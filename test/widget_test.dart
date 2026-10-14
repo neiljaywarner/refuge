@@ -10,11 +10,21 @@ void main() {
       repository = LocalPostRepository();
     });
 
+    Future<void> pumpApp(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(SanctuaryApp(repository: repository));
+      await tester.pumpAndSettle();
+    }
+
     testWidgets(
       'Renders Sanctuary header, seeded posts, and space navigation',
       (WidgetTester tester) async {
-        await tester.pumpWidget(SanctuaryApp(repository: repository));
-        await tester.pumpAndSettle();
+        await pumpApp(tester);
 
         // Verify title & calm-tech subtitle
         expect(find.text('Sanctuary'), findsOneWidget);
@@ -35,8 +45,7 @@ void main() {
     testWidgets('Switching space updates the stream of posts', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await pumpApp(tester);
 
       // Tap on #weekly-study space chip
       await tester.tap(find.text('📖 #weekly-study'));
@@ -57,8 +66,7 @@ void main() {
     testWidgets('Toggling sensory themes switches theme mode without errors', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await pumpApp(tester);
 
       // Tap 'Dark' (charcoal)
       await tester.tap(find.text('Dark'));
@@ -82,8 +90,7 @@ void main() {
     testWidgets('Publishing a reflection adds it to the top of the feed', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await pumpApp(tester);
 
       const testContent =
           'Grateful for quiet moments of stillness in a hurried world.';
@@ -108,8 +115,7 @@ void main() {
     testWidgets('Incrementing qualitative care reactions updates counts', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await pumpApp(tester);
 
       // Find first '🙏 6 Praying' button
       final prayingButton = find.text('6 Praying');
@@ -139,8 +145,7 @@ void main() {
     testWidgets('Filtering by tone tags displays only matching posts', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await pumpApp(tester);
 
       // Initially in 'prayer' space: David M. has [Prayer Request], Elena R. has [Comfort Only]
       expect(find.text('David M. (UK)'), findsOneWidget);

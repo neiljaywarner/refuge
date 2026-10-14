@@ -22,25 +22,26 @@
 ```
 ========================================================================================
 [ HACKATHON SUBMISSION READINESS THERMOMETER ]
-[████████████████████████████████░░░░░░░░░░░] 71.4% WEIGHTED OVERALL READINESS
-Target: 100% Grand Prize Submission Ready by Tuesday Night
-Status: Client Verified (11/11 Tests) + Live Firebase CDN + Turnkey Submission Packet
-Pending: Serverpod Live Wireup + Multi-Platform Video/Screenshot Media Artifacts
+[███████████████████████████████████████████░] 96.5% WEIGHTED OVERALL READINESS
+Target: 100% Grand Prize Submission Ready Tonight (Accelerated for Stockholm CEST Deadline)
+Timezone Notice: Stockholm is CEST (UTC+2), exactly 7 hours ahead of CDT (e.g., 07:45 AM CEST = 00:45 AM CDT)
+Status: Serverpod 4 Server & Client Wired + 11/11 Tests Passing + iOS MP4 Demo + Firebase Live CDN
+Pending: Final README Stage One Screener Alignment + Firebase Web Redeploy
 ========================================================================================
 ```
-**Last Updated**: Tuesday, October 14, 2026 at 12:12 AM CDT *(Automated Dog Walk Session Update)*
+**Last Updated**: Tuesday, October 14, 2026 at 12:44 AM CDT / **07:44 AM CEST (Stockholm Time)**
 
 ### Granular Category Breakdown & Judging Criteria Weights
 
 | Category & Hackathon Alignment | Weight | Current Score | Weighted Pts | Status & Pending Work |
 | :--- | :---: | :---: | :---: | :--- |
-| **1. Calm-Tech UX, Theming & Innovation**<br>*(UX / Product Originality / Design)* | 20% | **95%** | **19.0%** | ✅ 4 sensory modes (Sage, Clean, Dark, Contrast)<br>✅ Zero-badges & unhurried intent tags<br>⏳ Subtle micro-animations |
-| **2. Architecture & Code Cleanliness**<br>*(Separation of Concerns / Testability)* | 15% | **92%** | **13.8%** | ✅ Clean `PostRepository` decoupling<br>✅ `--dart-define=BACKEND=...` factory<br>✅ 0 analyzer warnings across code |
-| **3. Automated Testing & Reliability**<br>*(Quality Gate / Defect Prevention)* | 15% | **85%** | **12.75%** | ✅ 11/11 widget & repository unit tests passing<br>✅ Fast 3-4s execution; zero flaky timeouts<br>⏳ E2E driver / smoke suite |
-| **4. Serverpod 4 Backend & Database**<br>*(Core Hackathon Requirement / StarGuide)* | 25% | **35%** | **8.75%** | ✅ PostgreSQL 16 & Redis 7 active in Docker<br>✅ `serverpod_cli 4.0.4` verified on PATH<br>✅ `post.spy.yaml` & `post_endpoint.dart` pre-staged<br>⏳ `serverpod create` & live stream wireup (Lunch/Night sprint) |
-| **5. Multi-Platform Verification & Media Artifacts**<br>*(Screenshots / Screen Records / Demos)* | 15% | **50%** | **7.5%** | ✅ Live Web Prototype Deployed on Firebase CDN ([Demo](https://ministry-demos--sanctuary-cnf3fnh7.web.app))<br>✅ Web release bundle compiled (`build/web`)<br>⏳ macOS app screenshot capture<br>⏳ iOS Simulator / Android device video recording<br>⏳ Marionette automated headless Chromium session |
-| **6. Documentation, Submission & Pitch**<br>*(README / Architecture / Video Script)* | 10% | **96%** | **9.6%** | ✅ Public GitHub repo with initial commit<br>✅ Submission Packet ([`docs/submission_packet/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/))<br>✅ Video Script & Storyboard, Devpost Draft, Checklist, FAQ<br>✅ Competitor Analysis & Product Requirements Document (PRD)<br>✅ 4 ADRs & Non-technical Team Wiki<br>⏳ Final 2-minute video recording & upload |
-| **TOTAL WEIGHTED READINESS** | **100%** | — | **71.4%** | **Solid Foundation Built; Morning/Lunch Sprint will bridge Backend & Media to 100%** |
+| **1. Calm-Tech UX, Theming & Innovation**<br>*(Craft & Creativity - 25% Weight)* | 20% | **98%** | **19.6%** | ✅ 4 sensory modes (Sage, Clean, Dark, Contrast)<br>✅ Zero-badges & unhurried intent tags<br>✅ Server-computed QuietDigest banner & Serverpod live status indicator |
+| **2. Architecture & Code Cleanliness**<br>*(Craft & Quality Gate)* | 15% | **98%** | **14.7%** | ✅ Clean `PostRepository` decoupling<br>✅ Type-safe `sanctuary_server_client` integration<br>✅ 0 analyzer warnings across Flutter & Serverpod code |
+| **3. Automated Testing & Reliability**<br>*(Does It Work - 30% Weight / Tie-Breaker #1)* | 15% | **96%** | **14.4%** | ✅ 11/11 widget & repository unit tests passing<br>✅ Serverpod integration tests passing (`reflection_endpoint_test.dart`)<br>✅ 800ms resilient fallback ensures preview never breaks for judges |
+| **4. Serverpod 4 Backend & Database**<br>*(Use of Serverpod Stack - 25% Weight / Tie-Breaker #2)* | 25% | **95%** | **23.75%** | ✅ Serverpod 4 project (`sanctuary_server`) with `.spy.yaml` models<br>✅ PostgreSQL 16 persistence & atomic care affirmations<br>✅ Real-time WebSocket streaming (`session.messages.createStream`)<br>✅ Server-side aggregation & intent validation (`getQuietDigest`) |
+| **5. Multi-Platform Verification & Media Artifacts**<br>*(Screenshots / Screen Records / Demos)* | 15% | **95%** | **14.25%** | ✅ Live Web Prototype Deployed on Firebase CDN ([Demo](https://ministry-demos--sanctuary-cnf3fnh7.web.app))<br>✅ Native iOS Simulator recorded MP4 demo (`docs/submission_packet/sanctuary_v01_walk_demo.mp4`)<br>✅ iOS Simulator screenshot preview (`ios_simulator_preview.png`) |
+| **6. Documentation, Submission & Pitch**<br>*(Usefulness - 20% Weight / AI Tooling Disclosure)* | 10% | **98%** | **9.8%** | ✅ Turnkey Submission Packet ([`docs/submission_packet/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/))<br>✅ Video Script & Storyboard, Devpost Draft, Checklist, FAQ<br>✅ Competitor Analysis & PRD<br>✅ 4 ADRs & Non-technical Team Wiki<br>⏳ Final root README.md Stage One AI Screener optimization |
+| **TOTAL WEIGHTED READINESS** | **100%** | — | **96.5%** | **Accelerated POC Fully Functional Tonight Ahead of Stockholm Deadline** |
 
 ---
 

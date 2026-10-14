@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:sanctuary_server_client/sanctuary_server_client.dart' as sp;
 
 /// Visual ergonomics matching calm-tech accessibility and low-stimulation standards.
 enum SensoryMode { clean, sage, charcoal, contrast }
@@ -55,6 +56,7 @@ abstract class PostRepository {
     required String reactionType,
   });
   Stream<List<Post>> watchPosts({required String spaceKey});
+  Future<String?> getQuietDigest({required String spaceKey});
 }
 
 /// Resilient local-first implementation with asynchronous broadcast streams.
@@ -75,7 +77,8 @@ class LocalPostRepository implements PostRepository {
         authorName: 'David M. (UK)',
         spaceKey: 'prayer',
         toneTag: '[Prayer Request]',
-        content: 'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
+        content:
+            'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
         timestamp: now.subtract(const Duration(minutes: 35)),
         reactions: {'pray': 6, 'peace': 4},
       ),
@@ -84,7 +87,8 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Elena R. (Colorado)',
         spaceKey: 'prayer',
         toneTag: '[Comfort Only]',
-        content: 'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
+        content:
+            'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
         timestamp: now.subtract(const Duration(hours: 2)),
         reactions: {'pray': 11, 'peace': 14},
       ),
@@ -93,7 +97,8 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Pastor Thomas (Melbourne)',
         spaceKey: 'study',
         toneTag: '[Question]',
-        content: 'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
+        content:
+            'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
         timestamp: now.subtract(const Duration(hours: 5)),
         reactions: {'pray': 5, 'peace': 8},
       ),
@@ -140,17 +145,61 @@ class LocalPostRepository implements PostRepository {
       (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
     );
   }
+
+  @override
+  Future<String?> getQuietDigest({required String spaceKey}) async {
+    final posts = _store.where((p) => p.spaceKey == spaceKey).toList();
+    if (posts.isEmpty) {
+      return 'A quiet, unhurried space awaiting the first community reflection.';
+    }
+    final totalReactions = posts.fold<int>(
+      0,
+      (sum, p) => sum + p.reactions.values.fold<int>(0, (a, b) => a + b),
+    );
+    return 'Gathered in peace • ${posts.length} reflections shared with $totalReactions care affirmations.';
+  }
 }
 
-/// Serverpod-backed post repository with resilient offline fallback.
+/// Serverpod-backed post repository with live WebSocket streaming and resilient offline fallback.
 class ServerpodPostRepository implements PostRepository {
   final String serverUrl;
   final LocalPostRepository _fallback;
+  final sp.Client _client;
+  bool _isLiveConnected = false;
+
+  bool get isLiveConnected => _isLiveConnected;
 
   ServerpodPostRepository({
-    this.serverUrl = 'http://localhost:8080/',
+    String? serverUrl,
     LocalPostRepository? fallback,
-  }) : _fallback = fallback ?? LocalPostRepository();
+  })  : serverUrl = serverUrl ??
+            const String.fromEnvironment(
+              'SERVERPOD_URL',
+              defaultValue: 'http://localhost:8080/',
+            ),
+        _fallback = fallback ?? LocalPostRepository(),
+        _client = sp.Client(
+          serverUrl ??
+              const String.fromEnvironment(
+                'SERVERPOD_URL',
+                defaultValue: 'http://localhost:8080/',
+              ),
+        );
+
+  String _mapSpaceKey(String key) {
+    switch (key) {
+      case 'prayer':
+        return 'prayer_care';
+      case 'study':
+        return 'quiet_room';
+      case 'general':
+        return 'main_hall';
+      case 'announcements':
+        return 'gratitude';
+      default:
+        return key;
+    }
+  }
 
   @override
   Future<List<Post>> getPosts({required String spaceKey}) async {
@@ -159,17 +208,130 @@ class ServerpodPostRepository implements PostRepository {
 
   @override
   Future<Post> createPost(Post post) async {
-    return _fallback.createPost(post);
+    try {
+      final spPost = sp.ReflectionPost(
+        authorName: post.authorName,
+        spaceKey: _mapSpaceKey(post.spaceKey),
+        intentTag: post.toneTag,
+        content: post.content,
+        createdAt: post.timestamp.toUtc(),
+        prayingCount: post.reactions['pray'] ?? 0,
+        standingWithCount: post.reactions['standing'] ?? 0,
+        peaceCount: post.reactions['peace'] ?? 0,
+        encouragedCount: post.reactions['encouraged'] ?? 0,
+      );
+
+      final result = await _client.reflection
+          .publishReflection(spPost)
+          .timeout(const Duration(milliseconds: 1200));
+
+      _isLiveConnected = true;
+
+      return Post(
+        id: result.id?.toString() ?? post.id,
+        authorName: result.authorName,
+        spaceKey: post.spaceKey,
+        toneTag: result.intentTag,
+        content: result.content,
+        timestamp: result.createdAt.toLocal(),
+        reactions: {
+          'pray': result.prayingCount,
+          'standing': result.standingWithCount,
+          'peace': result.peaceCount,
+          'encouraged': result.encouragedCount,
+        },
+      );
+    } catch (_) {
+      _isLiveConnected = false;
+      return _fallback.createPost(post);
+    }
   }
 
   @override
-  Future<void> addReaction({required String postId, required String reactionType}) async {
+  Future<void> addReaction({
+    required String postId,
+    required String reactionType,
+  }) async {
+    final parsedId = int.tryParse(postId);
+    if (parsedId != null) {
+      try {
+        final keyMap = {
+          'pray': 'praying',
+          'standing': 'standingWith',
+          'peace': 'peace',
+          'encouraged': 'encouraged',
+        };
+        await _client.reflection
+            .affirmCare(parsedId, keyMap[reactionType] ?? reactionType)
+            .timeout(const Duration(milliseconds: 1200));
+        _isLiveConnected = true;
+        return;
+      } catch (_) {
+        _isLiveConnected = false;
+      }
+    }
     return _fallback.addReaction(postId: postId, reactionType: reactionType);
   }
 
   @override
-  Stream<List<Post>> watchPosts({required String spaceKey}) {
-    return _fallback.watchPosts(spaceKey: spaceKey);
+  Stream<List<Post>> watchPosts({required String spaceKey}) async* {
+    // 1. Instantly yield local fallback so user never sees a blank screen or loading spinner
+    yield await _fallback.getPosts(spaceKey: spaceKey);
+
+    // 2. Try to connect to Serverpod streaming endpoint
+    try {
+      final mappedSpace = _mapSpaceKey(spaceKey);
+      final stream = _client.reflection
+          .watchSpace(mappedSpace)
+          .timeout(const Duration(milliseconds: 800));
+
+      final livePosts = <Post>[];
+
+      await for (final spPost in stream) {
+        _isLiveConnected = true;
+        final post = Post(
+          id: spPost.id?.toString() ?? UniqueKey().toString(),
+          authorName: spPost.authorName,
+          spaceKey: spaceKey,
+          toneTag: spPost.intentTag,
+          content: spPost.content,
+          timestamp: spPost.createdAt.toLocal(),
+          reactions: {
+            'pray': spPost.prayingCount,
+            'standing': spPost.standingWithCount,
+            'peace': spPost.peaceCount,
+            'encouraged': spPost.encouragedCount,
+          },
+        );
+
+        final existingIdx = livePosts.indexWhere((p) => p.id == post.id);
+        if (existingIdx >= 0) {
+          livePosts[existingIdx] = post;
+        } else {
+          livePosts.insert(0, post);
+        }
+        yield List<Post>.from(livePosts);
+      }
+    } catch (_) {
+      // 3. Fallback gracefully to local stream
+      _isLiveConnected = false;
+      yield* _fallback.watchPosts(spaceKey: spaceKey);
+    }
+  }
+
+  @override
+  Future<String?> getQuietDigest({required String spaceKey}) async {
+    try {
+      final mappedSpace = _mapSpaceKey(spaceKey);
+      final digest = await _client.reflection
+          .getQuietDigest(mappedSpace)
+          .timeout(const Duration(milliseconds: 800));
+      _isLiveConnected = true;
+      return digest.summaryMessage;
+    } catch (_) {
+      _isLiveConnected = false;
+      return _fallback.getQuietDigest(spaceKey: spaceKey);
+    }
   }
 }
 
@@ -327,6 +489,7 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
   String _selectedSpace = 'prayer';
   String _selectedTone = '[Prayer Request]';
   String _activeFilter = 'All';
+  String? _quietDigestMessage;
   final TextEditingController _contentController = TextEditingController();
   Stream<List<Post>>? _postStream;
 
@@ -353,6 +516,13 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
   void _refreshStream() {
     setState(() {
       _postStream = widget.repository.watchPosts(spaceKey: _selectedSpace);
+    });
+    widget.repository.getQuietDigest(spaceKey: _selectedSpace).then((digest) {
+      if (mounted && digest != null) {
+        setState(() {
+          _quietDigestMessage = digest;
+        });
+      }
     });
   }
 
@@ -386,6 +556,9 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
     final isContrast = widget.themeNotifier.mode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
+    final isLiveServerpod = widget.repository is ServerpodPostRepository &&
+        (widget.repository as ServerpodPostRepository).isLiveConnected;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
@@ -396,13 +569,28 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
               'Sanctuary',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Text(
-              'Calm Tech &bull; Zero Badges &bull; ${configuredBackendMode.name.toUpperCase()}',
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).textTheme.bodySmall?.color
-                    ?.withValues(alpha: 0.7),
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isLiveServerpod
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFF68A67D),
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'Calm Tech • Zero Badges • ${configuredBackendMode.name.toUpperCase()} ${widget.repository is ServerpodPostRepository ? (isLiveServerpod ? "LIVE" : "RESILIENT") : ""}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).textTheme.bodySmall?.color
+                        ?.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -426,12 +614,52 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
           child: Column(
             children: [
               _buildSpaceNavigation(),
+              _buildQuietDigestBanner(primaryColor, isContrast),
               _buildComposerCard(primaryColor, isContrast),
               _buildToneFilterRow(),
               Expanded(child: _buildPostList(isContrast)),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuietDigestBanner(Color primaryColor, bool isContrast) {
+    if (_quietDigestMessage == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: isContrast
+            ? Colors.yellow.withValues(alpha: 0.1)
+            : primaryColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isContrast
+              ? Colors.yellow
+              : primaryColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.wb_twilight,
+            size: 15,
+            color: isContrast ? Colors.yellow : primaryColor,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _quietDigestMessage!,
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: isContrast ? Colors.yellow : null,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
