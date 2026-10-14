@@ -217,11 +217,13 @@ class ServerpodPostRepository implements PostRepository {
       case 'prayer':
         return 'prayer_care';
       case 'study':
-        return 'quiet_room';
+        return 'bible_study';
+      case 'special_interests':
+        return 'special_interests';
       case 'general':
         return 'main_hall';
       case 'announcements':
-        return 'gratitude';
+        return 'quiet_room';
       default:
         return key;
     }
@@ -239,6 +241,7 @@ class ServerpodPostRepository implements PostRepository {
         authorName: post.authorName,
         spaceKey: _mapSpaceKey(post.spaceKey),
         intentTag: post.toneTag,
+        specialInterestTag: post.specialInterestTag,
         content: post.content,
         createdAt: post.timestamp.toUtc(),
         prayingCount: post.reactions['pray'] ?? 0,
@@ -258,6 +261,7 @@ class ServerpodPostRepository implements PostRepository {
         authorName: result.authorName,
         spaceKey: post.spaceKey,
         toneTag: result.intentTag,
+        specialInterestTag: result.specialInterestTag,
         content: result.content,
         timestamp: result.createdAt.toLocal(),
         reactions: {
@@ -265,6 +269,7 @@ class ServerpodPostRepository implements PostRepository {
           'standing': result.standingWithCount,
           'peace': result.peaceCount,
           'encouraged': result.encouragedCount,
+          'relatable': result.encouragedCount,
         },
       );
     } catch (_) {
@@ -286,6 +291,7 @@ class ServerpodPostRepository implements PostRepository {
           'standing': 'standingWith',
           'peace': 'peace',
           'encouraged': 'encouraged',
+          'relatable': 'relatable',
         };
         await _client.reflection
             .affirmCare(parsedId, keyMap[reactionType] ?? reactionType)
@@ -320,6 +326,7 @@ class ServerpodPostRepository implements PostRepository {
           authorName: spPost.authorName,
           spaceKey: spaceKey,
           toneTag: spPost.intentTag,
+          specialInterestTag: spPost.specialInterestTag,
           content: spPost.content,
           timestamp: spPost.createdAt.toLocal(),
           reactions: {
@@ -327,6 +334,7 @@ class ServerpodPostRepository implements PostRepository {
             'standing': spPost.standingWithCount,
             'peace': spPost.peaceCount,
             'encouraged': spPost.encouragedCount,
+            'relatable': spPost.encouragedCount,
           },
         );
 
