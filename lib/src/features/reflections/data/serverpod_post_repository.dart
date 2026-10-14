@@ -30,6 +30,14 @@ class ServerpodPostRepository implements PostRepository {
               'SERVERPOD_URL',
               defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
             ),
+        onFailedCall: (context, error, stackTrace) {
+          debugPrint(
+            '🚨 [Serverpod RPC FAILED] ${context.endpointName}.${context.methodName}: $error',
+          );
+        },
+        onSucceededCall: (context) {
+          debugPrint('✅ [Serverpod RPC SUCCESS] ${context.endpointName}.${context.methodName}');
+        },
       );
 
   String _mapSpaceKey(String key) => switch (key) {
@@ -62,7 +70,7 @@ class ServerpodPostRepository implements PostRepository {
 
       final result = await _client.reflection
           .publishReflection(spPost)
-          .timeout(const Duration(milliseconds: 1200));
+          .timeout(const Duration(milliseconds: 5000));
 
       _isLiveConnected = true;
 
@@ -102,7 +110,7 @@ class ServerpodPostRepository implements PostRepository {
         };
         await _client.reflection
             .affirmCare(parsedId, keyMap[reactionType] ?? reactionType)
-            .timeout(const Duration(milliseconds: 1200));
+            .timeout(const Duration(milliseconds: 4000));
         _isLiveConnected = true;
         return;
       } catch (_) {
@@ -117,16 +125,17 @@ class ServerpodPostRepository implements PostRepository {
     // 1. Instantly yield local fallback so user never sees a blank screen or loading spinner
     yield await _fallback.getPosts(spaceKey: spaceKey);
 
-    // 2. Try to connect to Serverpod streaming endpoint
+    // 2. Connect to Serverpod streaming endpoint (persistent WebSocket stream)
     try {
       final mappedSpace = _mapSpaceKey(spaceKey);
-      final stream = _client.reflection
-          .watchSpace(mappedSpace)
-          .timeout(const Duration(milliseconds: 800));
+      final stream = _client.reflection.watchSpace(mappedSpace);
 
       final livePosts = <Post>[];
 
       await for (final spPost in stream) {
+        debugPrint(
+          '📡 [Serverpod Stream EVENT] Received post id=${spPost.id}: "${spPost.content}"',
+        );
         _isLiveConnected = true;
         final post = Post(
           id: spPost.id?.toString() ?? UniqueKey().toString(),
@@ -151,10 +160,12 @@ class ServerpodPostRepository implements PostRepository {
         } else {
           livePosts.insert(0, post);
         }
+        livePosts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
         yield List<Post>.from(livePosts);
       }
-    } catch (_) {
-      // 3. Fallback gracefully to local stream
+    } catch (e, st) {
+      debugPrint('🚨 [Serverpod Stream CATCH] watchPosts error: $e\n$st');
+      // 3. Fallback gracefully to local stream if network disconnects
       _isLiveConnected = false;
       yield* _fallback.watchPosts(spaceKey: spaceKey);
     }

@@ -6,11 +6,11 @@ import 'serverpod_post_repository.dart';
 enum BackendMode { local, serverpod, sqlite }
 
 BackendMode get configuredBackendMode {
-  const backend = String.fromEnvironment('BACKEND', defaultValue: 'local');
+  const backend = String.fromEnvironment('BACKEND', defaultValue: 'serverpod');
   return switch (backend.toLowerCase()) {
-    'serverpod' => BackendMode.serverpod,
+    'local' => BackendMode.local,
     'sqlite' || 'postgres' || 'docker' => BackendMode.sqlite,
-    _ => BackendMode.local,
+    _ => BackendMode.serverpod,
   };
 }
 
