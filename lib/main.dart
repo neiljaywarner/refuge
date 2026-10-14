@@ -12,6 +12,7 @@ class Post {
   final String authorName;
   final String spaceKey;
   final String toneTag;
+  final String? specialInterestTag;
   final String content;
   final DateTime timestamp;
   final Map<String, int> reactions;
@@ -21,6 +22,7 @@ class Post {
     required this.authorName,
     required this.spaceKey,
     required this.toneTag,
+    this.specialInterestTag,
     required this.content,
     required this.timestamp,
     required this.reactions,
@@ -31,6 +33,7 @@ class Post {
     String? authorName,
     String? spaceKey,
     String? toneTag,
+    String? specialInterestTag,
     String? content,
     DateTime? timestamp,
     Map<String, int>? reactions,
@@ -40,6 +43,7 @@ class Post {
       authorName: authorName ?? this.authorName,
       spaceKey: spaceKey ?? this.spaceKey,
       toneTag: toneTag ?? this.toneTag,
+      specialInterestTag: specialInterestTag ?? this.specialInterestTag,
       content: content ?? this.content,
       timestamp: timestamp ?? this.timestamp,
       reactions: reactions ?? Map<String, int>.from(this.reactions),
@@ -101,6 +105,28 @@ class LocalPostRepository implements PostRepository {
             'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
         timestamp: now.subtract(const Duration(hours: 5)),
         reactions: {'pray': 5, 'peace': 8},
+      ),
+      Post(
+        id: '4',
+        authorName: 'Nathan K. (Texas)',
+        spaceKey: 'special_interests',
+        toneTag: '[Autism & Faith Meme]',
+        specialInterestTag: 'Church Acoustics',
+        content:
+            'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
+        timestamp: now.subtract(const Duration(minutes: 15)),
+        reactions: {'pray': 4, 'peace': 8, 'relatable': 18},
+      ),
+      Post(
+        id: '5',
+        authorName: 'Sarah L. (Oxford)',
+        spaceKey: 'study',
+        toneTag: '[Bible Deep-Dive]',
+        specialInterestTag: 'Markan Chiasms',
+        content:
+            'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
+        timestamp: now.subtract(const Duration(hours: 1)),
+        reactions: {'pray': 7, 'peace': 9, 'relatable': 14},
       ),
     ]);
     _notify();
@@ -491,18 +517,25 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
   String _activeFilter = 'All';
   String? _quietDigestMessage;
   final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _specialInterestController =
+      TextEditingController();
   Stream<List<Post>>? _postStream;
 
   final Map<String, String> _spaces = const {
     'prayer': '🙏 #prayer-sanctuary',
     'study': '📖 #weekly-study',
     'announcements': '📢 #announcements',
-    'general': '☕ #general-fellowship',
+    'special_interests': '🧩 #special-interests-memes',
+    'general': '🌿 #main-hall',
   };
 
   final List<String> _toneOptions = const [
     '[Prayer Request]',
     '[Comfort Only]',
+    '[Bible Deep-Dive]',
+    '[Special Interest Infodump]',
+    '[Autism & Faith Meme]',
+    '[Giving Thanks]',
     '[Question]',
     '[Resource]',
   ];
@@ -511,6 +544,13 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
   void initState() {
     super.initState();
     _refreshStream();
+  }
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    _specialInterestController.dispose();
+    super.dispose();
   }
 
   void _refreshStream() {
@@ -537,17 +577,23 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
     final text = _contentController.text.trim();
     if (text.isEmpty) return;
 
+    final specialInterest = _specialInterestController.text.trim().isNotEmpty
+        ? _specialInterestController.text.trim()
+        : (_selectedTone.contains('Meme') ? 'Faith & Neurodiversity' : null);
+
     final newPost = Post(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       authorName: 'Fellowship Member',
       spaceKey: _selectedSpace,
       toneTag: _selectedTone,
+      specialInterestTag: specialInterest,
       content: text,
       timestamp: DateTime.now(),
-      reactions: {'pray': 1, 'peace': 1},
+      reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
     );
 
     _contentController.clear();
+    _specialInterestController.clear();
     await widget.repository.createPost(newPost);
   }
 
@@ -616,6 +662,7 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
           constraints: const BoxConstraints(maxWidth: 820),
           child: Column(
             children: [
+              _buildCommunityAnchorBanner(primaryColor, isContrast),
               _buildSpaceNavigation(),
               _buildQuietDigestBanner(primaryColor, isContrast),
               _buildComposerCard(primaryColor, isContrast),
@@ -628,10 +675,116 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
     );
   }
 
+  Widget _buildCommunityAnchorBanner(Color primaryColor, bool isContrast) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isContrast
+            ? Colors.black
+            : primaryColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isContrast
+              ? Colors.yellow
+              : primaryColor.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isContrast
+                  ? Colors.yellow.withValues(alpha: 0.2)
+                  : primaryColor.withValues(alpha: 0.15),
+            ),
+            child: const Text('🧩', style: TextStyle(fontSize: 14)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Belong on the Spectrum',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isContrast ? Colors.yellow : primaryColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '• belongonthespectrum.com',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.color
+                            ?.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  '"Fearfully and wonderfully made" (Psalm 139:14)',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontStyle: FontStyle.italic,
+                    color: isContrast
+                        ? Colors.white70
+                        : Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('🧩 Belong on the Spectrum'),
+                  content: const Text(
+                    'Sanctuary is the calm-tech digital community platform for Belong on the Spectrum (belongonthespectrum.com).\n\n'
+                    'Created by and for Autistic Disciples of Jesus and allies, replacing costly \$89-\$130/mo SaaS platforms with low-cost (<5\$/mo) Serverpod compute.\n\n'
+                    'Everyone brings their unique special interests, sharing Christ and Scripture as our unifying foundation.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Close'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Icon(
+                Icons.info_outline_rounded,
+                size: 16,
+                color: isContrast ? Colors.yellow : primaryColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuietDigestBanner(Color primaryColor, bool isContrast) {
     if (_quietDigestMessage == null) return const SizedBox.shrink();
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: isContrast
@@ -713,11 +866,11 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
 
   Widget _buildComposerCard(Color primaryColor, bool isContrast) {
     return Container(
-      margin: const EdgeInsets.all(12.0),
-      padding: const EdgeInsets.all(14.0),
+      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
           color: isContrast ? Colors.white : Theme.of(context).dividerColor,
           width: isContrast ? 2.0 : 1.0,
@@ -750,13 +903,33 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
               ),
             ],
           ),
+          if (_selectedTone.contains('Special Interest') ||
+              _selectedTone.contains('Meme') ||
+              _selectedSpace == 'special_interests') ...[
+            const SizedBox(height: 6),
+            TextField(
+              controller: _specialInterestController,
+              decoration: InputDecoration(
+                hintText:
+                    'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Liturgy)...',
+                hintStyle: const TextStyle(fontSize: 11),
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           TextField(
             controller: _contentController,
             maxLines: 3,
             decoration: InputDecoration(
               hintText:
-                  'Share a quiet, unhurried thought. No urgency to reply...',
+                  'Share an unhurried thought, Scripture insight, or relatable reflection...',
               hintStyle: const TextStyle(fontSize: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -794,6 +967,10 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
       'All',
       '[Prayer Request]',
       '[Comfort Only]',
+      '[Bible Deep-Dive]',
+      '[Special Interest Infodump]',
+      '[Autism & Faith Meme]',
+      '[Giving Thanks]',
       '[Question]',
       '[Resource]',
     ];
@@ -862,6 +1039,7 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           itemBuilder: (context, index) {
             final p = posts[index];
+            final isMeme = p.toneTag.contains('Meme');
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 6.0),
               padding: const EdgeInsets.all(14.0),
@@ -869,10 +1047,12 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(14.0),
                 border: Border.all(
-                  color: isContrast
-                      ? Colors.white
-                      : Theme.of(context).dividerColor,
-                  width: isContrast ? 2.0 : 1.0,
+                  color: isMeme
+                      ? Colors.amber.withValues(alpha: 0.8)
+                      : (isContrast
+                          ? Colors.white
+                          : Theme.of(context).dividerColor),
+                  width: isMeme ? 2.0 : (isContrast ? 2.0 : 1.0),
                 ),
               ),
               child: Column(
@@ -894,8 +1074,10 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
                           vertical: 3.0,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary
-                              .withValues(alpha: 0.12),
+                          color: isMeme
+                              ? Colors.amber.withValues(alpha: 0.2)
+                              : Theme.of(context).colorScheme.primary
+                                  .withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6.0),
                         ),
                         child: Text(
@@ -903,52 +1085,120 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: isMeme
+                                ? Colors.amber.shade800
+                                : Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ),
                     ],
                   ),
+                  if (p.specialInterestTag != null &&
+                      p.specialInterestTag!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 3.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6.0),
+                      ),
+                      child: Text(
+                        '🧩 Special Interest: ${p.specialInterestTag}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Text(
                     p.content,
                     style: const TextStyle(fontSize: 13, height: 1.45),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          onPressed: () => widget.repository.addReaction(
+                            postId: p.id,
+                            reactionType: 'pray',
+                          ),
+                          icon:
+                              const Text('🙏', style: TextStyle(fontSize: 12)),
+                          label: Text(
+                            '${p.reactions['pray'] ?? 0} Praying',
+                            style: const TextStyle(fontSize: 11),
+                          ),
                         ),
-                        onPressed: () => widget.repository.addReaction(
-                          postId: p.id,
-                          reactionType: 'pray',
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          onPressed: () => widget.repository.addReaction(
+                            postId: p.id,
+                            reactionType: 'peace',
+                          ),
+                          icon:
+                              const Text('🤍', style: TextStyle(fontSize: 12)),
+                          label: Text(
+                            '${p.reactions['peace'] ?? 0} Support',
+                            style: const TextStyle(fontSize: 11),
+                          ),
                         ),
-                        icon: const Text('🙏', style: TextStyle(fontSize: 12)),
-                        label: Text(
-                          '${p.reactions['pray'] ?? 0} Praying',
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        onPressed: () => widget.repository.addReaction(
-                          postId: p.id,
-                          reactionType: 'peace',
-                        ),
-                        icon: const Text('🤍', style: TextStyle(fontSize: 12)),
-                        label: Text(
-                          '${p.reactions['peace'] ?? 0} Support',
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                      ),
-                    ],
+                        if (p.reactions.containsKey('encouraged') ||
+                            p.reactions.containsKey('relatable')) ...[
+                          const SizedBox(width: 8),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            onPressed: () => widget.repository.addReaction(
+                              postId: p.id,
+                              reactionType: 'encouraged',
+                            ),
+                            icon: const Text('🌱',
+                                style: TextStyle(fontSize: 12)),
+                            label: Text(
+                              '${p.reactions['encouraged'] ?? 0} Encouraged',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            onPressed: () => widget.repository.addReaction(
+                              postId: p.id,
+                              reactionType: 'relatable',
+                            ),
+                            icon: const Text('😄',
+                                style: TextStyle(fontSize: 12)),
+                            label: Text(
+                              '${p.reactions['relatable'] ?? 0} Relatable',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ],
               ),
