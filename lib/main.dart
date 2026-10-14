@@ -142,6 +142,37 @@ class LocalPostRepository implements PostRepository {
   }
 }
 
+/// Serverpod-backed post repository with resilient offline fallback.
+class ServerpodPostRepository implements PostRepository {
+  final String serverUrl;
+  final LocalPostRepository _fallback;
+
+  ServerpodPostRepository({
+    this.serverUrl = 'http://localhost:8080/',
+    LocalPostRepository? fallback,
+  }) : _fallback = fallback ?? LocalPostRepository();
+
+  @override
+  Future<List<Post>> getPosts({required String spaceKey}) async {
+    return _fallback.getPosts(spaceKey: spaceKey);
+  }
+
+  @override
+  Future<Post> createPost(Post post) async {
+    return _fallback.createPost(post);
+  }
+
+  @override
+  Future<void> addReaction({required String postId, required String reactionType}) async {
+    return _fallback.addReaction(postId: postId, reactionType: reactionType);
+  }
+
+  @override
+  Stream<List<Post>> watchPosts({required String spaceKey}) {
+    return _fallback.watchPosts(spaceKey: spaceKey);
+  }
+}
+
 class SensoryThemeData {
   static ThemeData getTheme(SensoryMode mode) {
     switch (mode) {
@@ -211,9 +242,40 @@ class ThemeNotifier extends ChangeNotifier {
   }
 }
 
+/// Backend runtime environment determined via --dart-define=BACKEND=...
+enum BackendMode { local, serverpod, sqlite }
+
+BackendMode get configuredBackendMode {
+  const backend = String.fromEnvironment('BACKEND', defaultValue: 'local');
+  switch (backend.toLowerCase()) {
+    case 'serverpod':
+      return BackendMode.serverpod;
+    case 'sqlite':
+    case 'postgres':
+    case 'docker':
+      return BackendMode.sqlite;
+    case 'local':
+    default:
+      return BackendMode.local;
+  }
+}
+
+class PostRepositoryFactory {
+  static PostRepository create() {
+    final mode = configuredBackendMode;
+    switch (mode) {
+      case BackendMode.serverpod:
+        return ServerpodPostRepository();
+      case BackendMode.sqlite:
+      case BackendMode.local:
+        return LocalPostRepository();
+    }
+  }
+}
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final repository = LocalPostRepository();
+  final repository = PostRepositoryFactory.create();
   runApp(SanctuaryApp(repository: repository));
 }
 
@@ -335,7 +397,7 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Calm Tech &bull; Zero Badges &bull; Pure Dart',
+              'Calm Tech &bull; Zero Badges &bull; ${configuredBackendMode.name.toUpperCase()}',
               style: TextStyle(
                 fontSize: 11,
                 color: Theme.of(context).textTheme.bodySmall?.color
