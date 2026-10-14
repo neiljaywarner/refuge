@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "sanctuary_server_server",
+      "type": "dart",
+      "request": "attach",
+      "vmServiceInfoFile": "${workspaceFolder}/sanctuary_server_server/.dart_tool/serverpod/vm-service-info.json",
+      "preLaunchTask": "serverpod_start",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+services:
+  # Development services
+  postgres:
+    image: ghcr.io/serverpod/postgres:16
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: sanctuary_server
+      POSTGRES_PASSWORD: "RcDfYiuotSAxS488bMQ1sfjP6D1LyVRM"
+    volumes:
+      - sanctuary_server_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "gEtmTt3JSyUi8onOcD2ihsP771damWuo"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Test services
+  postgres_test:
+    image: ghcr.io/serverpod/postgres:16
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: sanctuary_server_test
+      POSTGRES_PASSWORD: "l32nspHEFwtOsvk91PMYYtLRo6qeFDmF"
+    volumes:
+      - sanctuary_server_test_data:/var/lib/postgresql/data
+
+  redis_test:
+    image: redis:6.2.6
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "OgI3H-SKIwTwPdAX0ff5USzc0n_KkjGx"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  sanctuary_server_data:
+  sanctuary_server_test_data:

@@ -1,0 +1,10 @@
+name: _
+publish_to: none
+
+environment:
+  sdk: '^3.12.2'
+
+workspace:
+  - sanctuary_server_client
+  - sanctuary_server_server
+

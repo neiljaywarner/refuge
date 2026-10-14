@@ -1,0 +1,9 @@
+### Server-side computational aggregation of a fellowship space's activity.
+class: QuietDigest
+fields:
+  spaceKey: String
+  totalReflections: int
+  totalCareAffirmations: int
+  predominantIntent: String
+  summaryMessage: String
+  generatedAt: DateTime

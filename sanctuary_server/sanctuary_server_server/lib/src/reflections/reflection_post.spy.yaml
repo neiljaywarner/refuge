@@ -1,0 +1,16 @@
+### A calm-tech fellowship reflection post persisted in PostgreSQL.
+class: ReflectionPost
+table: reflection_posts
+fields:
+  authorName: String
+  spaceKey: String
+  intentTag: String
+  content: String
+  createdAt: DateTime
+  prayingCount: int
+  standingWithCount: int
+  peaceCount: int
+  encouragedCount: int
+indexes:
+  space_created_idx:
+    fields: spaceKey, createdAt
