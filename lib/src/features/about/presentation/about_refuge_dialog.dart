@@ -26,7 +26,7 @@ void showAboutSanctuaryDialog(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Refuge (Sanctuary) v0.1.0',
+                  'Refuge (Sanctuary) v0.2.0',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -139,19 +139,19 @@ void showAboutSanctuaryDialog(
               ),
               const Divider(height: 20),
               const Text(
-                'Release Log (v0.1.0):',
+                'Release Log (v0.2.0):',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               const Text(
-                '• CodeWithAndrea Riverpod feature-first architecture\n'
-                '• Serverpod 4 (^4.0.4) protocol models (.spy.yaml) & ORM\n'
-                '• Atomic PostgreSQL qualitative care affirmations\n'
-                '• Real-time WebSocket streaming with 800ms resilient offline fallback\n'
-                '• Server-side Quiet Digest aggregation over space reflections\n'
-                '• 4 WCAG AAA-tested sensory modes (Sage, Clean, Dark, Contrast)\n'
-                '• 5 Fellowship spaces with Autism & Faith Meme support\n'
-                '• Serverpod Insights native macOS desktop diagnostic profiling\n'
+                '• 🖼️ Autism & Faith Meme Gallery with curated scripture cards\n'
+                '• 📊 Talker in-app visual and RPC network diagnostics console\n'
+                '• ⚡ Judge Serverpod API Explorer live interactive tool\n'
+                '• 🪝 Declarative State with hooks_riverpod (HookConsumerWidget)\n'
+                '• 📡 Verified bidirectional Serverpod 4 WebSocket streaming over 5G/LTE\n'
+                '• 🌙 4 WCAG AAA sensory themes (Sage Botanical, Clean Slate, Monastic Dark, High Contrast)\n'
+                '• 🕊️ Server-side Quiet Digest aggregation over space reflections\n'
+                '• 📱 Dual physical Google Pixel 9a verified live deployment\n'
                 '• Public GitHub Repository: neiljaywarner/refuge4serverpod',
                 style: TextStyle(fontSize: 11.5, height: 1.4),
               ),
