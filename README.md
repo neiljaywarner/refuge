@@ -1,15 +1,20 @@
 # 🌿 Sanctuary (Refuge): Full-Stack Calm-Tech Fellowship
+### Official Belong on the Spectrum Platform for Serverpod Hackathon 2026
+**Anchor Community**: [Belong on the Spectrum](https://www.belongonthespectrum.com/) — *"Fearfully and Wonderfully Made"* (Psalm 139:14)  
+Built with **Flutter 3** & **Serverpod 4** (`^4.0.4`) with PostgreSQL 16 & Redis 7.
 
-> **Official Serverpod Hackathon Submission**  
-> Built with **Flutter 3** & **Serverpod 4** (`^4.0.4`) with PostgreSQL 16 & Redis 7.  
-> 🔗 **Live Web App**: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app) *(Alternative: [https://ministry-demos--sanctuary-cnf3fnh7.web.app](https://ministry-demos--sanctuary-cnf3fnh7.web.app))*  
-> 📱 **Recorded Demo Video**: [`docs/submission_packet/sanctuary_v01_walk_demo.mp4`](docs/submission_packet/sanctuary_v01_walk_demo.mp4)  
-> ⏱️ **Timezone Notice**: Developed for Stockholm CEST (UTC+2) deadline submission.
+🌐 **Live Deployments & Endpoints**:
+* 🔗 **Live Web Application**: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app)
+* ☁️ **Serverpod Cloud API**: [https://refuge4serverpod.api.serverpod.space/](https://refuge4serverpod.api.serverpod.space/)
+* 🌐 **Serverpod Cloud Web**: [https://refuge4serverpod.serverpod.space/](https://refuge4serverpod.serverpod.space/)
+* 📊 **Serverpod Insights**: [https://refuge4serverpod.insights.serverpod.space/](https://refuge4serverpod.insights.serverpod.space/)
+* 📱 **Dual Pixel 9a Cloud Demo Videos**: [`sanctuary_pixel_left_scloud.mp4`](sanctuary_pixel_left_scloud.mp4) & [`sanctuary_pixel_right_scloud.mp4`](sanctuary_pixel_right_scloud.mp4)
+* 📦 **Android Release APK**: [`sanctuary-belong-v0.1.0.apk`](sanctuary-belong-v0.1.0.apk)
 
 [![Flutter CI](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
 [![Serverpod](https://img.shields.io/badge/Serverpod-4.0.4-blueviolet)](https://serverpod.dev)
+[![Serverpod Cloud](https://img.shields.io/badge/Serverpod%20Cloud-Active-brightgreen)](https://refuge4serverpod.serverpod.space/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
-[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)](https://redis.io)
 [![Tests Passing](https://img.shields.io/badge/Tests-20%2F20%20Passing-success)](test/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-refuge4serverpodhackathon.web.app-brightgreen)](https://refuge4serverpodhackathon.web.app)
 
