@@ -51,4 +51,5 @@ app.*.map.json
 # Local binaries and scratch
 *.apk
 *.mp4
+*.m4a
 scratch/
