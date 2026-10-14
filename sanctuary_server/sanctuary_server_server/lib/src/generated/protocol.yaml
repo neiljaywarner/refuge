@@ -11,3 +11,8 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+reflection:
+  - publishReflection:
+  - affirmCare:
+  - watchSpace:
+  - getQuietDigest:

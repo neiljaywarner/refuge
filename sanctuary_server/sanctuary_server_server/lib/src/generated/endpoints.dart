@@ -10,6 +10,8 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:sanctuary_server_server/src/generated/reflections/reflection_post.dart'
+    as _i1e9lush;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -18,6 +20,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../reflections/reflection_endpoint.dart' as _ipuei8a5;
 
 class Endpoints extends _is.EndpointDispatch {
   @override
@@ -39,6 +42,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'reflection': _ipuei8a5.ReflectionEndpoint()
+        ..initialize(
+          server,
+          'reflection',
           null,
         ),
     };
@@ -269,6 +278,100 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['greeting'] as _il624ik7.GreetingEndpoint).hello(
                     session,
                     params['name'],
+                  ),
+        ),
+      },
+    );
+    connectors['reflection'] = _is.EndpointConnector(
+      name: 'reflection',
+      endpoint: endpoints['reflection']!,
+      methodConnectors: {
+        'publishReflection': _is.MethodConnector(
+          name: 'publishReflection',
+          params: {
+            'post': _is.ParameterDescription(
+              name: 'post',
+              type: _is.getType<_i1e9lush.ReflectionPost>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
+                      .publishReflection(
+                        session,
+                        params['post'],
+                      ),
+        ),
+        'affirmCare': _is.MethodConnector(
+          name: 'affirmCare',
+          params: {
+            'postId': _is.ParameterDescription(
+              name: 'postId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'reactionKey': _is.ParameterDescription(
+              name: 'reactionKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
+                      .affirmCare(
+                        session,
+                        params['postId'],
+                        params['reactionKey'],
+                      ),
+        ),
+        'getQuietDigest': _is.MethodConnector(
+          name: 'getQuietDigest',
+          params: {
+            'spaceKey': _is.ParameterDescription(
+              name: 'spaceKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
+                      .getQuietDigest(
+                        session,
+                        params['spaceKey'],
+                      ),
+        ),
+        'watchSpace': _is.MethodStreamConnector(
+          name: 'watchSpace',
+          params: {
+            'spaceKey': _is.ParameterDescription(
+              name: 'spaceKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          streamParams: {},
+          returnType: _is.MethodStreamReturnType.streamType,
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+                Map<String, Stream> streamParams,
+              ) => (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
+                  .watchSpace(
+                    session,
+                    params['spaceKey'],
                   ),
         ),
       },

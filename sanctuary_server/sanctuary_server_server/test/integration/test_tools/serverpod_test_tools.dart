@@ -15,6 +15,10 @@ import 'dart:async' as _ida;
 import 'dart:io' as _idi;
 import 'package:sanctuary_server_server/src/generated/greetings/greeting.dart'
     as _i13ymihy;
+import 'package:sanctuary_server_server/src/generated/reflections/quiet_digest.dart'
+    as _iuvgcy14;
+import 'package:sanctuary_server_server/src/generated/reflections/reflection_post.dart'
+    as _i1e9lush;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -157,6 +161,8 @@ class TestEndpoints {
   late final _JwtRefreshEndpoint jwtRefresh;
 
   late final _GreetingEndpoint greeting;
+
+  late final _ReflectionEndpoint reflection;
 }
 
 class _InternalTestEndpoints extends TestEndpoints
@@ -175,6 +181,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     greeting = _GreetingEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    reflection = _ReflectionEndpoint(
       endpoints,
       serializationManager,
     );
@@ -533,6 +543,147 @@ class _GreetingEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i13ymihy.Greeting>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _ReflectionEndpoint {
+  _ReflectionEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_i1e9lush.ReflectionPost> publishReflection(
+    _ist.TestSessionBuilder sessionBuilder,
+    _i1e9lush.ReflectionPost post,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'reflection',
+            method: 'publishReflection',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'reflection',
+          methodName: 'publishReflection',
+          parameters: _ist.testObjectToJson({'post': post}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i1e9lush.ReflectionPost>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i1e9lush.ReflectionPost> affirmCare(
+    _ist.TestSessionBuilder sessionBuilder,
+    int postId,
+    String reactionKey,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'reflection',
+            method: 'affirmCare',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'reflection',
+          methodName: 'affirmCare',
+          parameters: _ist.testObjectToJson({
+            'postId': postId,
+            'reactionKey': reactionKey,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i1e9lush.ReflectionPost>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Stream<_i1e9lush.ReflectionPost> watchSpace(
+    _ist.TestSessionBuilder sessionBuilder,
+    String spaceKey,
+  ) {
+    var _localTestStreamManager =
+        _ist.TestStreamManager<_i1e9lush.ReflectionPost>();
+    _ist.callStreamFunctionAndHandleExceptions(
+      () async {
+        var _localUniqueSession =
+            (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+              endpoint: 'reflection',
+              method: 'watchSpace',
+            );
+        var _localCallContext = await _endpointDispatch
+            .getMethodStreamCallContext(
+              createSessionCallback: (_) => _localUniqueSession,
+              endpointPath: 'reflection',
+              methodName: 'watchSpace',
+              arguments: {'spaceKey': spaceKey},
+              requestedInputStreams: [],
+              serializationManager: _serializationManager,
+            );
+        await _localTestStreamManager.callStreamMethod(
+          _localCallContext,
+          _localUniqueSession,
+          {},
+        );
+      },
+      _localTestStreamManager.outputStreamController,
+    );
+    return _localTestStreamManager.outputStreamController.stream;
+  }
+
+  _ida.Future<_iuvgcy14.QuietDigest> getQuietDigest(
+    _ist.TestSessionBuilder sessionBuilder,
+    String spaceKey,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'reflection',
+            method: 'getQuietDigest',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'reflection',
+          methodName: 'getQuietDigest',
+          parameters: _ist.testObjectToJson({'spaceKey': spaceKey}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iuvgcy14.QuietDigest>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

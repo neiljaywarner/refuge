@@ -14,6 +14,10 @@ import 'dart:async' as _ida;
 import 'package:http/http.dart' as _i85jenna;
 import 'package:sanctuary_server_client/src/protocol/greetings/greeting.dart'
     as _imll9pl8;
+import 'package:sanctuary_server_client/src/protocol/reflections/quiet_digest.dart'
+    as _inazvanl;
+import 'package:sanctuary_server_client/src/protocol/reflections/reflection_post.dart'
+    as _iwhihj76;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _iacc;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
@@ -264,6 +268,60 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// Full-stack Serverpod 4 Endpoint managing calm-tech fellowship reflections,
+/// atomic qualitative care affirmations, real-time WebSocket streams, and
+/// server-side digest aggregations.
+/// {@category Endpoint}
+class EndpointReflection extends _isc.EndpointRef {
+  EndpointReflection(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'reflection';
+
+  /// Publishes a new reflection to PostgreSQL and broadcasts to live streaming sessions.
+  _ida.Future<_iwhihj76.ReflectionPost> publishReflection(
+    _iwhihj76.ReflectionPost post,
+  ) => caller.callServerEndpoint<_iwhihj76.ReflectionPost>(
+    'reflection',
+    'publishReflection',
+    {'post': post},
+  );
+
+  /// Atomically increments a qualitative care affirmation on a post.
+  _ida.Future<_iwhihj76.ReflectionPost> affirmCare(
+    int postId,
+    String reactionKey,
+  ) => caller.callServerEndpoint<_iwhihj76.ReflectionPost>(
+    'reflection',
+    'affirmCare',
+    {
+      'postId': postId,
+      'reactionKey': reactionKey,
+    },
+  );
+
+  /// Real-time streaming WebSocket endpoint for a fellowship space.
+  /// Yields existing database rows (or initial seeds on first boot), then streams live updates.
+  _ida.Stream<_iwhihj76.ReflectionPost> watchSpace(String spaceKey) =>
+      caller.callStreamingServerEndpoint<
+        _ida.Stream<_iwhihj76.ReflectionPost>,
+        _iwhihj76.ReflectionPost
+      >(
+        'reflection',
+        'watchSpace',
+        {'spaceKey': spaceKey},
+        {},
+      );
+
+  /// Computes server-side aggregation metrics for a fellowship space.
+  _ida.Future<_inazvanl.QuietDigest> getQuietDigest(String spaceKey) =>
+      caller.callServerEndpoint<_inazvanl.QuietDigest>(
+        'reflection',
+        'getQuietDigest',
+        {'spaceKey': spaceKey},
+      );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _iaic.Caller(client);
@@ -305,6 +363,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    reflection = EndpointReflection(this);
     modules = Modules(this);
   }
 
@@ -314,6 +373,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointGreeting greeting;
 
+  late final EndpointReflection reflection;
+
   late final Modules modules;
 
   @override
@@ -321,6 +382,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'reflection': reflection,
   };
 
   @override
