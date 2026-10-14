@@ -57,7 +57,7 @@ void main() {
     });
 
     test('ServerpodPostRepository operates resiliently with fallback', () async {
-      final repo = ServerpodPostRepository();
+      final repo = ServerpodPostRepository(serverUrl: 'http://localhost:9999/');
       final posts = await repo.getPosts(spaceKey: 'prayer');
       expect(posts, isNotEmpty);
 

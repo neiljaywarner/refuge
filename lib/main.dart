@@ -201,14 +201,14 @@ class ServerpodPostRepository implements PostRepository {
   })  : serverUrl = serverUrl ??
             const String.fromEnvironment(
               'SERVERPOD_URL',
-              defaultValue: 'http://localhost:8080/',
+              defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
             ),
         _fallback = fallback ?? LocalPostRepository(),
         _client = sp.Client(
           serverUrl ??
               const String.fromEnvironment(
                 'SERVERPOD_URL',
-                defaultValue: 'http://localhost:8080/',
+                defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
               ),
         );
 

@@ -4,8 +4,8 @@ void main() async {
   final client = Client('https://refuge4serverpod.api.serverpod.space/');
   try {
     print('Testing connection to Serverpod Cloud API...');
-    final digest = await client.reflection.getQuietDigest('prayer_care');
-    print('SUCCESS: Received digest: $digest');
+    final digest = await client.reflection.getQuietDigest('weekly_study');
+    print('SUCCESS: Received weekly_study digest: $digest');
 
     final post = ReflectionPost(
       authorName: 'Neil & Sanctuary Team',
