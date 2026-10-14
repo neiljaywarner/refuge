@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../memes/domain/calm_meme.dart';
 import '../../memes/presentation/meme_gallery_modal.dart';
 
-const List<String> kToneOptions = [
+/// Intent / tone tags available in the dropdown
+const kToneOptions = [
   '[Prayer Request]',
   '[Comfort Only]',
-  '[Bible Deep-Dive]',
-  '[Special Interest Infodump]',
+  '[Bible Deep Dive]',
+  '[Special Interest]',
   '[Autism & Faith Meme]',
-  '[Giving Thanks]',
-  '[Question]',
-  '[Resource]',
+  '[Praise Report]',
 ];
 
-/// Composer card allowing members to declare an intent tag, attach calm memes, and publish reflections.
-class ReflectionComposer extends StatefulWidget {
+/// Composes unhurried reflections using declarative Flutter Hooks for text editing controllers.
+class ReflectionComposer extends HookWidget {
   final String selectedSpace;
   final Color primaryColor;
   final bool isContrast;
@@ -35,56 +35,40 @@ class ReflectionComposer extends StatefulWidget {
   });
 
   @override
-  State<ReflectionComposer> createState() => _ReflectionComposerState();
-}
-
-class _ReflectionComposerState extends State<ReflectionComposer> {
-  String _selectedTone = '[Prayer Request]';
-  CalmMeme? _attachedMeme;
-  final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _specialInterestController = TextEditingController();
-
-  @override
-  void dispose() {
-    _contentController.dispose();
-    _specialInterestController.dispose();
-    super.dispose();
-  }
-
-  void _handleSelectMeme(CalmMeme meme) {
-    setState(() {
-      _attachedMeme = meme;
-      _selectedTone = '[Autism & Faith Meme]';
-      _specialInterestController.text = meme.tag;
-      if (_contentController.text.trim().isEmpty) {
-        _contentController.text = '${meme.icon} "${meme.title}"\n\n${meme.body}';
-      }
-    });
-  }
-
-  Future<void> _handlePublish() async {
-    final text = _contentController.text.trim();
-    if (text.isEmpty) return;
-
-    final specialInterest = _specialInterestController.text.trim().isNotEmpty
-        ? _specialInterestController.text.trim()
-        : (_selectedTone.contains('Meme') ? 'Faith & Neurodiversity' : null);
-
-    _contentController.clear();
-    _specialInterestController.clear();
-    setState(() {
-      _attachedMeme = null;
-    });
-
-    await widget.onSubmit(
-      content: text,
-      toneTag: _selectedTone,
-      specialInterestTag: specialInterest,
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final selectedTone = useState('[Prayer Request]');
+    final attachedMeme = useState<CalmMeme?>(null);
+    final contentController = useTextEditingController();
+    final specialInterestController = useTextEditingController();
+
+    void handleSelectMeme(CalmMeme meme) {
+      attachedMeme.value = meme;
+      selectedTone.value = '[Autism & Faith Meme]';
+      specialInterestController.text = meme.tag;
+      if (contentController.text.trim().isEmpty) {
+        contentController.text = '${meme.icon} "${meme.title}"\n\n${meme.body}';
+      }
+    }
+
+    Future<void> handlePublish() async {
+      final text = contentController.text.trim();
+      if (text.isEmpty) return;
+
+      final specialInterest = specialInterestController.text.trim().isNotEmpty
+          ? specialInterestController.text.trim()
+          : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
+
+      contentController.clear();
+      specialInterestController.clear();
+      attachedMeme.value = null;
+
+      await onSubmit(
+        content: text,
+        toneTag: selectedTone.value,
+        specialInterestTag: specialInterest,
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
       padding: const EdgeInsets.all(12.0),
@@ -92,8 +76,8 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
-          color: widget.isContrast ? Colors.white : Theme.of(context).dividerColor,
-          width: widget.isContrast ? 2.0 : 1.0,
+          color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+          width: isContrast ? 2.0 : 1.0,
         ),
       ),
       child: Column(
@@ -106,29 +90,25 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               DropdownButton<String>(
-                value: _selectedTone,
+                value: selectedTone.value,
                 isDense: true,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: widget.primaryColor,
-                ),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
                 underline: const SizedBox(),
                 items: kToneOptions.map((tone) {
                   return DropdownMenuItem(value: tone, child: Text(tone));
                 }).toList(),
                 onChanged: (val) {
-                  if (val != null) setState(() => _selectedTone = val);
+                  if (val != null) selectedTone.value = val;
                 },
               ),
             ],
           ),
-          if (_selectedTone.contains('Special Interest') ||
-              _selectedTone.contains('Meme') ||
-              widget.selectedSpace == 'special_interests') ...[
+          if (selectedTone.value.contains('Special Interest') ||
+              selectedTone.value.contains('Meme') ||
+              selectedSpace == 'special_interests') ...[
             const SizedBox(height: 6),
             TextField(
-              controller: _specialInterestController,
+              controller: specialInterestController,
               decoration: InputDecoration(
                 hintText:
                     'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Liturgy)...',
@@ -144,7 +124,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
           ],
           const SizedBox(height: 8),
           TextField(
-            controller: _contentController,
+            controller: contentController,
             maxLines: 3,
             decoration: InputDecoration(
               hintText: 'Share an unhurried thought, Scripture insight, or relatable reflection...',
@@ -157,7 +137,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
             ),
           ),
           const SizedBox(height: 8),
-          if (_attachedMeme != null) ...[
+          if (attachedMeme.value != null) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 8.0),
               padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
@@ -168,21 +148,21 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
               ),
               child: Row(
                 children: [
-                  Text(_attachedMeme!.icon, style: const TextStyle(fontSize: 16)),
+                  Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Attached: ${_attachedMeme!.title}',
+                      'Attached: ${attachedMeme.value!.title}',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: widget.isContrast ? Colors.yellow : Colors.amber.shade900,
+                        color: isContrast ? Colors.yellow : Colors.amber.shade900,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   InkWell(
-                    onTap: () => setState(() => _attachedMeme = null),
+                    onTap: () => attachedMeme.value = null,
                     child: const Icon(Icons.close, size: 14),
                   ),
                 ],
@@ -196,23 +176,23 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   side: BorderSide(
-                    color: widget.isContrast ? Colors.white : Theme.of(context).dividerColor,
+                    color: isContrast ? Colors.white : Theme.of(context).dividerColor,
                   ),
                 ),
-                onPressed: () => showMemeGalleryModal(context, onSelectedMeme: _handleSelectMeme),
+                onPressed: () => showMemeGalleryModal(context, onSelectedMeme: handleSelectMeme),
                 icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 14),
                 label: Text(
-                  _attachedMeme != null ? 'Change Meme' : 'Add Meme / GIF',
+                  attachedMeme.value != null ? 'Change Meme' : 'Add Meme / GIF',
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.primaryColor,
-                  foregroundColor: widget.isContrast ? Colors.black : Colors.white,
+                  backgroundColor: primaryColor,
+                  foregroundColor: isContrast ? Colors.black : Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
-                onPressed: _handlePublish,
+                onPressed: handlePublish,
                 icon: const Icon(Icons.send_rounded, size: 14),
                 label: const Text(
                   'Publish Reflection',
