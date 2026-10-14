@@ -2,7 +2,7 @@
 
 > **Official Serverpod Hackathon Submission**  
 > Built with **Flutter 3** & **Serverpod 4** (`^4.0.4`) with PostgreSQL 16 & Redis 7.  
-> 🔗 **Live Web Demo**: [https://ministry-demos--sanctuary-cnf3fnh7.web.app](https://ministry-demos--sanctuary-cnf3fnh7.web.app)  
+> 🔗 **Live Web App**: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app) *(Alternative: [https://ministry-demos--sanctuary-cnf3fnh7.web.app](https://ministry-demos--sanctuary-cnf3fnh7.web.app))*  
 > 📱 **Recorded Demo Video**: [`docs/submission_packet/sanctuary_v01_walk_demo.mp4`](docs/submission_packet/sanctuary_v01_walk_demo.mp4)  
 > ⏱️ **Timezone Notice**: Developed for Stockholm CEST (UTC+2) deadline submission.
 
@@ -11,7 +11,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)](https://redis.io)
 [![Tests Passing](https://img.shields.io/badge/Tests-11%2F11%20Passing-success)](test/)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Firebase%20CDN-brightgreen)](https://ministry-demos--sanctuary-cnf3fnh7.web.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-refuge4serverpodhackathon.web.app-brightgreen)](https://refuge4serverpodhackathon.web.app)
 
 ---
 
