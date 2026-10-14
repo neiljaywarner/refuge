@@ -1,0 +1,60 @@
+You are an expert Principal Judge and Technical Evaluator for the Official Serverpod Hackathon.
+
+Please perform a comprehensive technical review and rubric scoring of our project "Sanctuary" (Refuge):
+- Live Web Prototype: https://ministry-demos--sanctuary-cnf3fnh7.web.app
+- GitHub Repository: https://github.com/njwandroid/refuge_13oct_2026_prototype_for_serverpod_hackathon
+- Root Documentation & Quickstart: https://github.com/njwandroid/refuge_13oct_2026_prototype_for_serverpod_hackathon/blob/main/README.md
+
+-----------------------------------------------------------------------
+CONTEXT & OFFICIAL HACKATHON RULES
+-----------------------------------------------------------------------
+Per Section 6 of the Official Rules:
+- Stage One is an Automated AI-Assisted Screening that inspects the repository, commit history, and README to verify required Serverpod elements and synthesizes the project dossier for human judges.
+- Stage Two human judges score the build across four weighted criteria (and break ties in this exact order):
+  1. "Does it work: It runs, the core flow completes, nothing critical is faked." (30% Weight — Tie-Breaker #1)
+  2. "Use of the Serverpod stack: Doing real work, not sitting behind a static page." (25% Weight — Tie-Breaker #2)
+  3. "Craft and technical creativity: Rough is fine, careless is not." (25% Weight — Tie-Breaker #3)
+  4. "Usefulness: A clear user with a clear problem, and this helps." (20% Weight — Tie-Breaker #4)
+- Section 4 Compliance:
+  - We explicitly disclosed the use of AI coding assistants (Google Antigravity IDE, Gemini models) in the README.
+  - We strictly avoided third-party competitor trademarks (referring to "legacy $130/month community SaaS platforms").
+
+-----------------------------------------------------------------------
+KEY ARCHITECTURAL HIGHLIGHTS TO AUDIT
+-----------------------------------------------------------------------
+1. Serverpod 4 Backend (`sanctuary_server/sanctuary_server_server`):
+   - Protocol models defined in `.spy.yaml` and generated:
+     - `reflection_post.spy.yaml`: maps `ReflectionPost` to PostgreSQL table `reflection_posts` with composite index `space_created_idx` over `(spaceKey, createdAt)`.
+     - `quiet_digest.spy.yaml`: server-side aggregation data model.
+   - Endpoints doing real backend computation (`lib/src/reflections/reflection_endpoint.dart`):
+     - `publishReflection`: content validation, tone check, PostgreSQL persistence (`ReflectionPost.db.insertRow`), and WebSocket broadcast via `session.messages.postMessage('space_${post.spaceKey}', post)`.
+     - `affirmCare`: atomic increments of care affirmation counts in PostgreSQL (`ReflectionPost.db.updateRow`) with live channel broadcast.
+     - `watchSpace`: subscribes to real-time streams via `session.messages.createStream<ReflectionPost>('space_$spaceKey')` with automatic 4-room initial database seeding.
+     - `getQuietDigest`: server-side aggregation computing total posts, care metrics, predominant intent, and calm-tech tone validation.
+2. Flutter Client & Resilient Architecture (`lib/main.dart`):
+   - Wired to `sanctuary_server_client` and `serverpod_client: ^4.0.4`.
+   - Features a clean "Serverpod 4 Live / Resilient Mode" status indicator and a server-computed `QuietDigest` banner.
+   - 800ms Resilient Fallback: If opened without a local Serverpod instance running, automatically fails over to offline-first seeded calm-tech data within 800ms so judges never encounter a blank page or broken loader.
+3. Calm-Tech Craft & Accessibility:
+   - 4 WCAG AAA/AA Sensory Modes: Sage (`#4A6B5D`), Clean Slate (`#FFFFFF`), Monastic Dark (`#1A1C1B`), High Contrast (`#000000` / `#FFFF00`).
+   - 4 Fellowship Rooms: `🌿 Main Hall`, `🕯️ Quiet Room`, `🕊️ Prayer & Care`, `📖 Gratitude Journal`.
+   - Qualitative Care Affirmations (Zero Dopamine Traps): `🙏 Praying`, `🤍 Standing With`, `🕊️ Peace`, `🌱 Encouraged`.
+   - Unhurried Intent Tags: `Seeking Wisdom`, `Giving Thanks`, `Vulnerable Sharing`, `Quiet Reflection`.
+4. Automated Test Verification:
+   - 11/11 tests passing cleanly in `test/repository_test.dart` and `test/widget_test.dart`.
+   - Backend integration tests in `sanctuary_server_server/test/integration/reflection_endpoint_test.dart`.
+
+-----------------------------------------------------------------------
+YOUR EVALUATION PROMPT
+-----------------------------------------------------------------------
+Please provide:
+1. **Stage One AI Screening Assessment**: Does the repository and README pass the automated verification for required Serverpod 4 elements, setup documentation, and AI disclosure? (Pass / Fail + justification).
+2. **Rubric Scoring Breakdown**:
+   - Criterion 1: Does It Work (30% Weight) — Score / 100
+   - Criterion 2: Use of Serverpod Stack (25% Weight) — Score / 100
+   - Criterion 3: Craft and Technical Creativity (25% Weight) — Score / 100
+   - Criterion 4: Usefulness & Problem Solved (20% Weight) — Score / 100
+   - **Total Weighted Score**: Calculate the exact weighted total (out of 100).
+3. **Competitive Standing**: How does this build compare against typical hackathon projects (static frontends with minimal backend vs full-stack calm-tech with real ORM, pub/sub, server-side aggregation, and fallback resilience)?
+4. **Bounty Eligibility**: Evaluate our Serverpod 4 Developer Experience Feedback Report in the README for the $500 Most Valuable Feedback bounty.
+5. **Final Verdict**: Would you advance this project to the Grand Prize ($2,500) finals? Any last-minute polish recommendations before human judges score it?
