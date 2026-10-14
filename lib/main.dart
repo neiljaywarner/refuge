@@ -524,6 +524,7 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
   String _selectedTone = '[Prayer Request]';
   String _activeFilter = 'All';
   String? _quietDigestMessage;
+  Map<String, String>? _attachedMeme;
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _specialInterestController =
       TextEditingController();
@@ -602,6 +603,9 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
 
     _contentController.clear();
     _specialInterestController.clear();
+    setState(() {
+      _attachedMeme = null;
+    });
     await widget.repository.createPost(newPost);
   }
 
@@ -1062,26 +1066,231 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: isContrast ? Colors.black : Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
+          if (_attachedMeme != null) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(color: Colors.amber.shade700),
               ),
-              onPressed: _submitPost,
-              icon: const Icon(Icons.send_rounded, size: 14),
-              label: const Text(
-                'Publish Reflection',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              child: Row(
+                children: [
+                  Text(_attachedMeme!['icon'] ?? '🖼️',
+                      style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Attached: ${_attachedMeme!['title']}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isContrast ? Colors.yellow : Colors.amber.shade900,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => setState(() => _attachedMeme = null),
+                    child: const Icon(Icons.close, size: 14),
+                  ),
+                ],
               ),
             ),
+          ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  side: BorderSide(
+                    color: isContrast
+                        ? Colors.white
+                        : Theme.of(context).dividerColor,
+                  ),
+                ),
+                onPressed: _showMemeGalleryModal,
+                icon: const Icon(Icons.sentiment_very_satisfied_outlined,
+                    size: 14),
+                label: Text(
+                  _attachedMeme != null ? 'Change Meme' : 'Add Meme / GIF',
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: isContrast ? Colors.black : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                onPressed: _submitPost,
+                icon: const Icon(Icons.send_rounded, size: 14),
+                label: const Text(
+                  'Publish Reflection',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  void _showMemeGalleryModal() {
+    final memes = [
+      {
+        'title': 'Elijah Under the Broom Tree',
+        'icon': '🍞 💤',
+        'subtitle': '1 Kings 19:5 — Snack & Nap',
+        'tag': 'Burnout & Recovery',
+        'body':
+            'When you have severe sensory burnout and think you are done with ministry, but God\'s holy prescription is literally a warm cake of bread and a nap under the broom tree.',
+      },
+      {
+        'title': '2 Hours of Fellowship vs 3 Days in Dark Room',
+        'icon': '🕶️ 🤫',
+        'subtitle': 'Sensory Math for the Saints',
+        'tag': 'Masking & Church',
+        'body':
+            'Masking through Sunday fellowship hall small talk for 90 minutes = 72 hours of mandatory quiet sensory recharge under a weighted blanket in a dark room.',
+      },
+      {
+        'title': 'Specially Interested by Divine Design',
+        'icon': '🧩 🚂',
+        'subtitle': 'Psalm 139:14 — Fearfully Made',
+        'tag': 'Special Interests',
+        'body':
+            'When someone asks a casual 5-second question about church history or train switching gears, and my autistic brain prepares a 45-minute PowerPoint with handouts.',
+      },
+      {
+        'title': 'Reading Greek Verbs at 2 AM',
+        'icon': '📖 🦉',
+        'subtitle': 'Hyperfixation as Worship',
+        'tag': 'Bible Deep-Dive',
+        'body':
+            'Who needs circadian rhythm when the aorist subjunctive in Romans 8:28 is demanding our immediate, uninterrupted hyperfixation until dawn?',
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🖼️ Autism & Faith Meme Gallery',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                Text(
+                  'Wholesome, unhurried, relatable neurodivergent Christian humor (Belong on the Spectrum curated collection).',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: memes.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final m = memes[i];
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            _attachedMeme = m;
+                            _selectedTone = '[Autism & Faith Meme]';
+                            _specialInterestController.text = m['tag']!;
+                            if (_contentController.text.trim().isEmpty) {
+                              _contentController.text =
+                                  '${m['icon']} "${m['title']}"\n\n${m['body']}';
+                            }
+                          });
+                          Navigator.pop(ctx);
+                        },
+                        borderRadius: BorderRadius.circular(12.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.amber.shade700
+                                    .withValues(alpha: 0.4)),
+                            borderRadius: BorderRadius.circular(12.0),
+                            color: Colors.amber.withValues(alpha: 0.08),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(m['icon']!,
+                                  style: const TextStyle(fontSize: 24)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      m['title']!,
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      m['subtitle']!,
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.amber.shade900,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      m['body']!,
+                                      style: const TextStyle(
+                                          fontSize: 11, height: 1.3),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

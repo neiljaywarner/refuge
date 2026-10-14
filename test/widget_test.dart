@@ -171,5 +171,39 @@ void main() {
       expect(find.text('David M. (UK)'), findsOneWidget);
       expect(find.text('Elena R. (Colorado)'), findsOneWidget);
     });
+
+    testWidgets('Calm-tech meme gallery allows selecting and dismissing meme', (
+      WidgetTester tester,
+    ) async {
+      await pumpApp(tester);
+
+      // Verify 'Add Meme / GIF' button is present
+      final addMemeButton = find.text('Add Meme / GIF');
+      expect(addMemeButton, findsOneWidget);
+
+      // Open gallery modal
+      await tester.tap(addMemeButton);
+      await tester.pumpAndSettle();
+
+      // Check modal content
+      expect(find.text('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
+      expect(find.text('Elijah Under the Broom Tree'), findsOneWidget);
+
+      // Tap on Elijah meme
+      await tester.tap(find.text('Elijah Under the Broom Tree'));
+      await tester.pumpAndSettle();
+
+      // Modal is dismissed, attachment preview banner is shown
+      expect(find.text('Attached: Elijah Under the Broom Tree'), findsOneWidget);
+      expect(find.text('Change Meme'), findsOneWidget);
+
+      // Dismiss the meme
+      await tester.tap(find.byIcon(Icons.close).first);
+      await tester.pumpAndSettle();
+
+      // Preview banner is gone, button returns to 'Add Meme / GIF'
+      expect(find.text('Attached: Elijah Under the Broom Tree'), findsNothing);
+      expect(find.text('Add Meme / GIF'), findsOneWidget);
+    });
   });
 }
