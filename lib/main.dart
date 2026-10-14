@@ -564,12 +564,14 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
         elevation: 0.5,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Sanctuary',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   width: 7,
@@ -583,7 +585,8 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  'Calm Tech • Zero Badges • ${configuredBackendMode.name.toUpperCase()} ${widget.repository is ServerpodPostRepository ? (isLiveServerpod ? "LIVE" : "RESILIENT") : ""}',
+                  'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).textTheme.bodySmall?.color
