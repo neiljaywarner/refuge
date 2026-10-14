@@ -1,0 +1,4 @@
+class: ReactionPayload
+fields:
+  postId: int
+  reactionType: String

@@ -1,0 +1,9 @@
+class: Post
+table: post
+fields:
+  authorName: String
+  spaceKey: String
+  toneTag: String
+  content: String
+  timestamp: DateTime
+  reactions: Map<String, int>
