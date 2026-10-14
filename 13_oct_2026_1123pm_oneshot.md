@@ -6,6 +6,9 @@
 **Initial Commit**: `from argon from the web :)`  
 
 ### 🔗 Quick Navigation Links
+- 🌐 **Live Web Demo (Firebase CDN)**: [https://ministry-demos--sanctuary-cnf3fnh7.web.app](https://ministry-demos--sanctuary-cnf3fnh7.web.app)
+- 📊 **Competitor & Landscape Analysis**: [`docs/COMPETITOR_ANALYSIS.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/COMPETITOR_ANALYSIS.md)
+- 📋 **Product Requirements Document (PRD)**: [`docs/PRD.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/PRD.md)
 - 📘 **Integration Guide**: [`serverpod_integration.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/serverpod_integration.md)
 - 🐕 **Dog Walk Live Session**: [`session_whiule_neiul_walks_1142pm.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/session_whiule_neiul_walks_1142pm.md)
 - 📐 **Architecture Decision Records**: [`docs/adr/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/adr/) ([0001](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/adr/0001-calm-tech-design-principles.md), [0002](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/adr/0002-abstract-repository-pattern-decoupling.md), [0003](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/adr/0003-serverpod-4-websocket-streaming-protocol.md), [0004](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/adr/0004-sensory-modes-accessibility-standard.md))
@@ -18,12 +21,13 @@
 ```
 ========================================================================================
 [ HACKATHON SUBMISSION READINESS THERMOMETER ]
-[████████████████████████████░░░░░░░░░░░░░░░] 66.3% WEIGHTED OVERALL READINESS
+[███████████████████████████████░░░░░░░░░░░░] 70.6% WEIGHTED OVERALL READINESS
 Target: 100% Grand Prize Submission Ready by Tuesday Night
-Status: Client Verified (11/11 Tests) + Docker/Postgres Live + Web Release Compiled
-Pending: Backend Live Wireup + Video/Screenshot Multi-Platform Artifacts
+Status: Client Verified (11/11 Tests) + Live Firebase CDN Web Demo + PRD + Docker/Postgres
+Pending: Backend Live Wireup + Multi-Platform Video/Screenshot Media Artifacts
 ========================================================================================
 ```
+**Last Updated**: Monday, October 13, 2026 at 11:59 PM CDT *(Automated Dog Walk Session Update)*
 
 ### Granular Category Breakdown & Judging Criteria Weights
 
@@ -33,9 +37,9 @@ Pending: Backend Live Wireup + Video/Screenshot Multi-Platform Artifacts
 | **2. Architecture & Code Cleanliness**<br>*(Separation of Concerns / Testability)* | 15% | **92%** | **13.8%** | ✅ Clean `PostRepository` decoupling<br>✅ `--dart-define=BACKEND=...` factory<br>✅ 0 analyzer warnings across code |
 | **3. Automated Testing & Reliability**<br>*(Quality Gate / Defect Prevention)* | 15% | **85%** | **12.75%** | ✅ 11/11 widget & repository unit tests passing<br>✅ Fast 3-4s execution; zero flaky timeouts<br>⏳ E2E driver / smoke suite |
 | **4. Serverpod 4 Backend & Database**<br>*(Core Hackathon Requirement / StarGuide)* | 25% | **35%** | **8.75%** | ✅ PostgreSQL 16 & Redis 7 active in Docker<br>✅ `serverpod_cli 4.0.4` verified on PATH<br>✅ `post.spy.yaml` & `post_endpoint.dart` pre-staged<br>⏳ `serverpod create` & live stream wireup (Lunch/Night sprint) |
-| **5. Multi-Platform Verification & Media Artifacts**<br>*(Screenshots / Screen Records / Demos)* | 15% | **30%** | **4.5%** | ✅ Web release bundle compiled (`build/web`)<br>⏳ macOS app screenshot capture<br>⏳ iOS Simulator / Android device video recording (`xcrun simctl` / `adb screenrecord`)<br>⏳ Marionette automated headless Chromium session |
-| **6. Documentation, Submission & Pitch**<br>*(README / Architecture / Video Script)* | 10% | **75%** | **7.5%** | ✅ Public GitHub repo with initial commit<br>✅ Comprehensive `serverpod_integration.md`<br>✅ Master plan & dog walk session logs<br>⏳ 2-minute hackathon pitch video & demo script |
-| **TOTAL WEIGHTED READINESS** | **100%** | — | **66.3%** | **Solid Foundation Built; Morning/Lunch Sprint will bridge Backend & Media to 100%** |
+| **5. Multi-Platform Verification & Media Artifacts**<br>*(Screenshots / Screen Records / Demos)* | 15% | **50%** | **7.5%** | ✅ Live Web Prototype Deployed on Firebase CDN ([Demo](https://ministry-demos--sanctuary-cnf3fnh7.web.app))<br>✅ Web release bundle compiled (`build/web`)<br>⏳ macOS app screenshot capture<br>⏳ iOS Simulator / Android device video recording<br>⏳ Marionette automated headless Chromium session |
+| **6. Documentation, Submission & Pitch**<br>*(README / Architecture / Video Script)* | 10% | **88%** | **8.8%** | ✅ Public GitHub repo with initial commit<br>✅ Competitor Analysis ([`docs/COMPETITOR_ANALYSIS.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/COMPETITOR_ANALYSIS.md))<br>✅ Product Requirements Document ([`docs/PRD.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/PRD.md))<br>✅ Comprehensive `serverpod_integration.md`<br>✅ 4 ADRs & Non-technical Team Wiki<br>⏳ 2-minute hackathon pitch video & demo script |
+| **TOTAL WEIGHTED READINESS** | **100%** | — | **70.6%** | **Solid Foundation Built; Morning/Lunch Sprint will bridge Backend & Media to 100%** |
 
 ---
 
