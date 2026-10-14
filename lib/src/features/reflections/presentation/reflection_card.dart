@@ -40,23 +40,14 @@ class ReflectionCard extends StatelessWidget {
             children: [
               Text(
                 post.authorName,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 3.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
                 decoration: BoxDecoration(
                   color: isMeme
                       ? Colors.amber.withValues(alpha: 0.2)
-                      : Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.12),
+                      : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6.0),
                 ),
                 child: Text(
@@ -64,22 +55,16 @@ class ReflectionCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: isMeme
-                        ? Colors.amber.shade800
-                        : Theme.of(context).colorScheme.primary,
+                    color: isMeme ? Colors.amber.shade800 : Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
             ],
           ),
-          if (post.specialInterestTag != null &&
-              post.specialInterestTag!.isNotEmpty) ...[
+          if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 3.0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
               decoration: BoxDecoration(
                 color: Colors.blueGrey.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6.0),
@@ -95,10 +80,7 @@ class ReflectionCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 8),
-          Text(
-            post.content,
-            style: const TextStyle(fontSize: 13, height: 1.45),
-          ),
+          Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
           const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,

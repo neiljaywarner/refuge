@@ -13,8 +13,7 @@
 import 'package:serverpod/serverpod.dart' as _is;
 
 /// A calm-tech fellowship reflection post persisted in PostgreSQL.
-abstract class ReflectionPost
-    implements _is.TableRow<int?>, _is.ProtocolSerialization {
+abstract class ReflectionPost implements _is.TableRow<int?>, _is.ProtocolSerialization {
   ReflectionPost._({
     this.id,
     required this.authorName,
@@ -253,22 +252,20 @@ class ReflectionPostUpdateTable extends _is.UpdateTable<ReflectionPostTable> {
     value,
   );
 
-  _is.ColumnValue<String, String> specialInterestTag(String? value) =>
-      _is.ColumnValue(
-        table.specialInterestTag,
-        value,
-      );
+  _is.ColumnValue<String, String> specialInterestTag(String? value) => _is.ColumnValue(
+    table.specialInterestTag,
+    value,
+  );
 
   _is.ColumnValue<String, String> content(String value) => _is.ColumnValue(
     table.content,
     value,
   );
 
-  _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
-      _is.ColumnValue(
-        table.createdAt,
-        value,
-      );
+  _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) => _is.ColumnValue(
+    table.createdAt,
+    value,
+  );
 
   _is.ColumnValue<int, int> prayingCount(int value) => _is.ColumnValue(
     table.prayingCount,
@@ -292,8 +289,7 @@ class ReflectionPostUpdateTable extends _is.UpdateTable<ReflectionPostTable> {
 }
 
 class ReflectionPostTable extends _is.Table<int?> {
-  ReflectionPostTable({super.tableRelation})
-    : super(tableName: 'reflection_posts') {
+  ReflectionPostTable({super.tableRelation}) : super(tableName: 'reflection_posts') {
     updateTable = ReflectionPostUpdateTable(this);
     authorName = _is.ColumnString(
       'authorName',

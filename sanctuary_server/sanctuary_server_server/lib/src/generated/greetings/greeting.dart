@@ -13,8 +13,7 @@
 import 'package:serverpod/serverpod.dart' as _is;
 
 /// A greeting message which can be sent to or from the server.
-abstract class Greeting
-    implements _is.SerializableModel, _is.ProtocolSerialization {
+abstract class Greeting implements _is.SerializableModel, _is.ProtocolSerialization {
   Greeting._({
     required this.message,
     required this.author,

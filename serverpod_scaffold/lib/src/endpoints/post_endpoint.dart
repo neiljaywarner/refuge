@@ -1,4 +1,3 @@
-
 /*
   Reference Serverpod Endpoint implementation for Serverpod 4.
   To be placed in sanctuary_server_server/lib/src/endpoints/post_endpoint.dart

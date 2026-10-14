@@ -12,7 +12,9 @@ import 'dart:io';
 void main(List<String> args) async {
   if (args.isEmpty) {
     stdout.writeln('⚠️  Usage: dart run scripts/marionette_smoke_suite.dart <vm_service_ws_uri>');
-    stdout.writeln('Example: dart run scripts/marionette_smoke_suite.dart ws://127.0.0.1:56352/token=/ws');
+    stdout.writeln(
+      'Example: dart run scripts/marionette_smoke_suite.dart ws://127.0.0.1:56352/token=/ws',
+    );
     exit(1);
   }
 
@@ -54,11 +56,7 @@ void main(List<String> args) async {
     final completer = Completer<Map<String, dynamic>>();
     completers[id] = completer;
 
-    final request = <String, dynamic>{
-      'jsonrpc': '2.0',
-      'id': id,
-      'method': method,
-    };
+    final request = <String, dynamic>{'jsonrpc': '2.0', 'id': id, 'method': method};
     if (params != null) {
       request['params'] = params;
     }

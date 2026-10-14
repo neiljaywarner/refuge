@@ -13,10 +13,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/protocol.dart' as _isp;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _iacs;
-import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _iais;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart' as _iacs;
+import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart' as _iais;
+
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'reflections/quiet_digest.dart' as _iq7pkzn3;
 import 'reflections/reflection_post.dart' as _i44g36dz;
@@ -176,8 +175,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null ? _iq7pkzn3.QuietDigest.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_i44g36dz.ReflectionPost?>()) {
-      return (data != null ? _i44g36dz.ReflectionPost.fromJson(data) : null)
-          as T;
+      return (data != null ? _i44g36dz.ReflectionPost.fromJson(data) : null) as T;
     }
     try {
       return _iais.Protocol().deserialize<T>(data, t);
@@ -222,15 +220,11 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     className = _iais.Protocol().getClassNameForObject(data);
     if (className != null) {
-      return className.contains('.')
-          ? className
-          : 'serverpod_auth_idp.$className';
+      return className.contains('.') ? className : 'serverpod_auth_idp.$className';
     }
     className = _iacs.Protocol().getClassNameForObject(data);
     if (className != null) {
-      return className.contains('.')
-          ? className
-          : 'serverpod_auth_core.$className';
+      return className.contains('.') ? className : 'serverpod_auth_core.$className';
     }
     className = _isp.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -302,8 +296,7 @@ class Protocol extends _is.DatabaseSerializationManager {
   }
 
   @override
-  List<_isp.TableDefinition> getTargetTableDefinitions() =>
-      targetTableDefinitions;
+  List<_isp.TableDefinition> getTargetTableDefinitions() => targetTableDefinitions;
 
   @override
   String getModuleName() => 'sanctuary_server';

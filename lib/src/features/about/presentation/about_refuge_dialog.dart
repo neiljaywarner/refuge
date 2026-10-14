@@ -57,9 +57,7 @@ void showAboutSanctuaryDialog(
                       : primaryColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isContrast
-                        ? Colors.yellow
-                        : primaryColor.withValues(alpha: 0.25),
+                    color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
                   ),
                 ),
                 child: const Text(
@@ -158,12 +156,7 @@ void showAboutSanctuaryDialog(
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Close'),
-        ),
-      ],
+      actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close'))],
     ),
   );
 }

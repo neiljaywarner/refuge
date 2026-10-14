@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+
 import '../generated/protocol.dart';
 
 /// Full-stack Serverpod 4 Endpoint managing calm-tech fellowship reflections,
@@ -69,8 +70,7 @@ class ReflectionEndpoint extends Endpoint {
       content: cleanContent,
       createdAt: DateTime.now().toUtc(),
       prayingCount: post.prayingCount < 0 ? 0 : post.prayingCount,
-      standingWithCount:
-          post.standingWithCount < 0 ? 0 : post.standingWithCount,
+      standingWithCount: post.standingWithCount < 0 ? 0 : post.standingWithCount,
       peaceCount: post.peaceCount < 0 ? 0 : post.peaceCount,
       encouragedCount: post.encouragedCount < 0 ? 0 : post.encouragedCount,
     );
@@ -102,15 +102,11 @@ class ReflectionEndpoint extends Endpoint {
     }
 
     final updated = existing.copyWith(
-      prayingCount: reactionKey == 'praying'
-          ? existing.prayingCount + 1
-          : existing.prayingCount,
+      prayingCount: reactionKey == 'praying' ? existing.prayingCount + 1 : existing.prayingCount,
       standingWithCount: reactionKey == 'standingWith'
           ? existing.standingWithCount + 1
           : existing.standingWithCount,
-      peaceCount: reactionKey == 'peace'
-          ? existing.peaceCount + 1
-          : existing.peaceCount,
+      peaceCount: reactionKey == 'peace' ? existing.peaceCount + 1 : existing.peaceCount,
       encouragedCount: reactionKey == 'encouraged' || reactionKey == 'relatable'
           ? existing.encouragedCount + 1
           : existing.encouragedCount,
@@ -183,10 +179,7 @@ class ReflectionEndpoint extends Endpoint {
     final specialInterestCounts = <String, int>{};
 
     for (final p in posts) {
-      totalAffirmations += p.prayingCount +
-          p.standingWithCount +
-          p.peaceCount +
-          p.encouragedCount;
+      totalAffirmations += p.prayingCount + p.standingWithCount + p.peaceCount + p.encouragedCount;
 
       intentCounts[p.intentTag] = (intentCounts[p.intentTag] ?? 0) + 1;
 
@@ -217,7 +210,7 @@ class ReflectionEndpoint extends Endpoint {
     var summary = totalReflections == 0
         ? 'A quiet, unhurried space awaiting the first community reflection.'
         : 'Gathered in peace: $totalReflections reflections shared with '
-            '$totalAffirmations care affirmations. Leading posture: "$predominant".';
+              '$totalAffirmations care affirmations. Leading posture: "$predominant".';
 
     if (featuredSpecialInterest != null) {
       summary = '$summary Special Interest: $featuredSpecialInterest.';
@@ -248,8 +241,7 @@ class ReflectionEndpoint extends Endpoint {
             'Sitting with families in intensive care this morning. '
             'Holding space for grief without rushing to fix it. '
             'Praying for quiet peace in anxious rooms.',
-        createdAt:
-            DateTime.now().toUtc().subtract(const Duration(minutes: 42)),
+        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 42)),
         prayingCount: 7,
         standingWithCount: 5,
         peaceCount: 12,
@@ -273,10 +265,8 @@ class ReflectionEndpoint extends Endpoint {
         spaceKey: 'special_interests',
         intentTag: '[Autism & Faith Meme]',
         specialInterestTag: 'Church Acoustics',
-        content:
-            'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
-        createdAt:
-            DateTime.now().toUtc().subtract(const Duration(minutes: 15)),
+        content: 'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
+        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 15)),
         prayingCount: 4,
         standingWithCount: 8,
         peaceCount: 8,
@@ -287,8 +277,7 @@ class ReflectionEndpoint extends Endpoint {
         spaceKey: 'bible_study',
         intentTag: '[Bible Deep-Dive]',
         specialInterestTag: 'Markan Chiasms',
-        content:
-            'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
+        content: 'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
         createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 1)),
         prayingCount: 7,
         standingWithCount: 9,

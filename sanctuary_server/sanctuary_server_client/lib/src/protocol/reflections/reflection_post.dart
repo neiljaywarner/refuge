@@ -13,8 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// A calm-tech fellowship reflection post persisted in PostgreSQL.
-abstract class ReflectionPost
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+abstract class ReflectionPost implements _isc.SerializableModel, _isc.ProtocolSerialization {
   ReflectionPost._({
     this.id,
     required this.authorName,

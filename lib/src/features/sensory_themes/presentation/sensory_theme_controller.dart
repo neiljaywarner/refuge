@@ -15,8 +15,7 @@ class SensoryThemeNotifier extends StateNotifier<SensoryMode> {
 }
 
 /// Global provider for current sensory theme mode.
-final sensoryThemeModeProvider =
-    StateNotifierProvider<SensoryThemeNotifier, SensoryMode>(
+final sensoryThemeModeProvider = StateNotifierProvider<SensoryThemeNotifier, SensoryMode>(
   (ref) => SensoryThemeNotifier(),
 );
 

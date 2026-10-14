@@ -13,8 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Server-side computational aggregation of a fellowship space's activity.
-abstract class QuietDigest
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+abstract class QuietDigest implements _isc.SerializableModel, _isc.ProtocolSerialization {
   QuietDigest._({
     required this.spaceKey,
     required this.totalReflections,
@@ -41,8 +40,7 @@ abstract class QuietDigest
       totalReflections: jsonSerialization['totalReflections'] as int,
       totalCareAffirmations: jsonSerialization['totalCareAffirmations'] as int,
       predominantIntent: jsonSerialization['predominantIntent'] as String,
-      featuredSpecialInterest:
-          jsonSerialization['featuredSpecialInterest'] as String?,
+      featuredSpecialInterest: jsonSerialization['featuredSpecialInterest'] as String?,
       summaryMessage: jsonSerialization['summaryMessage'] as String,
       generatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['generatedAt'],
@@ -84,8 +82,7 @@ abstract class QuietDigest
       'totalReflections': totalReflections,
       'totalCareAffirmations': totalCareAffirmations,
       'predominantIntent': predominantIntent,
-      if (featuredSpecialInterest != null)
-        'featuredSpecialInterest': featuredSpecialInterest,
+      if (featuredSpecialInterest != null) 'featuredSpecialInterest': featuredSpecialInterest,
       'summaryMessage': summaryMessage,
       'generatedAt': generatedAt.toJson(),
     };
@@ -99,8 +96,7 @@ abstract class QuietDigest
       'totalReflections': totalReflections,
       'totalCareAffirmations': totalCareAffirmations,
       'predominantIntent': predominantIntent,
-      if (featuredSpecialInterest != null)
-        'featuredSpecialInterest': featuredSpecialInterest,
+      if (featuredSpecialInterest != null) 'featuredSpecialInterest': featuredSpecialInterest,
       'summaryMessage': summaryMessage,
       'generatedAt': generatedAt.toJson(),
     };
@@ -149,8 +145,7 @@ class _QuietDigestImpl extends QuietDigest {
     return QuietDigest(
       spaceKey: spaceKey ?? this.spaceKey,
       totalReflections: totalReflections ?? this.totalReflections,
-      totalCareAffirmations:
-          totalCareAffirmations ?? this.totalCareAffirmations,
+      totalCareAffirmations: totalCareAffirmations ?? this.totalCareAffirmations,
       predominantIntent: predominantIntent ?? this.predominantIntent,
       featuredSpecialInterest: featuredSpecialInterest is String?
           ? featuredSpecialInterest

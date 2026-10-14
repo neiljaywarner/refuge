@@ -16,35 +16,33 @@ class ServerpodPostRepository implements PostRepository {
 
   bool get isLiveConnected => _isLiveConnected;
 
-  ServerpodPostRepository({
-    String? serverUrl,
-    LocalPostRepository? fallback,
-  })  : serverUrl = serverUrl ??
+  ServerpodPostRepository({String? serverUrl, LocalPostRepository? fallback})
+    : serverUrl =
+          serverUrl ??
+          const String.fromEnvironment(
+            'SERVERPOD_URL',
+            defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
+          ),
+      _fallback = fallback ?? LocalPostRepository(),
+      _client = sp.Client(
+        serverUrl ??
             const String.fromEnvironment(
               'SERVERPOD_URL',
               defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
             ),
-        _fallback = fallback ?? LocalPostRepository(),
-        _client = sp.Client(
-          serverUrl ??
-              const String.fromEnvironment(
-                'SERVERPOD_URL',
-                defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
-              ),
-        );
+      );
 
   String _mapSpaceKey(String key) => switch (key) {
-        'prayer' => 'prayer_care',
-        'study' => 'bible_study',
-        'special_interests' => 'special_interests',
-        'general' => 'main_hall',
-        'announcements' => 'quiet_room',
-        _ => key,
-      };
+    'prayer' => 'prayer_care',
+    'study' => 'bible_study',
+    'special_interests' => 'special_interests',
+    'general' => 'main_hall',
+    'announcements' => 'quiet_room',
+    _ => key,
+  };
 
   @override
-  Future<List<Post>> getPosts({required String spaceKey}) =>
-      _fallback.getPosts(spaceKey: spaceKey);
+  Future<List<Post>> getPosts({required String spaceKey}) => _fallback.getPosts(spaceKey: spaceKey);
 
   @override
   Future<Post> createPost(Post post) async {
@@ -91,10 +89,7 @@ class ServerpodPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({
-    required String postId,
-    required String reactionType,
-  }) async {
+  Future<void> addReaction({required String postId, required String reactionType}) async {
     final parsedId = int.tryParse(postId);
     if (parsedId != null) {
       try {

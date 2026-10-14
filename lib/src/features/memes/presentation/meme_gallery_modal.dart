@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/calm_meme.dart';
 
 /// Opens the modal bottom sheet allowing members to select an unhurried, calm-tech meme.
-void showMemeGalleryModal(
-  BuildContext context, {
-  required ValueChanged<CalmMeme> onSelectedMeme,
-}) {
+void showMemeGalleryModal(BuildContext context, {required ValueChanged<CalmMeme> onSelectedMeme}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -36,18 +33,14 @@ void showMemeGalleryModal(
               ),
               Text(
                 'Wholesome, unhurried, relatable neurodivergent Christian humor (Belong on the Spectrum curated collection).',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
+                style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
               ),
               const SizedBox(height: 12),
               Flexible(
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: kCuratedCalmMemes.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (context, index) => const SizedBox(height: 8),
                   itemBuilder: (_, i) {
                     final m = kCuratedCalmMemes[i];
                     return InkWell(
@@ -59,9 +52,7 @@ void showMemeGalleryModal(
                       child: Container(
                         padding: const EdgeInsets.all(12.0),
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.amber.shade700.withValues(alpha: 0.4),
-                          ),
+                          border: Border.all(color: Colors.amber.shade700.withValues(alpha: 0.4)),
                           borderRadius: BorderRadius.circular(12.0),
                           color: Colors.amber.withValues(alpha: 0.08),
                         ),
@@ -90,13 +81,7 @@ void showMemeGalleryModal(
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    m.body,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      height: 1.3,
-                                    ),
-                                  ),
+                                  Text(m.body, style: const TextStyle(fontSize: 11, height: 1.3)),
                                 ],
                               ),
                             ),

@@ -23,7 +23,8 @@ class ReflectionComposer extends StatefulWidget {
     required String content,
     required String toneTag,
     String? specialInterestTag,
-  }) onSubmit;
+  })
+  onSubmit;
 
   const ReflectionComposer({
     super.key,
@@ -41,8 +42,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
   String _selectedTone = '[Prayer Request]';
   CalmMeme? _attachedMeme;
   final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _specialInterestController =
-      TextEditingController();
+  final TextEditingController _specialInterestController = TextEditingController();
 
   @override
   void dispose() {
@@ -57,8 +57,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
       _selectedTone = '[Autism & Faith Meme]';
       _specialInterestController.text = meme.tag;
       if (_contentController.text.trim().isEmpty) {
-        _contentController.text =
-            '${meme.icon} "${meme.title}"\n\n${meme.body}';
+        _contentController.text = '${meme.icon} "${meme.title}"\n\n${meme.body}';
       }
     });
   }
@@ -93,9 +92,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
-          color: widget.isContrast
-              ? Colors.white
-              : Theme.of(context).dividerColor,
+          color: widget.isContrast ? Colors.white : Theme.of(context).dividerColor,
           width: widget.isContrast ? 2.0 : 1.0,
         ),
       ),
@@ -141,8 +138,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             ),
           ],
@@ -151,8 +147,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
             controller: _contentController,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText:
-                  'Share an unhurried thought, Scripture insight, or relatable reflection...',
+              hintText: 'Share an unhurried thought, Scripture insight, or relatable reflection...',
               hintStyle: const TextStyle(fontSize: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -165,8 +160,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
           if (_attachedMeme != null) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 8.0),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
               decoration: BoxDecoration(
                 color: Colors.amber.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8.0),
@@ -174,8 +168,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
               ),
               child: Row(
                 children: [
-                  Text(_attachedMeme!.icon,
-                      style: const TextStyle(fontSize: 16)),
+                  Text(_attachedMeme!.icon, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -183,9 +176,7 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: widget.isContrast
-                            ? Colors.yellow
-                            : Colors.amber.shade900,
+                        color: widget.isContrast ? Colors.yellow : Colors.amber.shade900,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -203,34 +194,23 @@ class _ReflectionComposerState extends State<ReflectionComposer> {
             children: [
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   side: BorderSide(
-                    color: widget.isContrast
-                        ? Colors.white
-                        : Theme.of(context).dividerColor,
+                    color: widget.isContrast ? Colors.white : Theme.of(context).dividerColor,
                   ),
                 ),
-                onPressed: () => showMemeGalleryModal(
-                  context,
-                  onSelectedMeme: _handleSelectMeme,
-                ),
-                icon: const Icon(Icons.sentiment_very_satisfied_outlined,
-                    size: 14),
+                onPressed: () => showMemeGalleryModal(context, onSelectedMeme: _handleSelectMeme),
+                icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 14),
                 label: Text(
                   _attachedMeme != null ? 'Change Meme' : 'Add Meme / GIF',
-                  style: const TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: widget.primaryColor,
-                  foregroundColor:
-                      widget.isContrast ? Colors.black : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                  foregroundColor: widget.isContrast ? Colors.black : Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
                 onPressed: _handlePublish,
                 icon: const Icon(Icons.send_rounded, size: 14),

@@ -11,11 +11,7 @@ class SanctuaryApp extends StatefulWidget {
   final PostRepository repository;
   final List<Override>? overrides;
 
-  const SanctuaryApp({
-    super.key,
-    required this.repository,
-    this.overrides,
-  });
+  const SanctuaryApp({super.key, required this.repository, this.overrides});
 
   @override
   State<SanctuaryApp> createState() => _SanctuaryAppState();
@@ -29,37 +25,26 @@ class _SanctuaryAppState extends State<SanctuaryApp> {
 
   @override
   Widget build(BuildContext context) => ProviderScope(
-        overrides: [
-          postRepositoryProvider.overrideWithValue(widget.repository),
-          ...?widget.overrides,
-        ],
-        child: ListenableBuilder(
-          listenable: _themeNotifier,
-          builder: (context, _) => _SanctuaryAppContent(
-            repository: widget.repository,
-            themeNotifier: _themeNotifier,
-          ),
-        ),
-      );
+    overrides: [postRepositoryProvider.overrideWithValue(widget.repository), ...?widget.overrides],
+    child: ListenableBuilder(
+      listenable: _themeNotifier,
+      builder: (context, _) =>
+          _SanctuaryAppContent(repository: widget.repository, themeNotifier: _themeNotifier),
+    ),
+  );
 }
 
 class _SanctuaryAppContent extends ConsumerWidget {
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
 
-  const _SanctuaryAppContent({
-    required this.repository,
-    required this.themeNotifier,
-  });
+  const _SanctuaryAppContent({required this.repository, required this.themeNotifier});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Sanctuary Digital Clubhouse',
-        theme: SensoryThemeData.getTheme(themeNotifier.mode),
-        home: SanctuaryHomeScreen(
-          repository: repository,
-          themeNotifier: themeNotifier,
-        ),
-      );
+    debugShowCheckedModeBanner: false,
+    title: 'Sanctuary Digital Clubhouse',
+    theme: SensoryThemeData.getTheme(themeNotifier.mode),
+    home: SanctuaryHomeScreen(repository: repository, themeNotifier: themeNotifier),
+  );
 }

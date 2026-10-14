@@ -12,16 +12,11 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:http/http.dart' as _i85jenna;
-import 'package:sanctuary_server_client/src/protocol/greetings/greeting.dart'
-    as _imll9pl8;
-import 'package:sanctuary_server_client/src/protocol/reflections/quiet_digest.dart'
-    as _inazvanl;
-import 'package:sanctuary_server_client/src/protocol/reflections/reflection_post.dart'
-    as _iwhihj76;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _iacc;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _iaic;
+import 'package:sanctuary_server_client/src/protocol/greetings/greeting.dart' as _imll9pl8;
+import 'package:sanctuary_server_client/src/protocol/reflections/quiet_digest.dart' as _inazvanl;
+import 'package:sanctuary_server_client/src/protocol/reflections/reflection_post.dart' as _iwhihj76;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart' as _iacc;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart' as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'protocol.dart' as _il2as5qe;
 
@@ -302,11 +297,8 @@ class EndpointReflection extends _isc.EndpointRef {
 
   /// Real-time streaming WebSocket endpoint for a fellowship space.
   /// Yields existing database rows (or initial seeds on first boot), then streams live updates.
-  _ida.Stream<_iwhihj76.ReflectionPost> watchSpace(String spaceKey) =>
-      caller.callStreamingServerEndpoint<
-        _ida.Stream<_iwhihj76.ReflectionPost>,
-        _iwhihj76.ReflectionPost
-      >(
+  _ida.Stream<_iwhihj76.ReflectionPost> watchSpace(String spaceKey) => caller
+      .callStreamingServerEndpoint<_ida.Stream<_iwhihj76.ReflectionPost>, _iwhihj76.ReflectionPost>(
         'reflection',
         'watchSpace',
         {'spaceKey': spaceKey},
@@ -356,8 +348,7 @@ class Client extends _isc.ServerpodClientShared {
          connectionTimeout: connectionTimeout,
          onFailedCall: onFailedCall,
          onSucceededCall: onSucceededCall,
-         disconnectStreamsOnLostInternetConnection:
-             disconnectStreamsOnLostInternetConnection,
+         disconnectStreamsOnLostInternetConnection: disconnectStreamsOnLostInternetConnection,
          httpClientOverride: httpClientOverride,
        ) {
     emailIdp = EndpointEmailIdp(this);

@@ -16,7 +16,7 @@ BackendMode get configuredBackendMode {
 
 class PostRepositoryFactory {
   static PostRepository create() => switch (configuredBackendMode) {
-        BackendMode.serverpod => ServerpodPostRepository(),
-        BackendMode.sqlite || BackendMode.local => LocalPostRepository(),
-      };
+    BackendMode.serverpod => ServerpodPostRepository(),
+    BackendMode.sqlite || BackendMode.local => LocalPostRepository(),
+  };
 }

@@ -20,15 +20,10 @@ class SanctuaryHomeScreen extends ConsumerStatefulWidget {
   final PostRepository? repository;
   final ThemeNotifier? themeNotifier;
 
-  const SanctuaryHomeScreen({
-    super.key,
-    this.repository,
-    this.themeNotifier,
-  });
+  const SanctuaryHomeScreen({super.key, this.repository, this.themeNotifier});
 
   @override
-  ConsumerState<SanctuaryHomeScreen> createState() =>
-      _SanctuaryHomeScreenState();
+  ConsumerState<SanctuaryHomeScreen> createState() => _SanctuaryHomeScreenState();
 }
 
 /// Alias for SanctuaryHomeScreen to support Refuge branding.
@@ -40,8 +35,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
   String? _legacyQuietDigestMessage;
   Stream<List<Post>>? _legacyPostStream;
 
-  PostRepository get _activeRepository =>
-      widget.repository ?? ref.read(postRepositoryProvider);
+  PostRepository get _activeRepository => widget.repository ?? ref.read(postRepositoryProvider);
 
   @override
   void initState() {
@@ -76,19 +70,18 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
     required String content,
     required String toneTag,
     String? specialInterestTag,
-  }) async =>
-      _activeRepository.createPost(
-        Post(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          authorName: 'Fellowship Member',
-          spaceKey: _selectedSpace,
-          toneTag: toneTag,
-          specialInterestTag: specialInterestTag,
-          content: content,
-          timestamp: DateTime.now(),
-          reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
-        ),
-      );
+  }) async => _activeRepository.createPost(
+    Post(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      authorName: 'Fellowship Member',
+      spaceKey: _selectedSpace,
+      toneTag: toneTag,
+      specialInterestTag: specialInterestTag,
+      content: content,
+      timestamp: DateTime.now(),
+      reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
+    ),
+  );
 
   void _setSensoryMode(SensoryMode mode) {
     if (widget.themeNotifier != null) {
@@ -98,8 +91,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
     }
   }
 
-  SensoryMode get _currentMode =>
-      widget.themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
+  SensoryMode get _currentMode => widget.themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +99,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     final repo = _activeRepository;
-    final isLiveServerpod =
-        repo is ServerpodPostRepository && repo.isLiveConnected;
+    final isLiveServerpod = repo is ServerpodPostRepository && repo.isLiveConnected;
 
     return Scaffold(
       appBar: AppBar(
@@ -117,10 +108,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Sanctuary',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            const Text('Sanctuary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -129,9 +117,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
                   height: 7,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isLiveServerpod
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFF68A67D),
+                    color: isLiveServerpod ? const Color(0xFF4CAF50) : const Color(0xFF68A67D),
                   ),
                 ),
                 const SizedBox(width: 5),
@@ -140,11 +126,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.color
-                        ?.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -218,14 +200,8 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
           constraints: const BoxConstraints(maxWidth: 820),
           child: Column(
             children: [
-              CommunityAnchorBanner(
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-              ),
-              SpaceNavigationBar(
-                selectedSpace: _selectedSpace,
-                onSelectSpace: _onSelectSpace,
-              ),
+              CommunityAnchorBanner(primaryColor: primaryColor, isContrast: isContrast),
+              SpaceNavigationBar(selectedSpace: _selectedSpace, onSelectSpace: _onSelectSpace),
               QuietDigestBanner(
                 primaryColor: primaryColor,
                 isContrast: isContrast,
@@ -246,16 +222,12 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
                   stream: _legacyPostStream,
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator.adaptive(),
-                      );
+                      return const Center(child: CircularProgressIndicator.adaptive());
                     }
 
                     var posts = snapshot.data!;
                     if (_activeFilter != 'All') {
-                      posts = posts
-                          .where((p) => p.toneTag == _activeFilter)
-                          .toList();
+                      posts = posts.where((p) => p.toneTag == _activeFilter).toList();
                     }
 
                     if (posts.isEmpty) {
@@ -265,10 +237,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.color
+                            color: Theme.of(context).textTheme.bodySmall?.color
                                 ?.withValues(alpha: 0.6),
                           ),
                         ),
@@ -277,17 +246,13 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
 
                     return ListView.builder(
                       itemCount: posts.length,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 8.0,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                       itemBuilder: (context, index) {
                         final p = posts[index];
                         return ReflectionCard(
                           post: p,
                           isContrast: isContrast,
-                          onAddReaction: (reactionType) =>
-                              _activeRepository.addReaction(
+                          onAddReaction: (reactionType) => _activeRepository.addReaction(
                             postId: p.id,
                             reactionType: reactionType,
                           ),

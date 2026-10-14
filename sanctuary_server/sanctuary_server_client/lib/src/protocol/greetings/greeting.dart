@@ -13,8 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// A greeting message which can be sent to or from the server.
-abstract class Greeting
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+abstract class Greeting implements _isc.SerializableModel, _isc.ProtocolSerialization {
   Greeting._({
     required this.message,
     required this.author,

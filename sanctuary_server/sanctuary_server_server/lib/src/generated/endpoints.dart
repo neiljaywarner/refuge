@@ -13,10 +13,9 @@
 import 'package:sanctuary_server_server/src/generated/reflections/reflection_post.dart'
     as _i1e9lush;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
-    as _iacs;
-import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _iais;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart' as _iacs;
+import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart' as _iais;
+
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
@@ -73,12 +72,11 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async =>
-                  (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).login(
-                    session,
-                    email: params['email'],
-                    password: params['password'],
-                  ),
+              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).login(
+                session,
+                email: params['email'],
+                password: params['password'],
+              ),
         ),
         'startRegistration': _is.MethodConnector(
           name: 'startRegistration',
@@ -93,11 +91,10 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .startRegistration(
-                    session,
-                    email: params['email'],
-                  ),
+              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).startRegistration(
+                session,
+                email: params['email'],
+              ),
         ),
         'verifyRegistrationCode': _is.MethodConnector(
           name: 'verifyRegistrationCode',
@@ -117,8 +114,8 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .verifyRegistrationCode(
+              ) async =>
+                  (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).verifyRegistrationCode(
                     session,
                     accountRequestId: params['accountRequestId'],
                     verificationCode: params['verificationCode'],
@@ -142,12 +139,11 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .finishRegistration(
-                    session,
-                    registrationToken: params['registrationToken'],
-                    password: params['password'],
-                  ),
+              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).finishRegistration(
+                session,
+                registrationToken: params['registrationToken'],
+                password: params['password'],
+              ),
         ),
         'startPasswordReset': _is.MethodConnector(
           name: 'startPasswordReset',
@@ -162,11 +158,10 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .startPasswordReset(
-                    session,
-                    email: params['email'],
-                  ),
+              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).startPasswordReset(
+                session,
+                email: params['email'],
+              ),
         ),
         'verifyPasswordResetCode': _is.MethodConnector(
           name: 'verifyPasswordResetCode',
@@ -186,8 +181,8 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .verifyPasswordResetCode(
+              ) async =>
+                  (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).verifyPasswordResetCode(
                     session,
                     passwordResetRequestId: params['passwordResetRequestId'],
                     verificationCode: params['verificationCode'],
@@ -211,23 +206,19 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .finishPasswordReset(
-                    session,
-                    finishPasswordResetToken:
-                        params['finishPasswordResetToken'],
-                    newPassword: params['newPassword'],
-                  ),
+              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).finishPasswordReset(
+                session,
+                finishPasswordResetToken: params['finishPasswordResetToken'],
+                newPassword: params['newPassword'],
+              ),
         ),
         'hasAccount': _is.MethodConnector(
           name: 'hasAccount',
           params: {},
-          call:
-              (
-                _is.Session session,
-                Map<String, dynamic> params,
-              ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint)
-                  .hasAccount(session),
+          call: (
+            _is.Session session,
+            Map<String, dynamic> params,
+          ) async => (endpoints['emailIdp'] as _iuc1hd5t.EmailIdpEndpoint).hasAccount(session),
         ),
       },
     );
@@ -249,11 +240,10 @@ class Endpoints extends _is.EndpointDispatch {
                 _is.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['jwtRefresh'] as _inwq3ztq.JwtRefreshEndpoint)
-                      .refreshAccessToken(
-                        session,
-                        refreshToken: params['refreshToken'],
-                      ),
+                  (endpoints['jwtRefresh'] as _inwq3ztq.JwtRefreshEndpoint).refreshAccessToken(
+                    session,
+                    refreshToken: params['refreshToken'],
+                  ),
         ),
       },
     );
@@ -274,11 +264,10 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async =>
-                  (endpoints['greeting'] as _il624ik7.GreetingEndpoint).hello(
-                    session,
-                    params['name'],
-                  ),
+              ) async => (endpoints['greeting'] as _il624ik7.GreetingEndpoint).hello(
+                session,
+                params['name'],
+              ),
         ),
       },
     );
@@ -300,11 +289,10 @@ class Endpoints extends _is.EndpointDispatch {
                 _is.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
-                      .publishReflection(
-                        session,
-                        params['post'],
-                      ),
+                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint).publishReflection(
+                    session,
+                    params['post'],
+                  ),
         ),
         'affirmCare': _is.MethodConnector(
           name: 'affirmCare',
@@ -324,13 +312,11 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async =>
-                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
-                      .affirmCare(
-                        session,
-                        params['postId'],
-                        params['reactionKey'],
-                      ),
+              ) async => (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint).affirmCare(
+                session,
+                params['postId'],
+                params['reactionKey'],
+              ),
         ),
         'getQuietDigest': _is.MethodConnector(
           name: 'getQuietDigest',
@@ -345,12 +331,10 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async =>
-                  (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
-                      .getQuietDigest(
-                        session,
-                        params['spaceKey'],
-                      ),
+              ) async => (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint).getQuietDigest(
+                session,
+                params['spaceKey'],
+              ),
         ),
         'watchSpace': _is.MethodStreamConnector(
           name: 'watchSpace',
@@ -368,17 +352,14 @@ class Endpoints extends _is.EndpointDispatch {
                 _is.Session session,
                 Map<String, dynamic> params,
                 Map<String, Stream> streamParams,
-              ) => (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint)
-                  .watchSpace(
-                    session,
-                    params['spaceKey'],
-                  ),
+              ) => (endpoints['reflection'] as _ipuei8a5.ReflectionEndpoint).watchSpace(
+                session,
+                params['spaceKey'],
+              ),
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _iais.Endpoints()
-      ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _iacs.Endpoints()
-      ..initializeEndpoints(server);
+    modules['serverpod_auth_idp'] = _iais.Endpoints()..initializeEndpoints(server);
+    modules['serverpod_auth_core'] = _iacs.Endpoints()..initializeEndpoints(server);
   }
 }

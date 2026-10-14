@@ -1,4 +1,5 @@
 import '../generated/protocol.dart';
+
 import 'package:serverpod/serverpod.dart';
 
 // This is an example endpoint of your server. It's best practice to use the

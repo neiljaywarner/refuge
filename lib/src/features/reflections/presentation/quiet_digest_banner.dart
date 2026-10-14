@@ -33,19 +33,11 @@ class QuietDigestBanner extends ConsumerWidget {
             ? Colors.yellow.withValues(alpha: 0.1)
             : primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isContrast
-              ? Colors.yellow
-              : primaryColor.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.wb_twilight,
-            size: 15,
-            color: isContrast ? Colors.yellow : primaryColor,
-          ),
+          Icon(Icons.wb_twilight, size: 15, color: isContrast ? Colors.yellow : primaryColor),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

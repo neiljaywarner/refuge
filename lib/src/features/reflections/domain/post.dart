@@ -29,17 +29,16 @@ class Post {
     String? content,
     DateTime? timestamp,
     Map<String, int>? reactions,
-  }) =>
-      Post(
-        id: id ?? this.id,
-        authorName: authorName ?? this.authorName,
-        spaceKey: spaceKey ?? this.spaceKey,
-        toneTag: toneTag ?? this.toneTag,
-        specialInterestTag: specialInterestTag ?? this.specialInterestTag,
-        content: content ?? this.content,
-        timestamp: timestamp ?? this.timestamp,
-        reactions: reactions ?? Map<String, int>.from(this.reactions),
-      );
+  }) => Post(
+    id: id ?? this.id,
+    authorName: authorName ?? this.authorName,
+    spaceKey: spaceKey ?? this.spaceKey,
+    toneTag: toneTag ?? this.toneTag,
+    specialInterestTag: specialInterestTag ?? this.specialInterestTag,
+    content: content ?? this.content,
+    timestamp: timestamp ?? this.timestamp,
+    reactions: reactions ?? Map<String, int>.from(this.reactions),
+  );
 
   @override
   bool operator ==(Object other) =>

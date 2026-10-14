@@ -21,30 +21,27 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets(
-      'Renders Sanctuary header, seeded posts, and space navigation',
-      (WidgetTester tester) async {
-        await pumpApp(tester);
-
-        // Verify title & calm-tech subtitle
-        expect(find.text('Sanctuary'), findsOneWidget);
-        expect(find.textContaining('Calm Tech'), findsOneWidget);
-
-        // Verify default spaces navigation chips
-        expect(find.text('🙏 #prayer-sanctuary'), findsOneWidget);
-        expect(find.text('📖 #weekly-study'), findsOneWidget);
-
-        // Verify seeded posts in default 'prayer' space
-        expect(find.text('David M. (UK)'), findsOneWidget);
-        expect(find.text('Elena R. (Colorado)'), findsOneWidget);
-        // Pastor Thomas is in 'study' space, so shouldn't appear in 'prayer'
-        expect(find.text('Pastor Thomas (Melbourne)'), findsNothing);
-      },
-    );
-
-    testWidgets('Switching space updates the stream of posts', (
+    testWidgets('Renders Sanctuary header, seeded posts, and space navigation', (
       WidgetTester tester,
     ) async {
+      await pumpApp(tester);
+
+      // Verify title & calm-tech subtitle
+      expect(find.text('Sanctuary'), findsOneWidget);
+      expect(find.textContaining('Calm Tech'), findsOneWidget);
+
+      // Verify default spaces navigation chips
+      expect(find.text('🙏 #prayer-sanctuary'), findsOneWidget);
+      expect(find.text('📖 #weekly-study'), findsOneWidget);
+
+      // Verify seeded posts in default 'prayer' space
+      expect(find.text('David M. (UK)'), findsOneWidget);
+      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
+      // Pastor Thomas is in 'study' space, so shouldn't appear in 'prayer'
+      expect(find.text('Pastor Thomas (Melbourne)'), findsNothing);
+    });
+
+    testWidgets('Switching space updates the stream of posts', (WidgetTester tester) async {
       await pumpApp(tester);
 
       // Tap on #weekly-study space chip
@@ -100,8 +97,7 @@ void main() {
     ) async {
       await pumpApp(tester);
 
-      const testContent =
-          'Grateful for quiet moments of stillness in a hurried world.';
+      const testContent = 'Grateful for quiet moments of stillness in a hurried world.';
 
       // Enter text into the reflection TextField
       await tester.enterText(find.byType(TextField), testContent);
@@ -150,9 +146,7 @@ void main() {
       expect(find.text('4 Support'), findsNothing);
     });
 
-    testWidgets('Filtering by tone tags displays only matching posts', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Filtering by tone tags displays only matching posts', (WidgetTester tester) async {
       await pumpApp(tester);
 
       // Initially in 'prayer' space: David M. has [Prayer Request], Elena R. has [Comfort Only]
@@ -161,10 +155,7 @@ void main() {
 
       // Tap filter chip for '[Comfort Only]'
       // Note: filter row has a ChoiceChip with '[Comfort Only]'
-      final comfortFilterChips = find.widgetWithText(
-        ChoiceChip,
-        '[Comfort Only]',
-      );
+      final comfortFilterChips = find.widgetWithText(ChoiceChip, '[Comfort Only]');
       await tester.tap(comfortFilterChips.first);
       await tester.pumpAndSettle();
 

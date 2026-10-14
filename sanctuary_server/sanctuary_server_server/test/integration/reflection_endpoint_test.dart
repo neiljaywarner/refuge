@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:sanctuary_server_server/src/generated/protocol.dart';
+
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
