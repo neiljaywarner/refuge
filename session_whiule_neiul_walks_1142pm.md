@@ -67,3 +67,7 @@ Timezone Notice: Stockholm CEST is UTC+2 (7 hours ahead of local CDT).
 | **12:44:00 AM** | Issue D: Wired Flutter Client to Serverpod | Completed | Connected `ServerpodPostRepository` with 800ms fallback & 11/11 tests (PR #23) |
 | **12:46:00 AM** | Issue E: Optimized Root README.md | Completed | Formatted for Stage 1 Screener, 4 rubric criteria, DX report (PR #24) |
 | **12:47:30 AM** | Production Web Build & Firebase CDN Redeployment | Completed | Re-compiled & deployed live to `ministry-demos--sanctuary-cnf3fnh7.web.app` |
+| **12:52:00 AM** | Created & Deployed Branded Firebase Site | Completed | Live at `https://refuge4serverpodhackathon.web.app` (HTTP 200) |
+| **12:54:00 AM** | Issue #28: Belong on the Spectrum Anchor | Completed | Created issue for Special Interests & Neurodivergent Memes |
+| **12:55:00 AM** | Compiled Android APK & Published GitHub Release v0.1.0 | Completed | Uploaded `app-debug.apk` (144M) & demo MP4 to GitHub Release |
+| **01:03:00 AM** | BDD Feature Specs & Maestro Flow Added | Completed | 4 `.feature` files, Maestro flow, and 20/20 tests passing |

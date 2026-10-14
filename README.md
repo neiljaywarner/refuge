@@ -10,7 +10,7 @@
 [![Serverpod](https://img.shields.io/badge/Serverpod-4.0.4-blueviolet)](https://serverpod.dev)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)](https://redis.io)
-[![Tests Passing](https://img.shields.io/badge/Tests-11%2F11%20Passing-success)](test/)
+[![Tests Passing](https://img.shields.io/badge/Tests-20%2F20%20Passing-success)](test/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-refuge4serverpodhackathon.web.app-brightgreen)](https://refuge4serverpodhackathon.web.app)
 
 ---
@@ -169,10 +169,10 @@ Sanctuary is designed in strict accordance with Calm Technology and accessibilit
 
 ## 🧪 Automated Testing & Verification Suite
 
-Sanctuary has comprehensive unit, widget, and backend integration test coverage:
+Sanctuary has comprehensive unit, widget, BDD Gherkin feature, Maestro E2E, and backend integration test coverage:
 
 ```bash
-# Run client unit & widget tests (11/11 tests)
+# Run complete test suite (20/20 tests passing)
 flutter test
 
 # Run Serverpod server integration tests
@@ -180,7 +180,15 @@ cd sanctuary_server/sanctuary_server_server
 dart test test/integration/reflection_endpoint_test.dart
 ```
 
-### Verified Test Matrix:
+### 📋 BDD Feature Specifications & Maestro E2E
+- 📖 **BDD Feature Specifications**: [`test/features/`](test/features/)
+  - [`fellowship_spaces.feature`](test/features/fellowship_spaces.feature): Room navigation & intent filtering.
+  - [`sensory_modes.feature`](test/features/sensory_modes.feature): 4 WCAG theme mode transitions.
+  - [`qualitative_care.feature`](test/features/qualitative_care.feature): Atomic care affirmations & calm composer.
+  - [`serverpod_resilience.feature`](test/features/serverpod_resilience.feature): 800ms offline fallback & Quiet Digest aggregation.
+- 📱 **Maestro Mobile E2E Flow**: [`.maestro/calm_tech_walkthrough.yaml`](.maestro/calm_tech_walkthrough.yaml) (Human-readable end-to-end journey).
+
+### Verified Test Matrix (20/20 Passing):
 - `Post copyWith modifies fields immutably` ✅
 - `LocalPostRepository supports creating posts and streaming updates` ✅
 - `addReaction increments reaction count correctly` ✅
@@ -192,6 +200,15 @@ dart test test/integration/reflection_endpoint_test.dart
 - `Publishing a reflection adds it to the top of the feed` ✅
 - `Incrementing qualitative care reactions updates counts` ✅
 - `Filtering by tone tags displays only matching posts` ✅
+- `BDD: Switching between fellowship spaces displays space-specific reflections` ✅
+- `BDD: Visiting an empty fellowship room shows peaceful stillness` ✅
+- `BDD: Filtering reflections by mindful intent tags` ✅
+- `BDD: Toggling through all 4 sensory themes applies appropriate styling` ✅
+- `BDD: Visual contrast and title persistence across sensory switches` ✅
+- `BDD: Incrementing qualitative care affirmations atomically` ✅
+- `BDD: Publishing an unhurried reflection and resetting composer` ✅
+- `BDD: Operating in resilient offline fallback mode within 800ms` ✅
+- `BDD: Server-side Quiet Digest banner renders peaceful aggregates` ✅
 
 ---
 

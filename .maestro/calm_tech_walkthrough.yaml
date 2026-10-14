@@ -1,0 +1,41 @@
+appId: com.example.refuge13oct2026PrototypeForServerpodHackathon
+---
+# ==============================================================================
+# Sanctuary Calm-Tech Maestro Flow
+# Automated, human-readable E2E verification of fellowship flows
+# ==============================================================================
+- launchApp
+
+# Verify Header, Branding & Calm-Tech Subtitle
+- assertVisible: "Sanctuary"
+- assertVisible: "Calm Tech"
+
+# Verify Navigation across Fellowship Rooms
+- tapOn: "📖 #weekly-study"
+- assertVisible: "Pastor Thomas (Melbourne)"
+
+- tapOn: "📢 #announcements"
+- assertVisible: "Space is quiet right now"
+
+- tapOn: "🙏 #prayer-sanctuary"
+- assertVisible: "David M. (UK)"
+
+# Verify 4 Sensory Modes (Dark, High Contrast, Sage)
+- tapOn: "Dark"
+- assertVisible: "Sanctuary"
+
+- tapOn: "Contrast"
+- assertVisible: "Sanctuary"
+
+- tapOn: "Sage"
+- assertVisible: "Sanctuary"
+
+# Verify Qualitative Care Affirmation
+- tapOn: "6 Praying"
+- assertVisible: "7 Praying"
+
+# Verify Unhurried Reflection Composer
+- tapOn: "Share what is on your heart in stillness..."
+- inputText: "Peace be with this fellowship in quiet waters."
+- tapOn: "Publish Reflection"
+- assertVisible: "Peace be with this fellowship in quiet waters."
