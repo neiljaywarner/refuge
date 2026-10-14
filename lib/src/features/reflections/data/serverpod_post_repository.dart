@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:sanctuary_server_client/sanctuary_server_client.dart' as sp;
 
+import '../../../core/logging/app_logger.dart';
 import '../domain/post.dart';
 import 'local_post_repository.dart';
 import 'post_repository.dart';
@@ -31,11 +32,13 @@ class ServerpodPostRepository implements PostRepository {
               defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
             ),
         onFailedCall: (context, error, stackTrace) {
+          talker.handle(error, stackTrace, 'Serverpod RPC ${context.endpointName}.${context.methodName} FAILED');
           debugPrint(
             '🚨 [Serverpod RPC FAILED] ${context.endpointName}.${context.methodName}: $error',
           );
         },
         onSucceededCall: (context) {
+          talker.info('Serverpod RPC ${context.endpointName}.${context.methodName} SUCCESS');
           debugPrint('✅ [Serverpod RPC SUCCESS] ${context.endpointName}.${context.methodName}');
         },
       );
@@ -54,6 +57,7 @@ class ServerpodPostRepository implements PostRepository {
 
   @override
   Future<Post> createPost(Post post) async {
+    talker.info('📤 [Serverpod RPC] Publishing reflection: tag=[${post.toneTag}] specialInterest=[${post.specialInterestTag}] content="${post.content}"');
     try {
       final spPost = sp.ReflectionPost(
         authorName: post.authorName,
@@ -72,6 +76,7 @@ class ServerpodPostRepository implements PostRepository {
           .publishReflection(spPost)
           .timeout(const Duration(milliseconds: 5000));
 
+      talker.info('✅ [Serverpod RPC SUCCESS] Reflection published: id=${result.id} tag=[${result.intentTag}] specialInterest=[${result.specialInterestTag}]');
       _isLiveConnected = true;
 
       return Post(
@@ -90,7 +95,8 @@ class ServerpodPostRepository implements PostRepository {
           'relatable': result.encouragedCount,
         },
       );
-    } catch (_) {
+    } catch (e, st) {
+      talker.handle(e, st, '🚨 [Serverpod RPC FAILED] createPost error, falling back to local');
       _isLiveConnected = false;
       return _fallback.createPost(post);
     }
@@ -108,12 +114,16 @@ class ServerpodPostRepository implements PostRepository {
           'encouraged': 'encouraged',
           'relatable': 'relatable',
         };
+        final mappedKey = keyMap[reactionType] ?? reactionType;
+        talker.info('💖 [Serverpod RPC] Affirming care: post=$parsedId reaction=$reactionType (mapped: $mappedKey)');
         await _client.reflection
-            .affirmCare(parsedId, keyMap[reactionType] ?? reactionType)
+            .affirmCare(parsedId, mappedKey)
             .timeout(const Duration(milliseconds: 4000));
+        talker.info('✅ [Serverpod RPC SUCCESS] Care affirmed for post $parsedId ($reactionType)');
         _isLiveConnected = true;
         return;
-      } catch (_) {
+      } catch (e, st) {
+        talker.handle(e, st, '🚨 [Serverpod RPC FAILED] affirmCare error, falling back to local');
         _isLiveConnected = false;
       }
     }
@@ -128,11 +138,15 @@ class ServerpodPostRepository implements PostRepository {
     // 2. Connect to Serverpod streaming endpoint (persistent WebSocket stream)
     try {
       final mappedSpace = _mapSpaceKey(spaceKey);
+      talker.info('🔌 [Serverpod WebSocket] Connecting to live stream for space: $spaceKey (mapped: $mappedSpace)');
       final stream = _client.reflection.watchSpace(mappedSpace);
 
       final livePosts = <Post>[];
 
       await for (final spPost in stream) {
+        talker.info(
+          '📡 [Serverpod WebSocket EVENT] Received reflection: id=${spPost.id} author="${spPost.authorName}" tag=[${spPost.intentTag}] specialInterest=[${spPost.specialInterestTag}] content="${spPost.content}"',
+        );
         debugPrint(
           '📡 [Serverpod Stream EVENT] Received post id=${spPost.id}: "${spPost.content}"',
         );
@@ -164,6 +178,7 @@ class ServerpodPostRepository implements PostRepository {
         yield List<Post>.from(livePosts);
       }
     } catch (e, st) {
+      talker.handle(e, st, '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected');
       debugPrint('🚨 [Serverpod Stream CATCH] watchPosts error: $e\n$st');
       // 3. Fallback gracefully to local stream if network disconnects
       _isLiveConnected = false;
@@ -179,8 +194,9 @@ class ServerpodPostRepository implements PostRepository {
           .getQuietDigest(mappedSpace)
           .timeout(const Duration(milliseconds: 800));
       _isLiveConnected = true;
+      talker.info('📜 [Serverpod RPC] Fetched quiet digest for space $spaceKey: "${digest.summaryMessage}"');
       return digest.summaryMessage;
-    } catch (_) {
+    } catch (e) {
       _isLiveConnected = false;
       return _fallback.getQuietDigest(spaceKey: spaceKey);
     }

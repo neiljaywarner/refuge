@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
+import '../../../core/logging/app_logger.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
+import 'judge_api_explorer_dialog.dart';
 
 /// Shows the About Refuge & Hackathon Credits dialog, including sensory theme settings.
 void showAboutSanctuaryDialog(
@@ -156,7 +159,29 @@ void showAboutSanctuaryDialog(
           ),
         ),
       ),
-      actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close'))],
+      actions: [
+        OutlinedButton.icon(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+            JudgeApiExplorerDialog.show(context, primaryColor: primaryColor, isContrast: isContrast);
+          },
+          icon: const Icon(Icons.api_rounded, size: 16),
+          label: const Text('Judge API Explorer', style: TextStyle(fontSize: 12)),
+        ),
+        OutlinedButton.icon(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => TalkerScreen(talker: talker),
+              ),
+            );
+          },
+          icon: const Icon(Icons.receipt_long_rounded, size: 16),
+          label: const Text('Live Network & Talker Logs', style: TextStyle(fontSize: 12)),
+        ),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
+      ],
     ),
   );
 }
