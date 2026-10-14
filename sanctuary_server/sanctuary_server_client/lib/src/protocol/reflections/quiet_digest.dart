@@ -20,6 +20,7 @@ abstract class QuietDigest
     required this.totalReflections,
     required this.totalCareAffirmations,
     required this.predominantIntent,
+    this.featuredSpecialInterest,
     required this.summaryMessage,
     required this.generatedAt,
   });
@@ -29,6 +30,7 @@ abstract class QuietDigest
     required int totalReflections,
     required int totalCareAffirmations,
     required String predominantIntent,
+    String? featuredSpecialInterest,
     required String summaryMessage,
     required DateTime generatedAt,
   }) = _QuietDigestImpl;
@@ -39,6 +41,8 @@ abstract class QuietDigest
       totalReflections: jsonSerialization['totalReflections'] as int,
       totalCareAffirmations: jsonSerialization['totalCareAffirmations'] as int,
       predominantIntent: jsonSerialization['predominantIntent'] as String,
+      featuredSpecialInterest:
+          jsonSerialization['featuredSpecialInterest'] as String?,
       summaryMessage: jsonSerialization['summaryMessage'] as String,
       generatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['generatedAt'],
@@ -54,6 +58,8 @@ abstract class QuietDigest
 
   String predominantIntent;
 
+  String? featuredSpecialInterest;
+
   String summaryMessage;
 
   DateTime generatedAt;
@@ -66,6 +72,7 @@ abstract class QuietDigest
     int? totalReflections,
     int? totalCareAffirmations,
     String? predominantIntent,
+    String? featuredSpecialInterest,
     String? summaryMessage,
     DateTime? generatedAt,
   });
@@ -77,6 +84,8 @@ abstract class QuietDigest
       'totalReflections': totalReflections,
       'totalCareAffirmations': totalCareAffirmations,
       'predominantIntent': predominantIntent,
+      if (featuredSpecialInterest != null)
+        'featuredSpecialInterest': featuredSpecialInterest,
       'summaryMessage': summaryMessage,
       'generatedAt': generatedAt.toJson(),
     };
@@ -90,6 +99,8 @@ abstract class QuietDigest
       'totalReflections': totalReflections,
       'totalCareAffirmations': totalCareAffirmations,
       'predominantIntent': predominantIntent,
+      if (featuredSpecialInterest != null)
+        'featuredSpecialInterest': featuredSpecialInterest,
       'summaryMessage': summaryMessage,
       'generatedAt': generatedAt.toJson(),
     };
@@ -101,12 +112,15 @@ abstract class QuietDigest
   }
 }
 
+class _Undefined {}
+
 class _QuietDigestImpl extends QuietDigest {
   _QuietDigestImpl({
     required String spaceKey,
     required int totalReflections,
     required int totalCareAffirmations,
     required String predominantIntent,
+    String? featuredSpecialInterest,
     required String summaryMessage,
     required DateTime generatedAt,
   }) : super._(
@@ -114,6 +128,7 @@ class _QuietDigestImpl extends QuietDigest {
          totalReflections: totalReflections,
          totalCareAffirmations: totalCareAffirmations,
          predominantIntent: predominantIntent,
+         featuredSpecialInterest: featuredSpecialInterest,
          summaryMessage: summaryMessage,
          generatedAt: generatedAt,
        );
@@ -127,6 +142,7 @@ class _QuietDigestImpl extends QuietDigest {
     int? totalReflections,
     int? totalCareAffirmations,
     String? predominantIntent,
+    Object? featuredSpecialInterest = _Undefined,
     String? summaryMessage,
     DateTime? generatedAt,
   }) {
@@ -136,6 +152,9 @@ class _QuietDigestImpl extends QuietDigest {
       totalCareAffirmations:
           totalCareAffirmations ?? this.totalCareAffirmations,
       predominantIntent: predominantIntent ?? this.predominantIntent,
+      featuredSpecialInterest: featuredSpecialInterest is String?
+          ? featuredSpecialInterest
+          : this.featuredSpecialInterest,
       summaryMessage: summaryMessage ?? this.summaryMessage,
       generatedAt: generatedAt ?? this.generatedAt,
     );

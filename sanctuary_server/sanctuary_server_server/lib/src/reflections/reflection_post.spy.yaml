@@ -5,6 +5,7 @@ fields:
   authorName: String
   spaceKey: String
   intentTag: String
+  specialInterestTag: String?
   content: String
   createdAt: DateTime
   prayingCount: int

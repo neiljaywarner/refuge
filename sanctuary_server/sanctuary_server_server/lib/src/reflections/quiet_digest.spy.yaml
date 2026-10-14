@@ -5,5 +5,6 @@ fields:
   totalReflections: int
   totalCareAffirmations: int
   predominantIntent: String
+  featuredSpecialInterest: String?
   summaryMessage: String
   generatedAt: DateTime

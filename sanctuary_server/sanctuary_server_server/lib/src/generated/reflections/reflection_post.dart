@@ -20,6 +20,7 @@ abstract class ReflectionPost
     required this.authorName,
     required this.spaceKey,
     required this.intentTag,
+    this.specialInterestTag,
     required this.content,
     required this.createdAt,
     required this.prayingCount,
@@ -33,6 +34,7 @@ abstract class ReflectionPost
     required String authorName,
     required String spaceKey,
     required String intentTag,
+    String? specialInterestTag,
     required String content,
     required DateTime createdAt,
     required int prayingCount,
@@ -47,6 +49,7 @@ abstract class ReflectionPost
       authorName: jsonSerialization['authorName'] as String,
       spaceKey: jsonSerialization['spaceKey'] as String,
       intentTag: jsonSerialization['intentTag'] as String,
+      specialInterestTag: jsonSerialization['specialInterestTag'] as String?,
       content: jsonSerialization['content'] as String,
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
@@ -71,6 +74,8 @@ abstract class ReflectionPost
 
   String intentTag;
 
+  String? specialInterestTag;
+
   String content;
 
   DateTime createdAt;
@@ -94,6 +99,7 @@ abstract class ReflectionPost
     String? authorName,
     String? spaceKey,
     String? intentTag,
+    String? specialInterestTag,
     String? content,
     DateTime? createdAt,
     int? prayingCount,
@@ -109,6 +115,7 @@ abstract class ReflectionPost
       'authorName': authorName,
       'spaceKey': spaceKey,
       'intentTag': intentTag,
+      if (specialInterestTag != null) 'specialInterestTag': specialInterestTag,
       'content': content,
       'createdAt': createdAt.toJson(),
       'prayingCount': prayingCount,
@@ -126,6 +133,7 @@ abstract class ReflectionPost
       'authorName': authorName,
       'spaceKey': spaceKey,
       'intentTag': intentTag,
+      if (specialInterestTag != null) 'specialInterestTag': specialInterestTag,
       'content': content,
       'createdAt': createdAt.toJson(),
       'prayingCount': prayingCount,
@@ -171,6 +179,7 @@ class _ReflectionPostImpl extends ReflectionPost {
     required String authorName,
     required String spaceKey,
     required String intentTag,
+    String? specialInterestTag,
     required String content,
     required DateTime createdAt,
     required int prayingCount,
@@ -182,6 +191,7 @@ class _ReflectionPostImpl extends ReflectionPost {
          authorName: authorName,
          spaceKey: spaceKey,
          intentTag: intentTag,
+         specialInterestTag: specialInterestTag,
          content: content,
          createdAt: createdAt,
          prayingCount: prayingCount,
@@ -199,6 +209,7 @@ class _ReflectionPostImpl extends ReflectionPost {
     String? authorName,
     String? spaceKey,
     String? intentTag,
+    Object? specialInterestTag = _Undefined,
     String? content,
     DateTime? createdAt,
     int? prayingCount,
@@ -211,6 +222,9 @@ class _ReflectionPostImpl extends ReflectionPost {
       authorName: authorName ?? this.authorName,
       spaceKey: spaceKey ?? this.spaceKey,
       intentTag: intentTag ?? this.intentTag,
+      specialInterestTag: specialInterestTag is String?
+          ? specialInterestTag
+          : this.specialInterestTag,
       content: content ?? this.content,
       createdAt: createdAt ?? this.createdAt,
       prayingCount: prayingCount ?? this.prayingCount,
@@ -238,6 +252,12 @@ class ReflectionPostUpdateTable extends _is.UpdateTable<ReflectionPostTable> {
     table.intentTag,
     value,
   );
+
+  _is.ColumnValue<String, String> specialInterestTag(String? value) =>
+      _is.ColumnValue(
+        table.specialInterestTag,
+        value,
+      );
 
   _is.ColumnValue<String, String> content(String value) => _is.ColumnValue(
     table.content,
@@ -287,6 +307,10 @@ class ReflectionPostTable extends _is.Table<int?> {
       'intentTag',
       this,
     );
+    specialInterestTag = _is.ColumnString(
+      'specialInterestTag',
+      this,
+    );
     content = _is.ColumnString(
       'content',
       this,
@@ -321,6 +345,8 @@ class ReflectionPostTable extends _is.Table<int?> {
 
   late final _is.ColumnString intentTag;
 
+  late final _is.ColumnString specialInterestTag;
+
   late final _is.ColumnString content;
 
   late final _is.ColumnDateTime createdAt;
@@ -339,6 +365,7 @@ class ReflectionPostTable extends _is.Table<int?> {
     authorName,
     spaceKey,
     intentTag,
+    specialInterestTag,
     content,
     createdAt,
     prayingCount,
