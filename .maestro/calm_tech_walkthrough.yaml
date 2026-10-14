@@ -21,12 +21,15 @@ appId: com.example.refuge13oct2026PrototypeForServerpodHackathon
 - assertVisible: "David M. (UK)"
 
 # Verify 4 Sensory Modes (Dark, High Contrast, Sage)
+- tapOn: "Sensory Themes"
 - tapOn: "Dark"
 - assertVisible: "Sanctuary"
 
+- tapOn: "Sensory Themes"
 - tapOn: "Contrast"
 - assertVisible: "Sanctuary"
 
+- tapOn: "Sensory Themes"
 - tapOn: "Sage"
 - assertVisible: "Sanctuary"
 

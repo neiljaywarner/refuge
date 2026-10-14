@@ -68,19 +68,27 @@ void main() {
     ) async {
       await pumpApp(tester);
 
-      // Tap 'Dark' (charcoal)
+      // Tap 'Dark' (charcoal) via Sensory Themes menu
+      await tester.tap(find.byTooltip('Sensory Themes'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Dark'));
       await tester.pumpAndSettle();
 
-      // Tap 'Contrast'
+      // Tap 'Contrast' via Sensory Themes menu
+      await tester.tap(find.byTooltip('Sensory Themes'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Contrast'));
       await tester.pumpAndSettle();
 
-      // Tap 'Clean'
+      // Tap 'Clean' via Sensory Themes menu
+      await tester.tap(find.byTooltip('Sensory Themes'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Clean'));
       await tester.pumpAndSettle();
 
-      // Tap 'Sage'
+      // Tap 'Sage' via Sensory Themes menu
+      await tester.tap(find.byTooltip('Sensory Themes'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Sage'));
       await tester.pumpAndSettle();
 

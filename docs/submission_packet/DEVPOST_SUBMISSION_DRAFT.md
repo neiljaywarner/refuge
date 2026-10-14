@@ -29,14 +29,14 @@ We asked ourselves: **What would a platform look like if its primary goal was hu
 ---
 
 ## 🛠️ How We Built It
-- **Frontend (Flutter Multi-Platform)**: Built with pure Flutter, targeting Web, Android, iOS, and macOS desktop with responsive adaptive layouts. Clean separation of concerns with single-source-of-truth state management.
+- **Frontend (Flutter Multi-Platform & Riverpod Architecture)**: Built with pure Flutter and structured following **CodeWithAndrea's Riverpod feature-first architecture** (`codewithandrea.com`), decomposing the application cleanly into Data, Domain, and Presentation layers across modular features (`features/reflections/`, `features/sensory_themes/`, `features/fellowship_spaces/`, `features/memes/`, `features/about/`).
 - **Backend (Serverpod 4)**: 
   - Protocol models defined via Serverpod SPI (`post.spy.yaml`, `quiet_digest.spy.yaml`, `reaction_payload.spy.yaml`).
   - Streaming endpoint (`reflection_endpoint.dart`) utilizing Serverpod streaming WebSocket sessions for instant bi-directional broadcasts.
   - PostgreSQL 16 database running via Serverpod Cloud and Docker with native Serverpod migrations.
   - Redis 7 caching and session synchronization.
-- **Architecture**: Strict abstract `PostRepository` contract with runtime backend switching (`--dart-define=BACKEND=serverpod` / `local`) and resilient 800ms offline-first fallback.
-- **Testing & Quality Gate**: 21 unit, widget, and BDD feature tests passing with 100% pass rate; 0 warnings on `flutter analyze`.
+- **Architecture**: Strict abstract `PostRepository` contract with runtime backend switching (`--dart-define=BACKEND=serverpod` / `local`) and resilient 800ms offline-first fallback. Reactive state managed with `flutter_riverpod` `ProviderContainer` providers and stream providers.
+- **Testing & Quality Gate**: 26 unit, widget, BDD, and Riverpod architecture tests passing with 100% pass rate; 0 warnings on `flutter analyze`.
 - **Live Deployment**: Live web build hosted on Firebase CDN with global SSL and instant preview channels ([refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app)), backed by live Serverpod Cloud API ([refuge4serverpod.api.serverpod.space](https://refuge4serverpod.api.serverpod.space)).
 - **Physical Device Validation**: Tested and screen-recorded live on two physical Google Pixel 9a devices streaming over real-world T-Mobile LTE cellular data.
 
@@ -51,7 +51,7 @@ We asked ourselves: **What would a platform look like if its primary goal was hu
 
 ## 🏆 Accomplishments We're Proud Of
 - **Zero Analyzer Warnings**: Complete clean static analysis across the entire project (`flutter analyze`).
-- **Comprehensive Automated Testing**: 21 unit, widget, and BDD tests covering models, repositories, meme selectors, and UI flows with 100% pass rate.
+- **Comprehensive Automated Testing**: 26 unit, widget, BDD, and Riverpod architecture tests covering models, repositories, sensory theme controllers, meme selectors, and UI flows with 100% pass rate.
 - **Live Deployed Prototype**: Working public web application deployed and verified on Firebase CDN ([Live Web App](https://refuge4serverpodhackathon.web.app)) and Serverpod Cloud backend ([API Status](https://refuge4serverpod.api.serverpod.space)).
 - **Physical Hardware Verification**: Dual Pixel 9a devices exchanging reflections over live LTE cellular connections.
 - **True Calm-Tech Feat**: Successfully eliminating every notification counter while fostering deep, delightful communal connection.

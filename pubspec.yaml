@@ -32,6 +32,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
   serverpod_client: ^4.0.4
   sanctuary_server_client:
     path: sanctuary_server/sanctuary_server_client

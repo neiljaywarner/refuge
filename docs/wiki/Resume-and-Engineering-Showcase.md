@@ -3,8 +3,8 @@
 > **Engineering Leadership Overview**:
 > * **Role**: Lead Architect & Principal Full-Stack Engineer
 > * **Project**: Refuge — Calm-Tech Digital Community Platform
-> * **Core Technologies**: Dart 3.13, Flutter 3, Serverpod 4 (`^4.0.4`), PostgreSQL 16, Redis 7, Serverpod Cloud (`scloud`), Serverpod Insights macOS App, Docker, WebSockets, ADB Hardware Automation, BDD Testing.
-> * **Deliverables**: Live Web App, Live Serverpod Cloud Backend, Android Release APK, 21/21 Test Suite, Dual-Device Hardware Video Verification.
+> * **Core Technologies**: Dart 3.13, Flutter 3, flutter_riverpod 2.6, Serverpod 4 (`^4.0.4`), PostgreSQL 16, Redis 7, Serverpod Cloud (`scloud`), Serverpod Insights macOS App, Docker, WebSockets, ADB Hardware Automation, BDD Testing.
+> * **Deliverables**: Live Web App, Live Serverpod Cloud Backend, Android Release APK, 26/26 Test Suite (Riverpod, Unit, Widget, BDD), Dual-Device Hardware Video Verification.
 
 ---
 
@@ -90,8 +90,9 @@ Unlike projects tested solely on emulators or mocked environments, Sanctuary was
 
 * **Conventional Commits & Clean PR Flow**: 10 completed pull requests (#8 through #16, #18) linked to issues #1 through #7, #17.
 * **Zero Analyzer Warnings**: Strict adherence to Effective Dart guidelines; 0 issues on `flutter analyze` and `dart analyze`.
-* **21 / 21 Test Coverage**:
+* **26 / 26 Test Coverage**:
   * Unit tests covering post modeling, immutability, and atomic reactions.
+  * Riverpod architectural tests (`ProviderContainer`, state notifiers, stream providers, and reactive filters).
   * Widget tests verifying theme propagation, space navigation, calm-tech meme gallery, and composer reset.
   * BDD feature tests verifying human-readable acceptance scenarios.
 

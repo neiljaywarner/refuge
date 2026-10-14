@@ -108,22 +108,30 @@ void main() {
       (WidgetTester tester) async {
         await pumpSanctuary(tester);
 
-        // When I tap 'Dark'
+        // When I tap 'Dark' via Sensory Themes menu
+        await tester.tap(find.byTooltip('Sensory Themes'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Dark'));
         await tester.pumpAndSettle();
         expect(find.text('Sanctuary'), findsOneWidget);
 
-        // When I tap 'Contrast'
+        // When I tap 'Contrast' via Sensory Themes menu
+        await tester.tap(find.byTooltip('Sensory Themes'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Contrast'));
         await tester.pumpAndSettle();
         expect(find.text('Sanctuary'), findsOneWidget);
 
-        // When I tap 'Clean'
+        // When I tap 'Clean' via Sensory Themes menu
+        await tester.tap(find.byTooltip('Sensory Themes'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Clean'));
         await tester.pumpAndSettle();
         expect(find.text('Sanctuary'), findsOneWidget);
 
-        // When I tap 'Sage'
+        // When I tap 'Sage' via Sensory Themes menu
+        await tester.tap(find.byTooltip('Sensory Themes'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Sage'));
         await tester.pumpAndSettle();
         expect(find.text('Sanctuary'), findsOneWidget);
@@ -135,7 +143,9 @@ void main() {
       (WidgetTester tester) async {
         await pumpSanctuary(tester);
 
-        // Tap Contrast mode
+        // Tap Contrast mode via Sensory Themes menu
+        await tester.tap(find.byTooltip('Sensory Themes'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Contrast'));
         await tester.pumpAndSettle();
 
