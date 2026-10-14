@@ -2,15 +2,15 @@
 
 > **Engineering Leadership Overview**:
 > * **Role**: Lead Architect & Principal Full-Stack Engineer
-> * **Project**: Sanctuary (Refuge) — Calm-Tech Digital Community Platform
-> * **Core Technologies**: Dart 3.13, Flutter 3, Serverpod 4 (`^4.0.4`), PostgreSQL 16, Redis 7, Serverpod Cloud (`scloud`), Docker, WebSockets, ADB Hardware Automation, BDD Testing.
-> * **Deliverables**: Live Web App, Live Serverpod Cloud Backend, Android Release APK, 20/20 Test Suite, Dual-Device Hardware Video Verification.
+> * **Project**: Refuge — Calm-Tech Digital Community Platform
+> * **Core Technologies**: Dart 3.13, Flutter 3, Serverpod 4 (`^4.0.4`), PostgreSQL 16, Redis 7, Serverpod Cloud (`scloud`), Serverpod Insights macOS App, Docker, WebSockets, ADB Hardware Automation, BDD Testing.
+> * **Deliverables**: Live Web App, Live Serverpod Cloud Backend, Android Release APK, 21/21 Test Suite, Dual-Device Hardware Video Verification.
 
 ---
 
 ## 🎯 Executive Engineering Summary
 
-Sanctuary is a production-grade demonstration of **full-stack unified Dart architecture**, replacing costly, fragmented legacy community platforms with an integrated, typed, low-latency solution.
+Refuge is a production-grade demonstration of **full-stack unified Dart architecture**, replacing costly, fragmented legacy community platforms with an integrated, typed, low-latency solution.
 
 As lead architect, Neil Warner designed and executed the entire system lifecycle:
 1. **Business & Unit Economics**: Eliminated a **~$1,500/year ($130/month)** SaaS overhead for a faith-based non-profit ([Belong on the Spectrum](https://www.belongonthespectrum.com/)), replacing it with a self-hostable Serverpod 4 compute stack costing **<$5/month** (a **96% operating cost reduction**).
@@ -88,11 +88,11 @@ Unlike projects tested solely on emulators or mocked environments, Sanctuary was
 
 ## 📊 Rigorous Quality & Ticket-Driven Delivery
 
-* **Conventional Commits & Clean PR Flow**: 8 completed pull requests (#8 through #15) linked to issues #1 through #7.
+* **Conventional Commits & Clean PR Flow**: 10 completed pull requests (#8 through #16, #18) linked to issues #1 through #7, #17.
 * **Zero Analyzer Warnings**: Strict adherence to Effective Dart guidelines; 0 issues on `flutter analyze` and `dart analyze`.
-* **20 / 20 Test Coverage**:
+* **21 / 21 Test Coverage**:
   * Unit tests covering post modeling, immutability, and atomic reactions.
-  * Widget tests verifying theme propagation, space navigation, and composer reset.
+  * Widget tests verifying theme propagation, space navigation, calm-tech meme gallery, and composer reset.
   * BDD feature tests verifying human-readable acceptance scenarios.
 
 ---
@@ -102,9 +102,9 @@ Unlike projects tested solely on emulators or mocked environments, Sanctuary was
 | Domain | Competencies Demonstrated |
 | :--- | :--- |
 | **Frontend Architecture** | Flutter 3, Material 3, Adaptive Layouts, Custom State Management, WCAG AAA Accessibility. |
-| **Backend Engineering** | Serverpod 4, Dart Server CLI, RPC Endpoints, WebSocket Streams, Relic HTTP, Redis 7. |
+| **Backend Engineering** | Serverpod 4, Serverpod Insights macOS App, Dart Server CLI, RPC Endpoints, WebSocket Streams, Relic HTTP, Redis 7. |
 | **Database Design** | PostgreSQL 16, Relational Modeling, Composite Indexing, Database Migrations, Schema Versioning. |
-| **Cloud & DevOps** | Serverpod Cloud (`scloud`), Docker Containerization, Firebase Hosting, SSL/TLS, CI/CD. |
+| **Cloud & DevOps** | Serverpod Cloud (`scloud`), Serverpod Insights Diagnostics, Docker Containerization, Firebase Hosting, SSL/TLS, CI/CD. |
 | **Mobile Hardware** | Android SDK, ADB Shell Automation, Video Screen Recording, Native Device Profiling. |
 | **Quality Engineering** | Test-Driven Development (TDD), Behavior-Driven Development (BDD), Unit & Widget Testing. |
 | **Product Leadership** | Calm-Tech Design, Sensory Accommodation, Cost Engineering, Non-Profit Solution Architecture. |
