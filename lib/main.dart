@@ -30,6 +30,5 @@ export 'src/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final repository = PostRepositoryFactory.create();
-  runApp(SanctuaryApp(repository: repository));
+  runApp(SanctuaryApp(repository: PostRepositoryFactory.create()));
 }

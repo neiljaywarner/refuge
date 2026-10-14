@@ -40,10 +40,8 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
   String? _legacyQuietDigestMessage;
   Stream<List<Post>>? _legacyPostStream;
 
-  PostRepository get _activeRepository {
-    if (widget.repository != null) return widget.repository!;
-    return ref.read(postRepositoryProvider);
-  }
+  PostRepository get _activeRepository =>
+      widget.repository ?? ref.read(postRepositoryProvider);
 
   @override
   void initState() {
@@ -78,20 +76,19 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
     required String content,
     required String toneTag,
     String? specialInterestTag,
-  }) async {
-    final newPost = Post(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      authorName: 'Fellowship Member',
-      spaceKey: _selectedSpace,
-      toneTag: toneTag,
-      specialInterestTag: specialInterestTag,
-      content: content,
-      timestamp: DateTime.now(),
-      reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
-    );
-
-    await _activeRepository.createPost(newPost);
-  }
+  }) async =>
+      _activeRepository.createPost(
+        Post(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          authorName: 'Fellowship Member',
+          spaceKey: _selectedSpace,
+          toneTag: toneTag,
+          specialInterestTag: specialInterestTag,
+          content: content,
+          timestamp: DateTime.now(),
+          reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
+        ),
+      );
 
   void _setSensoryMode(SensoryMode mode) {
     if (widget.themeNotifier != null) {
@@ -101,12 +98,8 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
     }
   }
 
-  SensoryMode get _currentMode {
-    if (widget.themeNotifier != null) {
-      return widget.themeNotifier!.mode;
-    }
-    return ref.watch(sensoryThemeModeProvider);
-  }
+  SensoryMode get _currentMode =>
+      widget.themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
 
   @override
   Widget build(BuildContext context) {

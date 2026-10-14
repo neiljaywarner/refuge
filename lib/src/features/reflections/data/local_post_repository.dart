@@ -72,14 +72,11 @@ class LocalPostRepository implements PostRepository {
     _notify();
   }
 
-  void _notify() {
-    _controller.add(List.unmodifiable(_store));
-  }
-
-  @override
-  Future<List<Post>> getPosts({required String spaceKey}) async {
-    return _store.where((p) => p.spaceKey == spaceKey).toList();
-  }
+  void _notify() => _controller.add(List.unmodifiable(_store));
+ 
+   @override
+   Future<List<Post>> getPosts({required String spaceKey}) async =>
+       _store.where((p) => p.spaceKey == spaceKey).toList();
 
   @override
   Future<Post> createPost(Post post) async {

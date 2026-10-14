@@ -7,28 +7,16 @@ enum BackendMode { local, serverpod, sqlite }
 
 BackendMode get configuredBackendMode {
   const backend = String.fromEnvironment('BACKEND', defaultValue: 'local');
-  switch (backend.toLowerCase()) {
-    case 'serverpod':
-      return BackendMode.serverpod;
-    case 'sqlite':
-    case 'postgres':
-    case 'docker':
-      return BackendMode.sqlite;
-    case 'local':
-    default:
-      return BackendMode.local;
-  }
+  return switch (backend.toLowerCase()) {
+    'serverpod' => BackendMode.serverpod,
+    'sqlite' || 'postgres' || 'docker' => BackendMode.sqlite,
+    _ => BackendMode.local,
+  };
 }
 
 class PostRepositoryFactory {
-  static PostRepository create() {
-    final mode = configuredBackendMode;
-    switch (mode) {
-      case BackendMode.serverpod:
-        return ServerpodPostRepository();
-      case BackendMode.sqlite:
-      case BackendMode.local:
-        return LocalPostRepository();
-    }
-  }
+  static PostRepository create() => switch (configuredBackendMode) {
+        BackendMode.serverpod => ServerpodPostRepository(),
+        BackendMode.sqlite || BackendMode.local => LocalPostRepository(),
+      };
 }

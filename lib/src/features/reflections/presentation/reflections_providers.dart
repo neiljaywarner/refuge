@@ -9,17 +9,17 @@ final activeFilterProvider = StateProvider<String>((ref) => 'All');
 
 /// StreamProvider that yields posts for a given fellowship space.
 final postsStreamProvider =
-    StreamProvider.autoDispose.family<List<Post>, String>((ref, spaceKey) {
-  final repository = ref.watch(postRepositoryProvider);
-  return repository.watchPosts(spaceKey: spaceKey);
-});
+    StreamProvider.autoDispose.family<List<Post>, String>(
+  (ref, spaceKey) =>
+      ref.watch(postRepositoryProvider).watchPosts(spaceKey: spaceKey),
+);
 
 /// FutureProvider that fetches the server-computed QuietDigest summary for a given space.
 final quietDigestProvider =
-    FutureProvider.autoDispose.family<String?, String>((ref, spaceKey) {
-  final repository = ref.watch(postRepositoryProvider);
-  return repository.getQuietDigest(spaceKey: spaceKey);
-});
+    FutureProvider.autoDispose.family<String?, String>(
+  (ref, spaceKey) =>
+      ref.watch(postRepositoryProvider).getQuietDigest(spaceKey: spaceKey),
+);
 
 /// Convenience provider returning the stream of posts for the currently active space.
 final currentSpacePostsProvider =

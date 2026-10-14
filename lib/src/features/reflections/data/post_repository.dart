@@ -15,8 +15,8 @@ abstract class PostRepository {
 
 /// Riverpod Provider for accessing the active PostRepository instance.
 /// Must be overridden in ProviderScope at app root or in widget tests.
-final postRepositoryProvider = Provider<PostRepository>((ref) {
-  throw UnimplementedError(
+final postRepositoryProvider = Provider<PostRepository>(
+  (ref) => throw UnimplementedError(
     'postRepositoryProvider must be initialized in ProviderScope overrides',
-  );
-});
+  ),
+);

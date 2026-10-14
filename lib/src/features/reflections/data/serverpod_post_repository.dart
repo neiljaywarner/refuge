@@ -33,27 +33,18 @@ class ServerpodPostRepository implements PostRepository {
               ),
         );
 
-  String _mapSpaceKey(String key) {
-    switch (key) {
-      case 'prayer':
-        return 'prayer_care';
-      case 'study':
-        return 'bible_study';
-      case 'special_interests':
-        return 'special_interests';
-      case 'general':
-        return 'main_hall';
-      case 'announcements':
-        return 'quiet_room';
-      default:
-        return key;
-    }
-  }
+  String _mapSpaceKey(String key) => switch (key) {
+        'prayer' => 'prayer_care',
+        'study' => 'bible_study',
+        'special_interests' => 'special_interests',
+        'general' => 'main_hall',
+        'announcements' => 'quiet_room',
+        _ => key,
+      };
 
   @override
-  Future<List<Post>> getPosts({required String spaceKey}) async {
-    return _fallback.getPosts(spaceKey: spaceKey);
-  }
+  Future<List<Post>> getPosts({required String spaceKey}) =>
+      _fallback.getPosts(spaceKey: spaceKey);
 
   @override
   Future<Post> createPost(Post post) async {

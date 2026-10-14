@@ -28,23 +28,19 @@ class _SanctuaryAppState extends State<SanctuaryApp> {
   final ThemeNotifier _themeNotifier = ThemeNotifier();
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [
-        postRepositoryProvider.overrideWithValue(widget.repository),
-        ...?widget.overrides,
-      ],
-      child: ListenableBuilder(
-        listenable: _themeNotifier,
-        builder: (context, _) {
-          return _SanctuaryAppContent(
+  Widget build(BuildContext context) => ProviderScope(
+        overrides: [
+          postRepositoryProvider.overrideWithValue(widget.repository),
+          ...?widget.overrides,
+        ],
+        child: ListenableBuilder(
+          listenable: _themeNotifier,
+          builder: (context, _) => _SanctuaryAppContent(
             repository: widget.repository,
             themeNotifier: _themeNotifier,
-          );
-        },
-      ),
-    );
-  }
+          ),
+        ),
+      );
 }
 
 class _SanctuaryAppContent extends ConsumerWidget {
@@ -57,17 +53,13 @@ class _SanctuaryAppContent extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mode = themeNotifier.mode;
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Sanctuary Digital Clubhouse',
-      theme: SensoryThemeData.getTheme(mode),
-      home: SanctuaryHomeScreen(
-        repository: repository,
-        themeNotifier: themeNotifier,
-      ),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Sanctuary Digital Clubhouse',
+        theme: SensoryThemeData.getTheme(themeNotifier.mode),
+        home: SanctuaryHomeScreen(
+          repository: repository,
+          themeNotifier: themeNotifier,
+        ),
+      );
 }

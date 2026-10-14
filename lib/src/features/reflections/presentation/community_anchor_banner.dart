@@ -14,8 +14,7 @@ class CommunityAnchorBanner extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -102,5 +101,4 @@ class CommunityAnchorBanner extends StatelessWidget {
         ],
       ),
     );
-  }
 }
