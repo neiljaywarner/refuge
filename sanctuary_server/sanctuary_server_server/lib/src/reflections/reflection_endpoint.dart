@@ -11,6 +11,18 @@ class ReflectionEndpoint extends Endpoint {
     'Giving Thanks',
     'Vulnerable Sharing',
     'Quiet Reflection',
+    'Bible Deep-Dive',
+    'Special Interest Infodump',
+    'Autism & Faith Meme',
+    'Seeking Prayer & Care',
+    '[Prayer Request]',
+    '[Comfort Only]',
+    '[Bible Deep-Dive]',
+    '[Special Interest Infodump]',
+    '[Autism & Faith Meme]',
+    '[Giving Thanks]',
+    '[Question]',
+    '[Resource]',
   };
 
   /// Valid qualitative reaction keys.
@@ -19,6 +31,7 @@ class ReflectionEndpoint extends Endpoint {
     'standingWith',
     'peace',
     'encouraged',
+    'relatable',
   };
 
   /// Disallowed urgency keywords to enforce calm-tech standard on the backend.
@@ -56,7 +69,8 @@ class ReflectionEndpoint extends Endpoint {
       content: cleanContent,
       createdAt: DateTime.now().toUtc(),
       prayingCount: post.prayingCount < 0 ? 0 : post.prayingCount,
-      standingWithCount: post.standingWithCount < 0 ? 0 : post.standingWithCount,
+      standingWithCount:
+          post.standingWithCount < 0 ? 0 : post.standingWithCount,
       peaceCount: post.peaceCount < 0 ? 0 : post.peaceCount,
       encouragedCount: post.encouragedCount < 0 ? 0 : post.encouragedCount,
     );
@@ -97,7 +111,7 @@ class ReflectionEndpoint extends Endpoint {
       peaceCount: reactionKey == 'peace'
           ? existing.peaceCount + 1
           : existing.peaceCount,
-      encouragedCount: reactionKey == 'encouraged'
+      encouragedCount: reactionKey == 'encouraged' || reactionKey == 'relatable'
           ? existing.encouragedCount + 1
           : existing.encouragedCount,
     );
@@ -166,6 +180,7 @@ class ReflectionEndpoint extends Endpoint {
     final totalReflections = posts.length;
     var totalAffirmations = 0;
     final intentCounts = <String, int>{};
+    final specialInterestCounts = <String, int>{};
 
     for (final p in posts) {
       totalAffirmations += p.prayingCount +
@@ -174,6 +189,11 @@ class ReflectionEndpoint extends Endpoint {
           p.encouragedCount;
 
       intentCounts[p.intentTag] = (intentCounts[p.intentTag] ?? 0) + 1;
+
+      if (p.specialInterestTag != null && p.specialInterestTag!.isNotEmpty) {
+        specialInterestCounts[p.specialInterestTag!] =
+            (specialInterestCounts[p.specialInterestTag!] ?? 0) + 1;
+      }
     }
 
     var predominant = 'Quiet Reflection';
@@ -185,22 +205,36 @@ class ReflectionEndpoint extends Endpoint {
       }
     });
 
-    final summary = totalReflections == 0
+    String? featuredSpecialInterest;
+    var maxInterestCount = 0;
+    specialInterestCounts.forEach((interest, count) {
+      if (count > maxInterestCount) {
+        maxInterestCount = count;
+        featuredSpecialInterest = interest;
+      }
+    });
+
+    var summary = totalReflections == 0
         ? 'A quiet, unhurried space awaiting the first community reflection.'
         : 'Gathered in peace: $totalReflections reflections shared with '
             '$totalAffirmations care affirmations. Leading posture: "$predominant".';
+
+    if (featuredSpecialInterest != null) {
+      summary = '$summary Special Interest: $featuredSpecialInterest.';
+    }
 
     return QuietDigest(
       spaceKey: spaceKey,
       totalReflections: totalReflections,
       totalCareAffirmations: totalAffirmations,
       predominantIntent: predominant,
+      featuredSpecialInterest: featuredSpecialInterest,
       summaryMessage: summary,
       generatedAt: DateTime.now().toUtc(),
     );
   }
 
-  /// Seeds 4 realistic fellowship reflections across spaces on first boot.
+  /// Seeds realistic fellowship reflections across spaces on first boot.
   Future<void> _seedInitialReflectionsIfEmpty(
     Session session,
     String spaceKey,
@@ -214,7 +248,8 @@ class ReflectionEndpoint extends Endpoint {
             'Sitting with families in intensive care this morning. '
             'Holding space for grief without rushing to fix it. '
             'Praying for quiet peace in anxious rooms.',
-        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 42)),
+        createdAt:
+            DateTime.now().toUtc().subtract(const Duration(minutes: 42)),
         prayingCount: 7,
         standingWithCount: 5,
         peaceCount: 12,
@@ -234,17 +269,31 @@ class ReflectionEndpoint extends Endpoint {
         encouragedCount: 6,
       ),
       ReflectionPost(
-        authorName: 'Hannah & Caleb',
-        spaceKey: 'gratitude',
-        intentTag: 'Giving Thanks',
+        authorName: 'Nathan K. (Texas)',
+        spaceKey: 'special_interests',
+        intentTag: '[Autism & Faith Meme]',
+        specialInterestTag: 'Church Acoustics',
         content:
-            'Celebrated our son\'s first seizure-free month today. '
-            'Deeply thankful for everyone here who held us in prayer.',
-        createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 5)),
-        prayingCount: 15,
+            'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
+        createdAt:
+            DateTime.now().toUtc().subtract(const Duration(minutes: 15)),
+        prayingCount: 4,
         standingWithCount: 8,
-        peaceCount: 11,
-        encouragedCount: 24,
+        peaceCount: 8,
+        encouragedCount: 18,
+      ),
+      ReflectionPost(
+        authorName: 'Sarah L. (Oxford)',
+        spaceKey: 'bible_study',
+        intentTag: '[Bible Deep-Dive]',
+        specialInterestTag: 'Markan Chiasms',
+        content:
+            'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
+        createdAt: DateTime.now().toUtc().subtract(const Duration(hours: 1)),
+        prayingCount: 7,
+        standingWithCount: 9,
+        peaceCount: 9,
+        encouragedCount: 14,
       ),
       ReflectionPost(
         authorName: 'Marcus (Ministry Fellow)',
