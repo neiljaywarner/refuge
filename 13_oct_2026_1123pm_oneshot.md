@@ -7,6 +7,7 @@
 
 ### 🔗 Quick Navigation Links
 - 🌐 **Live Web Demo (Firebase CDN)**: [https://ministry-demos--sanctuary-cnf3fnh7.web.app](https://ministry-demos--sanctuary-cnf3fnh7.web.app)
+- 🏆 **Hackathon Submission Packet**: [`docs/submission_packet/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/) ([README](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/README.md), [Checklist](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/CHECKLIST.md), [Video Script](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/VIDEO_SCRIPT_AND_STORYBOARD.md), [Devpost Draft](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/DEVPOST_SUBMISSION_DRAFT.md), [Non-Technical Guide](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/NON_TECHNICAL_CONTRIBUTOR_GUIDE.md), [FAQ](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/FAQ.md))
 - 📊 **Competitor & Landscape Analysis**: [`docs/COMPETITOR_ANALYSIS.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/COMPETITOR_ANALYSIS.md)
 - 📋 **Product Requirements Document (PRD)**: [`docs/PRD.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/PRD.md)
 - 📘 **Integration Guide**: [`serverpod_integration.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/serverpod_integration.md)
@@ -21,13 +22,13 @@
 ```
 ========================================================================================
 [ HACKATHON SUBMISSION READINESS THERMOMETER ]
-[███████████████████████████████░░░░░░░░░░░░] 70.6% WEIGHTED OVERALL READINESS
+[████████████████████████████████░░░░░░░░░░░] 71.4% WEIGHTED OVERALL READINESS
 Target: 100% Grand Prize Submission Ready by Tuesday Night
-Status: Client Verified (11/11 Tests) + Live Firebase CDN Web Demo + PRD + Docker/Postgres
-Pending: Backend Live Wireup + Multi-Platform Video/Screenshot Media Artifacts
+Status: Client Verified (11/11 Tests) + Live Firebase CDN + Turnkey Submission Packet
+Pending: Serverpod Live Wireup + Multi-Platform Video/Screenshot Media Artifacts
 ========================================================================================
 ```
-**Last Updated**: Monday, October 13, 2026 at 11:59 PM CDT *(Automated Dog Walk Session Update)*
+**Last Updated**: Tuesday, October 14, 2026 at 12:12 AM CDT *(Automated Dog Walk Session Update)*
 
 ### Granular Category Breakdown & Judging Criteria Weights
 
@@ -38,14 +39,14 @@ Pending: Backend Live Wireup + Multi-Platform Video/Screenshot Media Artifacts
 | **3. Automated Testing & Reliability**<br>*(Quality Gate / Defect Prevention)* | 15% | **85%** | **12.75%** | ✅ 11/11 widget & repository unit tests passing<br>✅ Fast 3-4s execution; zero flaky timeouts<br>⏳ E2E driver / smoke suite |
 | **4. Serverpod 4 Backend & Database**<br>*(Core Hackathon Requirement / StarGuide)* | 25% | **35%** | **8.75%** | ✅ PostgreSQL 16 & Redis 7 active in Docker<br>✅ `serverpod_cli 4.0.4` verified on PATH<br>✅ `post.spy.yaml` & `post_endpoint.dart` pre-staged<br>⏳ `serverpod create` & live stream wireup (Lunch/Night sprint) |
 | **5. Multi-Platform Verification & Media Artifacts**<br>*(Screenshots / Screen Records / Demos)* | 15% | **50%** | **7.5%** | ✅ Live Web Prototype Deployed on Firebase CDN ([Demo](https://ministry-demos--sanctuary-cnf3fnh7.web.app))<br>✅ Web release bundle compiled (`build/web`)<br>⏳ macOS app screenshot capture<br>⏳ iOS Simulator / Android device video recording<br>⏳ Marionette automated headless Chromium session |
-| **6. Documentation, Submission & Pitch**<br>*(README / Architecture / Video Script)* | 10% | **88%** | **8.8%** | ✅ Public GitHub repo with initial commit<br>✅ Competitor Analysis ([`docs/COMPETITOR_ANALYSIS.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/COMPETITOR_ANALYSIS.md))<br>✅ Product Requirements Document ([`docs/PRD.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/PRD.md))<br>✅ Comprehensive `serverpod_integration.md`<br>✅ 4 ADRs & Non-technical Team Wiki<br>⏳ 2-minute hackathon pitch video & demo script |
-| **TOTAL WEIGHTED READINESS** | **100%** | — | **70.6%** | **Solid Foundation Built; Morning/Lunch Sprint will bridge Backend & Media to 100%** |
+| **6. Documentation, Submission & Pitch**<br>*(README / Architecture / Video Script)* | 10% | **96%** | **9.6%** | ✅ Public GitHub repo with initial commit<br>✅ Submission Packet ([`docs/submission_packet/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/))<br>✅ Video Script & Storyboard, Devpost Draft, Checklist, FAQ<br>✅ Competitor Analysis & Product Requirements Document (PRD)<br>✅ 4 ADRs & Non-technical Team Wiki<br>⏳ Final 2-minute video recording & upload |
+| **TOTAL WEIGHTED READINESS** | **100%** | — | **71.4%** | **Solid Foundation Built; Morning/Lunch Sprint will bridge Backend & Media to 100%** |
 
 ---
 
 ## 1. TL;DR
 
-- **Honest 66.3% Readiness**: Rather than an inflated number, we use a conservative weighted rubric matching the hackathon judging criteria.
+- **Honest 71.4% Readiness**: Rather than an inflated number, we use a conservative weighted rubric matching the hackathon judging criteria. Reflects live Firebase CDN deployment and turnkey submission packet.
 - **Client & Testing 100% Solid**: Pure Flutter calm-tech client is compiling cleanly, formatted, 0 warnings (`flutter analyze`), and thoroughly tested (11/11 tests pass in 4s).
 - **Backend Infrastructure Live**: Docker Desktop installed and running; PostgreSQL 16 (`sanctuary_postgres` on port 8090) and Redis 7 (`sanctuary_redis` on port 8091) active.
 - **Serverpod CLI 4.0.4 Active**: `serverpod_cli 4.0.4` activated globally; verified in interactive and non-interactive shells.

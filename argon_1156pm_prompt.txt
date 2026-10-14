@@ -1,0 +1,58 @@
+# 🌿 Sanctuary Web Prototype — Argon Web Verification Prompt
+# Generated: October 14, 2026 at 12:03 AM CDT
+# Target URL: https://ministry-demos--sanctuary-cnf3fnh7.web.app
+
+You are a Senior Product & UX Quality Assurance Specialist evaluating the live web prototype for "Sanctuary", a calm-tech fellowship platform built for the Serverpod Hackathon.
+
+Please navigate to:
+https://ministry-demos--sanctuary-cnf3fnh7.web.app
+
+Inspect and evaluate the live application against the following calm-tech and product criteria:
+
+### 1. First Impressions & Calm-Tech Aesthetics
+- Does the interface feel peaceful, unhurried, and distinct from dopamine-engineered feeds (like Discord, Slack, or X)?
+- Confirm that there are ZERO red notification badges, zero alert counters, and zero flashing elements.
+- Verify typography hierarchy and gentle organic spacing.
+
+### 2. Sensory Modes (Theming & Accessibility)
+- In the top header bar, find the Sensory Mode dropdown selector.
+- Test all four sensory modes:
+  1. Sage (Calm botanical green #4A6B5D)
+  2. Clean Slate (Minimal high-readability daylight #FFFFFF)
+  3. Monastic Dark (Gentle nocturnal OLED #1A1C1B)
+  4. High Contrast (WCAG AAA compliant deep contrast #000000 / #FFFF00)
+- Verify smooth palette transitions and clear contrast ratios across text.
+
+### 3. Fellowship Spaces Navigation
+- Navigate between the fellowship spaces in the sidebar/tabs:
+  - 🌿 Main Hall (General community fellowship)
+  - 🕯️ Quiet Room (Contemplative & silence-oriented)
+  - 🕊️ Prayer & Care (Intercession & support)
+  - 📖 Gratitude Journal (Thanksgiving & shared joys)
+- Confirm that the stream updates smoothly to show posts matching the selected space.
+
+### 4. Intent-Driven Reflection Creation
+- Locate the "Share a Reflection" composer card.
+- Select an Intent Tag (e.g. "Seeking Wisdom", "Giving Thanks", "Vulnerable Sharing", "Quiet Reflection").
+- Enter a short reflection and click "Publish Reflection".
+- Verify that the reflection immediately appears at the top of the feed with your selected intent tag and no engagement gamification.
+
+### 5. Qualitative Care Reactions (Not "Likes")
+- Find a reflection in the feed.
+- Click on the qualitative affirmation actions:
+  - "🙏 Praying"
+  - "🤍 Standing With"
+  - "🕊️ Peace"
+  - "🌱 Encouraged"
+- Confirm that the count increments calmly without explosion effects, confetti, or sounds.
+
+### 6. Mobile & Desktop Responsiveness
+- Test the viewport at 375px (iPhone mobile width) and 1280px+ (desktop).
+- Confirm that the navigation collapses cleanly and content remains centered with comfortable reading line length (max ~680px for post content).
+
+### 7. Deliverable Output
+Provide a concise 1-paragraph summary score (A/B/C) on:
+- Visual calmness & typography
+- Usability & interaction smoothness
+- Readiness for partner & judge demo
+- Any suggested polish for tomorrow's final submission
