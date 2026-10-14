@@ -1,11 +1,11 @@
 {
-    "name": "refuge_13oct_2026_prototype_for_serverpod_hackathon",
-    "short_name": "refuge_13oct_2026_prototype_for_serverpod_hackathon",
+    "name": "Sanctuary",
+    "short_name": "Sanctuary",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F4F7F5",
+    "theme_color": "#4A7C59",
+    "description": "Sanctuary - Calm-Tech Digital Community for Belong on the Spectrum built with Serverpod 4.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

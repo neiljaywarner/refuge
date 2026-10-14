@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refuge_13oct_2026_prototype_for_serverpod_hackathon/main.dart';
+import 'package:refuge4serverpod/main.dart';
 
 void main() {
   group('Post Model & Repository Unit Tests', () {

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.refuge_13oct_2026_prototype_for_serverpod_hackathon"
+    namespace = "com.belongonthespectrum.sanctuary"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.refuge_13oct_2026_prototype_for_serverpod_hackathon"
+        applicationId = "com.belongonthespectrum.sanctuary"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

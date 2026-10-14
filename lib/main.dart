@@ -645,13 +645,24 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildThemeChip(SensoryMode.clean, 'Clean'),
                 _buildThemeChip(SensoryMode.sage, 'Sage'),
                 _buildThemeChip(SensoryMode.charcoal, 'Dark'),
                 _buildThemeChip(SensoryMode.contrast, 'Contrast'),
+                IconButton(
+                  tooltip: 'About Sanctuary & Hackathon Credits',
+                  icon: const Icon(Icons.info_outline_rounded, size: 18),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => _showAboutSanctuaryDialog(
+                    context,
+                    primaryColor,
+                    isContrast,
+                  ),
+                ),
               ],
             ),
           ),
@@ -747,25 +758,11 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
             ),
           ),
           InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('🧩 Belong on the Spectrum'),
-                  content: const Text(
-                    'Sanctuary is the calm-tech digital community platform for Belong on the Spectrum (belongonthespectrum.com).\n\n'
-                    'Created by and for Autistic Disciples of Jesus and allies, replacing costly \$89-\$130/mo SaaS platforms with low-cost (<5\$/mo) Serverpod compute.\n\n'
-                    'Everyone brings their unique special interests, sharing Christ and Scripture as our unifying foundation.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                ),
-              );
-            },
+            onTap: () => _showAboutSanctuaryDialog(
+              context,
+              primaryColor,
+              isContrast,
+            ),
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.all(4.0),
@@ -775,6 +772,124 @@ class _SanctuaryHomeScreenState extends State<SanctuaryHomeScreen> {
                 color: isContrast ? Colors.yellow : primaryColor,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAboutSanctuaryDialog(
+    BuildContext context,
+    Color primaryColor,
+    bool isContrast,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Text('🧩', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Sanctuary (Refuge) v0.1.0',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.yellow : primaryColor,
+                    ),
+                  ),
+                  Text(
+                    'Belong on the Spectrum • belongonthespectrum.com',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isContrast
+                        ? Colors.yellow.withValues(alpha: 0.1)
+                        : primaryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isContrast
+                          ? Colors.yellow
+                          : primaryColor.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: const Text(
+                    '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."\n— Psalm 139:14',
+                    style:
+                        TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Community Purpose & Calm-Tech Moat:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '• Created by and for Autistic Disciples of Jesus and their allies.\n'
+                  '• Replaces expensive mainstream community SaaS (\$89–\$130/month) with low-cost (<\$5/month) Serverpod compute.\n'
+                  '• Zero dopamine manipulation: no red unread badges, no typing indicators, no algorithmic feeds, no notification anxiety.\n'
+                  '• Unifying Special Interest: Everyone brings their unique God-given interests while sharing Scripture & following Christ as our anchor.',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+                const Divider(height: 20),
+                const Text(
+                  'Grateful Appreciation & Hackathon Credits:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '🌟 BuilderBase: For developer cloud credits, deployment infrastructure, and sponsoring the Serverpod Hackathon.\n'
+                  '⚡ Serverpod Team & Community: For building an outstanding full-stack Dart framework with typed protocol generation and real-time streaming.\n'
+                  '🌿 Belong on the Spectrum: For inspiring our community architecture and showing that neurodiversity in the Church is a gift.',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+                const Divider(height: 20),
+                const Text(
+                  'Release Log (v0.1.0):',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '• Serverpod 4 (^4.0.4) protocol models (.spy.yaml) & ORM\n'
+                  '• Atomic PostgreSQL qualitative care affirmations\n'
+                  '• Real-time WebSocket streaming with 800ms resilient offline fallback\n'
+                  '• Server-side Quiet Digest aggregation over space reflections\n'
+                  '• 4 WCAG AAA-tested sensory modes (Sage, Clean, Dark, Contrast)\n'
+                  '• 5 Fellowship spaces with Autism & Faith Meme support\n'
+                  '• Public GitHub Repository: neiljaywarner/refuge4serverpod',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
           ),
         ],
       ),

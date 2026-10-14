@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="refuge_13oct_2026_prototype_for_serverpod_hackathon"
+        android:label="Sanctuary"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
