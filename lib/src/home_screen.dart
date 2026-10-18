@@ -195,74 +195,85 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 820),
-          child: Column(
-            children: [
-              CommunityAnchorBanner(primaryColor: primaryColor, isContrast: isContrast),
-              SpaceNavigationBar(selectedSpace: _selectedSpace, onSelectSpace: _onSelectSpace),
-              QuietDigestBanner(
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-                legacyMessage: _legacyQuietDigestMessage,
-              ),
-              ReflectionComposer(
-                selectedSpace: _selectedSpace,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-                onSubmit: _submitPost,
-              ),
-              ToneFilterRow(
-                activeFilter: _activeFilter,
-                onSelectFilter: (f) => setState(() => _activeFilter = f),
-              ),
-              Expanded(
-                child: StreamBuilder<List<Post>>(
-                  stream: _legacyPostStream,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator.adaptive());
-                    }
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        left: true,
+        right: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820),
+            child: Column(
+              children: [
+                CommunityAnchorBanner(primaryColor: primaryColor, isContrast: isContrast),
+                SpaceNavigationBar(selectedSpace: _selectedSpace, onSelectSpace: _onSelectSpace),
+                QuietDigestBanner(
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  legacyMessage: _legacyQuietDigestMessage,
+                ),
+                ReflectionComposer(
+                  selectedSpace: _selectedSpace,
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  onSubmit: _submitPost,
+                ),
+                ToneFilterRow(
+                  activeFilter: _activeFilter,
+                  onSelectFilter: (f) => setState(() => _activeFilter = f),
+                ),
+                Expanded(
+                  child: StreamBuilder<List<Post>>(
+                    stream: _legacyPostStream,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator.adaptive());
+                      }
 
-                    var posts = snapshot.data!;
-                    if (_activeFilter != 'All') {
-                      posts = posts.where((p) => p.toneTag == _activeFilter).toList();
-                    }
+                      var posts = snapshot.data!;
+                      if (_activeFilter != 'All') {
+                        posts = posts.where((p) => p.toneTag == _activeFilter).toList();
+                      }
 
-                    if (posts.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      itemCount: posts.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                      itemBuilder: (context, index) {
-                        final p = posts[index];
-                        return ReflectionCard(
-                          post: p,
-                          isContrast: isContrast,
-                          onAddReaction: (reactionType) => _activeRepository.addReaction(
-                            postId: p.id,
-                            reactionType: reactionType,
+                      if (posts.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'Space is quiet right now.\nBe the first to share an unhurried thought.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).textTheme.bodySmall?.color
+                                  ?.withValues(alpha: 0.6),
+                            ),
                           ),
                         );
-                      },
-                    );
-                  },
+                      }
+
+                      return ListView.builder(
+                        itemCount: posts.length,
+                        padding: const EdgeInsets.only(
+                          left: 12.0,
+                          right: 12.0,
+                          top: 8.0,
+                          bottom: 48.0,
+                        ),
+                        itemBuilder: (context, index) {
+                          final p = posts[index];
+                          return ReflectionCard(
+                            post: p,
+                            isContrast: isContrast,
+                            onAddReaction: (reactionType) => _activeRepository.addReaction(
+                              postId: p.id,
+                              reactionType: reactionType,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
