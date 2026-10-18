@@ -3,6 +3,45 @@ BRAND-NEW OUT-OF-THE-BOX APPLE SILICON MAC (M-SERIES) SETUP GUIDE
 Project: refuge4serverpod (Sanctuary / Belong on the Spectrum)
 ===============================================================================
 
+0. COPY-PASTE PROMPT FOR ANTIGRAVITY ON YOUR NEW MAC (DOES ~95% AUTOMATICALLY)
+-------------------------------------------------------------------------------
+Once you unbox the new Mac, install Antigravity, and download the attached
+`silicon_mac_home_and_configs.zip` into `~/Downloads`, paste this prompt into
+Antigravity:
+
+"""
+I just unboxed this brand-new Apple Silicon Mac (ARM64) and downloaded my
+migration bundle from my old Intel Mac to `~/Downloads/silicon_mac_home_and_configs.zip`.
+Please set up my entire `refuge4serverpod` Flutter + Serverpod Cloud environment:
+
+1. Extract `~/Downloads/silicon_mac_home_and_configs.zip` into `$HOME` so
+   `~/.antigravity/permissions.json`, `.serverpod`, `.config/gh`, `.gitconfig`,
+   and my shell dotfiles are restored.
+2. Patch my `.zprofile`, `.zshenv`, and `.zshrc` so all Intel paths
+   (`/usr/local/bin/brew`, `/usr/local/opt/ruby/bin`, and the old x64
+   `$HOME/flutter/bin`) are replaced with native Apple Silicon `/opt/homebrew`
+   paths.
+3. Check if Xcode Command Line Tools (`xcode-select -p`), Rosetta 2, and
+   Homebrew (`/opt/homebrew/bin/brew`) are installed. If Homebrew or Xcode CLT
+   need my sudo password in a terminal, let me know or run the installer.
+4. Install native ARM64 packages via Homebrew (NO Docker needed since we use
+   Serverpod Cloud `scloud`):
+   - Formulae: `git gh jq ffmpeg cocoapods ruby node openjdk@17`
+   - Casks: `flutter android-studio`
+5. Clone `https://github.com/neiljaywarner/refuge4serverpod.git` into
+   `~/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon`
+   and re-extract `~/Downloads/silicon_mac_home_and_configs.zip` into `$HOME`
+   so the untracked `passwords.yaml`, `sanctuary_server/.scloud`, and `.firebase`
+   land inside the cloned repo.
+6. Activate global CLIs: `serverpod_cli`, `serverpod_cloud_cli`, `firebase-tools`,
+   and `maestro`.
+7. Once Android SDK is present, install the `system-images;android-35;google_apis;arm64-v8a`
+   image and create two native `arm64-v8a` Pixel emulators (`Medium_Phone` and
+   `Pixel_8_16kb`).
+8. Run `flutter pub get` and `flutter test` in the repo and verify all tests pass
+   and `scloud` is authenticated.
+"""
+
 IMPORTANT WARNING BEFORE YOU UNBOX / BOOT THE NEW MAC:
 -------------------------------------------------------------------------------
 DO NOT use Apple Migration Assistant to copy `/usr/local`, `~/flutter`, or
@@ -14,8 +53,8 @@ Why:
    CANNOT BOOT (they require `arm64-v8a` system images), and Intel Flutter/
    Homebrew under Rosetta is 2-3x slower and causes native Pod/Gradle conflicts.
 3. Instead, set up the new Mac as a clean user (`neil`), attach
-   `silicon_mac_home_and_configs.zip` (~132 KB) to this email, and follow the
-   steps below (or run the 1-command bootstrap script included in the zip/repo).
+   `silicon_mac_home_and_configs.zip` (~146 KB) to this email, and follow the
+   steps below (or paste the Antigravity prompt above!).
 
 
 1. GIT REPOSITORIES (ALL COMMITTED & PUSHED)
