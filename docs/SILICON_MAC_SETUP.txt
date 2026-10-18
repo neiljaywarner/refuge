@@ -1,0 +1,240 @@
+===============================================================================
+BRAND-NEW OUT-OF-THE-BOX APPLE SILICON MAC (M-SERIES) SETUP GUIDE
+Project: refuge4serverpod (Sanctuary / Belong on the Spectrum)
+===============================================================================
+
+IMPORTANT WARNING BEFORE YOU UNBOX / BOOT THE NEW MAC:
+-------------------------------------------------------------------------------
+DO NOT use Apple Migration Assistant to copy `/usr/local`, `~/flutter`, or
+`~/.android/avd` from the old Mac!
+Why:
+1. Your old Mac is running `macos_x64` (Intel) Dart/Flutter, Intel Homebrew
+   (`/usr/local/bin/brew`), and `x86_64` Android Emulator images.
+2. On a brand-new Apple Silicon Mac (`arm64`), `x86_64` Android emulators
+   CANNOT BOOT (they require `arm64-v8a` system images), and Intel Flutter/
+   Homebrew under Rosetta is 2-3x slower and causes native Pod/Gradle conflicts.
+3. Instead, set up the new Mac as a clean user (`neil`), attach
+   `silicon_mac_home_and_configs.zip` (~132 KB) to this email, and follow the
+   steps below (or run the 1-command bootstrap script included in the zip/repo).
+
+
+1. GIT REPOSITORIES (ALL COMMITTED & PUSHED)
+-------------------------------------------------------------------------------
+- Main Repository:
+  https://github.com/neiljaywarner/refuge4serverpod.git
+  - `main` (commit 91599dc): Contains v0.2.0+2 release, Issue #31 SafeArea fix,
+    Serverpod Cloud (`scloud`) symlinks, live dual-Pixel demo scripts under
+    `scripts/`, and `scripts/bootstrap_new_silicon_mac.sh`.
+  - `feature/issue-31-safearea`: Pushed from `.worktrees/issue-31-safearea`.
+  - `feature/phase-2-serverpod-readiness`: Pushed to origin.
+  - `chore/silicon-mac-migration-snapshot`: Snapshot branch matching `main`.
+
+- GitHub Wiki Repository:
+  https://github.com/neiljaywarner/refuge4serverpod.wiki.git
+  - `master` (commit cdf316c): Clean and up to date on origin.
+
+
+2. ZIP ARCHIVES PREPARED ON OLD MAC (`/Users/neil/`)
+-------------------------------------------------------------------------------
+A) `/Users/neil/silicon_mac_home_and_configs.zip` (~132 KB - ATTACH TO EMAIL)
+   Contains:
+   - `bootstrap_new_silicon_mac.sh` (1-script automated setup for the new Mac)
+   - `.antigravity/permissions.json` (Antigravity terminal & filesystem allowlist)
+   - `.antigravity/argv.json` & `.antigravity-ide/argv.json`
+   - `.zshrc`, `.zprofile`, `.zshenv`, `.gitconfig`, `.bash_profile`
+   - `.serverpod/` (Serverpod CLI & Serverpod Cloud `scloud` auth/tokens)
+   - `.config/gh/` & `.config/flutter/` (GitHub CLI auth & Flutter settings)
+   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/sanctuary_server/sanctuary_server_server/config/passwords.yaml`
+   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/sanctuary_server/.scloud/`
+   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/.firebase/`
+
+B) `/Users/neil/refuge4serverpod_untracked_media_and_scratch.zip` (~47 MB)
+   (Copy via AirDrop / Google Drive / USB if needed)
+   Contains gitignored `.mp4` screen recordings, `.m4a` voiceovers, and `scratch/`
+   screenshots/logs.
+
+
+3. ZERO-TO-READY SETUP ON A BRAND-NEW BEST BUY MAC
+-------------------------------------------------------------------------------
+
+PHASE 0: macOS First-Boot Essentials (Open Terminal.app -> Cmd+Space "Terminal")
+-------------------------------------------------------------------------------
+# 1. Install Rosetta 2 (Required by a few Flutter/Android sub-binaries on M-series)
+sudo softwareupdate --install-rosetta --agree-to-license
+
+# 2. Install Xcode Command Line Tools (gives you `git`, `clang`, `make`, `unzip`)
+xcode-select --install
+# (Click "Install" on the macOS popup and wait ~2-3 minutes for it to finish)
+
+
+PHASE 1: One-Command Automated Bootstrap (OR Run Steps Manually Below)
+-------------------------------------------------------------------------------
+Download `silicon_mac_home_and_configs.zip` from your email into `~/Downloads`,
+then run:
+
+  unzip -o ~/Downloads/silicon_mac_home_and_configs.zip -d ~
+  bash ~/Users/neil/bootstrap_new_silicon_mac.sh ~/Downloads/silicon_mac_home_and_configs.zip
+
+--- OR RUN THE COMMANDS STEP-BY-STEP: ---
+
+# 1. Install Apple Silicon Native Homebrew (installs to /opt/homebrew)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# 2. Install CLI Tools & JDK 17 (needed by Gradle & Maestro)
+brew install git gh jq ffmpeg cocoapods ruby node openjdk@17
+sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+
+# 3. Install Native ARM64 GUI Apps (Flutter, Android Studio, Chrome)
+#    (Docker skipped since Serverpod Cloud `scloud` handles Postgres/Redis/API)
+brew install --cask google-chrome android-studio flutter
+
+# 4. Extract Home Configs & Antigravity Allowlist, then update Intel -> ARM64 paths
+unzip -o ~/Downloads/silicon_mac_home_and_configs.zip -d ~
+sed -i '' 's|/usr/local/bin/brew|/opt/homebrew/bin/brew|g' ~/.zprofile
+sed -i '' 's|/usr/local/opt/ruby/bin|/opt/homebrew/opt/ruby/bin|g' ~/.zshrc
+sed -i '' 's|export PATH=\$HOME/flutter/bin:\$PATH|# Using Homebrew ARM64 Flutter|g' ~/.zshenv
+source ~/.zprofile && source ~/.zshenv && source ~/.zshrc
+
+# 5. Verify GitHub CLI Auth & Clone `refuge4serverpod`
+gh auth status || gh auth login
+gh auth setup-git
+mkdir -p ~/AndroidStudioProjects
+cd ~/AndroidStudioProjects
+git clone https://github.com/neiljaywarner/refuge4serverpod.git refuge_13oct_2026_prototype_for_serverpod_hackathon
+
+# Re-extract zip so passwords.yaml, .scloud, and .firebase land inside the repo:
+unzip -o ~/Downloads/silicon_mac_home_and_configs.zip -d ~
+
+# 6. Activate Serverpod, Scloud, Firebase & Maestro CLIs
+dart pub global activate serverpod_cli
+dart pub global activate serverpod_cloud_cli
+npm install -g firebase-tools
+curl -Ls "https://get.maestro.mobile.dev" | bash
+
+
+PHASE 2: Android Studio & Native ARM64 Dual-Pixel Emulators
+-------------------------------------------------------------------------------
+1. Open **Android Studio** once from `/Applications` and complete the Standard
+   Setup Wizard (installs `~/Library/Android/sdk` + platform-tools + build-tools).
+2. In Android Studio -> **Settings (Cmd+,) -> Languages & Frameworks -> Android SDK**:
+   - **SDK Platforms tab**: Check **Android 15.0 (API 35)** and **Android 16.0 (API 36)**
+     (make sure **Google APIs ARM 64 v8a System Image** is selected).
+   - **SDK Tools tab**: Check **Android SDK Command-line Tools (latest)** and
+     click **Apply**.
+3. In Terminal, accept all Android licenses:
+     flutter doctor --android-licenses
+4. Create two native `arm64-v8a` Pixel emulators for the dual-Pixel live demo:
+     export PATH="$HOME/Library/Android/sdk/cmdline-tools/latest/bin:$HOME/Library/Android/sdk/emulator:$PATH"
+     sdkmanager "system-images;android-35;google_apis;arm64-v8a"
+     avdmanager create avd -n Medium_Phone -k "system-images;android-35;google_apis;arm64-v8a" -d "pixel_8" --force
+     avdmanager create avd -n Pixel_8_16kb -k "system-images;android-35;google_apis;arm64-v8a" -d "pixel_8" --force
+
+
+PHASE 3: Verify Everything Works
+-------------------------------------------------------------------------------
+  cd ~/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon
+  flutter doctor -v
+  flutter pub get
+  flutter test
+
+
+4. ANTIGRAVITY ALLOWLIST (`~/.antigravity/permissions.json`)
+-------------------------------------------------------------------------------
+Restored automatically by `silicon_mac_home_and_configs.zip`, or paste directly
+into `~/.antigravity/permissions.json`:
+
+{
+  "$schema": "https://antigravity.google/schemas/permissions.json",
+  "terminal": {
+    "allow": [
+      "git status*",
+      "git diff*",
+      "git branch*",
+      "git checkout*",
+      "git switch*",
+      "git add*",
+      "git rm*",
+      "git commit*",
+      "git merge*",
+      "git stash*",
+      "git worktree add*",
+      "git worktree list*",
+      "git worktree remove*",
+      "git worktree prune*",
+      "git fetch*",
+      "git pull*",
+      "git push origin *",
+      "git push -u origin *",
+      "git push --set-upstream origin *",
+      "flutter pub get*",
+      "flutter pub run *",
+      "flutter test*",
+      "flutter analyze*",
+      "flutter build *",
+      "flutter clean*",
+      "dart format*",
+      "dart analyze*",
+      "dart fix --apply*",
+      "dart run build_runner build*",
+      "dart run build_runner watch*"
+    ],
+    "deny": [
+      "git push * -f*",
+      "git push * --force*",
+      "git push origin main*",
+      "git push origin master*",
+      "git push * --delete main",
+      "git push * --delete master",
+      "git reset --hard*",
+      "git clean -fdx*"
+    ]
+  },
+  "filesystem": {
+    "allow": [
+      "read:**",
+      "write:**"
+    ],
+    "deny": [
+      "write:.git/config",
+      "delete:.git/**",
+      "write:*.keystore",
+      "write:*.jks",
+      "write:*.p12",
+      "write:*.mobileprovision"
+    ]
+  }
+}
+
+
+5. CLEAN APPLE SILICON DOTFILES (`~/.zprofile`, `~/.zshenv`, `~/.zshrc`)
+-------------------------------------------------------------------------------
+# ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.docker/bin"
+
+# ~/.zshenv
+export PATH="$HOME/.gem/bin:$HOME/.pub-cache/bin:$PATH"
+
+# ~/.zshrc
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+export PATH="$PATH:$HOME/.maestro/bin"
+export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
+
+
+6. LIVE CLOUD ENDPOINTS & DEPLOYMENT COMMANDS
+-------------------------------------------------------------------------------
+- Serverpod Cloud API:
+  https://sanctuary-api-at652301a.scloud.app/
+  Deploy command (from `sanctuary_server/`):
+    scloud deploy
+
+- Firebase Web Hosting:
+  https://sanctuary-refuge-2026.web.app
+  Deploy command (from repo root):
+    flutter build web --release && firebase deploy --only hosting
+===============================================================================

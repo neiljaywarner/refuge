@@ -77,6 +77,10 @@ if [ -f "$ZIP_PATH" ]; then
 fi
 
 cd "$REPO_DIR"
+mkdir -p "$HOME/.antigravity"
+if [ ! -f "$HOME/.antigravity/permissions.json" ] && [ -f "$REPO_DIR/scripts/antigravity_permissions.json" ]; then
+  cp "$REPO_DIR/scripts/antigravity_permissions.json" "$HOME/.antigravity/permissions.json"
+fi
 flutter pub get
 flutter test
 

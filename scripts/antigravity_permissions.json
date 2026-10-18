@@ -1,0 +1,61 @@
+{
+  "$schema": "https://antigravity.google/schemas/permissions.json",
+  "terminal": {
+    "allow": [
+      "git status*",
+      "git diff*",
+      "git branch*",
+      "git checkout*",
+      "git switch*",
+      "git add*",
+      "git rm*",
+      "git commit*",
+      "git merge*",
+      "git stash*",
+      "git worktree add*",
+      "git worktree list*",
+      "git worktree remove*",
+      "git worktree prune*",
+      "git fetch*",
+      "git pull*",
+      "git push origin *",
+      "git push -u origin *",
+      "git push --set-upstream origin *",
+      "flutter pub get*",
+      "flutter pub run *",
+      "flutter test*",
+      "flutter analyze*",
+      "flutter build *",
+      "flutter clean*",
+      "dart format*",
+      "dart analyze*",
+      "dart fix --apply*",
+      "dart run build_runner build*",
+      "dart run build_runner watch*"
+    ],
+    "deny": [
+      "git push * -f*",
+      "git push * --force*",
+      "git push origin main*",
+      "git push origin master*",
+      "git push * --delete main",
+      "git push * --delete master",
+      "git reset --hard*",
+      "git clean -fdx*"
+    ]
+  },
+  "filesystem": {
+    "allow": [
+      "read:**",
+      "write:**"
+    ],
+    "deny": [
+      "write:.git/config",
+      "delete:.git/**",
+      "write:*.keystore",
+      "write:*.jks",
+      "write:*.p12",
+      "write:*.mobileprovision"
+    ]
+  }
+}
