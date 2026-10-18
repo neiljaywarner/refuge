@@ -31,8 +31,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 echo "--> Installing CLI tools via Homebrew..."
 brew install git gh jq ffmpeg cocoapods ruby node openjdk@17
 
-echo "--> Installing GUI Apps (Flutter, Android Studio, Docker, Chrome)..."
-brew install --cask google-chrome android-studio docker flutter
+echo "--> Installing GUI Apps (Flutter, Android Studio, Chrome)..."
+brew install --cask google-chrome android-studio flutter
 
 # 5. Restore Home Configs & Antigravity Allowlist if zip is in ~/Downloads
 ZIP_PATH="${1:-$HOME/Downloads/silicon_mac_home_and_configs.zip}"
@@ -85,5 +85,4 @@ echo " Bootstrap Complete!"
 echo " Next manual steps:"
 echo "  1. Open Android Studio -> SDK Manager -> Install Android SDK + Command-line Tools"
 echo "  2. Run: flutter doctor --android-licenses"
-echo "  3. Open Docker Desktop once to finish background daemon setup"
 echo "======================================================================"
