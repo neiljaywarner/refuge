@@ -4,44 +4,46 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../data/feature_voting_repository.dart';
 import '../domain/feedback_and_voting_models.dart';
 
-/// State notifier managing community feature votes in-memory (and ready for
-/// Firebase/Serverpod persistence).
+/// State notifier managing community feature votes via the pluggable
+/// [FeatureVotingRepository] (`InMemory`, `Serverpod`, `Appwrite`, or `Firebase`).
 class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
   @override
-  List<VotableFeatureItem> build() => kDefaultBelongVotableFeatures;
+  List<VotableFeatureItem> build() {
+    final repo = ref.watch(featureVotingRepositoryProvider);
+    return repo.loadInitialFeatures();
+  }
 
   void toggleVote(String featureId) {
-    state = [
-      for (final item in state)
-        if (item.id == featureId)
-          item.copyWith(
-            userVoted: !item.userVoted,
-            votes: item.userVoted ? item.votes - 1 : item.votes + 1,
-          )
-        else
-          item,
-    ];
+    final repo = ref.read(featureVotingRepositoryProvider);
+    state = repo.toggleVote(state, featureId);
   }
 
   void proposeFeature({
     required String title,
     required String description,
   }) {
-    final trimmedTitle = title.trim();
-    if (trimmedTitle.isEmpty) return;
-    final newItem = VotableFeatureItem(
-      id: 'custom-${DateTime.now().millisecondsSinceEpoch}',
-      title: trimmedTitle,
-      description: description.trim().isEmpty
-          ? 'Proposed by a Belong community member.'
-          : description.trim(),
-      stage: FeatureStage.communityIdea,
-      votes: 1,
-      userVoted: true,
+    final repo = ref.read(featureVotingRepositoryProvider);
+    state = repo.proposeFeature(
+      state,
+      title: title,
+      description: description,
     );
-    state = [...state, newItem];
+  }
+
+  Future<void> submitFeedback({
+    required FeedbackSentiment sentiment,
+    required String message,
+    String? contactEmail,
+  }) {
+    final repo = ref.read(featureVotingRepositoryProvider);
+    return repo.submitFeedback(
+      sentiment: sentiment,
+      message: message,
+      contactEmail: contactEmail,
+    );
   }
 }
 

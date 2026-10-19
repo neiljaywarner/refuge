@@ -1,0 +1,21 @@
+appId: com.belongonthespectrum.refuge
+name: "Belong on the Spectrum — 1-Tap Feature Voting & Literal 3-Intent Feedback E2E"
+tags:
+  - belong
+  - feature-voting
+  - adr-0007
+  - adr-0009
+---
+- launchApp
+- assertVisible: "Belong"
+- tapOn: "Feedback & Vote"
+- assertVisible: "Belong Roadmap & Feedback"
+- assertVisible: "Direct Messages (Msgs Tab)"
+- tapOn: "24"
+- assertVisible: "25"
+- tapOn: "Share Feedback"
+- assertVisible: "Works Great"
+- assertVisible: "Idea / Tweak"
+- assertVisible: "Bug / Confusing"
+- tapOn: "Idea / Tweak"
+- assertVisible: "What would make Belong clearer or calmer for you?"
