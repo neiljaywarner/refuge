@@ -1,86 +1,36 @@
-# 🌿 Sanctuary (Refuge): Calm-Tech Fellowship Platform
-### *Official Documentation & Community Knowledge Base*
+# 🌱 Welcome to the Belong on the Spectrum & Refuge Wiki
 
-[![Flutter 3](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
-[![Serverpod 4.0.4](https://img.shields.io/badge/Serverpod-4.0.4-blueviolet)](https://serverpod.dev)
-[![Serverpod Cloud](https://img.shields.io/badge/Serverpod%20Cloud-Active-brightgreen)](https://refuge4serverpod.serverpod.space/)
-[![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
-[![Tests Passing](https://img.shields.io/badge/Tests-20%2F20%20Passing-success)](https://github.com/neiljaywarner/refuge4serverpod/tree/main/test)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-refuge4serverpodhackathon.web.app-brightgreen)](https://refuge4serverpodhackathon.web.app)
-
-> **"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."**  
-> — *Psalm 139:14*
+**Belong on the Spectrum** ([belongonthespectrum.com](https://www.belongonthespectrum.com/), partnered with [DFW Church](https://dfwchurch.org)) is a calm, sensory-safe digital community built with and for autistic and neurodivergent adults, friends, and families.
 
 ---
 
-## 🕊️ Welcome to Sanctuary
+## 🤝 Wondering How You Can Help Tonight? (Start Here — Zero Tech Skills Needed!)
 
-**Sanctuary (Refuge)** is a custom, full-stack, calm-tech community platform created with **Flutter** and **Serverpod 4**. It was built specifically for **[Belong on the Spectrum](https://www.belongonthespectrum.com/)**, an initiative created by and for Autistic Disciples of Jesus, neurodivergent Christians, and their allies.
+👉 **[Read: How You Can Help & Copy-Paste Message for Our Current Circle App](How-You-Can-Help-Volunteer-Guide)**
 
-Mainstream community platforms (Circle, Mighty Networks, Slack, and Discord) charge small non-profits and faith communities **$89–$130/month ($1,000–$1,560/year)** and bombard users with dopamine gamification, red notification badges, and sensory overload. Sanctuary replaces this expensive, stressful model with **low-cost Serverpod 4 compute (<$5/month)** and an unshakeable calm-tech ethos.
+Whether you have **1 minute** to upvote your favorite upcoming features in the app, **3 minutes** to test adding the app to your phone's Home Screen, or **5 minutes** to post a warm "Hello" during our October 24–31 transition week, your voice shapes our new home!
 
 ---
 
-## 🧭 Audience Portals
+## 🧭 Quick Navigation for Community Members & Organizers
 
-Please select the portal that best fits your role:
-
-| Portal | Target Audience | Key Contents |
+| Guide | Who It's For | What You'll Learn |
 | :--- | :--- | :--- |
-| **[🏆 Hackathon Judges Portal](Hackathon-Judges-Portal)** | Serverpod Hackathon Evaluators | Rubric breakdown (100%), live Serverpod Cloud endpoints, `.spy.yaml` protocols, PostgreSQL schema, 20/20 test results. |
-| **[💼 Resume & Engineering Showcase](Resume-and-Engineering-Showcase)** | Hiring Managers, Recruiters & Technical Peers | Full-stack Dart architectural leadership, 96% cost reduction case study, dual-hardware mobile automation, technical portfolio overview. |
-| **[🧩 Belong Community Guide](Belong-Community-Guide)** | Autistic Believers, Pastors, Caregivers & Allies | Community anchor, Psalm 139:14 mission, 5 fellowship spaces, special interest badging, autism & faith memes, 4 sensory modes. |
-| **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)** | QA Testers, UAT Evaluators & Early Beta Users | Web & Android APK installation, persona test matrices, offline fallback verification, bug report templates. |
+| **[🤝 How You Can Help (Volunteer Guide & Circle Copy/Paste)](How-You-Can-Help-Volunteer-Guide)** | **Everyone** (Members, Welcomers, Organizers) | Ready-to-copy message for our current Circle app + 5 easy ways to help this week without writing a line of code. |
+| **[📅 October 31st Circle.so Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)** | **Non-Technical Organizers & Leaders** | How we save **~$1,000+/year** over [Circle.so Pricing](https://circle.so/pricing), why we launch by **Oct 24** for a calm 7-day overlap before **Oct 31**, and what works on Day 1. |
+| **[📱 PWA Guide: Install on Your Phone & Store Timeline](PWA-Guide-for-Members-and-Organizers)** | **Members & Organizers** | Step-by-step instructions to add Belong to your iPhone/Android Home Screen today + why we can stay on PWA for months before needing Apple/Google stores. |
+| **[🎛️ Organizer Control Without Coding (Remote Config)](Organizer-Remote-Config-Guide)** | **Community Organizers** | How to update welcome banners and feature toggles instantly using [Firebase Remote Config](https://firebase.google.com/products/remote-config) ([Watch 3-Min Video](https://www.youtube.com/watch?v=_CXXVFPO6f0)). |
+| **[🏘️ Belong Community Spaces & Guidelines](Belong-Community-Guide)** | **All Community Members** | Tour of our 6 calm spaces (*Say Hello*, *Geek Out!*, *Sensory-Friendly Living*, *Faith & Spectrum*, *Prayer & Encouragement*, and *Advocacy*). |
+| **[🌿 Calm Technology & Sensory Safety](Calm-Tech-and-Accessibility)** | **Members & Designers** | Why Belong has zero autoplay video, predictable navigation, literal feedback cards, and neurodivergent-affirming design. |
 
 ---
 
-## 🌐 Live Deployments & Verification
+## 🛠️ Engineering, Architecture Decision Records (ADRs) & Student Mentoring
 
-* 🌐 **Live Web Application**: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app)
-* ☁️ **Serverpod Cloud API Endpoint**: [https://refuge4serverpod.api.serverpod.space/](https://refuge4serverpod.api.serverpod.space/)
-* 🖥️ **Serverpod Cloud Web Landing**: [https://refuge4serverpod.serverpod.space/](https://refuge4serverpod.serverpod.space/)
-* 📊 **Serverpod Insights**: [https://refuge4serverpod.insights.serverpod.space/](https://refuge4serverpod.insights.serverpod.space/)
-* 📦 **GitHub Release v0.1.0 (APK & Demos)**: [v0.1.0 Release](https://github.com/neiljaywarner/refuge4serverpod/releases/tag/v0.1.0)
-* 📱 **Dual Pixel 9a Cloud Demos**: [Pixel Left Demo](https://github.com/neiljaywarner/refuge4serverpod/releases/download/v0.1.0/sanctuary_pixel_left_scloud.mp4) • [Pixel Right Demo](https://github.com/neiljaywarner/refuge4serverpod/releases/download/v0.1.0/sanctuary_pixel_right_scloud.mp4)
-
----
-
-## ⚡ Architectural Snapshot
-
-```mermaid
-graph TD
-    subgraph Client ["Client Layer (Flutter Multi-Platform)"]
-        UI["Sanctuary App (WCAG AAA Themes)"]
-        Repo["ServerpodPostRepository (800ms Fallback Moat)"]
-        Local["LocalPostRepository (Seeded In-Memory Data)"]
-        UI --> Repo
-        Repo -.->|Offline Fallback| Local
-    end
-
-    subgraph Cloud ["Serverpod 4 Cloud Backend (scloud)"]
-        API["ReflectionEndpoint (WSS / JSON RPC)"]
-        Filter["Calm-Tech Urgency Filter (Anti-FOMO)"]
-        Digest["QuietDigest Aggregator"]
-        Stream["session.messages Stream Engine"]
-        
-        API --> Filter
-        Filter --> Digest
-        API --> Stream
-    end
-
-    subgraph Data ["Data & State Persistence"]
-        PG[("PostgreSQL 16 (reflection_posts)")]
-        Redis[("Redis 7 Cache & Pub/Sub")]
-        API --> PG
-        Stream --> Redis
-    end
-
-    Repo ==>|WSS / HTTPS| API
-```
-
----
-
-## 📖 Additional Technical Pages
-* **[Serverpod Architecture Deep Dive](Serverpod-Architecture-Deep-Dive)**: Complete review of SPI protocols, PostgreSQL indexing, and backend validation.
-* **[Dual Pixel Cloud Demo](Dual-Pixel-Cloud-Demo)**: How we verified physical multi-device communication on T-Mobile LTE.
-* **[Calm-Tech & Accessibility](Calm-Tech-and-Accessibility)**: Cognitive ease, color psychology, and WCAG AAA compliance.
+| Technical Resource | Summary |
+| :--- | :--- |
+| **[🧭 UX Evaluation & Architecture Decision Records (ADRs 0001–0008)](UX-Evaluation-and-ADRs)** | Full index of our timestamped ADRs + our UX evaluation simplifying Selah's feedback system into **Literal 3-Intent Cards + 1-Tap WIP Feature Voting** (with backport notes for Selah). |
+| **[⚖️ Backend Evaluation: Serverpod + Firebase vs. Appwrite (`appwrite.io`)](Migrate-to-Appwrite-Evaluation)** | Honest **37signals "Getting Real"** evaluation grading the likelihood (**85% right after `v1.0`**) of migrating to Appwrite for $0/mo hosting, turnkey Google/Apple OAuth, FCM, and Realtime. |
+| **[🎓 Apprentice, Mentee & Free-Tier Token Optimization Guide](Apprentice-and-Token-Optimization-Guide)** | How students and mentees use `hooks_riverpod`, CodeWithAndrea architecture, git worktrees, BDD, and smart AI model routing without burning LLM token quotas. |
+| **[🤝 Contributor Guide & Ticket-Driven Workflow](Contributor-Guide)** | How to pick an issue, spin up a worktree branch, run tests locally, and open a clean Pull Request. |
+| **[🧪 QA, BDD & Beta Testing Guide](QA-and-Beta-Testing-Guide)** | How we verify every release with Gherkin BDD widget tests, Marionette MCP, and Patrol MCP. |
