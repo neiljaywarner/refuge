@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'src/app.dart';
 import 'src/core/config/app_flavor.dart';
+import 'src/core/firebase/community_analytics_service.dart';
+import 'src/core/observability/error_reporter_service.dart';
 import 'src/features/reflections/data/post_repository_factory.dart';
 
 // Re-export domain models, repositories, themes, and presentation components
@@ -13,6 +15,7 @@ export 'src/constants/app_theme.dart';
 export 'src/core/config/app_flavor.dart';
 export 'src/core/firebase/community_analytics_service.dart';
 export 'src/core/firebase/organizer_remote_config_service.dart';
+export 'src/core/observability/error_reporter_service.dart';
 export 'src/core/presentation/coming_soon_view.dart';
 export 'src/features/about/presentation/about_refuge_dialog.dart';
 export 'src/features/branding/domain/community_brand_config.dart';
@@ -45,6 +48,27 @@ export 'src/home_screen.dart';
 
 void bootstrapBelongApp({required AppFlavor flavor}) {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final analytics = CommunityAnalyticsService(flavor: flavor);
+  final errorReporter = ErrorReporterService(flavor: flavor, analyticsService: analytics);
+
+  // Global Flutter framework error hook
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    errorReporter.recordError(
+      details.exception,
+      details.stack,
+      reason: details.context?.toStringShort(),
+      fatal: false,
+    );
+  };
+
+  // Platform root dispatcher unhandled asynchronous error hook
+  PlatformDispatcher.instance.onError = (error, stack) {
+    errorReporter.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   // A single ProviderScope lives inside SanctuaryApp. Do not wrap it in another
   // ProviderScope: root-scoped providers (e.g. quietDigestProvider) would then
   // read the nested postRepositoryProvider override, which Riverpod rejects in
@@ -52,7 +76,11 @@ void bootstrapBelongApp({required AppFlavor flavor}) {
   runApp(
     SanctuaryApp(
       repository: PostRepositoryFactory.create(),
-      overrides: [appFlavorProvider.overrideWithValue(flavor)],
+      overrides: [
+        appFlavorProvider.overrideWithValue(flavor),
+        communityAnalyticsServiceProvider.overrideWithValue(analytics),
+        errorReporterServiceProvider.overrideWithValue(errorReporter),
+      ],
     ),
   );
 }

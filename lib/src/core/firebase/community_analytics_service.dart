@@ -45,6 +45,24 @@ class CommunityAnalyticsService {
 
   Future<void> logBottomTabSelected(String tabName) =>
       logEvent('bottom_tab_selected', parameters: {'tab': tabName});
+
+  Future<void> logScreenView(String screenName) =>
+      logEvent('screen_view', parameters: {'screen_name': screenName});
+
+  Future<void> logVoteCast(String featureId) =>
+      logEvent('vote_cast', parameters: {'feature_id': featureId});
+
+  Future<void> logFeedbackIntent(String sentimentLabel) =>
+      logEvent('feedback_intent_selected', parameters: {'sentiment': sentimentLabel});
+
+  Future<void> logReflectionPublished({required String tag, required int lengthBucket}) =>
+      logEvent('reflection_published', parameters: {
+        'tag': tag,
+        'length_bucket': lengthBucket,
+      });
+
+  Future<void> logEventRsvp({required String eventId, required String status}) =>
+      logEvent('event_rsvp', parameters: {'event_id': eventId, 'status': status});
 }
 
 final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((
