@@ -21,6 +21,10 @@ class CommunityBrandConfig {
     required this.warmGoldAccentColor,
     required this.defaultOrganizerWelcomeTitle,
     required this.defaultOrganizerWelcomeMessage,
+    this.enableFellowshipAffiliationField = false,
+    this.fellowshipAffiliationPrompt = 'Which church or fellowship do you attend?',
+    this.fellowshipAffiliationOptions = const [],
+    this.fellowshipNonMemberOption = 'I am not a member of this fellowship',
   });
 
   /// Default flagship configuration for **Belong on the Spectrum**
@@ -41,7 +45,17 @@ class CommunityBrandConfig {
       warmGoldAccentColor = const Color(0xFFC99F49),
       defaultOrganizerWelcomeTitle = 'Welcome to Belong on the Spectrum',
       defaultOrganizerWelcomeMessage =
-          'You belong here. Take your time, choose a sensory theme that feels comfortable, and introduce yourself in Start Here when you are ready.';
+          'You belong here. Take your time, choose a sensory theme that feels comfortable, and introduce yourself in Start Here when you are ready.',
+      enableFellowshipAffiliationField = true,
+      fellowshipAffiliationPrompt = 'Which ICOC church do you attend?',
+      fellowshipAffiliationOptions = const [
+        'DFW Church (Partner)',
+        'Austin Christian Church',
+        'Boston Church of Christ',
+        'Greater Long Beach Church',
+        'Other ICOC Congregation',
+      ],
+      fellowshipNonMemberOption = 'I am not a member of an ICOC church';
 
   final String tenantId;
   final String shortName;
@@ -57,6 +71,10 @@ class CommunityBrandConfig {
   final Color warmGoldAccentColor;
   final String defaultOrganizerWelcomeTitle;
   final String defaultOrganizerWelcomeMessage;
+  final bool enableFellowshipAffiliationField;
+  final String fellowshipAffiliationPrompt;
+  final List<String> fellowshipAffiliationOptions;
+  final String fellowshipNonMemberOption;
 
   CommunityBrandConfig copyWith({
     String? tenantId,
@@ -73,6 +91,10 @@ class CommunityBrandConfig {
     Color? warmGoldAccentColor,
     String? defaultOrganizerWelcomeTitle,
     String? defaultOrganizerWelcomeMessage,
+    bool? enableFellowshipAffiliationField,
+    String? fellowshipAffiliationPrompt,
+    List<String>? fellowshipAffiliationOptions,
+    String? fellowshipNonMemberOption,
   }) {
     return CommunityBrandConfig(
       tenantId: tenantId ?? this.tenantId,
@@ -91,6 +113,14 @@ class CommunityBrandConfig {
           defaultOrganizerWelcomeTitle ?? this.defaultOrganizerWelcomeTitle,
       defaultOrganizerWelcomeMessage:
           defaultOrganizerWelcomeMessage ?? this.defaultOrganizerWelcomeMessage,
+      enableFellowshipAffiliationField:
+          enableFellowshipAffiliationField ?? this.enableFellowshipAffiliationField,
+      fellowshipAffiliationPrompt:
+          fellowshipAffiliationPrompt ?? this.fellowshipAffiliationPrompt,
+      fellowshipAffiliationOptions:
+          fellowshipAffiliationOptions ?? this.fellowshipAffiliationOptions,
+      fellowshipNonMemberOption:
+          fellowshipNonMemberOption ?? this.fellowshipNonMemberOption,
     );
   }
 }

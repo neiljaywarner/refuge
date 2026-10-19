@@ -15,6 +15,7 @@ import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
 import 'features/profile/domain/member_profile.dart';
+import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/reflections/data/serverpod_post_repository.dart';
@@ -30,7 +31,7 @@ import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
 /// Sub-navigation mode below the Belong logo inside the `Home` bottom tab.
-enum BelongHomeSubView { feed, spaces, comingSoonItem }
+enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory }
 
 /// Main screen of **Belong on the Spectrum** (powered by Refuge / Sanctuary),
 /// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
@@ -111,11 +112,19 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
     }
 
     Widget buildHomeBody() {
+      if (homeSubView.value == BelongHomeSubView.membersDirectory) {
+        return BelongMembersDirectoryView(
+          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+        );
+      }
+
       if (homeSubView.value == BelongHomeSubView.spaces) {
         return BelongSpacesDirectoryView(
           selectedSpaceSlug: selectedSpace.value,
           onSelectSpaceItem: (item) {
-            if (item.isComingSoon) {
+            if (item.slug == 'members_directory') {
+              homeSubView.value = BelongHomeSubView.membersDirectory;
+            } else if (item.isComingSoon) {
               activeComingSoonItem.value = item;
               homeSubView.value = BelongHomeSubView.comingSoonItem;
             } else {

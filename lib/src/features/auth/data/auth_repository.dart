@@ -17,6 +17,7 @@ abstract interface class AuthRepository {
     required String email,
     String? bio,
     List<String>? comfortBadges,
+    String? icocChurchAffiliation,
   });
 
   AuthSession signInWithOAuthProvider(String provider); // 'google' | 'apple'
@@ -36,6 +37,7 @@ mixin AuthSessionTransformMixin implements AuthRepository {
     required String email,
     String? bio,
     List<String>? comfortBadges,
+    String? icocChurchAffiliation,
   }) {
     final cleanName = displayName.trim().isEmpty
         ? 'Fellowship Member'
@@ -52,6 +54,7 @@ mixin AuthSessionTransformMixin implements AuthRepository {
           comfortBadges ?? const ['Literal communication appreciated'],
       isSignedIn: true,
       authMethod: '${target.name}_email',
+      icocChurchAffiliation: icocChurchAffiliation,
     );
     return _session;
   }

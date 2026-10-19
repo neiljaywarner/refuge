@@ -81,6 +81,12 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
     heading: 'COMMUNITY',
     items: [
       BelongSpaceItem(
+        slug: 'members_directory',
+        title: 'Members Section & Directory',
+        emoji: '👥',
+        subtitle: 'Community profiles, church affiliations & fellowship connections',
+      ),
+      BelongSpaceItem(
         slug: 'general_chat',
         title: 'General Chat',
         emoji: '💬',
