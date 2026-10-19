@@ -4,9 +4,11 @@ import '../domain/post.dart';
 import 'post_repository.dart';
 
 /// Resilient local-first in-memory implementation with asynchronous broadcast streams.
+/// Seeds both the original Sanctuary spaces and the Circle.so-style Belong spaces.
 class LocalPostRepository implements PostRepository {
   final List<Post> _store = [];
-  final StreamController<List<Post>> _controller = StreamController<List<Post>>.broadcast();
+  final StreamController<List<Post>> _controller =
+      StreamController<List<Post>>.broadcast();
 
   LocalPostRepository() {
     _seedInitialData();
@@ -20,7 +22,8 @@ class LocalPostRepository implements PostRepository {
         authorName: 'David M. (UK)',
         spaceKey: 'prayer',
         toneTag: '[Prayer Request]',
-        content: 'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
+        content:
+            'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
         timestamp: now.subtract(const Duration(minutes: 35)),
         reactions: {'pray': 6, 'peace': 4},
       ),
@@ -29,7 +32,8 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Elena R. (Colorado)',
         spaceKey: 'prayer',
         toneTag: '[Comfort Only]',
-        content: 'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
+        content:
+            'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
         timestamp: now.subtract(const Duration(hours: 2)),
         reactions: {'pray': 11, 'peace': 14},
       ),
@@ -38,7 +42,8 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Pastor Thomas (Melbourne)',
         spaceKey: 'study',
         toneTag: '[Question]',
-        content: 'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
+        content:
+            'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
         timestamp: now.subtract(const Duration(hours: 5)),
         reactions: {'pray': 5, 'peace': 8},
       ),
@@ -48,7 +53,8 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'special_interests',
         toneTag: '[Autism & Faith Meme]',
         specialInterestTag: 'Church Acoustics',
-        content: 'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
+        content:
+            'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
         timestamp: now.subtract(const Duration(minutes: 15)),
         reactions: {'pray': 4, 'peace': 8, 'relatable': 18},
       ),
@@ -58,9 +64,53 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'study',
         toneTag: '[Bible Deep-Dive]',
         specialInterestTag: 'Markan Chiasms',
-        content: 'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
+        content:
+            'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
         timestamp: now.subtract(const Duration(hours: 1)),
         reactions: {'pray': 7, 'peace': 9, 'relatable': 14},
+      ),
+      Post(
+        id: '6',
+        authorName: 'Belong Organizer (DFW)',
+        spaceKey: 'start_here',
+        toneTag: '[Welcome]',
+        specialInterestTag: 'Neurodivergent Fellowship',
+        content:
+            'Welcome to Belong on the Spectrum! Feel free to introduce yourself here at your own pace, share a favorite hobby or special interest, or simply read quietly.',
+        timestamp: now.subtract(const Duration(minutes: 10)),
+        reactions: {'pray': 9, 'peace': 12, 'encouraged': 15},
+      ),
+      Post(
+        id: '7',
+        authorName: 'Hannah W. (Dallas)',
+        spaceKey: 'general_chat',
+        toneTag: '[Fellowship]',
+        content:
+            'So grateful for a calm community space without flashing popups or algorithmic timelines. Wishing everyone a peaceful evening!',
+        timestamp: now.subtract(const Duration(minutes: 25)),
+        reactions: {'pray': 5, 'peace': 10},
+      ),
+      Post(
+        id: '8',
+        authorName: 'Caleb T. (Fort Worth)',
+        spaceKey: 'memes',
+        toneTag: '[Autism & Faith Meme]',
+        specialInterestTag: 'BiblicalMaps',
+        content:
+            'Me opening the back of my Bible to stare at Paul\'s 3rd Missionary Journey map for 45 minutes straight instead of making small talk in the lobby. 🗺️♾️',
+        timestamp: now.subtract(const Duration(minutes: 40)),
+        reactions: {'pray': 3, 'peace': 7, 'relatable': 22},
+      ),
+      Post(
+        id: '9',
+        authorName: 'Rachel S. (Arlington)',
+        spaceKey: 'resources_videos',
+        toneTag: '[Resource]',
+        specialInterestTag: 'Sensory Friendly Worship',
+        content:
+            'Shared a calm 10-minute video guide on creating sensory-friendly church welcome bags and quiet rooms (caption transcript included, zero autoplay).',
+        timestamp: now.subtract(const Duration(hours: 3)),
+        reactions: {'pray': 4, 'peace': 9, 'encouraged': 11},
       ),
     ]);
     _notify();
@@ -80,7 +130,10 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({required String postId, required String reactionType}) async {
+  Future<void> addReaction({
+    required String postId,
+    required String reactionType,
+  }) async {
     final index = _store.indexWhere((p) => p.id == postId);
     if (index != -1) {
       final post = _store[index];
@@ -95,7 +148,9 @@ class LocalPostRepository implements PostRepository {
   @override
   Stream<List<Post>> watchPosts({required String spaceKey}) async* {
     yield _store.where((p) => p.spaceKey == spaceKey).toList();
-    yield* _controller.stream.map((posts) => posts.where((p) => p.spaceKey == spaceKey).toList());
+    yield* _controller.stream.map(
+      (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
+    );
   }
 
   @override

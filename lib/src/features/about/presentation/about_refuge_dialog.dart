@@ -3,9 +3,9 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import '../../../core/logging/app_logger.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
-import 'judge_api_explorer_dialog.dart';
 
-/// Shows the About Refuge & Hackathon Credits dialog, including sensory theme settings.
+/// Shows the About Belong on the Spectrum & Sensory Settings dialog
+/// (with all hackathon / Judge API Explorer clutter removed per Issue #18).
 void showAboutSanctuaryDialog(
   BuildContext context, {
   required Color primaryColor,
@@ -18,15 +18,24 @@ void showAboutSanctuaryDialog(
     builder: (ctx) => AlertDialog(
       title: Row(
         children: [
-          const Text('🧩', style: TextStyle(fontSize: 22)),
-          const SizedBox(width: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/images/belong_logo.png',
+              width: 32,
+              height: 32,
+              errorBuilder: (_, _, _) =>
+                  const Text('♾️', style: TextStyle(fontSize: 22)),
+            ),
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Refuge (Sanctuary) v0.2.0',
+                  'Belong on the Spectrum (v0.8.0-alpha)',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -34,7 +43,7 @@ void showAboutSanctuaryDialog(
                   ),
                 ),
                 Text(
-                  'Belong on the Spectrum • belongonthespectrum.com',
+                  'belongonthespectrum.com • Partnered with DFW Church',
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).textTheme.bodySmall?.color,
@@ -60,7 +69,9 @@ void showAboutSanctuaryDialog(
                       : primaryColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
+                    color: isContrast
+                        ? Colors.yellow
+                        : primaryColor.withValues(alpha: 0.25),
                   ),
                 ),
                 child: const Text(
@@ -114,45 +125,14 @@ void showAboutSanctuaryDialog(
               ),
               const Divider(height: 20),
               const Text(
-                'Community Purpose & Calm-Tech Moat:',
+                'About Belong on the Spectrum:',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               const Text(
-                '• Created for neurodivergent individuals, autistic Christians, and friends.\n'
-                '• Replaces expensive mainstream community SaaS (\$89–\$130/month) with low-cost (<\$5/month) Serverpod compute.\n'
-                '• Zero dopamine manipulation: no red unread badges, no typing indicators, no algorithmic feeds, no notification anxiety.\n'
-                '• Unifying Special Interest: Everyone brings their unique interests while sharing honest, unhurried reflections in safety.',
-                style: TextStyle(fontSize: 11.5, height: 1.4),
-              ),
-              const Divider(height: 20),
-              const Text(
-                'Grateful Appreciation & Hackathon Credits:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '🌟 BuilderBase: For developer cloud credits, deployment infrastructure, and sponsoring the Serverpod Hackathon.\n'
-                '⚡ Serverpod Team & Community: For building an outstanding full-stack Dart framework with typed protocol generation, real-time streaming, and Serverpod Insights.\n'
-                '🌿 Belong on the Spectrum: For inspiring our community architecture and showing that neurodiversity is a gift.',
-                style: TextStyle(fontSize: 11.5, height: 1.4),
-              ),
-              const Divider(height: 20),
-              const Text(
-                'Release Log (v0.2.0):',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '• 🖼️ Autism & Faith Meme Gallery with curated scripture cards\n'
-                '• 📊 Talker in-app visual and RPC network diagnostics console\n'
-                '• ⚡ Judge Serverpod API Explorer live interactive tool\n'
-                '• 🪝 Declarative State with hooks_riverpod (HookConsumerWidget)\n'
-                '• 📡 Verified bidirectional Serverpod 4 WebSocket streaming over 5G/LTE\n'
-                '• 🌙 4 WCAG AAA sensory themes (Sage Botanical, Clean Slate, Monastic Dark, High Contrast)\n'
-                '• 🕊️ Server-side Quiet Digest aggregation over space reflections\n'
-                '• 📱 Dual physical Google Pixel 9a verified live deployment\n'
-                '• Public GitHub Repository: neiljaywarner/refuge4serverpod',
+                '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
+                '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
+                '• Organizers can update community announcements live via Firebase Remote Config.',
                 style: TextStyle(fontSize: 11.5, height: 1.4),
               ),
             ],
@@ -163,14 +143,6 @@ void showAboutSanctuaryDialog(
         OutlinedButton.icon(
           onPressed: () {
             Navigator.of(ctx).pop();
-            JudgeApiExplorerDialog.show(context, primaryColor: primaryColor, isContrast: isContrast);
-          },
-          icon: const Icon(Icons.api_rounded, size: 16),
-          label: const Text('Judge API Explorer', style: TextStyle(fontSize: 12)),
-        ),
-        OutlinedButton.icon(
-          onPressed: () {
-            Navigator.of(ctx).pop();
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => TalkerScreen(talker: talker),
@@ -178,9 +150,15 @@ void showAboutSanctuaryDialog(
             );
           },
           icon: const Icon(Icons.receipt_long_rounded, size: 16),
-          label: const Text('Live Network & Talker Logs', style: TextStyle(fontSize: 12)),
+          label: const Text(
+            'Diagnostics & Logs',
+            style: TextStyle(fontSize: 12),
+          ),
         ),
-        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Close'),
+        ),
       ],
     ),
   );

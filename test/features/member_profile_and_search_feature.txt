@@ -1,0 +1,17 @@
+Feature: Community Search & Neurodivergent Member Profile Customization
+  As a Belong on the Spectrum community member
+  I want to search posts/tags across spaces and customize my neurodivergent identity badges
+  So that I can connect over shared special interests and express my communication preferences
+
+  # Driven interactively via Marionette MCP / CLI (`marionette_mcp`) and verified via `patrol_finders` (`patrolWidgetTest`)
+  Scenario: Member searches community posts and special interest tags
+    Given the Belong on the Spectrum app is running
+    When I tap the "Search" tab in the bottom navigation bar
+    Then I see the Community Search bar and quick filter chips
+    When I enter a search query or tap a special interest tag
+    Then matching community reflections are displayed immediately
+
+  Scenario: Member opens Profile dialog and customizes neurodivergent identity badges
+    Given the Belong on the Spectrum app is running
+    When I tap the Member Profile avatar button (#belong_profile_avatar_button) in the top app bar
+    Then I see the Member Profile dialog with display name, bio, and neurodivergent identity badges

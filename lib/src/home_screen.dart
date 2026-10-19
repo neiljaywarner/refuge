@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'core/firebase/community_analytics_service.dart';
+import 'core/firebase/organizer_remote_config_service.dart';
+import 'core/presentation/coming_soon_view.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
+import 'features/branding/presentation/brand_config_provider.dart';
+import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
+import 'features/fellowship_spaces/domain/fellowship_space.dart';
+import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
+import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
+import 'features/profile/domain/member_profile.dart';
+import 'features/profile/presentation/member_profile_sheet.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/reflections/data/serverpod_post_repository.dart';
 import 'features/reflections/domain/post.dart';
@@ -9,127 +20,333 @@ import 'features/reflections/presentation/community_anchor_banner.dart';
 import 'features/reflections/presentation/quiet_digest_banner.dart';
 import 'features/reflections/presentation/reflection_card.dart';
 import 'features/reflections/presentation/reflection_composer.dart';
+import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
+import 'features/search/presentation/community_search_view.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
-/// Main screen of the Refuge (Sanctuary) calm-tech fellowship clubhouse.
-/// Implemented as a ConsumerStatefulWidget following CodeWithAndrea's architecture.
-class SanctuaryHomeScreen extends ConsumerStatefulWidget {
+/// Sub-navigation mode below the Belong logo inside the `Home` bottom tab.
+enum BelongHomeSubView { feed, spaces, comingSoonItem }
+
+/// Main screen of **Belong on the Spectrum** (powered by Refuge / Sanctuary),
+/// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
+/// architecture (#18, #22, #23, #26, #35).
+class SanctuaryHomeScreen extends HookConsumerWidget {
   final PostRepository? repository;
   final ThemeNotifier? themeNotifier;
 
   const SanctuaryHomeScreen({super.key, this.repository, this.themeNotifier});
 
   @override
-  ConsumerState<SanctuaryHomeScreen> createState() => _SanctuaryHomeScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final brand = ref.watch(communityBrandConfigProvider);
+    final profile = ref.watch(memberProfileProvider);
+    final remoteConfig = ref.watch(organizerRemoteConfigProvider);
+    final analytics = ref.watch(communityAnalyticsServiceProvider);
 
-/// Alias for SanctuaryHomeScreen to support Refuge branding.
-typedef RefugeHomeScreen = SanctuaryHomeScreen;
+    final selectedSpace = useState<String>('prayer');
+    final activeFilter = useState<String>('All');
+    final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
+    final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
+    final activeComingSoonItem = useState<BelongSpaceItem?>(null);
 
-class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
-  String _selectedSpace = 'prayer';
-  String _activeFilter = 'All';
-  String? _legacyQuietDigestMessage;
-  Stream<List<Post>>? _legacyPostStream;
+    final PostRepository activeRepository =
+        repository ?? ref.watch(postRepositoryProvider);
 
-  PostRepository get _activeRepository => widget.repository ?? ref.read(postRepositoryProvider);
+    final postStream = useMemoized(
+      () => activeRepository.watchPosts(spaceKey: selectedSpace.value),
+      [activeRepository, selectedSpace.value],
+    );
+    final quietDigestFuture = useMemoized(
+      () => activeRepository.getQuietDigest(spaceKey: selectedSpace.value),
+      [activeRepository, selectedSpace.value],
+    );
+    final quietDigestSnapshot = useFuture(quietDigestFuture);
 
-  @override
-  void initState() {
-    super.initState();
-    _refreshStream();
-  }
-
-  void _refreshStream() {
-    final repo = _activeRepository;
-    setState(() {
-      _legacyPostStream = repo.watchPosts(spaceKey: _selectedSpace);
-    });
-    repo.getQuietDigest(spaceKey: _selectedSpace).then((digest) {
-      if (mounted && digest != null) {
-        setState(() {
-          _legacyQuietDigestMessage = digest;
-        });
-      }
-    });
-  }
-
-  void _onSelectSpace(String spaceKey) {
-    if (_selectedSpace != spaceKey) {
-      setState(() {
-        _selectedSpace = spaceKey;
-      });
-      _refreshStream();
-    }
-  }
-
-  Future<void> _submitPost({
-    required String content,
-    required String toneTag,
-    String? specialInterestTag,
-  }) async => _activeRepository.createPost(
-    Post(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      authorName: 'Fellowship Member',
-      spaceKey: _selectedSpace,
-      toneTag: toneTag,
-      specialInterestTag: specialInterestTag,
-      content: content,
-      timestamp: DateTime.now(),
-      reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
-    ),
-  );
-
-  void _setSensoryMode(SensoryMode mode) {
-    if (widget.themeNotifier != null) {
-      widget.themeNotifier!.setMode(mode);
-    } else {
-      ref.read(sensoryThemeModeProvider.notifier).setMode(mode);
-    }
-  }
-
-  SensoryMode get _currentMode => widget.themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
-
-  @override
-  Widget build(BuildContext context) {
-    final isContrast = _currentMode == SensoryMode.contrast;
+    final SensoryMode currentMode =
+        themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
+    final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final isLiveServerpod =
+        activeRepository is ServerpodPostRepository &&
+        activeRepository.isLiveConnected;
 
-    final repo = _activeRepository;
-    final isLiveServerpod = repo is ServerpodPostRepository && repo.isLiveConnected;
+    void setSensoryMode(SensoryMode mode) {
+      if (themeNotifier != null) {
+        themeNotifier!.setMode(mode);
+      } else {
+        ref.read(sensoryThemeModeProvider.notifier).setMode(mode);
+      }
+      analytics.logSensoryModeChanged(mode.name);
+    }
+
+    void selectSpace(String spaceKey) {
+      selectedSpace.value = spaceKey;
+      homeSubView.value = BelongHomeSubView.feed;
+      activeComingSoonItem.value = null;
+      analytics.logSpaceViewed(spaceKey);
+    }
+
+    Future<void> submitPost({
+      required String content,
+      required String toneTag,
+      String? specialInterestTag,
+    }) async {
+      await activeRepository.createPost(
+        Post(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          authorName: profile.displayName,
+          spaceKey: selectedSpace.value,
+          toneTag: toneTag,
+          specialInterestTag: specialInterestTag,
+          content: content,
+          timestamp: DateTime.now(),
+          reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
+        ),
+      );
+    }
+
+    Widget buildHomeBody() {
+      if (homeSubView.value == BelongHomeSubView.spaces) {
+        return BelongSpacesDirectoryView(
+          selectedSpaceSlug: selectedSpace.value,
+          onSelectSpaceItem: (item) {
+            if (item.isComingSoon) {
+              activeComingSoonItem.value = item;
+              homeSubView.value = BelongHomeSubView.comingSoonItem;
+            } else {
+              selectSpace(item.slug);
+            }
+          },
+        );
+      }
+
+      if (homeSubView.value == BelongHomeSubView.comingSoonItem &&
+          activeComingSoonItem.value != null) {
+        final item = activeComingSoonItem.value!;
+        final extraNote = item.slug == 'link_community_guidelines'
+            ? remoteConfig.communityGuidelinesMarkdown
+            : item.slug == 'link_android_app' || item.slug == 'link_ios_app'
+            ? 'Tip: You can add Belong directly to your phone Home Screen right now via Safari ("Add to Home Screen") or Chrome ("Install App") with zero App Store wait!'
+            : null;
+        return ComingSoonView(
+          title: item.title,
+          emoji: item.emoji,
+          description: item.subtitle,
+          trackedIssueNumber: item.trackedIssueNumber,
+          extraMarkdownOrNote: extraNote,
+          onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
+        );
+      }
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompactHeight = constraints.maxHeight < 520;
+          return Column(
+            children: [
+              if (!isCompactHeight)
+                CommunityAnchorBanner(
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                ),
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
+              ),
+              if (!isCompactHeight)
+                QuietDigestBanner(
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  legacyMessage: quietDigestSnapshot.data,
+                ),
+              ReflectionComposer(
+                selectedSpace: selectedSpace.value,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                onSubmit: submitPost,
+              ),
+              ToneFilterRow(
+                activeFilter: activeFilter.value,
+                onSelectFilter: (f) => activeFilter.value = f,
+              ),
+              Expanded(
+            child: StreamBuilder<List<Post>>(
+              stream: postStream,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                }
+
+                var posts = snapshot.data!;
+                if (activeFilter.value != 'All') {
+                  posts = posts
+                      .where((p) => p.toneTag == activeFilter.value)
+                      .toList();
+                }
+
+                if (posts.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Space is quiet right now.\nBe the first to share an unhurried thought.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: posts.length,
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    right: 12.0,
+                    top: 8.0,
+                    bottom: 48.0,
+                  ),
+                  itemBuilder: (context, index) {
+                    final p = posts[index];
+                    return ReflectionCard(
+                      post: p,
+                      isContrast: isContrast,
+                      onAddReaction: (reactionType) =>
+                          activeRepository.addReaction(
+                            postId: p.id,
+                            reactionType: reactionType,
+                          ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+            ],
+          );
+        },
+      );
+    }
+
+    Widget buildActiveBottomTabBody() {
+      switch (activeBottomTab.value) {
+        case BelongBottomTab.home:
+          return Column(
+            children: [
+              _BelongSubHeaderBar(
+                activeSubView: homeSubView.value,
+                onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                onSelectSpaces: () =>
+                    homeSubView.value = BelongHomeSubView.spaces,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+              ),
+              Expanded(child: buildHomeBody()),
+            ],
+          );
+        case BelongBottomTab.notifications:
+          return ComingSoonView(
+            title: 'Calm Notification Bell',
+            emoji: '🔔',
+            description:
+                'Unhurried, digestible notifications (never overwhelming red badges) are scheduled for our fast-follow release.',
+            trackedIssueNumber: 27,
+            onBackToFeed: () => activeBottomTab.value = BelongBottomTab.home,
+          );
+        case BelongBottomTab.msgs:
+          return ComingSoonView(
+            title: 'Direct Messages (Msgs)',
+            emoji: '💬',
+            description:
+                '1-on-1 member direct messaging & welcoming fellowship inbox are scheduled for our fast-follow release.',
+            trackedIssueNumber: 27,
+            onBackToFeed: () => activeBottomTab.value = BelongBottomTab.home,
+          );
+        case BelongBottomTab.search:
+          return CommunitySearchView(
+            repository: activeRepository,
+            isContrast: isContrast,
+          );
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Sanctuary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isLiveServerpod ? const Color(0xFF4CAF50) : const Color(0xFF68A67D),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                brand.logoAssetPath,
+                key: const Key('belong_header_logo'),
+                width: 28,
+                height: 28,
+                errorBuilder: (_, _, _) =>
+                    const Text('♾️', style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        brand.shortName,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Sanctuary',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isLiveServerpod
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFF68A67D),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -137,7 +354,7 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
           PopupMenuButton<SensoryMode>(
             tooltip: 'Sensory Themes',
             icon: const Icon(Icons.brightness_6_rounded, size: 20),
-            onSelected: (mode) => _setSensoryMode(mode),
+            onSelected: setSensoryMode,
             itemBuilder: (context) => const [
               PopupMenuItem(
                 value: SensoryMode.clean,
@@ -182,15 +399,40 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
             ],
           ),
           IconButton(
-            tooltip: 'About Sanctuary & Hackathon Credits',
+            tooltip: 'About Belong',
             icon: const Icon(Icons.info_outline_rounded, size: 18),
             visualDensity: VisualDensity.compact,
             onPressed: () => showAboutSanctuaryDialog(
               context,
               primaryColor: primaryColor,
               isContrast: isContrast,
-              currentMode: _currentMode,
-              onSelectMode: _setSensoryMode,
+              currentMode: currentMode,
+              onSelectMode: setSensoryMode,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              key: const Key('belong_profile_avatar_button'),
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => MemberProfileDialog.show(context),
+              child: Tooltip(
+                message: 'Member Profile (${profile.displayName})',
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: isContrast
+                      ? Colors.yellow
+                      : primaryColor.withValues(alpha: 0.2),
+                  child: Text(
+                    profile.initials,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.black : primaryColor,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -203,79 +445,70 @@ class _SanctuaryHomeScreenState extends ConsumerState<SanctuaryHomeScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 820),
-            child: Column(
-              children: [
-                CommunityAnchorBanner(primaryColor: primaryColor, isContrast: isContrast),
-                SpaceNavigationBar(selectedSpace: _selectedSpace, onSelectSpace: _onSelectSpace),
-                QuietDigestBanner(
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  legacyMessage: _legacyQuietDigestMessage,
-                ),
-                ReflectionComposer(
-                  selectedSpace: _selectedSpace,
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  onSubmit: _submitPost,
-                ),
-                ToneFilterRow(
-                  activeFilter: _activeFilter,
-                  onSelectFilter: (f) => setState(() => _activeFilter = f),
-                ),
-                Expanded(
-                  child: StreamBuilder<List<Post>>(
-                    stream: _legacyPostStream,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator.adaptive());
-                      }
-
-                      var posts = snapshot.data!;
-                      if (_activeFilter != 'All') {
-                        posts = posts.where((p) => p.toneTag == _activeFilter).toList();
-                      }
-
-                      if (posts.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).textTheme.bodySmall?.color
-                                  ?.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        itemCount: posts.length,
-                        padding: const EdgeInsets.only(
-                          left: 12.0,
-                          right: 12.0,
-                          top: 8.0,
-                          bottom: 48.0,
-                        ),
-                        itemBuilder: (context, index) {
-                          final p = posts[index];
-                          return ReflectionCard(
-                            post: p,
-                            isContrast: isContrast,
-                            onAddReaction: (reactionType) => _activeRepository.addReaction(
-                              postId: p.id,
-                              reactionType: reactionType,
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+            child: buildActiveBottomTabBody(),
           ),
         ),
+      ),
+      bottomNavigationBar: BelongBottomNavBar(
+        currentTab: activeBottomTab.value,
+        isContrast: isContrast,
+        onSelectTab: (tab) {
+          activeBottomTab.value = tab;
+          analytics.logBottomTabSelected(tab.name);
+        },
+      ),
+    );
+  }
+}
+
+/// Alias for SanctuaryHomeScreen to support Refuge / Belong branding.
+typedef RefugeHomeScreen = SanctuaryHomeScreen;
+
+class _BelongSubHeaderBar extends StatelessWidget {
+  const _BelongSubHeaderBar({
+    required this.activeSubView,
+    required this.onSelectFeed,
+    required this.onSelectSpaces,
+    required this.primaryColor,
+    required this.isContrast,
+  });
+
+  final BelongHomeSubView activeSubView;
+  final VoidCallback onSelectFeed;
+  final VoidCallback onSelectSpaces;
+  final Color primaryColor;
+  final bool isContrast;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFeed = activeSubView == BelongHomeSubView.feed;
+    final isSpaces = activeSubView == BelongHomeSubView.spaces;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
+      child: Row(
+        children: [
+          ChoiceChip(
+            key: const Key('subnav_feed_tab'),
+            label: const Text('Feed'),
+            selected: isFeed,
+            onSelected: (_) => onSelectFeed(),
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            key: const Key('subnav_spaces_tab'),
+            label: const Text('Spaces'),
+            selected: isSpaces,
+            onSelected: (_) => onSelectSpaces(),
+          ),
+          const Spacer(),
+          ActionChip(
+            key: const Key('open_feedback_and_voting_button'),
+            avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
+            label: const Text('Vote & Feedback'),
+            onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+          ),
+        ],
       ),
     );
   }
