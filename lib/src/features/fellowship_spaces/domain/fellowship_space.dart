@@ -125,7 +125,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'actually_autistic_events',
         title: 'Actually Autistic Events',
         emoji: '🗓️',
-        subtitle: 'Upcoming sensory-friendly meetups & online gatherings',
+        subtitle: 'Upcoming sensory-friendly meetups & gatherings (Active)',
         isComingSoon: true,
         trackedIssueNumber: 28,
       ),

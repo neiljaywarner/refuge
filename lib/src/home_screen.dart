@@ -7,9 +7,12 @@ import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
+import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 import 'features/fellowship_spaces/domain/fellowship_space.dart';
 import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
+import 'features/messages/presentation/belong_messages_view.dart';
+import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
@@ -126,6 +129,11 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
       if (homeSubView.value == BelongHomeSubView.comingSoonItem &&
           activeComingSoonItem.value != null) {
         final item = activeComingSoonItem.value!;
+        if (item.slug == 'actually_autistic_events') {
+          return ActuallyAutisticEventsView(
+            onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+          );
+        }
         final extraNote = item.slug == 'link_community_guidelines'
             ? remoteConfig.communityGuidelinesMarkdown
             : item.slug == 'link_android_app' || item.slug == 'link_ios_app'
@@ -250,23 +258,11 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
             ],
           );
         case BelongBottomTab.notifications:
-          return ComingSoonView(
-            title: 'Calm Notification Bell',
-            emoji: '🔔',
-            description:
-                'Unhurried, digestible notifications (never overwhelming red badges) are scheduled for our fast-follow release.',
-            trackedIssueNumber: 27,
-            onBackToFeed: () => activeBottomTab.value = BelongBottomTab.home,
+          return CalmNotificationsView(
+            onBackToHome: () => activeBottomTab.value = BelongBottomTab.home,
           );
         case BelongBottomTab.msgs:
-          return ComingSoonView(
-            title: 'Direct Messages (Msgs)',
-            emoji: '💬',
-            description:
-                '1-on-1 member direct messaging & welcoming fellowship inbox are scheduled for our fast-follow release.',
-            trackedIssueNumber: 27,
-            onBackToFeed: () => activeBottomTab.value = BelongBottomTab.home,
-          );
+          return const BelongMessagesView();
         case BelongBottomTab.search:
           return CommunitySearchView(
             repository: activeRepository,
