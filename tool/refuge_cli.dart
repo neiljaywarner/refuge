@@ -1,16 +1,126 @@
+/// # Refuge CLI (`tool/refuge_cli.dart`)
+///
+/// Pure-Dart automation for the public `neiljaywarner/refuge` repository:
+/// GitHub issue hygiene, CodeRabbit-gated pull requests, wiki sync,
+/// MCP configuration, and a public-repo privacy scan.
+///
+/// ## Usage
+///
+/// ```bash
+/// dart run tool/refuge_cli.dart help
+/// dart run tool/refuge_cli.dart help ship-pr
+/// dart run tool/refuge_cli.dart ship-pr <branch> "<title>" "<body>"
+/// dart run tool/refuge_cli.dart merge-pr <number>
+/// dart run tool/refuge_cli.dart privacy-scan
+/// ```
+///
+/// ## Requirements
+///
+/// * `git` and the GitHub CLI (`gh`) on `PATH`, authenticated with
+///   `gh auth login`. Override the `gh` binary with `GH_BIN`.
+/// * Run from the repository root.
+///
+/// ## Design notes
+///
+/// * One prefix-matchable command shape (`dart run tool/refuge_cli.dart …`)
+///   so an agent host can approve it once.
+/// * **No private data**: this file is committed to a public repo. Never add
+///   emails, tokens, or absolute home-directory paths here. Use
+///   `Platform.environment` lookups instead. `privacy-scan` enforces this.
+/// * Exit codes: `0` success, `64` usage error, `2` CodeRabbit requested
+///   changes, `3` CodeRabbit left inline comments to triage, `4` timed out
+///   waiting for review, `5` privacy-scan findings.
+library;
+
+import 'dart:convert';
 import 'dart:io';
 
-/// Pure Dart CLI for Refuge repository automation, GitHub issue hygiene,
-/// CodeRabbit review triggers, and worktree orchestration.
-///
-/// Designed with a single prefix-matchable command shape:
-///   `/opt/homebrew/bin/dart run tool/refuge_cli.dart <subcommand>`
-/// so approving `/opt/homebrew/bin/dart run` once in Antigravity allows
-/// unattended execution without repeated permission prompts.
+/// Help text for every subcommand, shown by `help` and `help <subcommand>`.
+const Map<String, String> _commandHelp = {
+  'ship-pr': '''
+ship-pr <branch> "<title>" "<body>" [--timeout-min=15] [--no-merge] [--verified]
+  1. Pushes <branch> to origin and opens a PR against main.
+  2. Requests "@coderabbitai review".
+  3. Polls every 30s until CodeRabbit posts a review (or the timeout hits).
+  4. Merges (squash + delete branch) ONLY if CodeRabbit did not request
+     changes and left no findings (inline or in the review body).
+     --verified adds an "author reports analyze + tests passed" note; only
+     pass it if you actually ran them. Otherwise it prints a triage
+     summary and exits non-zero so a human/agent can fix the critical items or
+     defer polish to Issue #36, then run `merge-pr <number>`.''',
+  'merge-pr': '''
+merge-pr <number> [--force]
+  Re-checks CodeRabbit state for an existing PR and squash-merges it with
+  --delete-branch. --force skips the inline-comment gate (still refuses on
+  CHANGES_REQUESTED). Use it after triaging comments.''',
+  'review-status': '''
+review-status <number>
+  Prints CodeRabbit review state + inline comment summary for a PR.''',
+  'privacy-scan': '''
+privacy-scan
+  Scans tracked files for emails, absolute /Users/ paths, and common API key
+  / token patterns. Exits 5 if anything is found. Run before every PR.''',
+  'sync-wiki': '''
+sync-wiki
+  Copies docs/wiki/*.md into the GitHub wiki repo (refuge.wiki.git) and
+  pushes. Uses a temp directory; never touches your working tree.''',
+  'configure-mcp': '''
+configure-mcp
+  Writes \$HOME/.gemini/config/mcp_config.json registering the dart,
+  firebase, patrol, and marionette MCP servers (paths resolved from \$HOME
+  and PATH), then pings marionette_mcp with an MCP tools/list request.''',
+  'list-open': '''
+list-open
+  Lists up to 50 open issues.''',
+  'create-deploy-and-audio-issues': '''
+create-deploy-and-audio-issues
+  One-time seeding of deployment issues (#56-#59). Idempotency is NOT
+  guaranteed; re-running creates duplicates.''',
+  'sync-issues': '''
+sync-issues
+  One-time historical issue roster sync (#15-#37). Do not re-run.''',
+  'add-mentoring-epic': '''
+add-mentoring-epic
+  One-time historical seeding. Do not re-run.''',
+  'add-flavors-and-csv-issues': '''
+add-flavors-and-csv-issues
+  One-time historical seeding. Do not re-run.''',
+  'add-pwa-cicd-store-issues': '''
+add-pwa-cicd-store-issues
+  One-time historical seeding. Do not re-run.''',
+};
+
+/// Entry point. See the library documentation above for usage.
 Future<void> main(List<String> args) async {
   final command = args.isNotEmpty ? args.first : 'help';
+  final rest = args.skip(1).toList();
+
+  if (rest.contains('--help') || rest.contains('-h')) {
+    _printHelp(command);
+    return;
+  }
 
   switch (command) {
+    case 'help' || '--help' || '-h':
+      _printHelp(rest.isNotEmpty ? rest.first : null);
+    case 'ship-pr':
+      await _shipPr(rest);
+    case 'merge-pr':
+      await _mergePr(rest);
+    case 'review-status':
+      if (rest.isEmpty) _usage('review-status');
+      final status = await _coderabbitStatus(rest.first);
+      _log(status.summary());
+    case 'privacy-scan':
+      await _privacyScan();
+    case 'sync-wiki':
+      await _syncWiki();
+    case 'configure-mcp':
+      await _configureMcpAndTestMarionette();
+    case 'list-open':
+      await _runGh(['issue', 'list', '--repo', _repo, '--limit', '50']);
+    case 'create-deploy-and-audio-issues':
+      await _createDeployAndAudioIssues();
     case 'sync-issues':
       await _syncIssues();
     case 'add-mentoring-epic':
@@ -19,160 +129,371 @@ Future<void> main(List<String> args) async {
       await _addFlavorsAndCsvIssues();
     case 'add-pwa-cicd-store-issues':
       await _addPwaCicdStoreIssues();
-    case 'configure-mcp':
-      await _configureMcpAndTestMarionette();
-    case 'create-deploy-and-audio-issues':
-      await _createDeployAndAudioIssues();
-    case 'ship-pr':
-      await _shipPr(args.skip(1).toList());
-    case 'sync-wiki':
-      await _syncWiki();
-    case 'list-open':
-      await _runGh(['issue', 'list', '--repo', _repo, '--limit', '50']);
     default:
-      stdout.writeln(
-        'Usage: dart run tool/refuge_cli.dart <sync-issues|add-mentoring-epic|add-flavors-and-csv-issues|add-pwa-cicd-store-issues|configure-mcp|create-deploy-and-audio-issues|ship-pr|sync-wiki|list-open>',
-      );
+      stderr.writeln('Unknown command: $command\n');
+      _printHelp(null);
+      exit(64);
   }
+}
+
+void _printHelp(String? command) {
+  if (command != null && _commandHelp.containsKey(command)) {
+    stdout.writeln(_commandHelp[command]);
+    return;
+  }
+  stdout.writeln('''
+Refuge CLI: repo automation for neiljaywarner/refuge
+
+Usage: dart run tool/refuge_cli.dart <command> [args]
+       dart run tool/refuge_cli.dart help <command>
+
+Everyday commands:
+  ship-pr        Push branch, open PR, wait for CodeRabbit, merge if clean
+  merge-pr       Merge an already-triaged PR
+  review-status  Show CodeRabbit state for a PR
+  privacy-scan   Fail on emails / home paths / tokens in tracked files
+  sync-wiki      Publish docs/wiki/*.md to the GitHub wiki
+  configure-mcp  Register dart/firebase/patrol/marionette MCP servers
+  list-open      List open issues
+
+One-time historical seeding (do not re-run):
+  sync-issues, add-mentoring-epic, add-flavors-and-csv-issues,
+  add-pwa-cicd-store-issues, create-deploy-and-audio-issues
+
+Docs: docs/wiki/Refuge-CLI.md''');
+}
+
+Never _usage(String command) {
+  stderr.writeln('Usage:\n${_commandHelp[command]}');
+  exit(64);
+}
+
+/// Timestamped log line so long unattended runs are easy to follow.
+void _log(String message) {
+  final t = DateTime.now().toIso8601String().substring(11, 19);
+  stdout.writeln('[$t] $message');
+}
+
+String? _flag(List<String> args, String name) {
+  for (final a in args) {
+    if (a.startsWith('--$name=')) return a.substring(name.length + 3);
+  }
+  return null;
+}
+
+/// Snapshot of CodeRabbit's verdict on a pull request.
+class _ReviewStatus {
+  _ReviewStatus({
+    required this.prNumber,
+    required this.hasReview,
+    required this.changesRequested,
+    required this.inlineComments,
+    required this.bodyFindings,
+    required this.mergeState,
+  });
+
+  final String prNumber;
+  final bool hasReview;
+  final bool changesRequested;
+  final List<String> inlineComments;
+  final int bodyFindings;
+  final String mergeState;
+
+  String summary() {
+    final b = StringBuffer()
+      ..writeln('PR #$prNumber CodeRabbit status:')
+      ..writeln('  review posted     : $hasReview')
+      ..writeln('  changes requested : $changesRequested')
+      ..writeln('  inline comments   : ${inlineComments.length}')
+      ..writeln('  review-body finds : $bodyFindings')
+      ..writeln('  merge state       : $mergeState');
+    for (final c in inlineComments) {
+      b.writeln('  - $c');
+    }
+    return b.toString();
+  }
+}
+
+/// Fetches every page of a GitHub REST list endpoint as decoded JSON objects.
+///
+/// Fails closed: any `gh` error terminates the process instead of returning an
+/// empty list, so a network/auth/rate-limit failure can never look "clean".
+Future<List<Map<String, dynamic>>> _ghPaginated(String endpoint) async {
+  final r = await Process.run(_gh, ['api', '--paginate', endpoint, '--jq', '.[]']);
+  if (r.exitCode != 0) {
+    stderr.writeln('gh api $endpoint failed (failing closed): ${r.stderr}');
+    exit(r.exitCode == 0 ? 1 : r.exitCode);
+  }
+  return const LineSplitter()
+      .convert(r.stdout as String)
+      .where((l) => l.trim().isNotEmpty)
+      .map((l) => jsonDecode(l) as Map<String, dynamic>)
+      .toList();
+}
+
+bool _isRabbit(Map<String, dynamic> o) =>
+    ((o['user'] as Map?)?['login'] as String? ?? '').contains('coderabbit');
+
+/// Counts findings CodeRabbit puts in the review *body* (not inline), e.g.
+/// "Actionable comments posted: 3" and "Outside diff range comments (2)".
+int _bodyFindings(String body) {
+  var n = 0;
+  final actionable = RegExp(r'Actionable comments posted:\s*(\d+)').firstMatch(body);
+  if (actionable != null) n += int.parse(actionable.group(1)!);
+  for (final m in RegExp(r'Outside diff range comments?\s*\((\d+)\)').allMatches(body)) {
+    n += int.parse(m.group(1)!);
+  }
+  return n;
+}
+
+Future<_ReviewStatus> _coderabbitStatus(String prNumber) async {
+  final view = await Process.run(_gh, [
+    'pr', 'view', prNumber, '--repo', _repo, '--json', 'mergeStateStatus',
+  ]);
+  if (view.exitCode != 0) {
+    stderr.writeln('gh pr view failed: ${view.stderr}');
+    exit(view.exitCode);
+  }
+  final mergeState =
+      (jsonDecode(view.stdout as String) as Map)['mergeStateStatus'] as String? ??
+          'UNKNOWN';
+
+  // Use only the LATEST CodeRabbit review so an old CHANGES_REQUESTED review
+  // does not block forever after fixes are pushed and re-reviewed.
+  final reviews = (await _ghPaginated('repos/$_repo/pulls/$prNumber/reviews'))
+      .where(_isRabbit)
+      .where((r) => r['submitted_at'] != null)
+      .toList()
+    ..sort((a, b) =>
+        (a['submitted_at'] as String).compareTo(b['submitted_at'] as String));
+  final latest = reviews.isEmpty ? null : reviews.last;
+
+  // Inline comments that belong to the latest review only.
+  final inline = <String>[];
+  if (latest != null) {
+    for (final c in await _ghPaginated('repos/$_repo/pulls/$prNumber/comments')) {
+      if (!_isRabbit(c) || c['pull_request_review_id'] != latest['id']) continue;
+      final firstLine = (c['body'] as String? ?? '')
+          .split('\n')
+          .firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+      inline.add('${c['path']}:${c['line'] ?? '?'}  $firstLine');
+    }
+  }
+
+  return _ReviewStatus(
+    prNumber: prNumber,
+    hasReview: latest != null,
+    changesRequested: latest?['state'] == 'CHANGES_REQUESTED',
+    inlineComments: inline,
+    bodyFindings: latest == null ? 0 : _bodyFindings(latest['body'] as String? ?? ''),
+    mergeState: mergeState,
+  );
 }
 
 Future<void> _shipPr(List<String> rest) async {
-  if (rest.length < 3) {
-    stderr.writeln('Usage: dart run tool/refuge_cli.dart ship-pr <branch> <title> <body>');
-    exit(64);
-  }
-  final branch = rest[0];
-  final title = rest[1];
-  final body = rest[2];
+  final positional = rest.where((a) => !a.startsWith('--')).toList();
+  if (positional.length < 3) _usage('ship-pr');
+  final branch = positional[0];
+  final title = positional[1];
+  final body = positional[2];
+  final timeoutMin = int.tryParse(_flag(rest, 'timeout-min') ?? '') ?? 15;
+  final noMerge = rest.contains('--no-merge');
+  final verified = rest.contains('--verified');
 
-  stdout.writeln('==> 1. Pushing branch $branch to origin...');
-  final pushRes = await Process.run('git', ['push', '-u', 'origin', branch]);
-  stdout.write(pushRes.stdout);
-  stderr.write(pushRes.stderr);
-  if (pushRes.exitCode != 0) {
-    exit(pushRes.exitCode);
-  }
+  _log('1/4 Pushing $branch to origin...');
+  final push = await Process.run('git', ['push', '-u', 'origin', branch]);
+  stdout.write(push.stdout);
+  stderr.write(push.stderr);
+  if (push.exitCode != 0) exit(push.exitCode);
 
-  stdout.writeln('==> 2. Creating Pull Request for $branch...');
-  final prRes = await Process.run(_gh, [
-    'pr',
-    'create',
-    '--repo',
-    _repo,
-    '--head',
-    branch,
-    '--base',
-    'main',
-    '--title',
-    title,
-    '--body',
-    body,
+  _log('2/4 Opening pull request...');
+  final pr = await Process.run(_gh, [
+    'pr', 'create', '--repo', _repo, '--head', branch, '--base', 'main',
+    '--title', title, '--body', body,
   ]);
-  final prOut = (prRes.stdout as String).trim();
-  stdout.writeln(prOut);
-  if (prRes.exitCode != 0) {
-    stderr.writeln(prRes.stderr);
-    exit(prRes.exitCode);
+  final prUrl = (pr.stdout as String).trim();
+  if (pr.exitCode != 0) {
+    stderr.writeln(pr.stderr);
+    exit(pr.exitCode);
   }
+  final prNum = prUrl.split('/').last;
+  _log('    $prUrl');
 
-  final prNum = prOut.split('/').last.trim();
-  stdout.writeln('==> 3. Triggering @coderabbitai review on PR #$prNum...');
+  _log('3/4 Requesting @coderabbitai review and waiting up to $timeoutMin min...');
   await _runGh([
-    'pr',
-    'comment',
-    prNum,
-    '--repo',
-    _repo,
-    '--body',
-    '@coderabbitai review — verified locally via Dart MCP (analyze_files + run_tests). Non-blocking polish items tracked in Issue #36.',
+    'pr', 'comment', prNum, '--repo', _repo, '--body',
+    verified
+        ? '@coderabbitai review\n\nAuthor reports local `analyze_files` + '
+            '`run_tests` passed. Non-blocking polish will be deferred to #36.'
+        : '@coderabbitai review',
   ], ignoreErrors: true);
 
-  stdout.writeln('==> 4. Checking PR #$prNum mergeability & squash-merging...');
-  await Future<void>.delayed(const Duration(seconds: 3));
+  final deadline = DateTime.now().add(Duration(minutes: timeoutMin));
+  _ReviewStatus status;
+  while (true) {
+    await Future<void>.delayed(const Duration(seconds: 30));
+    status = await _coderabbitStatus(prNum);
+    if (status.hasReview) break;
+    if (DateTime.now().isAfter(deadline)) {
+      _log('Timed out waiting for CodeRabbit on PR #$prNum. NOT merging.');
+      _log('Re-check later: dart run tool/refuge_cli.dart merge-pr $prNum');
+      exit(4);
+    }
+    _log('    still waiting for CodeRabbit...');
+  }
+
+  stdout.writeln(status.summary());
+  if (noMerge) {
+    _log('--no-merge set; leaving PR #$prNum open.');
+    return;
+  }
+  await _mergeIfClean(status, force: false);
+}
+
+Future<void> _mergePr(List<String> rest) async {
+  final positional = rest.where((a) => !a.startsWith('--')).toList();
+  if (positional.isEmpty) _usage('merge-pr');
+  final status = await _coderabbitStatus(positional.first);
+  stdout.writeln(status.summary());
+  await _mergeIfClean(status, force: rest.contains('--force'));
+}
+
+/// Merge gate. `--force` only waives *findings* after triage; it never waives
+/// a missing review or a latest-review CHANGES_REQUESTED.
+Future<void> _mergeIfClean(_ReviewStatus s, {required bool force}) async {
+  if (!s.hasReview) {
+    _log('No CodeRabbit review on PR #${s.prNumber} yet. NOT merging '
+        '(--force does not bypass this).');
+    exit(4);
+  }
+  if (s.changesRequested) {
+    _log('CodeRabbit REQUESTED CHANGES on PR #${s.prNumber}. Fix in the '
+        'worktree, push, wait for the re-review, then run merge-pr ${s.prNumber}.');
+    exit(2);
+  }
+  final findings = s.inlineComments.length + s.bodyFindings;
+  if (findings > 0 && !force) {
+    _log('CodeRabbit left $findings finding(s) '
+        '(${s.inlineComments.length} inline, ${s.bodyFindings} in review body). '
+        'Triage: fix critical ones, defer polish to #36 with a link, then run '
+        'merge-pr ${s.prNumber} --force.');
+    exit(3);
+  }
+  _log('4/4 Squash-merging PR #${s.prNumber} and deleting branch...');
   await _runGh([
-    'pr',
-    'merge',
-    prNum,
-    '--repo',
-    _repo,
-    '--squash',
-    '--delete-branch',
+    'pr', 'merge', s.prNumber, '--repo', _repo, '--squash', '--delete-branch',
   ]);
-  stdout.writeln('==> PR #$prNum squash-merged and branch $branch deleted!');
+  _log('PR #${s.prNumber} merged.');
+}
+
+Future<void> _privacyScan() async {
+  final patterns = <String, RegExp>{
+    'email': RegExp(r'[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|icloud|hotmail)\.com'),
+    'home path': RegExp(r'/Users/[A-Za-z0-9._-]+/'),
+    'Google API key': RegExp(r'AIza[0-9A-Za-z_-]{35}'),
+    'GitHub token': RegExp(r'gh[pousr]_[0-9A-Za-z]{36}'),
+    'private key': RegExp(r'-----BEGIN [A-Z ]*PRIVATE KEY-----'),
+  };
+  final files = await Process.run('git', ['ls-files']);
+  if (files.exitCode != 0) {
+    stderr.writeln('git ls-files failed (not a git repo?): ${files.stderr}');
+    exit(files.exitCode);
+  }
+  var findings = 0;
+  for (final path in (files.stdout as String).split('\n')) {
+    if (path.isEmpty) continue;
+    final f = File(path);
+    if (!f.existsSync() || f.lengthSync() > 2 * 1024 * 1024) continue;
+    final String text;
+    try {
+      text = f.readAsStringSync();
+    } on FileSystemException {
+      continue; // binary
+    }
+    final lines = text.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      for (final e in patterns.entries) {
+        if (e.value.hasMatch(lines[i])) {
+          findings++;
+          stdout.writeln('$path:${i + 1}  [${e.key}]');
+        }
+      }
+    }
+  }
+  if (findings > 0) {
+    _log('privacy-scan: $findings finding(s). See Issue #64.');
+    exit(5);
+  }
+  _log('privacy-scan: clean.');
 }
 
 Future<void> _syncWiki() async {
-  final wikiDir = Directory('/tmp/refuge-wiki-sync');
-  if (wikiDir.existsSync()) {
-    wikiDir.deleteSync(recursive: true);
-  }
-  final cloneRes = await Process.run('git', [
-    'clone',
-    'https://github.com/neiljaywarner/refuge.wiki.git',
-    wikiDir.path,
+  final wikiDir = await Directory.systemTemp.createTemp('refuge-wiki-');
+  _log('Cloning wiki into ${wikiDir.path}...');
+  final clone = await Process.run('git', [
+    'clone', 'https://github.com/$_repo.wiki.git', wikiDir.path,
   ]);
-  if (cloneRes.exitCode != 0) {
-    stderr.writeln('Wiki clone failed: ${cloneRes.stderr}');
-    exit(cloneRes.exitCode);
+  if (clone.exitCode != 0) {
+    stderr.writeln('Wiki clone failed: ${clone.stderr}');
+    exit(clone.exitCode);
   }
-  final srcWiki = Directory('docs/wiki');
-  for (final entity in srcWiki.listSync()) {
+  for (final entity in Directory('docs/wiki').listSync()) {
     if (entity is File && entity.path.endsWith('.md')) {
-      final name = entity.uri.pathSegments.last;
-      entity.copySync('${wikiDir.path}/$name');
+      entity.copySync('${wikiDir.path}/${entity.uri.pathSegments.last}');
     }
   }
   await Process.run('git', ['-C', wikiDir.path, 'add', '-A']);
-  final commitRes = await Process.run('git', [
-    '-C',
-    wikiDir.path,
-    'commit',
-    '-m',
-    'docs(wiki): sync latest ADRs, Hybrid Appwrite+Firebase grading & Oct 31 roadmap',
+  final commit = await Process.run('git', [
+    '-C', wikiDir.path, 'commit', '-m', 'docs(wiki): sync from docs/wiki',
   ]);
-  stdout.write(commitRes.stdout);
-  final pushRes = await Process.run('git', ['-C', wikiDir.path, 'push', 'origin', 'master']);
-  stdout.write(pushRes.stdout);
-  stderr.write(pushRes.stderr);
-  stdout.writeln('==> Live GitHub Wiki synced!');
+  stdout.write(commit.stdout);
+  final push = await Process.run('git', ['-C', wikiDir.path, 'push', 'origin', 'HEAD']);
+  stderr.write(push.stderr);
+  if (push.exitCode != 0) {
+    _log('Wiki push failed.');
+    exit(push.exitCode);
+  }
+  _log('Wiki synced.');
 }
-
 
 Future<void> _configureMcpAndTestMarionette() async {
-  const mcpJson = '''{
-  "mcpServers": {
-    "marionette": {
-      "command": "/Users/neil/.pub-cache/bin/marionette_mcp",
-      "args": []
-    },
-    "firebase": {
-      "command": "/opt/homebrew/bin/firebase",
-      "args": ["mcp", "--dir", "/Users/neil/belongonthespectrum/refuge"]
-    },
-    "patrol": {
-      "command": "/Users/neil/.pub-cache/bin/patrol_mcp",
-      "args": []
-    },
-    "dart": {
-      "command": "/opt/homebrew/bin/dart",
-      "args": ["mcp-server"]
-    }
+  final home = Platform.environment['HOME'];
+  if (home == null) {
+    stderr.writeln('HOME is not set.');
+    exit(64);
   }
-}
-''';
-  final globalConfig = File('/Users/neil/.gemini/config/mcp_config.json');
-  await globalConfig.parent.create(recursive: true);
-  await globalConfig.writeAsString(mcpJson);
-  stdout.writeln('==> Wrote /Users/neil/.gemini/config/mcp_config.json with marionette, firebase, patrol, and dart MCP servers.');
+  final pubBin = '$home/.pub-cache/bin';
+  final config = {
+    'mcpServers': {
+      'dart': {'command': 'dart', 'args': ['mcp-server']},
+      'firebase': {
+        'command': 'firebase',
+        'args': ['mcp', '--dir', Directory.current.path],
+      },
+      'patrol': {'command': '$pubBin/patrol_mcp', 'args': <String>[]},
+      'marionette': {'command': '$pubBin/marionette_mcp', 'args': <String>[]},
+    },
+  };
+  final file = File('$home/.gemini/config/mcp_config.json');
+  await file.parent.create(recursive: true);
+  await file.writeAsString(const JsonEncoder.withIndent('  ').convert(config));
+  _log('Wrote ${file.path}');
 
-  // Verify Marionette MCP server tools/list via JSON-RPC over stdio
-  final proc = await Process.start('/Users/neil/.pub-cache/bin/marionette_mcp', []);
-  proc.stdin.writeln('{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"refuge_cli","version":"1.0.0"}}}');
-  proc.stdin.writeln('{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}');
+  final proc = await Process.start('$pubBin/marionette_mcp', []);
+  proc.stdin
+    ..writeln(jsonEncode({
+      'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
+      'params': {
+        'protocolVersion': '2024-11-05', 'capabilities': {},
+        'clientInfo': {'name': 'refuge_cli', 'version': '1.0.0'},
+      },
+    }))
+    ..writeln(jsonEncode({'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list'}));
   await proc.stdin.close();
-  final out = await proc.stdout.transform(const SystemEncoding().decoder).join();
-  stdout.writeln('==> Marionette MCP tools/list verified (${out.length} bytes response).');
+  final out = await proc.stdout.transform(utf8.decoder).join();
+  _log('marionette_mcp responded (${out.length} bytes).');
 }
+
 
 Future<void> _createDeployAndAudioIssues() async {
   stdout.writeln('==> Ensuring week1 label exists...');
@@ -424,7 +745,7 @@ Future<void> _addFlavorsAndCsvIssues() async {
 ### 🤖 LLM Execution Brief (Updated: All FlutterFire Packages + `dev`/`prod` Flavors)
 - **Worktree Setup**:
   ```bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-20-firebase-and-flavors -b feat/#20-firebase-and-flavors
+  git worktree add ../.worktrees/issue-20-firebase-and-flavors -b feat/#20-firebase-and-flavors
   ```
 - **Packages to Add in `pubspec.yaml`**:
   `firebase_core`, `firebase_analytics`, `firebase_remote_config`, `firebase_crashlytics`, `firebase_auth`, `firebase_messaging`, `firebase_performance`, `firebase_app_check`
@@ -515,7 +836,7 @@ Before **Belong on the Spectrum's** Circle.so subscription ends on **October 31s
 - **SECURITY MANDATE**: Real Circle CSV files contain member PII (names/emails). Ensure `.gitignore` blocks all real `.csv` files outside `test/fixtures/sample_anonymized_circle_export.csv`.
 - **Worktree Setup**:
   ```bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-41-circle-csv-migration -b feat/#41-circle-csv-migration
+  git worktree add ../.worktrees/issue-41-circle-csv-migration -b feat/#41-circle-csv-migration
   ```
 - **Target Files**:
   - `tool/import_circle_csv.dart`
@@ -585,7 +906,8 @@ Many students, mentees, and open-source apprentices work on **free-tier or cappe
 }
 
 const String _repo = 'neiljaywarner/refuge';
-const String _gh = '/opt/homebrew/bin/gh';
+/// GitHub CLI executable. Override with the `GH_BIN` environment variable.
+final String _gh = Platform.environment['GH_BIN'] ?? 'gh';
 
 Future<void> _syncIssues() async {
   stdout.writeln('==> 1. Closing early unlabelled draft duplicates (#2..#14)...');
@@ -647,7 +969,7 @@ To keep our Flutter codebase clean, testable, and free of `StatefulWidget` boile
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Medium (~12 Agent Clock Minutes)
 - **Worktree Command**:
   ```bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-35-hooks-riverpod-arch -b refactor/#35-hooks-riverpod-arch
+  git worktree add ../.worktrees/issue-35-hooks-riverpod-arch -b refactor/#35-hooks-riverpod-arch
   ```
 - **Verification**:
   ```bash

@@ -2,12 +2,12 @@
 
 > **Production Web & PWA URL**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 > **Firebase Console**: [`https://console.firebase.google.com/project/belongonthespectrum/overview`](https://console.firebase.google.com/project/belongonthespectrum/overview)
-> **Primary Automation CLI**: [`tool/deploy_release.dart`](file:///Users/neil/belongonthespectrum/refuge/tool/deploy_release.dart) & [`tool/refuge_cli.dart`](file:///Users/neil/belongonthespectrum/refuge/tool/refuge_cli.dart)
+> **Primary Automation CLI**: [`tool/deploy_release.dart`](tool/deploy_release.dart) & [`tool/refuge_cli.dart`](tool/refuge_cli.dart)
 > **Related Docs**:
-> * [`unattended_session_908pm.md`](file:///Users/neil/belongonthespectrum/unattended_session_908pm.md)
-> * [`neil_to_review_sunday_night.md`](file:///Users/neil/belongonthespectrum/neil_to_review_sunday_night.md)
-> * [`ADR-0006: Dev vs. Prod Flavor Strategy`](file:///Users/neil/belongonthespectrum/refuge/docs/adr/0006-firebase-flavors-dev-prod.md)
-> * [`ADR-0009: Serverpod, Appwrite & Firebase Hybrid Architecture`](file:///Users/neil/belongonthespectrum/refuge/docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
+> * [`unattended_session_908pm.md`](https://github.com/neiljaywarner/refuge/blob/main/unattended_session_908pm.md)
+> * [`neil_to_review_sunday_night.md`](https://github.com/neiljaywarner/refuge/blob/main/neil_to_review_sunday_night.md)
+> * [`ADR-0006: Dev vs. Prod Flavor Strategy`](docs/adr/0006-firebase-flavors-dev-prod.md)
+> * [`ADR-0009: Serverpod, Appwrite & Firebase Hybrid Architecture`](docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
 > * [GitHub Issue #56 (Minimum Viable Deployment Process)](https://github.com/neiljaywarner/refuge/issues/56)
 > * [GitHub Issue #57 (GitHub Actions CI/CD Auto-Deploy)](https://github.com/neiljaywarner/refuge/issues/57)
 > * [GitHub Issue #58 (Multi-Channel Release Notes & App Distribution)](https://github.com/neiljaywarner/refuge/issues/58)
@@ -17,7 +17,7 @@
 
 ## 1. Philosophy: Calm, Verifiable, Zero-Surprise Releases
 
-Every release of **Belong on the Spectrum** follows a 4-step deterministic pipeline implemented in pure Dart ([`tool/deploy_release.dart`](file:///Users/neil/belongonthespectrum/refuge/tool/deploy_release.dart)):
+Every release of **Belong on the Spectrum** follows a 4-step deterministic pipeline implemented in pure Dart ([`tool/deploy_release.dart`](tool/deploy_release.dart)):
 
 ```mermaid
 flowchart LR
@@ -80,7 +80,7 @@ dart run tool/deploy_release.dart --version v0.7.0 --dry-run
 
 ## 3. Firebase MCP Server & CLI Coexistence
 
-- **Firebase MCP Server (`firebase mcp`)**: Configured in `~/.gemini/config/mcp_config.json` pointing at `/Users/neil/belongonthespectrum/refuge`. Agents should prefer Firebase MCP tools for inspecting project configuration, Remote Config keys, Hosting sites, and Analytics/Crashlytics state.
+- **Firebase MCP Server (`firebase mcp`)**: Configured in `~/.gemini/config/mcp_config.json` with `--dir` set to the absolute path of the repo root (`refuge_cli configure-mcp` fills this in from the current directory). Agents should prefer Firebase MCP tools for inspecting project configuration, Remote Config keys, Hosting sites, and Analytics/Crashlytics state.
 - **Firebase CLI (`/opt/homebrew/bin/firebase`)**: Invoked by `tool/deploy_release.dart` for uploading compiled `build/web` static bundles to `belongonthespectrum.web.app` and preview channels.
 
 ---
