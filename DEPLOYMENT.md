@@ -37,28 +37,44 @@ flowchart LR
 
 We prefer **pure Dart** over fragile bash scripts so it runs identically on macOS Apple Silicon and Linux CI runners:
 
-### Deploy to Preview Channel + Live Production (`belongonthespectrum.web.app`)
+### Standard release (web prod + preview + GitHub Release)
 ```bash
-/opt/homebrew/bin/dart run tool/deploy_release.dart \
-  --version v0.8.0-alpha \
-  --channel v0-8-0-alpha \
-  --prod \
-  --github-release
+dart run tool/deploy_release.dart --version v0.7.0 --prod --github-release
 ```
 
-### Deploy Only to a Preview Channel (For PRs or Experimental Previews)
+### Full release incl. Android APK → App Distribution (`pre-alpha-testers`)
 ```bash
-/opt/homebrew/bin/dart run tool/deploy_release.dart \
-  --version v0.6.0-preview \
-  --channel pr-preview
+dart run tool/deploy_release.dart --version v0.8.0-alpha --prod --github-release \
+  --distribute-android \
+  --highlights-file docs/release_highlights/v0.8.0-alpha.md
+```
+Firebase emails every tester in the group the same notes, including the web preview link, so testers get **Android + Web in one email**. The Android app id is auto-detected (`firebase apps:list ANDROID`) or passed with `--android-app-id` / `FIREBASE_ANDROID_APP_ID`. Tester emails live only in the Firebase console, never in this repo.
+
+### Dry run (print notes, deploy nothing)
+```bash
+dart run tool/deploy_release.dart --version v0.7.0 --dry-run
 ```
 
-### Dry-Run Mode (Generate Release Notes & Verify Commands Without Publishing)
-```bash
-/opt/homebrew/bin/dart run tool/deploy_release.dart \
-  --version v0.8.0-alpha \
-  --dry-run
-```
+### How release notes are built
+1. Optional hand-written **Highlights** (`--highlights-file`): plain language, for members.
+2. **Changes**: merged commit titles since the previous tag (`git describe --tags HEAD^`), so notes only list what actually shipped.
+3. Fixed "How to try it" and "Feedback" sections.
+
+### Release discipline checklist
+- [ ] `main` is green: `analyze_files` + `run_tests` (Dart MCP) pass.
+- [ ] Every merged PR got a CodeRabbit review (`dart run tool/refuge_cli.dart review-status <N>`).
+- [ ] `dart run tool/refuge_cli.dart privacy-scan` is clean on new files.
+- [ ] Dry run reviewed; highlights mention only shipped features.
+- [ ] After deploy: open the prod URL and the preview URL; tap Feedback & Vote once.
+
+### Troubleshooting
+| Symptom | Fix |
+| :--- | :--- |
+| `JAVA_HOME is set to an invalid directory` | `flutter config --jdk-dir "/Applications/Android Studio.app/Contents/jbr/Contents/Home"` |
+| `LicenceNotAcceptedException` / `sdkmanager not found` | Install **Android SDK Command-line Tools** in Android Studio → SDK Tools, then `flutter doctor --android-licenses` (maintainer must accept) |
+| `firebase`/`gh` 401 inside an AI sandbox | Re-run that command outside the sandbox (keychain access) |
+| `Unable to add channel domain to Firebase Auth` | Harmless until Firebase Auth is enabled; ignore |
+| `No Firebase Android app found` | `firebase apps:list ANDROID --project belongonthespectrum`, then pass `--android-app-id` |
 
 ---
 
