@@ -23,7 +23,6 @@ import 'features/reflections/presentation/community_anchor_banner.dart';
 import 'features/reflections/presentation/quiet_digest_banner.dart';
 import 'features/reflections/presentation/reflection_card.dart';
 import 'features/reflections/presentation/reflection_composer.dart';
-import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';

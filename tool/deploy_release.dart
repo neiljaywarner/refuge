@@ -35,6 +35,7 @@
 /// | `--android-app-id` | `$FIREBASE_ANDROID_APP_ID` or auto-detect | Firebase Android app id |
 /// | `--groups` | `pre-alpha-testers` | App Distribution group alias(es) |
 /// | `--highlights-file` | none | Markdown prepended under "Highlights" |
+/// | `--attach` | none (repeatable) | File paths (images/videos) to upload to GitHub Release |
 /// | `--skip-build` | off | Reuse existing `build/web` / APK |
 /// | `--dry-run` | off | Print notes only; build/deploy nothing |
 ///
@@ -71,9 +72,10 @@ Future<void> main(List<String> args) async {
   final highlightsPath = _arg(args, '--highlights-file');
   final skipBuild = args.contains('--skip-build');
   final dryRun = args.contains('--dry-run');
+  final attachments = _argsAll(args, '--attach');
 
   _log('Release $version | channel=$channel prod=$prod gh=$ghRelease '
-      'android=$android groups=$groups dryRun=$dryRun');
+      'android=$android groups=$groups attachments=${attachments.length} dryRun=$dryRun');
 
   if (dryRun) {
     final notes = await _writeNotes(version, previewUrl: '(preview URL)',
@@ -133,6 +135,16 @@ Future<void> main(List<String> args) async {
       '--notes-file', notes.path,
       if (exists.exitCode != 0) '--prerelease',
     ]);
+    if (attachments.isNotEmpty) {
+      final validFiles = attachments.where((p) => File(p).existsSync()).toList();
+      if (validFiles.isNotEmpty) {
+        _log('Uploading ${validFiles.length} release asset(s) to GitHub Release $version ...');
+        await _run(_bin('gh'), [
+          'release', 'upload', version, ...validFiles,
+          '--repo', _repo, '--clobber',
+        ]);
+      }
+    }
   }
 
   if (android) {
@@ -155,6 +167,19 @@ String? _arg(List<String> args, String flag) {
     if (a.startsWith('$flag=')) return a.substring(flag.length + 1);
   }
   return null;
+}
+
+List<String> _argsAll(List<String> args, String flag) {
+  final result = <String>[];
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] == flag && i + 1 < args.length) {
+      result.add(args[i + 1]);
+      i++;
+    } else if (args[i].startsWith('$flag=')) {
+      result.add(args[i].substring(flag.length + 1));
+    }
+  }
+  return result;
 }
 
 void _log(String m) =>

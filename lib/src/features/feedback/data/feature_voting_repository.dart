@@ -153,15 +153,15 @@ class FirebaseFeatureVotingRepository
   FirebaseFeatureVotingRepository({
     this.featuresCollectionPath = 'feature_votes',
     this.feedbackCollectionPath = 'member_feedback',
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore;
+    this.customFirestore,
+  });
 
   final String featuresCollectionPath;
   final String feedbackCollectionPath;
-  final FirebaseFirestore? _firestore;
+  final FirebaseFirestore? customFirestore;
 
   FirebaseFirestore? get firestore {
-    if (_firestore != null) return _firestore;
+    if (customFirestore != null) return customFirestore;
     try {
       return FirebaseFirestore.instance;
     } catch (_) {
