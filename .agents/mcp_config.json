@@ -1,0 +1,43 @@
+{
+  "mcpServers": {
+    "dart": {
+      "command": "/opt/homebrew/bin/dart",
+      "args": [
+        "mcp-server",
+        "--enable",
+        "all"
+      ]
+    },
+    "marionette": {
+      "command": "/Users/neil/.pub-cache/bin/marionette_mcp",
+      "args": []
+    },
+    "patrol": {
+      "command": "/opt/homebrew/bin/dart",
+      "args": [
+        "pub",
+        "global",
+        "run",
+        "patrol_mcp"
+      ],
+      "env": {
+        "PROJECT_ROOT": "/Users/neil/belongonthespectrum/refuge_13oct_2026_prototype_for_serverpod_hackathon",
+        "PATROL_FLAGS": "",
+        "SHOW_TERMINAL": "false"
+      }
+    },
+    "adb": {
+      "command": "/opt/homebrew/bin/npx",
+      "args": [
+        "-y",
+        "adb-mcp@0.1.1"
+      ]
+    },
+    "github": {
+      "command": "/bin/bash",
+      "args": [
+        "/Users/neil/belongonthespectrum/.agents/plugins/github/run_github_mcp.sh"
+      ]
+    }
+  }
+}
