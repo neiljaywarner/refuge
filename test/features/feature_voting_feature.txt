@@ -1,0 +1,19 @@
+Feature: Neurodivergent-First 1-Tap Feature Voting & Literal 3-Intent Feedback (ADR-0007 / ADR-0009)
+  As a Belong on the Spectrum community member
+  I want a calm, literal 1-tap feature voting board and 3-intent feedback sheet
+  So that I can prioritize community features before the October 31 Circle.so cutover without star-rating ambiguity
+
+  Scenario: Member upvotes an active WIP feature on the Feature Voting Board
+    Given the Belong on the Spectrum app is running
+    When I tap the "Feedback & Vote" button in the top bar
+    Then I see the "Belong Roadmap & Feedback" sheet
+    And I see "Direct Messages (Msgs Tab)" with badge "WIP · Shipping Before Oct 31"
+    When I tap the upvote button for "wip-direct-messages"
+    Then the vote count for "Direct Messages (Msgs Tab)" increases by 1
+
+  Scenario: Member shares a private suggestion using Literal 3-Intent Cards
+    Given the "Belong Roadmap & Feedback" sheet is open
+    When I tap the "Send Feedback" tab
+    Then I see the 3 literal intent cards "Works Great", "Idea / Tweak", and "Bug / Confusing"
+    When I select "Idea / Tweak"
+    Then I see the literal prompt "What would make Belong clearer or calmer for you?"
