@@ -1,39 +1,36 @@
-# ♾️ Belong on the Spectrum (Powered by Refuge) — Community & Project Wiki
+# 🌱 Welcome to the Belong on the Spectrum & Refuge Wiki
 
-> *"I praise you because I am fearfully and wonderfully made."* — **Psalm 139:14**  
-> **Community Website**: [belongonthespectrum.com](https://www.belongonthespectrum.com/) • **Partner Church**: [DFW Church](https://dfwchurch.org)  
-> **Circle.so Cutover Target**: **Saturday, October 31, 2026**
+**Belong on the Spectrum** ([belongonthespectrum.com](https://www.belongonthespectrum.com/), partnered with [DFW Church](https://dfwchurch.org)) is a calm, sensory-safe digital community built with and for autistic and neurodivergent adults, friends, and families.
 
 ---
 
-## 👋 Welcome! Start With Your Role
+## 🤝 Wondering How You Can Help Tonight? (Start Here — Zero Tech Skills Needed!)
 
-We organized this Wiki so **community members, non-technical organizers, and software contributors/apprentices** can immediately find what they need in plain English:
+👉 **[Read: How You Can Help & Copy-Paste Message for Our Current Circle App](How-You-Can-Help-Volunteer-Guide)**
 
-### 🏛️ 1. For Non-Technical Community Organizers & Leaders
-- **[📅 Non-Technical Roadmap & Schedule to October 31st (Circle.so Cutover)](Non-Technical-Roadmap-to-Oct-31)**  
-  *Day-by-day calendar from October 18 to October 31, 2026 (the final day of the Circle.so subscription), showing how every Circle space maps to the new Belong app.*
-- **[📣 Updating the "Message from the Organizer" Without Coding (Firebase Remote Config)](Organizer-Remote-Config-Guide)**  
-  *Step-by-step guide to changing the welcome banner, announcements, and links anytime from a simple web dashboard.*
-- **[📱 Progressive Web App (PWA) Guide — How Long Can We Stay on Web/PWA Before App Stores?](PWA-Guide-for-Members-and-Organizers)**  
-  *How members install Belong onto their iPhone or Android Home Screen in 10 seconds, and why the PWA lets us cut over from Circle.so on October 31st with zero App Store wait.*
-- **[🧩 Belong Community & Sensory Accessibility Guide](Belong-Community-Guide)**  
-  *How our 4 sensory themes (High Clarity, Warm Calm, Low Stimulus Dark, Low Motion) protect neurodivergent comfort.*
+Whether you have **1 minute** to upvote your favorite upcoming features in the app, **3 minutes** to test adding the app to your phone's Home Screen, or **5 minutes** to post a warm "Hello" during our October 24–31 transition week, your voice shapes our new home!
 
 ---
 
-### 🎓 2. For Contributors, Students, Mentees & Apprentices
-- **[🤝 Contributor Guide (Technical & Non-Technical)](Contributor-Guide)**  
-  *How volunteers, testers, designers, and developers contribute safely using Ticket-Driven Development.*
-- **[🎓 Student, Mentee & Apprentice Guide (Clean Architecture, BDD & Free-Tier Token Optimization)](Apprentice-and-Token-Optimization-Guide)**  
-  *Learn CodeWithAndrea feature-first architecture, `hooks_riverpod`, Red-Green-Refactor BDD, pure-Dart CLI tooling (`tool/refuge_cli.dart`), and how students on free AI tiers save 80–90% of their tokens.*
-- **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)**  
-  *User acceptance testing personas and accessibility verification checklists.*
+## 🧭 Quick Navigation for Community Members & Organizers
+
+| Guide | Who It's For | What You'll Learn |
+| :--- | :--- | :--- |
+| **[🤝 How You Can Help (Volunteer Guide & Circle Copy/Paste)](How-You-Can-Help-Volunteer-Guide)** | **Everyone** (Members, Welcomers, Organizers) | Ready-to-copy message for our current Circle app + 5 easy ways to help this week without writing a line of code. |
+| **[📅 October 31st Circle.so Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)** | **Non-Technical Organizers & Leaders** | How we save **~$1,000+/year** over [Circle.so Pricing](https://circle.so/pricing), why we launch by **Oct 24** for a calm 7-day overlap before **Oct 31**, and what works on Day 1. |
+| **[📱 PWA Guide: Install on Your Phone & Store Timeline](PWA-Guide-for-Members-and-Organizers)** | **Members & Organizers** | Step-by-step instructions to add Belong to your iPhone/Android Home Screen today + why we can stay on PWA for months before needing Apple/Google stores. |
+| **[🎛️ Organizer Control Without Coding (Remote Config)](Organizer-Remote-Config-Guide)** | **Community Organizers** | How to update welcome banners and feature toggles instantly using [Firebase Remote Config](https://firebase.google.com/products/remote-config) ([Watch 3-Min Video](https://www.youtube.com/watch?v=_CXXVFPO6f0)). |
+| **[🏘️ Belong Community Spaces & Guidelines](Belong-Community-Guide)** | **All Community Members** | Tour of our 6 calm spaces (*Say Hello*, *Geek Out!*, *Sensory-Friendly Living*, *Faith & Spectrum*, *Prayer & Encouragement*, and *Advocacy*). |
+| **[🌿 Calm Technology & Sensory Safety](Calm-Tech-and-Accessibility)** | **Members & Designers** | Why Belong has zero autoplay video, predictable navigation, literal feedback cards, and neurodivergent-affirming design. |
 
 ---
 
-### ⚙️ 3. Architecture & Technical Reference
-- **[⚡ Serverpod & Full-Stack Dart Architecture](Serverpod-Architecture-Deep-Dive)**
-- **[🛡️ Calm-Tech & WCAG AAA Accessibility Standards](Calm-Tech-and-Accessibility)**
-- **[🧭 User Journeys & Community Spaces](User-Journeys-and-Fellowship-Rooms)**
-- **[💼 Principal Engineering & Architecture Showcase](Resume-and-Engineering-Showcase)**
+## 🛠️ Engineering, Architecture Decision Records (ADRs) & Student Mentoring
+
+| Technical Resource | Summary |
+| :--- | :--- |
+| **[🧭 UX Evaluation & Architecture Decision Records (ADRs 0001–0008)](UX-Evaluation-and-ADRs)** | Full index of our timestamped ADRs + our UX evaluation simplifying Selah's feedback system into **Literal 3-Intent Cards + 1-Tap WIP Feature Voting** (with backport notes for Selah). |
+| **[⚖️ Backend Evaluation: Serverpod + Firebase vs. Appwrite (`appwrite.io`)](Migrate-to-Appwrite-Evaluation)** | Honest **37signals "Getting Real"** evaluation grading the likelihood (**85% right after `v1.0`**) of migrating to Appwrite for $0/mo hosting, turnkey Google/Apple OAuth, FCM, and Realtime. |
+| **[🎓 Apprentice, Mentee & Free-Tier Token Optimization Guide](Apprentice-and-Token-Optimization-Guide)** | How students and mentees use `hooks_riverpod`, CodeWithAndrea architecture, git worktrees, BDD, and smart AI model routing without burning LLM token quotas. |
+| **[🤝 Contributor Guide & Ticket-Driven Workflow](Contributor-Guide)** | How to pick an issue, spin up a worktree branch, run tests locally, and open a clean Pull Request. |
+| **[🧪 QA, BDD & Beta Testing Guide](QA-and-Beta-Testing-Guide)** | How we verify every release with Gherkin BDD widget tests, Marionette MCP, and Patrol MCP. |
