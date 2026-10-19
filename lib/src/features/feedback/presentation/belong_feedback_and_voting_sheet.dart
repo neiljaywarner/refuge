@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/feature_voting_repository.dart';
 import '../domain/feedback_and_voting_models.dart';
@@ -190,7 +189,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   for (final item in features)
                     Card(
                       key: Key('vote_card_${item.id}'),
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: const militaryPadding ?? const EdgeInsets.only(bottom: 10),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
