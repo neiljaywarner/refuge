@@ -1,10 +1,11 @@
-import 'dart:developer' as developer;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.dart';
+import 'package:refuge4serverpod/src/core/logging/app_logger.dart' as app_log;
+import 'package:talker_flutter/talker_flutter.dart';
 
 /// Unified error handling and observability service delivering triple-destination
 /// error reporting across:
@@ -17,10 +18,12 @@ class ErrorReporterService {
   ErrorReporterService({
     required this.flavor,
     required this.analyticsService,
-  });
+    Talker? talkerInstance,
+  }) : talker = talkerInstance ?? app_log.talker;
 
   final AppFlavor flavor;
   final CommunityAnalyticsService analyticsService;
+  final Talker talker;
 
   /// In-memory ring buffer of reported errors for UI diagnostics and test inspection.
   final List<Map<String, Object?>> recordedErrorsForTesting = [];
@@ -45,13 +48,20 @@ class ErrorReporterService {
     };
     recordedErrorsForTesting.add(errorEntry);
 
-    // 1. Diagnostics / developer log (visible in VM Service / console)
-    developer.log(
-      '🚨 [ErrorReporter] ${fatal ? "FATAL" : "HANDLED"}: $exception (Reason: $reason)',
-      name: 'belong.error',
-      error: exception,
-      stackTrace: stack,
-    );
+    // 1. Diagnostics & structured logging via Talker
+    if (fatal) {
+      talker.critical(
+        '🚨 [ErrorReporter FATAL] $exception (Reason: $reason)',
+        exception,
+        stack,
+      );
+    } else {
+      talker.error(
+        '⚠️ [ErrorReporter HANDLED] $exception (Reason: $reason)',
+        exception,
+        stack,
+      );
+    }
 
     // 2. Firebase Analytics: log 'app_error' event with category and reason
     try {
