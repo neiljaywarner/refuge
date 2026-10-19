@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 
@@ -34,19 +36,19 @@ export 'src/features/reflections/data/post_repository.dart';
 export 'src/features/reflections/data/post_repository_factory.dart';
 export 'src/features/reflections/data/serverpod_post_repository.dart';
 export 'src/features/reflections/domain/post.dart';
-export 'src/features/reflections/presentation/community_anchor_banner.dart';
-export 'src/features/reflections/presentation/quiet_digest_banner.dart';
-export 'src/features/reflections/presentation/reflection_card.dart';
-export 'src/features/reflections/presentation/reflection_composer.dart';
-export 'src/features/reflections/presentation/reflections_providers.dart';
-export 'src/features/reflections/presentation/space_navigation_bar.dart';
-export 'src/features/reflections/presentation/tone_filter_row.dart';
 export 'src/features/search/presentation/community_search_view.dart';
 export 'src/features/sensory_themes/domain/sensory_mode.dart';
 export 'src/features/sensory_themes/presentation/sensory_theme_controller.dart';
 export 'src/home_screen.dart';
 
-void bootstrapBelongApp({required AppFlavor flavor}) {
+/// Entrypoint with runtime flavor resolution for Dev, TestFlight/Play Beta,
+/// and Production (#52, ADR-0006).
+void main() {
+  const flavor = AppFlavor.dev;
+  runWithFlavor(flavor);
+}
+
+void runWithFlavor(AppFlavor flavor) {
   WidgetsFlutterBinding.ensureInitialized();
 
   final analytics = CommunityAnalyticsService(flavor: flavor);
@@ -58,7 +60,7 @@ void bootstrapBelongApp({required AppFlavor flavor}) {
     errorReporter.recordError(
       details.exception,
       details.stack,
-      reason: details.context?.toStringShort(),
+      reason: details.context?.toDescription(),
       fatal: false,
     );
   };
@@ -75,17 +77,13 @@ void bootstrapBelongApp({required AppFlavor flavor}) {
   // debug builds (red screen found while driving the Pixel, #73).
   runApp(
     SanctuaryApp(
-      repository: PostRepositoryFactory.create(),
-      overrides: [
-        appFlavorProvider.overrideWithValue(flavor),
-        communityAnalyticsServiceProvider.overrideWithValue(analytics),
-        errorReporterServiceProvider.overrideWithValue(errorReporter),
-      ],
+      flavor: flavor,
+      repository: PostRepositoryFactory.create(
+        flavor: flavor,
+        enableServerpod: false,
+      ),
+      analyticsService: analytics,
+      errorReporter: errorReporter,
     ),
   );
-}
-
-void main() {
-  const envFlavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
-  bootstrapBelongApp(flavor: AppFlavor.fromString(envFlavor));
 }
