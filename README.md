@@ -46,6 +46,7 @@ Its flagship community is **[Belong on the Spectrum](https://www.belongonthespec
 | :--- | :--- | :--- |
 | **[📅 Oct 31 Circle.so Cutover Schedule](docs/wiki/Non-Technical-Roadmap-to-Oct-31.md)** | **Organizers & Pastors** | Plain-English day-by-day schedule from Oct 18 to Oct 31, 2026 (final day of Circle.so subscription). |
 | **[⚖️ Backend Migration & Hybrid Grading (ADR-0009)](docs/wiki/Backend-Migration-Strategy-Serverpod-Appwrite-Firebase.md)** | **Engineers & Architects** | Why Appwrite Core (Auth/DB/Realtime) + Firebase Edge (Hosting/FCM/Audiences) scores **A+ (`9.7/10`)**, and Piece-by-Piece vs. One-Shot grading. |
+| **[🛠️ Refuge CLI (`tool/refuge_cli.dart`)](docs/wiki/Refuge-CLI.md)** | **Engineers & Mentees** | `ship-pr` (CodeRabbit-gated merges), `privacy-scan`, `sync-wiki`, exit codes & FAQ. Run `dart run tool/refuge_cli.dart help`. |
 | **[🚀 Deployment & Release Runbook](DEPLOYMENT.md)** | **Engineers & Release Ops** | Pure-Dart deployment script (`tool/deploy_release.dart`) + `week1` Audio MP3 Release Notes roadmap. |
 | **[📣 Organizer Remote Config Guide](docs/wiki/Organizer-Remote-Config-Guide.md)** | **Organizers & Leaders** | How to edit the *"Message from the Organizer"* banner without needing a developer. |
 | **[📱 PWA & App Store Guide](docs/wiki/PWA-Guide-for-Members-and-Organizers.md)** | **Members & Organizers** | How members install Belong to their iPhone/Android Home Screen in 10 seconds. |

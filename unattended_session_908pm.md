@@ -2,9 +2,9 @@
 
 > **Window**: Sunday, October 18, 2026 · **9:08 PM – 11:30+ PM CDT**
 > **Target Outcome**: Ship **`v0.6.0`**, **`v0.7.0`**, and **`v0.8.0-alpha`** (*Usable Community Alpha with Stage 1 Auth, Feature Voting 4-Layer Test Suite, Direct Messages, Events Calendar, Circle CSV Importer, and Live Deployment to `https://belongonthespectrum.web.app` + Firebase Preview Channels*).
-> **Companion Review Doc**: [`neil_to_review_sunday_night.md`](file:///Users/neil/belongonthespectrum/refuge/neil_to_review_sunday_night.md)
-> **Deployment Runbook**: [`DEPLOYMENT.md`](file:///Users/neil/belongonthespectrum/refuge/DEPLOYMENT.md)
-> **Backend Migration ADR**: [`docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md`](file:///Users/neil/belongonthespectrum/refuge/docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
+> **Companion Review Doc**: [`neil_to_review_sunday_night.md`](neil_to_review_sunday_night.md)
+> **Deployment Runbook**: [`DEPLOYMENT.md`](DEPLOYMENT.md)
+> **Backend Migration ADR**: [`docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md`](docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
 > **Live Wiki**: [GitHub Wiki (`refuge.wiki.git`)](https://github.com/neiljaywarner/refuge/wiki)
 
 ---
@@ -19,4 +19,4 @@
 
 ## 2. Execution Phases (Phases 0 – 5)
 
-See [`/Users/neil/belongonthespectrum/unattended_session_908pm.md`](file:///Users/neil/belongonthespectrum/unattended_session_908pm.md) and [`neil_to_review_sunday_night.md`](file:///Users/neil/belongonthespectrum/refuge/neil_to_review_sunday_night.md) for the live ticket-by-ticket tracker.
+See [`neil_to_review_sunday_night.md`](neil_to_review_sunday_night.md) for the live ticket-by-ticket tracker.

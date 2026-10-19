@@ -1,8 +1,8 @@
 # ⚖️ Backend Migration Strategy: Grading Serverpod, Appwrite & Firebase Hybrid (`v1.0` – `v2.0`)
 
-> **Companion ADR**: [`ADR-0009: Piece-by-Piece vs. One-Shot Backend Migration`](file:///Users/neil/belongonthespectrum/refuge/docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
+> **Companion ADR**: [`ADR-0009: Piece-by-Piece vs. One-Shot Backend Migration`](../../docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
-> **Deployment Runbook**: [`DEPLOYMENT.md`](file:///Users/neil/belongonthespectrum/refuge/DEPLOYMENT.md)
+> **Deployment Runbook**: [`DEPLOYMENT.md`](../../DEPLOYMENT.md)
 
 ---
 

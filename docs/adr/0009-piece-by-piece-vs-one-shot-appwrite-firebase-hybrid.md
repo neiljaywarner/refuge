@@ -4,11 +4,11 @@
 * **Date**: October 18, 2026
 * **Deciders**: Neil Jay Warner & Engineering Team
 * **Related Docs**:
-  * [`unattended_session_908pm.md`](file:///Users/neil/belongonthespectrum/unattended_session_908pm.md)
-  * [`neil_to_review_sunday_night.md`](file:///Users/neil/belongonthespectrum/neil_to_review_sunday_night.md)
-  * [`DEPLOYMENT.md`](file:///Users/neil/belongonthespectrum/refuge/DEPLOYMENT.md)
-  * [ADR-0007: Neurodivergent-First Feedback & 1-Tap Feature Voting](file:///Users/neil/belongonthespectrum/refuge/docs/adr/0007-neurodivergent-feedback-and-feature-voting.md)
-  * [ADR-0008: Appwrite Migration Timing](file:///Users/neil/belongonthespectrum/refuge/docs/adr/0008-appwrite-migration-timing.md)
+  * [`unattended_session_908pm.md`](https://github.com/neiljaywarner/refuge/blob/main/unattended_session_908pm.md)
+  * [`neil_to_review_sunday_night.md`](https://github.com/neiljaywarner/refuge/blob/main/neil_to_review_sunday_night.md)
+  * [`DEPLOYMENT.md`](../../DEPLOYMENT.md)
+  * [ADR-0007: Neurodivergent-First Feedback & 1-Tap Feature Voting](../../docs/adr/0007-neurodivergent-feedback-and-feature-voting.md)
+  * [ADR-0008: Appwrite Migration Timing](../../docs/adr/0008-appwrite-migration-timing.md)
   * [Wiki: Backend Migration Strategy (Serverpod, Appwrite & Firebase)](https://github.com/neiljaywarner/refuge/wiki/Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)
 
 ---

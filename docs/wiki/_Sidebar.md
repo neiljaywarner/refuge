@@ -12,6 +12,7 @@
 * **[⚖️ Serverpod → Appwrite + Firebase Hybrid Grading (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
 * **[🔄 Appwrite vs. Serverpod Evaluation](Migrate-to-Appwrite-Evaluation)**
 * **[📸 Plan for Videos & Screenshots](Plan-for-Videos-and-Screenshots)**
+* **[🛠️ Refuge CLI](Refuge-CLI)**
 * **[🎓 Apprentice & Token Guide](Apprentice-and-Token-Optimization-Guide)**
 * **[🤝 Contributor Guide](Contributor-Guide)**
 * **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)**
