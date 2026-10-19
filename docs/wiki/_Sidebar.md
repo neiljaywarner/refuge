@@ -1,29 +1,27 @@
-### 🌿 Sanctuary (Refuge) Wiki
-**v0.1.0 Hackathon Release**
-*Anchor*: [Belong on the Spectrum](https://www.belongonthespectrum.com/)  
-*"Fearfully & Wonderfully Made"* (Ps 139:14)
+### ♾️ Belong on the Spectrum Wiki
+*Powered by Refuge*  
+[belongonthespectrum.com](https://www.belongonthespectrum.com/) • [DFW Church](https://dfwchurch.org)
 
 ---
 
-### 🧭 Audience Portals
+### 🌟 Organizers & Members
 * **[🏠 Wiki Home](Home)**
-* **[🏆 Hackathon Judges Portal](Hackathon-Judges-Portal)**
-* **[💼 Resume & Engineering Showcase](Resume-and-Engineering-Showcase)**
+* **[📅 Oct 31 Circle.so Cutover Schedule](Non-Technical-Roadmap-to-Oct-31)**
+* **[📣 Organizer Remote Config Guide](Organizer-Remote-Config-Guide)**
+* **[📱 PWA & App Store Guide](PWA-Guide-for-Members-and-Organizers)**
 * **[🧩 Belong Community Guide](Belong-Community-Guide)**
+
+---
+
+### 🎓 Contributors & Apprentices
+* **[🤝 Contributor Guide](Contributor-Guide)**
+* **[🎓 Apprentice & Token Optimization Guide](Apprentice-and-Token-Optimization-Guide)**
 * **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)**
 
 ---
 
-### ⚙️ Technical Deep Dives
-* **[⚡ Serverpod Architecture Deep Dive](Serverpod-Architecture-Deep-Dive)**
-* **[📱 Dual Pixel Cloud Demo](Dual-Pixel-Cloud-Demo)**
+### ⚙️ Architecture & Deep Dives
 * **[🛡️ Calm-Tech & Accessibility (WCAG)](Calm-Tech-and-Accessibility)**
-
----
-
-### 🌐 Quick Links
-* [Live Web App](https://refuge4serverpodhackathon.web.app)
-* [Serverpod Cloud API](https://refuge4serverpod.api.serverpod.space/)
-* [Serverpod Insights](https://refuge4serverpod.insights.serverpod.space/)
-* [GitHub Repository](https://github.com/neiljaywarner/refuge4serverpod)
-* [v0.1.0 Release (APK & Videos)](https://github.com/neiljaywarner/refuge4serverpod/releases/tag/v0.1.0)
+* **[🧭 Community Spaces & Journeys](User-Journeys-and-Fellowship-Rooms)**
+* **[⚡ Serverpod Architecture](Serverpod-Architecture-Deep-Dive)**
+* **[💼 Engineering Showcase](Resume-and-Engineering-Showcase)**

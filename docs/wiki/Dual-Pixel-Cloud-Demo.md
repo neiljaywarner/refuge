@@ -65,4 +65,4 @@ adb -s $LEFT_DEV pull /sdcard/left_pixel_scloud.mp4 ./sanctuary_pixel_left_sclou
 adb -s $RIGHT_DEV pull /sdcard/right_pixel_scloud.mp4 ./sanctuary_pixel_right_scloud.mp4
 ```
 
-This ensures reproducible, verifiable hardware validation for hackathon evaluators.
+This ensures reproducible, verifiable hardware validation for community QA testers and contributors.

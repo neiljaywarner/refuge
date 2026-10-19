@@ -8,7 +8,7 @@
 ## 📥 How to Access Test Builds
 
 ### 1. Web Application (All Modern Browsers)
-* URL: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app)
+* URL: [https://www.belongonthespectrum.com/](https://www.belongonthespectrum.com/)
 * Supported: Chrome, Safari, Firefox, Edge on desktop, tablet, and mobile.
 
 ### 2. Android Standalone APK

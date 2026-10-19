@@ -1,86 +1,39 @@
-# 🌿 Sanctuary (Refuge): Calm-Tech Fellowship Platform
-### *Official Documentation & Community Knowledge Base*
+# ♾️ Belong on the Spectrum (Powered by Refuge) — Community & Project Wiki
 
-[![Flutter 3](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
-[![Serverpod 4.0.4](https://img.shields.io/badge/Serverpod-4.0.4-blueviolet)](https://serverpod.dev)
-[![Serverpod Cloud](https://img.shields.io/badge/Serverpod%20Cloud-Active-brightgreen)](https://refuge4serverpod.serverpod.space/)
-[![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org)
-[![Tests Passing](https://img.shields.io/badge/Tests-20%2F20%20Passing-success)](https://github.com/neiljaywarner/refuge4serverpod/tree/main/test)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-refuge4serverpodhackathon.web.app-brightgreen)](https://refuge4serverpodhackathon.web.app)
-
-> **"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."**  
-> — *Psalm 139:14*
+> *"I praise you because I am fearfully and wonderfully made."* — **Psalm 139:14**  
+> **Community Website**: [belongonthespectrum.com](https://www.belongonthespectrum.com/) • **Partner Church**: [DFW Church](https://dfwchurch.org)  
+> **Circle.so Cutover Target**: **Saturday, October 31, 2026**
 
 ---
 
-## 🕊️ Welcome to Sanctuary
+## 👋 Welcome! Start With Your Role
 
-**Sanctuary (Refuge)** is a custom, full-stack, calm-tech community platform created with **Flutter** and **Serverpod 4**. It was built specifically for **[Belong on the Spectrum](https://www.belongonthespectrum.com/)**, an initiative created by and for Autistic Disciples of Jesus, neurodivergent Christians, and their allies.
+We organized this Wiki so **community members, non-technical organizers, and software contributors/apprentices** can immediately find what they need in plain English:
 
-Mainstream community platforms (Circle, Mighty Networks, Slack, and Discord) charge small non-profits and faith communities **$89–$130/month ($1,000–$1,560/year)** and bombard users with dopamine gamification, red notification badges, and sensory overload. Sanctuary replaces this expensive, stressful model with **low-cost Serverpod 4 compute (<$5/month)** and an unshakeable calm-tech ethos.
-
----
-
-## 🧭 Audience Portals
-
-Please select the portal that best fits your role:
-
-| Portal | Target Audience | Key Contents |
-| :--- | :--- | :--- |
-| **[🏆 Hackathon Judges Portal](Hackathon-Judges-Portal)** | Serverpod Hackathon Evaluators | Rubric breakdown (100%), live Serverpod Cloud endpoints, `.spy.yaml` protocols, PostgreSQL schema, 20/20 test results. |
-| **[💼 Resume & Engineering Showcase](Resume-and-Engineering-Showcase)** | Hiring Managers, Recruiters & Technical Peers | Full-stack Dart architectural leadership, 96% cost reduction case study, dual-hardware mobile automation, technical portfolio overview. |
-| **[🧩 Belong Community Guide](Belong-Community-Guide)** | Autistic Believers, Pastors, Caregivers & Allies | Community anchor, Psalm 139:14 mission, 5 fellowship spaces, special interest badging, autism & faith memes, 4 sensory modes. |
-| **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)** | QA Testers, UAT Evaluators & Early Beta Users | Web & Android APK installation, persona test matrices, offline fallback verification, bug report templates. |
+### 🏛️ 1. For Non-Technical Community Organizers & Leaders
+- **[📅 Non-Technical Roadmap & Schedule to October 31st (Circle.so Cutover)](Non-Technical-Roadmap-to-Oct-31)**  
+  *Day-by-day calendar from October 18 to October 31, 2026 (the final day of the Circle.so subscription), showing how every Circle space maps to the new Belong app.*
+- **[📣 Updating the "Message from the Organizer" Without Coding (Firebase Remote Config)](Organizer-Remote-Config-Guide)**  
+  *Step-by-step guide to changing the welcome banner, announcements, and links anytime from a simple web dashboard.*
+- **[📱 Progressive Web App (PWA) Guide — How Long Can We Stay on Web/PWA Before App Stores?](PWA-Guide-for-Members-and-Organizers)**  
+  *How members install Belong onto their iPhone or Android Home Screen in 10 seconds, and why the PWA lets us cut over from Circle.so on October 31st with zero App Store wait.*
+- **[🧩 Belong Community & Sensory Accessibility Guide](Belong-Community-Guide)**  
+  *How our 4 sensory themes (High Clarity, Warm Calm, Low Stimulus Dark, Low Motion) protect neurodivergent comfort.*
 
 ---
 
-## 🌐 Live Deployments & Verification
-
-* 🌐 **Live Web Application**: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app)
-* ☁️ **Serverpod Cloud API Endpoint**: [https://refuge4serverpod.api.serverpod.space/](https://refuge4serverpod.api.serverpod.space/)
-* 🖥️ **Serverpod Cloud Web Landing**: [https://refuge4serverpod.serverpod.space/](https://refuge4serverpod.serverpod.space/)
-* 📊 **Serverpod Insights**: [https://refuge4serverpod.insights.serverpod.space/](https://refuge4serverpod.insights.serverpod.space/)
-* 📦 **GitHub Release v0.1.0 (APK & Demos)**: [v0.1.0 Release](https://github.com/neiljaywarner/refuge4serverpod/releases/tag/v0.1.0)
-* 📱 **Dual Pixel 9a Cloud Demos**: [Pixel Left Demo](https://github.com/neiljaywarner/refuge4serverpod/releases/download/v0.1.0/sanctuary_pixel_left_scloud.mp4) • [Pixel Right Demo](https://github.com/neiljaywarner/refuge4serverpod/releases/download/v0.1.0/sanctuary_pixel_right_scloud.mp4)
-
----
-
-## ⚡ Architectural Snapshot
-
-```mermaid
-graph TD
-    subgraph Client ["Client Layer (Flutter Multi-Platform)"]
-        UI["Sanctuary App (WCAG AAA Themes)"]
-        Repo["ServerpodPostRepository (800ms Fallback Moat)"]
-        Local["LocalPostRepository (Seeded In-Memory Data)"]
-        UI --> Repo
-        Repo -.->|Offline Fallback| Local
-    end
-
-    subgraph Cloud ["Serverpod 4 Cloud Backend (scloud)"]
-        API["ReflectionEndpoint (WSS / JSON RPC)"]
-        Filter["Calm-Tech Urgency Filter (Anti-FOMO)"]
-        Digest["QuietDigest Aggregator"]
-        Stream["session.messages Stream Engine"]
-        
-        API --> Filter
-        Filter --> Digest
-        API --> Stream
-    end
-
-    subgraph Data ["Data & State Persistence"]
-        PG[("PostgreSQL 16 (reflection_posts)")]
-        Redis[("Redis 7 Cache & Pub/Sub")]
-        API --> PG
-        Stream --> Redis
-    end
-
-    Repo ==>|WSS / HTTPS| API
-```
+### 🎓 2. For Contributors, Students, Mentees & Apprentices
+- **[🤝 Contributor Guide (Technical & Non-Technical)](Contributor-Guide)**  
+  *How volunteers, testers, designers, and developers contribute safely using Ticket-Driven Development.*
+- **[🎓 Student, Mentee & Apprentice Guide (Clean Architecture, BDD & Free-Tier Token Optimization)](Apprentice-and-Token-Optimization-Guide)**  
+  *Learn CodeWithAndrea feature-first architecture, `hooks_riverpod`, Red-Green-Refactor BDD, pure-Dart CLI tooling (`tool/refuge_cli.dart`), and how students on free AI tiers save 80–90% of their tokens.*
+- **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)**  
+  *User acceptance testing personas and accessibility verification checklists.*
 
 ---
 
-## 📖 Additional Technical Pages
-* **[Serverpod Architecture Deep Dive](Serverpod-Architecture-Deep-Dive)**: Complete review of SPI protocols, PostgreSQL indexing, and backend validation.
-* **[Dual Pixel Cloud Demo](Dual-Pixel-Cloud-Demo)**: How we verified physical multi-device communication on T-Mobile LTE.
-* **[Calm-Tech & Accessibility](Calm-Tech-and-Accessibility)**: Cognitive ease, color psychology, and WCAG AAA compliance.
+### ⚙️ 3. Architecture & Technical Reference
+- **[⚡ Serverpod & Full-Stack Dart Architecture](Serverpod-Architecture-Deep-Dive)**
+- **[🛡️ Calm-Tech & WCAG AAA Accessibility Standards](Calm-Tech-and-Accessibility)**
+- **[🧭 User Journeys & Community Spaces](User-Journeys-and-Fellowship-Rooms)**
+- **[💼 Principal Engineering & Architecture Showcase](Resume-and-Engineering-Showcase)**
