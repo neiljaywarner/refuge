@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../feedback/data/feature_voting_repository.dart';
@@ -97,13 +98,57 @@ class AppwriteAuthRepository with AuthSessionTransformMixin implements AuthRepos
 }
 
 class FirebaseAuthRepository with AuthSessionTransformMixin implements AuthRepository {
+  FirebaseAuthRepository({
+    fb_auth.FirebaseAuth? firebaseAuth,
+  }) : _auth = firebaseAuth;
+
+  final fb_auth.FirebaseAuth? _auth;
+
+  fb_auth.FirebaseAuth? get auth {
+    if (_auth != null) return _auth;
+    try {
+      return fb_auth.FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   BackendTarget get target => BackendTarget.firebase;
+
+  @override
+  AuthSession currentSession() {
+    final fbUser = auth?.currentUser;
+    if (fbUser != null) {
+      return AuthSession(
+        userId: fbUser.uid,
+        displayName: fbUser.displayName ?? 'Fellowship Member',
+        email: fbUser.email ?? '',
+        bio: 'Verified Member of Belong on the Spectrum',
+        comfortBadges: const [
+          'Literal communication appreciated',
+          'Firebase Cloud Verified',
+        ],
+        isSignedIn: true,
+        authMethod: 'firebase_auth',
+      );
+    }
+    return super.currentSession();
+  }
+
+  @override
+  AuthSession signOut() {
+    try {
+      auth?.signOut();
+    } catch (_) {}
+    return super.signOut();
+  }
 }
 
 /// 1-line switchable provider controlling which backend powers Authentication.
+/// Defaults to [BackendTarget.firebase] for v0.8.0-alpha shared cloud auth.
 final authBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.serverpod,
+  (ref) => BackendTarget.firebase,
 );
 
 /// Active [AuthRepository] adapter.

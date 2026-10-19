@@ -55,6 +55,7 @@ dependencies:
   salomon_bottom_bar: ^3.3.2
   url_launcher: ^6.3.3
   marionette_flutter: ^0.7.0
+  cloud_firestore: ^7.0.0
 
 dev_dependencies:
   flutter_test:

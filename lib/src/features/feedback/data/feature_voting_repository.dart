@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../domain/feedback_and_voting_models.dart';
@@ -152,18 +153,87 @@ class FirebaseFeatureVotingRepository
   FirebaseFeatureVotingRepository({
     this.featuresCollectionPath = 'feature_votes',
     this.feedbackCollectionPath = 'member_feedback',
-  });
+    FirebaseFirestore? firestore,
+  }) : _firestore = firestore;
 
   final String featuresCollectionPath;
   final String feedbackCollectionPath;
+  final FirebaseFirestore? _firestore;
+
+  FirebaseFirestore? get firestore {
+    if (_firestore != null) return _firestore;
+    try {
+      return FirebaseFirestore.instance;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   BackendTarget get target => BackendTarget.firebase;
+
+  @override
+  List<VotableFeatureItem> toggleVote(
+    List<VotableFeatureItem> current,
+    String featureId,
+  ) {
+    final next = super.toggleVote(current, featureId);
+    final targetItem = next.firstWhere(
+      (e) => e.id == featureId,
+      orElse: () => current.firstWhere((e) => e.id == featureId),
+    );
+
+    final fs = firestore;
+    if (fs != null) {
+      try {
+        fs.collection(featuresCollectionPath).doc(featureId).set({
+          'id': featureId,
+          'title': targetItem.title,
+          'description': targetItem.description,
+          'votes': targetItem.votes,
+          'lastVotedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (_) {
+        // Resilient offline fallback
+      }
+    }
+    return next;
+  }
+
+  @override
+  Future<void> submitFeedback({
+    required FeedbackSentiment sentiment,
+    required String message,
+    String? contactEmail,
+  }) async {
+    await super.submitFeedback(
+      sentiment: sentiment,
+      message: message,
+      contactEmail: contactEmail,
+    );
+
+    final fs = firestore;
+    if (fs != null) {
+      try {
+        await fs.collection(feedbackCollectionPath).add({
+          'sentiment': sentiment.name,
+          'isPrivateTriage': sentiment.isPrivateTriage,
+          'message': message.trim(),
+          if (contactEmail != null && contactEmail.trim().isNotEmpty)
+            'contactEmail': contactEmail.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {
+        // Resilient offline fallback
+      }
+    }
+  }
 }
 
 /// 1-line switchable provider controlling which backend powers Feature Voting.
+/// Defaults to [BackendTarget.firebase] for v0.8.0-alpha shared cloud persistence.
 final featureVotingBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.serverpod,
+  (ref) => BackendTarget.firebase,
 );
 
 /// Provides the active [FeatureVotingRepository] implementation.
