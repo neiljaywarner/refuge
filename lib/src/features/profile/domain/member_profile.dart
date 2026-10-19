@@ -14,6 +14,7 @@ class MemberProfile {
     required this.comfortBadges,
     required this.isSignedIn,
     this.authMethod = 'guest',
+    this.icocChurchAffiliation,
   });
 
   const MemberProfile.guest()
@@ -22,7 +23,8 @@ class MemberProfile {
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
       isSignedIn = false,
-      authMethod = 'guest';
+      authMethod = 'guest',
+      icocChurchAffiliation = null;
 
   final String displayName;
   final String email;
@@ -30,6 +32,14 @@ class MemberProfile {
   final List<String> comfortBadges;
   final bool isSignedIn;
   final String authMethod;
+  final String? icocChurchAffiliation;
+
+  /// Returns true if the member has confirmed affiliation with an ICOC church congregation.
+  bool get isIcocMember =>
+      icocChurchAffiliation != null &&
+      icocChurchAffiliation!.trim().isNotEmpty &&
+      icocChurchAffiliation != 'I am not a member of an ICOC church' &&
+      icocChurchAffiliation != 'I am not a member of this fellowship';
 
   String get initials {
     final trimmed = displayName.trim();
@@ -49,6 +59,7 @@ class MemberProfile {
     List<String>? comfortBadges,
     bool? isSignedIn,
     String? authMethod,
+    String? icocChurchAffiliation,
   }) {
     return MemberProfile(
       displayName: displayName ?? this.displayName,
@@ -57,6 +68,8 @@ class MemberProfile {
       comfortBadges: comfortBadges ?? this.comfortBadges,
       isSignedIn: isSignedIn ?? this.isSignedIn,
       authMethod: authMethod ?? this.authMethod,
+      icocChurchAffiliation:
+          icocChurchAffiliation ?? this.icocChurchAffiliation,
     );
   }
 }
@@ -73,6 +86,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       comfortBadges: session.comfortBadges,
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
+      icocChurchAffiliation: session.icocChurchAffiliation,
     );
   }
 
@@ -81,6 +95,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     required String email,
     String? bio,
     List<String>? comfortBadges,
+    String? icocChurchAffiliation,
   }) {
     final repo = ref.read(authRepositoryProvider);
     final session = repo.signInWithEmailAndName(
@@ -88,6 +103,8 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       bio: bio ?? state.bio,
       comfortBadges: comfortBadges ?? state.comfortBadges,
+      icocChurchAffiliation:
+          icocChurchAffiliation ?? state.icocChurchAffiliation,
     );
     state = MemberProfile(
       displayName: session.displayName,
@@ -96,6 +113,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       comfortBadges: session.comfortBadges,
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
+      icocChurchAffiliation: session.icocChurchAffiliation,
     );
   }
 
@@ -109,6 +127,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       comfortBadges: session.comfortBadges,
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
+      icocChurchAffiliation: session.icocChurchAffiliation,
     );
   }
 

@@ -12,6 +12,7 @@ class AuthSession {
     required this.comfortBadges,
     required this.isSignedIn,
     required this.authMethod,
+    this.icocChurchAffiliation,
   });
 
   const AuthSession.guest()
@@ -21,7 +22,8 @@ class AuthSession {
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
       isSignedIn = false,
-      authMethod = 'guest';
+      authMethod = 'guest',
+      icocChurchAffiliation = null;
 
   final String userId;
   final String displayName;
@@ -30,4 +32,12 @@ class AuthSession {
   final List<String> comfortBadges;
   final bool isSignedIn;
   final String authMethod; // 'guest', 'stage1_email', 'appwrite_google', 'appwrite_apple'
+  final String? icocChurchAffiliation;
+
+  /// Returns true if this member has explicitly affiliated with an ICOC church congregation.
+  bool get isIcocMember =>
+      icocChurchAffiliation != null &&
+      icocChurchAffiliation!.trim().isNotEmpty &&
+      icocChurchAffiliation != 'I am not a member of an ICOC church' &&
+      icocChurchAffiliation != 'I am not a member of this fellowship';
 }
