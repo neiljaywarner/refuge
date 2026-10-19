@@ -72,9 +72,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.88,
-        child: BelongFeedbackAndVotingSheet(initialTabIndex: initialTabIndex),
+      builder: (_) => SafeArea(
+        top: false,
+        bottom: true,
+        child: FractionallySizedBox(
+          heightFactor: 0.88,
+          child: BelongFeedbackAndVotingSheet(initialTabIndex: initialTabIndex),
+        ),
       ),
     );
   }
@@ -95,6 +99,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final features = ref.watch(featureVotingProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final listPadding = EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset);
 
     return Column(
       children: [
@@ -152,7 +158,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
             children: [
               // TAB 1: Feature Voting & Active WIP Board
               ListView(
-                padding: const EdgeInsets.all(16),
+                padding: listPadding,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -272,7 +278,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
               // TAB 2: Literal 3-Intent Feedback Funnel ("Private Feedback, Public Praise")
               ListView(
-                padding: const EdgeInsets.all(16),
+                padding: listPadding,
                 children: [
                   Text(
                     'What kind of note would you like to share?',
