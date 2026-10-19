@@ -1,190 +1,239 @@
+/// # Belong on the Spectrum release pipeline (`tool/deploy_release.dart`)
+///
+/// One command that ships a release to every channel with the **same**
+/// honest, plain-language release notes:
+///
+/// 1. Builds Flutter Web (and, with `--distribute-android`, a release APK).
+/// 2. Deploys a Firebase Hosting **preview channel** and captures its URL.
+/// 3. Generates `build/RELEASE_NOTES_<version>.md` from merged PR titles since
+///    the previous tag, plus optional hand-written highlights.
+/// 4. Optionally deploys production (`https://belongonthespectrum.web.app`).
+/// 5. Optionally creates/updates the GitHub Release.
+/// 6. Optionally uploads the APK to Firebase App Distribution for a tester
+///    group (default `pre-alpha-testers`). Firebase emails the release notes,
+///    which include the web preview link, so testers get Android + Web at once.
+///
+/// ## Usage
+///
+/// ```bash
+/// dart run tool/deploy_release.dart --version v0.7.0 --prod --github-release
+/// dart run tool/deploy_release.dart --version v0.8.0-alpha --prod \
+///   --github-release --distribute-android \
+///   --highlights-file docs/release_highlights/v0.8.0-alpha.md
+/// dart run tool/deploy_release.dart --version v0.7.0 --dry-run
+/// ```
+///
+/// ## Flags
+///
+/// | Flag | Default | Meaning |
+/// | --- | --- | --- |
+/// | `--version` | required | Tag / release name, e.g. `v0.7.0` |
+/// | `--channel` | version with dots→dashes | Hosting preview channel id |
+/// | `--prod` | off | Also deploy live production |
+/// | `--github-release` | off | Create or edit the GitHub Release |
+/// | `--distribute-android` | off | Build APK + upload to App Distribution |
+/// | `--android-app-id` | `$FIREBASE_ANDROID_APP_ID` or auto-detect | Firebase Android app id |
+/// | `--groups` | `pre-alpha-testers` | App Distribution group alias(es) |
+/// | `--highlights-file` | none | Markdown prepended under "Highlights" |
+/// | `--skip-build` | off | Reuse existing `build/web` / APK |
+/// | `--dry-run` | off | Print notes only; build/deploy nothing |
+///
+/// Tester emails are **never** stored here (public repo). They live only in
+/// the App Distribution group in the Firebase console.
+library;
+
 import 'dart:io';
 
-/// Pure-Dart Deployment & Release Notes CLI for Belong on the Spectrum.
-///
-/// Builds the Flutter Web release bundle, generates structured human +
-/// neurodivergent-friendly release notes (`build/RELEASE_NOTES_<version>.md`),
-/// deploys to a Firebase Hosting Preview Channel, optionally deploys to live
-/// production (`https://belongonthespectrum.web.app`), and publishes a GitHub
-/// Release.
-///
-/// Usage:
-///   `/opt/homebrew/bin/dart run tool/deploy_release.dart --version v0.8.0-alpha --channel v0-8-0-alpha --prod --github-release`
+const _project = 'belongonthespectrum';
+const _repo = 'neiljaywarner/refuge';
+const _prodUrl = 'https://belongonthespectrum.web.app';
+
+/// Resolves a tool from `$<NAME>_BIN` or falls back to PATH.
+String _bin(String name) =>
+    Platform.environment['${name.toUpperCase()}_BIN'] ?? name;
+
 Future<void> main(List<String> args) async {
-  final version = _argValue(args, '--version') ?? 'v0.6.0-alpha';
-  final channel =
-      _argValue(args, '--channel') ??
-      version.replaceAll('.', '-').replaceAll('_', '-');
-  final deployProd = args.contains('--prod');
-  final createGhRelease = args.contains('--github-release');
+  if (args.contains('--help') || args.contains('-h')) {
+    stdout.writeln('See the library doc at the top of tool/deploy_release.dart '
+        'or DEPLOYMENT.md.');
+    return;
+  }
+  final version = _arg(args, '--version');
+  if (version == null) {
+    stderr.writeln('--version is required (e.g. --version v0.7.0)');
+    exit(64);
+  }
+  final channel = _arg(args, '--channel') ?? version.replaceAll('.', '-');
+  final prod = args.contains('--prod');
+  final ghRelease = args.contains('--github-release');
+  final android = args.contains('--distribute-android');
+  final groups = _arg(args, '--groups') ?? 'pre-alpha-testers';
+  final highlightsPath = _arg(args, '--highlights-file');
   final skipBuild = args.contains('--skip-build');
   final dryRun = args.contains('--dry-run');
 
-  stdout.writeln('==========================================================');
-  stdout.writeln('🚀 Belong on the Spectrum — Release & Deployment Pipeline');
-  stdout.writeln('   Version        : $version');
-  stdout.writeln('   Preview Channel: $channel');
-  stdout.writeln('   Deploy Prod    : $deployProd (https://belongonthespectrum.web.app)');
-  stdout.writeln('   GitHub Release : $createGhRelease');
-  stdout.writeln('   Dry Run        : $dryRun');
-  stdout.writeln('==========================================================');
-
-  // 1. Generate structured Release Notes
-  final notesFile = await _generateReleaseNotes(version);
-  stdout.writeln('==> 1. Generated Release Notes: ${notesFile.path}');
+  _log('Release $version | channel=$channel prod=$prod gh=$ghRelease '
+      'android=$android groups=$groups dryRun=$dryRun');
 
   if (dryRun) {
-    stdout.writeln('==> [Dry-Run] Release notes contents:\n');
-    stdout.writeln(await notesFile.readAsString());
+    final notes = await _writeNotes(version, previewUrl: '(preview URL)',
+        highlightsPath: highlightsPath, android: android);
+    stdout.writeln(await notes.readAsString());
     return;
   }
 
-  // 2. Build Flutter Web release bundle
-  if (!skipBuild) {
-    stdout.writeln('==> 2. Building Flutter Web Release Bundle (lib/main.dart)...');
-    await _run('/opt/homebrew/bin/flutter', [
-      'build',
-      'web',
-      '--release',
-    ]);
-  }
-
-  // 3. Deploy to Firebase Hosting Preview Channel
-  stdout.writeln('==> 3. Deploying to Firebase Hosting Preview Channel "$channel"...');
-  await _run('/opt/homebrew/bin/firebase', [
-    'hosting:channel:deploy',
-    channel,
-    '--project',
-    'belongonthespectrum',
-    '--expires',
-    '14d',
-  ]);
-
-  // 4. Deploy to Live Production (https://belongonthespectrum.web.app)
-  if (deployProd) {
-    stdout.writeln(
-      '==> 4. Deploying to Live Production (https://belongonthespectrum.web.app)...',
-    );
-    await _run('/opt/homebrew/bin/firebase', [
-      'deploy',
-      '--only',
-      'hosting',
-      '--project',
-      'belongonthespectrum',
-      '--message',
-      'Release $version — Belong on the Spectrum',
-    ]);
-  }
-
-  // 5. Create or update GitHub Release with structured notes
-  if (createGhRelease) {
-    stdout.writeln('==> 5. Publishing GitHub Release $version...');
-    final existing = await Process.run('/opt/homebrew/bin/gh', [
-      'release',
-      'view',
-      version,
-      '--repo',
-      'neiljaywarner/refuge',
-    ]);
-    if (existing.exitCode == 0) {
-      await _run('/opt/homebrew/bin/gh', [
-        'release',
-        'edit',
-        version,
-        '--repo',
-        'neiljaywarner/refuge',
-        '--title',
-        '$version — Belong on the Spectrum Community Alpha',
-        '--notes-file',
-        notesFile.path,
-      ]);
-    } else {
-      await _run('/opt/homebrew/bin/gh', [
-        'release',
-        'create',
-        version,
-        '--repo',
-        'neiljaywarner/refuge',
-        '--title',
-        '$version — Belong on the Spectrum Community Alpha',
-        '--notes-file',
-        notesFile.path,
-        '--prerelease',
-      ]);
+  // Resolve the Android app id early so we fail fast before deploying anything.
+  String? androidAppId;
+  if (android) {
+    androidAppId = _arg(args, '--android-app-id') ??
+        Platform.environment['FIREBASE_ANDROID_APP_ID'] ??
+        await _detectAndroidAppId();
+    if (androidAppId == null) {
+      stderr.writeln('No Firebase Android app found. Pass --android-app-id.');
+      exit(65);
     }
   }
 
-  stdout.writeln('🎉 Release $version complete! Live at https://belongonthespectrum.web.app');
+  if (!skipBuild) {
+    _log('Building Flutter Web...');
+    await _run(_bin('flutter'), ['build', 'web', '--release']);
+    if (android) {
+      _log('Building release APK...');
+      await _run(_bin('flutter'), ['build', 'apk', '--release']);
+    }
+  }
+
+  _log('Deploying preview channel "$channel"...');
+  final previewOut = await _run(_bin('firebase'), [
+    'hosting:channel:deploy', channel, '--project', _project,
+    '--expires', '14d', '--json',
+  ]);
+  final previewUrl = _extractPreviewUrl(previewOut) ?? '(see Firebase console)';
+  _log('Preview: $previewUrl');
+
+  final notes = await _writeNotes(version, previewUrl: previewUrl,
+      highlightsPath: highlightsPath, android: android);
+  _log('Release notes: ${notes.path}');
+
+  if (prod) {
+    _log('Deploying production $_prodUrl ...');
+    await _run(_bin('firebase'), [
+      'deploy', '--only', 'hosting', '--project', _project,
+      '--message', 'Release $version',
+    ]);
+  }
+
+  if (ghRelease) {
+    _log('Publishing GitHub Release $version ...');
+    final exists = await Process.run(
+        _bin('gh'), ['release', 'view', version, '--repo', _repo]);
+    await _run(_bin('gh'), [
+      'release', exists.exitCode == 0 ? 'edit' : 'create', version,
+      '--repo', _repo, '--title', '$version: Belong on the Spectrum',
+      '--notes-file', notes.path,
+      if (exists.exitCode != 0) '--prerelease',
+    ]);
+  }
+
+  if (android) {
+    _log('Uploading APK to App Distribution (groups: $groups)...');
+    await _run(_bin('firebase'), [
+      'appdistribution:distribute',
+      'build/app/outputs/flutter-apk/app-release.apk',
+      '--app', androidAppId!, '--groups', groups,
+      '--release-notes-file', notes.path, '--project', _project,
+    ]);
+  }
+
+  _log('Done. Web: $_prodUrl | Preview: $previewUrl');
 }
 
-String? _argValue(List<String> args, String flag) {
-  final idx = args.indexOf(flag);
-  if (idx != -1 && idx + 1 < args.length) {
-    return args[idx + 1];
-  }
-  for (final arg in args) {
-    if (arg.startsWith('$flag=')) {
-      return arg.substring(flag.length + 1);
-    }
+String? _arg(List<String> args, String flag) {
+  final i = args.indexOf(flag);
+  if (i != -1 && i + 1 < args.length) return args[i + 1];
+  for (final a in args) {
+    if (a.startsWith('$flag=')) return a.substring(flag.length + 1);
   }
   return null;
 }
 
-Future<File> _generateReleaseNotes(String version) async {
-  final gitLog = await Process.run('git', [
-    'log',
-    '-n',
-    '10',
-    '--oneline',
-    '--no-decorate',
-  ]);
-  final commits = (gitLog.stdout as String).trim();
-  final now = DateTime.now().toUtc().toIso8601String();
+void _log(String m) =>
+    stdout.writeln('[${DateTime.now().toIso8601String().substring(11, 19)}] $m');
 
-  final notes = '''
-# 🌿 Belong on the Spectrum — Release `$version`
-
-* **Published**: `$now`
-* **Live Production Web / PWA**: https://belongonthespectrum.web.app
-* **Partner Community**: [DFW Church](https://dfwchurch.org) & [Belong on the Spectrum](https://www.belongonthespectrum.com/)
-* **Audio MP3 Summary (`week1` Issue #59)**: *Coming in Week 1 — "Listen to What's New in 60 Seconds"*
-
----
-
-## 💚 What's New for Community Members (Calm, Plain-Language Summary)
-1. **Circle-Parity Home & Spaces Navigation**: Browse `PINNED`, `WELCOME`, `COMMUNITY`, `ACTUALLY AUTISTIC`, and `LINKS` spaces with calm, sensory-safe colors and zero visual clutter.
-2. **Literal 3-Intent Feedback & 1-Tap Feature Voting (`ADR-0007`)**: Tap **"Feedback & Vote"** in the top bar to share praise (💚 *Works Great*), ideas (💡 *Idea / Tweak*), or private bug reports (🛠️ *Bug / Confusing*), and upvote upcoming community features with 1 tap.
-3. **Frictionless Community Sign-In & Member Profile (`v0.8.0-alpha`)**: Sign in with your display name and email, customize your self-identification badge, and post directly to community spaces.
-4. **Direct Messages (`Msgs`), Calm Notification Bell & Actually Autistic Events Calendar**: RSVP to sensory-friendly events and toggle batched notification digests.
-
-## 🛠️ What's New for Organizers & Engineers
-- **Live Organizer Banner (`OrganizerRemoteConfigService`)**: Update the pinned community announcement banner via Firebase Remote Config without redeploying code.
-- **Clean Backend Adapter Architecture (`ADR-0009`)**: Pluggable `InMemory`, `Serverpod`, `Appwrite`, and `Firebase` repository adapters tested across Unit, Widget BDD (`patrolWidgetTest`), Integration, and Maestro E2E layers.
-- **Circle.so CSV Migration Tooling (`tool/import_circle_csv.dart`)**: Ready for the October 24 overlap window and October 31 Circle.so cutover.
-
-## 📜 Recent Commits Included
-```text
-$commits
-```
-''';
-
-  final dir = Directory('build');
-  if (!dir.existsSync()) {
-    dir.createSync(recursive: true);
-  }
-  final file = File('build/RELEASE_NOTES_$version.md');
-  await file.writeAsString(notes);
-  return file;
+Future<String?> _detectAndroidAppId() async {
+  final r = await Process.run(
+      _bin('firebase'), ['apps:list', 'ANDROID', '--project', _project, '--json']);
+  if (r.exitCode != 0) return null;
+  final match = RegExp(r'"appId"\s*:\s*"([^"]+:android:[^"]+)"')
+      .firstMatch(r.stdout as String);
+  return match?.group(1);
 }
 
-Future<void> _run(String executable, List<String> args) async {
-  final result = await Process.run(executable, args);
-  final out = (result.stdout as String).trim();
-  final err = (result.stderr as String).trim();
+String? _extractPreviewUrl(String jsonOut) {
+  final m = RegExp(r'"url"\s*:\s*"(https://[^"]+)"').firstMatch(jsonOut);
+  return m?.group(1);
+}
+
+/// Merged PR titles since the previous tag, newest first.
+Future<List<String>> _changesSinceLastTag() async {
+  final tag = await Process.run('git', ['describe', '--tags', '--abbrev=0', 'HEAD^']);
+  final range = tag.exitCode == 0 ? '${(tag.stdout as String).trim()}..HEAD' : 'HEAD~15..HEAD';
+  final log = await Process.run('git', ['log', range, '--no-merges', '--pretty=%s']);
+  return (log.stdout as String)
+      .split('\n')
+      .map((l) => l.trim())
+      .where((l) => l.isNotEmpty)
+      .toList();
+}
+
+Future<File> _writeNotes(String version,
+    {required String previewUrl, String? highlightsPath, required bool android}) async {
+  final changes = await _changesSinceLastTag();
+  final highlights = highlightsPath != null && File(highlightsPath).existsSync()
+      ? File(highlightsPath).readAsStringSync().trim()
+      : null;
+  final b = StringBuffer()
+    ..writeln('# Belong on the Spectrum $version')
+    ..writeln()
+    ..writeln('Thank you for testing! 💚 This is an early pre-alpha build.')
+    ..writeln()
+    ..writeln('## How to try it')
+    ..writeln('- **Web / PWA (any phone or computer):** $_prodUrl')
+    ..writeln('- **This exact build (preview link):** $previewUrl')
+    ..writeln(android
+        ? '- **Android:** install from the Firebase App Distribution email or app.'
+        : '- **Android app:** coming soon. Use the web link and "Add to Home Screen".')
+    ..writeln();
+  if (highlights != null) {
+    b
+      ..writeln('## Highlights')
+      ..writeln(highlights)
+      ..writeln();
+  }
+  b
+    ..writeln('## Changes in this release')
+    ..writeAll(changes.map((c) => '- $c\n'))
+    ..writeln()
+    ..writeln('## Feedback')
+    ..writeln('Tap **Feedback & Vote** in the top bar: 💚 works great, '
+        '💡 idea, or 🛠️ bug/confusing. Private notes go only to organizers.')
+    ..writeln()
+    ..writeln('Full history: https://github.com/$_repo/releases');
+  await Directory('build').create(recursive: true);
+  final f = File('build/RELEASE_NOTES_$version.md');
+  await f.writeAsString(b.toString());
+  return f;
+}
+
+Future<String> _run(String exe, List<String> args) async {
+  final r = await Process.run(exe, args);
+  final out = (r.stdout as String).trim();
+  final err = (r.stderr as String).trim();
   if (out.isNotEmpty) stdout.writeln(out);
   if (err.isNotEmpty) stderr.writeln(err);
-  if (result.exitCode != 0) {
-    stderr.writeln('Command failed ($executable ${args.join(' ')}): exit ${result.exitCode}');
-    exit(result.exitCode);
+  if (r.exitCode != 0) {
+    stderr.writeln('FAILED (${r.exitCode}): $exe ${args.join(' ')}');
+    exit(r.exitCode);
   }
+  return out;
 }
