@@ -1,33 +1,42 @@
 # ♾️ Refuge — Powering Belong on the Spectrum
 
 > *"I praise you because I am fearfully and wonderfully made."* — **Psalm 139:14**  
+> **Live Web & PWA**: **[`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)**  
 > **First Community**: **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** (partnered with **[DFW Church](https://dfwchurch.org)**)  
-> **Circle.so Cutover Target**: **Saturday, October 31, 2026**
+> **Circle.so Overlap Window**: **October 24 – October 30, 2026** · **Final Cutover**: **Saturday, October 31, 2026**
+
+---
+
+## 🔗 Quick Executive & Engineering Links
+- 📋 **[Neil's Sunday Night Review (`neil_to_review_sunday_night.md`)](neil_to_review_sunday_night.md)**: Breakdown by Milestones (`v0.5.0`–`v1.0.0`), Live Releases, ADRs (`0001`–`0009`), and Hybrid Architecture Grading.
+- 🌙 **[Unattended Session Execution Plan & LLM Troubleshooting (`unattended_session_908pm.md`)](unattended_session_908pm.md)**: Live Mini-Milestones tracker, FAQ, and zero-stall troubleshooting guide for lighter LLMs.
+- 🚀 **[Deployment & Release Runbook (`DEPLOYMENT.md`)](DEPLOYMENT.md)**: 1-command pure-Dart release pipeline (`tool/deploy_release.dart`) for `belongonthespectrum.web.app`, Firebase Hosting Preview Channels, and GitHub Releases.
+- ⚖️ **[ADR-0009: Serverpod → Appwrite Core + Firebase Edge Hybrid Strategy](docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)**: Graded comparison (**A+ / `9.7/10`**) of Piece-by-Piece vs. One-Shot migration and permanent Firebase Hosting/FCM/Audiences coexistence.
 
 ---
 
 ## 🌟 About Belong on the Spectrum & Refuge
 
-**Refuge** is an open, white-labelable, calm-technology community platform built with **Flutter** and **Serverpod** as a sensory-friendly, cost-effective replacement for Circle.so.
+**Refuge** is an open, white-labelable, calm-technology community platform built with **Flutter**, **Riverpod (`hooks_riverpod`)**, **Serverpod / Appwrite**, and **Firebase** as a sensory-friendly, cost-effective replacement for Circle.so.
 
 Its flagship community is **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** — a welcoming Christian & neurodivergent/autistic fellowship community.
 
 ### Key Features
 - **Familiar Circle.so-Style Navigation**:
-  - **Top Bar**: Official **Belong** cross & gold neurodiversity infinity (`∞`) logo in the upper-left, Sensory Theme switcher + **Member Profile Avatar** in the upper-right, and **`Feed`** | **`Spaces`** selector below the logo.
+  - **Top Bar**: Official **Belong** cross & gold neurodiversity infinity (`∞`) logo in the upper-left, **"Feedback & Vote"** pill + Sensory Theme switcher + **Member Profile Avatar** in the upper-right, and **`Feed`** | **`Spaces`** selector below the logo.
   - **Spaces Hierarchy**:
     - 📌 **Pinned**: `General Chat`
     - 👋 **Welcome**: `Start Here & Introduce Yourself`, `Announcements`
     - 🤝 **Community**: `General Chat`, `Memes`, `Online Resources / Videos`, `Actually Autistic Chat`, `Friends Chat`, `Family Chat`
     - 📅 **Actually Autistic**: `Actually Autistic Events`
     - 🔗 **Links**: `Community Guidelines`, `DFW Church` (`dfwchurch.org`), `Download the Android App`, `Download the iOS App`
-  - **4-Tab Bottom Navigation Bar**: `Home`, `Notifications`, `Msgs`, and `Search`.
+  - **4-Tab Bottom Navigation Bar**: `Feed`, `Spaces`, `Search`, and `Msgs`.
+- **Neurodivergent-First Feedback & 1-Tap Feature Voting (`ADR-0007`)**:
+  - Literal 3-Intent Cards (💚 *Works Great*, 💡 *Idea / Tweak*, 🛠️ *Bug / Confusing*) + 1-Tap Feature Voting Board backed by pluggable `InMemory`, `Serverpod`, `Appwrite`, and `Firebase` repository adapters (`ADR-0009`).
 - **Non-Technical Organizer Control (`Firebase Remote Config`)**:
   - Community organizers can update the **"Message from the Organizer"** welcome card, announcements, and store links anytime from the Firebase Console without code changes.
 - **4 Neurodivergent-Affirming Sensory Themes (WCAG AAA)**:
   - *High Clarity*, *Warm Calm*, *Low Stimulus Dark*, and *Low Motion* (zero surprise pop-ups or auto-playing media).
-- **Multi-Environment Flavor Isolation (`dev` vs `prod`)**:
-  - Built using the **CodeWithAndrea (`codewithandrea.com`) Feature-First Layered Architecture** (`presentation` / `application` / `domain` / `data`) + **`hooks_riverpod`** (`HookConsumerWidget`).
 
 ---
 
@@ -36,14 +45,16 @@ Its flagship community is **[Belong on the Spectrum](https://www.belongonthespec
 | Guide | Audience | Description |
 | :--- | :--- | :--- |
 | **[📅 Oct 31 Circle.so Cutover Schedule](docs/wiki/Non-Technical-Roadmap-to-Oct-31.md)** | **Organizers & Pastors** | Plain-English day-by-day schedule from Oct 18 to Oct 31, 2026 (final day of Circle.so subscription). |
+| **[⚖️ Backend Migration & Hybrid Grading (ADR-0009)](docs/wiki/Backend-Migration-Strategy-Serverpod-Appwrite-Firebase.md)** | **Engineers & Architects** | Why Appwrite Core (Auth/DB/Realtime) + Firebase Edge (Hosting/FCM/Audiences) scores **A+ (`9.7/10`)**, and Piece-by-Piece vs. One-Shot grading. |
+| **[🚀 Deployment & Release Runbook](DEPLOYMENT.md)** | **Engineers & Release Ops** | Pure-Dart deployment script (`tool/deploy_release.dart`) + `week1` Audio MP3 Release Notes roadmap. |
 | **[📣 Organizer Remote Config Guide](docs/wiki/Organizer-Remote-Config-Guide.md)** | **Organizers & Leaders** | How to edit the *"Message from the Organizer"* banner without needing a developer. |
-| **[📱 PWA & App Store Guide](docs/wiki/PWA-Guide-for-Members-and-Organizers.md)** | **Members & Organizers** | How members install Belong to their iPhone/Android Home Screen in 10 seconds, and how long we can run on the PWA before needing Google Play & the Apple App Store. |
+| **[📱 PWA & App Store Guide](docs/wiki/PWA-Guide-for-Members-and-Organizers.md)** | **Members & Organizers** | How members install Belong to their iPhone/Android Home Screen in 10 seconds. |
 | **[🤝 Contributor Guide](docs/wiki/Contributor-Guide.md)** | **Volunteers & Developers** | How to contribute via Ticket-Driven Development (`1 Issue = 1 Worktree = 1 PR`). |
 | **[🎓 Student, Mentee & Apprentice Guide](docs/wiki/Apprentice-and-Token-Optimization-Guide.md)** | **Students & Mentees** | Clean architecture walkthrough, BDD testing, pure-Dart CLI tools (`tool/refuge_cli.dart`), and **Free-Tier AI Token Optimization**. |
 
 ---
 
-## 🛠️ Quick Start for Developers & Mentees
+## 🛠️ Quick Start & One-Command Deployment
 
 ```bash
 # 1. Fetch dependencies
@@ -53,6 +64,6 @@ flutter pub get
 dart analyze
 flutter test
 
-# 3. Launch in Chrome (or connected Pixel 9a)
-flutter run -d chrome
+# 3. Deploy to Firebase Preview Channel + Live Production (https://belongonthespectrum.web.app)
+dart run tool/deploy_release.dart --version v0.8.0-alpha --channel v0-8-0-alpha --prod --github-release
 ```

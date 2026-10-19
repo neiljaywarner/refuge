@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "belongonthespectrum",
+    "prod": "belongonthespectrum",
+    "dev": "belongonthespectrum"
+  }
+}
