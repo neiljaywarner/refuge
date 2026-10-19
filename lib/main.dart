@@ -36,6 +36,13 @@ export 'src/features/reflections/data/post_repository.dart';
 export 'src/features/reflections/data/post_repository_factory.dart';
 export 'src/features/reflections/data/serverpod_post_repository.dart';
 export 'src/features/reflections/domain/post.dart';
+export 'src/features/reflections/presentation/community_anchor_banner.dart';
+export 'src/features/reflections/presentation/quiet_digest_banner.dart';
+export 'src/features/reflections/presentation/reflection_card.dart';
+export 'src/features/reflections/presentation/reflection_composer.dart';
+export 'src/features/reflections/presentation/reflections_providers.dart';
+export 'src/features/reflections/presentation/space_navigation_bar.dart';
+export 'src/features/reflections/presentation/tone_filter_row.dart';
 export 'src/features/search/presentation/community_search_view.dart';
 export 'src/features/sensory_themes/domain/sensory_mode.dart';
 export 'src/features/sensory_themes/presentation/sensory_theme_controller.dart';
@@ -77,13 +84,12 @@ void runWithFlavor(AppFlavor flavor) {
   // debug builds (red screen found while driving the Pixel, #73).
   runApp(
     SanctuaryApp(
-      flavor: flavor,
-      repository: PostRepositoryFactory.create(
-        flavor: flavor,
-        enableServerpod: false,
-      ),
-      analyticsService: analytics,
-      errorReporter: errorReporter,
+      repository: PostRepositoryFactory.create(),
+      overrides: [
+        appFlavorProvider.overrideWithValue(flavor),
+        communityAnalyticsServiceProvider.overrideWithValue(analytics),
+        errorReporterServiceProvider.overrideWithValue(errorReporter),
+      ],
     ),
   );
 }
