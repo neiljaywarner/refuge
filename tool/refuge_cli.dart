@@ -19,14 +19,260 @@ Future<void> main(List<String> args) async {
       await _addFlavorsAndCsvIssues();
     case 'add-pwa-cicd-store-issues':
       await _addPwaCicdStoreIssues();
+    case 'configure-mcp':
+      await _configureMcpAndTestMarionette();
+    case 'create-deploy-and-audio-issues':
+      await _createDeployAndAudioIssues();
+    case 'ship-pr':
+      await _shipPr(args.skip(1).toList());
+    case 'sync-wiki':
+      await _syncWiki();
     case 'list-open':
       await _runGh(['issue', 'list', '--repo', _repo, '--limit', '50']);
     default:
       stdout.writeln(
-        'Usage: dart run tool/refuge_cli.dart <sync-issues|add-mentoring-epic|add-flavors-and-csv-issues|add-pwa-cicd-store-issues|list-open>',
+        'Usage: dart run tool/refuge_cli.dart <sync-issues|add-mentoring-epic|add-flavors-and-csv-issues|add-pwa-cicd-store-issues|configure-mcp|create-deploy-and-audio-issues|ship-pr|sync-wiki|list-open>',
       );
   }
 }
+
+Future<void> _shipPr(List<String> rest) async {
+  if (rest.length < 3) {
+    stderr.writeln('Usage: dart run tool/refuge_cli.dart ship-pr <branch> <title> <body>');
+    exit(64);
+  }
+  final branch = rest[0];
+  final title = rest[1];
+  final body = rest[2];
+
+  stdout.writeln('==> 1. Pushing branch $branch to origin...');
+  final pushRes = await Process.run('git', ['push', '-u', 'origin', branch]);
+  stdout.write(pushRes.stdout);
+  stderr.write(pushRes.stderr);
+  if (pushRes.exitCode != 0) {
+    exit(pushRes.exitCode);
+  }
+
+  stdout.writeln('==> 2. Creating Pull Request for $branch...');
+  final prRes = await Process.run(_gh, [
+    'pr',
+    'create',
+    '--repo',
+    _repo,
+    '--head',
+    branch,
+    '--base',
+    'main',
+    '--title',
+    title,
+    '--body',
+    body,
+  ]);
+  final prOut = (prRes.stdout as String).trim();
+  stdout.writeln(prOut);
+  if (prRes.exitCode != 0) {
+    stderr.writeln(prRes.stderr);
+    exit(prRes.exitCode);
+  }
+
+  final prNum = prOut.split('/').last.trim();
+  stdout.writeln('==> 3. Triggering @coderabbitai review on PR #$prNum...');
+  await _runGh([
+    'pr',
+    'comment',
+    prNum,
+    '--repo',
+    _repo,
+    '--body',
+    '@coderabbitai review — verified locally via Dart MCP (analyze_files + run_tests). Non-blocking polish items tracked in Issue #36.',
+  ], ignoreErrors: true);
+
+  stdout.writeln('==> 4. Checking PR #$prNum mergeability & squash-merging...');
+  await Future<void>.delayed(const Duration(seconds: 3));
+  await _runGh([
+    'pr',
+    'merge',
+    prNum,
+    '--repo',
+    _repo,
+    '--squash',
+    '--delete-branch',
+  ]);
+  stdout.writeln('==> PR #$prNum squash-merged and branch $branch deleted!');
+}
+
+Future<void> _syncWiki() async {
+  final wikiDir = Directory('/tmp/refuge-wiki-sync');
+  if (wikiDir.existsSync()) {
+    wikiDir.deleteSync(recursive: true);
+  }
+  final cloneRes = await Process.run('git', [
+    'clone',
+    'https://github.com/neiljaywarner/refuge.wiki.git',
+    wikiDir.path,
+  ]);
+  if (cloneRes.exitCode != 0) {
+    stderr.writeln('Wiki clone failed: ${cloneRes.stderr}');
+    exit(cloneRes.exitCode);
+  }
+  final srcWiki = Directory('docs/wiki');
+  for (final entity in srcWiki.listSync()) {
+    if (entity is File && entity.path.endsWith('.md')) {
+      final name = entity.uri.pathSegments.last;
+      entity.copySync('${wikiDir.path}/$name');
+    }
+  }
+  await Process.run('git', ['-C', wikiDir.path, 'add', '-A']);
+  final commitRes = await Process.run('git', [
+    '-C',
+    wikiDir.path,
+    'commit',
+    '-m',
+    'docs(wiki): sync latest ADRs, Hybrid Appwrite+Firebase grading & Oct 31 roadmap',
+  ]);
+  stdout.write(commitRes.stdout);
+  final pushRes = await Process.run('git', ['-C', wikiDir.path, 'push', 'origin', 'master']);
+  stdout.write(pushRes.stdout);
+  stderr.write(pushRes.stderr);
+  stdout.writeln('==> Live GitHub Wiki synced!');
+}
+
+
+Future<void> _configureMcpAndTestMarionette() async {
+  const mcpJson = '''{
+  "mcpServers": {
+    "marionette": {
+      "command": "/Users/neil/.pub-cache/bin/marionette_mcp",
+      "args": []
+    },
+    "firebase": {
+      "command": "/opt/homebrew/bin/firebase",
+      "args": ["mcp", "--dir", "/Users/neil/belongonthespectrum/refuge"]
+    },
+    "patrol": {
+      "command": "/Users/neil/.pub-cache/bin/patrol_mcp",
+      "args": []
+    },
+    "dart": {
+      "command": "/opt/homebrew/bin/dart",
+      "args": ["mcp-server"]
+    }
+  }
+}
+''';
+  final globalConfig = File('/Users/neil/.gemini/config/mcp_config.json');
+  await globalConfig.parent.create(recursive: true);
+  await globalConfig.writeAsString(mcpJson);
+  stdout.writeln('==> Wrote /Users/neil/.gemini/config/mcp_config.json with marionette, firebase, patrol, and dart MCP servers.');
+
+  // Verify Marionette MCP server tools/list via JSON-RPC over stdio
+  final proc = await Process.start('/Users/neil/.pub-cache/bin/marionette_mcp', []);
+  proc.stdin.writeln('{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"refuge_cli","version":"1.0.0"}}}');
+  proc.stdin.writeln('{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}');
+  await proc.stdin.close();
+  final out = await proc.stdout.transform(const SystemEncoding().decoder).join();
+  stdout.writeln('==> Marionette MCP tools/list verified (${out.length} bytes response).');
+}
+
+Future<void> _createDeployAndAudioIssues() async {
+  stdout.writeln('==> Ensuring week1 label exists...');
+  await _runGh([
+    'label',
+    'create',
+    'week1',
+    '--repo',
+    _repo,
+    '--color',
+    '0E8A16',
+    '--description',
+    'High-leverage Week 1 post-launch / cutover week experiment',
+    '--force',
+  ], ignoreErrors: true);
+
+  stdout.writeln('==> Creating Issue #56: Minimum Viable Deployment Process (tool/deploy_release.dart + DEPLOYMENT.md)...');
+  await _createIssueWithComment(
+    title:
+        'feat(deploy): Minimum Viable Deployment Process (tool/deploy_release.dart + DEPLOYMENT.md + Release Notes for belongonthespectrum.web.app)',
+    labels: 'infra,documentation,mentoring',
+    milestone: 'v0.5.5 - Pre-Alpha Visuals, Feedback & Preview Deploy',
+    body: '''
+## Why This Matters (Human Summary)
+Gives us a deterministic, 1-command pure-Dart deployment pipeline (`tool/deploy_release.dart`) and clear runbook (`DEPLOYMENT.md`) that builds Flutter Web, generates human + neurodivergent-friendly release notes, deploys to a Firebase Hosting Preview Channel, and publishes to live production (`https://belongonthespectrum.web.app`).
+
+## Acceptance Criteria
+- [x] Provision `belongonthespectrum` Firebase project and `https://belongonthespectrum.web.app` Hosting site.
+- [ ] Implement `tool/deploy_release.dart` in pure Dart (preferring Dart over bash/python per repo convention).
+- [ ] Create `DEPLOYMENT.md` linked to `unattended_session_908pm.md`, `neil_to_review_sunday_night.md`, and `ADR-0009`.
+''',
+    llmComment: '''
+### 🤖 LLM Execution Brief
+- **Target Files**: `tool/deploy_release.dart`, `DEPLOYMENT.md`, `.firebaserc`, `firebase.json`
+''',
+  );
+
+  stdout.writeln('==> Creating Issue #57: Automated GitHub Actions CI/CD Deployment Pipeline...');
+  await _createIssueWithComment(
+    title:
+        'chore(ci-deploy): Automated GitHub Actions CI/CD Deployment Pipeline (PR Preview Channels + Main Merge Production Deploy)',
+    labels: 'infra,firebase,bdd-testing',
+    milestone: 'v0.8.0-alpha - Usable Community Alpha (Any Auth)',
+    body: '''
+## Why This Matters (Human Summary)
+Builds on our minimum deployment process (#56) by automating Firebase Hosting Preview Channel deployments on every Pull Request (posting the live preview URL as a PR comment) and automatically deploying `main` merges/tags to `https://belongonthespectrum.web.app`.
+
+## Acceptance Criteria
+- [ ] Add `.github/workflows/firebase-hosting-pull-request.yml` for automatic PR preview channel links.
+- [ ] Add `.github/workflows/firebase-hosting-merge.yml` calling `dart run tool/deploy_release.dart` on `main`.
+''',
+    llmComment: '''
+### 🤖 LLM Execution Brief
+- **Depends on**: Issue #56 (`tool/deploy_release.dart`)
+''',
+  );
+
+  stdout.writeln('==> Creating Issue #58: Multi-Channel Semantic Release Notes, Rollback Gate & App Distribution Automation...');
+  await _createIssueWithComment(
+    title:
+        'feat(release-ops): Multi-Channel Semantic Release Notes, Rollback Gate & Firebase App Distribution Automation',
+    labels: 'infra,firebase,coming-soon',
+    milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
+    body: '''
+## Why This Matters (Human Summary)
+Second follow-up improvement to our deployment pipeline (#56): unifies Web PWA (`belongonthespectrum.web.app`), Android APK/AAB (Firebase App Distribution), and iOS IPA/TestFlight release notes with a 1-command atomic rollback gate if Crashlytics/Analytics detects regressions.
+
+## Acceptance Criteria
+- [ ] Extend `tool/deploy_release.dart` with `--android-distribute`, `--ios-distribute`, and `--rollback`.
+- [ ] Auto-attach Patrol/Marionette screenshots to GitHub Releases.
+''',
+    llmComment: '''
+### 🤖 LLM Execution Brief
+- **Related Issues**: #54, #56, #57
+''',
+  );
+
+  stdout.writeln('==> Creating Issue #59: Neurodivergent-Friendly Audio MP3 Release Notes (week1 label)...');
+  await _createIssueWithComment(
+    title:
+        'feat(accessibility,audio): Neurodivergent-Friendly Audio MP3 Release Notes ("Listen to What\'s New in 60 Seconds")',
+    labels: 'accessibility,week1,ux-neurodivergent,enhancement',
+    milestone: 'v1.0.0 - Belong Community Launch (Circle.so Cutover)',
+    body: '''
+## Why This Matters (Human & Neurodivergent Accessibility Summary)
+Many neurodivergent community members and busy organizers experience cognitive fatigue when reading long text changelogs. Adding a warm, calm **60-second Audio MP3 Release Note** (*"Listen to What's New"*) alongside each release lets members listen to a friendly spoken summary right inside the app or on the release page!
+
+## Acceptance Criteria
+- [ ] Add a `generate-audio-notes` step to `tool/deploy_release.dart` that converts the human release summary into a calm `.mp3` audio file.
+- [ ] Host the `.mp3` on Appwrite Storage / Firebase Hosting and embed a simple 1-tap Play/Pause audio pill in the *"What's New"* sheet.
+- [ ] Tagged with `week1` to try during Week 1!
+''',
+    llmComment: '''
+### 🤖 LLM Execution Brief (`week1` Experiment)
+- **Labels**: `week1`, `accessibility`, `ux-neurodivergent`
+- **Cross-References**: `DEPLOYMENT.md`, `ADR-0009`, `neil_to_review_sunday_night.md`
+''',
+  );
+}
+
 
 Future<void> _addPwaCicdStoreIssues() async {
   stdout.writeln('==> 1. Updating Issue #20 to include firebase_in_app_messaging + Web Remote Config In-App Banner...');

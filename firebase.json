@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "refuge4serverpodhackathon",
+    "site": "belongonthespectrum",
     "public": "build/web",
     "ignore": [
       "firebase.json",
@@ -11,6 +11,17 @@
       {
         "source": "**",
         "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/flutter_service_worker.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   }
