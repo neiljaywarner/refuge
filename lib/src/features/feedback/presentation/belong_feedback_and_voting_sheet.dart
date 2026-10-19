@@ -296,6 +296,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: ChoiceChip(
                               key: Key('sentiment_${sentiment.name}'),
+                              // The emoji + selected color already show the
+                              // choice; the default checkmark squeezed labels
+                              // on a 411dp Pixel ("Idea…", "Bug / Confusi…").
+                              showCheckmark: false,
+                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                              labelPadding: EdgeInsets.zero,
                               selected: selectedSentiment.value == sentiment,
                               onSelected: (_) {
                                 selectedSentiment.value = sentiment;

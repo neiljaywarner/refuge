@@ -54,6 +54,7 @@ dependencies:
   firebase_app_check: ^0.5.0
   salomon_bottom_bar: ^3.3.2
   url_launcher: ^6.3.3
+  marionette_flutter: ^0.7.0
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +67,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   patrol_finders: ^3.6.0
+  integration_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

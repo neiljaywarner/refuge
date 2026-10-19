@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:integration_test/integration_test.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
   testWidgets(
     'End-to-end integration flow: Feature Voting persists across modal sheet openings with Appwrite/Serverpod/Firebase adapters',
     (tester) async {
