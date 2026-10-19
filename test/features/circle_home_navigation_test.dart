@@ -69,4 +69,29 @@ void main() {
       expect($('Bug / Confusing'), findsOneWidget);
     },
   );
+
+  patrolWidgetTest(
+    'BDD: Member opens Spaces and navigates to Members Section & Directory (#93)',
+    ($) async {
+      await $.tester.binding.setSurfaceSize(const Size(800, 1400));
+      addTearDown(() => $.tester.binding.setSurfaceSize(null));
+
+      await $.pumpWidgetAndSettle(
+        SanctuaryApp(repository: LocalPostRepository()),
+      );
+
+      await $(const Key('subnav_spaces_tab')).tap();
+      await $.pumpAndSettle();
+
+      expect($('Members Section & Directory'), findsOneWidget);
+      await $('Members Section & Directory').tap();
+      await $.pumpAndSettle();
+
+      expect(
+        $('Store profile info & connect with verified fellowship members'),
+        findsOneWidget,
+      );
+      expect($('Marty (Organizer)'), findsOneWidget);
+    },
+  );
 }
