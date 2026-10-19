@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'src/app.dart';
+import 'src/core/config/app_flavor.dart';
 import 'src/features/reflections/data/post_repository_factory.dart';
 
 // Re-export domain models, repositories, themes, and presentation components
@@ -8,7 +10,12 @@ import 'src/features/reflections/data/post_repository_factory.dart';
 // 100% backward compatibility with all unit, widget, and BDD tests.
 export 'src/app.dart';
 export 'src/constants/app_theme.dart';
+export 'src/core/config/app_flavor.dart';
+export 'src/core/firebase/community_analytics_service.dart';
+export 'src/core/firebase/organizer_remote_config_service.dart';
 export 'src/features/about/presentation/about_refuge_dialog.dart';
+export 'src/features/branding/domain/community_brand_config.dart';
+export 'src/features/branding/presentation/brand_config_provider.dart';
 export 'src/features/fellowship_spaces/domain/fellowship_space.dart';
 export 'src/features/memes/domain/calm_meme.dart';
 export 'src/features/memes/presentation/meme_gallery_modal.dart';
@@ -28,7 +35,19 @@ export 'src/features/sensory_themes/domain/sensory_mode.dart';
 export 'src/features/sensory_themes/presentation/sensory_theme_controller.dart';
 export 'src/home_screen.dart';
 
-void main() {
+void bootstrapBelongApp({required AppFlavor flavor}) {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(SanctuaryApp(repository: PostRepositoryFactory.create()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        appFlavorProvider.overrideWithValue(flavor),
+      ],
+      child: SanctuaryApp(repository: PostRepositoryFactory.create()),
+    ),
+  );
+}
+
+void main() {
+  const envFlavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
+  bootstrapBelongApp(flavor: AppFlavor.fromString(envFlavor));
 }
