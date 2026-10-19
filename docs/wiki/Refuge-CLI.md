@@ -2,7 +2,7 @@
 
 A small pure-Dart command-line tool that automates the repetitive parts of our **Ticket-Driven Development** loop (`1 Issue = 1 Worktree = 1 PR → CodeRabbit → squash-merge`).
 
-> Source: [`tool/refuge_cli.dart`](../../tool/refuge_cli.dart) · Deploys live in a separate tool: [`tool/deploy_release.dart`](../../tool/deploy_release.dart) (see [`DEPLOYMENT.md`](../../DEPLOYMENT.md)).
+> Source: [`tool/refuge_cli.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/refuge_cli.dart) · Deploys live in a separate tool: [`tool/deploy_release.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/deploy_release.dart) (see [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md)).
 
 ## Quick start
 
@@ -32,8 +32,8 @@ Requirements: `git`, and the GitHub CLI `gh` authenticated via `gh auth login`. 
 | :---: | :--- | :--- |
 | `0` | Success | Nothing |
 | `2` | CodeRabbit requested changes | Fix in the worktree, push, run `merge-pr N` |
-| `3` | CodeRabbit left inline comments | Fix critical ones; defer polish to **#36** with a link; then `merge-pr N --force` |
-| `4` | Timed out waiting for CodeRabbit | Wait, then `merge-pr N` |
+| `3` | CodeRabbit left findings (inline or in the review body) | Fix critical ones; defer polish to **#36** with a link; then `merge-pr N --force` |
+| `4` | No CodeRabbit review yet (timeout) | Wait, then `merge-pr N`. It will not merge without a review, even with `--force` |
 | `5` | `privacy-scan` found something | Remove it (see **#64**) |
 | `64` | Usage error | Run `help <command>` |
 

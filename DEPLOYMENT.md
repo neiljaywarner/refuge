@@ -64,7 +64,7 @@ We prefer **pure Dart** over fragile bash scripts so it runs identically on macO
 
 ## 3. Firebase MCP Server & CLI Coexistence
 
-- **Firebase MCP Server (`firebase mcp`)**: Configured in `~/.gemini/config/mcp_config.json` pointing at the repo root (`firebase mcp --dir .`). Agents should prefer Firebase MCP tools for inspecting project configuration, Remote Config keys, Hosting sites, and Analytics/Crashlytics state.
+- **Firebase MCP Server (`firebase mcp`)**: Configured in `~/.gemini/config/mcp_config.json` with `--dir` set to the absolute path of the repo root (`refuge_cli configure-mcp` fills this in from the current directory). Agents should prefer Firebase MCP tools for inspecting project configuration, Remote Config keys, Hosting sites, and Analytics/Crashlytics state.
 - **Firebase CLI (`/opt/homebrew/bin/firebase`)**: Invoked by `tool/deploy_release.dart` for uploading compiled `build/web` static bundles to `belongonthespectrum.web.app` and preview channels.
 
 ---

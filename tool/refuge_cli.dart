@@ -38,12 +38,14 @@ import 'dart:io';
 /// Help text for every subcommand, shown by `help` and `help <subcommand>`.
 const Map<String, String> _commandHelp = {
   'ship-pr': '''
-ship-pr <branch> "<title>" "<body>" [--timeout-min=15] [--no-merge]
+ship-pr <branch> "<title>" "<body>" [--timeout-min=15] [--no-merge] [--verified]
   1. Pushes <branch> to origin and opens a PR against main.
   2. Requests "@coderabbitai review".
   3. Polls every 30s until CodeRabbit posts a review (or the timeout hits).
   4. Merges (squash + delete branch) ONLY if CodeRabbit did not request
-     changes and left no inline comments. Otherwise it prints a triage
+     changes and left no findings (inline or in the review body).
+     --verified adds an "author reports analyze + tests passed" note; only
+     pass it if you actually ran them. Otherwise it prints a triage
      summary and exits non-zero so a human/agent can fix the critical items or
      defer polish to Issue #36, then run `merge-pr <number>`.''',
   'merge-pr': '''
@@ -186,6 +188,7 @@ class _ReviewStatus {
     required this.hasReview,
     required this.changesRequested,
     required this.inlineComments,
+    required this.bodyFindings,
     required this.mergeState,
   });
 
@@ -193,6 +196,7 @@ class _ReviewStatus {
   final bool hasReview;
   final bool changesRequested;
   final List<String> inlineComments;
+  final int bodyFindings;
   final String mergeState;
 
   String summary() {
@@ -201,6 +205,7 @@ class _ReviewStatus {
       ..writeln('  review posted     : $hasReview')
       ..writeln('  changes requested : $changesRequested')
       ..writeln('  inline comments   : ${inlineComments.length}')
+      ..writeln('  review-body finds : $bodyFindings')
       ..writeln('  merge state       : $mergeState');
     for (final c in inlineComments) {
       b.writeln('  - $c');
@@ -209,31 +214,65 @@ class _ReviewStatus {
   }
 }
 
+/// Fetches every page of a GitHub REST list endpoint as decoded JSON objects.
+///
+/// Fails closed: any `gh` error terminates the process instead of returning an
+/// empty list, so a network/auth/rate-limit failure can never look "clean".
+Future<List<Map<String, dynamic>>> _ghPaginated(String endpoint) async {
+  final r = await Process.run(_gh, ['api', '--paginate', endpoint, '--jq', '.[]']);
+  if (r.exitCode != 0) {
+    stderr.writeln('gh api $endpoint failed (failing closed): ${r.stderr}');
+    exit(r.exitCode == 0 ? 1 : r.exitCode);
+  }
+  return const LineSplitter()
+      .convert(r.stdout as String)
+      .where((l) => l.trim().isNotEmpty)
+      .map((l) => jsonDecode(l) as Map<String, dynamic>)
+      .toList();
+}
+
+bool _isRabbit(Map<String, dynamic> o) =>
+    ((o['user'] as Map?)?['login'] as String? ?? '').contains('coderabbit');
+
+/// Counts findings CodeRabbit puts in the review *body* (not inline), e.g.
+/// "Actionable comments posted: 3" and "Outside diff range comments (2)".
+int _bodyFindings(String body) {
+  var n = 0;
+  final actionable = RegExp(r'Actionable comments posted:\s*(\d+)').firstMatch(body);
+  if (actionable != null) n += int.parse(actionable.group(1)!);
+  for (final m in RegExp(r'Outside diff range comments?\s*\((\d+)\)').allMatches(body)) {
+    n += int.parse(m.group(1)!);
+  }
+  return n;
+}
+
 Future<_ReviewStatus> _coderabbitStatus(String prNumber) async {
   final view = await Process.run(_gh, [
-    'pr', 'view', prNumber, '--repo', _repo,
-    '--json', 'reviews,mergeStateStatus',
+    'pr', 'view', prNumber, '--repo', _repo, '--json', 'mergeStateStatus',
   ]);
   if (view.exitCode != 0) {
     stderr.writeln('gh pr view failed: ${view.stderr}');
     exit(view.exitCode);
   }
-  final json = jsonDecode(view.stdout as String) as Map<String, dynamic>;
-  final reviews = (json['reviews'] as List).cast<Map<String, dynamic>>();
-  final rabbit = reviews.where(
-    (r) => ((r['author'] as Map?)?['login'] as String? ?? '')
-        .contains('coderabbit'),
-  );
+  final mergeState =
+      (jsonDecode(view.stdout as String) as Map)['mergeStateStatus'] as String? ??
+          'UNKNOWN';
 
-  final comments = await Process.run(_gh, [
-    'api', 'repos/$_repo/pulls/$prNumber/comments',
-  ]);
+  // Use only the LATEST CodeRabbit review so an old CHANGES_REQUESTED review
+  // does not block forever after fixes are pushed and re-reviewed.
+  final reviews = (await _ghPaginated('repos/$_repo/pulls/$prNumber/reviews'))
+      .where(_isRabbit)
+      .where((r) => r['submitted_at'] != null)
+      .toList()
+    ..sort((a, b) =>
+        (a['submitted_at'] as String).compareTo(b['submitted_at'] as String));
+  final latest = reviews.isEmpty ? null : reviews.last;
+
+  // Inline comments that belong to the latest review only.
   final inline = <String>[];
-  if (comments.exitCode == 0) {
-    for (final c in (jsonDecode(comments.stdout as String) as List)
-        .cast<Map<String, dynamic>>()) {
-      final login = (c['user'] as Map?)?['login'] as String? ?? '';
-      if (!login.contains('coderabbit')) continue;
+  if (latest != null) {
+    for (final c in await _ghPaginated('repos/$_repo/pulls/$prNumber/comments')) {
+      if (!_isRabbit(c) || c['pull_request_review_id'] != latest['id']) continue;
       final firstLine = (c['body'] as String? ?? '')
           .split('\n')
           .firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
@@ -243,10 +282,11 @@ Future<_ReviewStatus> _coderabbitStatus(String prNumber) async {
 
   return _ReviewStatus(
     prNumber: prNumber,
-    hasReview: rabbit.isNotEmpty,
-    changesRequested: rabbit.any((r) => r['state'] == 'CHANGES_REQUESTED'),
+    hasReview: latest != null,
+    changesRequested: latest?['state'] == 'CHANGES_REQUESTED',
     inlineComments: inline,
-    mergeState: json['mergeStateStatus'] as String? ?? 'UNKNOWN',
+    bodyFindings: latest == null ? 0 : _bodyFindings(latest['body'] as String? ?? ''),
+    mergeState: mergeState,
   );
 }
 
@@ -258,6 +298,7 @@ Future<void> _shipPr(List<String> rest) async {
   final body = positional[2];
   final timeoutMin = int.tryParse(_flag(rest, 'timeout-min') ?? '') ?? 15;
   final noMerge = rest.contains('--no-merge');
+  final verified = rest.contains('--verified');
 
   _log('1/4 Pushing $branch to origin...');
   final push = await Process.run('git', ['push', '-u', 'origin', branch]);
@@ -281,8 +322,10 @@ Future<void> _shipPr(List<String> rest) async {
   _log('3/4 Requesting @coderabbitai review and waiting up to $timeoutMin min...');
   await _runGh([
     'pr', 'comment', prNum, '--repo', _repo, '--body',
-    '@coderabbitai review\n\nVerified locally: `analyze_files` + `run_tests` '
-        '(Dart MCP). Non-blocking polish will be deferred to #36.',
+    verified
+        ? '@coderabbitai review\n\nAuthor reports local `analyze_files` + '
+            '`run_tests` passed. Non-blocking polish will be deferred to #36.'
+        : '@coderabbitai review',
   ], ignoreErrors: true);
 
   final deadline = DateTime.now().add(Duration(minutes: timeoutMin));
@@ -315,14 +358,23 @@ Future<void> _mergePr(List<String> rest) async {
   await _mergeIfClean(status, force: rest.contains('--force'));
 }
 
+/// Merge gate. `--force` only waives *findings* after triage; it never waives
+/// a missing review or a latest-review CHANGES_REQUESTED.
 Future<void> _mergeIfClean(_ReviewStatus s, {required bool force}) async {
+  if (!s.hasReview) {
+    _log('No CodeRabbit review on PR #${s.prNumber} yet. NOT merging '
+        '(--force does not bypass this).');
+    exit(4);
+  }
   if (s.changesRequested) {
     _log('CodeRabbit REQUESTED CHANGES on PR #${s.prNumber}. Fix in the '
-        'worktree, push, then run merge-pr ${s.prNumber}.');
+        'worktree, push, wait for the re-review, then run merge-pr ${s.prNumber}.');
     exit(2);
   }
-  if (s.inlineComments.isNotEmpty && !force) {
-    _log('CodeRabbit left ${s.inlineComments.length} inline comment(s). '
+  final findings = s.inlineComments.length + s.bodyFindings;
+  if (findings > 0 && !force) {
+    _log('CodeRabbit left $findings finding(s) '
+        '(${s.inlineComments.length} inline, ${s.bodyFindings} in review body). '
         'Triage: fix critical ones, defer polish to #36 with a link, then run '
         'merge-pr ${s.prNumber} --force.');
     exit(3);
@@ -343,9 +395,13 @@ Future<void> _privacyScan() async {
     'private key': RegExp(r'-----BEGIN [A-Z ]*PRIVATE KEY-----'),
   };
   final files = await Process.run('git', ['ls-files']);
+  if (files.exitCode != 0) {
+    stderr.writeln('git ls-files failed (not a git repo?): ${files.stderr}');
+    exit(files.exitCode);
+  }
   var findings = 0;
   for (final path in (files.stdout as String).split('\n')) {
-    if (path.isEmpty || path == 'tool/refuge_cli.dart') continue;
+    if (path.isEmpty) continue;
     final f = File(path);
     if (!f.existsSync() || f.lengthSync() > 2 * 1024 * 1024) continue;
     final String text;
@@ -393,7 +449,11 @@ Future<void> _syncWiki() async {
   stdout.write(commit.stdout);
   final push = await Process.run('git', ['-C', wikiDir.path, 'push', 'origin', 'HEAD']);
   stderr.write(push.stderr);
-  _log(push.exitCode == 0 ? 'Wiki synced.' : 'Wiki push failed.');
+  if (push.exitCode != 0) {
+    _log('Wiki push failed.');
+    exit(push.exitCode);
+  }
+  _log('Wiki synced.');
 }
 
 Future<void> _configureMcpAndTestMarionette() async {
