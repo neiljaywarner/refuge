@@ -448,23 +448,6 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     : 'Share Praise & Encouragement',
                               ),
                             ),
-                            OutlinedButton.icon(
-                              onPressed: () async {
-                                final sentiment = selectedSentiment.value;
-                                final subject = Uri.encodeComponent(
-                                  'Belong Feedback: ${sentiment.label} (${sentiment.subtitle})',
-                                );
-                                final body = Uri.encodeComponent(
-                                  feedbackController.text.trim(),
-                                );
-                                final uri = Uri.parse(
-                                  'mailto:neil@belongonthespectrum.com?subject=$subject&body=$body',
-                                );
-                                await launchUrl(uri);
-                              },
-                              icon: const Icon(Icons.email_outlined, size: 18),
-                              label: const Text('Email Organizer Directly'),
-                            ),
                           ],
                         ),
                       ],
