@@ -1,11 +1,11 @@
 {
-    "name": "Sanctuary",
-    "short_name": "Sanctuary",
+    "name": "Belong on the Spectrum",
+    "short_name": "Belong",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#F4F7F5",
-    "theme_color": "#4A7C59",
-    "description": "Sanctuary - Calm-Tech Digital Community for Belong on the Spectrum built with Serverpod 4.",
+    "background_color": "#F3EFE6",
+    "theme_color": "#112334",
+    "description": "You belong here — a calm, neurodivergent-affirming Christian & autistic fellowship community.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
