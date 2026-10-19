@@ -17,4 +17,5 @@
 * **[🤝 Contributor Guide](Contributor-Guide)**
 * **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)**
 * **[🏗️ Architecture Deep Dive](Serverpod-Architecture-Deep-Dive)**
+* **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**

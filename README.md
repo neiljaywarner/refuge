@@ -9,6 +9,7 @@
 
 ## 🔗 Quick Executive & Engineering Links
 - 📋 **[Neil's Sunday Night Review (`neil_to_review_sunday_night.md`)](neil_to_review_sunday_night.md)**: Breakdown by Milestones (`v0.5.0`–`v1.0.0`), Live Releases, ADRs (`0001`–`0009`), and Hybrid Architecture Grading.
+- 🗄️ **[Backend & Database Architecture (`docs/DATABASE_ARCHITECTURE.md`)](docs/DATABASE_ARCHITECTURE.md)**: Under-the-hood map, Firestore collection schemas (`users`, `posts`, `feedback`), indexes, security rules, and Serverpod RPC mapping.
 - 🌙 **[Unattended Session Execution Plan & LLM Troubleshooting (`unattended_session_908pm.md`)](unattended_session_908pm.md)**: Live Mini-Milestones tracker, FAQ, and zero-stall troubleshooting guide for lighter LLMs.
 - 🚀 **[Deployment & Release Runbook (`DEPLOYMENT.md`)](DEPLOYMENT.md)**: 1-command pure-Dart release pipeline (`tool/deploy_release.dart`) for `belongonthespectrum.web.app`, Firebase Hosting Preview Channels, and GitHub Releases.
 - ⚖️ **[ADR-0009: Serverpod → Appwrite Core + Firebase Edge Hybrid Strategy](docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)**: Graded comparison (**A+ / `9.7/10`**) of Piece-by-Piece vs. One-Shot migration and permanent Firebase Hosting/FCM/Audiences coexistence.
@@ -50,6 +51,7 @@ Its flagship community is **[Belong on the Spectrum](https://www.belongonthespec
 | **[🚀 Deployment & Release Runbook](DEPLOYMENT.md)** | **Engineers & Release Ops** | Pure-Dart deployment script (`tool/deploy_release.dart`) + `week1` Audio MP3 Release Notes roadmap. |
 | **[📣 Organizer Remote Config Guide](docs/wiki/Organizer-Remote-Config-Guide.md)** | **Organizers & Leaders** | How to edit the *"Message from the Organizer"* banner without needing a developer. |
 | **[📱 PWA & App Store Guide](docs/wiki/PWA-Guide-for-Members-and-Organizers.md)** | **Members & Organizers** | How members install Belong to their iPhone/Android Home Screen in 10 seconds. |
+| **[🗄️ Backend & Database Architecture](docs/DATABASE_ARCHITECTURE.md)** | **Engineers & Organizers** | Under-the-hood map, Firestore collection schemas (`users`, `posts`, `feedback`), indexes, security rules, and Serverpod RPC mapping. |
 | **[🤝 Contributor Guide](docs/wiki/Contributor-Guide.md)** | **Volunteers & Developers** | How to contribute via Ticket-Driven Development (`1 Issue = 1 Worktree = 1 PR`). |
 | **[🎓 Student, Mentee & Apprentice Guide](docs/wiki/Apprentice-and-Token-Optimization-Guide.md)** | **Students & Mentees** | Clean architecture walkthrough, BDD testing, pure-Dart CLI tools (`tool/refuge_cli.dart`), and **Free-Tier AI Token Optimization**. |
 
