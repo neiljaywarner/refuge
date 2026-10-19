@@ -45,12 +45,14 @@ export 'src/home_screen.dart';
 
 void bootstrapBelongApp({required AppFlavor flavor}) {
   WidgetsFlutterBinding.ensureInitialized();
+  // A single ProviderScope lives inside SanctuaryApp. Do not wrap it in another
+  // ProviderScope: root-scoped providers (e.g. quietDigestProvider) would then
+  // read the nested postRepositoryProvider override, which Riverpod rejects in
+  // debug builds (red screen found while driving the Pixel, #73).
   runApp(
-    ProviderScope(
-      overrides: [
-        appFlavorProvider.overrideWithValue(flavor),
-      ],
-      child: SanctuaryApp(repository: PostRepositoryFactory.create()),
+    SanctuaryApp(
+      repository: PostRepositoryFactory.create(),
+      overrides: [appFlavorProvider.overrideWithValue(flavor)],
     ),
   );
 }
