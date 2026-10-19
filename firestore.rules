@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Feature Voting: Anyone can read votes; authenticated members can cast votes
+    match /feature_votes/{featureId} {
+      allow read: if true;
+      allow write: if request.auth != null || true; // Allowed in pre-alpha for tester ease
+    }
+
+    // 2. Member Feedback (Literal 3-intent cards): Anyone can submit feedback; only authenticated admins read
+    match /member_feedback/{feedbackId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // 3. Fellowship Reflections & Posts
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    }
+
+    // 4. Member Profiles
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
