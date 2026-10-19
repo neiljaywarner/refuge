@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../domain/member_profile.dart';
 
 /// Upper-right Member Profile & Stage 1 ("Any Auth") Sign-In Dialog/Sheet
-/// built as a [HookConsumerWidget] (#23, #26, #35).
+/// built as a [HookConsumerWidget] (#23, #26, #35, ADR-0009).
 class MemberProfileDialog extends HookConsumerWidget {
   const MemberProfileDialog({super.key});
 
@@ -45,7 +45,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                 ),
                 Text(
                   profile.isSignedIn
-                      ? 'Signed in to Belong on the Spectrum'
+                      ? 'Signed in to Belong on the Spectrum (${profile.displayName})'
                       : 'Sign in so your reflections carry your name',
                   style: const TextStyle(fontSize: 11.5),
                 ),
@@ -87,6 +87,46 @@ class MemberProfileDialog extends HookConsumerWidget {
                   isDense: true,
                 ),
               ),
+              const SizedBox(height: 14),
+              const Text(
+                '1-Tap Sign-In (Appwrite OAuth2 Ready · ADR-0009)',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  OutlinedButton.icon(
+                    key: const Key('oauth_google_sign_in_button'),
+                    onPressed: () {
+                      ref
+                          .read(memberProfileProvider.notifier)
+                          .signInWithOAuth('google');
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(Icons.g_mobiledata_rounded, size: 18),
+                    label: const Text(
+                      'Continue with Google',
+                      style: TextStyle(fontSize: 11.5),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    key: const Key('oauth_apple_sign_in_button'),
+                    onPressed: () {
+                      ref
+                          .read(memberProfileProvider.notifier)
+                          .signInWithOAuth('apple');
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(Icons.apple_rounded, size: 16),
+                    label: const Text(
+                      'Continue with Apple',
+                      style: TextStyle(fontSize: 11.5),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -94,6 +134,7 @@ class MemberProfileDialog extends HookConsumerWidget {
       actions: [
         if (profile.isSignedIn)
           TextButton(
+            key: const Key('profile_sign_out_button'),
             onPressed: () {
               ref.read(memberProfileProvider.notifier).signOut();
               Navigator.of(context).pop();

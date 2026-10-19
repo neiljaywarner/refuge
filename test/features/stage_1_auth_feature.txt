@@ -1,0 +1,10 @@
+Feature: Stage 1 "Any Auth" & Pluggable Appwrite/Serverpod Auth Repository (#26, ADR-0009)
+  As a Belong on the Spectrum alpha member
+  I want frictionless Stage 1 email + display name sign-in and 1-Tap Google/Apple Sign-In readiness
+  So that my reflections carry my name and I can sign out anytime from the upper-right profile dialog
+
+  Scenario: Member signs in with Display Name and Email
+    Given I open the upper-right Member Profile & Sign-In dialog
+    When I enter "Caleb Stone" into Display Name and "caleb@belong.org" into Email Address
+    And I tap "Save & Sign In"
+    Then my profile is signed in as "Caleb Stone" with initials "CS"
