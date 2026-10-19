@@ -3,9 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
-import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
-import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
-import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 
 void main() {
   group('Pragmatic TDD: FeatureVotingNotifier & Literal Feedback Intents', () {

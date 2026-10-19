@@ -95,7 +95,7 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
               ),
               Switch.adaptive(
                 value: _calmDigestEnabled,
-                activeColor: const Color(0xFF2E6B56),
+                activeTrackColor: const Color(0xFF2E6B56),
                 onChanged: (val) {
                   setState(() => _calmDigestEnabled = val);
                 },
@@ -130,7 +130,7 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             itemCount: _threads.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, indent: 64),
+            separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
             itemBuilder: (context, index) {
               final thread = _threads[index];
               return ListTile(
