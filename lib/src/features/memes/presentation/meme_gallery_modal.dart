@@ -7,6 +7,7 @@ void showMemeGalleryModal(BuildContext context, {required ValueChanged<CalmMeme>
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
     ),
