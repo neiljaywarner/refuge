@@ -65,3 +65,6 @@ scratch/
 **/firebase_options.dart
 .worktrees/
 
+# Strict Zero-PII: Never commit member CSV exports (only synthetic test fixture allowed)
+**/*.csv
+!test/fixtures/sample_anonymized_circle_export.csv
