@@ -1,0 +1,26 @@
+# Actually Autistic Events Calendar BDD Specification (Issue #28)
+# Driver: Marionette MCP / CLI / PatrolWidgetTest
+# Neurodivergent Target: Sensory-friendly event details (lighting, sound, quiet room) + 1-Tap RSVP.
+
+Feature: Actually Autistic Events Calendar
+  As an autistic adult in the Belong on the Spectrum community
+  I want to review sensory accommodations for community events in advance
+  And register with a 1-tap quiet RSVP
+  So that I know what to expect and feel safe attending
+
+  Scenario: Browsing upcoming sensory-friendly events
+    Given the user opens Belong on the Spectrum
+    When the user navigates to Spaces and selects "Actually Autistic Events"
+    Then the Actually Autistic Events view is displayed
+    And a sensory-friendly banner emphasizes masking-free and stimming-welcome policies
+    And upcoming events are listed with date, time, and location
+    And each event card displays sensory badges for lighting, sound, and quiet room availability
+
+  Scenario: Toggling 1-Tap Sensory-Friendly RSVP
+    Given the user is viewing the "Sensory-Friendly Board Game Night" event
+    When the user taps "RSVP (Sensory-Friendly)"
+    Then the button state changes to "Attending (Quiet RSVP)"
+    And the card displays a "✅ RSVP Confirmed" badge
+    And the attending member count increases by 1
+    When the user taps the RSVP button again
+    Then the RSVP is cancelled gracefully and the count decreases by 1

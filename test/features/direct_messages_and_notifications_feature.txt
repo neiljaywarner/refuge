@@ -1,0 +1,33 @@
+# Direct Messages (Msgs) & Calm Notifications BDD Specification (Issue #27)
+# Driver: Marionette MCP / CLI / PatrolWidgetTest
+# Neurodivergent Target: Calm, sensory-friendly 1-on-1 communication with batched digest support.
+
+Feature: Direct Messages and Calm Notifications
+  As an autistic adult in the Belong on the Spectrum community
+  I want to communicate 1-on-1 and check notifications without sensory anxiety or red-dot urgency
+  So that I can build meaningful friendships at my own pace
+
+  Scenario: Viewing conversations list and toggling Calm Batched Digest
+    Given the user opens Belong on the Spectrum
+    When the user taps the bottom tab "Msgs"
+    Then the Direct Messages view is displayed with 3 conversation threads
+    And a calm digest banner shows "Calm Batched Digest is Active"
+    When the user toggles the Calm Batched Digest switch
+    Then the status updates to disabled realtime mode without error
+
+  Scenario: Opening a conversation thread and sending a calm reply
+    Given the user is on the Direct Messages view
+    When the user taps the thread with "Marty & Community Team"
+    Then the message history is shown with "Welcome to Belong!"
+    And a reply field with hint "Type a calm reply..." is present
+    When the user enters "Thank you Marty, glad to be here!"
+    And the user taps the send button
+    Then the new message is added to the conversation history
+    And the reply field is cleared
+
+  Scenario: Viewing Calm Notifications Bell
+    Given the user opens Belong on the Spectrum
+    When the user taps the bottom tab "Notifications"
+    Then the Calm Notifications view is displayed
+    And a calm sensory reminder shows notifications are delivered gently without intrusive alerts
+    And recent items for Events, Reflections, and Digest are visible
