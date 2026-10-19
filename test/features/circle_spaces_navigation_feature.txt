@@ -1,0 +1,18 @@
+Feature: Circle.so Parity Spaces Navigation & Belong Community Directory
+  As an autistic or neurodivergent member of Belong on the Spectrum
+  I want predictable, calm navigation between the Home Feed and structured Community Spaces
+  So that I can find welcoming spaces without sensory overload or confusing menus
+
+  # Driven interactively via Marionette MCP / CLI (`marionette_mcp`) and verified via `patrol_finders` (`patrolWidgetTest`)
+  Scenario: Member switches between Feed and Spaces sub-tabs and explores Circle sections
+    Given the Belong on the Spectrum app is running on the Home tab
+    Then I see the "Belong" header logo and "Sanctuary" subtitle
+    And I see the "Feed" chip (#subnav_feed_tab) selected by default
+    When I tap the "Spaces" chip (#subnav_spaces_tab)
+    Then I see the "PINNED" section header and "General Chat" space
+    And I see the "WELCOME" section header and "Start Here & Introduce Yourself" space
+    And I see the "COMMUNITY" section header with "Memes", "Online Resources / Videos", "Actually Autistic Chat", "Friends Chat", and "Family Chat"
+    And I see the "ACTUALLY AUTISTIC" section header with "Actually Autistic Events" marked "Coming Soon"
+    And I see the "LINKS" section header with "Community Guidelines" and "DFW Church"
+    When I tap "Start Here & Introduce Yourself"
+    Then I return to the calm Feed view filtered to the selected space
