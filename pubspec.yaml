@@ -16,8 +16,13 @@ publish_to: 'none'
 # of the product and file versions while build-number is used as the build suffix.
 version: 0.2.0+2
 
+# Toolchain this project is built, tested, and released with (from
+# `flutter --version`, Oct 18 2026). Pinning via FVM is tracked in a GitHub issue.
+#   Flutter 3.47.7 • channel stable • framework abaf9c5237 (2026-10-08)
+#   Engine d8a2d6c768 • Dart 3.13.5 • DevTools 2.60.0
 environment:
   sdk: ^3.13.5
+  flutter: ">=3.47.7"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -42,7 +47,6 @@ dependencies:
   firebase_core: ^5.0.0
   firebase_analytics: ^13.0.0
   firebase_remote_config: ^7.0.0
-  firebase_in_app_messaging: ^0.10.0
   firebase_crashlytics: ^6.0.0
   firebase_auth: ^7.0.0
   firebase_messaging: ^17.0.0
