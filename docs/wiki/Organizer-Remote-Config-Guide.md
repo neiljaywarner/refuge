@@ -9,7 +9,10 @@
 
 In most apps, changing the welcome message at the top of the home screen or updating a community link requires asking a software developer to edit code, test it, and publish a new version.
 
-In **Belong on the Spectrum**, we connected the **"Message from the Organizer"** banner and key community links to **Firebase Remote Config**. That means **any authorized community organizer can log into a simple web dashboard, type a new message, click "Publish Changes," and see it update across the Web/PWA, Android, and iPhone apps automatically!**
+In **Belong on the Spectrum**, we connected the **"Message from the Organizer"** banner and key community links to **[Firebase Remote Config](https://firebase.google.com/products/remote-config)**. That means **any authorized community organizer can log into a simple web dashboard, type a new message, click "Publish Changes," and see it update across the Web/PWA, Android, and iPhone apps automatically!**
+
+- 🌐 **Product Overview for Non-Technical Leaders**: [Firebase Remote Config Official Page](https://firebase.google.com/products/remote-config)
+- 🎥 **2-Minute Video Explainer**: [What is Firebase Remote Config? (YouTube)](https://www.youtube.com/watch?v=_CXXVFPO6f0)
 
 ---
 

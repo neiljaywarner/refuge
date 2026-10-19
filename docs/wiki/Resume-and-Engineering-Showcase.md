@@ -13,7 +13,7 @@
 Refuge is a production-grade demonstration of **full-stack unified Dart architecture**, replacing costly, fragmented legacy community platforms with an integrated, typed, low-latency solution.
 
 As lead architect, Neil Warner designed and executed the entire system lifecycle:
-1. **Business & Unit Economics**: Eliminated a **~$1,500/year ($130/month)** SaaS overhead for a faith-based non-profit ([Belong on the Spectrum](https://www.belongonthespectrum.com/)), replacing it with a self-hostable Serverpod 4 compute stack costing **<$5/month** (a **96% operating cost reduction**).
+1. **Business & Unit Economics**: Eliminated a **~$1,000+/year (see https://circle.so/pricing)** SaaS overhead for a faith-based non-profit ([Belong on the Spectrum](https://www.belongonthespectrum.com/)), replacing it with a self-hostable Serverpod 4 compute stack costing **<$5/month** (a **96% operating cost reduction**).
 2. **End-to-End Type Safety**: Shared Dart models between Flutter multi-platform clients and Serverpod cloud servers via Serverpod SPI (`.spy.yaml`), eliminating JSON serialization boilerplate and client-server drift.
 3. **Resilient Offline-First Architecture**: Engineered an unshakeable 800ms fallback moat ensuring zero user-facing crash or error states during connectivity fluctuations.
 4. **Physical Device Test Automation**: Built an automated hardware verification harness driving two real Google Pixel 9a smartphones communicating live over T-Mobile LTE.
