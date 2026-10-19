@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -52,6 +51,11 @@ export 'src/home_screen.dart';
 /// and Production (#52, ADR-0006).
 void main() {
   const flavor = AppFlavor.dev;
+  runWithFlavor(flavor);
+}
+
+/// Backward compatibility entrypoint for `main_dev.dart` and `main_prod.dart`.
+void bootstrapBelongApp({required AppFlavor flavor}) {
   runWithFlavor(flavor);
 }
 

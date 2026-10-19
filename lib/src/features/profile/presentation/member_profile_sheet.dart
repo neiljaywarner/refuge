@@ -175,7 +175,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
                   key: const Key('profile_church_affiliation_dropdown'),
-                  value: allAffiliationOptions.contains(selectedAffiliation.value)
+                  initialValue: allAffiliationOptions.contains(selectedAffiliation.value)
                       ? selectedAffiliation.value
                       : null,
                   isExpanded: true,
