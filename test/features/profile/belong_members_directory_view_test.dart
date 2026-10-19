@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
-import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/belong_members_directory_view.dart';
 
 void main() {
