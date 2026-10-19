@@ -53,3 +53,15 @@ app.*.map.json
 *.mp4
 *.m4a
 scratch/
+
+# Strictly ignore all secrets, API keys, cloud configs, and PII
+**/passwords.yaml
+**/.scloud/
+**/.firebase/
+**/.env
+**/.env.*
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
+.worktrees/
+

@@ -1,87 +1,88 @@
-# 🌿 Refuge — Product & Engineering Roadmap for Belong on the Spectrum (`belongonthespectrum.com`)
+# Belong on the Spectrum (`belongonthespectrum.com`) — Product & Engineering Roadmap (Circle.so Cutover by Oct 31, 2026)
 
-> **Repository**: `neiljaywarner/refuge` (Clean successor to `refuge4serverpod`)  
-> **First Anchor Organization**: [Belong on the Spectrum](https://www.belongonthespectrum.com/) (*"Fearfully and Wonderfully Made"* — Psalm 139:14)  
-> **Architecture**: Flutter 3 (Web + Android/iOS) + Serverpod 4 Cloud (`scloud`, PostgreSQL 16 + Redis 7 WebSocket Streams) + White-Label Tenant Config  
-> **Last Updated**: `2026-10-18`
-
----
-
-## 1. Executive Summary & Product Vision
-
-**Belong on the Spectrum** (and similar neurodivergent/faith fellowships) needs a clean, welcoming community home like **Circle.so**, without Circle's **$89–$130/month SaaS fee** or sensory-overloading dark patterns (red unread badge spam, typing indicators, algorithmic feeds).
-
-**Refuge** is our white-labelable, calm-tech **Circle competitor** built end-to-end in Dart:
-1. **First Tenant (`belongonthespectrum.com`)**: Ships out-of-the-box branded for **Belong on the Spectrum**, while keeping all branding, copy, palette defaults, and space definitions inside a clean `CommunityBrandConfig` so future churches and non-profits can white-label/skin the platform immediately.
-2. **Core Circle-Competitor Feature Set for `v1.0.0`**:
-   - **Clean Spaces**: A welcoming **General Space (`#main-hall`)**, a **Meme & Special Interests Space (`#special-interests-memes`)**, plus Prayer & Study rooms.
-   - **Community Organizer's Priority Feature** (`v0.7.0` — slot ready for organizer specs).
-   - **Member Profiles**: Clean profile card/sheet with display name, avatar/initials, bio, God-given special interests, sensory mode preference, and member/steward badge.
-   - **Direct Messages / Calm Inbox**: 1-on-1 member messaging without "...is typing" urgency or read-receipt pressure.
-   - **Calm Notification Bell**: Top-bar notification bell showing replies, care affirmations, DMs, and announcements without anxiety-inducing red badge counters.
-   - **Two-Stage Authentication**:
-     - **Stage 1 ("Any Auth" in `v0.8.0-alpha` / `v0.9.0-rc` / `v1.0.0`)**: Frictionless Serverpod session / email+passcode sign-in so every post, reaction, profile, and DM belongs to a real authenticated member.
-     - **Stage 2 ("Good Auth" in `v1.0.1` / `v1.1.0`)**: Google Sign-In / OAuth + Push & Email Notifications (fast-follow).
+> **Repository**: `https://github.com/neiljaywarner/refuge` (Local: `/Users/neil/belongonthespectrum/refuge`)  
+> **First White-Label Community**: [Belong on the Spectrum](https://www.belongonthespectrum.com/) (Christian & Neurodivergent / Autistic Affirming Community partnered with [DFW Church](https://dfwchurch.org))  
+> **Hard External Deadline**: **Saturday, October 31, 2026** — **Final day of the existing Circle.so subscription!**  
+> **Companion Execution Plan**: [`18-oct-diving-in-since-machine-setup-in25-minutes-successfully.md`](file:///Users/neil/belongonthespectrum/18-oct-diving-in-since-machine-setup-in25-minutes-successfully.md)
 
 ---
 
-## 2. Staged Release Milestones (`v0.5.0` → `v1.1.0`)
+## 1. Non-Technical Schedule & Timeline to October 31st (Circle.so Cutover)
 
-| Milestone | Theme | Core Features & Deliverables | Holistic & Automated Test Coverage Gate |
-| :--- | :--- | :--- | :--- |
-| **`v0.5.0`** *(Done)* | **Working Full-Stack Baseline** | - Live Serverpod Cloud backend + 800ms offline fallback<br>- 5 Spaces, 4 WCAG Sensory Modes (`Clean`, `Sage`, `Dark`, `Contrast`)<br>- Qualitative Care Affirmations + Calm Meme Gallery Modal<br>- Apple Silicon (`arm64`) dev/MCP environment & 26/26 green tests | **Baseline (`26/26` unit/widget/BDD tests passing)** |
-| **`v0.6.0`** | **Clean `refuge` Repo + Skinnable Circle Shell** | - Fresh `neiljaywarner/refuge` repo (no `prototype`/`hackathon` naming)<br>- **White-Label `CommunityBrandConfig`** (anchored on `belongonthespectrum.com`)<br>- **Circle-Style Clean UI Polish** for **General (`#main-hall`)** and **Meme (`#special-interests-memes`)** spaces<br>- `bdd_widget_test` + Marionette VM-service driver integration | Foundation for `50%` gate |
-| **`v0.7.0`** | **Organizer's Request + Profiles + DMs + 50% Coverage** | - **Community Organizer's Request** *(slot reserved)*<br>- **Member Profile** view & editable special interests/sensory default<br>- **Direct Messages / Calm Inbox** drawer & repository<br>- **Automated Testing Milestone 1 (`50%` Holistic & `flutter test --coverage`)** | **🎯 50% Coverage Gate** (BDD `.feature` flows + Marionette + `--coverage`) |
-| **`v0.8.0-alpha`** | **Alpha — "Any Auth" + Calm Notification Bell** | - **Stage 1 Auth ("Any Auth")**: Sign-in / sign-up modal + persisted member identity across posts, reactions, and DMs<br>- **Calm Notification Bell**: Top-bar activity feed drawer (affirmations, DMs, announcements) | Alpha smoke suite on Chrome & Pixel 9a |
-| **`v0.9.0-rc`** | **Release Candidate — Clean, Usable & 70% Coverage** | - Author post edit/delete + Steward moderation controls (pin/hide)<br>- End-to-end UX polish across all 4 WCAG sensory modes<br>- **Automated Testing Milestone 2 (`70%` Holistic & `flutter test --coverage`)** | **🎯 70% Coverage Gate** (BDD + Marionette + Maestro/Patrol + `--coverage`) |
-| **`v1.0.0`** | **Community Launch (`belongonthespectrum.com`)** | - **Usable by the Belong on the Spectrum Community**<br>- Deployed to production Web + Serverpod Cloud (`scloud`) + Android APK for Pixel/mobile | Full RC + 70%+ regression gate green |
-| **`v1.0.1` / `v1.1.0`** | **Fast-Follow — Google Auth, Push/Email Notifications & 90% Coverage** | - **Google Auth ("Good Auth")** (OAuth 2.0 / Serverpod Auth)<br>- **Push & Scheduled Email Notifications** (opt-in alerts & Quiet Digests)<br>- **Multi-Org White-Label Switcher** for additional ministries<br>- **Automated Testing Milestone 3 (`90%` Holistic & `flutter test --coverage`)** | **🎯 90% Coverage Gate** (Full E2E + `integration_test`/Patrol + Maestro + `--coverage`) |
+Because **October 31, 2026** is the final day of Belong on the Spectrum's Circle.so subscription, our release schedule is anchored backward from that date so community organizers, moderators, and members experience a stress-free transition:
 
----
-
-## 3. Tiered Automated Testing & Holistic Coverage Strategy (`50%` → `70%` → `90%`)
-
-Per our [ticket_driven_development.md](file:///Users/neil/belongonthespectrum/.agents/rules/ticket_driven_development.md) rule:
-- **Pragmatic BDD First**: We prioritize human-readable **BDD feature specs** (`test/features/*.feature` + `bdd_widget_test`) and **holistic user-journey coverage** over brittle, over-mocked unit TDD boilerplate.
-- **No CDP / Playwright**: We drive live apps exclusively with **Marionette** (`marionette_mcp` over Flutter VM Service WebSocket), **Maestro** (`.maestro/*.yaml` on physical Pixel 9a), and **Patrol** (`patrol_mcp` / `patrol_cli`).
-- **Blended Coverage Definition**: Each milestone gate (`50%`, `70%`, `90%`) combines:
-  1. **`flutter test --coverage`** (`lcov.info` line/branch coverage across domain, data, and presentation layers), **AND**
-  2. **Holistic User-Flow Coverage** (percentage of core user journeys verified end-to-end via BDD widget tests, Marionette live driving, and Maestro/Patrol device flows).
-
-### Coverage Issue Breakdown (3 Dedicated GitHub Epics/Issues with Subtasks)
-
-1. **Coverage Issue 1 — `v0.7.0`: 50% Automated & Holistic Flow Coverage**
-   - [ ] Subtask 1.1: Configure `bdd_widget_test` and baseline `flutter test --coverage` (`lcov.info`) reporting script.
-   - [ ] Subtask 1.2: BDD & widget tests for `CommunityBrandConfig` (`belongonthespectrum.com` white-label defaults), General Space (`#main-hall`), and Meme Space (`#special-interests-memes`).
-   - [ ] Subtask 1.3: BDD & Marionette smoke verification for the Community Organizer's Request, Member Profile, and DM Inbox (`>= 50%` holistic + LCOV coverage).
-
-2. **Coverage Issue 2 — `v0.9.0-rc`: 70% Automated & Holistic Flow Coverage**
-   - [ ] Subtask 2.1: BDD & widget tests for Stage 1 Auth ("Any Auth" sign-in/sign-out/author attribution) and Calm Notification Bell drawer.
-   - [ ] Subtask 2.2: BDD & widget tests for Author Post Edit/Delete and Steward Moderation (pin/hide reflection).
-   - [ ] Subtask 2.3: Maestro / Marionette E2E flow verification across Chrome + physical Pixel 9a and `flutter test --coverage` reaching `>= 70%`.
-
-3. **Coverage Issue 3 — `v1.1.0`: 90% Automated & Holistic Flow Coverage**
-   - [ ] Subtask 3.1: Integration & Patrol/BDD tests for Google Auth ("Good Auth") and token/session refresh resilience.
-   - [ ] Subtask 3.2: End-to-end tests for Push / Scheduled Email Notification triggers and preferences.
-   - [ ] Subtask 3.3: Multi-tenant White-Label switching verification + full `flutter test --coverage` & E2E matrix reaching `>= 90%`.
+| Date Window | Release Milestone | What Non-Technical Organizers & Members Experience | Who Needs to Do What |
+| :--- | :---: | :--- | :--- |
+| **Sun, Oct 18 (Tonight)** | **`v0.5.0` → `v0.6.0` → `v0.8.0-alpha`** | • Hackathon clutter removed<br>• Official **Belong** cross + gold infinity (`∞`) logo & icons across Web, Android & iOS<br>• Familiar Circle-style `Feed` & `Spaces` layout (`Start Here`, `Announcements`, `General Chat`, `Memes`, `Online Resources / Videos`, `Actually Autistic Chat`, `Friends Chat`, `Family Chat`, `Links`)<br>• **Firebase Remote Config** live so organizers can edit the *"Message from the Organizer"* without code changes<br>• **Non-Technical Wiki** published<br>• **Alpha Sign-In ("Any Auth")** ready to test | **Neil & Organizers**: Glance at Chrome / Pixel 9a UI and share the organizer's custom feature request |
+| **Mon, Oct 19 – Wed, Oct 21** | **`v0.7.0`** | • Upper-right **Member Profile & Avatar** view<br>• **Community Organizer's Custom Request** live<br>• **50% Automated Test Coverage** verified | **Community Organizer**: Try editing the Welcome Message in Firebase Remote Config & preview the Alpha link |
+| **Thu, Oct 22 – Sat, Oct 24** | **`v0.8.0-alpha` (Moderator & Core Group Alpha)** | • Invite 5–10 friendly Belong moderators/leaders to post in `Start Here`, `General Chat`, and `Memes` | **Moderators**: Post initial welcome threads and seed a few favorite memes/videos |
+| **Sun, Oct 25 – Tue, Oct 27** | **`v0.9.0-rc` (Release Candidate)** | • Official **Community Guidelines** published under `Links`<br>• **70% Automated & Holistic Test Coverage** on Web + physical phones | **Organizers**: Final sign-off on Community Guidelines text |
+| **Wed, Oct 28 – Fri, Oct 30** | **`v1.0.0` (Belong Community Launch!)** | • `belongonthespectrum.com` points to the new Belong app<br>• Announcement posted in Circle inviting all members into their new home **before** Oct 31 | **All Members**: Join `belongonthespectrum.com`! |
+| **Sat, Oct 31, 2026** | **Circle.so Subscription Ends** | • Circle.so billing stops cleanly (saving ~\$1,500/year)<br>• Zero community downtime | Celebrate! 🎉 |
+| **Nov 1 – Nov 10, 2026** | **`v1.0.1` & `v1.1.0` (Fast-Follow)** | • Live **Notification Bell** & **Direct Messages (`Msgs`)** replace "Coming Soon" tabs<br>• **1-Tap Google Sign-In ("Good Auth")**<br>• **`Actually Autistic Events`** calendar<br>• **90% Test Coverage** | Automatic upgrade for all members |
 
 ---
 
-## 4. Initial GitHub Issue Queue for `neiljaywarner/refuge` (1 Issue = 1 Worktree = 1 PR)
+## 2. Exact Belong UI, Navigation & White-Label Architecture (`v0.6.0`)
 
-| Issue # | Title | Milestone | Branch / Worktree | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **#1** | `chore: bootstrap Apple Silicon ARM64 Mac, MCP servers, official Dart/Flutter skills & clean refuge repo` | `v0.5.0` | `chore/#1-silicon-mac-bootstrap` | **DONE (Close immediately upon creation)** |
-| **#2** | `feat(brand): extract white-label CommunityBrandConfig anchored on Belong on the Spectrum` | `v0.6.0` | `feat/#2-white-label-brand-config` | Ready |
-| **#3** | `feat(spaces): Circle-style clean UI polish for General (#main-hall) and Meme (#special-interests-memes) spaces` | `v0.6.0` | `feat/#3-circle-clean-spaces` | Ready |
-| **#4** | `feat(organizer): implement Belong on the Spectrum community organizer's priority request` | `v0.7.0` | `feat/#4-organizer-request` | Waiting on your details |
-| **#5** | `feat(profile): add clean Member Profile sheet with special interests & sensory preference` | `v0.7.0` | `feat/#5-member-profile` | Ready |
-| **#6** | `feat(dm): add Direct Messages / Calm Inbox drawer and repository` | `v0.7.0` | `feat/#6-direct-messages-inbox` | Ready |
-| **#7** | `test(coverage): achieve 50% holistic BDD, Marionette & LCOV test coverage for v0.7.0` | `v0.7.0` | `test/#7-coverage-50-percent` | Ready |
-| **#8** | `feat(auth): add Stage 1 "Any Auth" sign-in and authenticated member attribution` | `v0.8.0-alpha` | `feat/#8-stage1-any-auth` | Ready |
-| **#9** | `feat(notifications): add Calm Notification Bell & in-app activity drawer` | `v0.8.0-alpha` | `feat/#9-calm-notification-bell` | Ready |
-| **#10** | `feat(moderation): add author post edit/delete and steward moderation controls for RC` | `v0.9.0-rc` | `feat/#10-steward-moderation-rc` | Ready |
-| **#11** | `test(coverage): achieve 70% holistic BDD, Maestro/Patrol & LCOV test coverage for v0.9.0-rc` | `v0.9.0-rc` | `test/#11-coverage-70-percent` | Ready |
-| **#12** | `feat(auth-google): add Google Sign-In ("Good Auth") for v1.0.1 / v1.1.0 fast-follow` | `v1.1.0` | `feat/#12-google-auth` | Backlog (`1.0.1`/`1.1`) |
-| **#13** | `feat(push-email): add push & scheduled Quiet Digest email notifications for v1.0.1 / v1.1.0` | `v1.1.0` | `feat/#13-push-email-notifications` | Backlog (`1.0.1`/`1.1`) |
-| **#14** | `test(coverage): achieve 90% holistic BDD, Patrol/Maestro & LCOV test coverage for v1.1.0` | `v1.1.0` | `test/#14-coverage-90-percent` | Backlog (`1.1`) |
+### 2.1 Top Header & Sub-Navigation
+- **Upper-Left**: Official **Belong** logo (`assets/images/belong_logo.png`) + title.
+- **Upper-Right**: Sensory Theme switcher (High Clarity, Warm Calm, Low Stimulus Dark, Low Motion) + **Member Profile Avatar**.
+- **Below Logo**: Clean toggle between **`Feed`** and **`Spaces`**.
+- **Top of Feed / Start Here**: **"Message from the Organizer"** card powered by **Firebase Remote Config** (`organizer_welcome_title`, `organizer_welcome_message`, `organizer_banner_enabled`) so non-technical organizers can update community announcements anytime from the Firebase web console.
+
+### 2.2 Circle.so-Style Spaces Hierarchy
+- 📌 **Pinned**:
+  - `General Chat` (`general_chat`)
+- 👋 **Welcome**:
+  - `Start Here & Introduce Yourself` (`start_here`)
+  - `Announcements` (`announcements`)
+- 🤝 **Community**:
+  - `General Chat` (`general_chat`)
+  - `Memes` (`memes`)
+  - `Online Resources / Videos` (`resources_videos`)
+  - `Actually Autistic Chat` (`actually_autistic_chat`)
+  - `Friends Chat` (`friends_chat`)
+  - `Family Chat` (`family_chat`)
+- 📅 **Actually Autistic**:
+  - `Actually Autistic Events` (`actually_autistic_events`) -> Opens calm **"Coming Soon"** view (tracked in **Issue #13**)
+- 🔗 **Links**:
+  - `Community Guidelines` -> Opens **"Pending — Coming Soon"** view (tracked in **Issue #14**)
+  - `DFW Church` -> Opens `https://dfwchurch.org`
+  - `Download the Android App` -> Opens **"Pending — Coming Soon"** view (tracked in **Issue #15**)
+  - `Download the iOS App` -> Opens **"Pending — Coming Soon"** view (tracked in **Issue #16**)
+
+### 2.3 Bottom Navigation Bar (Vetted via ADR 0005)
+- **4 Clean Tabs**:
+  1. **`Home`** (`Feed` + `Spaces`)
+  2. **`Notifications`** (Clean **"Coming Soon"** view, tracked in **Issue #12**)
+  3. **`Msgs`** (Clean **"Coming Soon"** view, tracked in **Issue #12**)
+  4. **`Search`** (Instant keyword & space search across posts, memes, and videos)
+
+---
+
+## 3. Complete GitHub Issues & Epics Roster (`neiljaywarner/refuge`)
+
+Every issue has both a **human-readable description** for non-technical stakeholders and a dedicated **`🤖 LLM Execution Brief` comment** so **Gemini 4 Argon Low / Medium** can execute each ticket deterministically in an isolated git worktree:
+
+| Issue | Milestone | Title | Model Tier | Agent Mins | Neil Mins |
+| :---: | :---: | :--- | :---: | :---: | :---: |
+| **#1** | `v0.5.0` | Bootstrap Apple Silicon ARM64 Mac environment in 24 minutes *(CLOSED/DONE)* | Pro | 24m *(done)* | 2m *(done)* |
+| **#2** | `v0.6.0` | Implement White-Label `CommunityBrandConfig` (`belongonthespectrum.com` first tenant) | **Argon Low** | 10m | 0m |
+| **#3** | `v0.6.0` | Home Screen Scaffolding & Circle-Style Navigation Update (`Feed`/`Spaces`, Vetted Bottom Nav w/ ADR, Remove Judges API Explorer) | **Argon Low / Med** | 25m | 3m |
+| **#4** | `v0.6.0` | Belong Logo, Adaptive Launcher Icons & Multi-Platform App Icons (`Android`, `iOS`, `Web`, `macOS`) | **Argon Low** | 12m | 1m |
+| **#5** | `v0.6.0` | Add Firebase Analytics & Firebase Remote Config (`"Message from the Organizer"` live updates) | **Argon Low / Med** | 15m | 1m |
+| **#6** | `v0.6.0` | Overhaul Wiki for Non-Technical Organizers, Contributors & Oct 31st Circle.so Cutover Schedule | **Argon Low** | 12m | 1m |
+| **#7** | `v0.6.0` | Search tab filtering & visual media/meme post cards for `Memes` and `Online Resources / Videos` | **Argon Low** | 12m | 0m |
+| **#8** | `v0.7.0` | Upper-right Member Profile & Avatar view with neurodivergent comfort preferences | **Argon Low** | 15m | 1m |
+| **#9** | `v0.7.0` | Implement Belong on the Spectrum community organizer's priority request | **Argon Med / High** | 20m | 5m |
+| **#10** | `v0.7.0` | **[EPIC] Achieve 50% automated & holistic test coverage for `v0.7.0`** | **Argon Low** | 15m | 0m |
+| **#11** | `v0.8.0-alpha` | Stage 1 Authentication ("Any Auth") for `v0.8.0-alpha` | **Argon Med / High** | 20m | 3m |
+| **#12** | `v1.0.1` | **[EPIC] Direct Messages (`Msgs`) Inbox & Calm Notification Bell Engine** | **Argon Med / High** | 35m | 3m |
+| **#13** | `v1.1.0` | **[EPIC] `Actually Autistic Events` view & RSVP calendar** | **Argon Low / Med** | 25m | 2m |
+| **#14** | `v0.9.0-rc` | Publish Belong `Community Guidelines` view (replaces Pending link) | **Argon Low** | 8m | 2m |
+| **#15** | `v1.0.0` | Wire `Download the Android App` link once APK / Play Store build is live | **Argon Low** | 5m | 1m |
+| **#16** | `v1.0.0` | Wire `Download the iOS App` link once TestFlight / App Store build is live | **Argon Low** | 5m | 1m |
+| **#17** | `v0.9.0-rc` | **[EPIC] Achieve 70% automated & holistic test coverage for `v0.9.0-rc`** | **Argon Low / Med** | 25m | 2m |
+| **#18** | `v1.0.1` | Stage 2 Authentication ("Good Auth" — Google Sign-In / OAuth) | **Argon High** | 30m | 5m |
+| **#19** | `v1.1.0` | **[EPIC] Achieve 90% automated & holistic test coverage for `v1.1.0`** | **Argon Low / Med** | 30m | 2m |
