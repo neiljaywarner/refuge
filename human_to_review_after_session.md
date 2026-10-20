@@ -13,7 +13,7 @@
 > **Marionette MCP Guide**: [`readme_marionette.md`](readme_marionette.md)  
 > **Manual Testing & UAT Playbook**: [`docs/wiki/Manual-Testing-and-UAT-Flows.md`](docs/wiki/Manual-Testing-and-UAT-Flows.md) ([Issue #122](https://github.com/neiljaywarner/refuge/issues/122))  
 > **Calm Notifications Architecture**: [`docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md`](docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md)  
-> **Last Updated**: **Monday Oct 19, 2026 @ 8:28 PM CDT**
+> **Last Updated**: **Monday Oct 19, 2026 @ 8:40 PM CDT**
 
 ---
 
@@ -71,10 +71,11 @@
 
 ---
 
-## 🛠️ Complete Summary of Merged Pull Requests
+## 🛠️ Complete Summary of Merged Pull Requests (25 Merged PRs)
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#123** | #122 | docs(wiki): Manual Testing & UAT Playbook for Community Testers ("How Can I Help Test?") | ✅ 4 BDD + Maestro tests passing |
 | **#120** | #119 | feat(auth): Solid Firebase Auth with Email/Password, Passwordless Magic Link, and Cloud Storage Seam | ✅ 19 tests passing |
 | **#115** | #114 | feat(infra): Agent Harness 2.0, Orchestrator Subagent Topology & Multi-Model Quota Preservation Architecture | ✅ Verified |
 | **#113** | #111 | chore(dashboards): Update status.md and human_to_review_after_session.md for PR #112 & weeknights plan | ✅ Verified |

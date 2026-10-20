@@ -27,7 +27,7 @@ When updating **Selah** (`selah_prototype_audio_13sep2026`), engineers can repla
    - `lib/src/features/feedback/domain/feedback_and_voting_models.dart`
    - `lib/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart`
 2. **Replace `kDefaultBelongVotableFeatures`** with Selah's audio meditation roadmap items (e.g., *ESV Audio Support*, *Sleep Timer Fade-Out*, *Offline Chapter Downloads*).
-3. **Remove redundant dependencies** (`doorbell`, `aptabase_flutter`, `posthog_flutter`) and route private submissions (`isPrivateTriage == true`) through a single lightweight Firebase Cloud Function or GitHub Issues REST webhook targeting `njwandroid/selahfeedback`.
+3. **Remove redundant dependencies** (`doorbell`, `aptabase_flutter`, `posthog_flutter`) and route private submissions (`isPrivateTriage == true`) through a single lightweight webhook or router targeting private sibling repo `neiljaywarner/belong_feedback` (similar to Selah's private `selah_feedback` repo).
 
 ---
 
@@ -41,5 +41,5 @@ When updating **Selah** (`selah_prototype_audio_13sep2026`), engineers can repla
 | **ADR-0004** | `2026-10-18 19:15` | **Two-Stage Authentication ("Getting Real" Philosophy)**: Ships Stage 1 Email/Password + Profile immediately for the Oct 24–31 cutover preview, followed by Stage 2 1-Tap Google & Apple Sign-In before `v1.0`. | Accepted |
 | **ADR-0005** | `2026-10-18 19:25` | **Circle.so Parity Bottom Navigation (`salomon_bottom_bar`)**: Selects a calm 5-destination navigation bar (`Home`, `Spaces`, `Msgs`, `Notifications`, `Profile`) with honest "Coming Soon" previews for WIP tabs. | Accepted |
 | **ADR-0006** | `2026-10-18 19:35` | **Multi-Environment Flavors (`dev`/`prod`) & Unified FlutterFire Suite**: Isolates `dev` and `prod` Firebase environments and empowers non-technical organizers via Firebase Remote Config. | Accepted |
-| **ADR-0007** | `2026-10-18 19:50` | **Neurodivergent-First UX & Simplified "Private Feedback, Public Praise, Feature Voting"**: Replaces ambiguous star ratings and multi-SDK bloat with literal 3-intent feedback cards and 1-tap WIP feature voting. | Accepted |
+| **ADR-0007** | `2026-10-18 19:50` | **Neurodivergent-First UX & Simplified "Private Feedback, Public Praise, Feature Voting"**: Replaces ambiguous star ratings with literal 3-intent feedback cards, 1-tap WIP voting, and routes private bug triage to confidential sibling repo `neiljaywarner/belong_feedback` (#124). | Accepted |
 | **ADR-0008** | `2026-10-18 19:55` | **Post-MVP Backend Evaluation: Serverpod Cloud vs. Appwrite (`migrate_to_appwrite.md`)**: Evaluates why shipping MVP on Firebase/Serverpod now and migrating to Appwrite right after `v1.0` (85% likelihood) maximizes speed and $0 long-term sustainability. | Proposed / Evaluated |

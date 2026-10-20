@@ -3,7 +3,7 @@
 - **Date / Timestamp**: `2026-10-18T19:50:00-05:00`
 - **Status**: Accepted
 - **Authors**: Neil Warner & Antigravity Architecture Team
-- **Related Issues**: `#18`, `#21`, `#47`+ (Observability & Feedback Epic)
+- **Related Issues**: `#18`, `#21`, `#47`+ (Observability & Feedback Epic), `#124`
 - **Wiki Mirror**: [`UX-Evaluation-and-ADRs`](https://github.com/neiljaywarner/refuge/wiki/UX-Evaluation-and-ADRs)
 
 ---
@@ -47,3 +47,14 @@ To replace Selah's over-complicated multi-SDK feedback system with this clean ar
    - `lib/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart`
 2. Replace `kDefaultBelongVotableFeatures` with Selah's contemplative audio roadmap items (*ESV Audio Support*, *Sleep Timer Fade-Out*, *Offline Chapter Caching*).
 3. Remove `doorbell`, `aptabase_flutter`, and `posthog_flutter` from `pubspec.yaml`, keeping only `firebase_analytics` + a single private GitHub Issue / Organizer webhook relay for `isPrivateTriage == true` submissions.
+
+---
+
+## 4. Decoupled Private Triage Sibling Repository (`neiljaywarner/belong_feedback`) (Issue #124)
+
+Following the proven pattern from `selah_prototype_audio_13sep2026` (which routed private feedback to `selah_feedback`), all confidential submissions (`isPrivateTriage == true`) are routed away from the open public repository (`neiljaywarner/refuge`) and directed to a dedicated private sibling repository:
+- **Private Target Repo**: [`neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)
+- **Router Service**: `lib/src/features/feedback/application/private_feedback_router.dart`
+- **Key Benefits**:
+  1. **Zero-PII Public Safety**: Members can submit sensory overload details, device logs, and personal contact info with zero risk of public exposure.
+  2. **Clean Separation**: Public repo stays focused on open-source code and architecture, while community triage happens privately.

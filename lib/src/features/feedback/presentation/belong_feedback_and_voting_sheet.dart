@@ -168,18 +168,19 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          Icons.info_outline,
-                          size: 20,
+                          Icons.touch_app_outlined,
                           color: colorScheme.primary,
+                          size: 20,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'We are transitioning from Circle.so to our own calm home before October 31! Tap any feature below to upvote what matters most to you (no typing required).',
-                            style: textTheme.bodySmall,
+                            'Tap the thumb to upvote! Features with the most community support are built first.',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
                           ),
                         ),
                       ],
@@ -188,85 +189,97 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   const SizedBox(height: 12),
                   for (final item in features)
                     Card(
-                      key: Key('vote_card_${item.id}'),
-                      margin: const EdgeInsets.only(bottom: 10),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
                           color: item.userVoted
                               ? colorScheme.primary
                               : colorScheme.outlineVariant,
-                          width: item.userVoted ? 1.5 : 1.0,
+                          width: item.userVoted ? 2.0 : 1.0,
                         ),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          item.stage ==
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: item.stage ==
+                                            FeatureStage.workInProgress
+                                        ? colorScheme.primary.withValues(
+                                            alpha: 0.15,
+                                          )
+                                        : colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item.stage.badgeLabel,
+                                    style: textTheme.labelSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: item.stage ==
                                               FeatureStage.workInProgress
-                                          ? colorScheme.tertiaryContainer
-                                          : colorScheme
-                                                .surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      item.stage.badgeLabel,
-                                      style: textTheme.labelSmall?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color:
-                                            item.stage ==
-                                                FeatureStage.workInProgress
-                                            ? colorScheme.onTertiaryContainer
-                                            : colorScheme.onSurfaceVariant,
-                                      ),
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurfaceVariant,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    item.title,
-                                    style: textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w700,
+                                ),
+                                const Spacer(),
+                                OutlinedButton.icon(
+                                  key: Key('vote_btn_${item.id}'),
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: item.userVoted
+                                        ? colorScheme.primaryContainer
+                                        : null,
+                                  ),
+                                  onPressed: () {
+                                    HapticFeedback.selectionClick();
+                                    ref
+                                        .read(featureVotingProvider.notifier)
+                                        .toggleVote(item.id);
+                                  },
+                                  icon: Icon(
+                                    item.userVoted
+                                        ? Icons.thumb_up
+                                        : Icons.thumb_up_alt_outlined,
+                                    size: 16,
+                                    color: item.userVoted
+                                        ? colorScheme.primary
+                                        : null,
+                                  ),
+                                  label: Text(
+                                    '${item.votes}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: item.userVoted
+                                          ? colorScheme.primary
+                                          : null,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    item.description,
-                                    style: textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              item.title,
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            FilledButton.tonalIcon(
-                              key: Key('vote_button_${item.id}'),
-                              onPressed: () {
-                                ref
-                                    .read(featureVotingProvider.notifier)
-                                    .toggleVote(item.id);
-                              },
-                              icon: Icon(
-                                item.userVoted
-                                    ? Icons.check_circle
-                                    : Icons.arrow_upward_rounded,
-                                size: 18,
+                            const SizedBox(height: 4),
+                            Text(
+                              item.description,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
                               ),
-                              label: Text('${item.votes}'),
                             ),
                           ],
                         ),
@@ -275,181 +288,190 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                 ],
               ),
 
-              // TAB 2: Literal 3-Intent Feedback Funnel ("Private Feedback, Public Praise")
+              // TAB 2: Literal 3-Intent Feedback Funnel
               ListView(
                 padding: listPadding,
                 children: [
-                  Text(
-                    'What kind of note would you like to share?',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'No 1–5 star ratings or guesswork. Pick what best matches your experience:',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'No star ratings or guesswork: choose whether you are sharing praise, a calm suggestion, or a bug/confusion report.',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      for (final sentiment in FeedbackSentiment.values)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ChoiceChip(
-                              key: Key('sentiment_${sentiment.name}'),
-                              // The emoji + selected color already show the
-                              // choice; the default checkmark squeezed labels
-                              // on a 411dp Pixel ("Idea…", "Bug / Confusi…").
-                              showCheckmark: false,
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                              labelPadding: EdgeInsets.zero,
-                              selected: selectedSentiment.value == sentiment,
-                              onSelected: (_) {
-                                selectedSentiment.value = sentiment;
-                                submittedMessage.value = null;
-                              },
-                              label: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 6,
-                                ),
+                  const SizedBox(height: 12),
+                  // Sentiment Cards (Works Great / Idea / Bug)
+                  for (final sentiment in FeedbackSentiment.values)
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          color: selectedSentiment.value == sentiment
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
+                          width: selectedSentiment.value == sentiment ? 2.0 : 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      color: selectedSentiment.value == sentiment
+                          ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                          : null,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          selectedSentiment.value = sentiment;
+                          feedbackController.clear();
+                          submittedMessage.value = null;
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Text(
+                                sentiment.emoji,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      sentiment.emoji,
-                                      style: const TextStyle(fontSize: 22),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
                                       sentiment.label,
-                                      style: textTheme.labelMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
+                                      style: textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Text(
                                       sentiment.subtitle,
-                                      style: textTheme.labelSmall?.copyWith(
-                                        fontSize: 10,
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              selectedSentiment.value.isPrivateTriage
-                                  ? Icons.lock_outline_rounded
-                                  : Icons.favorite_border_rounded,
-                              size: 18,
-                              color: colorScheme.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                selectedSentiment.value.promptTitle,
-                                style: textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
+                              if (selectedSentiment.value == sentiment)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: colorScheme.primary,
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          key: const Key('feedback_message_input'),
-                          controller: feedbackController,
-                          maxLines: 4,
-                          decoration: InputDecoration(
-                            hintText: selectedSentiment.value.promptHint,
-                            border: const OutlineInputBorder(),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          key: const Key('feedback_contact_input'),
-                          controller: contactController,
-                          decoration: const InputDecoration(
-                            labelText:
-                                'Optional name or email (if you would like a reply)',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        if (submittedMessage.value != null) ...[
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+
+                  const SizedBox(height: 12),
+                  // Feedback Form
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            selectedSentiment.value.promptTitle,
+                            style: textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            child: Text(
-                              submittedMessage.value!,
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onPrimaryContainer,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            key: const Key('feedback_message_input'),
+                            controller: feedbackController,
+                            maxLines: 4,
+                            decoration: InputDecoration(
+                              hintText: selectedSentiment.value.promptHint,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 10),
-                        ],
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 8,
-                          children: [
-                            FilledButton.icon(
-                              key: const Key('submit_feedback_button'),
-                              onPressed: () async {
-                                final text = feedbackController.text.trim();
-                                if (text.isEmpty) {
-                                  submittedMessage.value =
-                                      'Please enter a short note above so we can read your thoughts.';
-                                  return;
-                                }
-                                final sentiment = selectedSentiment.value;
-                                final summary =
-                                    '[Belong ${sentiment.label} (${sentiment.subtitle})] '
-                                    '$text '
-                                    '${contactController.text.trim().isNotEmpty ? "(From: ${contactController.text.trim()})" : ""}';
-                                await Clipboard.setData(
-                                  ClipboardData(text: summary),
-                                );
-                                submittedMessage.value =
-                                    sentiment.isPrivateTriage
-                                    ? 'Thank you! Your private note was recorded and copied so it goes straight to organizer triage.'
-                                    : 'Thank you for your encouragement! Your praise was recorded and copied.';
-                                feedbackController.clear();
-                              },
-                              icon: const Icon(Icons.send_rounded, size: 18),
-                              label: Text(
-                                selectedSentiment.value.isPrivateTriage
-                                    ? 'Send Private Feedback'
-                                    : 'Share Praise & Encouragement',
+                          TextField(
+                            key: const Key('feedback_contact_input'),
+                            controller: contactController,
+                            decoration: const InputDecoration(
+                              labelText:
+                                  'Optional name or email (if you would like a reply)',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          if (submittedMessage.value != null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                submittedMessage.value!,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
+                            const SizedBox(height: 10),
                           ],
-                        ),
-                      ],
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 8,
+                            children: [
+                              FilledButton.icon(
+                                key: const Key('submit_feedback_button'),
+                                onPressed: () async {
+                                  final text = feedbackController.text.trim();
+                                  if (text.isEmpty) {
+                                    submittedMessage.value =
+                                        'Please enter a short note above so we can read your thoughts.';
+                                    return;
+                                  }
+                                  final sentiment = selectedSentiment.value;
+                                  final contact = contactController.text.trim();
+                                  await ref
+                                      .read(featureVotingProvider.notifier)
+                                      .submitFeedback(
+                                        sentiment: sentiment,
+                                        message: text,
+                                        contactEmail:
+                                            contact.isNotEmpty ? contact : null,
+                                      );
+                                  final summary =
+                                      '[Belong ${sentiment.label} (${sentiment.subtitle})] '
+                                      '$text '
+                                      '${contact.isNotEmpty ? "(From: $contact)" : ""}';
+                                  await Clipboard.setData(
+                                    ClipboardData(text: summary),
+                                  );
+                                  submittedMessage.value = sentiment.isPrivateTriage
+                                      ? 'Thank you! Your note was securely routed to our private triage queue (belong_feedback) so your privacy is 100% protected.'
+                                      : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                  feedbackController.clear();
+                                },
+                                icon: const Icon(Icons.send_rounded, size: 18),
+                                label: Text(
+                                  selectedSentiment.value.isPrivateTriage
+                                      ? 'Send Private Feedback'
+                                      : 'Share Praise & Encouragement',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
