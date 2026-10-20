@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../auth/presentation/belong_auth_sheet.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../domain/member_profile.dart';
 
@@ -208,6 +209,24 @@ class MemberProfileDialog extends HookConsumerWidget {
                   },
                 ),
               ],
+              const SizedBox(height: 14),
+              const Text(
+                'Firebase Auth & Magic Link (ADR-0009 / Issue #119)',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              OutlinedButton.icon(
+                key: const Key('profile_open_firebase_auth_button'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  BelongAuthSheet.show(context);
+                },
+                icon: const Icon(Icons.lock_outline_rounded, size: 16),
+                label: const Text(
+                  'Password or Magic Link Sign-In / Register',
+                  style: TextStyle(fontSize: 11.5),
+                ),
+              ),
               const SizedBox(height: 14),
               const Text(
                 '1-Tap Sign-In (Appwrite OAuth2 Ready · ADR-0009)',
