@@ -6,6 +6,7 @@ import 'core/firebase/community_analytics_service.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
+import 'features/auth/presentation/belong_auth_sheet.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
@@ -439,6 +440,23 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
               onSelectMode: setSensoryMode,
             ),
           ),
+          if (!profile.isSignedIn)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: FilledButton.tonalIcon(
+                key: const Key('home_top_bar_sign_in_button'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: () => BelongAuthSheet.show(context),
+                icon: const Icon(Icons.login_rounded, size: 15),
+                label: const Text(
+                  'Sign In',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: InkWell(
