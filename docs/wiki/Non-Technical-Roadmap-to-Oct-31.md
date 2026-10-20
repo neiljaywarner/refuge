@@ -1,7 +1,8 @@
 # 📅 Non-Technical Roadmap & Schedule to October 31st (Circle.so Cutover)
 
 > **Audience**: Community Organizers, Pastors, Moderators, and Non-Technical Leaders at **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** & **[DFW Church](https://dfwchurch.org)**  
-> **Key Date**: **Saturday, October 31, 2026** — *Final day of the current Circle.so subscription (\$130/month)*
+> **Key Date**: **Saturday, October 31, 2026** — *Final day of the current Circle.so subscription (\$130/month)*  
+> **Current Status**: 🟢 **Ahead of Schedule** (Core features & migration tools already completed on Monday, Oct 19!)
 
 ---
 
@@ -14,6 +15,7 @@ Why this move helps the community:
 - **Built Specifically for Neurodivergent & Autistic Comfort**: Features 4 one-tap sensory themes (*High Clarity*, *Warm Calm*, *Low Stimulus Dark*, and *Low Motion*) with zero surprise pop-ups or auto-playing videos.
 - **Familiar Layout**: Keeps the exact same rooms (`Start Here & Introduce Yourself`, `Announcements`, `General Chat`, `Memes`, `Online Resources / Videos`, `Actually Autistic Chat`, `Friends Chat`, `Family Chat`, and `Links`) that members already know from Circle.so.
 - **Organizer Control Without Coding**: Any authorized community leader can update the **"Message from the Organizer"** welcome banner anytime from a simple web form using [Firebase Remote Config](https://firebase.google.com/products/remote-config) (watch the [2-minute YouTube overview for product & community managers](https://www.youtube.com/watch?v=_CXXVFPO6f0)) without needing a programmer.
+- **Preserves Community History**: Our pure-Dart spreadsheet migration tool ([`Circle-CSV-Migration-Guide.md`](Circle-CSV-Migration-Guide)) safely brings over past introductions and discussions so no memories are lost.
 
 ---
 
@@ -22,15 +24,17 @@ Why this move helps the community:
 > [!IMPORTANT]
 > **Why Overlap Matters for Neurodivergent Members**: Sudden transitions are stressful. Our schedule launches **`v1.0.0` by Friday, October 23 – Saturday, October 24** so there is a **full 7-to-8-day Overlap Window (Oct 24 – Oct 31)** where members can explore the new Belong home at their own pace while Circle.so is still open!
 
-| Dates | Milestone | What Is Ready for the Community | What Organizers & Members Do |
+| Dates | Milestone | Current Progress & Status | What Organizers & Members Do |
 | :--- | :---: | :--- | :--- |
-| **Sun, Oct 18 (Tonight)** | **`v0.6.0-alpha` → `v0.8.0-alpha` (Firebase Preview Channel Live)** | • Live **Firebase Hosting Preview Channel** URL to click & test<br>• Official **Belong** cross + gold infinity (`∞`) logo & icons<br>• Top `Feed` and `Spaces` navigation matching Circle.so<br>• 4-tab Bottom Bar (`Home`, `Notifications`, `Msgs`, `Search`)<br>• Live **"Message from the Organizer"** banner via Firebase Remote Config<br>• Simple Alpha Sign-In ("Any Auth") | **Neil & Organizers**: Open the Firebase Preview link on phone/computer and share the organizer's custom feature request |
-| **Mon, Oct 19 – Tue, Oct 20** | **`v0.7.0` (Member Profiles & Organizer Priority Feature)** | • Upper-right **Member Profile & Avatar** customization<br>• Community Organizer's priority feature request built<br>• 50% automated quality test coverage | **Organizer**: Try editing the Welcome Message in Firebase Remote Config & preview the custom feature |
-| **Wed, Oct 21 – Thu, Oct 22** | **`v0.9.0-rc` (Release Candidate & CSV History Import)** | • Existing Circle.so posts & introductions imported via CSV (**Issue #41**)<br>• Official **Community Guidelines** live under `Links`<br>• **Moderator Early Access**: 5–10 core leaders post welcome notes in `Start Here` and `Memes` | **Moderators**: Seed a few welcoming posts and favorite memes so the rooms feel warm before members arrive |
-| **Fri, Oct 23 – Sat, Oct 24** | **`v1.0.0` (Belong Community Launch — Start of 7-Day Overlap!)** | • **`belongonthespectrum.com` Community Launch!**<br>• Both Circle.so and the new Belong app remain open side-by-side for a full week | **Organizers**: Post the *"Come Visit Our New Belong Home (No Rush — You Have All Week!)"* announcement in Circle.so |
-| **Sun, Oct 25 – Fri, Oct 30** | **7-Day Calm Overlap & Onboarding Week** | • Members sign in at their own pace, add the Belong icon to their phone Home Screen (PWA), and chat in `General Chat` & `Memes`<br>• Final delta CSV sync of any last-minute Circle posts on Oct 30 | **Members & Leaders**: Welcome newcomers in `Start Here & Introduce Yourself` |
-| **Sat, Oct 31, 2026** | **Circle.so Subscription Ends Cleanly** | • Circle.so billing stops (saving ~\$1,000+/year)<br>• Everyone is already settled in the new Belong community | Celebrate! 🎉 |
-| **Nov 1 – Nov 10, 2026** | **`v1.0.1` & `v1.1.0` (Fast-Follow Enhancements)** | • Live **Notification Bell** & **Direct Messages (`Msgs`)** replace the "Coming Soon" tabs<br>• 1-Tap **Sign in with Google**<br>• **`Actually Autistic Events`** calendar<br>• Native Apple App Store & Google Play Store listings | Nothing required — updates appear automatically! |
+| **Sun, Oct 18** | **`v0.6.0-alpha` → `v0.8.0-alpha` (Preview Live)** | ✅ **Delivered**: Live Web PWA at [`belongonthespectrum.web.app`](https://belongonthespectrum.web.app), Belong logo & infinity branding, 4-tab bottom nav, Remote Config welcome banner, and Android test build 2. | **Organizers**: Verified live web preview link on phone and computer. |
+| **Mon, Oct 19** | **`v0.7.0` (Organizer Feature & Migration Tools)** | ✅ **Delivered Ahead of Schedule**: <br>• Marty the Organizer's required ICOC church affiliation question & non-member option.<br>• Interactive Members Section & Directory.<br>• Circle CSV Data Importer CLI (`tool/import_circle_csv.dart`) with 11 tests.<br>• Dual Observability (Crashlytics + Offline Diagnostics).<br>• 82 automated tests passing green. | **Organizers**: Previewed the Member Profile Sheet on emulator and verified church affiliation dropdown. |
+| **Tue, Oct 20** | **`v0.8.5` (Test Hardening & Seams)** | ⏳ **In Progress**: Expanding automated test suite to 95+ tests, validating Members Directory widget tests, and running automated privacy scans. | **Neil / Organizers**: Relax! Autonomous test verification runs in background. Low-touch human review (5 mins). |
+| **Wed, Oct 21** | **`v0.9.0-rc` (Synthetic Data Dry-Run)** | 📅 **Scheduled**: Testing CSV importer with synthetic data fixtures to verify post ordering and image cards in `Memes`. | **Organizers**: Check sample posts in the preview channel. |
+| **Thu, Oct 22** | **Final Quality & PWA Verification** | 📅 **Scheduled**: Verifying *"Add to Home Screen"* (PWA) on iPhone Safari and Android Chrome, checking offline caching. | **Organizers**: Try installing the preview PWA to your mobile home screen. |
+| **Fri, Oct 23 – Sat, Oct 24** | **`v1.0.0` Community Launch (Start of 7-Day Overlap!)** | 🚀 **Milestone Target**: Production app launched at [`belongonthespectrum.com`](https://belongonthespectrum.com)! Both Circle and Belong remain open side-by-side. | **Organizers**: Post the *"Welcome to Our New Belong Home (Take Your Time — 7 Days of Overlap)"* announcement in Circle.so. |
+| **Sun, Oct 25 – Fri, Oct 30** | **7-Day Calm Overlap & Onboarding Week** | 🌿 Members explore at their own unhurried pace, sign in with Google or email, and chat in `General Chat` & `Memes`. Final delta sync on Oct 30. | **Members & Welcomers**: Say hello to newcomers in `Start Here & Introduce Yourself`! |
+| **Sat, Oct 31, 2026** | **Circle.so Subscription Ends Cleanly** | 🎉 Circle billing stops permanently. Everyone is happily settled in Belong on the Spectrum. | Celebrate! 🥳 |
+| **Nov 1 – Nov 10, 2026** | **`v1.0.1` & `v1.1.0` (Fast-Follow Polish)** | 🌟 Live Notification Bell, Direct Messages (`Msgs`), Actually Autistic Events calendar, and native App Store/Play Store packages. | Updates appear automatically in the app. |
 
 ---
 
@@ -49,8 +53,9 @@ Members will find their favorite rooms organized in the exact same structure und
 | 🤝 **Community** | **Actually Autistic Chat** | ✅ **Live Now** | Peer conversation space |
 | 🤝 **Community** | **Friends Chat** | ✅ **Live Now** | Welcoming space for friends & allies |
 | 🤝 **Community** | **Family Chat** | ✅ **Live Now** | Space for parents, spouses, and family members |
-| 📅 **Actually Autistic** | **Actually Autistic Events** | 🗓️ *"Coming Soon"* screen (`v1.1.0`) | Shows a friendly Coming Soon page until the community needs an events calendar (**Issue #28**) |
-| 🔗 **Links** | **Community Guidelines** | 📜 Live by `v0.9.0-rc` (Oct 27) | Editable via Firebase Remote Config (**Issue #29**) |
+| 👥 **Directory** | **Members Section & Directory** | ✅ **Live Now** | Member profiles, avatars, and ICOC church affiliation |
+| 📅 **Actually Autistic** | **Actually Autistic Events** | 🗓️ Friendly *"Coming Soon"* screen (`v1.1.0`) | Ready when the community schedules live events (**Issue #28**) |
+| 🔗 **Links** | **Community Guidelines** | 📜 Live by `v0.9.0-rc` | Editable via Firebase Remote Config (**Issue #29**) |
 | 🔗 **Links** | **DFW Church** | ✅ **Live Now** | Opens `https://dfwchurch.org` |
 | 🔗 **Links** | **Download the Android App** | 📱 PWA Guide now → Play Store in `v1.0.1` | Tracked in **Issues #30, #44, #45** |
-| 🔗 **Links** | **Download the iOS App** | 🍎 PWA Guide now → App Store in `v1.0.1` | Tracked in **Issues #31, #44, #46** |
+| 🔗 **Links** | **Download the iOS App** | 🍏 PWA Guide now → App Store in `v1.0.1` | Tracked in **Issues #31, #44, #46** |

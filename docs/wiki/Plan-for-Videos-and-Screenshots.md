@@ -1,4 +1,7 @@
-# 📸🎬 Automated Videos & Screenshots Plan for Wiki, Pull Requests & GitHub Issues
+# 📸🎬 Automated Videos & Screenshots Plan for Wiki, Pull Requests & GitHub Issues (Historical Archive)
+
+> [!NOTE]
+> **Historical Archive Document**: This document outlines the original asset hosting architecture for early video and screenshot capture. For current testing, device driving, and screenshot verification on real Pixel 9a hardware, see [`QA-and-Beta-Testing-Guide`](QA-and-Beta-Testing-Guide) and [`Engineering-Lessons-Learned-and-Accomplishments`](Engineering-Lessons-Learned-and-Accomplishments).
 
 *Last Updated: October 18, 2026 (`2026-10-18T20:10:00-05:00`)*
 *Canonical Plan File: `plan_to_make_videos_and_screenshots_for_wiki_and_prs_andgithub_issues.md`*

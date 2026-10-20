@@ -1,4 +1,7 @@
-# 🕊️ Product Vision & The Calm-Tech Standard
+# 🕊️ Product Vision & The Calm-Tech Standard (Historical Archive)
+
+> [!NOTE]
+> **Historical Archive Document**: This document outlines the original hackathon pitch and foundational vision of the Refuge project. For our active, non-technical community guide, see [`Belong-Community-Guide`](Belong-Community-Guide) and [`Calm-Tech-and-Accessibility`](Calm-Tech-and-Accessibility).
 
 ## The Problem
 Modern digital communication platforms are engineered for hyper-stimulation and urgency:

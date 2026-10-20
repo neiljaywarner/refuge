@@ -1,4 +1,7 @@
-# 🧭 User Journeys & Fellowship Rooms
+# 🧭 User Journeys & Fellowship Rooms (Historical Archive)
+
+> [!NOTE]
+> **Historical Archive Document**: This document describes early conceptual rooms from the initial sprint. For the current Belong on the Spectrum community spaces, see [`Belong-Community-Guide`](Belong-Community-Guide).
 
 Sanctuary organizes community life into distinct, peaceful rooms rather than a single chaotic timeline.
 
