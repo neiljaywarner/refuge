@@ -177,134 +177,129 @@ class _JudgeApiExplorerDialogState extends State<JudgeApiExplorerDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          const Text('⚡', style: TextStyle(fontSize: 22)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Hackathon Judge API Explorer',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: widget.isContrast ? Colors.yellow : widget.primaryColor,
-                  ),
-                ),
-                Text(
-                  'Serverpod Cloud • https://refuge4serverpod.api.serverpod.space',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      content: SizedBox(
-        width: 580,
-        child: SingleChildScrollView(
+  Widget build(BuildContext context) => AlertDialog(
+    title: Row(
+      children: [
+        const Text('⚡', style: TextStyle(fontSize: 22)),
+        const SizedBox(width: 8),
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Test Serverpod endpoints live from your browser. Tapping an action sends a real-time RPC to Serverpod Cloud and renders the response below.',
-                style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    ),
-                    onPressed: _isLoading ? null : _testQuietDigest,
-                    icon: const Icon(Icons.analytics_outlined, size: 16),
-                    label: const Text('Test Quiet Digest API', style: TextStyle(fontSize: 12)),
-                  ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    ),
-                    onPressed: _isLoading ? null : _testPublishReflection,
-                    icon: const Icon(Icons.cloud_upload_outlined, size: 16),
-                    label: const Text('Test Post to Cloud', style: TextStyle(fontSize: 12)),
-                  ),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    ),
-                    onPressed: _isLoading ? null : _testCalmTechValidation,
-                    icon: const Icon(Icons.shield_outlined, size: 16),
-                    label: const Text('Test Urgency Filter', style: TextStyle(fontSize: 12)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey.withValues(alpha: 0.12),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _activeEndpoint,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (_isLoading)
-                      const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                  ],
+                'Hackathon Judge API Explorer',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: widget.isContrast ? Colors.yellow : widget.primaryColor,
                 ),
               ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                  border: Border.all(color: Colors.grey.shade800),
-                ),
-                child: SelectableText(
-                  _outputJson,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 11.5,
-                    color: Color(0xFF9CDCFE),
-                    height: 1.4,
-                  ),
-                ),
+              Text(
+                'Serverpod Cloud • https://refuge4serverpod.api.serverpod.space',
+                style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
               ),
             ],
           ),
         ),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close Explorer')),
       ],
-    );
-  }
+    ),
+    content: SizedBox(
+      width: 580,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Test Serverpod endpoints live from your browser. Tapping an action sends a real-time RPC to Serverpod Cloud and renders the response below.',
+              style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  onPressed: _isLoading ? null : _testQuietDigest,
+                  icon: const Icon(Icons.analytics_outlined, size: 16),
+                  label: const Text('Test Quiet Digest API', style: TextStyle(fontSize: 12)),
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  onPressed: _isLoading ? null : _testPublishReflection,
+                  icon: const Icon(Icons.cloud_upload_outlined, size: 16),
+                  label: const Text('Test Post to Cloud', style: TextStyle(fontSize: 12)),
+                ),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  onPressed: _isLoading ? null : _testCalmTechValidation,
+                  icon: const Icon(Icons.shield_outlined, size: 16),
+                  label: const Text('Test Urgency Filter', style: TextStyle(fontSize: 12)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey.withValues(alpha: 0.12),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _activeEndpoint,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (_isLoading)
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E1E),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                border: Border.all(color: Colors.grey.shade800),
+              ),
+              child: SelectableText(
+                _outputJson,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 11.5,
+                  color: Color(0xFF9CDCFE),
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    actions: [
+      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close Explorer')),
+    ],
+  );
 }
