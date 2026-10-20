@@ -50,18 +50,16 @@ class MessageThread {
     int? unreadCount,
     bool? isBatchedDigest,
     List<DirectMessage>? messages,
-  }) {
-    return MessageThread(
-      id: id ?? this.id,
-      participantName: participantName ?? this.participantName,
-      avatarInitials: avatarInitials ?? this.avatarInitials,
-      previewSnippet: previewSnippet ?? this.previewSnippet,
-      lastActivity: lastActivity ?? this.lastActivity,
-      unreadCount: unreadCount ?? this.unreadCount,
-      isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
-      messages: messages ?? this.messages,
-    );
-  }
+  }) => MessageThread(
+    id: id ?? this.id,
+    participantName: participantName ?? this.participantName,
+    avatarInitials: avatarInitials ?? this.avatarInitials,
+    previewSnippet: previewSnippet ?? this.previewSnippet,
+    lastActivity: lastActivity ?? this.lastActivity,
+    unreadCount: unreadCount ?? this.unreadCount,
+    isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
+    messages: messages ?? this.messages,
+  );
 
   /// Default welcoming seed threads for Belong on the Spectrum pre-alpha.
   static List<MessageThread> sampleThreads() {

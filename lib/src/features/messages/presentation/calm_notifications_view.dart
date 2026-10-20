@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 /// Calm Notification Bell view (Issue #27).
 /// Presents unhurried, digestible notifications without high-stress red dots or urgency badges.
 class CalmNotificationsView extends StatelessWidget {
-  const CalmNotificationsView({
-    super.key,
-    this.onBackToHome,
-  });
+  const CalmNotificationsView({super.key, this.onBackToHome});
 
   final VoidCallback? onBackToHome;
 
@@ -76,66 +73,68 @@ class CalmNotificationsView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...notifications.map((item) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                elevation: 0,
-                color: const Color(0xFFFAFAFA),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(color: Colors.grey.shade200),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8ECEF),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(item.icon, size: 18, color: const Color(0xFF2C3E50)),
+          ...notifications.map(
+            (item) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              elevation: 0,
+              color: const Color(0xFFFAFAFA),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: Colors.grey.shade200),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8ECEF),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  item.category,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade600,
-                                  ),
+                      child: Icon(item.icon, size: 18, color: const Color(0xFF2C3E50)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                item.category,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade600,
                                 ),
-                                Text(
-                                  item.timeAgo,
-                                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item.title,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              item.body,
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                            ),
-                          ],
-                        ),
+                              ),
+                              Text(
+                                item.timeAgo,
+                                style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.body,
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
