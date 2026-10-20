@@ -59,9 +59,7 @@ class PrivateIssuePayload {
 ///   sibling repository (`neiljaywarner/belong_feedback`), safeguarding member
 ///   privacy and preventing PII leakage in the open public repository.
 class PrivateFeedbackRouter {
-  const PrivateFeedbackRouter({
-    this.privateRepository = defaultPrivateRepository,
-  });
+  const PrivateFeedbackRouter({this.privateRepository = defaultPrivateRepository});
 
   /// Default private sibling repository for confidential triage.
   static const String defaultPrivateRepository = 'neiljaywarner/belong_feedback';
@@ -86,9 +84,7 @@ class PrivateFeedbackRouter {
     final now = timestamp ?? DateTime.now();
     final cleanMessage = message.trim();
     final firstLine = cleanMessage.split('\n').first;
-    final truncatedTitle = firstLine.length > 60
-        ? '${firstLine.substring(0, 57)}...'
-        : firstLine;
+    final truncatedTitle = firstLine.length > 60 ? '${firstLine.substring(0, 57)}...' : firstLine;
 
     final title = '[${sentiment.label}] $truncatedTitle';
 
@@ -124,6 +120,6 @@ class PrivateFeedbackRouter {
 }
 
 /// Riverpod provider for the [PrivateFeedbackRouter].
-final privateFeedbackRouterProvider = Provider<PrivateFeedbackRouter>((ref) {
-  return const PrivateFeedbackRouter();
-});
+final privateFeedbackRouterProvider = Provider<PrivateFeedbackRouter>(
+  (ref) => const PrivateFeedbackRouter(),
+);
