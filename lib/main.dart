@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -68,6 +70,9 @@ void runWithFlavor(AppFlavor flavor) {
   // Global Flutter framework error hook
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    if (Firebase.apps.isNotEmpty) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    }
     errorReporter.recordError(
       details.exception,
       details.stack,
@@ -78,6 +83,9 @@ void runWithFlavor(AppFlavor flavor) {
 
   // Platform root dispatcher unhandled asynchronous error hook
   PlatformDispatcher.instance.onError = (error, stack) {
+    if (Firebase.apps.isNotEmpty) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    }
     errorReporter.recordError(error, stack, fatal: true);
     return true;
   };
