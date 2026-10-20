@@ -13,11 +13,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
   final Color primaryColor;
   final bool isContrast;
 
-  const CommunityAnchorBanner({
-    super.key,
-    required this.primaryColor,
-    required this.isContrast,
-  });
+  const CommunityAnchorBanner({super.key, required this.primaryColor, required this.isContrast});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,9 +30,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isContrast
-              ? Colors.yellow
-              : primaryColor.withValues(alpha: 0.25),
+          color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
         ),
       ),
       child: Row(
@@ -75,9 +69,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                       '• belongonthespectrum.com',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],

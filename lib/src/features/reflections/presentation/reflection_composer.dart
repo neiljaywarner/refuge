@@ -94,9 +94,9 @@ class ReflectionComposer extends HookWidget {
                 isDense: true,
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
                 underline: const SizedBox(),
-                items: kToneOptions.map((tone) {
-                  return DropdownMenuItem(value: tone, child: Text(tone));
-                }).toList(),
+                items: kToneOptions
+                    .map((tone) => DropdownMenuItem(value: tone, child: Text(tone)))
+                    .toList(),
                 onChanged: (val) {
                   if (val != null) selectedTone.value = val;
                 },
