@@ -12,53 +12,61 @@
 > **Engineering Lessons Learned**: [`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md) ([Issue #102](https://github.com/neiljaywarner/refuge/issues/102))  
 > **Marionette MCP Guide**: [`readme_marionette.md`](readme_marionette.md)  
 > **Calm Notifications Architecture**: [`docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md`](docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md)  
-> **Last Updated**: **Monday Oct 19, 2026 @ 8:00 PM CDT**
+> **Last Updated**: **Monday Oct 19, 2026 @ 8:16 PM CDT**
 
 ---
 
 ## 📌 Executive Summary (What Was Accomplished)
 
-1. **Circle.so CSV Data Migration Importer Completed (`#41`, PR `#98`)**:
+1. **Firebase Authentication with Email/Password & Passwordless Magic Link (#119, PR #120)**:
+   - Built rock-solid, calm, neurodivergent-friendly authentication engine (`firebase_auth`) backed by Firebase Cloud Storage (`StorageRepository`) and Serverpod.
+   - Dual-mode sign-in: Regular Email & Password (`signInWithPassword`, `registerWithPassword`) + Passwordless 1-Click Magic Link (`sendMagicLink`, `signInWithMagicLink`).
+   - Neurodivergent-friendly `BelongAuthSheet` modal dialog with tabs for Sign In, Registration, and Magic Link, with reassuring `AuthException` error translations (no scary raw error codes).
+   - Preserves Marty the Organizer's required ICOC church affiliation selection with non-member option.
+   - Created follow-up tickets: Issue #117 (1-Tap Google Sign-In) and Issue #118 (Facebook Sign-In).
+   - 19 automated tests passing green in `test/features/auth`.
+
+2. **Circle.so CSV Data Migration Importer Completed (`#41`, PR `#98`)**:
    - Pure-Dart CLI tool `tool/import_circle_csv.dart` built with RFC 4180 parser and `--dry-run` / `--json` reporting.
    - Maps Circle spaces (`Start Here`, `Announcements`, `General Chat`, `Memes`, `Online Resources`, `Actually Autistic Chat`, `Friends Chat`, `Family Chat`) cleanly to Belong space slugs.
    - 11 unit tests passing green; strict Zero-PII gitignore protection in place.
 
-2. **Marty the Organizer's SMS Specifications Completed (`#93`, PRs `#94`, `#95`, `#97`)**:
+3. **Marty the Organizer's SMS Specifications Completed (`#93`, PRs `#94`, `#95`, `#97`)**:
    - Required question: **"Which ICOC church do you attend?"** with explicit **"I am not a member of an ICOC church"** non-member option.
    - Interactive **Members Section & Directory** (`BelongMembersDirectoryView`) displaying active user profile and dev dummy members (Marty, Hannah, Alex, Jordan).
    - Validation banner blocking profile save if affiliation is omitted.
 
-3. **Dual Observability Documented & Verified (`#84`, `#90`, `#99`, PR `#100`)**:
+4. **Dual Observability Documented & Verified (`#84`, `#90`, `#99`, PR `#100`)**:
    - Dual-channel telemetry across **Firebase Crashlytics & Analytics** (cloud) and **Serverpod & Talker Diagnostic Buffer** (100% offline fallback).
    - Automated PII regex scrubbing for email addresses and secret tokens.
    - Complete guides published in `docs/OBSERVABILITY_AND_ANALYTICS.md` and Wiki.
 
-4. **LeanCode Marionette MCP Server & CLI Guide (`#103`, PR `#104`)**:
+5. **LeanCode Marionette MCP Server & CLI Guide (`#103`, PR `#104`)**:
    - Published `readme_marionette.md` documenting semantic widget tree driving (<200 tokens) vs screenshot dumps (~1,500 tokens).
    - Added auto-approvable ADB wrapper `tool/capture_device.sh` supporting Pixel 9a, `emulator-5554`, and Chrome.
 
-5. **ADR-0010 Calm Notifications & Multi-Tier Coverage Roadmap (`#105`, PR `#106`)**:
+6. **ADR-0010 Calm Notifications & Multi-Tier Coverage Roadmap (`#105`, PR `#106`)**:
    - Published architectural ADR comparing local vs FCM push for neurodivergent sensory safety.
    - Detailed 4-tier coverage scorecard targeting 90% combined coverage.
 
-6. **Repository-Level Agent Rules & Zero-PII Enforcement (`#107`, PR `#108`)**:
+7. **Repository-Level Agent Rules & Zero-PII Enforcement (`#107`, PR `#108`)**:
    - Added `.cursorrules`, `AGENTS.md`, and `GEMINI.md` to repository root to guarantee zero terminal approval popups and zero PII leaks across all future agent sessions.
 
-7. **Clean Separation of Wiki & Low-Touch Gym Plan (`#111`, PR `#112`)**:
+8. **Clean Separation of Wiki & Low-Touch Gym Plan (`#111`, PR `#112`)**:
    - Cleanly separated Wiki into **Community & Organizers** (zero technical jargon), **Engineering & Mentoring**, and **Historical Archives**.
    - Added clear historical archive disclaimers across all 6 early prototype docs.
    - Published `weeknights_week_of_oct19th.md` with 5–10 min/evening low-touch human protocol for gym attendance.
    - Published plain-English spreadsheet migration guide (`docs/wiki/Circle-CSV-Migration-Guide.md`) and updated Issue `#41`.
 
-8. **Agent Harness 2.0 & Multi-Model Quota Preservation (`#114`, PR `#115`)**:
+9. **Agent Harness 2.0 & Multi-Model Quota Preservation (`#114`, PR `#115`)**:
    - Formalized 3-tier routing: **Tier 0 Local (48GB Mac via Ollama `qwen2.5-coder:32b`/`14b`)** @ $0 API cost, **Tier 1 Subagents (Gemini Flash)** for broad research/grep @ 90% cost savings, and **Tier 2 Lead Orchestrator (Gemini Pro)** reserved strictly for architecture.
    - Designed 📿 **"Beads" Sequential State DAG** preventing quadratic context expansion.
    - Published visual Knowledge Graph Mermaid flowcharts in `docs/AGENT_HARNESS_AND_ORCHESTRATION.md` and Wiki.
 
-9. **Multi-Tier Quality & Test Metrics**:
+10. **Multi-Tier Quality & Test Metrics**:
    - Automated tests expanded to **82 tests passing green** on `main` (and **93 tests passing** in Soundscapes branch).
    - **0 static analysis errors or warnings** (`analyze_files` via Dart MCP).
-   - **23 Atomic Pull Requests Merged** to `main` with strict zero direct commits to `main`.
+   - **24 Atomic Pull Requests Merged** to `main` with strict zero direct commits to `main`.
 
 ---
 
@@ -66,6 +74,7 @@
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#120** | #119 | feat(auth): Solid Firebase Auth with Email/Password, Passwordless Magic Link, and Cloud Storage Seam | ✅ 19 tests passing |
 | **#115** | #114 | feat(infra): Agent Harness 2.0, Orchestrator Subagent Topology & Multi-Model Quota Preservation Architecture | ✅ Verified |
 | **#113** | #111 | chore(dashboards): Update status.md and human_to_review_after_session.md for PR #112 & weeknights plan | ✅ Verified |
 | **#112** | #111 | docs(wiki): Clean separation of non-technical wiki, archive historical docs, Oct 31 roadmap update & weeknight gym plan | ✅ Verified |
