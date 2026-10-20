@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../auth/data/auth_repository.dart';
+import '../../auth/domain/auth_session.dart';
 
 /// Represents the signed-in community member's profile and Stage 1 ("Any Auth")
 /// session state (#23, #26), backed by the pluggable [AuthRepository] (#52, ADR-0009).
@@ -106,20 +107,65 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       icocChurchAffiliation:
           icocChurchAffiliation ?? state.icocChurchAffiliation,
     );
-    state = MemberProfile(
-      displayName: session.displayName,
-      email: session.email,
-      bio: session.bio,
-      comfortBadges: session.comfortBadges,
-      isSignedIn: session.isSignedIn,
-      authMethod: session.authMethod,
-      icocChurchAffiliation: session.icocChurchAffiliation,
+    _applySession(session);
+  }
+
+  Future<void> signInWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    final session = await repo.signInWithPassword(
+      email: email,
+      password: password,
     );
+    _applySession(session);
+  }
+
+  Future<void> registerWithPassword({
+    required String email,
+    required String password,
+    required String displayName,
+    String? bio,
+    List<String>? comfortBadges,
+    required String icocChurchAffiliation,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    final session = await repo.registerWithPassword(
+      email: email,
+      password: password,
+      displayName: displayName,
+      bio: bio ?? state.bio,
+      comfortBadges: comfortBadges ?? state.comfortBadges,
+      icocChurchAffiliation: icocChurchAffiliation,
+    );
+    _applySession(session);
+  }
+
+  Future<void> sendMagicLink({required String email, String? redirectUrl}) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.sendMagicLink(email: email, redirectUrl: redirectUrl);
+  }
+
+  Future<void> signInWithMagicLink({
+    required String email,
+    required String emailLink,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    final session = await repo.signInWithMagicLink(
+      email: email,
+      emailLink: emailLink,
+    );
+    _applySession(session);
   }
 
   void signInWithOAuth(String provider) {
     final repo = ref.read(authRepositoryProvider);
     final session = repo.signInWithOAuthProvider(provider);
+    _applySession(session);
+  }
+
+  void _applySession(AuthSession session) {
     state = MemberProfile(
       displayName: session.displayName,
       email: session.email,
