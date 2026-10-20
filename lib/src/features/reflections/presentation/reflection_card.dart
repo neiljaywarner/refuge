@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/post.dart';
+import 'reflections_providers.dart';
+import 'threaded_discussion_sheet.dart';
 
 /// Card widget presenting an unhurried reflection and qualitative care reaction affirmations.
-class ReflectionCard extends StatelessWidget {
+class ReflectionCard extends ConsumerWidget {
   final Post post;
   final bool isContrast;
   final ValueChanged<String> onAddReaction;
+  final VoidCallback? onOpenDiscussion;
 
   const ReflectionCard({
     super.key,
     required this.post,
     required this.isContrast,
     required this.onAddReaction,
+    this.onOpenDiscussion,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMeme = post.toneTag.contains('Meme');
 
     return Container(
@@ -140,6 +145,33 @@ class ReflectionCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(width: 8),
+                Builder(
+                  builder: (ctx) {
+                    final countAsync =
+                        ref.watch(postCommentCountStreamProvider(post.id));
+                    final count = countAsync.value ?? 0;
+                    return OutlinedButton.icon(
+                      key: Key('discussion_button_${post.id}'),
+                      style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      onPressed: onOpenDiscussion ??
+                          () => ThreadedDiscussionSheet.show(
+                                context,
+                                post: post,
+                              ),
+                      icon: const Text('💬', style: TextStyle(fontSize: 12)),
+                      label: Text(
+                        count == 1
+                            ? '1 Reply'
+                            : (count > 1 ? '$count Replies' : 'Reply'),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),

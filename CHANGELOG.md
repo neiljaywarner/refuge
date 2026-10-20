@@ -4,9 +4,15 @@ All notable changes and planned release milestones leading up to the **October 3
 
 ---
 
-## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.8.0-alpha` (Oct 18, 2026)]
+## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.9.0-rc` (Oct 20, 2026)]
 
 ### Added
+- **Threaded Comments & Nested Discussion Replies (`#156`)**:
+  - Full Circle.so parity for discussion replies under reflections (`Comment` domain model with optional `parentCommentId`).
+  - Pluggable `CommentRepository` seam with in-memory broadcast streams (`LocalCommentRepository`) and seeded authentic discussion threads.
+  - `ThreadedDiscussionSheet` modal presentation with original post context, hierarchical indentation (`↳`), care reactions (`🙏`, `🤍`, `🌱`, `😄`), tone tag chips (`[Comfort Only]`, `[Relatable]`, `[Encouragement]`, `[Prayer]`), and reply-to targeting.
+  - `ReflectionCard` live comment count badge (`Key('discussion_button_${post.id}')`).
+  - Comprehensive unit and BDD widget test suite with `patrol_finders` (+138 tests green).
 - **White-Label Multi-Tenant Architecture (`#17`)**: `CommunityBrandConfig` domain model and `hooks_riverpod` provider with **Belong on the Spectrum** (`belongonthespectrum.com`, partnered with `dfwchurch.org`) as default flagship tenant.
 - **Official Multi-Platform Belong Branding & PWA Manifest (`#19`)**: Android API 26+ Adaptive Icons with 66% safe-zone padding, opaque `RGB24` iOS App Store icons, macOS icons, and installable Web PWA manifest.
 - **Circle.so Parity Navigation & 6 Belong Spaces (`#18`, `#22`, `#23`)**:
