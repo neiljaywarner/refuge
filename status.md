@@ -1,11 +1,11 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Monday Oct 19, 2026 @ 7:55 PM CDT  
-> **Session State**: 🟢 Active (Caffeinated, 22 PRs merged cleanly, 1 Idea PR pending review)  
+> **Current Timestamp**: Monday Oct 19, 2026 @ 8:00 PM CDT  
+> **Session State**: 🟢 Active (Caffeinated, 23 PRs merged cleanly, 1 Idea PR pending review)  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
-> **GitHub Wiki (27+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
+> **GitHub Wiki (28+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
 > **Firebase Console**: [`https://console.firebase.google.com/project/belongonthespectrum/overview`](https://console.firebase.google.com/project/belongonthespectrum/overview)
 
 ---
@@ -13,25 +13,31 @@
 ## 📌 Executive Review Documents (Start Here!)
 
 1. [**`human_to_review_after_session.md` (Executive Review)**](human_to_review_after_session.md)
-   * Comprehensive summary of milestones delivered, 22 merged PRs, and verified glass metrics.
+   * Comprehensive summary of milestones delivered, 23 merged PRs, and verified glass metrics.
    * Links directly to maintainer questions in [`questions_19_oct_evening.md`](questions_19_oct_evening.md).
 
-2. [**`weeknights_week_of_oct19th.md` (Weeknights Gym & Low-Touch Protocol)**](weeknights_week_of_oct19th.md)
+2. [**`docs/AGENT_HARNESS_AND_ORCHESTRATION.md` (Agent Harness 2.0 Spec)**](docs/AGENT_HARNESS_AND_ORCHESTRATION.md)
+   * Multi-model quota routing, subagent orchestrator topology, 📿 "Beads" execution DAG, and local 48GB Mac fallback.
+
+3. [**`docs/wiki/Agent-Harness-and-Token-Orchestration.md` (Token Optimization Wiki)**](docs/wiki/Agent-Harness-and-Token-Orchestration.md)
+   * Visual Knowledge Graph & multi-model quota defense guide for students, mentees, and engineers.
+
+4. [**`weeknights_week_of_oct19th.md` (Weeknights Gym & Low-Touch Protocol)**](weeknights_week_of_oct19th.md)
    * Daily 5–10 minute human check-in protocol allowing autonomous agents to deliver milestones while Neil attends the gym.
 
-3. [**`docs/wiki/Circle-CSV-Migration-Guide.md` (Spreadsheet Migration Guide)**](docs/wiki/Circle-CSV-Migration-Guide.md)
+5. [**`docs/wiki/Circle-CSV-Migration-Guide.md` (Spreadsheet Migration Guide)**](docs/wiki/Circle-CSV-Migration-Guide.md)
    * Plain-English explanation of past posts/introductions import for non-technical community organizers.
 
-4. [**`questions_19_oct_evening.md` (Decision Items)**](questions_19_oct_evening.md)
+6. [**`questions_19_oct_evening.md` (Decision Items)**](questions_19_oct_evening.md)
    * 5 concise, actionable questions for Neil regarding Circle CSV migration cutover, church affiliation badges, push notifications, and local LLM setup. Tracked in [Issue #101](https://github.com/neiljaywarner/refuge/issues/101).
 
-5. [**`docs/OBSERVABILITY_AND_ANALYTICS.md` (Dual Observability)**](docs/OBSERVABILITY_AND_ANALYTICS.md)
+7. [**`docs/OBSERVABILITY_AND_ANALYTICS.md` (Dual Observability)**](docs/OBSERVABILITY_AND_ANALYTICS.md)
    * Complete architecture guide detailing Firebase Crashlytics & Analytics alongside local Talker/Serverpod diagnostics.
 
-6. [**`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`**](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)
+8. [**`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`**](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)
    * Public-safe reference on physical device driving lessons, zero-PII automation, and MCP tooling velocity. Tracked in [Issue #102](https://github.com/neiljaywarner/refuge/issues/102).
 
-7. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
+9. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
    * Interactive element semantics (<200 tokens) vs full screenshots, runner commands, and ADB fallback script `tool/capture_device.sh`.
 
 ---
@@ -52,10 +58,12 @@
 
 ---
 
-## 🛠️ Complete Summary of Merged Pull Requests (22 Merged PRs)
+## 🛠️ Complete Summary of Merged Pull Requests (23 Merged PRs)
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#115** | #114 | feat(infra): Agent Harness 2.0, Orchestrator Subagent Topology & Multi-Model Quota Preservation Architecture | ✅ Verified |
+| **#113** | #111 | chore(dashboards): Update status.md and human_to_review_after_session.md for PR #112 & weeknights plan | ✅ Verified |
 | **#112** | #111 | docs(wiki): Clean separation of non-technical wiki, archive historical docs, Oct 31 roadmap update & weeknight gym plan | ✅ Verified |
 | **#108** | #107 | chore(rules): Add AGENTS.md, GEMINI.md, and .cursorrules for zero-PII and MCP server prioritization | ✅ Verified |
 | **#106** | #105 | docs(architecture): Add ADR-0010 Calm Notifications Architecture & Multi-Tier Test Coverage Plan | ✅ Verified |

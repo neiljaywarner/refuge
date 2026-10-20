@@ -4,14 +4,15 @@
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
 > **GitHub Wiki (26+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
 > **Companion Questions for Maintainer**: [`questions_19_oct_evening.md`](questions_19_oct_evening.md) ([Issue #101](https://github.com/neiljaywarner/refuge/issues/101))  
-> **Session Plan & FAQ**: [`unattended_session_908pm.md`](unattended_session_908pm.md)  
+> **Agent Harness 2.0 & Token Quota**: [`docs/AGENT_HARNESS_AND_ORCHESTRATION.md`](docs/AGENT_HARNESS_AND_ORCHESTRATION.md)  
+> **Token Optimization Wiki**: [`docs/wiki/Agent-Harness-and-Token-Orchestration.md`](docs/wiki/Agent-Harness-and-Token-Orchestration.md)  
 > **Weeknights Gym & Low-Touch Plan**: [`weeknights_week_of_oct19th.md`](weeknights_week_of_oct19th.md)  
 > **Spreadsheet Migration Guide**: [`docs/wiki/Circle-CSV-Migration-Guide.md`](docs/wiki/Circle-CSV-Migration-Guide.md)  
 > **Observability Architecture**: [`docs/OBSERVABILITY_AND_ANALYTICS.md`](docs/OBSERVABILITY_AND_ANALYTICS.md)  
 > **Engineering Lessons Learned**: [`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md) ([Issue #102](https://github.com/neiljaywarner/refuge/issues/102))  
 > **Marionette MCP Guide**: [`readme_marionette.md`](readme_marionette.md)  
 > **Calm Notifications Architecture**: [`docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md`](docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md)  
-> **Last Updated**: **Monday Oct 19, 2026 @ 7:55 PM CDT**
+> **Last Updated**: **Monday Oct 19, 2026 @ 8:00 PM CDT**
 
 ---
 
@@ -49,10 +50,15 @@
    - Published `weeknights_week_of_oct19th.md` with 5–10 min/evening low-touch human protocol for gym attendance.
    - Published plain-English spreadsheet migration guide (`docs/wiki/Circle-CSV-Migration-Guide.md`) and updated Issue `#41`.
 
-8. **Multi-Tier Quality & Test Metrics**:
+8. **Agent Harness 2.0 & Multi-Model Quota Preservation (`#114`, PR `#115`)**:
+   - Formalized 3-tier routing: **Tier 0 Local (48GB Mac via Ollama `qwen2.5-coder:32b`/`14b`)** @ $0 API cost, **Tier 1 Subagents (Gemini Flash)** for broad research/grep @ 90% cost savings, and **Tier 2 Lead Orchestrator (Gemini Pro)** reserved strictly for architecture.
+   - Designed 📿 **"Beads" Sequential State DAG** preventing quadratic context expansion.
+   - Published visual Knowledge Graph Mermaid flowcharts in `docs/AGENT_HARNESS_AND_ORCHESTRATION.md` and Wiki.
+
+9. **Multi-Tier Quality & Test Metrics**:
    - Automated tests expanded to **82 tests passing green** on `main` (and **93 tests passing** in Soundscapes branch).
    - **0 static analysis errors or warnings** (`analyze_files` via Dart MCP).
-   - **22 Atomic Pull Requests Merged** to `main` with strict zero direct commits to `main`.
+   - **23 Atomic Pull Requests Merged** to `main` with strict zero direct commits to `main`.
 
 ---
 
@@ -60,6 +66,8 @@
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#115** | #114 | feat(infra): Agent Harness 2.0, Orchestrator Subagent Topology & Multi-Model Quota Preservation Architecture | ✅ Verified |
+| **#113** | #111 | chore(dashboards): Update status.md and human_to_review_after_session.md for PR #112 & weeknights plan | ✅ Verified |
 | **#112** | #111 | docs(wiki): Clean separation of non-technical wiki, archive historical docs, Oct 31 roadmap update & weeknight gym plan | ✅ Verified |
 | **#108** | #107 | chore(rules): Add AGENTS.md, GEMINI.md, and .cursorrules for zero-PII and MCP server prioritization | ✅ Verified |
 | **#106** | #105 | docs(architecture): Add ADR-0010 Calm Notifications Architecture & Multi-Tier Test Coverage Plan | ✅ Verified |
