@@ -1,14 +1,14 @@
 # 🌙 Unattended Session: Sun Oct 18, 9:08 PM → ~1 AM (`unattended_session_908pm.md`)
 
 > Live web: https://belongonthespectrum.web.app · Repo: https://github.com/neiljaywarner/refuge
-> Companion docs: `neil_to_review_sunday_night.md` (review by milestone), `refuge/DEPLOYMENT.md` (release runbook), `refuge/docs/driving_pixels.md` (device testing), `refuge/docs/wiki/Refuge-CLI.md` (CLI)
-> Last updated: **10:38 PM**
+> Companion docs: `human_to_review_after_session.md` (executive review after session), `questions_19_oct_evening.md` (maintainer questions), `refuge/DEPLOYMENT.md` (release runbook), `refuge/docs/driving_pixels.md` (device testing)
+> Last updated: **Monday Oct 19, 2026 @ 7:05 PM CDT**
 
 ---
 
-## TL;DR
+## Highlights
 
-- ✅ **Web is live** at belongonthespectrum.web.app (v0.6.0 → v0.6.1). Each release also has a preview channel and a GitHub Release with corrected, truthful notes.
+- ✅ **First web release deployed** to Firebase Hosting (`v0.6.0` and `v0.6.1`). Live at https://belongonthespectrum.web.app.
 - ✅ **First Android build delivered** via Firebase App Distribution to the **Pre-Alpha Testers** group (v0.2.0 build 2). Check your email for the invite.
 - ✅ **Driving the real app on the Pixel 9a** with Marionette found and fixed two bugs that unit/widget tests missed: a **red-screen Riverpod crash** in debug builds and **squeezed feedback chips**.
 - ✅ **First on-device integration test passed** (Feature Voting). It had never actually run before tonight.

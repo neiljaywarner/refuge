@@ -8,8 +8,10 @@
 ---
 
 ## 🔗 Quick Executive & Engineering Links
-- 📋 **[Neil's Sunday Night Review (`neil_to_review_sunday_night.md`)](neil_to_review_sunday_night.md)**: Breakdown by Milestones (`v0.5.0`–`v1.0.0`), Live Releases, ADRs (`0001`–`0009`), and Hybrid Architecture Grading.
+- 📋 **[Maintainer Review After Session (`human_to_review_after_session.md`)](human_to_review_after_session.md)**: Executive breakdown of Milestones, Live Releases, ADRs (`0001`–`0010`), and verified device metrics.
+- 📡 **[Observability & Analytics (`docs/OBSERVABILITY_AND_ANALYTICS.md`)](docs/OBSERVABILITY_AND_ANALYTICS.md)**: Dual/Triple-observability across Firebase Crashlytics/Analytics & local Serverpod/Talker diagnostics.
 - 🗄️ **[Backend & Database Architecture (`docs/DATABASE_ARCHITECTURE.md`)](docs/DATABASE_ARCHITECTURE.md)**: Under-the-hood map, Firestore collection schemas (`users`, `posts`, `feedback`), indexes, security rules, and Serverpod RPC mapping.
+- 🎓 **[Engineering Lessons Learned & Accomplishments](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)**: Mentee reference covering real device testing, MCP tooling, and zero-PII architecture.
 - 🌙 **[Unattended Session Execution Plan & LLM Troubleshooting (`unattended_session_908pm.md`)](unattended_session_908pm.md)**: Live Mini-Milestones tracker, FAQ, and zero-stall troubleshooting guide for lighter LLMs.
 - 🚀 **[Deployment & Release Runbook (`DEPLOYMENT.md`)](DEPLOYMENT.md)**: 1-command pure-Dart release pipeline (`tool/deploy_release.dart`) for `belongonthespectrum.web.app`, Firebase Hosting Preview Channels, and GitHub Releases.
 - ⚖️ **[ADR-0009: Serverpod → Appwrite Core + Firebase Edge Hybrid Strategy](docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)**: Graded comparison (**A+ / `9.7/10`**) of Piece-by-Piece vs. One-Shot migration and permanent Firebase Hosting/FCM/Audiences coexistence.
