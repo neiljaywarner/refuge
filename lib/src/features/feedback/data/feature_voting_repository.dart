@@ -27,10 +27,7 @@ abstract interface class FeatureVotingRepository {
   List<VotableFeatureItem> loadInitialFeatures();
 
   /// Applies an optimistic vote toggle and persists to the active backend adapter.
-  List<VotableFeatureItem> toggleVote(
-    List<VotableFeatureItem> current,
-    String featureId,
-  );
+  List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId);
 
   /// Appends a community-proposed feature and persists to the active backend adapter.
   List<VotableFeatureItem> proposeFeature(
@@ -57,21 +54,16 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       List<VotableFeatureItem>.unmodifiable(kDefaultBelongVotableFeatures);
 
   @override
-  List<VotableFeatureItem> toggleVote(
-    List<VotableFeatureItem> current,
-    String featureId,
-  ) {
-    return [
-      for (final item in current)
-        if (item.id == featureId)
-          item.copyWith(
-            userVoted: !item.userVoted,
-            votes: item.userVoted ? item.votes - 1 : item.votes + 1,
-          )
-        else
-          item,
-    ];
-  }
+  List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId) => [
+    for (final item in current)
+      if (item.id == featureId)
+        item.copyWith(
+          userVoted: !item.userVoted,
+          votes: item.userVoted ? item.votes - 1 : item.votes + 1,
+        )
+      else
+        item,
+  ];
 
   @override
   List<VotableFeatureItem> proposeFeature(
@@ -180,10 +172,7 @@ class FirebaseFeatureVotingRepository
   BackendTarget get target => BackendTarget.firebase;
 
   @override
-  List<VotableFeatureItem> toggleVote(
-    List<VotableFeatureItem> current,
-    String featureId,
-  ) {
+  List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId) {
     final next = super.toggleVote(current, featureId);
     final targetItem = next.firstWhere(
       (e) => e.id == featureId,
@@ -213,11 +202,7 @@ class FirebaseFeatureVotingRepository
     required String message,
     String? contactEmail,
   }) async {
-    await super.submitFeedback(
-      sentiment: sentiment,
-      message: message,
-      contactEmail: contactEmail,
-    );
+    await super.submitFeedback(sentiment: sentiment, message: message, contactEmail: contactEmail);
 
     final fs = firestore;
     if (fs != null) {
@@ -226,9 +211,7 @@ class FirebaseFeatureVotingRepository
         await fs.collection(feedbackCollectionPath).add({
           'sentiment': sentiment.name,
           'isPrivateTriage': sentiment.isPrivateTriage,
-          'targetRepository': destination is PrivateRepoDestination
-              ? destination.repository
-              : null,
+          'targetRepository': destination is PrivateRepoDestination ? destination.repository : null,
           'message': message.trim(),
           if (contactEmail != null && contactEmail.trim().isNotEmpty)
             'contactEmail': contactEmail.trim(),
@@ -243,9 +226,7 @@ class FirebaseFeatureVotingRepository
 
 /// 1-line switchable provider controlling which backend powers Feature Voting.
 /// Defaults to [BackendTarget.firebase] for v0.8.0-alpha shared cloud persistence.
-final featureVotingBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.firebase,
-);
+final featureVotingBackendTargetProvider = Provider<BackendTarget>((ref) => BackendTarget.firebase);
 
 /// Provides the active [FeatureVotingRepository] implementation.
 final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) {

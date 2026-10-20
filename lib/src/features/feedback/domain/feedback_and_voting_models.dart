@@ -11,8 +11,7 @@ enum FeedbackSentiment {
     label: 'Works Great',
     subtitle: 'Public Praise',
     promptTitle: 'What feels calm, clear, or welcoming?',
-    promptHint:
-        'Share what you love so our organizers know which features and spaces to protect!',
+    promptHint: 'Share what you love so our organizers know which features and spaces to protect!',
     isPrivateTriage: false,
   ),
 
@@ -22,8 +21,7 @@ enum FeedbackSentiment {
     label: 'Idea / Tweak',
     subtitle: 'Private Suggestion',
     promptTitle: 'What would make Belong clearer or calmer for you?',
-    promptHint:
-        'Suggest a feature, a clearer label, or a sensory improvement (sent privately to organizers).',
+    promptHint: 'Suggest a feature, a clearer label, or a sensory improvement (sent privately to organizers).',
     isPrivateTriage: true,
   ),
 
@@ -33,8 +31,7 @@ enum FeedbackSentiment {
     label: 'Bug / Confusing',
     subtitle: 'Private Triage',
     promptTitle: 'What felt broken, confusing, or overwhelming?',
-    promptHint:
-        'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
+    promptHint: 'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
     isPrivateTriage: true,
   );
 
@@ -86,20 +83,15 @@ class VotableFeatureItem {
   final bool userVoted;
   final int? githubIssueNumber;
 
-  VotableFeatureItem copyWith({
-    int? votes,
-    bool? userVoted,
-  }) {
-    return VotableFeatureItem(
-      id: id,
-      title: title,
-      description: description,
-      stage: stage,
-      votes: votes ?? this.votes,
-      userVoted: userVoted ?? this.userVoted,
-      githubIssueNumber: githubIssueNumber,
-    );
-  }
+  VotableFeatureItem copyWith({int? votes, bool? userVoted}) => VotableFeatureItem(
+    id: id,
+    title: title,
+    description: description,
+    stage: stage,
+    votes: votes ?? this.votes,
+    userVoted: userVoted ?? this.userVoted,
+    githubIssueNumber: githubIssueNumber,
+  );
 }
 
 /// Sane default features + active WIP items for the Oct 24–31 Circle cutover preview.
@@ -125,8 +117,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-autistic-events',
     title: 'Actually Autistic Events Calendar',
-    description:
-        'Sensory-friendly DFW & online meetups, clear expectations, and 1-tap RSVP.',
+    description: 'Sensory-friendly DFW & online meetups, clear expectations, and 1-tap RSVP.',
     stage: FeatureStage.workInProgress,
     votes: 28,
     githubIssueNumber: 28,
@@ -134,8 +125,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-google-apple-auth',
     title: '1-Tap Google & Apple Sign-In',
-    description:
-        'Frictionless single-tap sign-in alongside Stage 1 email/password accounts.',
+    description: 'Frictionless single-tap sign-in alongside Stage 1 email/password accounts.',
     stage: FeatureStage.workInProgress,
     votes: 17,
     githubIssueNumber: 33,
@@ -143,8 +133,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'planned-native-store-apps',
     title: 'Native iOS App Store & Google Play Apps',
-    description:
-        'Installable store apps alongside our instant Web & Add-to-Home-Screen PWA.',
+    description: 'Installable store apps alongside our instant Web & Add-to-Home-Screen PWA.',
     stage: FeatureStage.planned,
     votes: 21,
     githubIssueNumber: 45,
@@ -168,8 +157,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'idea-weekly-calm-digest',
     title: 'Single Weekly Calm Digest Email',
-    description:
-        'Catch up on community highlights once a week without daily notification clutter.',
+    description: 'Catch up on community highlights once a week without daily notification clutter.',
     stage: FeatureStage.communityIdea,
     votes: 12,
   ),
