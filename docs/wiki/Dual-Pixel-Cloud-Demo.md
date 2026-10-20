@@ -1,4 +1,7 @@
-# 📱 Dual Pixel Cloud Demo — Hardware Verification
+# 📱 Dual Pixel Cloud Demo — Hardware Verification (Historical Archive)
+
+> [!NOTE]
+> **Historical Archive Document**: This document records early hackathon hardware testing over Serverpod Cloud and T-Mobile LTE. For current production architecture and live device testing on Google Pixel 9a, see [`QA-and-Beta-Testing-Guide`](QA-and-Beta-Testing-Guide) and [`Engineering-Lessons-Learned-and-Accomplishments`](Engineering-Lessons-Learned-and-Accomplishments).
 
 > Real-time multi-device verification executed across physical Google Pixel 9a hardware operating on T-Mobile LTE communicating over Serverpod Cloud.
 
