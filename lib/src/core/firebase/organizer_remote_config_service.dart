@@ -5,13 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
 
-/// Immutable snapshot of community organizer settings controlled via
-/// **Firebase Remote Config** (`docs/wiki/Organizer-Remote-Config-Guide.md`).
-///
-/// Works identically across **Flutter Web / PWA, Android, and iOS**, allowing
-/// non-technical organizers at **Belong on the Spectrum** to update the
-/// *"Message from the Organizer"* card, Community Guidelines, and app store
-/// links without needing a developer or code deployment.
 @immutable
 class OrganizerRemoteConfig {
   const OrganizerRemoteConfig({
@@ -24,17 +17,15 @@ class OrganizerRemoteConfig {
     required this.iosAppDownloadUrl,
   });
 
-  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) {
-    return OrganizerRemoteConfig(
-      welcomeTitle: brand.defaultOrganizerWelcomeTitle,
-      welcomeMessage: brand.defaultOrganizerWelcomeMessage,
-      bannerEnabled: true,
-      dfwChurchUrl: brand.partnerOrgUrl,
-      communityGuidelinesMarkdown: _defaultGuidelines,
-      androidAppDownloadUrl: '',
-      iosAppDownloadUrl: '',
-    );
-  }
+  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) => OrganizerRemoteConfig(
+    welcomeTitle: brand.defaultOrganizerWelcomeTitle,
+    welcomeMessage: brand.defaultOrganizerWelcomeMessage,
+    bannerEnabled: true,
+    dfwChurchUrl: brand.partnerOrgUrl,
+    communityGuidelinesMarkdown: _defaultGuidelines,
+    androidAppDownloadUrl: '',
+    iosAppDownloadUrl: '',
+  );
 
   static const String _defaultGuidelines = '''
 # Belong on the Spectrum — Community Guidelines
@@ -60,24 +51,17 @@ class OrganizerRemoteConfig {
     String? communityGuidelinesMarkdown,
     String? androidAppDownloadUrl,
     String? iosAppDownloadUrl,
-  }) {
-    return OrganizerRemoteConfig(
-      welcomeTitle: welcomeTitle ?? this.welcomeTitle,
-      welcomeMessage: welcomeMessage ?? this.welcomeMessage,
-      bannerEnabled: bannerEnabled ?? this.bannerEnabled,
-      dfwChurchUrl: dfwChurchUrl ?? this.dfwChurchUrl,
-      communityGuidelinesMarkdown:
-          communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
-      androidAppDownloadUrl:
-          androidAppDownloadUrl ?? this.androidAppDownloadUrl,
-      iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
-    );
-  }
+  }) => OrganizerRemoteConfig(
+    welcomeTitle: welcomeTitle ?? this.welcomeTitle,
+    welcomeMessage: welcomeMessage ?? this.welcomeMessage,
+    bannerEnabled: bannerEnabled ?? this.bannerEnabled,
+    dfwChurchUrl: dfwChurchUrl ?? this.dfwChurchUrl,
+    communityGuidelinesMarkdown: communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
+    androidAppDownloadUrl: androidAppDownloadUrl ?? this.androidAppDownloadUrl,
+    iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
+  );
 }
 
-/// Service that reads live [FirebaseRemoteConfig] values when Firebase is
-/// initialized for the active flavor (`dev` or `prod`) and gracefully falls
-/// back to [OrganizerRemoteConfig.defaults] in unit/BDD tests or offline runs.
 class OrganizerRemoteConfigService {
   const OrganizerRemoteConfigService(this._brand);
 

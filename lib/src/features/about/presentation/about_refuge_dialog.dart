@@ -4,8 +4,6 @@ import 'package:talker_flutter/talker_flutter.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 
-/// Shows the About Belong on the Spectrum & Sensory Settings dialog
-/// (with all hackathon / Judge API Explorer clutter removed per Issue #18).
 void showAboutSanctuaryDialog(
   BuildContext context, {
   required Color primaryColor,
@@ -24,8 +22,7 @@ void showAboutSanctuaryDialog(
               'assets/images/belong_logo.png',
               width: 32,
               height: 32,
-              errorBuilder: (_, _, _) =>
-                  const Text('♾️', style: TextStyle(fontSize: 22)),
+              errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 22)),
             ),
           ),
           const SizedBox(width: 10),
@@ -69,9 +66,7 @@ void showAboutSanctuaryDialog(
                       : primaryColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isContrast
-                        ? Colors.yellow
-                        : primaryColor.withValues(alpha: 0.25),
+                    color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
                   ),
                 ),
                 child: const Text(
@@ -143,22 +138,13 @@ void showAboutSanctuaryDialog(
         OutlinedButton.icon(
           onPressed: () {
             Navigator.of(ctx).pop();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => TalkerScreen(talker: talker),
-              ),
-            );
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => TalkerScreen(talker: talker)));
           },
           icon: const Icon(Icons.receipt_long_rounded, size: 16),
-          label: const Text(
-            'Diagnostics & Logs',
-            style: TextStyle(fontSize: 12),
-          ),
+          label: const Text('Diagnostics & Logs', style: TextStyle(fontSize: 12)),
         ),
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Close'),
-        ),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
       ],
     ),
   );

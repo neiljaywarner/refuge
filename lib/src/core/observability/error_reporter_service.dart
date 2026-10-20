@@ -6,13 +6,6 @@ import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.d
 import 'package:refuge4serverpod/src/core/logging/app_logger.dart' as app_log;
 import 'package:talker_flutter/talker_flutter.dart';
 
-/// Unified error handling and observability service delivering triple-destination
-/// error reporting across:
-/// 1. Firebase Crashlytics (unhandled fatal and handled non-fatal exceptions)
-/// 2. Firebase Analytics (`app_error` event with sanitized categorization)
-/// 3. Serverpod / Local Diagnostics buffer for offline/developer visibility
-///
-/// Designed with strict Zero-PII principles (scrubs emails, tokens, and names).
 class ErrorReporterService {
   ErrorReporterService({
     required this.flavor,
@@ -24,10 +17,8 @@ class ErrorReporterService {
   final CommunityAnalyticsService analyticsService;
   final Talker talker;
 
-  /// In-memory ring buffer of reported errors for UI diagnostics and test inspection.
   final List<Map<String, Object?>> recordedErrorsForTesting = [];
 
-  /// Primary reporting method for both synchronous and asynchronous exceptions.
   Future<void> recordError(
     Object exception,
     StackTrace? stack, {
@@ -47,22 +38,12 @@ class ErrorReporterService {
     };
     recordedErrorsForTesting.add(errorEntry);
 
-    // 1. Diagnostics & structured logging via Talker
     if (fatal) {
-      talker.critical(
-        '🚨 [ErrorReporter FATAL] $exception (Reason: $reason)',
-        exception,
-        stack,
-      );
+      talker.critical('🚨 [ErrorReporter FATAL] $exception (Reason: $reason)', exception, stack);
     } else {
-      talker.error(
-        '⚠️ [ErrorReporter HANDLED] $exception (Reason: $reason)',
-        exception,
-        stack,
-      );
+      talker.error('⚠️ [ErrorReporter HANDLED] $exception (Reason: $reason)', exception, stack);
     }
 
-    // 2. Firebase Analytics: log 'app_error' event with category and reason
     try {
       await analyticsService.logEvent(
         'app_error',
@@ -73,10 +54,8 @@ class ErrorReporterService {
         },
       );
     } catch (_) {
-      // Analytics failure must never trigger secondary errors.
     }
 
-    // 3. Firebase Crashlytics: native symbolicated error tracking
     if (Firebase.apps.isNotEmpty) {
       try {
         await FirebaseCrashlytics.instance.recordError(
@@ -84,17 +63,13 @@ class ErrorReporterService {
           stack,
           reason: reason,
           fatal: fatal,
-          information: sanitizedContext.entries
-              .map((e) => '${e.key}: ${e.value}')
-              .toList(),
+          information: sanitizedContext.entries.map((e) => '${e.key}: ${e.value}').toList(),
         );
       } catch (_) {
-        // Crashlytics failure fallback is handled by in-memory diagnostic buffer.
       }
     }
   }
 
-  /// Scrubs sensitive information (emails, auth tokens, phone numbers) before logging.
   Map<String, Object> _sanitizeMetadata(Map<String, Object>? raw) {
     if (raw == null) return {};
     final sanitized = <String, Object>{};

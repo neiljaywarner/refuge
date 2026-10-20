@@ -3,35 +3,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 
-/// Privacy-safe, zero-PII analytics service backed by [FirebaseAnalytics].
-///
-/// Automatically prefixes or tags events with the active [AppFlavor] (`dev` vs
-/// `prod`) so developer testing never skews production community insights, and
-/// operates as a safe no-op with in-memory event recording during unit/BDD tests.
 class CommunityAnalyticsService {
   CommunityAnalyticsService({required this.flavor});
 
   final AppFlavor flavor;
   final List<Map<String, Object>> recordedEventsForTesting = [];
 
-  Future<void> logEvent(
-    String name, {
-    Map<String, Object>? parameters,
-  }) async {
-    final enriched = <String, Object>{
-      'flavor': flavor.slug,
-      ...?parameters,
-    };
+  Future<void> logEvent(String name, {Map<String, Object>? parameters}) async {
+    final enriched = <String, Object>{'flavor': flavor.slug, ...?parameters};
     recordedEventsForTesting.add({'name': name, ...enriched});
 
     if (Firebase.apps.isEmpty) {
       return;
     }
     try {
-      await FirebaseAnalytics.instance.logEvent(
-        name: name,
-        parameters: enriched,
-      );
+      await FirebaseAnalytics.instance.logEvent(name: name, parameters: enriched);
     } catch (_) {
       // Never surface analytics transport errors to community members.
     }
@@ -56,18 +42,13 @@ class CommunityAnalyticsService {
       logEvent('feedback_intent_selected', parameters: {'sentiment': sentimentLabel});
 
   Future<void> logReflectionPublished({required String tag, required int lengthBucket}) =>
-      logEvent('reflection_published', parameters: {
-        'tag': tag,
-        'length_bucket': lengthBucket,
-      });
+      logEvent('reflection_published', parameters: {'tag': tag, 'length_bucket': lengthBucket});
 
   Future<void> logEventRsvp({required String eventId, required String status}) =>
       logEvent('event_rsvp', parameters: {'event_id': eventId, 'status': status});
 }
 
-final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((
-  ref,
-) {
+final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((ref) {
   final flavor = ref.watch(appFlavorProvider);
   return CommunityAnalyticsService(flavor: flavor);
 });
