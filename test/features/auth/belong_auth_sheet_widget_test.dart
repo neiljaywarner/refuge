@@ -48,6 +48,13 @@ void main() {
     });
 
     patrolWidgetTest('requires ICOC church affiliation selection on registration', ($) async {
+      $.tester.view.physicalSize = const Size(800, 1200);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       await $.pumpWidgetAndSettle(buildTestWidget());
 
       // Switch to Register tab
@@ -95,6 +102,16 @@ void main() {
         $('A secure sign-in link has been sent to magic@belong.org. Please check your inbox or paste the link below.'),
         findsOneWidget,
       );
+    });
+
+    patrolWidgetTest('renders 1-Tap Google Sign-In button and handles click', ($) async {
+      await $.pumpWidgetAndSettle(buildTestWidget());
+
+      expect($(const Key('auth_google_sign_in_button')), findsOneWidget);
+      expect($('Continue with Google'), findsOneWidget);
+
+      await $(const Key('auth_google_sign_in_button')).tap();
+      await $.pump();
     });
   });
 }
