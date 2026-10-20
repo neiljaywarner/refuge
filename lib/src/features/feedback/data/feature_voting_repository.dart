@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
@@ -93,6 +94,8 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     return [...current, newItem];
   }
 
+  PrivateFeedbackRouter get privateRouter => const PrivateFeedbackRouter();
+
   @override
   Future<void> submitFeedback({
     required FeedbackSentiment sentiment,
@@ -101,10 +104,14 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   }) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty) return;
+    final destination = privateRouter.resolveDestination(sentiment);
     submittedFeedbackLog.add({
       'backend': target.name,
       'sentiment': sentiment.name,
       'isPrivateTriage': '${sentiment.isPrivateTriage}',
+      'destination': destination is PrivateRepoDestination
+          ? destination.repository
+          : 'public_community_board',
       'message': trimmed,
       if (contactEmail != null && contactEmail.trim().isNotEmpty)
         'contactEmail': contactEmail.trim(),
@@ -215,9 +222,13 @@ class FirebaseFeatureVotingRepository
     final fs = firestore;
     if (fs != null) {
       try {
+        final destination = privateRouter.resolveDestination(sentiment);
         await fs.collection(feedbackCollectionPath).add({
           'sentiment': sentiment.name,
           'isPrivateTriage': sentiment.isPrivateTriage,
+          'targetRepository': destination is PrivateRepoDestination
+              ? destination.repository
+              : null,
           'message': message.trim(),
           if (contactEmail != null && contactEmail.trim().isNotEmpty)
             'contactEmail': contactEmail.trim(),
