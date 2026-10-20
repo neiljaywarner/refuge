@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../auth/presentation/belong_auth_sheet.dart';
 import '../../branding/presentation/brand_config_provider.dart';
+import '../../../core/config/preview_mode_provider.dart';
 import '../domain/member_profile.dart';
 
 /// Upper-right Member Profile & Stage 1 ("Any Auth") Sign-In Dialog/Sheet
@@ -11,12 +12,8 @@ import '../domain/member_profile.dart';
 class MemberProfileDialog extends HookConsumerWidget {
   const MemberProfileDialog({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => const MemberProfileDialog(),
-    );
-  }
+  static Future<void> show(BuildContext context) =>
+      showDialog<void>(context: context, builder: (_) => const MemberProfileDialog());
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,8 +94,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded,
-                          size: 18, color: Colors.red),
+                      const Icon(Icons.error_outline_rounded, size: 18, color: Colors.red),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -118,10 +114,7 @@ class MemberProfileDialog extends HookConsumerWidget {
               TextField(
                 key: const Key('profile_display_name_field'),
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Display Name',
-                  isDense: true,
-                ),
+                decoration: const InputDecoration(labelText: 'Display Name', isDense: true),
               ),
               const SizedBox(height: 10),
               TextField(
@@ -147,17 +140,11 @@ class MemberProfileDialog extends HookConsumerWidget {
                   children: [
                     Text(
                       brand.fellowshipAffiliationPrompt,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                     const Text(
                       ' *',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -166,11 +153,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
                   style: TextStyle(
                     fontSize: 10.5,
-                    color: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.color
-                        ?.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -182,8 +165,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   isExpanded: true,
                   decoration: const InputDecoration(
                     isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     border: OutlineInputBorder(),
                     hintText: 'Select your church affiliation...',
                   ),
@@ -195,8 +177,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                         opt,
                         style: TextStyle(
                           fontSize: 12,
-                          fontStyle:
-                              isNonMember ? FontStyle.italic : FontStyle.normal,
+                          fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
                         ),
                       ),
                     );
@@ -240,32 +221,47 @@ class MemberProfileDialog extends HookConsumerWidget {
                   OutlinedButton.icon(
                     key: const Key('oauth_google_sign_in_button'),
                     onPressed: () {
-                      ref
-                          .read(memberProfileProvider.notifier)
-                          .signInWithOAuth('google');
+                      ref.read(memberProfileProvider.notifier).signInWithOAuth('google');
                       Navigator.of(context).pop();
                     },
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 18),
-                    label: const Text(
-                      'Continue with Google',
-                      style: TextStyle(fontSize: 11.5),
-                    ),
+                    label: const Text('Continue with Google', style: TextStyle(fontSize: 11.5)),
                   ),
                   OutlinedButton.icon(
                     key: const Key('oauth_apple_sign_in_button'),
                     onPressed: () {
-                      ref
-                          .read(memberProfileProvider.notifier)
-                          .signInWithOAuth('apple');
+                      ref.read(memberProfileProvider.notifier).signInWithOAuth('apple');
                       Navigator.of(context).pop();
                     },
                     icon: const Icon(Icons.apple_rounded, size: 16),
-                    label: const Text(
-                      'Continue with Apple',
-                      style: TextStyle(fontSize: 11.5),
-                    ),
+                    label: const Text('Continue with Apple', style: TextStyle(fontSize: 11.5)),
                   ),
                 ],
+              ),
+              const SizedBox(height: 14),
+              const Divider(height: 10),
+              Consumer(
+                builder: (context, ref, _) {
+                  final isPreview = ref.watch(previewFeaturesEnabledProvider);
+                  return SwitchListTile.adaptive(
+                    key: const Key('preview_mode_switch'),
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: const Text(
+                      '🧪 Experimental Preview Features',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: const Text(
+                      'Show early, experimental features still being tested.',
+                      style: TextStyle(fontSize: 10.5),
+                    ),
+                    value: isPreview,
+                    onChanged: (val) {
+                      ref.read(previewModeUserOverrideProvider.notifier).state = val;
+                      ref.read(previewFeaturesEnabledProvider.notifier).setEnabled(val);
+                    },
+                  );
+                },
               ),
             ],
           ),
@@ -281,22 +277,19 @@ class MemberProfileDialog extends HookConsumerWidget {
             },
             child: const Text('Sign Out'),
           ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
         FilledButton(
           key: const Key('profile_save_sign_in_button'),
           onPressed: () {
             if (brand.enableFellowshipAffiliationField &&
-                (selectedAffiliation.value == null ||
-                    selectedAffiliation.value!.trim().isEmpty)) {
-              validationError.value =
-                  'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
+                (selectedAffiliation.value == null || selectedAffiliation.value!.trim().isEmpty)) {
+              validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
               return;
             }
 
-            ref.read(memberProfileProvider.notifier).signIn(
+            ref
+                .read(memberProfileProvider.notifier)
+                .signIn(
                   displayName: nameController.text,
                   email: emailController.text,
                   bio: bioController.text,
