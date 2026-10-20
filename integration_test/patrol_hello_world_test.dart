@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
@@ -17,22 +16,22 @@ void main() {
       );
 
       // 1. Verify community app title and branding
-      expect($('Belong'), findsOneWidget);
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Belong on the Spectrum'), findsOneWidget);
 
       // 2. Verify bottom navigation tabs are present
       expect($('Home'), findsOneWidget);
       expect($('Spaces'), findsOneWidget);
       expect($('Msgs'), findsOneWidget);
-      expect($('Notifications'), findsOneWidget);
+      expect($('Events'), findsOneWidget);
 
-      // 3. Verify intent filter row
-      expect($('Filter: '), findsOneWidget);
-      expect($(ChoiceChip), findsWidgets);
-      expect($('[Prayer Request]'), findsWidgets);
+      // 3. Verify emotional tone filter chips
+      expect($('🌱 Gentle'), findsOneWidget);
+      expect($('🎯 Clarity'), findsOneWidget);
+      expect($('🎉 Joy'), findsOneWidget);
+      expect($('🤝 Help'), findsOneWidget);
 
-      // 4. Tap the first ChoiceChip and settle
-      await $(ChoiceChip).first.tap();
+      // 4. Tap the Gentle tone filter chip and settle
+      await $(find.text('🌱 Gentle')).tap();
       await $.pumpAndSettle();
     },
   );
