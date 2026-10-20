@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../domain/message_thread.dart';
 
 /// Neurodivergent-first Direct Messages view (Issue #27).
 /// Features unhurried conversation threads, soft non-urgent unread badges,
 /// and a toggle for calm batched digest mode.
 class BelongMessagesView extends StatefulWidget {
-  const BelongMessagesView({
-    super.key,
-    this.initialThreads,
-  });
+  const BelongMessagesView({super.key, this.initialThreads});
 
   final List<MessageThread>? initialThreads;
 
@@ -163,7 +161,11 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
                         ),
                         child: Text(
                           '${thread.unreadCount}',
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                   ],
@@ -195,114 +197,115 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
     );
   }
 
-  Widget _buildThreadDetail(BuildContext context, ThemeData theme, MessageThread thread) {
-    return Column(
-      children: [
-        // Thread App Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-          ),
+  Widget _buildThreadDetail(BuildContext context, ThemeData theme, MessageThread thread) => Column(
+    children: [
+      // Thread App Bar
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              key: const Key('back-to-messages-list'),
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => setState(() => _activeThread = null),
+            ),
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: const Color(0xFFE8ECEF),
+              child: Text(
+                thread.avatarInitials,
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                thread.participantName,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // Message History
+      Expanded(
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: thread.messages.length,
+          itemBuilder: (context, index) {
+            final msg = thread.messages[index];
+            return Align(
+              alignment: msg.isFromMe ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                decoration: BoxDecoration(
+                  color: msg.isFromMe ? const Color(0xFF2E6B56) : const Color(0xFFF1F3F4),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  msg.content,
+                  style: TextStyle(
+                    color: msg.isFromMe ? Colors.white : Colors.black87,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+
+      // Reply Input Bar
+      Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        ),
+        child: SafeArea(
+          top: false,
           child: Row(
             children: [
-              IconButton(
-                key: const Key('back-to-messages-list'),
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => setState(() => _activeThread = null),
-              ),
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: const Color(0xFFE8ECEF),
-                child: Text(thread.avatarInitials, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  thread.participantName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  overflow: TextOverflow.ellipsis,
+                child: TextField(
+                  key: const Key('reply-message-field'),
+                  controller: _replyController,
+                  decoration: InputDecoration(
+                    hintText: 'Type a calm reply...',
+                    hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    filled: true,
+                    fillColor: const Color(0xFFF7F9FA),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(color: Colors.grey.shade200),
+                    ),
+                  ),
+                  onSubmitted: (_) => _sendReply(),
                 ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                key: const Key('send-reply-button'),
+                icon: const Icon(Icons.send_rounded, color: Color(0xFF2E6B56)),
+                onPressed: _sendReply,
               ),
             ],
           ),
         ),
-
-        // Message History
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: thread.messages.length,
-            itemBuilder: (context, index) {
-              final msg = thread.messages[index];
-              return Align(
-                alignment: msg.isFromMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                  decoration: BoxDecoration(
-                    color: msg.isFromMe ? const Color(0xFF2E6B56) : const Color(0xFFF1F3F4),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(
-                    msg.content,
-                    style: TextStyle(
-                      color: msg.isFromMe ? Colors.white : Colors.black87,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-
-        // Reply Input Bar
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(top: BorderSide(color: Colors.grey.shade200)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: const Key('reply-message-field'),
-                    controller: _replyController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a calm reply...',
-                      hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-                      filled: true,
-                      fillColor: const Color(0xFFF7F9FA),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                    ),
-                    onSubmitted: (_) => _sendReply(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  key: const Key('send-reply-button'),
-                  icon: const Icon(Icons.send_rounded, color: Color(0xFF2E6B56)),
-                  onPressed: _sendReply,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }
