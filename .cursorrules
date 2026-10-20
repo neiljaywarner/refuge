@@ -1,0 +1,18 @@
+# THIS IS AN OPEN PUBLIC REPO — STRICT ZERO PII & SECURITY RULE
+
+1. **PUBLIC OPEN-SOURCE REPOSITORY**:
+   - `belongonthespectrum` and `refuge` are public open-source repositories hosted on GitHub.
+   - Everything committed or pushed to `main` or any remote branch is instantly visible to the entire world.
+
+2. **STRICT ZERO PII (Personally Identifiable Information)**:
+   - NEVER commit or push personal real names, phone numbers, real personal email addresses, organizer contact details, or community member identities.
+   - For tests, demos, and docs, use synthetic domain-safe placeholders exclusively:
+     - Emails: `member@belongonthespectrum.com`, `tester@example.com`, `organizer@belongonthespectrum.com`
+     - Names: `Fellow Member`, `David M.`, `Sarah K.`, `Community Member`
+
+3. **STRICT ZERO SECRETS & CREDENTIALS**:
+   - NEVER commit API keys, service account JSON files, private certificates, keystores, passwords, personal access tokens, or session tokens.
+   - Pre-push / pre-PR check: Always verify with `dart run tool/refuge_cli.dart privacy-scan`.
+
+4. **ZERO LOCAL MACHINE PATHS**:
+   - NEVER hardcode machine-specific paths (e.g. `/Users/neil/...` or `/home/...`) in commit messages, release notes, production code, or user-facing documentation. Use relative paths or dynamic environment variables (`$HOME`, `Platform.environment['HOME']`).
