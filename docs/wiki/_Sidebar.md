@@ -17,6 +17,7 @@
 * **[🧪 QA, Device Driving & Beta Testing](QA-and-Beta-Testing-Guide)**
 * **[🤝 Contributor & Worktree Workflow](Contributor-Guide)**
 * **[🎓 Apprentice, Mentee & Token Optimization Guide](Apprentice-and-Token-Optimization-Guide)**
+* **[📿 Agent Harness 2.0 & Token Quota Preservation](Agent-Harness-and-Token-Orchestration)**
 * **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)**
 * **[🛠️ Refuge CLI Developer Tool](Refuge-CLI)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
