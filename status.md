@@ -1,11 +1,11 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Monday Oct 19, 2026 @ 8:16 PM CDT  
-> **Session State**: 🟢 Active (Caffeinated, 24 PRs merged cleanly, 1 Idea PR pending review)  
+> **Current Timestamp**: Monday Oct 19, 2026 @ 8:28 PM CDT  
+> **Session State**: 🟢 Active (Caffeinated, 24 PRs merged cleanly, Issue #122 Manual Testing & UAT Playbook in progress)  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
-> **GitHub Wiki (28+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
+> **GitHub Wiki (29+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
 > **Firebase Console**: [`https://console.firebase.google.com/project/belongonthespectrum/overview`](https://console.firebase.google.com/project/belongonthespectrum/overview)
 
 ---
@@ -37,7 +37,10 @@
 8. [**`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`**](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)
    * Public-safe reference on physical device driving lessons, zero-PII automation, and MCP tooling velocity. Tracked in [Issue #102](https://github.com/neiljaywarner/refuge/issues/102).
 
-9. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
+9. [**`docs/wiki/Manual-Testing-and-UAT-Flows.md` (Manual Testing & UAT Playbook)**](docs/wiki/Manual-Testing-and-UAT-Flows.md)
+   * Plain-English, zero-jargon testing checklist with step-by-step flows and bug report template for community testers and organizers. Tracked in [Issue #122](https://github.com/neiljaywarner/refuge/issues/122).
+
+10. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
    * Interactive element semantics (<200 tokens) vs full screenshots, runner commands, and ADB fallback script `tool/capture_device.sh`.
 
 ---

@@ -6,6 +6,7 @@
 * **[🎛️ Updating Announcements & Welcome Banner Without Coding](Organizer-Remote-Config-Guide)**
 * **[📥 Bringing Over Past Posts (Spreadsheet / CSV Guide)](Circle-CSV-Migration-Guide)**
 * **[🤝 Volunteer & Welcome Team Guide](How-You-Can-Help-Volunteer-Guide)**
+* **[🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")](Manual-Testing-and-UAT-Flows)**
 * **[🌿 Sensory Themes & Calm-Tech Philosophy](Calm-Tech-and-Accessibility)**
 
 ### 🛠️ Engineering, Architecture & Mentoring

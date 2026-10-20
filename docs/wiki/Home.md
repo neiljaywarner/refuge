@@ -22,6 +22,7 @@ Whether you have **1 minute** to upvote your favorite upcoming features in the a
 | **[🎛️ Organizer Control Without Coding (Remote Config)](Organizer-Remote-Config-Guide)** | **Community Organizers** | How to update welcome banners and feature announcements instantly using [Firebase Remote Config](https://firebase.google.com/products/remote-config) ([Watch 3-Min Video](https://www.youtube.com/watch?v=_CXXVFPO6f0)). |
 | **[📥 Bringing Over Past Posts (Spreadsheet / CSV Guide)](Circle-CSV-Migration-Guide)** | **Organizers & Volunteers** | Plain-English explanation of how past introductions, prayer requests, and discussions are safely imported from Circle spreadsheets into Belong with zero data loss. |
 | **[🏘️ Belong Community Spaces & Guidelines](Belong-Community-Guide)** | **All Community Members** | Tour of our familiar rooms (*Start Here*, *Announcements*, *General Chat*, *Memes*, *Online Resources / Videos*, *Actually Autistic Chat*, *Friends Chat*, *Family Chat*, and *Links*). |
+| **[🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")](Manual-Testing-and-UAT-Flows)** | **Community Testers & Organizers** | Complete, non-technical step-by-step checklist to test Belong across Web PWA, Android, and iOS — zero coding knowledge required! |
 | **[🌿 Calm Technology & Sensory Safety](Calm-Tech-and-Accessibility)** | **Members & Designers** | Why Belong has zero autoplay video, predictable navigation, literal feedback cards, and neurodivergent-affirming design. |
 
 ---
