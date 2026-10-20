@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../domain/sensory_event.dart';
 
 /// Presentation view for Actually Autistic Events Calendar (Issue #28).
 /// Features sensory indicators (lighting, sound, quiet room, masking policy)
 /// and a 1-tap sensory RSVP button with calm visual feedback.
 class ActuallyAutisticEventsView extends StatefulWidget {
-  const ActuallyAutisticEventsView({
-    super.key,
-    this.initialEvents,
-    this.onBackToSpaces,
-  });
+  const ActuallyAutisticEventsView({super.key, this.initialEvents, this.onBackToSpaces});
 
   final List<SensoryEvent>? initialEvents;
   final VoidCallback? onBackToSpaces;
@@ -101,8 +98,8 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
           const SizedBox(height: 14),
 
           // Event Cards List
-          ..._events.map((event) {
-            return Card(
+          ..._events.map(
+            (event) => Card(
               key: Key('event-card-${event.id}'),
               margin: const EdgeInsets.only(bottom: 14),
               elevation: 0,
@@ -161,9 +158,7 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
                     // Title
                     Text(
                       event.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
 
@@ -194,23 +189,14 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        _SensoryBadge(
-                          icon: Icons.lightbulb_outline,
-                          label: event.lightingLevel,
-                        ),
-                        _SensoryBadge(
-                          icon: Icons.volume_down_outlined,
-                          label: event.soundLevel,
-                        ),
+                        _SensoryBadge(icon: Icons.lightbulb_outline, label: event.lightingLevel),
+                        _SensoryBadge(icon: Icons.volume_down_outlined, label: event.soundLevel),
                         if (event.quietRoomAvailable)
                           const _SensoryBadge(
                             icon: Icons.meeting_room_outlined,
                             label: 'Quiet Room Available',
                           ),
-                        _SensoryBadge(
-                          icon: Icons.favorite_outline,
-                          label: event.maskingPolicy,
-                        ),
+                        _SensoryBadge(icon: Icons.favorite_outline, label: event.maskingPolicy),
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -239,12 +225,11 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            backgroundColor:
-                                event.userRsvpd ? const Color(0xFF2E6B56) : Colors.transparent,
+                            backgroundColor: event.userRsvpd
+                                ? const Color(0xFF2E6B56)
+                                : Colors.transparent,
                             side: const BorderSide(color: Color(0xFF2E6B56)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           ),
                           onPressed: () => _toggleRsvp(event.id),
@@ -254,8 +239,8 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
                   ],
                 ),
               ),
-            );
-          }),
+            ),
+          ),
         ],
       ),
     );
@@ -263,38 +248,33 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
 }
 
 class _SensoryBadge extends StatelessWidget {
-  const _SensoryBadge({
-    required this.icon,
-    required this.label,
-  });
+  const _SensoryBadge({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F3F4),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFFE2E6E9)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: const Color(0xFF2C3E50)),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF2C3E50),
-            ),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF1F3F4),
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: const Color(0xFFE2E6E9)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: const Color(0xFF2C3E50)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF2C3E50),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
