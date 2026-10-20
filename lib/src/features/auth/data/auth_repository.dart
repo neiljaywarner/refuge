@@ -1,6 +1,6 @@
 import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../feedback/data/feature_voting_repository.dart';
@@ -21,10 +21,7 @@ abstract interface class AuthRepository {
   Stream<AuthSession> authStateChanges();
 
   /// Authenticate with email and password.
-  Future<AuthSession> signInWithPassword({
-    required String email,
-    required String password,
-  });
+  Future<AuthSession> signInWithPassword({required String email, required String password});
 
   /// Create a new account with email, password, display name, and required church affiliation.
   Future<AuthSession> registerWithPassword({
@@ -37,16 +34,10 @@ abstract interface class AuthRepository {
   });
 
   /// Dispatch a passwordless "Magic Link" email for 1-tap sign-in.
-  Future<void> sendMagicLink({
-    required String email,
-    String? redirectUrl,
-  });
+  Future<void> sendMagicLink({required String email, String? redirectUrl});
 
   /// Complete sign-in using an incoming magic email link.
-  Future<AuthSession> signInWithMagicLink({
-    required String email,
-    required String emailLink,
-  });
+  Future<AuthSession> signInWithMagicLink({required String email, required String emailLink});
 
   /// Send a password reset email.
   Future<void> sendPasswordResetEmail({required String email});
@@ -68,10 +59,7 @@ abstract interface class AuthRepository {
 }
 
 class _InMemoryUserRecord {
-  _InMemoryUserRecord({
-    required this.password,
-    required this.session,
-  });
+  _InMemoryUserRecord({required this.password, required this.session});
 
   final String password;
   AuthSession session;
@@ -79,14 +67,12 @@ class _InMemoryUserRecord {
 
 /// In-Memory implementation of [AuthRepository] for deterministic testing.
 class InMemoryAuthRepository implements AuthRepository {
-  InMemoryAuthRepository({
-    AuthSession initialSession = const AuthSession.guest(),
-  }) : _session = initialSession {
+  InMemoryAuthRepository({AuthSession initialSession = const AuthSession.guest()})
+    : _session = initialSession {
     _controller.add(_session);
   }
 
-  final StreamController<AuthSession> _controller =
-      StreamController<AuthSession>.broadcast();
+  final StreamController<AuthSession> _controller = StreamController<AuthSession>.broadcast();
 
   final Map<String, _InMemoryUserRecord> _users = {};
   final Set<String> _pendingMagicLinks = {};
@@ -142,7 +128,8 @@ class InMemoryAuthRepository implements AuthRepository {
     if (_users.containsKey(cleanEmail)) {
       throw const AuthException(
         code: 'email-already-in-use',
-        message: 'An account with this email already exists. Please sign in or request a magic link.',
+        message:
+            'An account with this email already exists. Please sign in or request a magic link.',
       );
     }
 
@@ -159,20 +146,14 @@ class InMemoryAuthRepository implements AuthRepository {
       emailVerified: false,
     );
 
-    _users[cleanEmail] = _InMemoryUserRecord(
-      password: password,
-      session: newSession,
-    );
+    _users[cleanEmail] = _InMemoryUserRecord(password: password, session: newSession);
 
     _updateSession(newSession);
     return newSession;
   }
 
   @override
-  Future<AuthSession> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthSession> signInWithPassword({required String email, required String password}) async {
     _validateEmail(email);
     _validatePassword(password);
 
@@ -181,7 +162,8 @@ class InMemoryAuthRepository implements AuthRepository {
     if (record == null) {
       throw const AuthException(
         code: 'user-not-found',
-        message: 'No account was found with this email. Please check your email or create an account.',
+        message:
+            'No account was found with this email. Please check your email or create an account.',
       );
     }
 
@@ -197,10 +179,7 @@ class InMemoryAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> sendMagicLink({
-    required String email,
-    String? redirectUrl,
-  }) async {
+  Future<void> sendMagicLink({required String email, String? redirectUrl}) async {
     _validateEmail(email);
     final cleanEmail = email.trim().toLowerCase();
     _pendingMagicLinks.add(cleanEmail);
@@ -222,7 +201,7 @@ class InMemoryAuthRepository implements AuthRepository {
         message: 'This magic link is invalid or has already been used. Please request a new one.',
       );
     }
-    
+
     // Auto-create or resume member via magic link
     final existing = _users[cleanEmail]?.session;
     final session = existing != null
@@ -236,19 +215,13 @@ class InMemoryAuthRepository implements AuthRepository {
             displayName: cleanEmail.split('@').first,
             email: cleanEmail,
             bio: 'Belong Member (Signed in via Magic Link)',
-            comfortBadges: const [
-              'Literal communication appreciated',
-              'Magic Link Verified',
-            ],
+            comfortBadges: const ['Literal communication appreciated', 'Magic Link Verified'],
             isSignedIn: true,
             authMethod: 'in_memory_magic_link',
             emailVerified: true,
           );
 
-    _users[cleanEmail] ??= _InMemoryUserRecord(
-      password: 'magic-link-login',
-      session: session,
-    );
+    _users[cleanEmail] ??= _InMemoryUserRecord(password: 'magic-link-login', session: session);
 
     _pendingMagicLinks.remove(cleanEmail);
     _updateSession(session);
@@ -271,7 +244,8 @@ class InMemoryAuthRepository implements AuthRepository {
     final cleanName = displayName.trim().isEmpty ? 'Fellowship Member' : displayName.trim();
     final cleanEmail = email.trim();
     final session = AuthSession(
-      userId: 'member-${cleanEmail.isEmpty ? cleanName.toLowerCase().replaceAll(' ', '-') : cleanEmail}',
+      userId:
+          'member-${cleanEmail.isEmpty ? cleanName.toLowerCase().replaceAll(' ', '-') : cleanEmail}',
       displayName: cleanName,
       email: cleanEmail,
       bio: (bio == null || bio.trim().isEmpty) ? 'Exploring Belong on the Spectrum' : bio.trim(),
@@ -297,10 +271,7 @@ class InMemoryAuthRepository implements AuthRepository {
       displayName: '$label Community Member',
       email: 'member@$cleanProvider.belongonthespectrum.com',
       bio: 'Signed in with 1-Tap $label Auth',
-      comfortBadges: const [
-        'Literal communication appreciated',
-        '1-Tap Verified',
-      ],
+      comfortBadges: const ['Literal communication appreciated', '1-Tap Verified'],
       isSignedIn: true,
       authMethod: '${target.name}_$cleanProvider',
     );
@@ -318,11 +289,9 @@ class InMemoryAuthRepository implements AuthRepository {
 
 /// Production Firebase Authentication repository with graceful offline/test fallback.
 class FirebaseAuthRepository implements AuthRepository {
-  FirebaseAuthRepository({
-    fb_auth.FirebaseAuth? firebaseAuth,
-    InMemoryAuthRepository? fallback,
-  })  : _auth = firebaseAuth,
-        _fallback = fallback ?? InMemoryAuthRepository();
+  FirebaseAuthRepository({fb_auth.FirebaseAuth? firebaseAuth, InMemoryAuthRepository? fallback})
+    : _auth = firebaseAuth,
+      _fallback = fallback ?? InMemoryAuthRepository();
 
   final fb_auth.FirebaseAuth? _auth;
   final InMemoryAuthRepository _fallback;
@@ -348,10 +317,7 @@ class FirebaseAuthRepository implements AuthRepository {
         displayName: fbUser.displayName ?? 'Fellowship Member',
         email: fbUser.email ?? '',
         bio: 'Verified Member of Belong on the Spectrum',
-        comfortBadges: const [
-          'Literal communication appreciated',
-          'Firebase Cloud Verified',
-        ],
+        comfortBadges: const ['Literal communication appreciated', 'Firebase Cloud Verified'],
         isSignedIn: true,
         authMethod: 'firebase_auth',
         emailVerified: fbUser.emailVerified,
@@ -372,10 +338,7 @@ class FirebaseAuthRepository implements AuthRepository {
             displayName: fbUser.displayName ?? 'Fellowship Member',
             email: fbUser.email ?? '',
             bio: 'Verified Member of Belong on the Spectrum',
-            comfortBadges: const [
-              'Literal communication appreciated',
-              'Firebase Cloud Verified',
-            ],
+            comfortBadges: const ['Literal communication appreciated', 'Firebase Cloud Verified'],
             isSignedIn: true,
             authMethod: 'firebase_auth',
             emailVerified: fbUser.emailVerified,
@@ -435,10 +398,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthSession> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthSession> signInWithPassword({required String email, required String password}) async {
     final liveAuth = auth;
     if (liveAuth != null) {
       try {
@@ -468,10 +428,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> sendMagicLink({
-    required String email,
-    String? redirectUrl,
-  }) async {
+  Future<void> sendMagicLink({required String email, String? redirectUrl}) async {
     final liveAuth = auth;
     if (liveAuth != null) {
       try {
@@ -514,10 +471,7 @@ class FirebaseAuthRepository implements AuthRepository {
             displayName: user.displayName ?? 'Fellowship Member',
             email: user.email ?? email.trim(),
             bio: 'Verified Member of Belong on the Spectrum (Magic Link)',
-            comfortBadges: const [
-              'Literal communication appreciated',
-              'Magic Link Verified',
-            ],
+            comfortBadges: const ['Literal communication appreciated', 'Magic Link Verified'],
             isSignedIn: true,
             authMethod: 'firebase_magic_link',
             emailVerified: true,
@@ -590,9 +544,7 @@ class AppwriteAuthRepository extends InMemoryAuthRepository {
 
 /// 1-line switchable provider controlling which backend powers Authentication.
 /// Defaults to [BackendTarget.firebase] for solid cloud auth.
-final authBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.firebase,
-);
+final authBackendTargetProvider = Provider<BackendTarget>((ref) => BackendTarget.firebase);
 
 /// Active [AuthRepository] adapter.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
