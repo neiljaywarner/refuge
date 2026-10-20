@@ -49,8 +49,7 @@ class MemberProfile {
     if (parts.length == 1) {
       return parts.first.substring(0, 1).toUpperCase();
     }
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
-        .toUpperCase();
+    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'.toUpperCase();
   }
 
   MemberProfile copyWith({
@@ -61,18 +60,15 @@ class MemberProfile {
     bool? isSignedIn,
     String? authMethod,
     String? icocChurchAffiliation,
-  }) {
-    return MemberProfile(
-      displayName: displayName ?? this.displayName,
-      email: email ?? this.email,
-      bio: bio ?? this.bio,
-      comfortBadges: comfortBadges ?? this.comfortBadges,
-      isSignedIn: isSignedIn ?? this.isSignedIn,
-      authMethod: authMethod ?? this.authMethod,
-      icocChurchAffiliation:
-          icocChurchAffiliation ?? this.icocChurchAffiliation,
-    );
-  }
+  }) => MemberProfile(
+    displayName: displayName ?? this.displayName,
+    email: email ?? this.email,
+    bio: bio ?? this.bio,
+    comfortBadges: comfortBadges ?? this.comfortBadges,
+    isSignedIn: isSignedIn ?? this.isSignedIn,
+    authMethod: authMethod ?? this.authMethod,
+    icocChurchAffiliation: icocChurchAffiliation ?? this.icocChurchAffiliation,
+  );
 }
 
 class MemberProfileNotifier extends Notifier<MemberProfile> {
@@ -104,21 +100,14 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       bio: bio ?? state.bio,
       comfortBadges: comfortBadges ?? state.comfortBadges,
-      icocChurchAffiliation:
-          icocChurchAffiliation ?? state.icocChurchAffiliation,
+      icocChurchAffiliation: icocChurchAffiliation ?? state.icocChurchAffiliation,
     );
     _applySession(session);
   }
 
-  Future<void> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signInWithPassword({required String email, required String password}) async {
     final repo = ref.read(authRepositoryProvider);
-    final session = await repo.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    final session = await repo.signInWithPassword(email: email, password: password);
     _applySession(session);
   }
 
@@ -147,15 +136,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     await repo.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
 
-  Future<void> signInWithMagicLink({
-    required String email,
-    required String emailLink,
-  }) async {
+  Future<void> signInWithMagicLink({required String email, required String emailLink}) async {
     final repo = ref.read(authRepositoryProvider);
-    final session = await repo.signInWithMagicLink(
-      email: email,
-      emailLink: emailLink,
-    );
+    final session = await repo.signInWithMagicLink(email: email, emailLink: emailLink);
     _applySession(session);
   }
 
@@ -184,7 +167,6 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   }
 }
 
-final memberProfileProvider =
-    NotifierProvider<MemberProfileNotifier, MemberProfile>(
-      MemberProfileNotifier.new,
-    );
+final memberProfileProvider = NotifierProvider<MemberProfileNotifier, MemberProfile>(
+  MemberProfileNotifier.new,
+);

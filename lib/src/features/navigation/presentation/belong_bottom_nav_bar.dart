@@ -15,9 +15,7 @@ enum BelongBottomTab {
   final IconData icon;
 }
 
-final activeBottomTabProvider = StateProvider<BelongBottomTab>(
-  (ref) => BelongBottomTab.home,
-);
+final activeBottomTabProvider = StateProvider<BelongBottomTab>((ref) => BelongBottomTab.home);
 
 class BelongBottomNavBar extends HookConsumerWidget {
   const BelongBottomNavBar({
@@ -40,9 +38,7 @@ class BelongBottomNavBar extends HookConsumerWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
-          top: BorderSide(
-            color: isContrast ? Colors.yellow : primary.withValues(alpha: 0.2),
-          ),
+          top: BorderSide(color: isContrast ? Colors.yellow : primary.withValues(alpha: 0.2)),
         ),
       ),
       child: SafeArea(
@@ -51,22 +47,15 @@ class BelongBottomNavBar extends HookConsumerWidget {
           key: const Key('belong_bottom_nav_bar'),
           currentIndex: currentTab.index,
           onTap: (index) => onSelectTab(BelongBottomTab.values[index]),
-          duration: disableAnimations
-              ? Duration.zero
-              : const Duration(milliseconds: 250),
+          duration: disableAnimations ? Duration.zero : const Duration(milliseconds: 250),
           selectedItemColor: isContrast ? Colors.yellow : primary,
           unselectedItemColor: isContrast
               ? Colors.white70
-              : Theme.of(context).textTheme.bodyMedium?.color?.withValues(
-                  alpha: 0.7,
-                ),
+              : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
           items: [
             for (final tab in BelongBottomTab.values)
               SalomonBottomBarItem(
-                icon: Icon(
-                  tab.icon,
-                  key: Key('bottom_nav_icon_${tab.name}'),
-                ),
+                icon: Icon(tab.icon, key: Key('bottom_nav_icon_${tab.name}')),
                 title: Text(tab.label),
               ),
           ],
