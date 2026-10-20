@@ -1,4 +1,7 @@
-# ⚡ Serverpod Architecture Deep Dive
+# ⚡ Serverpod Architecture Deep Dive (Historical Archive)
+
+> [!NOTE]
+> **Historical Archive Document**: This document captures the initial Serverpod 4 and PostgreSQL/Redis backend evaluation. For current production backend architecture, see [`Backend-and-Database-Architecture`](Backend-and-Database-Architecture) and [`Backend-Migration-Strategy-Serverpod-Appwrite-Firebase`](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase).
 
 > This document details the technical implementation of **Serverpod 4** within **Sanctuary (Refuge)**.
 
@@ -129,4 +132,3 @@ To monitor runtime server health, database execution latency, and WebSocket stre
    - Verified that broadcast events were dispatched concurrently to desktop, web, and physical mobile clients with minimal latency.
 4. **Live Structured Log Aggregation**:
    - Filtered server diagnostic events (`INFO`, `WARNING`, `ERROR`) through a sleek native GUI, expediting debugging without terminal noise.
-

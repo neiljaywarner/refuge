@@ -1,4 +1,7 @@
-# ⚖️ Backend & Auth Evaluation: Why 1-Tap Google Sign-In + Appwrite (`appwrite.io`) Fits Between Alpha & Beta
+# ⚖️ Backend & Auth Evaluation: Why 1-Tap Google Sign-In + Appwrite Fits Between Alpha & Beta (Historical Archive)
+
+> [!NOTE]
+> **Historical Archive Document**: This document records our early backend evaluation between Alpha and Beta. For active multi-backend architecture, see [`Backend-Migration-Strategy-Serverpod-Appwrite-Firebase`](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase) and [`Backend-and-Database-Architecture`](Backend-and-Database-Architecture).
 
 *Last Updated: October 18, 2026 (`2026-10-18T20:01:00-05:00`)*
 *Canonical Repo Document: [`docs/migrate_to_appwrite.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/migrate_to_appwrite.md)*
