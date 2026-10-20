@@ -72,10 +72,7 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
 /// allowing members to store profile info, review their ICOC fellowship status,
 /// and browse fellow community members.
 class BelongMembersDirectoryView extends HookConsumerWidget {
-  const BelongMembersDirectoryView({
-    super.key,
-    this.onBackToSpaces,
-  });
+  const BelongMembersDirectoryView({super.key, this.onBackToSpaces});
 
   final VoidCallback? onBackToSpaces;
 
@@ -92,11 +89,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            border: Border(
-              bottom: BorderSide(
-                color: primary.withValues(alpha: 0.15),
-              ),
-            ),
+            border: Border(bottom: BorderSide(color: primary.withValues(alpha: 0.15))),
           ),
           child: Row(
             children: [
@@ -114,10 +107,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                   children: [
                     Text(
                       'Members Section & Directory',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Store profile info & connect with verified fellowship members',
@@ -163,10 +153,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                             radius: 22,
                             child: Text(
                               profile.initials,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -189,7 +176,9 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                                     if (profile.isSignedIn)
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.green.withValues(alpha: 0.15),
                                           borderRadius: BorderRadius.circular(4),
@@ -212,10 +201,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                                       : 'Guest Member (Alpha Session)',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
+                                    color: Theme.of(context).textTheme.bodySmall?.color
                                         ?.withValues(alpha: 0.7),
                                   ),
                                 ),
@@ -225,18 +211,14 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        profile.bio,
-                        style: const TextStyle(fontSize: 12.5),
-                      ),
+                      Text(profile.bio, style: const TextStyle(fontSize: 12.5)),
                       const SizedBox(height: 8),
 
                       // Church Affiliation Badge
                       if (brand.enableFellowshipAffiliationField)
                         Container(
                           key: const Key('user_profile_affiliation_badge'),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                           decoration: BoxDecoration(
                             color: profile.isIcocMember
                                 ? primary.withValues(alpha: 0.12)
@@ -244,7 +226,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: profile.isIcocMember
-                                  ? primary.withValues(alpha: 0.3)
+                                   ? primary.withValues(alpha: 0.3)
                                   : Colors.amber.withValues(alpha: 0.4),
                             ),
                           ),
@@ -252,13 +234,9 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                profile.isIcocMember
-                                    ? Icons.church_rounded
-                                    : Icons.spa_rounded,
+                                profile.isIcocMember ? Icons.church_rounded : Icons.spa_rounded,
                                 size: 14,
-                                color: profile.isIcocMember
-                                    ? primary
-                                    : Colors.amber[900],
+                                color: profile.isIcocMember ? primary : Colors.amber[900],
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -269,9 +247,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: profile.isIcocMember
-                                      ? primary
-                                      : Colors.amber[900],
+                                  color: profile.isIcocMember ? primary : Colors.amber[900],
                                 ),
                               ),
                             ],
@@ -282,14 +258,15 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
-                        children: profile.comfortBadges.map((badge) {
-                          return Chip(
-                            label: Text(badge, style: const TextStyle(fontSize: 10.5)),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          );
-                        }).toList(),
+                        children: profile.comfortBadges
+                            .map(
+                              (badge) => Chip(
+                                label: Text(badge, style: const TextStyle(fontSize: 10.5)),
+                                padding: EdgeInsets.zero,
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            )
+                            .toList(),
                       ),
                     ],
                   ),
@@ -312,11 +289,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                 'Browse fellow autistic Christians, allies, and church leaders in our fellowship.',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.color
-                      ?.withValues(alpha: 0.7),
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 10),
@@ -324,14 +297,14 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
               // Dev member list
               for (final member in kDevFellowshipMembers)
                 Card(
-                  key: Key('dev_member_card_${member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}'),
+                  key: Key(
+                    'dev_member_card_${member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}',
+                  ),
                   margin: const EdgeInsets.only(bottom: 10),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                    ),
+                    side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.3)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
@@ -344,10 +317,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                               radius: 16,
                               child: Text(
                                 member.initials,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -366,10 +336,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                                     member.role,
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.color
+                                      color: Theme.of(context).textTheme.bodySmall?.color
                                           ?.withValues(alpha: 0.8),
                                     ),
                                   ),
@@ -377,8 +344,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
                                 color: member.isIcocMember
                                     ? primary.withValues(alpha: 0.1)
@@ -397,22 +363,14 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          member.bio,
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                        Text(member.bio, style: const TextStyle(fontSize: 12)),
                         const SizedBox(height: 6),
                         Row(
                           children: [
                             Icon(
-                              member.isIcocMember
-                                  ? Icons.church_rounded
-                                  : Icons.spa_rounded,
+                              member.isIcocMember ? Icons.church_rounded : Icons.spa_rounded,
                               size: 13,
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.color
+                              color: Theme.of(context).textTheme.bodySmall?.color
                                   ?.withValues(alpha: 0.7),
                             ),
                             const SizedBox(width: 4),
@@ -424,10 +382,7 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                                 fontStyle: member.isIcocMember
                                     ? FontStyle.normal
                                     : FontStyle.italic,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color
+                                color: Theme.of(context).textTheme.bodySmall?.color
                                     ?.withValues(alpha: 0.8),
                               ),
                             ),
@@ -437,14 +392,15 @@ class BelongMembersDirectoryView extends HookConsumerWidget {
                         Wrap(
                           spacing: 4,
                           runSpacing: 4,
-                          children: member.comfortBadges.map((badge) {
-                            return Chip(
-                              label: Text(badge, style: const TextStyle(fontSize: 9.5)),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            );
-                          }).toList(),
+                          children: member.comfortBadges
+                              .map(
+                                (badge) => Chip(
+                                  label: Text(badge, style: const TextStyle(fontSize: 9.5)),
+                                  padding: EdgeInsets.zero,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
                     ),
