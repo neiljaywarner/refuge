@@ -22,19 +22,19 @@ class OrganizerRemoteConfig {
     required this.communityGuidelinesMarkdown,
     required this.androidAppDownloadUrl,
     required this.iosAppDownloadUrl,
+    this.previewModeEnabled = false,
   });
 
-  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) {
-    return OrganizerRemoteConfig(
-      welcomeTitle: brand.defaultOrganizerWelcomeTitle,
-      welcomeMessage: brand.defaultOrganizerWelcomeMessage,
-      bannerEnabled: true,
-      dfwChurchUrl: brand.partnerOrgUrl,
-      communityGuidelinesMarkdown: _defaultGuidelines,
-      androidAppDownloadUrl: '',
-      iosAppDownloadUrl: '',
-    );
-  }
+  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) => OrganizerRemoteConfig(
+    welcomeTitle: brand.defaultOrganizerWelcomeTitle,
+    welcomeMessage: brand.defaultOrganizerWelcomeMessage,
+    bannerEnabled: true,
+    dfwChurchUrl: brand.partnerOrgUrl,
+    communityGuidelinesMarkdown: _defaultGuidelines,
+    androidAppDownloadUrl: '',
+    iosAppDownloadUrl: '',
+    previewModeEnabled: false,
+  );
 
   static const String _defaultGuidelines = '''
 # Belong on the Spectrum — Community Guidelines
@@ -51,6 +51,7 @@ class OrganizerRemoteConfig {
   final String communityGuidelinesMarkdown;
   final String androidAppDownloadUrl;
   final String iosAppDownloadUrl;
+  final bool previewModeEnabled;
 
   OrganizerRemoteConfig copyWith({
     String? welcomeTitle,
@@ -60,19 +61,17 @@ class OrganizerRemoteConfig {
     String? communityGuidelinesMarkdown,
     String? androidAppDownloadUrl,
     String? iosAppDownloadUrl,
-  }) {
-    return OrganizerRemoteConfig(
-      welcomeTitle: welcomeTitle ?? this.welcomeTitle,
-      welcomeMessage: welcomeMessage ?? this.welcomeMessage,
-      bannerEnabled: bannerEnabled ?? this.bannerEnabled,
-      dfwChurchUrl: dfwChurchUrl ?? this.dfwChurchUrl,
-      communityGuidelinesMarkdown:
-          communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
-      androidAppDownloadUrl:
-          androidAppDownloadUrl ?? this.androidAppDownloadUrl,
-      iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
-    );
-  }
+    bool? previewModeEnabled,
+  }) => OrganizerRemoteConfig(
+    welcomeTitle: welcomeTitle ?? this.welcomeTitle,
+    welcomeMessage: welcomeMessage ?? this.welcomeMessage,
+    bannerEnabled: bannerEnabled ?? this.bannerEnabled,
+    dfwChurchUrl: dfwChurchUrl ?? this.dfwChurchUrl,
+    communityGuidelinesMarkdown: communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
+    androidAppDownloadUrl: androidAppDownloadUrl ?? this.androidAppDownloadUrl,
+    iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
+    previewModeEnabled: previewModeEnabled ?? this.previewModeEnabled,
+  );
 }
 
 /// Service that reads live [FirebaseRemoteConfig] values when Firebase is
@@ -97,6 +96,7 @@ class OrganizerRemoteConfigService {
       final androidUrl = rc.getString('android_app_download_url').trim();
       final iosUrl = rc.getString('ios_app_download_url').trim();
       final enabledStr = rc.getString('organizer_banner_enabled').trim();
+      final previewModeStr = rc.getString('organizer_preview_mode_enabled').trim();
 
       return OrganizerRemoteConfig(
         welcomeTitle: title.isNotEmpty ? title : defaults.welcomeTitle,
@@ -110,6 +110,9 @@ class OrganizerRemoteConfigService {
             : defaults.communityGuidelinesMarkdown,
         androidAppDownloadUrl: androidUrl,
         iosAppDownloadUrl: iosUrl,
+        previewModeEnabled: previewModeStr.isEmpty
+            ? defaults.previewModeEnabled
+            : previewModeStr.toLowerCase() == 'true',
       );
     } catch (_) {
       return defaults;
