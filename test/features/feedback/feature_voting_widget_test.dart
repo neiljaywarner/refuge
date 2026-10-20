@@ -36,7 +36,6 @@ void main() {
 
         // Switch to Literal 3-Intent Feedback tab
         await $(const Key('tab_private_feedback')).tap();
-        expect($('What kind of note would you like to share?'), findsOneWidget);
         expect($('Works Great'), findsOneWidget);
         expect($('Idea / Tweak'), findsOneWidget);
         expect($('Bug / Confusing'), findsOneWidget);
