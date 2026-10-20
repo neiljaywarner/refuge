@@ -21,6 +21,7 @@
 * **[🎓 Apprentice, Mentee & Token Optimization Guide](Apprentice-and-Token-Optimization-Guide)**
 * **[📿 Agent Harness 2.0 & Token Quota Preservation](Agent-Harness-and-Token-Orchestration)**
 * **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)**
+* **[💬 Threaded Comments & Nested Discussion Architecture](Threaded-Comments-and-Discussion-Architecture)**
 * **[🛠️ Refuge CLI Developer Tool](Refuge-CLI)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
 
