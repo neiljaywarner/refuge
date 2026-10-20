@@ -86,18 +86,13 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
                 child: Column(
                   children: [
                     for (var i = 0; i < section.items.length; i++) ...[
-                      if (i > 0)
-                        Divider(
-                          height: 1,
-                          color: primary.withValues(alpha: 0.1),
-                        ),
+                      if (i > 0) Divider(height: 1, color: primary.withValues(alpha: 0.1)),
                       _SpaceRowTile(
                         item: section.items[i],
                         isSelected:
                             selectedSpaceSlug == section.items[i].slug &&
                             section.heading != 'PINNED',
-                        onTap: () =>
-                            _handleTap(context, section.items[i], remoteConfig),
+                        onTap: () => _handleTap(context, section.items[i], remoteConfig),
                       ),
                     ],
                   ],
@@ -112,11 +107,7 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
 }
 
 class _SpaceRowTile extends StatelessWidget {
-  const _SpaceRowTile({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _SpaceRowTile({required this.item, required this.isSelected, required this.onTap});
 
   final BelongSpaceItem item;
   final bool isSelected;
@@ -136,10 +127,7 @@ class _SpaceRowTile extends StatelessWidget {
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
         ),
       ),
-      subtitle: Text(
-        item.subtitle,
-        style: const TextStyle(fontSize: 11.5),
-      ),
+      subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 11.5)),
       trailing: item.externalUrl != null
           ? Icon(Icons.open_in_new_rounded, size: 16, color: primary)
           : item.isComingSoon
@@ -151,11 +139,7 @@ class _SpaceRowTile extends StatelessWidget {
               ),
               child: Text(
                 item.slug.startsWith('link_') ? 'Pending' : 'Coming Soon',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: primary,
-                ),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: primary),
               ),
             )
           : const Icon(Icons.chevron_right_rounded, size: 18),
