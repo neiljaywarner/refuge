@@ -1,0 +1,58 @@
+appId: com.belongonthespectrum.refuge
+name: "Belong on the Spectrum — Firebase Auth, Passwordless Magic Link & ICOC Affiliation E2E"
+tags:
+  - belong
+  - auth
+  - profile
+  - adr-0009
+  - issue-119
+---
+- launchApp
+- assertVisible: "Belong"
+
+# Open Member Profile Dialog
+- tapOn:
+    id: "profile_avatar_button"
+- assertVisible: "Member Profile & Sign-In"
+- assertVisible: "Which ICOC church do you attend?"
+- assertVisible: "Required: Confirms whether you are part of our church fellowship or a welcoming visitor."
+
+# Attempt save without affiliation to verify validation banner
+- tapOn: "Save & Sign In"
+- assertVisible: "Please select which ICOC church you attend"
+
+# Open Firebase Auth Sheet
+- tapOn: "Password or Magic Link Sign-In / Register"
+- assertVisible: "Belong on the Spectrum Account"
+- assertVisible: "Sign In"
+- assertVisible: "Register"
+- assertVisible: "Magic Link"
+
+# Test Sign-In Validation
+- tapOn: "Sign In with Password"
+- assertVisible: "Please enter your email address."
+
+# Test Registration Flow with Required Affiliation
+- tapOn: "Register"
+- assertVisible: "Preferred Display Name"
+- assertVisible: "Password (min 6 chars)"
+- inputText:
+    id: "auth_register_display_name_field"
+    text: "Joy Disciple"
+- inputText:
+    id: "auth_register_email_field"
+    text: "joy@belong.org"
+- inputText:
+    id: "auth_register_password_field"
+    text: "belongPass123"
+- tapOn: "Create Account"
+- assertVisible: "Please select which ICOC church you attend"
+
+# Test Passwordless Magic Link Flow
+- tapOn: "Magic Link"
+- assertVisible: "Sign in without memorizing a password"
+- inputText:
+    id: "auth_magic_link_email_field"
+    text: "magic@belong.org"
+- tapOn: "Send Magic Link to Email"
+- assertVisible: "A secure sign-in link has been sent to magic@belong.org"
