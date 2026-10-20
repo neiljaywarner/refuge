@@ -234,7 +234,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 ),
                                 const Spacer(),
                                 OutlinedButton.icon(
-                                  key: Key('vote_btn_${item.id}'),
+                                  key: Key('vote_button_${item.id}'),
                                   style: OutlinedButton.styleFrom(
                                     backgroundColor: item.userVoted
                                         ? colorScheme.primaryContainer
@@ -309,6 +309,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   // Sentiment Cards (Works Great / Idea / Bug)
                   for (final sentiment in FeedbackSentiment.values)
                     Card(
+                      key: Key('sentiment_${sentiment.name}'),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         side: BorderSide(
