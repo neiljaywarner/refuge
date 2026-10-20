@@ -1,7 +1,7 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Monday Oct 19, 2026 @ 7:05 PM CDT  
-> **Session State**: 🟢 Active (System caffeinated, 17 PRs merged cleanly)  
+> **Current Timestamp**: Monday Oct 19, 2026 @ 7:45 PM CDT  
+> **Session State**: 🟢 Active (Caffeinated, 21 PRs merged cleanly, 1 Idea PR pending review)  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
@@ -13,17 +13,20 @@
 ## 📌 Executive Review Documents (Start Here!)
 
 1. [**`human_to_review_after_session.md` (Executive Review)**](human_to_review_after_session.md)
-   * Comprehensive summary of milestones delivered, 17 merged PRs, and verified glass metrics.
+   * Comprehensive summary of milestones delivered, 21 merged PRs, and verified glass metrics.
    * Links directly to maintainer questions in [`questions_19_oct_evening.md`](questions_19_oct_evening.md).
 
 2. [**`questions_19_oct_evening.md` (Decision Items)**](questions_19_oct_evening.md)
-   * 5 concise, actionable questions for Neil regarding Circle CSV migration cutover, church affiliation badges, push notifications, and local LLM setup.
+   * 5 concise, actionable questions for Neil regarding Circle CSV migration cutover, church affiliation badges, push notifications, and local LLM setup. Tracked in [Issue #101](https://github.com/neiljaywarner/refuge/issues/101).
 
 3. [**`docs/OBSERVABILITY_AND_ANALYTICS.md` (Dual Observability)**](docs/OBSERVABILITY_AND_ANALYTICS.md)
    * Complete architecture guide detailing Firebase Crashlytics & Analytics alongside local Talker/Serverpod diagnostics.
 
 4. [**`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`**](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)
-   * Public-safe reference on physical device driving lessons, zero-PII automation, and MCP tooling velocity.
+   * Public-safe reference on physical device driving lessons, zero-PII automation, and MCP tooling velocity. Tracked in [Issue #102](https://github.com/neiljaywarner/refuge/issues/102).
+
+5. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
+   * Interactive element semantics (<200 tokens) vs full screenshots, runner commands, and ADB fallback script `tool/capture_device.sh`.
 
 ---
 
@@ -36,16 +39,21 @@
 | **GitHub Release** | Tags / Releases | [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha) | 🟢 **Published** |
 | **Android Release APK** | Firebase App Distribution | Group `pre-alpha-testers` (`v0.2.0 build 2`) | 🟢 **Delivered via Email** |
 | **Physical Hardware** | Connected USB Device | Google Pixel 9a (`56091JEBF14039`), Android 15 | 📱 **Connected & Verified** |
-| **Automated Tests** | Dart MCP `run_tests` | 82 automated unit, widget, and BDD tests | 🟢 **82/82 Passing Green** |
+| **Android Emulator** | Android Studio AVD | `emulator-5554` (sdk gphone64 arm64), Android 15 | 🟢 **Active (PID 35776, DTD connected)** |
+| **Automated Tests** | Dart MCP `run_tests` | 82 automated unit, widget, and BDD tests on `main` (93 in soundscape branch) | 🟢 **82/82 Passing Green** |
 | **Circle CSV Importer** | Pure-Dart CLI | `tool/import_circle_csv.dart` | 🟢 **Verified (`--dry-run`)** |
 | **Zero-PII Compliance** | Repository Rule & Scanner | `.cursorrules` + `.agents/rules/open_public_repo_zero_pii.md` | 🛡️ **Zero PII in Public Repo** |
 
 ---
 
-## 🛠️ Complete Summary of Merged Pull Requests (17 Merged PRs)
+## 🛠️ Complete Summary of Merged Pull Requests (21 Merged PRs)
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#108** | #107 | chore(rules): Add AGENTS.md, GEMINI.md, and .cursorrules for zero-PII and MCP server prioritization | ✅ Verified |
+| **#106** | #105 | docs(architecture): Add ADR-0010 Calm Notifications Architecture & Multi-Tier Test Coverage Plan | ✅ Verified |
+| **#104** | #103 | docs: Add Marionette MCP server & CLI driving guide and capture script | ✅ Verified |
+| **#100** | #99 | docs(wiki): Document Firebase & Serverpod dual observability and track engineering lessons learned | ✅ Verified |
 | **#98** | #41 | feat(migration): Circle.so CSV Data Migration Importer CLI & Parser | ✅ 82 tests passing |
 | **#97** | #96 | fix(main): Provide bootstrapBelongApp backward compatibility and resolve unused imports | ✅ 71 tests passing |
 | **#95** | #95 | fix(main): Restore reflection presentation re-exports and SanctuaryApp overrides | ✅ Verified |
@@ -63,3 +71,11 @@
 | **#62** | #26 | feat(auth): Stage 1 Any Auth session, pluggable AuthRepository adapters | ✅ 48 tests passing |
 | **#61** | #52 | feat(voting): Feature Voting clean repository seam (InMemory, Serverpod, Appwrite, Firebase) | ✅ 37 tests passing |
 | **#60** | #56 | feat(deploy): Minimum pure-Dart deployment pipeline (`tool/deploy_release.dart`), DEPLOYMENT.md | ✅ Live Web PWA deployed |
+
+---
+
+## 💡 Active Idea Proposals for Maintainer Review
+
+| PR | Issue | Title & Concept | Status |
+| :--- | :---: | :--- | :--- |
+| **#110** | #109 | `[Idea] feat(accessibility): Calm Sensory Ambient Soundscapes & Brown Noise Generator` | 💡 Open for Review (93 tests passing) |
