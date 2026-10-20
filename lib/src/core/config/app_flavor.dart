@@ -1,34 +1,42 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter/foundation.dart';
+import 'app_logger.dart';
 
-/// Multi-environment flavors following ADR 0006 (CodeWithAndrea + VGV hybrid)
-/// so `dev` testing and preview channels never clash with `prod` community
-/// data, Firebase Analytics, or Firebase Remote Config.
-enum AppFlavor {
-  dev('dev', 'Belong (Dev)', isProduction: false),
-  stg('stg', 'Belong (Staging)', isProduction: false),
-  qa('qa', 'Belong (QA)', isProduction: false),
-  prod('prod', 'Belong on the Spectrum', isProduction: true);
+enum AppFlavor { dev, staging, prod }
 
-  const AppFlavor(
-    this.slug,
-    this.displayName, {
-    required this.isProduction,
-  });
+class AppFlavorConfig {
+  static const String _flavorStr = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
 
-  final String slug;
-  final String displayName;
-  final bool isProduction;
-
-  static AppFlavor fromString(String value) {
-    return AppFlavor.values.firstWhere(
-      (f) => f.slug.toLowerCase() == value.toLowerCase(),
-      orElse: () => AppFlavor.dev,
-    );
+  static AppFlavor get current {
+    switch (_flavorStr.toLowerCase()) {
+      case 'prod':
+        return AppFlavor.prod;
+      case 'staging':
+        return AppFlavor.staging;
+      case 'dev':
+      default:
+        return AppFlavor.dev;
+    }
   }
-}
 
-/// Provides the active [AppFlavor] for the running instance.
-final appFlavorProvider = Provider<AppFlavor>((ref) {
-  const envFlavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
-  return AppFlavor.fromString(envFlavor);
-});
+  static bool get isDev => current == AppFlavor.dev;
+  static bool get isStaging => current == AppFlavor.staging;
+  static bool get isProd => current == AppFlavor.prod;
+
+  static String get serverpodUrl {
+    if (kIsWeb) return 'http://localhost:8080/';
+    switch (current) {
+      case AppFlavor.prod:
+        return 'https://api.belongonthespectrum.com/';
+      case AppFlavor.staging:
+        return 'https://staging.belongonthespectrum.com/';
+      case AppFlavor.dev:
+        return defaultTargetPlatform == TargetPlatform.android
+            ? 'http://10.0.2.2:8080/'
+            : 'http://localhost:8080/';
+    }
+  }
+
+  static void logCurrentFlavor() => AppLogger.info(
+    '🚀 [FlavorConfig] Active Flavor: ${current.name.toUpperCase()} (Target: $serverpodUrl)',
+  );
+}

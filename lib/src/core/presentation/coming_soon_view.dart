@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Reusable, calm "Coming Soon / Pending" placeholder view used for:
-/// - `Notifications` bottom navigation tab (Issue #27)
-/// - `Msgs` (Direct Messages) bottom navigation tab (Issue #27)
-/// - `Actually Autistic Events` space item (Issue #28)
-/// - Pending `Links` (`Community Guidelines` #29, `Download the Android App` #30,
-///   `Download the iOS App` #31).
 class ComingSoonView extends StatelessWidget {
   const ComingSoonView({
     super.key,
@@ -26,12 +20,14 @@ class ComingSoonView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
+
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -46,31 +42,21 @@ class ComingSoonView extends StatelessWidget {
                   Text(emoji, style: const TextStyle(fontSize: 40)),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       'Coming Soon',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: primary,
-                      ),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primary),
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -79,13 +65,10 @@ class ComingSoonView extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.45,
-                      color: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
                     ),
                   ),
-                  if (extraMarkdownOrNote != null &&
-                      extraMarkdownOrNote!.isNotEmpty) ...[
+                  if (extraMarkdownOrNote != null && extraMarkdownOrNote!.isNotEmpty) ...[
                     const SizedBox(height: 14),
                     Container(
                       width: double.infinity,
@@ -107,9 +90,7 @@ class ComingSoonView extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
