@@ -5,11 +5,13 @@
 > **GitHub Wiki (26+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
 > **Companion Questions for Maintainer**: [`questions_19_oct_evening.md`](questions_19_oct_evening.md) ([Issue #101](https://github.com/neiljaywarner/refuge/issues/101))  
 > **Session Plan & FAQ**: [`unattended_session_908pm.md`](unattended_session_908pm.md)  
+> **Weeknights Gym & Low-Touch Plan**: [`weeknights_week_of_oct19th.md`](weeknights_week_of_oct19th.md)  
+> **Spreadsheet Migration Guide**: [`docs/wiki/Circle-CSV-Migration-Guide.md`](docs/wiki/Circle-CSV-Migration-Guide.md)  
 > **Observability Architecture**: [`docs/OBSERVABILITY_AND_ANALYTICS.md`](docs/OBSERVABILITY_AND_ANALYTICS.md)  
 > **Engineering Lessons Learned**: [`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md) ([Issue #102](https://github.com/neiljaywarner/refuge/issues/102))  
 > **Marionette MCP Guide**: [`readme_marionette.md`](readme_marionette.md)  
 > **Calm Notifications Architecture**: [`docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md`](docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md)  
-> **Last Updated**: **Monday Oct 19, 2026 @ 7:45 PM CDT**
+> **Last Updated**: **Monday Oct 19, 2026 @ 7:55 PM CDT**
 
 ---
 
@@ -41,10 +43,16 @@
 6. **Repository-Level Agent Rules & Zero-PII Enforcement (`#107`, PR `#108`)**:
    - Added `.cursorrules`, `AGENTS.md`, and `GEMINI.md` to repository root to guarantee zero terminal approval popups and zero PII leaks across all future agent sessions.
 
-7. **Multi-Tier Quality & Test Metrics**:
+7. **Clean Separation of Wiki & Low-Touch Gym Plan (`#111`, PR `#112`)**:
+   - Cleanly separated Wiki into **Community & Organizers** (zero technical jargon), **Engineering & Mentoring**, and **Historical Archives**.
+   - Added clear historical archive disclaimers across all 6 early prototype docs.
+   - Published `weeknights_week_of_oct19th.md` with 5–10 min/evening low-touch human protocol for gym attendance.
+   - Published plain-English spreadsheet migration guide (`docs/wiki/Circle-CSV-Migration-Guide.md`) and updated Issue `#41`.
+
+8. **Multi-Tier Quality & Test Metrics**:
    - Automated tests expanded to **82 tests passing green** on `main` (and **93 tests passing** in Soundscapes branch).
    - **0 static analysis errors or warnings** (`analyze_files` via Dart MCP).
-   - **21 Atomic Pull Requests Merged** to `main` with strict zero direct commits to `main`.
+   - **22 Atomic Pull Requests Merged** to `main` with strict zero direct commits to `main`.
 
 ---
 
@@ -52,6 +60,7 @@
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#112** | #111 | docs(wiki): Clean separation of non-technical wiki, archive historical docs, Oct 31 roadmap update & weeknight gym plan | ✅ Verified |
 | **#108** | #107 | chore(rules): Add AGENTS.md, GEMINI.md, and .cursorrules for zero-PII and MCP server prioritization | ✅ Verified |
 | **#106** | #105 | docs(architecture): Add ADR-0010 Calm Notifications Architecture & Multi-Tier Test Coverage Plan | ✅ Verified |
 | **#104** | #103 | docs: Add Marionette MCP server & CLI driving guide and capture script | ✅ Verified |
