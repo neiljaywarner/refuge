@@ -189,7 +189,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   for (final item in features)
                     Card(
                       key: Key('vote_card_${item.id}'),
-                      margin: const militaryPadding ?? const EdgeInsets.only(bottom: 10),
+                      margin: const EdgeInsets.only(bottom: 10),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
