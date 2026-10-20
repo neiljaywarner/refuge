@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import '../domain/sensory_event.dart';
 
 /// Presentation view for Actually Autistic Events Calendar (Issue #28).
 /// Features sensory indicators (lighting, sound, quiet room, masking policy)
 /// and a 1-tap sensory RSVP button with calm visual feedback.
-class ActuallyAutisticEventsView extends StatefulWidget {
+class ActuallyAutisticEventsView extends HookWidget {
   const ActuallyAutisticEventsView({
     super.key,
     this.initialEvents,
@@ -15,21 +16,14 @@ class ActuallyAutisticEventsView extends StatefulWidget {
   final VoidCallback? onBackToSpaces;
 
   @override
-  State<ActuallyAutisticEventsView> createState() => _ActuallyAutisticEventsViewState();
-}
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final events = useState<List<SensoryEvent>>(
+      initialEvents ?? SensoryEvent.sampleEvents(),
+    );
 
-class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView> {
-  late List<SensoryEvent> _events;
-
-  @override
-  void initState() {
-    super.initState();
-    _events = widget.initialEvents ?? SensoryEvent.sampleEvents();
-  }
-
-  void _toggleRsvp(String eventId) {
-    setState(() {
-      _events = _events.map((e) {
+    void toggleRsvp(String eventId) {
+      events.value = events.value.map((e) {
         if (e.id == eventId) {
           final newRsvpd = !e.userRsvpd;
           return e.copyWith(
@@ -39,21 +33,16 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
         }
         return e;
       }).toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Actually Autistic Events'),
-        leading: widget.onBackToSpaces != null
+        leading: onBackToSpaces != null
             ? IconButton(
                 key: const Key('events-back-button'),
                 icon: const Icon(Icons.arrow_back),
-                onPressed: widget.onBackToSpaces,
+                onPressed: onBackToSpaces,
               )
             : null,
       ),
@@ -101,7 +90,7 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
           const SizedBox(height: 14),
 
           // Event Cards List
-          ..._events.map((event) {
+          ...events.value.map((event) {
             return Card(
               key: Key('event-card-${event.id}'),
               margin: const EdgeInsets.only(bottom: 14),
@@ -247,7 +236,7 @@ class _ActuallyAutisticEventsViewState extends State<ActuallyAutisticEventsView>
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           ),
-                          onPressed: () => _toggleRsvp(event.id),
+                          onPressed: () => toggleRsvp(event.id),
                         ),
                       ],
                     ),
