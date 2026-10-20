@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import '../domain/message_thread.dart';
 
-/// Neurodivergent-first Direct Messages view (Issue #27).
-/// Features unhurried conversation threads, soft non-urgent unread badges,
-/// and a toggle for calm batched digest mode.
-class BelongMessagesView extends StatefulWidget {
+/// Direct Messages View featuring calm, asynchronous communication (Issue #27).
+/// Supports calm digest batching, non-urgent messaging, and unread counts
+/// without red badges or stressful notification triggers.
+class BelongMessagesView extends HookWidget {
   const BelongMessagesView({
     super.key,
     this.initialThreads,
@@ -13,59 +14,52 @@ class BelongMessagesView extends StatefulWidget {
   final List<MessageThread>? initialThreads;
 
   @override
-  State<BelongMessagesView> createState() => _BelongMessagesViewState();
-}
-
-class _BelongMessagesViewState extends State<BelongMessagesView> {
-  late List<MessageThread> _threads;
-  bool _calmDigestEnabled = true;
-  MessageThread? _activeThread;
-  final TextEditingController _replyController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _threads = widget.initialThreads ?? MessageThread.sampleThreads();
-  }
-
-  @override
-  void dispose() {
-    _replyController.dispose();
-    super.dispose();
-  }
-
-  void _sendReply() {
-    final text = _replyController.text.trim();
-    if (text.isEmpty || _activeThread == null) return;
-
-    final newMsg = DirectMessage(
-      id: 'msg-${DateTime.now().millisecondsSinceEpoch}',
-      senderName: 'You',
-      isFromMe: true,
-      content: text,
-      sentAt: DateTime.now(),
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final threads = useState<List<MessageThread>>(
+      initialThreads ?? MessageThread.sampleThreads(),
     );
+    final calmDigestEnabled = useState(true);
+    final activeThread = useState<MessageThread?>(null);
+    final replyController = useTextEditingController();
 
-    setState(() {
-      final updatedMessages = [..._activeThread!.messages, newMsg];
-      final updatedThread = _activeThread!.copyWith(
+    void sendReply() {
+      final text = replyController.text.trim();
+      if (text.isEmpty || activeThread.value == null) return;
+
+      final newMsg = DirectMessage(
+        id: 'msg-${DateTime.now().millisecondsSinceEpoch}',
+        senderName: 'You',
+        isFromMe: true,
+        content: text,
+        sentAt: DateTime.now(),
+      );
+
+      final current = activeThread.value!;
+      final updatedMessages = [...current.messages, newMsg];
+      final updatedThread = current.copyWith(
         messages: updatedMessages,
         previewSnippet: text,
         lastActivity: DateTime.now(),
         unreadCount: 0,
       );
-      _threads = _threads.map((t) => t.id == updatedThread.id ? updatedThread : t).toList();
-      _activeThread = updatedThread;
-      _replyController.clear();
-    });
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+      threads.value = threads.value
+          .map((t) => t.id == updatedThread.id ? updatedThread : t)
+          .toList();
+      activeThread.value = updatedThread;
+      replyController.clear();
+    }
 
-    if (_activeThread != null) {
-      return _buildThreadDetail(context, theme, _activeThread!);
+    if (activeThread.value != null) {
+      return _buildThreadDetail(
+        context,
+        theme,
+        activeThread.value!,
+        replyController,
+        sendReply,
+        () => activeThread.value = null,
+      );
     }
 
     return Column(
@@ -86,7 +80,7 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Calm Batched Digest is ${_calmDigestEnabled ? "Active (quiet daily summary)" : "Disabled (realtime alerts)"}',
+                  'Calm Batched Digest is ${calmDigestEnabled.value ? "Active (quiet daily summary)" : "Disabled (realtime alerts)"}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: const Color(0xFF1E4638),
                     fontWeight: FontWeight.w600,
@@ -94,11 +88,9 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
                 ),
               ),
               Switch.adaptive(
-                value: _calmDigestEnabled,
+                value: calmDigestEnabled.value,
                 activeTrackColor: const Color(0xFF2E6B56),
-                onChanged: (val) {
-                  setState(() => _calmDigestEnabled = val);
-                },
+                onChanged: (val) => calmDigestEnabled.value = val,
               ),
             ],
           ),
@@ -118,7 +110,7 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
                 ),
               ),
               Text(
-                '${_threads.length} conversations',
+                '${threads.value.length} conversations',
                 style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
               ),
             ],
@@ -129,10 +121,10 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            itemCount: _threads.length,
+            itemCount: threads.value.length,
             separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
             itemBuilder: (context, index) {
-              final thread = _threads[index];
+              final thread = threads.value[index];
               return ListTile(
                 key: Key('thread-${thread.id}'),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -182,10 +174,11 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
                   ),
                 ),
                 onTap: () {
-                  setState(() {
-                    _activeThread = thread.copyWith(unreadCount: 0);
-                    _threads = _threads.map((t) => t.id == thread.id ? _activeThread! : t).toList();
-                  });
+                  final updated = thread.copyWith(unreadCount: 0);
+                  activeThread.value = updated;
+                  threads.value = threads.value
+                      .map((t) => t.id == thread.id ? updated : t)
+                      .toList();
                 },
               );
             },
@@ -195,7 +188,14 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
     );
   }
 
-  Widget _buildThreadDetail(BuildContext context, ThemeData theme, MessageThread thread) {
+  Widget _buildThreadDetail(
+    BuildContext context,
+    ThemeData theme,
+    MessageThread thread,
+    TextEditingController replyController,
+    VoidCallback onSendReply,
+    VoidCallback onBack,
+  ) {
     return Column(
       children: [
         // Thread App Bar
@@ -210,7 +210,7 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
               IconButton(
                 key: const Key('back-to-messages-list'),
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => setState(() => _activeThread = null),
+                onPressed: onBack,
               ),
               CircleAvatar(
                 radius: 16,
@@ -273,7 +273,7 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
                 Expanded(
                   child: TextField(
                     key: const Key('reply-message-field'),
-                    controller: _replyController,
+                    controller: replyController,
                     decoration: InputDecoration(
                       hintText: 'Type a calm reply...',
                       hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
@@ -289,14 +289,14 @@ class _BelongMessagesViewState extends State<BelongMessagesView> {
                         borderSide: BorderSide(color: Colors.grey.shade200),
                       ),
                     ),
-                    onSubmitted: (_) => _sendReply(),
+                    onSubmitted: (_) => onSendReply(),
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
                   key: const Key('send-reply-button'),
                   icon: const Icon(Icons.send_rounded, color: Color(0xFF2E6B56)),
-                  onPressed: _sendReply,
+                  onPressed: onSendReply,
                 ),
               ],
             ),
