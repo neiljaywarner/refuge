@@ -5,7 +5,6 @@ import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/auth/presentation/belong_auth_sheet.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
-import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 
 void main() {
   group('BelongAuthSheet Widget & BDD Tests (#119)', () {

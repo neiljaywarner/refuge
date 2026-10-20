@@ -11,8 +11,9 @@
 > **Observability Architecture**: [`docs/OBSERVABILITY_AND_ANALYTICS.md`](docs/OBSERVABILITY_AND_ANALYTICS.md)  
 > **Engineering Lessons Learned**: [`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md) ([Issue #102](https://github.com/neiljaywarner/refuge/issues/102))  
 > **Marionette MCP Guide**: [`readme_marionette.md`](readme_marionette.md)  
+> **Manual Testing & UAT Playbook**: [`docs/wiki/Manual-Testing-and-UAT-Flows.md`](docs/wiki/Manual-Testing-and-UAT-Flows.md) ([Issue #122](https://github.com/neiljaywarner/refuge/issues/122))  
 > **Calm Notifications Architecture**: [`docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md`](docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md)  
-> **Last Updated**: **Monday Oct 19, 2026 @ 8:16 PM CDT**
+> **Last Updated**: **Monday Oct 19, 2026 @ 8:28 PM CDT**
 
 ---
 
