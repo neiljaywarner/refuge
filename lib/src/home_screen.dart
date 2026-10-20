@@ -14,6 +14,7 @@ import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dar
 import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
+import 'features/observability/presentation/observability_easter_egg_dialog.dart';
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
@@ -54,6 +55,8 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
     final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
     final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
     final activeComingSoonItem = useState<BelongSpaceItem?>(null);
+    final easterEggTapCount = useState<int>(0);
+    final easterEggLastTap = useState<DateTime?>(null);
 
     final PostRepository activeRepository =
         repository ?? ref.watch(postRepositoryProvider);
@@ -282,77 +285,99 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                brand.logoAssetPath,
-                key: const Key('belong_header_logo'),
-                width: 28,
-                height: 28,
-                errorBuilder: (_, _, _) =>
-                    const Text('♾️', style: TextStyle(fontSize: 18)),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        brand.shortName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'Sanctuary',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+        title: InkWell(
+          key: const Key('belong_app_bar_title_tap_target'),
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            final now = DateTime.now();
+            if (easterEggLastTap.value == null ||
+                now.difference(easterEggLastTap.value!).inSeconds > 4) {
+              easterEggTapCount.value = 1;
+            } else {
+              easterEggTapCount.value++;
+            }
+            easterEggLastTap.value = now;
+
+            if (easterEggTapCount.value >= 7) {
+              easterEggTapCount.value = 0;
+              ObservabilityEasterEggDialog.show(context);
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset(
+                    brand.logoAssetPath,
+                    key: const Key('belong_header_logo'),
+                    width: 28,
+                    height: 28,
+                    errorBuilder: (_, _, _) =>
+                        const Text('♾️', style: TextStyle(fontSize: 18)),
                   ),
-                  Row(
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isLiveServerpod
-                              ? const Color(0xFF4CAF50)
-                              : const Color(0xFF68A67D),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Flexible(
-                        child: Text(
-                          'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context).textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.7),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            brand.shortName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Sanctuary',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isLiveServerpod
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFF68A67D),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context).textTheme.bodySmall?.color
+                                    ?.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
         actions: [
           PopupMenuButton<SensoryMode>(
