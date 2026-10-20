@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../feedback/data/feature_voting_repository.dart';
@@ -64,9 +65,8 @@ class InMemoryStorageRepository implements StorageRepository {
 
 /// Production Firebase Cloud Storage repository seam.
 class FirebaseStorageRepository implements StorageRepository {
-  FirebaseStorageRepository({
-    InMemoryStorageRepository? fallback,
-  }) : _fallback = fallback ?? InMemoryStorageRepository();
+  FirebaseStorageRepository({InMemoryStorageRepository? fallback})
+    : _fallback = fallback ?? InMemoryStorageRepository();
 
   final InMemoryStorageRepository _fallback;
 
@@ -80,11 +80,7 @@ class FirebaseStorageRepository implements StorageRepository {
     required String filename,
   }) async {
     // Falls back gracefully to structured path when offline or in test mode
-    return _fallback.uploadAvatar(
-      userId: userId,
-      bytes: bytes,
-      filename: filename,
-    );
+    return _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
   }
 
   @override
@@ -92,13 +88,7 @@ class FirebaseStorageRepository implements StorageRepository {
     required String spaceSlug,
     required Uint8List bytes,
     required String filename,
-  }) async {
-    return _fallback.uploadPostMedia(
-      spaceSlug: spaceSlug,
-      bytes: bytes,
-      filename: filename,
-    );
-  }
+  }) async => _fallback.uploadPostMedia(spaceSlug: spaceSlug, bytes: bytes, filename: filename);
 
   @override
   Future<void> deleteMedia(String downloadUrl) async {
@@ -106,9 +96,7 @@ class FirebaseStorageRepository implements StorageRepository {
   }
 }
 
-final storageBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.firebase,
-);
+final storageBackendTargetProvider = Provider<BackendTarget>((ref) => BackendTarget.firebase);
 
 final storageRepositoryProvider = Provider<StorageRepository>((ref) {
   final target = ref.watch(storageBackendTargetProvider);
