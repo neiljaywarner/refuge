@@ -18,4 +18,6 @@
 * **[🧪 QA & Beta Testing Guide](QA-and-Beta-Testing-Guide)**
 * **[🏗️ Architecture Deep Dive](Serverpod-Architecture-Deep-Dive)**
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
+* **[📡 Observability, Analytics & Crash Reporting](Observability-Crashlytics-Analytics-and-Diagnostics)**
+* **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
