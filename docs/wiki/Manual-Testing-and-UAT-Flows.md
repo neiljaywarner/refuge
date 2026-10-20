@@ -140,7 +140,7 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
      - 💡 **Idea / Tweak** (Constructive suggestion)
      - ⚠️ **Bug / Confusing** (Something felt awkward or broken)
    - Type your thought and tap **"Send Feedback"**.
-   - **Expected**: A warm confirmation message appears thanking you for your voice.
+   - **Expected**: A warm confirmation message appears thanking you for your voice, confirming that private notes (*Bug / Confusing* and *Idea / Tweak*) are safely routed to our private triage repository (`neiljaywarner/belong_feedback`) with zero public exposure.
 
 ---
 

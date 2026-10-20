@@ -1,7 +1,7 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Monday Oct 19, 2026 @ 8:28 PM CDT  
-> **Session State**: 🟢 Active (Caffeinated, 24 PRs merged cleanly, Issue #122 Manual Testing & UAT Playbook in progress)  
+> **Current Timestamp**: Monday Oct 19, 2026 @ 8:40 PM CDT  
+> **Session State**: 🟢 Active (Caffeinated, 25 PRs merged cleanly, Issue #124 Private Sibling Feedback Repo in progress)  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
@@ -61,10 +61,11 @@
 
 ---
 
-## 🛠️ Complete Summary of Merged Pull Requests (24 Merged PRs)
+## 🛠️ Complete Summary of Merged Pull Requests (25 Merged PRs)
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#123** | #122 | docs(wiki): Manual Testing & UAT Playbook for Community Testers ("How Can I Help Test?") | ✅ 4 BDD + Maestro tests passing |
 | **#120** | #119 | feat(auth): Solid Firebase Auth with Email/Password, Passwordless Magic Link, and Cloud Storage Seam | ✅ 19 tests passing |
 | **#115** | #114 | feat(infra): Agent Harness 2.0, Orchestrator Subagent Topology & Multi-Model Quota Preservation Architecture | ✅ Verified |
 | **#113** | #111 | chore(dashboards): Update status.md and human_to_review_after_session.md for PR #112 & weeknights plan | ✅ Verified |
