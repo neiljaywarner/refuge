@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../fellowship_spaces/domain/fellowship_space.dart';
+import '../data/comment_repository.dart';
 import '../data/post_repository.dart';
+import '../domain/comment.dart';
 import '../domain/post.dart';
 
 /// Riverpod StateProvider for filtering reflections by intent tone tag ('All', '[Prayer Request]', etc.)
@@ -28,3 +30,13 @@ final currentSpacePostsProvider = Provider.autoDispose<AsyncValue<List<Post>>>((
     return posts.where((p) => p.toneTag == filter).toList();
   });
 });
+
+/// StreamProvider yielding threaded comments for a given post.
+final postCommentsStreamProvider = StreamProvider.autoDispose.family<List<Comment>, String>(
+  (ref, postId) => ref.watch(commentRepositoryProvider).watchComments(postId: postId),
+);
+
+/// StreamProvider yielding total comment count for a given post.
+final postCommentCountStreamProvider = StreamProvider.autoDispose.family<int, String>(
+  (ref, postId) => ref.watch(commentRepositoryProvider).watchCommentCount(postId: postId),
+);
