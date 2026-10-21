@@ -94,12 +94,12 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
     return true;
   };
 
-  // A single ProviderScope lives inside SanctuaryApp. Do not wrap it in another
+  // A single ProviderScope lives inside RefugeApp. Do not wrap it in another
   // ProviderScope: root-scoped providers (e.g. quietDigestProvider) would then
   // read the nested postRepositoryProvider override, which Riverpod rejects in
   // debug builds (red screen found while driving the Pixel, #73).
   runApp(
-    SanctuaryApp(
+    RefugeApp(
       repository: PostRepositoryFactory.create(),
       overrides: [
         appFlavorProvider.overrideWithValue(flavor),

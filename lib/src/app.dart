@@ -6,21 +6,21 @@ import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 import 'home_screen.dart';
 
-/// Root application widget wrapping Refuge (Sanctuary) in a Riverpod ProviderScope.
-class SanctuaryApp extends StatefulWidget {
+/// Root application widget wrapping Refuge in a Riverpod ProviderScope.
+class RefugeApp extends StatefulWidget {
   final PostRepository repository;
   final List<Override>? overrides;
 
-  const SanctuaryApp({super.key, required this.repository, this.overrides});
+  const RefugeApp({super.key, required this.repository, this.overrides});
 
   @override
-  State<SanctuaryApp> createState() => _SanctuaryAppState();
+  State<RefugeApp> createState() => _RefugeAppState();
 }
 
-/// Alias for SanctuaryApp to support Refuge branding.
-typedef RefugeApp = SanctuaryApp;
+/// Backward-compatible alias for SanctuaryApp.
+typedef SanctuaryApp = RefugeApp;
 
-class _SanctuaryAppState extends State<SanctuaryApp> {
+class _RefugeAppState extends State<RefugeApp> {
   final ThemeNotifier _themeNotifier = ThemeNotifier();
 
   @override
@@ -29,22 +29,22 @@ class _SanctuaryAppState extends State<SanctuaryApp> {
     child: ListenableBuilder(
       listenable: _themeNotifier,
       builder: (context, _) =>
-          _SanctuaryAppContent(repository: widget.repository, themeNotifier: _themeNotifier),
+          _RefugeAppContent(repository: widget.repository, themeNotifier: _themeNotifier),
     ),
   );
 }
 
-class _SanctuaryAppContent extends ConsumerWidget {
+class _RefugeAppContent extends ConsumerWidget {
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
 
-  const _SanctuaryAppContent({required this.repository, required this.themeNotifier});
+  const _RefugeAppContent({required this.repository, required this.themeNotifier});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
     debugShowCheckedModeBanner: false,
     title: 'Belong',
     theme: SensoryThemeData.getTheme(themeNotifier.mode),
-    home: SanctuaryHomeScreen(repository: repository, themeNotifier: themeNotifier),
+    home: RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
   );
 }
