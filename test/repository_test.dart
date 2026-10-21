@@ -79,6 +79,24 @@ void main() {
     test('PostRepositoryFactory creates configured repository mode', () {
       final repo = PostRepositoryFactory.create();
       expect(repo, isA<PostRepository>());
+
+      final prodRepo = PostRepositoryFactory.create(flavor: AppFlavor.prod);
+      expect(prodRepo, isA<PostRepository>());
+    });
+
+    test('LocalPostRepository in production mode starts empty without hardcoded mock data', () async {
+      final repo = LocalPostRepository(isDevMode: false);
+      final posts = await repo.getPosts(spaceKey: 'prayer');
+      expect(posts, isEmpty);
+
+      final quietPosts = await repo.getPosts(spaceKey: 'quiet');
+      expect(quietPosts, isEmpty);
+    });
+
+    test('LocalPostRepository in dev mode retains seeded mock posts', () async {
+      final repo = LocalPostRepository(isDevMode: true);
+      final posts = await repo.getPosts(spaceKey: 'prayer');
+      expect(posts, isNotEmpty);
     });
   });
 }

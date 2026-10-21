@@ -1,3 +1,4 @@
+import '../../../core/config/app_flavor.dart';
 import 'local_post_repository.dart';
 import 'post_repository.dart';
 import 'serverpod_post_repository.dart';
@@ -15,8 +16,13 @@ BackendMode get configuredBackendMode {
 }
 
 class PostRepositoryFactory {
-  static PostRepository create() => switch (configuredBackendMode) {
-    BackendMode.serverpod => ServerpodPostRepository(),
-    BackendMode.sqlite || BackendMode.local => LocalPostRepository(),
-  };
+  static PostRepository create({AppFlavor flavor = AppFlavor.dev}) {
+    final isDevMode = !flavor.isProduction;
+    return switch (configuredBackendMode) {
+      BackendMode.serverpod => ServerpodPostRepository(isDevMode: isDevMode),
+      BackendMode.sqlite || BackendMode.local => LocalPostRepository(
+        isDevMode: isDevMode,
+      ),
+    };
+  }
 }

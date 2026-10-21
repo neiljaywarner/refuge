@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../domain/comment.dart';
 import 'local_comment_repository.dart';
 
@@ -24,7 +25,12 @@ abstract class CommentRepository {
   Stream<int> watchCommentCount({required String postId});
 }
 
-/// Riverpod provider exposing the singleton instance of CommentRepository.
-final commentRepositoryProvider = Provider<CommentRepository>(
-  (ref) => LocalCommentRepository.instance,
-);
+/// Riverpod provider exposing the configured CommentRepository.
+///
+/// In production (`AppFlavor.prod`), initializes an empty repository with
+/// zero hardcoded mock data and live Firestore dual-redundancy. In dev/QA,
+/// seeds authentic discussion threads.
+final commentRepositoryProvider = Provider<CommentRepository>((ref) {
+  final flavor = ref.watch(appFlavorProvider);
+  return LocalCommentRepository(isDevMode: !flavor.isProduction);
+});

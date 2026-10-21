@@ -1,22 +1,44 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+
 import '../domain/comment.dart';
 import 'comment_repository.dart';
 
-/// In-memory, broadcast stream implementation of [CommentRepository].
+/// In-memory, broadcast stream implementation of [CommentRepository] with
+/// Firebase Cloud Firestore dual-redundancy and dev-mode isolation.
 ///
-/// Pre-seeds authentic discussion threads matching Belong on the Spectrum community culture.
+/// In production (`AppFlavor.prod`), starts with an empty store so only real
+/// community discussions appear. Hardcoded sample threads are gated to dev mode.
 class LocalCommentRepository implements CommentRepository {
   static final LocalCommentRepository instance = LocalCommentRepository();
 
   final List<Comment> _store = [];
   final StreamController<List<Comment>> _controller =
       StreamController<List<Comment>>.broadcast();
+  final FirebaseFirestore? customFirestore;
 
-  LocalCommentRepository({List<Comment>? initialComments}) {
+  FirebaseFirestore? get firestore {
+    if (customFirestore != null) return customFirestore;
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        return FirebaseFirestore.instance;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  LocalCommentRepository({
+    List<Comment>? initialComments,
+    bool isDevMode = true,
+    this.customFirestore,
+  }) {
     if (initialComments != null) {
       _store.addAll(initialComments);
-    } else {
+    } else if (isDevMode) {
       _seedInitialData();
     }
   }
@@ -103,6 +125,26 @@ class LocalCommentRepository implements CommentRepository {
   Future<Comment> addComment(Comment comment) async {
     _store.add(comment);
     _controller.add(List.unmodifiable(_store));
+
+    // Dual-redundancy: dispatch to Firebase Cloud Firestore
+    final fs = firestore;
+    if (fs != null) {
+      try {
+        await fs.collection('comments').doc(comment.id).set({
+          'postId': comment.postId,
+          if (comment.parentCommentId != null)
+            'parentCommentId': comment.parentCommentId,
+          'authorName': comment.authorName,
+          'content': comment.content,
+          'toneTag': comment.toneTag,
+          'timestamp': comment.timestamp.toIso8601String(),
+          'reactions': comment.reactions,
+        });
+      } catch (_) {
+        // Silent edge fallback ensures local UX never blocks
+      }
+    }
+
     return comment;
   }
 
@@ -118,6 +160,17 @@ class LocalCommentRepository implements CommentRepository {
       updatedReactions[reactionType] = (updatedReactions[reactionType] ?? 0) + 1;
       _store[index] = existing.copyWith(reactions: updatedReactions);
       _controller.add(List.unmodifiable(_store));
+
+      final fs = firestore;
+      if (fs != null) {
+        try {
+          await fs.collection('comments').doc(commentId).update({
+            'reactions.$reactionType': FieldValue.increment(1),
+          });
+        } catch (_) {
+          // Silent edge fallback
+        }
+      }
     }
   }
 

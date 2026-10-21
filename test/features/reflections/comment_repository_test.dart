@@ -160,5 +160,21 @@ void main() {
 
       await expectation;
     });
+
+    test('Production mode starts with 0 comments and no hardcoded seed data', () async {
+      final repo = LocalCommentRepository(isDevMode: false);
+      final comments = await repo.getComments(postId: '1');
+      expect(comments, isEmpty);
+
+      final count = await repo.getCommentCount(postId: '1');
+      expect(count, 0);
+    });
+
+    test('Dev mode seeds default comments for post 1', () async {
+      final repo = LocalCommentRepository(isDevMode: true);
+      final comments = await repo.getComments(postId: '1');
+      expect(comments, isNotEmpty);
+      expect(comments.length, equals(3));
+    });
   });
 }
