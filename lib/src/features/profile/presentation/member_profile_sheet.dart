@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../auth/presentation/belong_auth_sheet.dart';
 import '../../auth/presentation/belong_firebase_auth_screen.dart';
+import '../../auth/presentation/simple_auth.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../../../core/config/preview_mode_provider.dart';
 import '../domain/member_profile.dart';
@@ -82,7 +83,7 @@ class MemberProfileDialog extends HookConsumerWidget {
         width: 380,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: minAxisSize,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (validationError.value != null) ...[
@@ -210,13 +211,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                 key: const Key('profile_open_firebase_auth_button'),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => profile.isSignedIn
-                          ? const BelongFirebaseProfileScreen()
-                          : const BelongFirebaseSignInScreen(),
-                    ),
-                  );
+                  SimpleAuthScreen.show(context);
                 },
                 icon: Icon(
                   profile.isSignedIn ? Icons.account_circle_outlined : Icons.lock_outline_rounded,
@@ -225,7 +220,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                 label: Text(
                   profile.isSignedIn
                       ? 'Open Firebase Account Profile & Security'
-                      : 'Firebase UI Sign-In, Register & Reset',
+                      : 'Firebase SimpleAuth (Sign-In / Register)',
                   style: const TextStyle(fontSize: 11.5),
                 ),
               ),
