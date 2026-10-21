@@ -8,6 +8,7 @@
 ---
 
 ## 🔗 Quick Executive & Engineering Links
+- 🎨 **[Golden Testing & Visual Regression Guide (`docs/wiki/Golden-Testing-and-Visual-Regression-Guide.md`)](docs/wiki/Golden-Testing-and-Visual-Regression-Guide.md)**: Headless font loading (`TestFontLoader`), Martin Fowler sociable widget goldens, and pixel-fidelity regression verification.
 - 📋 **[Maintainer Review After Session (`human_to_review_after_session.md`)](human_to_review_after_session.md)**: Executive breakdown of Milestones, Live Releases, ADRs (`0001`–`0010`), and verified device metrics.
 - 📡 **[Observability & Analytics (`docs/OBSERVABILITY_AND_ANALYTICS.md`)](docs/OBSERVABILITY_AND_ANALYTICS.md)**: Dual/Triple-observability across Firebase Crashlytics/Analytics & local Serverpod/Talker diagnostics.
 - 🗄️ **[Backend & Database Architecture (`docs/DATABASE_ARCHITECTURE.md`)](docs/DATABASE_ARCHITECTURE.md)**: Under-the-hood map, Firestore collection schemas (`users`, `posts`, `feedback`), indexes, security rules, and Serverpod RPC mapping.

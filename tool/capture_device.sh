@@ -3,12 +3,17 @@ set -e
 
 if [ -n "$ADB_DEVICE" ]; then
   DEVICE="$ADB_DEVICE"
-elif adb devices | grep -q "56091JEBF14039"; then
-  DEVICE="56091JEBF14039"
-elif adb devices | grep -q "emulator-"; then
-  DEVICE="$(adb devices | grep 'emulator-' | head -n 1 | awk '{print $1}')"
 else
-  DEVICE="56091JEBF14039"
+  PHYSICAL_DEV="$(adb devices 2>/dev/null | grep -v "List" | grep "device$" | grep -v "emulator-" | head -n 1 | awk '{print $1}')"
+  EMULATOR_DEV="$(adb devices 2>/dev/null | grep -v "List" | grep "device$" | grep "emulator-" | head -n 1 | awk '{print $1}')"
+
+  if [ -n "$PHYSICAL_DEV" ]; then
+    DEVICE="$PHYSICAL_DEV"
+  elif [ -n "$EMULATOR_DEV" ]; then
+    DEVICE="$EMULATOR_DEV"
+  else
+    DEVICE="$(adb devices 2>/dev/null | grep -v "List" | grep "device$" | head -n 1 | awk '{print $1}')"
+  fi
 fi
 ACTION="${1:-screenshot}"
 TARGET="${2:-/tmp/screenshot.png}"
@@ -33,6 +38,10 @@ case "$ACTION" in
     TEXT="${2:-}"
     adb -s "$DEVICE" shell input text "$TEXT"
     echo "Input text sent"
+    ;;
+  shell)
+    shift
+    adb -s "$DEVICE" shell "$@"
     ;;
   record)
     DURATION="${2:-15}"

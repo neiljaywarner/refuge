@@ -80,7 +80,7 @@ Stream<List<Post>> watchPosts({required String spaceKey}) async* {
 
 ### 4. Hardware-Level Verification & Dual-Pixel ADB Automation
 Unlike projects tested solely on emulators or mocked environments, Sanctuary was tested and recorded live on physical production hardware:
-* **Test Fleet**: Two physical **Google Pixel 9a** devices (`56091JEBF14039` & `58221JEBF20835`).
+* **Test Fleet**: Two physical **Google Pixel 9a** devices (`Device A` & `Device B`).
 * **Real Network Topology**: Both devices connected over **T-Mobile LTE** mobile networks.
 * **Orchestration**: Automated shell scripts driving simultaneous `adb screenrecord`, UI input injection, theme toggles, and cross-device communication verification.
 

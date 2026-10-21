@@ -14,7 +14,7 @@ Rather than relying on emulators or localhost network loopbacks, Sanctuary was t
 | Specification | Pixel Left (Device 1) | Pixel Right (Device 2) |
 | :--- | :--- | :--- |
 | **Model** | Google Pixel 9a | Google Pixel 9a |
-| **Serial Number** | `56091JEBF14039` | `58221JEBF20835` |
+| **Role** | Pixel Left (Receiving) | Pixel Right (Initiating) |
 | **Operating System** | Android 15 | Android 15 |
 | **Local Wi-Fi IP** | `192.168.4.46` | `192.168.4.45` |
 | **Cellular Network** | T-Mobile LTE (`rmnet16`) | T-Mobile LTE (`rmnet17`) |
@@ -46,8 +46,8 @@ The test execution was driven via an automated bash script utilizing ADB:
 
 ```bash
 #!/bin/bash
-LEFT_DEV="56091JEBF14039"
-RIGHT_DEV="58221JEBF20835"
+LEFT_DEV="${LEFT_DEVICE_SERIAL:-<DEVICE_1_SERIAL>}"
+RIGHT_DEV="${RIGHT_DEVICE_SERIAL:-<DEVICE_2_SERIAL>}"
 
 # 1. Start concurrent screen recordings
 adb -s $LEFT_DEV shell screenrecord --time-limit 35 /sdcard/left_pixel_scloud.mp4 &

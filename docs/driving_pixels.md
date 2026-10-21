@@ -16,24 +16,27 @@ How humans and AI agents run, drive, and verify **Belong on the Spectrum** on ph
 
 | Device | Serial | Notes |
 | :--- | :--- | :--- |
-| Pixel 9a (`tegu`) | `56091JEBF14039` | USB; turn on Developer options → **Stay awake** |
+| Pixel 9a / Android Device | Auto-detected (`adb devices`) | USB; turn on Developer options → **Stay awake** |
 
 ## 3. Recipes
 
 ```bash
-# Run the dev build (Marionette-drivable) on the Pixel
-flutter run -t lib/main_dev.dart -d 56091JEBF14039
+# Auto-detect device ID
+DEVICE=$(adb devices | grep -v "List" | grep "device$" | head -n 1 | awk '{print $1}')
+
+# Run the dev build (Marionette-drivable) on the Pixel / Android device
+flutter run -t lib/main_dev.dart -d "$DEVICE"
 
 # On-device integration tests
-flutter test integration_test -d 56091JEBF14039
+flutter test integration_test -d "$DEVICE"
 
 # Install + launch the release APK (smoke test what testers get)
 flutter build apk --release
-~/Library/Android/sdk/platform-tools/adb -s 56091JEBF14039 install -r build/app/outputs/flutter-apk/app-release.apk
-~/Library/Android/sdk/platform-tools/adb -s 56091JEBF14039 shell monkey -p com.belongonthespectrum.sanctuary -c android.intent.category.LAUNCHER 1
+adb -s "$DEVICE" install -r build/app/outputs/flutter-apk/app-release.apk
+adb -s "$DEVICE" shell monkey -p com.belongonthespectrum.sanctuary -c android.intent.category.LAUNCHER 1
 
 # Screenshot for a PR / wiki (never commit to the main repo; use the wiki assets or PR uploads)
-~/Library/Android/sdk/platform-tools/adb -s 56091JEBF14039 exec-out screencap -p > shot.png
+adb -s "$DEVICE" exec-out screencap -p > shot.png
 ```
 
 ## 4. Learnings & troubleshooting (newest first)
