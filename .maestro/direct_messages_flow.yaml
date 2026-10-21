@@ -1,0 +1,29 @@
+appId: com.belongonthespectrum.sanctuary
+name: "Direct Messages and Calm Private Fellowship Flow"
+tags:
+  - messages
+  - fellowship
+  - regression
+---
+# 1. Launch Refuge Application
+- launchApp:
+    clearState: false
+
+# 2. Navigate to Direct Messages tab
+- tapOn: "Msgs"
+- assertVisible: "Direct Messages"
+
+# 3. Open conversation thread with Marty & Community Team
+- tapOn: ".*Marty.*"
+- assertVisible: ".*Welcome to Belong.*"
+
+# 4. Compose calm reply
+- tapOn:
+    point: "500,2051"
+- inputText: "Thank you Marty! Glad to be here."
+- hideKeyboard
+- tapOn:
+    point: "991,2051"
+
+# 5. Assert message appeared in chat history
+- assertVisible: ".*Thank you Marty.*"
