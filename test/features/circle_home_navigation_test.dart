@@ -63,7 +63,8 @@ void main() {
       expect($('25'), findsOneWidget);
 
       // 4. Close bottom sheet and navigate back to feed
-      await $.native.pressBack();
+      await $.tester.tapAt(const Offset(20, 20));
+      await $.pumpAndSettle();
       await $(const Key('subnav_feed_tab')).tap();
       expect($('Feed'), findsWidgets);
     },

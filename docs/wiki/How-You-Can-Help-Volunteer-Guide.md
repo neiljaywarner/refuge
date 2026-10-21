@@ -6,7 +6,10 @@ Welcome! Whether you are a member of **Belong on the Spectrum**, a friend from *
 
 ## 📋 Ready-to-Copy-Paste Message for Our Current Circle.so App
 
-> **For Neil / Organizers:** Copy and paste the message below directly into **Announcements** or **Say Hello** in the existing Circle.so Belong app!
+> [!IMPORTANT]
+> **Tracked on High-Priority Issue**: [Issue #249](https://github.com/neiljaywarner/refuge/issues/249) (`*** 🚨 HIGH PRIORITY: Copy Circle.so Welcome Post into Circle to begin Oct 24–31 Overlap Week 🚨 ***`).  
+> **Source Document**: [`docs/circle_migration_invitation_post.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/circle_migration_invitation_post.md)  
+> **For Neil / Organizers:** Copy and paste the message below directly into **Announcements** or **Say Hello** in the existing Circle.so Belong app to kick off our 7-day calm exploration week!
 
 ```markdown
 👋 Hey Belong family!
