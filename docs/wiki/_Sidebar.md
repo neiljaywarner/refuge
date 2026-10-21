@@ -20,6 +20,7 @@
 * **[📋 Comprehensive Test Cases & QA Matrix](Test-Cases)**
 * **[🧪 Firebase Test Lab & Patrol Integration Guide](Firebase-Test-Lab-and-Patrol-Guide)**
 * **[🤝 Contributor & Worktree Workflow](Contributor-Guide)**
+* **[🤖 Local LLMs & Token Quota Preservation Strategy](Local-LLMs-and-Token-Quota-Preservation)**
 * **[🎓 Apprentice, Mentee & Token Optimization Guide](Apprentice-and-Token-Optimization-Guide)**
 * **[📿 Agent Harness 2.0 & Token Quota Preservation](Agent-Harness-and-Token-Orchestration)**
 * **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)**

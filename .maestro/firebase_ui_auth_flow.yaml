@@ -1,0 +1,35 @@
+appId: com.belongonthespectrum.sanctuary
+name: "Belong on the Spectrum — FirebaseUI Auth E2E Flow"
+tags:
+  - belong
+  - auth
+  - firebase_ui_auth
+  - e2e
+---
+# 1. Launch App & Wait for Feed
+- launchApp
+- assertVisible: "Belong"
+- assertVisible: "Sign In"
+
+# 2. Navigate to Sign In Screen
+- tapOn: "Sign In"
+- assertVisible: "Sign in"
+- assertVisible: "Don't have an account? "
+- assertVisible: "Register"
+- assertVisible: "Forgotten password?"
+
+# 3. Test Forgot Password Screen Navigation
+- tapOn: "Forgotten password?"
+- assertVisible: "Reset your password"
+- assertVisible: "Reset password"
+- back
+- assertVisible: "Sign in"
+
+# 4. Navigate to Register Screen
+- tapOn: "Register"
+- assertVisible: "Register"
+- assertVisible: "Already have an account? "
+
+# 5. Dismiss back to home screen
+- back
+- assertVisible: "Belong"

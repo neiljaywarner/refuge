@@ -58,6 +58,7 @@ Its flagship community is **[Belong on the Spectrum](https://www.belongonthespec
 | **[🗄️ Backend & Database Architecture](docs/DATABASE_ARCHITECTURE.md)** | **Engineers & Organizers** | Under-the-hood map, Firestore collection schemas (`users`, `posts`, `feedback`), indexes, security rules, and Serverpod RPC mapping. |
 | **[🤝 Contributor Guide](docs/wiki/Contributor-Guide.md)** | **Volunteers & Developers** | How to contribute via Ticket-Driven Development (`1 Issue = 1 Worktree = 1 PR`). |
 | **[🎓 Student, Mentee & Apprentice Guide](docs/wiki/Apprentice-and-Token-Optimization-Guide.md)** | **Students & Mentees** | Clean architecture walkthrough, BDD testing, pure-Dart CLI tools (`tool/refuge_cli.dart`), and **Free-Tier AI Token Optimization**. |
+| **[🤖 Local LLMs & Token Quota Preservation Strategy](docs/wiki/Local-LLMs-and-Token-Quota-Preservation.md)** | **Engineers & AI Agents** | Hardware benchmarks (48GB Apple Silicon unified RAM), Ollama + Qwen 2.5 Coder 32B/14B setup, and mechanical task delegation taxonomy. |
 | **[📿 Agent Harness 2.0 & Token Quota Preservation](docs/wiki/Agent-Harness-and-Token-Orchestration.md)** | **Engineers & Mentees** | Preserving Gemini Pro weekly caps, Flash subagent delegation, beads execution DAG, and local 48GB Mac Ollama fallback. |
 
 ---
