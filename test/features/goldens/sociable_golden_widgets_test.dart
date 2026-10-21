@@ -190,6 +190,11 @@ void main() {
         await $.pumpAndSettle();
         expect(reactionsAdded, equals(1));
 
+        // Tap reply / discussion button and verify callback
+        await $('Reply').tap();
+        await $.pumpAndSettle();
+        expect(discussionOpened, isTrue);
+
         // Golden verification if file exists
         final goldenFile = File('test/features/goldens/goldens/reflection_card.png');
         if (goldenFile.existsSync()) {

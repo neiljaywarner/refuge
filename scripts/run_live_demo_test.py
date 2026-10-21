@@ -3,8 +3,19 @@ import subprocess
 import time
 import sys
 
-LEFT_DEV = "56091JEBF14039"
-RIGHT_DEV = "58221JEBF20835"
+# Auto-detect connected devices or accept environment overrides:
+# Usage: [LEFT_DEV=<id>] [RIGHT_DEV=<id>] python3 scripts/run_live_demo_test.py
+def _detect_devices():
+    try:
+        out = subprocess.check_output(["adb", "devices"]).decode('utf-8')
+        lines = [line.split()[0] for line in out.strip().split('\n')[1:] if line.strip() and 'device' in line]
+        return lines
+    except Exception:
+        return []
+
+_detected = _detect_devices()
+LEFT_DEV = os.environ.get("LEFT_DEV", _detected[0] if len(_detected) > 0 else "")
+RIGHT_DEV = os.environ.get("RIGHT_DEV", _detected[1] if len(_detected) > 1 else "")
 
 def adb(dev, *args):
     cmd = ["adb", "-s", dev] + list(args)

@@ -11,11 +11,13 @@
 - **Dart MCP Server**: ALWAYS use `analyze_files` and `run_tests` via Dart MCP instead of raw shell commands.
 - **Patrol MCP Server & Device Driving**: Use Patrol MCP or `tool/capture_device.sh` targeting the connected Pixel or automatically falling back to the "Medium Phone" emulator (`emulator-5554`) or Chrome when the physical device is unplugged.
 
-## 2. Strict Ticket-Driven Development
-- 1 Issue = 1 Worktree = 1 PR.
+## 2. Strict Ticket-Driven Development for EVERY Prompt
+- 1 Issue = 1 Worktree = 1 PR for EVERY single prompt without exception.
 - No direct commits to `main`.
 - Worktrees live in `/Users/neil/belongonthespectrum/.worktrees/issue-<NUM>-<slug>`.
 - Open atomic PRs referencing `Closes #<NUM>`.
+- **Mandatory Verification Step / Comment on EVERY Issue & PR (UI & Non-UI)**: Every ticket and PR must include exact confirmation steps, commands executed, and verified results (plus Before/After screenshots for UI changes).
 
-## 3. Real Device Driving
-- Always drive the connected Google Pixel 9a (`56091JEBF14039`) using Marionette and Patrol. Never declare UI features complete based on headless tests alone.
+## 3. Real Device Driving & *Mandatory Before/After Visual Evidence*
+- Always drive the connected Google Pixel or physical Android device using Marionette and Patrol (falling back to the Android emulator or Chrome when unplugged). Never declare UI features complete based on headless tests alone.
+- ***Mandatory Visual Verification Step\***: Every UI, branding, icon, or styling PR MUST include side-by-side **Before and After** screenshots/videos attached to BOTH the GitHub Issue and the Pull Request before declaring complete.
