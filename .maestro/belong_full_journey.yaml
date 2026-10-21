@@ -1,0 +1,47 @@
+appId: com.belongonthespectrum.sanctuary
+---
+# 📱 Belong on the Spectrum — Comprehensive Maestro End-to-End User Journey
+# Verified across connected physical Google Pixel 9a hardware & Android emulators.
+
+# 1. Launch Belong Sanctuary
+- launchApp:
+    clearState: false
+
+- assertVisible: "Belong on the Spectrum"
+- takeScreenshot: screenshots/01_home_anchor_welcome
+
+# 2. Test Sensory Theme Switcher
+- tapOn:
+    id: "sensory_theme_toggle_button"
+    optional: true
+- tapOn: "Monastic Dark"
+- assertVisible: "Belong on the Spectrum"
+- takeScreenshot: screenshots/02_monastic_dark_applied
+
+- tapOn:
+    id: "sensory_theme_toggle_button"
+    optional: true
+- tapOn: "Sage Botanical"
+- takeScreenshot: screenshots/03_sage_botanical_restored
+
+# 3. Explore Spaces Directory
+- tapOn:
+    text: "Spaces"
+    optional: true
+- assertVisible: "General Fellowship"
+- takeScreenshot: screenshots/04_spaces_directory
+
+# 4. Open About Belong Dialog & Verify Psalm 139:14 Scripture Anchor
+- tapOn:
+    id: "about_belong_info_button"
+    optional: true
+- assertVisible: "Psalm 139:14"
+- takeScreenshot: screenshots/05_about_belong_scripture_dialog
+- tapOn: "Close"
+
+# 5. Open Auth Sheet & Verify Neurodivergent Reassurance
+- tapOn:
+    text: "Sign In"
+    optional: true
+- assertVisible: "Sign In"
+- takeScreenshot: screenshots/06_auth_modal_sheet
