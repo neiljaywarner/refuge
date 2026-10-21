@@ -16,6 +16,9 @@ class CommunityAnalyticsService {
   final ServerpodTelemetryBackup? serverpodBackup;
   final List<Map<String, Object>> recordedEventsForTesting = [];
 
+  /// In-memory testing hook alias for verifying dispatched analytics events.
+  List<Map<String, Object>> get dispatchedEventsForTesting => recordedEventsForTesting;
+
   Future<void> logEvent(
     String name, {
     Map<String, Object>? parameters,
