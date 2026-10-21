@@ -1,0 +1,36 @@
+appId: com.belongonthespectrum.sanctuary
+---
+# 🔐 Belong on the Spectrum — Dedicated Maestro Authentication Verification Flow
+# Verifies account registration, ICOC church affiliation selection, and sign-in.
+
+- launchApp:
+    clearState: false
+
+# 1. Open Auth Modal
+- tapOn:
+    text: "Sign In"
+    optional: true
+- takeScreenshot: screenshots/auth_01_signin_tab
+
+# 2. Switch to Create Account / Registration Tab
+- tapOn: "Create Account"
+- takeScreenshot: screenshots/auth_02_register_tab
+
+# 3. Fill in Registration Form
+- tapOn: "Name or Nickname"
+- inputText: "Neil Warner"
+
+- tapOn: "Email Address"
+- inputText: "neilwarner+2026Oct20+954pm@gmail.com"
+
+- tapOn: "Password"
+- inputText: "BelongPassword2026!"
+
+# 4. Select ICOC Church Affiliation
+- tapOn: "Which ICOC church do you attend?"
+- tapOn: "DFW Church"
+- takeScreenshot: screenshots/auth_03_registration_filled
+
+# 5. Submit Registration
+- tapOn: "Join Belong Fellowship"
+- takeScreenshot: screenshots/auth_04_joined_success
