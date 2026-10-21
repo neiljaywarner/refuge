@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,9 @@ import 'package:flutter/material.dart';
 /// 2. [ProfileScreen] showing account email, change password, and sign out.
 /// 3. Zero custom forms or state overhead — plain vanilla Firebase Auth.
 class SimpleAuthScreen extends StatelessWidget {
-  const SimpleAuthScreen({super.key});
+  const SimpleAuthScreen({super.key, this.auth});
+
+  final FirebaseAuth? auth;
 
   /// Opens the SimpleAuth screen directly via Navigator.
   static Future<void> show(BuildContext context) {
@@ -23,13 +26,23 @@ class SimpleAuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final providers = [EmailAuthProvider()];
+    final effectiveAuth = auth ?? (Firebase.apps.isNotEmpty ? FirebaseAuth.instance : null);
+
+    if (effectiveAuth == null) {
+      // In headless unit tests or when Firebase is uninitialized
+      return Scaffold(
+        appBar: AppBar(title: const Text('Sign In to Belong')),
+        body: const Center(child: Text('Firebase Auth offline / test mode')),
+      );
+    }
 
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: effectiveAuth.authStateChanges(),
       builder: (context, snapshot) {
-        final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
+        final user = snapshot.data ?? effectiveAuth.currentUser;
         if (user == null) {
           return SignInScreen(
+            auth: effectiveAuth,
             providers: providers,
             actions: [
               AuthStateChangeAction<UserCreated>((context, state) {
@@ -43,6 +56,7 @@ class SimpleAuthScreen extends StatelessWidget {
         }
 
         return ProfileScreen(
+          auth: effectiveAuth,
           providers: providers,
           actions: [
             SignedOutAction((context) {
