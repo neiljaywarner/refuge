@@ -130,5 +130,19 @@ void main() {
       expect(profile.icocChurchAffiliation, 'I am not a member of an ICOC church');
       expect(profile.isIcocMember, isFalse);
     });
+
+    patrolWidgetTest('renders accessible close button in header (#167)', ($) async {
+      await $.pumpWidgetAndSettle(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: MemberProfileDialog(),
+            ),
+          ),
+        ),
+      );
+
+      expect($(const Key('profile_sheet_close_button')), findsOneWidget);
+    });
   });
 }

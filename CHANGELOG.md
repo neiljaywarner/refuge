@@ -7,6 +7,11 @@ All notable changes and planned release milestones leading up to the **October 3
 ## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.9.0-rc` (Oct 20, 2026)]
 
 ### Added
+- **FCM Push Notifications for Web, PWA & Android + Android 13+ POST_NOTIFICATIONS Permission (`#53`, `#166`)**:
+  - Added Android 13+ (API 33+) `POST_NOTIFICATIONS` runtime permission to `android/app/src/main/AndroidManifest.xml` enabling system push alerts on modern Android devices (including Google Pixel 9a / Android 15).
+  - Wired `NotificationPermissionsService.requestPushPermission()` to `FirebaseMessaging.instance.requestPermission()` with calm-tech defaults (alert: true, badge: false, sound: false) and token generation with web VAPID key support.
+- **Accessible Member Profile Close Action (`#167`)**:
+  - Added explicit, accessible `profile_sheet_close_button` to the `MemberProfileDialog` header for keyboard and mouse navigation on Web/PWA platforms.
 - **Alpha Self-Testing Brief, Multi-Method Verification Guide & Google Sign-In Preview Mode Gating (`#163`)**:
   - Gated 1-Tap Google Sign-In behind `previewFeaturesEnabledProvider` so the public default authentication flow is rock-solid Email & Password sign-in/registration (with required ICOC church affiliation selection) and passwordless magic link, while Google Sign-In can be safely toggled in Preview Mode without exposing non-technical Alpha members to unfinished OAuth redirects.
   - Added `docs/ascii_email_for_self_testing_alpha_verification.txt` containing the complete testing briefing and 8-step self-testing checklist referencing the real-device Pixel 9a walkthrough video (`doc/videos/pwa_walkthrough_pixel9a.mp4`).

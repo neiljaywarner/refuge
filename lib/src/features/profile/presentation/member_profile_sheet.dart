@@ -73,6 +73,12 @@ class MemberProfileDialog extends HookConsumerWidget {
               ],
             ),
           ),
+          IconButton(
+            key: const Key('profile_sheet_close_button'),
+            icon: const Icon(Icons.close_rounded, size: 20),
+            onPressed: () => Navigator.of(context).pop(),
+            tooltip: 'Close',
+          ),
         ],
       ),
       content: SizedBox(
