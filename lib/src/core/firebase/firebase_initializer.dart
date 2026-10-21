@@ -1,6 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../config/app_flavor.dart';
 import '../logging/app_logger.dart';
@@ -76,8 +77,13 @@ class FirebaseInitializer {
       await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
       await FirebaseAnalytics.instance.setUserProperty(name: 'flavor', value: flavor.slug);
       await FirebaseAnalytics.instance.setUserProperty(name: 'app_variant', value: 'belong_refuge');
+
+      // 3. Configure Firebase UI Auth providers (Email / Password / Reset)
+      FirebaseUIAuth.configureProviders([
+        EmailAuthProvider(),
+      ]);
     } catch (e) {
-      talker.warning('⚠️ [FirebaseInitializer] Error configuring Crashlytics/Analytics: $e');
+      talker.warning('⚠️ [FirebaseInitializer] Error configuring Firebase services: $e');
     }
   }
 }

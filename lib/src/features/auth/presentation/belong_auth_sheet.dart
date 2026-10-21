@@ -205,6 +205,72 @@ class BelongAuthSheet extends HookConsumerWidget {
       }
     }
 
+    Future<void> handleForgotPassword() async {
+      final resetEmailController = TextEditingController(text: emailController.text.trim());
+      final dialogContext = context;
+
+      final requested = await showDialog<bool>(
+        context: dialogContext,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Reset Password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter your account email to receive a password reset link.',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('auth_reset_password_email_field'),
+                controller: resetEmailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  prefixIcon: Icon(Icons.alternate_email_rounded, size: 18),
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              key: const Key('auth_reset_password_cancel_button'),
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              key: const Key('auth_send_password_reset_button'),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Send Reset Link'),
+            ),
+          ],
+        ),
+      );
+
+      if (requested == true) {
+        final email = resetEmailController.text.trim();
+        if (email.isEmpty) {
+          errorMessage.value = 'Please enter your email address.';
+          return;
+        }
+        isLoading.value = true;
+        errorMessage.value = null;
+        successMessage.value = null;
+        try {
+          await ref.read(memberProfileProvider.notifier).sendPasswordResetEmail(email: email);
+          successMessage.value = 'Password reset instructions have been sent to $email.';
+        } catch (e) {
+          final authEx = AuthException.fromFirebase(e);
+          errorMessage.value = authEx.message;
+        } finally {
+          isLoading.value = false;
+        }
+      }
+    }
+
     return AlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
       contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -395,13 +461,21 @@ class BelongAuthSheet extends HookConsumerWidget {
                     label: const Text('Sign In with Password'),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Center(
-                  child: TextButton(
-                    key: const Key('auth_switch_to_magic_link_button'),
-                    onPressed: () => tabController.animateTo(2),
-                    child: const Text('Prefer no password? Sign in with Magic Link →'),
-                  ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      key: const Key('auth_forgot_password_button'),
+                      onPressed: isLoading.value ? null : handleForgotPassword,
+                      child: const Text('Forgot password?'),
+                    ),
+                    TextButton(
+                      key: const Key('auth_switch_to_magic_link_button'),
+                      onPressed: () => tabController.animateTo(2),
+                      child: const Text('Magic Link →'),
+                    ),
+                  ],
                 ),
               ],
 
