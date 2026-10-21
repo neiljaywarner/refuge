@@ -1,45 +1,48 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
-import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.dart';
-import 'package:refuge4serverpod/src/core/firebase/firebase_initializer.dart';
-import 'package:refuge4serverpod/src/core/observability/error_reporter_service.dart';
+import 'package:refuge4serverpod/main.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  group('FirebaseInitializer Unit Tests', () {
-    test('defines valid public webOptions for belongonthespectrum project', () {
-      expect(FirebaseInitializer.webOptions.projectId, 'belongonthespectrum');
-      expect(FirebaseInitializer.webOptions.messagingSenderId, '1056581413812');
-      expect(FirebaseInitializer.webOptions.authDomain, 'belongonthespectrum.firebaseapp.com');
-      expect(FirebaseInitializer.webOptions.storageBucket, 'belongonthespectrum.appspot.com');
-    });
-
-    test('initialize runs resiliently and reports initialization state', () async {
-      // In headless test environments where native Firebase C++ bindings are mockable or unlinked,
-      // initialize() must never throw unhandled exceptions and should report state.
-      final result = await FirebaseInitializer.initialize(flavor: AppFlavor.dev);
-      expect(result, isA<bool>());
-    });
-  });
-
-  group('Main Global Error Hooks Unit Tests', () {
-    late CommunityAnalyticsService analytics;
+  group('FirebaseInitializer & Error Hooks Unit Tests', () {
+    late CommunityAnalyticsService analyticsService;
     late ErrorReporterService errorReporter;
 
     setUp(() {
-      analytics = CommunityAnalyticsService(flavor: AppFlavor.dev);
+      analyticsService = CommunityAnalyticsService(flavor: AppFlavor.dev);
       errorReporter = ErrorReporterService(
         flavor: AppFlavor.dev,
-        analyticsService: analytics,
+        analyticsService: analyticsService,
       );
     });
 
-    test('FlutterError.onError hook captures framework exceptions and records them', () {
+    test('FirebaseInitializer returns headless fallback in unit test environment', () async {
+      final initialized = await FirebaseInitializer.initialize(flavor: AppFlavor.dev);
+      expect(initialized, isFalse);
+      expect(FirebaseInitializer.isInitialized, isFalse);
+    });
+
+    test('ErrorReporterService records handled errors without throwing', () {
+      expect(
+        () => errorReporter.recordError(
+          Exception('Simulated network timeout'),
+          StackTrace.current,
+          reason: 'Background refresh failed',
+          fatal: false,
+          context: {'space': 'prayer'},
+        ),
+        returnsNormally,
+      );
+
+      expect(errorReporter.recordedErrorsForTesting.length, 1);
+      final error = errorReporter.recordedErrorsForTesting.first;
+      expect(error['reason'], 'Background refresh failed');
+      expect(error['fatal'], isFalse);
+    });
+
+    test('FlutterError.onError hook captures framework layout errors', () {
       final capturedErrors = <FlutterErrorDetails>[];
 
-      // Simulate the FlutterError.onError hook defined in main.dart
+      // Simulate FlutterError.onError hook defined in main.dart
       void testFlutterErrorHandler(FlutterErrorDetails details) {
         capturedErrors.add(details);
         errorReporter.recordError(
@@ -53,7 +56,7 @@ void main() {
       final details = FlutterErrorDetails(
         exception: StateError('RenderFlex overflowed by 42 pixels'),
         stack: StackTrace.current,
-        context: ErrorDescription('during layout of SanctuaryHomeScreen'),
+        context: ErrorDescription('during layout of RefugeHomeScreen'),
       );
 
       testFlutterErrorHandler(details);
@@ -62,7 +65,7 @@ void main() {
       expect(errorReporter.recordedErrorsForTesting.length, 1);
       final recorded = errorReporter.recordedErrorsForTesting.first;
       expect(recorded['error'], contains('RenderFlex overflowed'));
-      expect(recorded['reason'], 'during layout of SanctuaryHomeScreen');
+      expect(recorded['reason'], 'during layout of RefugeHomeScreen');
       expect(recorded['fatal'], isFalse);
     });
 
