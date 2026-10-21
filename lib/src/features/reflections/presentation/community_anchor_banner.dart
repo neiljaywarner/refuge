@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/firebase/organizer_remote_config_service.dart';
@@ -28,8 +29,8 @@ class CommunityAnchorBanner extends HookConsumerWidget {
 
     return Container(
       key: const Key('organizer_message_banner'),
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const .fromLTRB(12, 8, 12, 4),
+      padding: const .symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
@@ -42,7 +43,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(5),
+            padding: const .all(5),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isContrast
@@ -51,7 +52,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
             ),
             child: const Text('♾️', style: TextStyle(fontSize: 14)),
           ),
-          const SizedBox(width: 8),
+          const Gap(8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +71,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const Gap(4),
                     Text(
                       '• belongonthespectrum.com',
                       style: TextStyle(
@@ -82,7 +83,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 1),
+                const Gap(1),
                 Text(
                   remoteConfig.welcomeMessage,
                   maxLines: 2,
@@ -105,7 +106,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
             ),
             borderRadius: BorderRadius.circular(6),
             child: Padding(
-              padding: const EdgeInsets.all(4.0),
+              padding: const .all(4.0),
               child: Icon(
                 Icons.info_outline_rounded,
                 size: 16,

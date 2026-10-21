@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../reflections/data/post_repository.dart';
@@ -62,7 +63,7 @@ class CommunitySearchView extends HookConsumerWidget {
     }).toList();
 
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const .all(12),
       child: Column(
         children: [
           TextField(
@@ -73,18 +74,18 @@ class CommunitySearchView extends HookConsumerWidget {
                   'Search posts, Memes, Online Resources / Videos, or special interests...',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: query.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
-                      onPressed: queryController.clear,
-                    )
-                  : null,
+                ? IconButton(
+                    icon: const Icon(Icons.clear_rounded),
+                    onPressed: queryController.clear,
+                  )
+                : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               isDense: true,
             ),
           ),
-          const SizedBox(height: 10),
+          const Gap(10),
           Expanded(
             child: posts.isEmpty
                 ? const Center(

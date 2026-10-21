@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 
 import '../../fellowship_spaces/domain/fellowship_space.dart';
 import 'reflections_providers.dart';
@@ -26,8 +27,8 @@ class QuietDigestBanner extends ConsumerWidget {
     if (message == null || message.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 4, 12, 6),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      margin: const .fromLTRB(12, 4, 12, 6),
+      padding: const .symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: isContrast
             ? Colors.yellow.withValues(alpha: 0.1)
@@ -38,7 +39,7 @@ class QuietDigestBanner extends ConsumerWidget {
       child: Row(
         children: [
           Icon(Icons.wb_twilight, size: 15, color: isContrast ? Colors.yellow : primaryColor),
-          const SizedBox(width: 8),
+          const Gap(8),
           Expanded(
             child: Text(
               message,

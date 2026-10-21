@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 
 import 'reflections_providers.dart';
 
@@ -25,11 +26,11 @@ class ToneFilterRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
+      padding: const .symmetric(horizontal: 14.0, vertical: 4.0),
       child: Row(
         children: [
           const Text('Filter: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-          const SizedBox(width: 6),
+          const Gap(6),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -37,7 +38,7 @@ class ToneFilterRow extends ConsumerWidget {
                 children: kToneFilters.map((f) {
                   final isSelected = activeFilter == f;
                   return Padding(
-                    padding: const EdgeInsets.only(right: 6.0),
+                    padding: const .only(right: 6.0),
                     child: ChoiceChip(
                       visualDensity: VisualDensity.compact,
                       label: Text(f, style: const TextStyle(fontSize: 10)),
