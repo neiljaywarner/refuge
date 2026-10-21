@@ -98,7 +98,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
             ),
           ),
           InkWell(
-            onTap: () => showAboutSanctuaryDialog(
+            onTap: () => showAboutRefugeDialog(
               context,
               primaryColor: primaryColor,
               isContrast: isContrast,

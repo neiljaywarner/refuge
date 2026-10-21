@@ -138,7 +138,7 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
                 children: [
                   const Expanded(
                     child: SelectableText(
-                      'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary',
+                      'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.refuge',
                       style: TextStyle(fontFamily: 'monospace', fontSize: 10),
                     ),
                   ),
@@ -150,7 +150,7 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
                       Clipboard.setData(
                         const ClipboardData(
                           text:
-                              'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary',
+                              'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.refuge',
                         ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(

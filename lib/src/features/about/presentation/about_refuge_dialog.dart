@@ -6,7 +6,7 @@ import '../../sensory_themes/domain/sensory_mode.dart';
 
 /// Shows the About Belong on the Spectrum & Sensory Settings dialog
 /// (with all hackathon / Judge API Explorer clutter removed per Issue #18).
-void showAboutSanctuaryDialog(
+void showAboutRefugeDialog(
   BuildContext context, {
   required Color primaryColor,
   required bool isContrast,
@@ -163,3 +163,19 @@ void showAboutSanctuaryDialog(
     ),
   );
 }
+
+/// Backward-compatible alias for showAboutRefugeDialog.
+void showAboutSanctuaryDialog(
+  BuildContext context, {
+  required Color primaryColor,
+  required bool isContrast,
+  SensoryMode currentMode = SensoryMode.sage,
+  ValueChanged<SensoryMode>? onSelectMode,
+}) =>
+    showAboutRefugeDialog(
+      context,
+      primaryColor: primaryColor,
+      isContrast: isContrast,
+      currentMode: currentMode,
+      onSelectMode: onSelectMode,
+    );
