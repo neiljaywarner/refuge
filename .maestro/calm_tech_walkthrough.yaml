@@ -1,4 +1,4 @@
-appId: com.example.refuge13oct2026PrototypeForServerpodHackathon
+appId: com.belongonthespectrum.sanctuary
 ---
 # ==============================================================================
 # Sanctuary Calm-Tech Maestro Flow
@@ -7,20 +7,21 @@ appId: com.example.refuge13oct2026PrototypeForServerpodHackathon
 - launchApp
 
 # Verify Header, Branding & Calm-Tech Subtitle
+- assertVisible: "Belong"
 - assertVisible: "Sanctuary"
 - assertVisible: "Calm Tech"
 
-# Verify Navigation across Fellowship Rooms
-- tapOn: "📖 #weekly-study"
-- assertVisible: "Pastor Thomas (Melbourne)"
-
-- tapOn: "📢 #announcements"
+# Verify Navigation across Canonical Spaces
+- tapOn: "General Chat"
 - assertVisible: "Space is quiet right now"
 
-- tapOn: "🙏 #prayer-sanctuary"
-- assertVisible: "David M. (UK)"
+- tapOn: "Memes"
+- assertVisible: "Memes"
 
-# Verify 4 Sensory Modes (Dark, High Contrast, Sage)
+- tapOn: "Resources"
+- assertVisible: "Resources"
+
+# Verify Sensory Modes (Clean, Dark, Contrast, Sage)
 - tapOn: "Sensory Themes"
 - tapOn: "Dark"
 - assertVisible: "Sanctuary"
@@ -32,10 +33,6 @@ appId: com.example.refuge13oct2026PrototypeForServerpodHackathon
 - tapOn: "Sensory Themes"
 - tapOn: "Sage"
 - assertVisible: "Sanctuary"
-
-# Verify Qualitative Care Affirmation
-- tapOn: "6 Praying"
-- assertVisible: "7 Praying"
 
 # Verify Unhurried Reflection Composer
 - tapOn: "Share what is on your heart in stillness..."

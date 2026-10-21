@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.dart';
 import 'package:refuge4serverpod/src/core/logging/app_logger.dart' as app_log;
+import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 /// Unified error handling and observability service delivering triple-destination
@@ -17,11 +18,13 @@ class ErrorReporterService {
   ErrorReporterService({
     required this.flavor,
     required this.analyticsService,
+    this.serverpodBackup,
     Talker? talkerInstance,
   }) : talker = talkerInstance ?? app_log.talker;
 
   final AppFlavor flavor;
   final CommunityAnalyticsService analyticsService;
+  final ServerpodTelemetryBackup? serverpodBackup;
   final Talker talker;
 
   /// In-memory ring buffer of reported errors for UI diagnostics and test inspection.
@@ -92,6 +95,19 @@ class ErrorReporterService {
         // Crashlytics failure fallback is handled by in-memory diagnostic buffer.
       }
     }
+
+    // 4. Serverpod backup telemetry ring buffer
+    try {
+      await serverpodBackup?.recordErrorReport(
+        exception,
+        stack,
+        reason: reason,
+        fatal: fatal,
+        context: sanitizedContext,
+      );
+    } catch (_) {
+      // Serverpod backup failures must never interrupt app execution.
+    }
   }
 
   /// Scrubs sensitive information (emails, auth tokens, phone numbers) before logging.
@@ -123,5 +139,10 @@ extension on String {
 final errorReporterServiceProvider = Provider<ErrorReporterService>((ref) {
   final flavor = ref.watch(appFlavorProvider);
   final analytics = ref.watch(communityAnalyticsServiceProvider);
-  return ErrorReporterService(flavor: flavor, analyticsService: analytics);
+  final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
+  return ErrorReporterService(
+    flavor: flavor,
+    analyticsService: analytics,
+    serverpodBackup: serverpodBackup,
+  );
 });
