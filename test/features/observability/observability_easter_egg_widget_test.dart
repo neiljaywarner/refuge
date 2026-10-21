@@ -20,7 +20,7 @@ void main() {
             communityAnalyticsServiceProvider.overrideWithValue(fakeAnalytics),
             errorReporterServiceProvider.overrideWithValue(fakeErrorReporter),
           ],
-          child: SanctuaryApp(
+          child: RefugeApp(
             repository: LocalPostRepository(),
           ),
         ),
@@ -49,21 +49,23 @@ void main() {
       // 4. Tap "Record Handled NFE" and verify error is captured in buffer
       await $(const Key('easter_egg_trigger_nfe_button')).tap();
       await $.pumpAndSettle();
-
-      expect(fakeErrorReporter.recordedErrorsForTesting.length, equals(1));
+      expect(fakeErrorReporter.recordedErrorsForTesting.length, 1);
       expect(
         fakeErrorReporter.recordedErrorsForTesting.first['reason'],
-        equals('Manual 7-Tap Easter Egg Verification'),
+        'Manual 7-Tap Easter Egg Verification',
       );
 
-      // 5. Tap "Emit Test Analytics Event" and verify SnackBar
+      // 5. Tap "Emit Test Analytics Event" and verify analytics event dispatched
       await $(const Key('easter_egg_trigger_analytics_button')).tap();
       await $.pumpAndSettle();
+      expect(
+        fakeAnalytics.dispatchedEventsForTesting.any((e) => e['name'] == 'easter_egg_test_event'),
+        isTrue,
+      );
 
-      // 6. Close the dialog
+      // 6. Dismiss dialog cleanly
       await $(const Key('easter_egg_close_button')).tap();
       await $.pumpAndSettle();
-
       expect($(const Key('observability_easter_egg_dialog')), findsNothing);
     },
   );

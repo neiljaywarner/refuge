@@ -8,14 +8,14 @@ void main() {
     'Patrol Hello World Widget Test: Boots Belong App, checks top bar and bottom nav',
     ($) async {
       await $.pumpWidgetAndSettle(
-        SanctuaryApp(
+        RefugeApp(
           repository: LocalPostRepository(),
         ),
       );
 
       // 1. Verify community app title and branding
       expect($('Belong'), findsOneWidget);
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
 
       // 2. Verify bottom navigation tabs are present
       expect($('Home'), findsOneWidget);

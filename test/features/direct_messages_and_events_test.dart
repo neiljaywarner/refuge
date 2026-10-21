@@ -137,7 +137,7 @@ void main() {
     'BDD (patrol_finders): Full App navigation switches into Msgs tab smoothly',
     ($) async {
       await $.pumpWidgetAndSettle(
-        SanctuaryApp(repository: LocalPostRepository()),
+        RefugeApp(repository: LocalPostRepository()),
       );
 
       // Tap bottom tab Msgs via unselected icon

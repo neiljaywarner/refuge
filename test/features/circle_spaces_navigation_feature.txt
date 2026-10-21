@@ -6,7 +6,7 @@ Feature: Circle.so Parity Spaces Navigation & Belong Community Directory
   # Driven interactively via Marionette MCP / CLI (`marionette_mcp`) and verified via `patrol_finders` (`patrolWidgetTest`)
   Scenario: Member switches between Feed and Spaces sub-tabs and explores Circle sections
     Given the Belong on the Spectrum app is running on the Home tab
-    Then I see the "Belong" header logo and "Sanctuary" subtitle
+    Then I see the "Belong" header logo and "Refuge" subtitle
     And I see the "Feed" chip (#subnav_feed_tab) selected by default
     When I tap the "Spaces" chip (#subnav_spaces_tab)
     Then I see the "PINNED" section header and "General Chat" space

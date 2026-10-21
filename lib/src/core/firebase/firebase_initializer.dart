@@ -75,7 +75,7 @@ class FirebaseInitializer {
       // 2. Configure Analytics
       await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
       await FirebaseAnalytics.instance.setUserProperty(name: 'flavor', value: flavor.slug);
-      await FirebaseAnalytics.instance.setUserProperty(name: 'app_variant', value: 'belong_sanctuary');
+      await FirebaseAnalytics.instance.setUserProperty(name: 'app_variant', value: 'belong_refuge');
     } catch (e) {
       talker.warning('⚠️ [FirebaseInitializer] Error configuring Crashlytics/Analytics: $e');
     }
