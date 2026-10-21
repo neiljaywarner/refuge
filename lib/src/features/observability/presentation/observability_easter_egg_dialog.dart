@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,29 +16,26 @@ import '../../../core/observability/error_reporter_service.dart';
 class ObservabilityEasterEggDialog extends ConsumerWidget {
   const ObservabilityEasterEggDialog({super.key});
 
-  static Future<void> show(BuildContext context) => showDialog<void>(
-    context: context,
-    builder: (context) => const ObservabilityEasterEggDialog(),
-  );
-
-  static const String adbDebugCommand =
-      'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary';
+  static Future<void> show(BuildContext context) => showDialog(
+        context: context,
+        builder: (_) => const ObservabilityEasterEggDialog(),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final analytics = ref.watch(communityAnalyticsServiceProvider);
-    final errorReporter = ref.watch(errorReporterServiceProvider);
     final theme = Theme.of(context);
+    final errorReporter = ref.watch(errorReporterServiceProvider);
+    final analytics = ref.watch(communityAnalyticsServiceProvider);
 
     return AlertDialog(
       key: const Key('observability_easter_egg_dialog'),
-      title: const Row(
+      title: Row(
         children: [
-          Text('🐣', style: TextStyle(fontSize: 22)),
-          SizedBox(width: 8),
-          Expanded(
+          const Icon(Icons.bug_report_outlined, color: Colors.orangeAccent),
+          const SizedBox(width: 8),
+          const Expanded(
             child: Text(
-              'Observability & Diagnostics',
+              'Observability Verification',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
@@ -48,64 +46,55 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Secret developer menu to verify Firebase Analytics, Crashlytics, and Talker logging.',
-              style: theme.textTheme.bodySmall,
+            const Text(
+              'Tap below to verify Firebase Crashlytics and Google Analytics events live on device or emulator.',
+              style: TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 16),
 
-            // 1. Force Handled Non-Fatal Error (NFE)
-            FilledButton.tonalIcon(
+            // 1. Trigger Handled Non-Fatal Error (NFE)
+            OutlinedButton.icon(
               key: const Key('easter_egg_trigger_nfe_button'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.amber.withValues(alpha: 0.15),
-                foregroundColor: Colors.amber.shade900,
-              ),
-              onPressed: () async {
-                await errorReporter.recordError(
+              onPressed: () {
+                errorReporter.recordError(
                   Exception('Test Handled NFE from 7-Tap Easter Egg'),
                   StackTrace.current,
                   reason: 'Manual 7-Tap Easter Egg Verification',
                   fatal: false,
-                  context: {'source': 'easter_egg_dialog', 'test_mode': 'non_fatal'},
-                );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('⚠️ Handled NFE recorded to Crashlytics, Analytics & Talker!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.warning_amber_rounded, size: 18),
-              label: const Text('Record Handled NFE'),
-            ),
-            const SizedBox(height: 8),
-
-            // 2. Force Test Analytics Event
-            FilledButton.tonalIcon(
-              key: const Key('easter_egg_trigger_analytics_button'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.blue.withValues(alpha: 0.15),
-                foregroundColor: Colors.blue.shade800,
-              ),
-              onPressed: () async {
-                await analytics.logEvent(
-                  'easter_egg_test_event',
-                  parameters: {
-                    'source': 'easter_egg_dialog',
+                  context: {
+                    'screen': 'easter_egg_dialog',
                     'timestamp': DateTime.now().toIso8601String(),
                   },
                 );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('📊 Test event logged to Firebase Analytics & DebugView!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✅ Handled NFE logged to Crashlytics, Analytics & Talker'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.warning_amber_rounded, size: 18),
+              label: const Text('Trigger Handled NFE'),
+            ),
+            const SizedBox(height: 8),
+
+            // 2. Trigger Custom Analytics Event
+            OutlinedButton.icon(
+              key: const Key('easter_egg_trigger_analytics_button'),
+              onPressed: () {
+                analytics.logEvent(
+                  'easter_egg_test_event',
+                  parameters: {
+                    'trigger_source': '7_tap_header',
+                    'time': DateTime.now().toIso8601String(),
+                  },
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('📊 Analytics event "easter_egg_test_event" dispatched'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               },
               icon: const Icon(Icons.analytics_outlined, size: 18),
               label: const Text('Emit Test Analytics Event'),
@@ -120,7 +109,7 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
                 foregroundColor: theme.colorScheme.onError,
               ),
               onPressed: () {
-                if (Firebase.apps.isNotEmpty) {
+                if (Firebase.apps.isNotEmpty && !kIsWeb) {
                   FirebaseCrashlytics.instance.crash();
                 } else {
                   throw StateError('Simulated Fatal Crash from 7-Tap Easter Egg');
@@ -142,34 +131,27 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: SelectableText(
-                adbDebugCommand,
-                style: const TextStyle(fontSize: 10, fontFamily: 'monospace'),
+              child: const SelectableText(
+                'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary',
+                style: TextStyle(fontFamily: 'monospace', fontSize: 10),
               ),
-            ),
-            const SizedBox(height: 6),
-            OutlinedButton.icon(
-              key: const Key('easter_egg_copy_adb_button'),
-              style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),
-              onPressed: () {
-                Clipboard.setData(const ClipboardData(text: adbDebugCommand));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('📋 ADB command copied to clipboard!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.copy_rounded, size: 14),
-              label: const Text('Copy ADB Command', style: TextStyle(fontSize: 11)),
             ),
             const SizedBox(height: 8),
             Text(
-              'Recent Diagnostic Entries: ${errorReporter.recordedErrorsForTesting.length}',
-              style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade600),
+              'Recent In-Memory Errors (${errorReporter.recordedErrorsForTesting.length}):',
+              style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              errorReporter.recordedErrorsForTesting.isEmpty
+                  ? 'No errors recorded in this session.'
+                  : errorReporter.recordedErrorsForTesting
+                      .map((e) => '• [${e['fatal'] == true ? 'FATAL' : 'HANDLED'}] ${e['reason']}')
+                      .join('\n'),
+              style: const TextStyle(fontSize: 10, fontFamily: 'monospace'),
             ),
           ],
         ),
@@ -178,7 +160,7 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
         TextButton(
           key: const Key('easter_egg_close_button'),
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: const Text('Done'),
         ),
       ],
     );
