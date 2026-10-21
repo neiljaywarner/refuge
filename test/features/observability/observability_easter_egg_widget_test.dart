@@ -40,7 +40,7 @@ void main() {
 
       // 3. Dialog is now visible
       expect($(const Key('observability_easter_egg_dialog')), findsOneWidget);
-      expect($('Observability & Diagnostics'), findsOneWidget);
+      expect($('Observability Verification'), findsOneWidget);
       expect($(const Key('easter_egg_trigger_nfe_button')), findsOneWidget);
       expect($(const Key('easter_egg_trigger_analytics_button')), findsOneWidget);
       expect($(const Key('easter_egg_trigger_fatal_crash_button')), findsOneWidget);

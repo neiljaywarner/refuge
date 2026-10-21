@@ -129,14 +129,39 @@ class ObservabilityEasterEggDialog extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const SelectableText(
-                'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary',
-                style: TextStyle(fontFamily: 'monospace', fontSize: 10),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: SelectableText(
+                      'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary',
+                      style: TextStyle(fontFamily: 'monospace', fontSize: 10),
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('easter_egg_copy_adb_button'),
+                    icon: const Icon(Icons.copy, size: 14),
+                    tooltip: 'Copy ADB command',
+                    onPressed: () {
+                      Clipboard.setData(
+                        const ClipboardData(
+                          text:
+                              'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary',
+                        ),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('📋 ADB command copied to clipboard'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
