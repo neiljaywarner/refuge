@@ -43,9 +43,7 @@ Chrome displays the native install prompt showing the official **Belong on the S
 ---
 
 ### Step 5: Installed Right to Your Home Screen
-Android automatically provisions the WebAPK and places the **Belong** icon directly onto your home screen dock and app drawer alongside your other apps.
-
-![Step 5: Home Screen](../../doc/screenshots/pwa_home_screen_pixel9a.png)
+Android automatically provisions the WebAPK and places the **Belong** icon directly onto your device home screen and app drawer alongside your other apps. Once installed, tap the Belong icon to launch.
 
 ---
 
