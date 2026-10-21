@@ -10,8 +10,12 @@ class LocalPostRepository implements PostRepository {
   final StreamController<List<Post>> _controller =
       StreamController<List<Post>>.broadcast();
 
-  LocalPostRepository() {
-    _seedInitialData();
+  LocalPostRepository({bool isDevMode = true, List<Post>? initialPosts}) {
+    if (initialPosts != null) {
+      _store.addAll(initialPosts);
+    } else if (isDevMode) {
+      _seedInitialData();
+    }
   }
 
   void _seedInitialData() {

@@ -100,7 +100,7 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
   // debug builds (red screen found while driving the Pixel, #73).
   runApp(
     RefugeApp(
-      repository: PostRepositoryFactory.create(),
+      repository: PostRepositoryFactory.create(flavor: flavor),
       overrides: [
         appFlavorProvider.overrideWithValue(flavor),
         communityAnalyticsServiceProvider.overrideWithValue(analytics),
