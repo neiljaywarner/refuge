@@ -7,6 +7,11 @@ All notable changes and planned release milestones leading up to the **October 3
 ## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.9.0-rc` (Oct 20, 2026)]
 
 ### Added
+- **Web Push & Native FCM Evaluation with Calm-Tech Digest Ethics (`#154`)**:
+  - Background Service Worker (`web/firebase-messaging-sw.js`) implementing W3C Web Push and Firebase Cloud Messaging with calm-tech tags, non-intrusive sound policies, and single-instance digest deduplication.
+  - `CalmNotificationPreferences` domain model and `NotificationPermissionsService` StateNotifier (`calmNotificationPreferencesProvider`) featuring 4 predictable schedules (Twice Daily Digest, Morning Only, Immediate Gentle, Muted) and transparent permission guards for Mobile Safari.
+  - Interactive `CalmNotificationPreferencesSheet` accessible via `CalmNotificationsView` app bar tune button and preferences action card.
+  - Comprehensive unit and widget tests in `test/features/notifications/notification_preferences_test.dart` (+145 tests green).
 - **PWA Installation Walkthrough, Video Demo & In-App Guide (`#153`)**:
   - Full-resolution physical glass video recording (`doc/videos/pwa_walkthrough_pixel9a.mp4`, 5.0 MB) and real-device step-by-step screenshots (`doc/screenshots/*`) on Google Pixel 9a demonstrating 1-tap Chrome WebAPK install and launcher dock placement.
   - Member-facing educational guides in GitHub Wiki (`PWA-Installation-and-Mobile-Web-Guide.md` and `PWA-Guide-for-Members-and-Organizers.md`) addressing zero storage bloat (< 5 MB), instant updates, and sandboxed calm privacy.

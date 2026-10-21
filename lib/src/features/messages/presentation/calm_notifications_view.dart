@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:refuge4serverpod/src/features/notifications/presentation/calm_notification_preferences_sheet.dart';
 
 /// Calm Notification Bell view (Issue #27).
 /// Presents unhurried, digestible notifications without high-stress red dots or urgency badges.
@@ -51,6 +52,14 @@ class CalmNotificationsView extends StatelessWidget {
                 onPressed: onBackToHome,
               )
             : null,
+        actions: [
+          IconButton(
+            key: const Key('notification-preferences-button'),
+            icon: const Icon(Icons.tune_rounded),
+            tooltip: 'Calm Notification Preferences',
+            onPressed: () => CalmNotificationPreferencesSheet.show(context),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -73,6 +82,37 @@ class CalmNotificationsView extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            key: const Key('open-preferences-card'),
+            onTap: () => CalmNotificationPreferencesSheet.show(context),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.tune_rounded, size: 18, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Configure Delivery Schedule & Push Digests',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, size: 18, color: theme.colorScheme.primary),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
