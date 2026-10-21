@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:refuge4serverpod/src/core/config/preview_mode_provider.dart';
 import 'package:refuge4serverpod/src/features/auth/presentation/belong_auth_sheet.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
 
 void main() {
-  group('BelongAuthSheet Widget & BDD Tests (#119)', () {
-    Widget buildTestWidget({CommunityBrandConfig? brandConfig}) {
+  group('BelongAuthSheet Widget & BDD Tests (#119, #163)', () {
+    Widget buildTestWidget({
+      CommunityBrandConfig? brandConfig,
+      bool? previewModeEnabled,
+    }) {
       return ProviderScope(
         overrides: [
           if (brandConfig != null)
             communityBrandConfigProvider.overrideWithValue(brandConfig),
+          if (previewModeEnabled != null)
+            previewModeUserOverrideProvider.overrideWith((ref) => previewModeEnabled),
         ],
         child: const MaterialApp(
           home: Scaffold(
@@ -104,8 +110,15 @@ void main() {
       );
     });
 
-    patrolWidgetTest('renders 1-Tap Google Sign-In button and handles click', ($) async {
+    patrolWidgetTest('hides Google Sign-In button by default when preview mode is disabled (#163)', ($) async {
       await $.pumpWidgetAndSettle(buildTestWidget());
+
+      expect($(const Key('auth_google_sign_in_button')), findsNothing);
+      expect($('Continue with Google'), findsNothing);
+    });
+
+    patrolWidgetTest('renders Google Sign-In button when preview mode is enabled and handles click (#163)', ($) async {
+      await $.pumpWidgetAndSettle(buildTestWidget(previewModeEnabled: true));
 
       expect($(const Key('auth_google_sign_in_button')), findsOneWidget);
       expect($('Continue with Google'), findsOneWidget);

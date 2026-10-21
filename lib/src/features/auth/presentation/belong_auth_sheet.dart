@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../../profile/domain/member_profile.dart';
 import '../domain/auth_exception.dart';
+import '../../../core/config/preview_mode_provider.dart';
 
 /// Neurodivergent-friendly authentication dialog & sheet for Belong.
 ///
@@ -35,6 +36,7 @@ class BelongAuthSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final brand = ref.watch(communityBrandConfigProvider);
     final currentProfile = ref.watch(memberProfileProvider);
+    final previewFeaturesEnabled = ref.watch(previewFeaturesEnabledProvider);
 
     final tabController = useTabController(initialLength: 3, initialIndex: initialTab);
     final activeTabIndex = useState<int>(initialTab);
@@ -249,44 +251,46 @@ class BelongAuthSheet extends HookConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  key: const Key('auth_google_sign_in_button'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              if (previewFeaturesEnabled) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const Key('auth_google_sign_in_button'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    ref.read(memberProfileProvider.notifier).signInWithOAuth('google');
-                    Navigator.of(context).pop();
-                  },
-                  icon: const Icon(Icons.g_mobiledata_rounded, size: 24),
-                  label: const Text(
-                    'Continue with Google',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    onPressed: () {
+                      ref.read(memberProfileProvider.notifier).signInWithOAuth('google');
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(Icons.g_mobiledata_rounded, size: 24),
+                    label: const Text(
+                      'Continue with Google',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              const Row(
-                children: [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'or with email',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                const SizedBox(height: 12),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        'or with email',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
                     ),
-                  ),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              const SizedBox(height: 10),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
               if (errorMessage.value != null) ...[
                 Container(
                   key: const Key('auth_error_banner'),
