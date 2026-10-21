@@ -17,7 +17,7 @@ In an intensive 24-hour sprint preceding the October 31 cutover deadline, the en
 - **Truthful Semantic Release Notes**: Automated `tool/deploy_release.dart` to generate release notes strictly from actual merged GitHub PRs.
 
 ### 2. Physical Device Driving & Real Glass Verification
-- Automated driving of the connected **Google Pixel 9a (`56091JEBF14039`)** using Marionette and Patrol.
+- Automated driving of the connected **Google Pixel 9a / Android device** using Marionette and Patrol.
 - **Two Real-World Bugs Caught & Fixed on Glass**:
   1. 🛑 **Riverpod Red-Screen Runtime Crash**: A nested `ProviderScope` in debug builds caused root providers to fail. Fixed by consolidating into a single root `ProviderScope` with `overrides`.
   2. 🛑 **ChoiceChip Viewport Squeeze**: Default chip checkmarks caused severe text truncation on 411dp mobile screens. Resolved with custom label padding and `showCheckmark: false`.

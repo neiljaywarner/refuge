@@ -9,7 +9,7 @@
 
 ## 🧭 Why Run on Firebase Test Lab?
 
-While local testing on the physical **Google Pixel 9a (`56091JEBF14039`)** and **Medium Phone Emulator (`emulator-5554`)** provides rapid inner-loop developer feedback, **Firebase Test Lab** provides:
+While local testing on the physical **Google Pixel 9a** and **Android Emulator (`emulator-5554`)** provides rapid inner-loop developer feedback, **Firebase Test Lab** provides:
 1. **Diverse Device Matrix**: Automated testing across multiple Android API levels (Android 12, 13, 14, 15) and form factors (Pixel 7, Samsung Galaxy, tablets) without owning physical hardware.
 2. **Video & Performance Recordings**: Every test execution automatically captures screen video, CPU/memory profiles, and logcat output in the Firebase Console.
 3. **Release Packaging Gate**: Confirms that release/debug ProGuard rules, R8 shrinking, and Android Gradle dependencies compile cleanly.
