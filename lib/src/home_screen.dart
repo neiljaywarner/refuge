@@ -35,14 +35,14 @@ import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 /// Sub-navigation mode below the Belong logo inside the `Home` bottom tab.
 enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory }
 
-/// Main screen of **Belong on the Spectrum** (powered by Refuge / Sanctuary),
+/// Main screen of **Belong on the Spectrum** (powered by Refuge),
 /// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
 /// architecture (#18, #22, #23, #26, #35).
-class SanctuaryHomeScreen extends HookConsumerWidget {
+class RefugeHomeScreen extends HookConsumerWidget {
   final PostRepository? repository;
   final ThemeNotifier? themeNotifier;
 
-  const SanctuaryHomeScreen({super.key, this.repository, this.themeNotifier});
+  const RefugeHomeScreen({super.key, this.repository, this.themeNotifier});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -342,7 +342,7 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
                           ),
                           const SizedBox(width: 6),
                           const Text(
-                            'Sanctuary',
+                            'Refuge',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -359,7 +359,7 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isLiveServerpod
-                                   ? const Color(0xFF4CAF50)
+                                  ? const Color(0xFF4CAF50)
                                   : const Color(0xFF68A67D),
                             ),
                           ),
@@ -439,7 +439,7 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
             tooltip: 'About Belong',
             icon: const Icon(Icons.info_outline_rounded, size: 18),
             visualDensity: VisualDensity.compact,
-            onPressed: () => showAboutSanctuaryDialog(
+            onPressed: () => showAboutRefugeDialog(
               context,
               primaryColor: primaryColor,
               isContrast: isContrast,
@@ -518,8 +518,8 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
   }
 }
 
-/// Alias for SanctuaryHomeScreen to support Refuge / Belong branding.
-typedef RefugeHomeScreen = SanctuaryHomeScreen;
+/// Backward-compatible alias for SanctuaryHomeScreen.
+typedef SanctuaryHomeScreen = RefugeHomeScreen;
 
 class _BelongSubHeaderBar extends StatelessWidget {
   const _BelongSubHeaderBar({
