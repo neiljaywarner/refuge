@@ -43,7 +43,7 @@ class _SanctuaryAppContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'Sanctuary Digital Clubhouse',
+    title: 'Belong',
     theme: SensoryThemeData.getTheme(themeNotifier.mode),
     home: SanctuaryHomeScreen(repository: repository, themeNotifier: themeNotifier),
   );

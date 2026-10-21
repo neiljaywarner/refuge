@@ -4,7 +4,7 @@
     <!-- Android 13+ (API 33+) runtime push notifications for FCM calm digests -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="Sanctuary"
+        android:label="Belong"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
