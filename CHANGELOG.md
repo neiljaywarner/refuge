@@ -16,7 +16,16 @@ All notable changes, accomplishments, and planned release milestones leading up 
   - Added attached meme thumbnail banner in `ReflectionComposer` and rounded media card rendering with loading states and graceful error fallback in `ReflectionCard`.
   - 8 unit and BDD tests passing via `patrol_finders` (`test/features/memes/calm_meme_and_gif_test.dart`).
 
-#### 2. Triple Observability & Serverpod Telemetry Backup (PR #148, PR #180)
+#### 2. Triple Observability, Firebase Lifecycle & Serverpod Telemetry Backup (PR #148, PR #180, PR #184, PR #186)
+- **Firebase Lifecycle Initializer & Error Forwarding (`#183`, PR #184)**:
+  - Resolved root cause of silent telemetry bypass by building `FirebaseInitializer` (`lib/src/core/firebase/firebase_initializer.dart`) with public `webOptions`, platform fallback, and automatic Crashlytics & Analytics collection activation.
+  - Guarded Crashlytics with `!kIsWeb` across core services and `main.dart` to prevent web invocation exceptions.
+  - Wired `main_dev.dart`, `main_prod.dart`, and `runWithFlavor` as async with `await FirebaseInitializer.initialize(flavor: flavor)`.
+  - Added 4 automated tests verifying `FlutterError.onError` and `PlatformDispatcher.onError` forwarding to the error reporter.
+- **Main Re-exports Clean-up & Easter Egg ADB Copy (`#185`, PR #186)**:
+  - Re-exported `reflections_providers.dart` in `lib/main.dart` and eliminated legacy/duplicate symbols for 100% CodeWithAndrea feature-first cleanliness.
+  - Added 1-tap clipboard copy button (`Key('easter_egg_copy_adb_button')`) for `adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.sanctuary` in the 7-Tap Developer Easter Egg dialog.
+  - Verified 165/165 tests pass green across the entire test suite via Dart MCP server.
 - **Serverpod Telemetry Backup & CLI Audit (`#179`, PR #180)**:
   - Built `ServerpodTelemetryBackup` ring buffer service with FIFO eviction ensuring conversion funnels and error logs are safely preserved even if Firebase is unreachable.
   - Dual-dispatched all user journey analytics and error reports into Serverpod backup from `ErrorReporterService` and `CommunityAnalyticsService`.
@@ -56,15 +65,15 @@ All notable changes, accomplishments, and planned release milestones leading up 
 #### 6. Testing, BDD & Zero-Boilerplate Standardization (PR #162, PR #174, PR #180)
 - **100% Patrol Finders Standardization (`#161`, PR #162)**:
   - Replaced verbose `tester.widget(...)` and `waitUntilExists` boilerplate with concise, robust `$` syntax from `package:patrol_finders` across all widget and integration tests.
-  - **161/161 Automated Tests Passing Green (100%)** via Dart MCP `run_tests`.
+  - **165/165 Automated Tests Passing Green (100%)** via Dart MCP `run_tests`.
   - **0 Static Analysis Errors** across `lib/`, `test/`, and `tool/` via Dart MCP `analyze_files`.
 - **Physical Glass & Marionette Driving**:
   - Live VM Service RPC driving on connected Google Pixel 9a (Android 15) auditing interactive elements and navigation flows.
 
-#### 7. DevOps Velocity & Zero-Terminal-Push Enforcement (PR #160, PR #170, PR #180)
+#### 7. DevOps Velocity & Zero-Terminal-Push Enforcement (PR #160, PR #170, PR #180, PR #184, PR #186)
 - **Mandatory GitHub MCP Server Rule (`#160`)**:
   - Strictly enforced GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`) eliminating 100% of interactive terminal push popups.
-- **39 Atomic Pull Requests Merged Cleanly**:
+- **41 Atomic Pull Requests Merged Cleanly**:
   - All feature branches, fixes, and docs merged via squash merges with continuous CodeRabbit triage.
 
 ---
