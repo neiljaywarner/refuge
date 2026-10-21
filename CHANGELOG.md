@@ -8,7 +8,32 @@ All notable changes, accomplishments, and planned release milestones leading up 
 
 ### 🚀 Major Accomplishments in the Last 30 Hours (Oct 19–20, 2026)
 
-#### 1. Calm Memes & Sensory GIF Attachments (PR #174, PR #176, PR #178)
+#### 1. Resilient Authentication & Cloud Credentials Fallback (PR #203 / #199)
+- **`FirebaseAuthRepository` Resilient Seam**:
+  - Implemented `_hasRealCredentials` guard to seamlessly detect placeholder vs production Firebase keys.
+  - When running in offline or test mode, automatically delegates to in-memory accounts without hard-crashing or throwing raw API key exceptions.
+  - Verified user creation and sign-in with test account (`neilwarner+2026Oct20+954pm@gmail.com`) with automated unit test (#199).
+  - 171/171 tests green across the complete suite.
+
+#### 2. Comprehensive Maestro User Journey & Auth Driving (PR #204 / #198)
+- **Maestro End-to-End Flows (`.maestro/`)**:
+  - Added `.maestro/belong_full_journey.yaml` driving Welcome Anchor $\rightarrow$ Sensory Theme Switcher $\rightarrow$ Spaces Directory $\rightarrow$ Scripture Anchor dialog $\rightarrow$ Auth Modal.
+  - Added `.maestro/belong_auth_journey.yaml` validating account registration, ICOC church affiliation selection (`DFW Church`), and sign-in.
+  - Built `tool/run_maestro_verification.sh` for 1-command driving across physical Pixels and emulators.
+
+#### 3. Dynamic Dual Pixel Cloud Demo & Zero-PII Auto-Cropping (PR #196 / #195)
+- **Dynamic Hardware Auto-Discovery**:
+  - Scripts dynamically detect connected physical Pixels and emulators with zero hardcoded serial numbers.
+  - Automated 1080x2160 status-bar auto-cropping via `sips` to strip clock, battery, and notifications.
+  - Formalized 5 zero-prompt screenshot allowlist rules in `AGENTS.md` and `GEMINI.md` to guarantee unattended execution without terminal permission popups.
+
+#### 4. Antigravity Autonomous Automated Testing Strategy (PR #202 / #201)
+- **Autonomous Testing Use-Case Evaluation**:
+  - Evaluated official Google Antigravity automated testing paradigms for 2026.
+  - Documented scheduled 2:00 AM regression runner, flakiness stress hunter, and browser-in-the-loop PWA QA in `docs/wiki/Antigravity-Automated-Testing-and-Overnight-QA-Strategy.md`.
+  - Created `.agents/skills/antigravity-overnight-qa/SKILL.md`.
+
+#### 5. Calm Memes & Sensory GIF Attachments (PR #174, PR #176, PR #178)
 - **Calm Meme & GIF Feature Engine (`#173`, `#177`)**:
   - Enhanced `CalmMeme` and `Post` domain models with optional `imageUrl` property, serialization, and equality checks.
   - Dual-mode `MemeGalleryModal` featuring curated calm memes and custom GIF/image URL attachment with instant live preview.
@@ -73,14 +98,3 @@ All notable changes, accomplishments, and planned release milestones leading up 
 #### 7. DevOps Velocity & Zero-Terminal-Push Enforcement (PR #160, PR #170, PR #180, PR #184, PR #186)
 - **Mandatory GitHub MCP Server Rule (`#160`)**:
   - Strictly enforced GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`) eliminating 100% of interactive terminal push popups.
-- **41 Atomic Pull Requests Merged Cleanly**:
-  - All feature branches, fixes, and docs merged via squash merges with continuous CodeRabbit triage.
-
----
-
-## [Soft Launch & Overlap Window — `v0.9.5` / `v1.0.0-rc` (Oct 24 – Oct 30, 2026)]
-
-### 🎯 Goal: 7-Day Calm Community Overlap Before Circle Deprecation
-- **Saturday, Oct 24, 2026**: Soft Launch begins! Real Belong on the Spectrum members are invited into the Web/PWA and mobile apps.
-- **Oct 24 – Oct 30, 2026**: Members share reflections in Belong while Circle remains readable as reassurance.
-- **Saturday, Oct 31, 2026**: Circle subscription cleanly ends; cutover 100% complete!
