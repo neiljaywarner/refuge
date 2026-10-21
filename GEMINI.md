@@ -24,6 +24,7 @@
 - Worktrees live in `/Users/neil/belongonthespectrum/.worktrees/issue-<NUM>-<slug>`.
 - Open atomic PRs referencing `Closes #<NUM>`.
 - **Mandatory Verification Step / Comment on EVERY Issue & PR (UI & Non-UI)**: Every ticket and PR must include exact confirmation steps, commands executed, and verified results (plus Before/After screenshots for UI changes).
+- **Mandatory CodeRabbit Completion Wait Protocol**: When opening a PR, trigger `@coderabbitai review` and ALWAYS wait/poll until CodeRabbit finishes analyzing and posts its review comments before merging. NEVER squash-merge while review is in progress (`"Currently processing new changes"`). Triage all findings into focused GitHub issues.
 
 ## 3. Real Device Driving & *Mandatory Before/After Visual Evidence*
 - Always drive the connected Google Pixels (`56091JEBF14039`, `58221JEBF20835`) or physical Android device using Maestro, Marionette, and Patrol (falling back to `emulator-5554` or Chrome when unplugged). Never declare UI features complete based on headless tests alone.
