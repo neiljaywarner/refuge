@@ -8,6 +8,7 @@ import 'core/presentation/coming_soon_view.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/belong_auth_sheet.dart';
 import 'features/auth/presentation/belong_firebase_auth_screen.dart';
+import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
@@ -151,11 +152,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   visualDensity: VisualDensity.compact,
                 ),
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const BelongFirebaseSignInScreen(),
-                    ),
-                  );
+                  SimpleAuthScreen.show(context);
                 },
                 icon: const Icon(Icons.login_rounded, size: 15),
                 label: const Text(

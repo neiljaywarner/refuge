@@ -24,6 +24,7 @@ export 'src/core/presentation/coming_soon_view.dart';
 export 'src/features/about/presentation/about_refuge_dialog.dart';
 export 'src/features/auth/presentation/belong_auth_sheet.dart';
 export 'src/features/auth/presentation/belong_firebase_auth_screen.dart';
+export 'src/features/auth/presentation/simple_auth.dart';
 export 'src/features/branding/domain/community_brand_config.dart';
 export 'src/features/branding/presentation/brand_config_provider.dart';
 export 'src/features/feedback/domain/feedback_and_voting_models.dart';
