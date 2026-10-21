@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/messages/presentation/calm_notifications_view.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/notification_permissions_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
@@ -48,15 +49,15 @@ void main() {
   });
 
   group('CalmNotificationPreferencesSheet Widget Tests', () {
-    testWidgets('renders preferences sheet and updates schedule', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
+    patrolWidgetTest('renders preferences sheet and updates schedule', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
+      await $.pumpWidgetAndSettle(
         const ProviderScope(
           child: MaterialApp(
             home: CalmNotificationsView(),
@@ -64,45 +65,39 @@ void main() {
         ),
       );
 
-      expect(find.text('Calm Notifications'), findsOneWidget);
-      expect(find.byKey(const Key('notification-preferences-button')), findsOneWidget);
-      expect(find.byKey(const Key('open-preferences-card')), findsOneWidget);
+      expect($('Calm Notifications'), findsOneWidget);
+      expect($(const Key('notification-preferences-button')), findsOneWidget);
+      expect($(const Key('open-preferences-card')), findsOneWidget);
 
       // Open preferences via action button
-      await tester.tap(find.byKey(const Key('notification-preferences-button')));
-      await tester.pumpAndSettle();
+      await $(const Key('notification-preferences-button')).tap();
 
-      expect(find.text('Calm Notification Ethics'), findsOneWidget);
-      expect(find.byKey(const ValueKey('toggle-notifications-switch')), findsOneWidget);
+      expect($('Calm Notification Ethics'), findsOneWidget);
+      expect($(const ValueKey('toggle-notifications-switch')), findsOneWidget);
 
       // Toggle notifications
-      await tester.tap(find.byKey(const ValueKey('toggle-notifications-switch')));
-      await tester.pumpAndSettle();
+      await $(const ValueKey('toggle-notifications-switch')).tap();
 
       // Switch to Morning Only
-      final morningRadio = find.byKey(const ValueKey('schedule-radio-morningOnly'));
-      expect(morningRadio, findsOneWidget);
-      await tester.tap(morningRadio);
-      await tester.pumpAndSettle();
+      expect($(const ValueKey('schedule-radio-morningOnly')), findsOneWidget);
+      await $(const ValueKey('schedule-radio-morningOnly')).tap();
 
       // Tap Save & Return
-      final saveBtn = find.byKey(const ValueKey('save-notification-preferences-button'));
-      expect(saveBtn, findsOneWidget);
-      await tester.tap(saveBtn);
-      await tester.pumpAndSettle();
+      expect($(const ValueKey('save-notification-preferences-button')), findsOneWidget);
+      await $(const ValueKey('save-notification-preferences-button')).tap();
 
-      expect(find.text('Calm Notification Ethics'), findsNothing);
+      expect($('Calm Notification Ethics'), findsNothing);
     });
 
-    testWidgets('renders iOS web without PWA warning banner when applicable', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
+    patrolWidgetTest('renders iOS web without PWA warning banner when applicable', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
+      await $.pumpWidgetAndSettle(
         ProviderScope(
           overrides: [
             calmNotificationPreferencesProvider.overrideWith((ref) {
@@ -119,9 +114,9 @@ void main() {
         ),
       );
 
-      expect(find.text('Calm Notification Ethics'), findsOneWidget);
+      expect($('Calm Notification Ethics'), findsOneWidget);
       expect(
-        find.textContaining('Apple iOS Requirement: Mobile Safari requires adding Belong to your Home Screen'),
+        $(RegExp('Apple iOS Requirement: Mobile Safari requires adding Belong to your Home Screen')),
         findsOneWidget,
       );
     });

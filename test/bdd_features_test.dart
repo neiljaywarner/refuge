@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
 
 void main() {
@@ -10,76 +11,71 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpSanctuary(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1200, 1600);
-      tester.view.devicePixelRatio = 1.0;
+    Future<void> pumpSanctuary(PatrolTester $) async {
+      $.tester.view.physicalSize = const Size(1200, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
     }
 
-    testWidgets(
+    patrolWidgetTest(
       'Scenario: Switching between fellowship spaces displays space-specific reflections',
-      (WidgetTester tester) async {
+      ($) async {
         // Given the Sanctuary application is open in default '#prayer-sanctuary' room
-        await pumpSanctuary(tester);
+        await pumpSanctuary($);
 
         // Then I should see reflections from 'David M. (UK)'
-        expect(find.text('David M. (UK)'), findsOneWidget);
+        expect($('David M. (UK)'), findsOneWidget);
         // And I should not see reflections from 'Pastor Thomas (Melbourne)'
-        expect(find.text('Pastor Thomas (Melbourne)'), findsNothing);
+        expect($('Pastor Thomas (Melbourne)'), findsNothing);
 
         // When I tap on the '📖 #weekly-study' space chip
-        await tester.tap(find.text('📖 #weekly-study'));
-        await tester.pumpAndSettle();
+        await $('📖 #weekly-study').tap();
 
         // Then I should see reflections from 'Pastor Thomas (Melbourne)'
-        expect(find.text('Pastor Thomas (Melbourne)'), findsOneWidget);
+        expect($('Pastor Thomas (Melbourne)'), findsOneWidget);
         // And I should not see reflections from 'David M. (UK)'
-        expect(find.text('David M. (UK)'), findsNothing);
+        expect($('David M. (UK)'), findsNothing);
       },
     );
 
-    testWidgets('Scenario: Visiting an empty fellowship room shows peaceful stillness', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Visiting an empty fellowship room shows peaceful stillness', (
+      $,
     ) async {
-      await pumpSanctuary(tester);
+      await pumpSanctuary($);
 
       // When I tap on '#announcements' space chip
-      await tester.tap(find.text('📢 #announcements'));
-      await tester.pumpAndSettle();
+      await $('📢 #announcements').tap();
 
       // Then I should see 'Space is quiet right now'
-      expect(find.textContaining('Space is quiet right now'), findsOneWidget);
+      expect($(RegExp('Space is quiet right now')), findsOneWidget);
       // And no chaotic error banners exist
-      expect(find.textContaining('Error'), findsNothing);
+      expect($(RegExp('Error')), findsNothing);
     });
 
-    testWidgets('Scenario: Filtering reflections by mindful intent tags', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Filtering reflections by mindful intent tags', (
+      $,
     ) async {
-      await pumpSanctuary(tester);
+      await pumpSanctuary($);
 
       // When I select the '[Comfort Only]' intent filter chip
-      final comfortFilter = find.widgetWithText(ChoiceChip, '[Comfort Only]');
-      await tester.tap(comfortFilter.first);
-      await tester.pumpAndSettle();
+      final comfortFilter = $(find.widgetWithText(ChoiceChip, '[Comfort Only]'));
+      await comfortFilter.first.tap();
 
       // Then I should see reflections from 'Elena R. (Colorado)'
-      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
+      expect($('Elena R. (Colorado)'), findsOneWidget);
       // And I should not see reflections from 'David M. (UK)'
-      expect(find.text('David M. (UK)'), findsNothing);
+      expect($('David M. (UK)'), findsNothing);
 
       // When I select the 'All' intent filter chip
-      await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
-      await tester.pumpAndSettle();
+      await $(find.widgetWithText(ChoiceChip, 'All')).tap();
 
       // Then I should see reflections from both
-      expect(find.text('David M. (UK)'), findsOneWidget);
-      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
+      expect($('David M. (UK)'), findsOneWidget);
+      expect($('Elena R. (Colorado)'), findsOneWidget);
     });
   });
 
@@ -90,65 +86,54 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpSanctuary(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1200, 1600);
-      tester.view.devicePixelRatio = 1.0;
+    Future<void> pumpSanctuary(PatrolTester $) async {
+      $.tester.view.physicalSize = const Size(1200, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
     }
 
-    testWidgets('Scenario: Toggling through all 4 sensory themes applies appropriate styling', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Toggling through all 4 sensory themes applies appropriate styling', (
+      $,
     ) async {
-      await pumpSanctuary(tester);
+      await pumpSanctuary($);
 
       // When I tap 'Dark' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Dark'));
-      await tester.pumpAndSettle();
-      expect(find.text('Sanctuary'), findsOneWidget);
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Dark').tap();
+      expect($('Sanctuary'), findsOneWidget);
 
       // When I tap 'Contrast' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Contrast'));
-      await tester.pumpAndSettle();
-      expect(find.text('Sanctuary'), findsOneWidget);
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Contrast').tap();
+      expect($('Sanctuary'), findsOneWidget);
 
       // When I tap 'Clean' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Clean'));
-      await tester.pumpAndSettle();
-      expect(find.text('Sanctuary'), findsOneWidget);
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Clean').tap();
+      expect($('Sanctuary'), findsOneWidget);
 
       // When I tap 'Sage' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Sage'));
-      await tester.pumpAndSettle();
-      expect(find.text('Sanctuary'), findsOneWidget);
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Sage').tap();
+      expect($('Sanctuary'), findsOneWidget);
     });
 
-    testWidgets('Scenario: Visual contrast and title persistence across sensory switches', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Visual contrast and title persistence across sensory switches', (
+      $,
     ) async {
-      await pumpSanctuary(tester);
+      await pumpSanctuary($);
 
       // Tap Contrast mode via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Contrast'));
-      await tester.pumpAndSettle();
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Contrast').tap();
 
       // Verify title & calm tech subtitle remain visible and unclipped
-      expect(find.text('Sanctuary'), findsOneWidget);
-      expect(find.textContaining('Calm Tech'), findsOneWidget);
+      expect($('Sanctuary'), findsOneWidget);
+      expect($(RegExp('Calm Tech')), findsOneWidget);
     });
   });
 
@@ -159,54 +144,50 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpSanctuary(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1200, 1600);
-      tester.view.devicePixelRatio = 1.0;
+    Future<void> pumpSanctuary(PatrolTester $) async {
+      $.tester.view.physicalSize = const Size(1200, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
     }
 
-    testWidgets('Scenario: Incrementing qualitative care affirmations atomically', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Incrementing qualitative care affirmations atomically', (
+      $,
     ) async {
-      await pumpSanctuary(tester);
+      await pumpSanctuary($);
 
       // Initial Praying reaction
-      final prayButton = find.text('6 Praying');
+      final prayButton = $('6 Praying');
       expect(prayButton, findsOneWidget);
 
       // When I tap '6 Praying'
-      await tester.tap(prayButton);
-      await tester.pumpAndSettle();
+      await prayButton.tap();
 
       // Then counter should increment to '7 Praying'
-      expect(find.text('7 Praying'), findsOneWidget);
-      expect(find.text('6 Praying'), findsNothing);
+      expect($('7 Praying'), findsOneWidget);
+      expect($('6 Praying'), findsNothing);
     });
 
-    testWidgets('Scenario: Publishing an unhurried reflection and resetting composer', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Publishing an unhurried reflection and resetting composer', (
+      $,
     ) async {
-      await pumpSanctuary(tester);
+      await pumpSanctuary($);
 
       const testReflection = 'Finding rest in Scripture and quiet stillness today.';
 
       // When I type into reflection composer
-      await tester.enterText(find.byType(TextField), testReflection);
-      await tester.pumpAndSettle();
+      await $(TextField).enterText(testReflection);
 
       // And tap 'Publish Reflection'
-      await tester.tap(find.text('Publish Reflection'));
-      await tester.pumpAndSettle();
+      await $('Publish Reflection').tap();
 
       // Then reflection appears in the feed
-      expect(find.text(testReflection), findsOneWidget);
+      expect($(testReflection), findsOneWidget);
       // And input is cleared
-      final textField = tester.widget<TextField>(find.byType(TextField));
+      final textField = $.tester.widget<TextField>(find.byType(TextField));
       expect(textField.controller?.text, isEmpty);
     });
   });
@@ -224,24 +205,23 @@ void main() {
       expect(posts.any((p) => p.authorName.contains('David M.')), isTrue);
     });
 
-    testWidgets('Scenario: Server-side Quiet Digest banner renders peaceful aggregates', (
-      WidgetTester tester,
+    patrolWidgetTest('Scenario: Server-side Quiet Digest banner renders peaceful aggregates', (
+      $,
     ) async {
-      tester.view.physicalSize = const Size(1200, 1600);
-      tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
 
       final repo = LocalPostRepository();
-      await tester.pumpWidget(SanctuaryApp(repository: repo));
-      await tester.pumpAndSettle();
+      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repo));
 
       // Verify Quiet Digest banner is present
-      expect(find.textContaining('Gathered in peace'), findsOneWidget);
-      expect(find.textContaining('reflections'), findsOneWidget);
-      expect(find.textContaining('care affirmations'), findsOneWidget);
+      expect($(RegExp('Gathered in peace')), findsOneWidget);
+      expect($(RegExp('reflections')), findsOneWidget);
+      expect($(RegExp('care affirmations')), findsOneWidget);
     });
   });
 }

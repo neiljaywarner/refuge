@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets(
+  patrolWidgetTest(
     'End-to-end integration flow: Feature Voting persists across modal sheet openings with Appwrite/Serverpod/Firebase adapters',
-    (tester) async {
-      await tester.pumpWidget(
+    ($) async {
+      await $.pumpWidgetAndSettle(
         ProviderScope(
           overrides: [
             featureVotingBackendTargetProvider.overrideWithValue(
@@ -35,16 +36,14 @@ void main() {
       );
 
       // 1. Open modal sheet
-      await tester.tap(find.byKey(const Key('open_feedback_sheet_btn')));
-      await tester.pumpAndSettle();
+      await $(const Key('open_feedback_sheet_btn')).tap();
 
-      expect(find.text('Belong Roadmap & Feedback'), findsOneWidget);
-      expect(find.text('24'), findsOneWidget);
+      expect($('Belong Roadmap & Feedback'), findsOneWidget);
+      expect($('24'), findsOneWidget);
 
       // 2. Tap upvote on Direct Messages
-      await tester.tap(find.byKey(const Key('vote_button_wip-direct-messages')));
-      await tester.pumpAndSettle();
-      expect(find.text('25'), findsOneWidget);
+      await $(const Key('vote_button_wip-direct-messages')).tap();
+      expect($('25'), findsOneWidget);
     },
   );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
 
 void main() {
@@ -10,199 +11,168 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpApp(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1200, 1600);
-      tester.view.devicePixelRatio = 1.0;
+    Future<void> pumpApp(PatrolTester $) async {
+      $.tester.view.physicalSize = const Size(1200, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
       });
-      await tester.pumpWidget(SanctuaryApp(repository: repository));
-      await tester.pumpAndSettle();
+      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
     }
 
-    testWidgets('Renders Sanctuary header, seeded posts, and space navigation', (
-      WidgetTester tester,
-    ) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Renders Sanctuary header, seeded posts, and space navigation', ($) async {
+      await pumpApp($);
 
       // Verify title & calm-tech subtitle
-      expect(find.text('Sanctuary'), findsOneWidget);
-      expect(find.textContaining('Calm Tech'), findsOneWidget);
+      expect($('Sanctuary'), findsOneWidget);
+      expect($(RegExp('Calm Tech')), findsOneWidget);
 
       // Verify default spaces navigation chips
-      expect(find.text('🙏 #prayer-sanctuary'), findsOneWidget);
-      expect(find.text('📖 #weekly-study'), findsOneWidget);
+      expect($('🙏 #prayer-sanctuary'), findsOneWidget);
+      expect($('📖 #weekly-study'), findsOneWidget);
 
       // Verify seeded posts in default 'prayer' space
-      expect(find.text('David M. (UK)'), findsOneWidget);
-      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
+      expect($('David M. (UK)'), findsOneWidget);
+      expect($('Elena R. (Colorado)'), findsOneWidget);
       // Pastor Thomas is in 'study' space, so shouldn't appear in 'prayer'
-      expect(find.text('Pastor Thomas (Melbourne)'), findsNothing);
+      expect($('Pastor Thomas (Melbourne)'), findsNothing);
     });
 
-    testWidgets('Switching space updates the stream of posts', (WidgetTester tester) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Switching space updates the stream of posts', ($) async {
+      await pumpApp($);
 
       // Tap on #weekly-study space chip
-      await tester.tap(find.text('📖 #weekly-study'));
-      await tester.pumpAndSettle();
+      await $('📖 #weekly-study').tap();
 
       // Now Pastor Thomas should be visible, and David M. should not
-      expect(find.text('Pastor Thomas (Melbourne)'), findsOneWidget);
-      expect(find.text('David M. (UK)'), findsNothing);
+      expect($('Pastor Thomas (Melbourne)'), findsOneWidget);
+      expect($('David M. (UK)'), findsNothing);
 
       // Tap on #announcements (empty space)
-      await tester.tap(find.text('📢 #announcements'));
-      await tester.pumpAndSettle();
+      await $('📢 #announcements').tap();
 
       // Verify empty space peaceful placeholder
-      expect(find.textContaining('Space is quiet right now'), findsOneWidget);
+      expect($(RegExp('Space is quiet right now')), findsOneWidget);
     });
 
-    testWidgets('Toggling sensory themes switches theme mode without errors', (
-      WidgetTester tester,
-    ) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Toggling sensory themes switches theme mode without errors', ($) async {
+      await pumpApp($);
 
       // Tap 'Dark' (charcoal) via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Dark'));
-      await tester.pumpAndSettle();
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Dark').tap();
 
       // Tap 'Contrast' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Contrast'));
-      await tester.pumpAndSettle();
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Contrast').tap();
 
       // Tap 'Clean' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Clean'));
-      await tester.pumpAndSettle();
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Clean').tap();
 
       // Tap 'Sage' via Sensory Themes menu
-      await tester.tap(find.byTooltip('Sensory Themes'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Sage'));
-      await tester.pumpAndSettle();
+      await $(find.byTooltip('Sensory Themes')).tap();
+      await $('Sage').tap();
 
-      expect(find.text('Sanctuary'), findsOneWidget);
+      expect($('Sanctuary'), findsOneWidget);
     });
 
-    testWidgets('Publishing a reflection adds it to the top of the feed', (
-      WidgetTester tester,
-    ) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Publishing a reflection adds it to the top of the feed', ($) async {
+      await pumpApp($);
 
       const testContent = 'Grateful for quiet moments of stillness in a hurried world.';
 
       // Enter text into the reflection TextField
-      await tester.enterText(find.byType(TextField), testContent);
-      await tester.pumpAndSettle();
+      await $(TextField).enterText(testContent);
 
       // Tap 'Publish Reflection'
-      await tester.tap(find.text('Publish Reflection'));
-      await tester.pumpAndSettle();
+      await $('Publish Reflection').tap();
 
       // Verify the new post is rendered
-      expect(find.text(testContent), findsOneWidget);
-      expect(find.text('Fellowship Member'), findsOneWidget);
+      expect($(testContent), findsOneWidget);
+      expect($('Fellowship Member'), findsOneWidget);
 
       // Verify input field was cleared
-      final textField = tester.widget<TextField>(find.byType(TextField));
+      final textField = $.tester.widget<TextField>(find.byType(TextField));
       expect(textField.controller?.text, isEmpty);
     });
 
-    testWidgets('Incrementing qualitative care reactions updates counts', (
-      WidgetTester tester,
-    ) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Incrementing qualitative care reactions updates counts', ($) async {
+      await pumpApp($);
 
       // Find first '🙏 6 Praying' button
-      final prayingButton = find.text('6 Praying');
+      final prayingButton = $('6 Praying');
       expect(prayingButton, findsOneWidget);
 
       // Tap pray reaction
-      await tester.tap(prayingButton);
-      await tester.pumpAndSettle();
+      await prayingButton.tap();
 
       // Verify it incremented to 7
-      expect(find.text('7 Praying'), findsOneWidget);
-      expect(find.text('6 Praying'), findsNothing);
+      expect($('7 Praying'), findsOneWidget);
+      expect($('6 Praying'), findsNothing);
 
       // Find '🤍 4 Support' button
-      final supportButton = find.text('4 Support');
+      final supportButton = $('4 Support');
       expect(supportButton, findsOneWidget);
 
       // Tap support reaction
-      await tester.tap(supportButton);
-      await tester.pumpAndSettle();
+      await supportButton.tap();
 
       // Verify incremented to 5
-      expect(find.text('5 Support'), findsOneWidget);
-      expect(find.text('4 Support'), findsNothing);
+      expect($('5 Support'), findsOneWidget);
+      expect($('4 Support'), findsNothing);
     });
 
-    testWidgets('Filtering by tone tags displays only matching posts', (WidgetTester tester) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Filtering by tone tags displays only matching posts', ($) async {
+      await pumpApp($);
 
       // Initially in 'prayer' space: David M. has [Prayer Request], Elena R. has [Comfort Only]
-      expect(find.text('David M. (UK)'), findsOneWidget);
-      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
+      expect($('David M. (UK)'), findsOneWidget);
+      expect($('Elena R. (Colorado)'), findsOneWidget);
 
       // Tap filter chip for '[Comfort Only]'
-      // Note: filter row has a ChoiceChip with '[Comfort Only]'
-      final comfortFilterChips = find.widgetWithText(ChoiceChip, '[Comfort Only]');
-      await tester.tap(comfortFilterChips.first);
-      await tester.pumpAndSettle();
+      final comfortFilterChips = $(find.widgetWithText(ChoiceChip, '[Comfort Only]'));
+      await comfortFilterChips.first.tap();
 
       // Elena should be present, David should be filtered out
-      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
-      expect(find.text('David M. (UK)'), findsNothing);
+      expect($('Elena R. (Colorado)'), findsOneWidget);
+      expect($('David M. (UK)'), findsNothing);
 
       // Switch filter back to 'All'
-      await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
-      await tester.pumpAndSettle();
+      await $(find.widgetWithText(ChoiceChip, 'All')).tap();
 
-      expect(find.text('David M. (UK)'), findsOneWidget);
-      expect(find.text('Elena R. (Colorado)'), findsOneWidget);
+      expect($('David M. (UK)'), findsOneWidget);
+      expect($('Elena R. (Colorado)'), findsOneWidget);
     });
 
-    testWidgets('Calm-tech meme gallery allows selecting and dismissing meme', (
-      WidgetTester tester,
-    ) async {
-      await pumpApp(tester);
+    patrolWidgetTest('Calm-tech meme gallery allows selecting and dismissing meme', ($) async {
+      await pumpApp($);
 
       // Verify 'Add Meme / GIF' button is present
-      final addMemeButton = find.text('Add Meme / GIF');
+      final addMemeButton = $('Add Meme / GIF');
       expect(addMemeButton, findsOneWidget);
 
       // Open gallery modal
-      await tester.tap(addMemeButton);
-      await tester.pumpAndSettle();
+      await addMemeButton.tap();
 
       // Check modal content
-      expect(find.text('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
-      expect(find.text('Elijah Under the Broom Tree'), findsOneWidget);
+      expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
+      expect($('Elijah Under the Broom Tree'), findsOneWidget);
 
       // Tap on Elijah meme
-      await tester.tap(find.text('Elijah Under the Broom Tree'));
-      await tester.pumpAndSettle();
+      await $('Elijah Under the Broom Tree').tap();
 
       // Modal is dismissed, attachment preview banner is shown
-      expect(find.text('Attached: Elijah Under the Broom Tree'), findsOneWidget);
-      expect(find.text('Change Meme'), findsOneWidget);
+      expect($('Attached: Elijah Under the Broom Tree'), findsOneWidget);
+      expect($('Change Meme'), findsOneWidget);
 
       // Dismiss the meme
-      await tester.tap(find.byIcon(Icons.close).first);
-      await tester.pumpAndSettle();
+      await $(Icons.close).first.tap();
 
       // Preview banner is gone, button returns to 'Add Meme / GIF'
-      expect(find.text('Attached: Elijah Under the Broom Tree'), findsNothing);
-      expect(find.text('Add Meme / GIF'), findsOneWidget);
+      expect($('Attached: Elijah Under the Broom Tree'), findsNothing);
+      expect($('Add Meme / GIF'), findsOneWidget);
     });
   });
 }
