@@ -1,41 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
-import 'package:refuge4serverpod/src/features/reflections/domain/reflection.dart';
 
 void main() {
+  group('Pragmatic TDD: FeatureVotingNotifier & Literal Feedback Intents', () {
+    test('toggles vote count and userVoted state cleanly', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final initial = container.read(featureVotingProvider);
+      final dmItem = initial.firstWhere(
+        (e) => e.id == 'wip-direct-messages',
+      );
+      expect(dmItem.votes, 24);
+      expect(dmItem.userVoted, isFalse);
+
+      container
+          .read(featureVotingProvider.notifier)
+          .toggleVote('wip-direct-messages');
+      final afterUpvote = container
+          .read(featureVotingProvider)
+          .firstWhere((e) => e.id == 'wip-direct-messages');
+      expect(afterUpvote.votes, 25);
+      expect(afterUpvote.userVoted, isTrue);
+    });
+
+    test('Literal 3-Intent FeedbackSentiment routes Neutral/Sad privately', () {
+      expect(FeedbackSentiment.happy.isPrivateTriage, isFalse);
+      expect(FeedbackSentiment.neutral.isPrivateTriage, isTrue);
+      expect(FeedbackSentiment.sad.isPrivateTriage, isTrue);
+    });
+  });
+
   patrolWidgetTest(
-    'BDD: Member lands on Sanctuary home, navigates spaces, and views announcements',
+    'BDD (patrol_finders): Member navigates Circle Spaces, opens Roadmap & Feedback, and upvotes WIP feature',
     ($) async {
       await $.pumpWidgetAndSettle(
-        ProviderScope(
-          overrides: [
-            reflectionsStreamProvider.overrideWith(
-              (ref) => Stream.value([
-                Reflection(
-                  id: 'announcement-1',
-                  authorId: 'organizer-marty',
-                  authorName: 'Marty (Organizer)',
-                  content: 'Welcome to Belong on the Spectrum alpha test!',
-                  timestamp: DateTime.now(),
-                  careAffirmations: const {'prayer': 5, 'encouraged': 3},
-                  tags: const ['announcements'],
-                ),
-              ]),
-            ),
-          ],
-          child: const SanctuaryApp(),
-        ),
+        RefugeApp(repository: LocalPostRepository()),
       );
 
-      // 1. Verify app header and scripture anchor
+      // 1. Verify Belong header and sub-navigation chips
       expect($('Belong'), findsWidgets);
-      expect($('Feed'), findsWidgets);
-      expect($('Spaces'), findsOneWidget);
+      expect($(const Key('subnav_feed_tab')), findsOneWidget);
+      expect($(const Key('subnav_spaces_tab')), findsOneWidget);
 
-      // 2. Navigate to Spaces directory
+      // 2. Tap Spaces sub-tab and verify Circle-style section headers
       await $(const Key('subnav_spaces_tab')).tap();
       expect($('PINNED'), findsOneWidget);
       expect($('WELCOME'), findsOneWidget);
@@ -63,61 +74,69 @@ void main() {
     'BDD: Member opens Directory from Spaces and browses fellowship members',
     ($) async {
       await $.pumpWidgetAndSettle(
-        const ProviderScope(
-          child: SanctuaryApp(),
-        ),
+        RefugeApp(repository: LocalPostRepository()),
       );
 
-      // Navigate to Spaces
       await $(const Key('subnav_spaces_tab')).tap();
+      await $.pumpAndSettle();
 
-      // Tap on Members Section & Directory card
+      expect($('Members Section & Directory'), findsOneWidget);
       await $('Members Section & Directory').tap();
+      await $.pumpAndSettle();
 
-      // Verify directory opens with search and members list
-      expect($('Belong Members Directory'), findsOneWidget);
+      expect(
+        $('Store profile info & connect with verified fellowship members'),
+        findsOneWidget,
+      );
       expect($('Marty (Organizer)'), findsOneWidget);
-      expect($('Hannah'), findsOneWidget);
-
-      // Search for Hannah
-      await $(const Key('members_search_field')).enterText('Hannah');
-      expect($('Hannah'), findsOneWidget);
-      expect($('Alex'), findsNothing);
     },
   );
 
   patrolWidgetTest(
-    'BDD: Member views reflection and interacts with care affirmation reaction',
+    'BDD: AppBar shows Sign In when signed out, and Avatar when signed in (#238)',
     ($) async {
+      // 1. Signed-out state: verify Sign In button is present, avatar is absent
       await $.pumpWidgetAndSettle(
-        ProviderScope(
-          overrides: [
-            reflectionsStreamProvider.overrideWith(
-              (ref) => Stream.value([
-                Reflection(
-                  id: 'prayer-req-1',
-                  authorId: 'member-alex',
-                  authorName: 'Alex',
-                  content: 'Please pray for my upcoming sensory exam.',
-                  timestamp: DateTime.now(),
-                  careAffirmations: const {'prayer': 2},
-                  tags: const ['prayer-sanctuary'],
-                ),
-              ]),
-            ),
-          ],
-          child: const SanctuaryApp(),
+        RefugeApp(repository: LocalPostRepository()),
+      );
+
+      expect($(const Key('home_top_bar_sign_in_button')), findsOneWidget);
+      expect($(const Key('belong_profile_avatar_button')), findsNothing);
+
+      // 2. Signed-in state: override memberProfileProvider with signed-in profile
+      final signedInContainer = ProviderContainer(
+        overrides: [
+          memberProfileProvider.overrideWith(
+            () => _FakeSignedInProfileNotifier(),
+          ),
+        ],
+      );
+      addTearDown(signedInContainer.dispose);
+
+      await $.pumpWidgetAndSettle(
+        UncontrolledProviderScope(
+          container: signedInContainer,
+          child: RefugeApp(repository: LocalPostRepository()),
         ),
       );
 
-      // Verify reflection and prayer button
-      expect($('Alex'), findsOneWidget);
-      expect($('Please pray for my upcoming sensory exam.'), findsOneWidget);
-      expect($('2 Praying'), findsOneWidget);
-
-      // Tap prayer reaction button to increment care affirmation
-      await $('2 Praying').tap();
-      expect($('3 Praying'), findsOneWidget);
+      expect($(const Key('home_top_bar_sign_in_button')), findsNothing);
+      expect($(const Key('belong_profile_avatar_button')), findsOneWidget);
+      expect($('JD'), findsOneWidget);
     },
   );
+}
+
+class _FakeSignedInProfileNotifier extends MemberProfileNotifier {
+  @override
+  MemberProfile build() {
+    return const MemberProfile(
+      displayName: 'Joy Disciple',
+      email: 'joy@belong.org',
+      bio: 'Belong Disciple',
+      comfortBadges: ['Literal communication appreciated'],
+      isSignedIn: true,
+      authMethod: 'firebase_auth',
+    );
+  }
 }

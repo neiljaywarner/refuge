@@ -27,7 +27,7 @@
 3. **CodeRabbit Completion Wait Protocol Enforced (#247, PR #248)**:
    - Established mandatory 90–180 second polling window before squash-merging.
    - Solved the premature merge abort issue (`"Action not completed: Pull request is closed"`) previously seen on PR #162 and PR #244.
-   - Pre-merge checks and AI review on PR #248 passed cleanly.
+   - Pre-merge checks and AI review on PR #248 and PR #251 passed cleanly.
 
 ---
 
@@ -38,9 +38,25 @@
 | **1** | **Code Architecture & Clean Seams** | **A** | **94 / 100** | **96 / 100** | **A** | Domain/Data/Presentation separation; pluggable repository interfaces (`AuthRepository`, `StorageRepository`, `FeatureVotingRepository`); constructor dot-shorthands; `gap: ^3.0.1` layout spacing; zero circular dependencies; 0 static analyzer errors. | 1. Enforce Dart 3 class modifiers (`sealed`/`final`) across 100% of Domain entities.<br>2. Add an automated architectural test asserting zero presentation imports inside `lib/src/**/data/` or `domain/`.<br>3. Remove any remaining prototype mock references from production DI paths. |
 | **2** | **Automated Test Suite & Patrol BDD** | **A-** | **92 / 100** | **95 / 100** | **A** | **175/175 tests green**; standardized on `patrol_finders` (`$` selector syntax); sub-2s execution; human-readable Marionette Gherkin specs (`test/features/*_feature.txt`); sociable testing across Riverpod provider scopes. | 1. Elevate test count from 175 to 200+ by adding sociable golden tests for all 4 sensory themes (`test/features/goldens/`).<br>2. Wire automated 2:00 AM regression runner via `.agents/skills/antigravity-overnight-qa/SKILL.md`.<br>3. Add `patrol_finders` error boundary tests for `CalmNotificationPreferencesSheet` and `SimpleAuthScreen`. |
 | **3** | **Agent Operations & GitHub MCP Velocity** | **A** | **96 / 100** | **98 / 100** | **A+** | **100% Zero Terminal Push Prompts**; all 53 PRs created, reviewed, and squash-merged via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`); strict `1 Issue = 1 Worktree = 1 PR` hygiene; CodeRabbit wait protocol (90–180s) verified. | 1. Maintain zero race conditions with CodeRabbit by enforcing 90–180s wait window on 100% of PRs.<br>2. Automate local branch and worktree pruning after squash-merges.<br>3. Expand GitHub Actions CI matrix to test on macOS, Ubuntu, and Windows runners in parallel. |
-| **4** | **UX, Calm-Tech & Neurodivergent Flow** | **B+** | **87 / 100** | **90 / 100** | **A-** | 4 WCAG AAA sensory themes (Clean Slate, Sage Botanical, Monastic Dark, High Contrast); Scripture anchor (Psalm 139:14); single-avatar AppBar state (PR #240); Google Password Manager autofill hints (PR #241); calm notification digest preferences (PR #244); calm meme engine with low-motion rules. | 1. Execute Issue #239: Feed simplification ("When in doubt, leave it out") to reduce visual density on small screens.<br>2. Add tactile haptic feedback preferences toggle (`HapticFeedback.lightImpact` on reaction affirmations, with zero-haptic calm mode).<br>3. Verify custom text-scale factors (up to 200% dynamic font scaling) without RenderFlex overflow. |
-| **5** | **PWA & Mobile Web Installation** | **A-** | **90 / 100** | **93 / 100** | **A** | Web Push service worker (`web/firebase-messaging-sw.js`); W3C manifest; zero-PII screenshots in `doc/screenshots/`; responsive design tested on Chrome and mobile viewports. | 1. Test full offline service worker caching on Chromium with network throttling (offline mode).<br>2. Add custom PWA install prompt banner ("Add Belong to Home Screen" bottom toast with calm dismiss).<br>3. Complete Lighthouse PWA audit achieving 100/100 PWA score. |
-| **6** | **Backend Persistence & Cloud Verification** | **B** | **82 / 100** | **85 / 100** | **B+** | Real production `google-services.json` (Project #207506875171); live Firebase Auth (user `neilwarner+21oct1253am@gmail.com`); Firestore sync; Firebase Analytics collection hooks; Serverpod 4 dual-redundancy. | 1. Verify real-time Cloud Firestore snapshot synchronization across two independent browser sessions / emulators.<br>2. Implement automated retry with exponential backoff for Firestore and Serverpod network timeouts.<br>3. Add multi-tenant space scoping security rules audit in `firestore.rules`. |
+| **4** | **UX, Calm-Tech & Neurodivergent Flow** | **B+** | **87 / 100** | **90 / 100** | **A-** | 4 WCAG AAA sensory themes (Clean Slate, Sage Botanical, Monastic Dark, High Contrast); Scripture anchor (Psalm 139:14); single-avatar AppBar state (PR #240); Google Password Manager autofill hints (PR #241); calm notification digest preferences (PR #244); calm meme engine with low-motion rules. | 1. Execute Issue #239: Feed simplification ("When in doubt, leave it out") to reduce visual density on small screens.<br>2. Add tactile haptic feedback preferences toggle (`HapticFeedback.lightImpact` on reaction affirmations, with zero-haptic calm mode; Issue #252).<br>3. Verify custom text-scale factors (up to 200% dynamic font scaling) without RenderFlex overflow. |
+| **5** | **PWA & Mobile Web Installation** | **A-** | **90 / 100** | **93 / 100** | **A** | Web Push service worker (`web/firebase-messaging-sw.js`); W3C manifest; zero-PII screenshots in `doc/screenshots/`; responsive design tested on Chrome and mobile viewports. | 1. Test full offline service worker caching on Chromium with network throttling (offline mode).<br>2. Add custom PWA install prompt banner ("Add Belong to Home Screen" bottom toast with calm dismiss; Issue #253).<br>3. Complete Lighthouse PWA audit achieving 100/100 PWA score. |
+| **6** | **Backend Persistence & Cloud Verification** | **B** | **82 / 100** | **85 / 100** | **B+** | Real production `google-services.json` (Project #207506875171); live Firebase Auth (user `tester+alpha@belongonthespectrum.com`); Firestore sync; Firebase Analytics collection hooks; Serverpod 4 dual-redundancy. | 1. Verify real-time Cloud Firestore snapshot synchronization across two independent browser sessions / emulators (Issue #254).<br>2. Implement automated retry with exponential backoff for Firestore and Serverpod network timeouts.<br>3. Add multi-tenant space scoping security rules audit in `firestore.rules`. |
+
+---
+
+## 📊 Firebase Analytics & Observability Verification Audit
+
+Telemetry was audited and verified across both cloud collection hooks (`FirebaseAnalytics`) and local ring buffers (`Talker`):
+
+1. **Event Dispatch Verification**:
+   - `reflection_created`: Tracks reflection intent (`prayer`, `comfort`, `deep_dive`), word count bucket (`short`, `medium`, `long`), and space slug (`prayer-sanctuary`, `general-chat`).
+   - `care_affirmation_clicked`: Tracks reaction category (`prayer`, `support`, `encouraged`, `relatable`) without user PII.
+   - `sensory_theme_changed`: Tracks theme selections (`clean_slate`, `sage_botanical`, `monastic_dark`, `high_contrast`) to understand sensory preferences.
+   - `calm_digest_schedule_updated`: Tracks notification schedule options (`twice_daily`, `morning_digest`, `immediate`, `muted`).
+2. **Collection Hooks & Privacy Scrubbing**:
+   - Wired in `lib/src/features/observability/data/community_analytics_service.dart`.
+   - Automated regex scrubbing prevents emails, passwords, or personal names from reaching Google Analytics or Crashlytics.
+   - Verified with unit tests in `test/features/observability/analytics_service_test.dart` asserting 100% event delivery via `dispatchedEventsForTesting`.
 
 ---
 
@@ -52,7 +68,7 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 | Pixel 1 (Home) | Pixel 1 (Reacted) | Pixel 2 (Synchronized) |
 | :---: | :---: | :---: |
 | ![Pixel 1 Home](doc/screenshots/dual_pixel1_56091JEBF14039_home.jpg) | ![Pixel 1 Reacted](doc/screenshots/dual_pixel1_56091JEBF14039_reacted.jpg) | ![Pixel 2 Synced](doc/screenshots/dual_pixel2_58221JEBF20835_synced.jpg) |
-| *Hardware: Google Pixel `56091JEBF14039`* | *Tapped 🙏 Praying reaction* | *Hardware: Google Pixel 9a `58221JEBF20835`* |
+| *Hardware: Google Pixel 1* | *Tapped 🙏 Praying reaction* | *Hardware: Google Pixel 2* |
 
 ### 2. Android Emulator (`emulator-5554`) Live Verification
 | Home View & Reflections | Sensory Themes Menu | Monastic Dark Theme | Psalm 139:14 Scripture Anchor |
@@ -100,9 +116,9 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 | :--- | :---: | :--- | :--- |
 | **#248** | #247 | chore(coderabbit): enforce CodeRabbit completion wait protocol & QA guide documentation | ✅ CodeRabbit passed cleanly |
 | **#246** | #245 | chore(security): remove personal home screen screenshots from doc/screenshots | ✅ Verified Zero-PII |
-| **#244** | #243 | feat(notifications): Real-Time Instant Alerts vs. Calm Batched Digest Toggle & Feature Voting | ✅ Live Pixel 9a verified |
+| **#244** | #243 | feat(notifications): Real-Time Instant Alerts vs. Calm Batched Digest Toggle & Feature Voting | ✅ Live Pixel verified |
 | **#242** | #241 | docs: update status dashboard with real Firebase auth & AppBar cleanup milestones | ✅ 175 tests green |
-| **#240** | #238 | fix(ui): AppBar Auth State — Show Avatar only when signed in, Sign In button only when signed out | ✅ Pixel 9a visual proof |
+| **#240** | #238 | fix(ui): AppBar Auth State — Show Avatar only when signed in, Sign In button only when signed out | ✅ Pixel visual proof |
 | **#237** | #234 | docs(wiki): Local LLMs & Token Quota Preservation Strategy Guide | ✅ Published to Wiki |
 | **#235** | #226 | feat(firebase): add real production google-services.json and Web/Android FirebaseOptions | ✅ Live Firebase verified |
 | **#232** | #230 | fix(auth): add offline and headless test mode fallback in SimpleAuthScreen | ✅ Verified |
@@ -121,7 +137,7 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 | **#204** | #198 | test(maestro): add comprehensive user journey and auth flows | ✅ Verified |
 | **#203** | #199 | feat(auth): resilient offline and placeholder credentials fallback for FirebaseAuthRepository | ✅ Verified |
 | **#202** | #201 | docs(testing): Antigravity autonomous automated testing and overnight QA strategy | ✅ Verified |
-| **#196** | #195 | feat(demo): live dual Pixel 9a cloud demonstration, automated multi-device driving and wiki documentation | ✅ Dual Pixels verified |
+| **#196** | #195 | feat(demo): live dual Pixel cloud demonstration, automated multi-device driving and wiki documentation | ✅ Dual Pixels verified |
 | **#194** | #193 | chore(clean): remove hardcoded physical device serial numbers across refuge scripts and docs | ✅ Verified |
 | **#192** | #191 | test(goldens): sociable golden widget tests, headless font loader & visual regression wiki guide | ✅ Verified |
 | **#190** | #189 | fix(launcher): thicken 'Belong' lettering and infinity logo for crisp launcher icon contrast & update app label to 'Belong' | ✅ Verified |
@@ -168,6 +184,9 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 1. **`v0.9.0-rc` (Pre-Launch Release Candidate — Target: Oct 22, 2026)**:
    - Full PWA offline caching audit.
    - Issue #239: Feed simplification ("When in doubt, leave it out").
+   - Issue #252: Tactile haptic feedback preferences toggle.
+   - Issue #253: Custom PWA install prompt banner with 14-day calm dismiss.
+   - Issue #254: Cross-client Cloud Firestore snapshot sync test.
    - 200+ green automated tests.
 2. **`v1.0.0` (Production Cutover & Overlap Week — Target: Oct 23–24, 2026)**:
    - Post Circle.so invitation announcement (Issue #249).
