@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../feedback/data/feature_voting_repository.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
+import '../../../core/logging/app_logger.dart';
 
 /// Pluggable authentication repository interface supporting:
 /// - Firebase Authentication (Production Email/Password & Passwordless Magic Link)
@@ -106,6 +107,21 @@ class InMemoryAuthRepository implements AuthRepository {
     _session = newSession;
     _controller.add(_session);
   }
+
+  /// Seeds an in-memory user account (useful for offline testing and deterministic harnesses).
+  void seedUser({
+    required String email,
+    required String password,
+    required AuthSession session,
+  }) {
+    _users[email.trim().toLowerCase()] = _InMemoryUserRecord(
+      password: password,
+      session: session,
+    );
+  }
+
+  /// Returns true if an account with this email exists in memory.
+  bool hasUser(String email) => _users.containsKey(email.trim().toLowerCase());
 
   void _validateEmail(String email) {
     final clean = email.trim();
@@ -336,27 +352,41 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 
+  /// Whether Firebase has been initialized with real (non-placeholder) credentials.
+  bool get _hasRealCredentials {
+    try {
+      final key = auth?.app.options.apiKey;
+      if (key == null) return false;
+      if (key.contains('DummyKey') || key.contains('dummy')) return false;
+      return key.length > 20;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   BackendTarget get target => BackendTarget.firebase;
 
   @override
   AuthSession currentSession() {
-    final fbUser = auth?.currentUser;
-    if (fbUser != null) {
-      return AuthSession(
-        userId: fbUser.uid,
-        displayName: fbUser.displayName ?? 'Fellowship Member',
-        email: fbUser.email ?? '',
-        bio: 'Verified Member of Belong on the Spectrum',
-        comfortBadges: const [
-          'Literal communication appreciated',
-          'Firebase Cloud Verified',
-        ],
-        isSignedIn: true,
-        authMethod: 'firebase_auth',
-        emailVerified: fbUser.emailVerified,
-        photoUrl: fbUser.photoURL,
-      );
+    if (_hasRealCredentials) {
+      final fbUser = auth?.currentUser;
+      if (fbUser != null) {
+        return AuthSession(
+          userId: fbUser.uid,
+          displayName: fbUser.displayName ?? 'Fellowship Member',
+          email: fbUser.email ?? '',
+          bio: 'Verified Member of Belong on the Spectrum',
+          comfortBadges: const [
+            'Literal communication appreciated',
+            'Firebase Cloud Verified',
+          ],
+          isSignedIn: true,
+          authMethod: 'firebase_auth',
+          emailVerified: fbUser.emailVerified,
+          photoUrl: fbUser.photoURL,
+        );
+      }
     }
     return _fallback.currentSession();
   }
@@ -364,7 +394,7 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Stream<AuthSession> authStateChanges() {
     final liveAuth = auth;
-    if (liveAuth != null) {
+    if (liveAuth != null && _hasRealCredentials) {
       return liveAuth.authStateChanges().map((fbUser) {
         if (fbUser != null) {
           return AuthSession(
@@ -398,7 +428,7 @@ class FirebaseAuthRepository implements AuthRepository {
     required String icocChurchAffiliation,
   }) async {
     final liveAuth = auth;
-    if (liveAuth != null) {
+    if (liveAuth != null && _hasRealCredentials) {
       try {
         final credential = await liveAuth.createUserWithEmailAndPassword(
           email: email.trim(),
@@ -407,7 +437,7 @@ class FirebaseAuthRepository implements AuthRepository {
         final user = credential.user;
         if (user != null) {
           await user.updateDisplayName(displayName.trim());
-          return AuthSession(
+          final session = AuthSession(
             userId: user.uid,
             displayName: displayName.trim(),
             email: user.email ?? email.trim(),
@@ -419,11 +449,15 @@ class FirebaseAuthRepository implements AuthRepository {
             emailVerified: user.emailVerified,
             photoUrl: user.photoURL,
           );
+          _fallback.seedUser(email: email, password: password, session: session);
+          return session;
         }
       } catch (e) {
+        talker.warning('⚠️ [FirebaseAuthRepository] Firebase registration failed: $e');
         throw AuthException.fromFirebase(e);
       }
     }
+    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory session (offline/test credentials)');
     return _fallback.registerWithPassword(
       email: email,
       password: password,
@@ -440,7 +474,7 @@ class FirebaseAuthRepository implements AuthRepository {
     required String password,
   }) async {
     final liveAuth = auth;
-    if (liveAuth != null) {
+    if (liveAuth != null && _hasRealCredentials) {
       try {
         final credential = await liveAuth.signInWithEmailAndPassword(
           email: email.trim(),
@@ -461,9 +495,11 @@ class FirebaseAuthRepository implements AuthRepository {
           );
         }
       } catch (e) {
+        talker.warning('⚠️ [FirebaseAuthRepository] Firebase sign-in failed: $e');
         throw AuthException.fromFirebase(e);
       }
     }
+    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory sign-in (offline/test credentials)');
     return _fallback.signInWithPassword(email: email, password: password);
   }
 
@@ -473,7 +509,7 @@ class FirebaseAuthRepository implements AuthRepository {
     String? redirectUrl,
   }) async {
     final liveAuth = auth;
-    if (liveAuth != null) {
+    if (liveAuth != null && _hasRealCredentials) {
       try {
         final actionCodeSettings = fb_auth.ActionCodeSettings(
           url: redirectUrl ?? 'https://belongonthespectrum.web.app/auth',
@@ -489,9 +525,11 @@ class FirebaseAuthRepository implements AuthRepository {
         );
         return;
       } catch (e) {
+        talker.warning('⚠️ [FirebaseAuthRepository] Firebase magic link failed: $e');
         throw AuthException.fromFirebase(e);
       }
     }
+    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory magic link');
     return _fallback.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
 
@@ -501,7 +539,7 @@ class FirebaseAuthRepository implements AuthRepository {
     required String emailLink,
   }) async {
     final liveAuth = auth;
-    if (liveAuth != null) {
+    if (liveAuth != null && _hasRealCredentials) {
       try {
         final credential = await liveAuth.signInWithEmailLink(
           email: email.trim(),
@@ -525,9 +563,11 @@ class FirebaseAuthRepository implements AuthRepository {
           );
         }
       } catch (e) {
+        talker.warning('⚠️ [FirebaseAuthRepository] Firebase magic link consumption failed: $e');
         throw AuthException.fromFirebase(e);
       }
     }
+    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory magic link consumption');
     return _fallback.signInWithMagicLink(email: email, emailLink: emailLink);
   }
 
