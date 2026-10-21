@@ -23,6 +23,7 @@ class ReflectionComposer extends HookWidget {
     required String content,
     required String toneTag,
     String? specialInterestTag,
+    String? imageUrl,
   })
   onSubmit;
 
@@ -36,7 +37,10 @@ class ReflectionComposer extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedTone = useState('[Prayer Request]');
+    final initialTone = selectedSpace == 'memes'
+        ? '[Autism & Faith Meme]'
+        : '[Prayer Request]';
+    final selectedTone = useState(initialTone);
     final attachedMeme = useState<CalmMeme?>(null);
     final contentController = useTextEditingController();
     final specialInterestController = useTextEditingController();
@@ -58,6 +62,8 @@ class ReflectionComposer extends HookWidget {
           ? specialInterestController.text.trim()
           : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
 
+      final memeUrl = attachedMeme.value?.imageUrl;
+
       contentController.clear();
       specialInterestController.clear();
       attachedMeme.value = null;
@@ -66,6 +72,7 @@ class ReflectionComposer extends HookWidget {
         content: text,
         toneTag: selectedTone.value,
         specialInterestTag: specialInterest,
+        imageUrl: memeUrl,
       );
     }
 
@@ -105,13 +112,14 @@ class ReflectionComposer extends HookWidget {
           ),
           if (selectedTone.value.contains('Special Interest') ||
               selectedTone.value.contains('Meme') ||
-              selectedSpace == 'special_interests') ...[
+              selectedSpace == 'special_interests' ||
+              selectedSpace == 'memes') ...[
             const SizedBox(height: 6),
             TextField(
               controller: specialInterestController,
               decoration: InputDecoration(
                 hintText:
-                    'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Liturgy)...',
+                    'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Biblical Maps)...',
                 hintStyle: const TextStyle(fontSize: 11),
                 isDense: true,
                 border: OutlineInputBorder(
@@ -139,6 +147,7 @@ class ReflectionComposer extends HookWidget {
           const SizedBox(height: 8),
           if (attachedMeme.value != null) ...[
             Container(
+              key: const Key('attached_meme_banner'),
               margin: const EdgeInsets.only(bottom: 8.0),
               padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
               decoration: BoxDecoration(
@@ -148,7 +157,23 @@ class ReflectionComposer extends HookWidget {
               ),
               child: Row(
                 children: [
-                  Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 16)),
+                  if (attachedMeme.value!.imageUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4.0),
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        color: Colors.amber.withValues(alpha: 0.2),
+                        child: Image.network(
+                          attachedMeme.value!.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 14)),
+                        ),
+                      ),
+                    )
+                  else
+                    Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -162,6 +187,7 @@ class ReflectionComposer extends HookWidget {
                     ),
                   ),
                   InkWell(
+                    key: const Key('remove_attached_meme_button'),
                     onTap: () => attachedMeme.value = null,
                     child: const Icon(Icons.close, size: 14),
                   ),
@@ -173,6 +199,7 @@ class ReflectionComposer extends HookWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               OutlinedButton.icon(
+                key: const Key('add_meme_gif_button'),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   side: BorderSide(
@@ -187,6 +214,7 @@ class ReflectionComposer extends HookWidget {
                 ),
               ),
               ElevatedButton.icon(
+                key: const Key('publish_reflection_button'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: isContrast ? Colors.black : Colors.white,

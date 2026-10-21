@@ -5,6 +5,7 @@ class CalmMeme {
   final String subtitle;
   final String tag;
   final String body;
+  final String? imageUrl;
 
   const CalmMeme({
     required this.title,
@@ -12,6 +13,7 @@ class CalmMeme {
     required this.subtitle,
     required this.tag,
     required this.body,
+    this.imageUrl,
   });
 
   Map<String, String> toMap() => {
@@ -20,6 +22,7 @@ class CalmMeme {
     'subtitle': subtitle,
     'tag': tag,
     'body': body,
+    if (imageUrl != null) 'imageUrl': imageUrl!,
   };
 
   factory CalmMeme.fromMap(Map<String, String> map) => CalmMeme(
@@ -28,11 +31,12 @@ class CalmMeme {
     subtitle: map['subtitle'] ?? '',
     tag: map['tag'] ?? '',
     body: map['body'] ?? '',
+    imageUrl: map['imageUrl'],
   );
 }
 
 /// Curated Belong on the Spectrum calm-tech memes: zero flashing strobe animations,
-/// zero third-party telemetry, 100% wholesome and relatable.
+/// zero third-party telemetry, 100% wholesome, sensory-safe, and relatable.
 const List<CalmMeme> kCuratedCalmMemes = [
   CalmMeme(
     title: 'Elijah Under the Broom Tree',
@@ -40,6 +44,7 @@ const List<CalmMeme> kCuratedCalmMemes = [
     subtitle: '1 Kings 19:5 — Snack & Nap',
     tag: 'Burnout & Recovery',
     body: 'When you have severe sensory burnout and think you are done with ministry, but God\'s holy prescription is literally a warm cake of bread and a nap under the broom tree.',
+    imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80',
   ),
   CalmMeme(
     title: '2 Hours of Fellowship vs 3 Days in Dark Room',
@@ -54,6 +59,7 @@ const List<CalmMeme> kCuratedCalmMemes = [
     subtitle: 'Psalm 139:14 — Fearfully Made',
     tag: 'Special Interests',
     body: 'When someone asks a casual 5-second question about church history or train switching gears, and my autistic brain prepares a 45-minute PowerPoint with handouts.',
+    imageUrl: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&auto=format&fit=crop&q=80',
   ),
   CalmMeme(
     title: 'Reading Greek Verbs at 2 AM',
