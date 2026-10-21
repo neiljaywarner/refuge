@@ -60,8 +60,7 @@ void main() {
       ($) async {
         await $.pumpWidgetAndSettle(
           ProviderScope(
-            overrides: [
-              organizerRemoteConfigProvider.overrideWithValue(
+            overrides: [\n              organizerRemoteConfigProvider.overrideWithValue(
                 OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong()),
               ),
             ],
@@ -163,7 +162,7 @@ void main() {
               home: Scaffold(
                 body: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const .all(12.0),
                     child: RepaintBoundary(
                       child: ReflectionCard(
                         post: testPost,

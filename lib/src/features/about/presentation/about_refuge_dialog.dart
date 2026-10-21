@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import '../../../core/logging/app_logger.dart';
@@ -28,7 +29,7 @@ void showAboutRefugeDialog(
                   const Text('♾️', style: TextStyle(fontSize: 22)),
             ),
           ),
-          const SizedBox(width: 10),
+          const Gap(10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +63,7 @@ void showAboutRefugeDialog(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const .all(10),
                 decoration: BoxDecoration(
                   color: isContrast
                       ? Colors.yellow.withValues(alpha: 0.1)
@@ -79,12 +80,12 @@ void showAboutRefugeDialog(
                   style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
                 ),
               ),
-              const SizedBox(height: 12),
+              const Gap(12),
               const Text(
                 'Sensory Theme Settings (WCAG AAA):',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 6),
+              const Gap(6),
               Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
@@ -106,7 +107,7 @@ void showAboutRefugeDialog(
                     },
                   ),
                   ChoiceChip(
-                    label: const Text('🌙 Monastic Dark'),
+                    label: const Text('🌘 Monastic Dark'),
                     selected: currentMode == SensoryMode.charcoal,
                     onSelected: (_) {
                       onSelectMode?.call(SensoryMode.charcoal);
@@ -128,7 +129,7 @@ void showAboutRefugeDialog(
                 'About Belong on the Spectrum:',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 4),
+              const Gap(4),
               const Text(
                 '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
                 '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
