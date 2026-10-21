@@ -93,5 +93,28 @@ As an open-source, public-friendly ministry project, we adhere to the highest st
 
 ---
 
-## 6. Questions?
-If you have any questions or need assistance exporting past files, please reach out to the organizers or post in [GitHub Issue #41](https://github.com/neiljaywarner/refuge/issues/41)!
+## 6. Official Circle.so Welcome & Overlap Invitation Post (Oct 24–31)
+
+To begin the calm 7-day exploration overlap week, organizers post the official invitation in Circle.so **Announcements**:
+
+> [!IMPORTANT]
+> **High-Priority Maintainer Tracking**: [Issue #249](https://github.com/neiljaywarner/refuge/issues/249) (`*** 🚨 HIGH PRIORITY: Copy Circle.so Welcome Post into Circle to begin Oct 24–31 Overlap Week 🚨 ***`).  
+> **Source Markdown File**: [`docs/circle_migration_invitation_post.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/circle_migration_invitation_post.md)  
+> **Self-Testing Guide**: [`docs/ascii_email_for_self_testing_alpha_verification.txt`](https://github.com/neiljaywarner/refuge/blob/main/docs/ascii_email_for_self_testing_alpha_verification.txt)  
+> **Production App URL**: [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app)
+
+### Quick Copy Template for Organizers
+```markdown
+🎉 Welcome to Belong on the Spectrum — Our Calm-Tech Digital Home!
+
+We are beginning our 7-day calm exploration week (Oct 24–31, 2026). Both our existing Circle community and our new Belong on the Spectrum home will remain open side-by-side so everyone can explore at their own unhurried pace.
+
+🔗 Open the live app: https://belongonthespectrum.web.app
+📖 How to test & help: Check out our self-testing guide in the app under "About Belong" or explore the spaces directory.
+🕊️ Sensory Comfort: Try out the 4 WCAG AAA sensory themes (Clean Slate, Sage Botanical, Monastic Dark, High Contrast).
+```
+
+---
+
+## 7. Questions?
+If you have any questions or need assistance exporting past files, please reach out to the organizers or post in [GitHub Issue #41](https://github.com/neiljaywarner/refuge/issues/41) or [Issue #249](https://github.com/neiljaywarner/refuge/issues/249)!
