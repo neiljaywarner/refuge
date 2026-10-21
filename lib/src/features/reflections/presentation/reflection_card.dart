@@ -86,6 +86,63 @@ class ReflectionCard extends ConsumerWidget {
           ],
           const SizedBox(height: 8),
           Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
+          if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.0),
+              child: Container(
+                key: Key('post_meme_image_${post.id}'),
+                constraints: const BoxConstraints(maxHeight: 280),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(
+                    color: isMeme
+                        ? Colors.amber.shade300
+                        : (isContrast ? Colors.white70 : Colors.grey.shade300),
+                  ),
+                ),
+                child: Image.network(
+                  post.imageUrl!,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      height: 120,
+                      alignment: Alignment.center,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    padding: const EdgeInsets.all(12.0),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.broken_image_outlined,
+                          size: 18,
+                          color: Colors.amber.shade800,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Wholesome Meme / GIF Attached',
+                          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -146,28 +203,34 @@ class ReflectionCard extends ConsumerWidget {
                   ),
                 ],
                 const SizedBox(width: 8),
-                Builder(
-                  builder: (ctx) {
-                    final countAsync =
-                        ref.watch(postCommentCountStreamProvider(post.id));
-                    final count = countAsync.value ?? 0;
+                // Threaded Comments Discussion Button
+                Consumer(
+                  builder: (context, ref, _) {
+                    final commentsAsync = ref.watch(commentsForPostProvider(post.id));
+                    final count = commentsAsync.value?.length ?? 0;
                     return OutlinedButton.icon(
                       key: Key('discussion_button_${post.id}'),
                       style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
+                        foregroundColor: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: onOpenDiscussion ??
-                          () => ThreadedDiscussionSheet.show(
-                                context,
-                                post: post,
+                          () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                               ),
-                      icon: const Text('💬', style: TextStyle(fontSize: 12)),
+                              builder: (_) => ThreadedDiscussionSheet(post: post),
+                            );
+                          },
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 14),
                       label: Text(
-                        count == 1
-                            ? '1 Reply'
-                            : (count > 1 ? '$count Replies' : 'Reply'),
-                        style: const TextStyle(fontSize: 11),
+                        count > 0 ? '$count Replies' : 'Discuss',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     );
                   },
