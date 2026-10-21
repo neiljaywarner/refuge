@@ -70,6 +70,12 @@
 10. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
     * Interactive element semantics (<200 tokens) vs full screenshots, runner commands, and ADB fallback script `tool/capture_device.sh`.
 
+11. [**`belong_roadmap.md` (Product & Engineering Roadmap)**](belong_roadmap.md)
+    * Schedule and timeline for the Oct 24–31 7-day calm community overlap window and checklist before real users sign in.
+
+12. [**`CHANGELOG.md` (Release Changelog)**](CHANGELOG.md)
+    * Detailed log of all features, fixes, and architectural upgrades shipped in `v0.9.0-rc` and planned for `v1.0.0`.
+
 ---
 
 ## 🚀 Deployed Releases & Hardware Test Status

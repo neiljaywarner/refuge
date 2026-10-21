@@ -1,67 +1,80 @@
 # Changelog & Release Roadmap (`Belong on the Spectrum` / `refuge`)
 
-All notable changes and planned release milestones leading up to the **October 31, 2026 Circle.so Cutover** are documented in this file.
+All notable changes, accomplishments, and planned release milestones leading up to the **October 24–31, 2026 Circle.so Cutover & Overlap Window** are documented in this file.
 
 ---
 
-## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.9.0-rc` (Oct 20, 2026)]
+## [Current Release — `v0.9.0-rc` / Soft Launch Candidate (Oct 20, 2026)]
 
-### Added
-- **FCM Push Notifications for Web, PWA & Android + Android 13+ POST_NOTIFICATIONS Permission (`#53`, `#166`)**:
-  - Added Android 13+ (API 33+) `POST_NOTIFICATIONS` runtime permission to `android/app/src/main/AndroidManifest.xml` enabling system push alerts on modern Android devices (including Google Pixel 9a / Android 15).
-  - Wired `NotificationPermissionsService.requestPushPermission()` to `FirebaseMessaging.instance.requestPermission()` with calm-tech defaults (alert: true, badge: false, sound: false) and token generation with web VAPID key support.
-- **Accessible Member Profile Close Action (`#167`)**:
-  - Added explicit, accessible `profile_sheet_close_button` to the `MemberProfileDialog` header for keyboard and mouse navigation on Web/PWA platforms.
-- **Alpha Self-Testing Brief, Multi-Method Verification Guide & Google Sign-In Preview Mode Gating (`#163`)**:
-  - Gated 1-Tap Google Sign-In behind `previewFeaturesEnabledProvider` so the public default authentication flow is rock-solid Email & Password sign-in/registration (with required ICOC church affiliation selection) and passwordless magic link, while Google Sign-In can be safely toggled in Preview Mode without exposing non-technical Alpha members to unfinished OAuth redirects.
-  - Added `docs/ascii_email_for_self_testing_alpha_verification.txt` containing the complete testing briefing and 8-step self-testing checklist referencing the real-device Pixel 9a walkthrough video (`doc/videos/pwa_walkthrough_pixel9a.mp4`).
-  - Added BDD widget test coverage verifying Google Sign-In visibility adheres to `previewModeUserOverrideProvider`.
-- **Web Push & Native FCM Evaluation with Calm-Tech Digest Ethics (`#154`)**:
-  - Background Service Worker (`web/firebase-messaging-sw.js`) implementing W3C Web Push and Firebase Cloud Messaging with calm-tech tags, non-intrusive sound policies, and single-instance digest deduplication.
-  - `CalmNotificationPreferences` domain model and `NotificationPermissionsService` StateNotifier (`calmNotificationPreferencesProvider`) featuring 4 predictable schedules (Twice Daily Digest, Morning Only, Immediate Gentle, Muted) and transparent permission guards for Mobile Safari.
-  - Interactive `CalmNotificationPreferencesSheet` accessible via `CalmNotificationsView` app bar tune button and preferences action card.
-  - Comprehensive unit and widget tests in `test/features/notifications/notification_preferences_test.dart` (+145 tests green).
-- **PWA Installation Walkthrough, Video Demo & In-App Guide (`#153`)**:
-  - Full-resolution physical glass video recording (`doc/videos/pwa_walkthrough_pixel9a.mp4`, 5.0 MB) and real-device step-by-step screenshots (`doc/screenshots/*`) on Google Pixel 9a demonstrating 1-tap Chrome WebAPK install and launcher dock placement.
-  - Member-facing educational guides in GitHub Wiki (`PWA-Installation-and-Mobile-Web-Guide.md` and `PWA-Guide-for-Members-and-Organizers.md`) addressing zero storage bloat (< 5 MB), instant updates, and sandboxed calm privacy.
-  - Interactive `ComingSoonView` PWA Guide bottom sheet (`showPwaInstallGuide`) wired to the mobile app store placeholder links in `HomeScreen`.
-  - Comprehensive BDD widget tests in `test/core/presentation/coming_soon_view_test.dart`.
-- **Threaded Comments & Nested Discussion Replies (`#156`)**:
-  - Full Circle.so parity for discussion replies under reflections (`Comment` domain model with optional `parentCommentId`).
-  - Pluggable `CommentRepository` seam with in-memory broadcast streams (`LocalCommentRepository`) and seeded authentic discussion threads.
-  - `ThreadedDiscussionSheet` modal presentation with original post context, hierarchical indentation (`↳`), care reactions (`🙏`, `🤍`, `🌱`, `😄`), tone tag chips (`[Comfort Only]`, `[Relatable]`, `[Encouragement]`, `[Prayer]`), and reply-to targeting.
-  - `ReflectionCard` live comment count badge (`Key('discussion_button_${post.id}')`).
-  - Comprehensive unit and BDD widget test suite with `patrol_finders` (+138 tests green).
-- **White-Label Multi-Tenant Architecture (`#17`)**: `CommunityBrandConfig` domain model and `hooks_riverpod` provider with **Belong on the Spectrum** (`belongonthespectrum.com`, partnered with `dfwchurch.org`) as default flagship tenant.
-- **Official Multi-Platform Belong Branding & PWA Manifest (`#19`)**: Android API 26+ Adaptive Icons with 66% safe-zone padding, opaque `RGB24` iOS App Store icons, macOS icons, and installable Web PWA manifest.
-- **Circle.so Parity Navigation & 6 Belong Spaces (`#18`, `#22`, `#23`)**:
-  - 5-tab `salomon_bottom_bar` (`Home`, `Spaces`, `Msgs`, `Notifications`, `Profile`).
-  - All 6 Belong spaces grouped into *Welcome & Connection*, *Neurodivergent Life & Special Interests*, and *Faith, Prayer & Encouragement*.
-  - Real-time Community Search & Media/Meme attachment tags.
-  - Interactive Member Profile & Neurodivergent Identity Badges sheet.
-- **Simplified Neurodivergent-First Feedback & 1-Tap Feature Voting (`ADR-0007`)**:
-  - Replaces ambiguous 1–5 star ratings with **Literal 3-Intent Cards** (💚 *Works Great / Public Praise*, 💡 *Idea / Tweak*, 🛠️ *Bug / Confusing*) + a **1-Tap Feature Voting Board** pre-seeded with `WIP · Shipping Before Oct 31` items.
-- **Unified FlutterFire Suite & `dev`/`prod` Flavors (`#20`, `ADR-0006`)**:
-  - Installed all 9 Firebase packages (`firebase_core`, `firebase_analytics`, `firebase_remote_config`, `firebase_in_app_messaging`, `firebase_crashlytics`, `firebase_auth`, `firebase_messaging`, `firebase_performance`, `firebase_app_check`).
-  - Added `OrganizerRemoteConfigService` so non-technical organizers can update the *"Message from the Organizer"* banner without coding.
-- **Live GitHub Wiki & Engineering ADRs (`#21`, `#39`)**:
-  - Published 19 approachable Wiki pages at [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki), including a ready-to-copy Circle.so invitation message, the Oct 24–31 7-day overlap plan, PWA installation guide, `patrol_finders` BDD testing guide, and `docs/migrate_to_appwrite.md`.
+### 🚀 Major Accomplishments in the Last 30 Hours (Oct 19–20, 2026)
 
----
+#### 1. Calm Push Notifications & Permissions (PR #159, PR #168)
+- **FCM Web Push & Android 13+ Runtime Permissions (`#53`, `#166`)**:
+  - Added `<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>` in `android/app/src/main/AndroidManifest.xml` for Android 13+ (API 33+) / Android 15 on Google Pixel 9a.
+  - Wired `NotificationPermissionsService.requestPushPermission()` to `FirebaseMessaging.instance.requestPermission()` with calm-tech defaults (alert: true, badge: false, sound: false) and web VAPID key support.
+  - Created background Service Worker (`web/firebase-messaging-sw.js`) implementing W3C Web Push with calm-tech digest deduplication.
+  - Interactive `CalmNotificationPreferencesSheet` offering 4 predictable schedules: Twice Daily Digest, Morning Only, Immediate Gentle, and Muted.
+  - Deferred iOS FCM / APNs to mid-November milestone (tracked in dedicated Issue `#165`).
 
-## [Planned Next — `v0.8.5` / `v0.9.0-beta` (Between Alpha & Beta — Target Oct 20–23, 2026)]
+#### 2. Authentication & Alpha Self-Testing Gating (PR #120, PR #152, PR #164)
+- **Solid Dual-Mode Firebase Auth (`#119`, PR #120)**:
+  - Email & Password (`signInWithPassword`, `registerWithPassword`) + 1-Click Passwordless Magic Link (`sendMagicLink`, `signInWithMagicLink`).
+  - Neurodivergent-friendly `BelongAuthSheet` modal dialog with clear reassurance banners and translated error messages (no scary raw error codes).
+  - Preserves Marty the Organizer's required ICOC church affiliation question (*"Which ICOC church do you attend?"*) with explicit non-member option, validated on profile save (PR #94, PR #97).
+- **1-Tap Google Sign-In & Preview Mode Gating (`#117`, `#163`, PR #152, PR #164)**:
+  - 1-Tap Google Sign-In implemented and safely gated behind `previewFeaturesEnabledProvider` so public alpha testers use rock-solid email/password while Google Sign-In is previewed risk-free.
+  - Published self-testing briefing (`docs/ascii_email_for_self_testing_alpha_verification.txt`) with 8-step verification checklist and physical glass Pixel 9a walkthrough video.
 
-### High-Value User Experience & Auth Upgrade
-- **1-Tap Google Sign-In & Appwrite Evaluation Cutover (`#33`, `ADR-0008` — 90% Likelihood Window)**:
-  - Introduce **1-Tap Google Sign-In** (and Apple Sign-In) between Alpha and Beta so neurodivergent community members never have to deal with "Forgot Password" links during the October 24–31 Circle transition week!
-  - Evaluate/connect `AppwriteAuthRepository` and `AppwritePostRepository` (`appwrite.io` $0/month free tier + Realtime + FCM integration).
-- **Direct Messages (`Msgs` Tab) & Calm Notification Bell (`#27`)**.
-- **Actually Autistic Events Calendar & RSVP (`#28`)**.
-- **Circle.so CSV Member & Post Migration Importer (`#41`)**.
-- **70% Automated Test Coverage (`patrol_finders` BDD + Domain TDD, `#32`)**.
+#### 3. Community Discussions & Circle.so Migration Parity (PR #98, PR #110, PR #157)
+- **Threaded Comments & Nested Discussion Replies (`#156`, PR #157)**:
+  - Added full discussion reply support under reflections (`Comment` domain model, hierarchical indentation `↳`, tone tags `[Comfort Only]`, `[Relatable]`, `[Encouragement]`, `[Prayer]`, and reactions `🙏`, `🤍`, `🌱`, `😄`).
+- **Circle.so CSV Data Migration Importer CLI (`#41`, PR #98)**:
+  - Pure-Dart CLI `tool/import_circle_csv.dart` with RFC 4180 parser and `--dry-run` validation mapping 8 canonical Circle spaces (`start_here`, `announcements`, `general_chat`, `memes`, `resources_videos`, `actually_autistic_chat`, `friends_chat`, `family_chat`).
+- **Calm Sensory Ambient Soundscapes & Brown Noise Generator (`#109`, PR #110)**:
+  - Added low-frequency brown noise and ambient soundscapes for sensory regulation.
+- **Direct Messages (`Msgs`) & Actually Autistic Events Calendar (`#27`, `#28`, PR #76)**:
+  - Active messaging tabs and community events RSVP.
+- **Accessible Dialog Close Actions (`#167`, PR #168)**:
+  - Added `profile_sheet_close_button` to `MemberProfileDialog` for web/desktop accessibility.
+
+#### 4. Testing, BDD & Zero-Boilerplate Standardization (PR #162)
+- **100% Patrol Finders Standardization (`#161`, PR #162)**:
+  - Replaced verbose `tester.widget(...)` and `waitUntilExists` boilerplate with concise, robust `$` syntax from `package:patrol_finders` across all widget and integration tests.
+  - **147/147 Automated Tests Passing Green (100%)** via Dart MCP `run_tests`.
+  - **0 Static Analysis Errors** across `lib/` and `test/` via Dart MCP `analyze_files`.
+- **Physical Glass & Marionette Driving**:
+  - Live VM Service RPC driving on connected Google Pixel 9a (Android 15) auditing interactive elements and navigation flows.
+
+#### 5. DevOps Velocity & Zero-Terminal-Push Enforcement (PR #160, PR #170)
+- **Mandatory GitHub MCP Server Rule (`#160`)**:
+  - Strictly enforced GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`) eliminating 100% of interactive terminal push popups.
+- **Dashboards & Soft Launch Report Card (`#169`, PR #170)**:
+  - Published Soft Launch Readiness Report Card (**Overall A- 91%**) and Maintainer Private Review Note in `status.md`.
+  - 35 atomic Pull Requests merged to `main` with continuous CodeRabbit triage.
 
 ---
 
-## [Planned Production Cutover — `v1.0.0` (Oct 24 – Oct 31, 2026)]
-- **7-Day Calm Overlap Window (Oct 24 – Oct 31, 2026)** welcoming all existing Circle.so Belong members into the new Web/PWA and mobile beta apps before turning off the $1,000+/year Circle subscription on October 31.
-- **90% BDD/Widget Test Coverage (`#34`)**, **TestFlight & Google Play Beta (`#44`)**, and **App Store / Play Store Submissions (`#45`, `#46`)**.
+## [Soft Launch & Overlap Window — `v0.9.5` / `v1.0.0-rc` (Oct 24 – Oct 30, 2026)]
+
+### 🎯 Goal: 7-Day Calm Community Overlap Before Circle Deprecation
+- **Saturday, Oct 24, 2026**: Soft Launch begins! Real Belong on the Spectrum members are invited into the Web/PWA and mobile apps.
+- **Oct 24 – Oct 30**: Dual-system calm overlap. Circle.so remains accessible while members create profiles, explore spaces, and share reflections in Belong.
+- **Saturday, Oct 31, 2026**: Circle.so subscription ends cleanly, saving $1,000+/year.
+
+### 📋 Checklist Before Oct 24th Launch:
+1. [x] **Core Auth**: Email/password, magic link, and required church affiliation question verified.
+2. [x] **Spaces & Discussions**: All 8 Circle spaces mapped, threaded replies and care reactions active.
+3. [x] **Calm Push Notifications**: FCM active on Web, PWA, and Android with quiet default schedules.
+4. [x] **PWA Installability**: Installable WebAPK verified with full video walkthrough on real Pixel 9a.
+5. [x] **Test Suite**: 147/147 tests green with Patrol Finders.
+6. [ ] **Maintainer Private Review**: Neil checks personal Circle community spaces and member cards side-by-side.
+7. [ ] **Circle CSV Migration Execution**: Run `tool/import_circle_csv.dart` against official export.
+8. [ ] **Firebase Remote Config**: Publish official launch welcome greeting from organizer.
+9. [ ] **Community Invitation**: Post launch announcement in Circle `#announcements` with link to `belongonthespectrum.com`.
+
+---
+
+## [Post-Launch Fast-Follows — `v1.1.0` (Mid-November 2026)]
+- **iOS FCM & APNs Verification (`#165`)**: Complete end-to-end device testing of APNs push tokens on physical iOS hardware.
+- **Public Google & Apple 1-Tap Sign-In**: Graduate 1-Tap OAuth from preview flag to default auth sheet.
+- **Expanded Church Affiliation Directory**: Additional congregation filters requested by organizers.
