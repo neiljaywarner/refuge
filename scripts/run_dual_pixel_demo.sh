@@ -1,26 +1,31 @@
 #!/bin/bash
 set -e
 
-# Auto-detect connected devices or accept environment overrides:
-# Usage: [LEFT_DEV=<id>] [RIGHT_DEV=<id>] ./scripts/run_dual_pixel_demo.sh
-DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" {print $1}'))
+# Auto-detect connected devices dynamically:
+PHYSICAL_DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" && !/emulator/ {print $1}'))
+if [ ${#PHYSICAL_DEVICES[@]} -ge 2 ]; then
+  DEVICES=("${PHYSICAL_DEVICES[@]}")
+else
+  DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" {print $1}'))
+fi
+
 LEFT_DEV="${LEFT_DEV:-${DEVICES[0]}}"
 RIGHT_DEV="${RIGHT_DEV:-${DEVICES[1]}}"
 
 if [ -z "$LEFT_DEV" ] || [ -z "$RIGHT_DEV" ]; then
-  echo "Error: Two connected Android devices are required. Detected: ${#DEVICES[@]}"
+  echo "Error: Two Android devices are required. Detected: ${#DEVICES[@]}"
   echo "Specify explicitly via: LEFT_DEV=<dev1> RIGHT_DEV=<dev2> $0"
   exit 1
 fi
 
-echo "=== Starting dual Pixel screen recordings ==="
+echo "=== Starting dual Pixel screen recordings on $LEFT_DEV and $RIGHT_DEV ==="
 adb -s $LEFT_DEV shell "rm -f /sdcard/left_pixel_scloud.mp4"
 adb -s $RIGHT_DEV shell "rm -f /sdcard/right_pixel_scloud.mp4"
 
-adb -s $LEFT_DEV shell screenrecord --time-limit 35 /sdcard/left_pixel_scloud.mp4 &
+adb -s $LEFT_DEV shell screenrecord --time-limit 45 /sdcard/left_pixel_scloud.mp4 &
 LEFT_PID=$!
 
-adb -s $RIGHT_DEV shell screenrecord --time-limit 35 /sdcard/right_pixel_scloud.mp4 &
+adb -s $RIGHT_DEV shell screenrecord --time-limit 45 /sdcard/right_pixel_scloud.mp4 &
 RIGHT_PID=$!
 
 echo "Recordings started (PIDs: $LEFT_PID, $RIGHT_PID). Waiting 2s..."
@@ -28,36 +33,48 @@ sleep 2
 
 echo "=== Step 1: Pixel Right posting via Serverpod Cloud ==="
 # Tap text box
-adb -s $RIGHT_DEV shell input tap 500 1060
+adb -s $RIGHT_DEV shell input tap 524 1266
 sleep 0.8
 # Type message
-adb -s $RIGHT_DEV shell "input text 'From%spixel%son%sthe%sright%son%sT-Mobile%sLTE%s\(192.168.4.45\)%ssaying%shi%sto%spixel%son%sthe%sleft%svia%sServerpod%sCloud!'"
+adb -s $RIGHT_DEV shell "input text 'From%spixel%son%sthe%sright%ssaying%shi%svia%sServerpod%sCloud!'"
+sleep 0.8
+# Dismiss keyboard
+adb -s $RIGHT_DEV shell input keyevent 4
 sleep 0.8
 # Tap Publish Reflection
-adb -s $RIGHT_DEV shell input tap 740 1255
-sleep 1.5
-# Toggle Dark theme
-adb -s $RIGHT_DEV shell input tap 630 95
-sleep 1.0
+adb -s $RIGHT_DEV shell input tap 778 1470
+sleep 2.5
 
-echo "=== Step 2: Pixel Left replying via Serverpod Cloud ==="
+echo "=== Step 2: Pixel Left reacting and replying ==="
+# Tap reaction chip (🙏 Praying)
+adb -s $LEFT_DEV shell input tap 184 2119
+sleep 1.0
 # Tap text box
-adb -s $LEFT_DEV shell input tap 500 1060
+adb -s $LEFT_DEV shell input tap 524 1266
 sleep 0.8
 # Type reply
-adb -s $LEFT_DEV shell "input text 'From%spixel%son%sthe%sleft%son%sT-Mobile%sLTE%s\(192.168.4.46\)%sreceived%syour%scloud%sreflection!%sFearfully%sand%swonderfully%smade%s\(Psalm%s139:14\)'"
+adb -s $LEFT_DEV shell "input text 'From%spixel%son%sthe%sleft:%sreceived%syour%scloud%sreflection!%sFearfully%sand%swonderfully%smade.'"
+sleep 0.8
+# Dismiss keyboard
+adb -s $LEFT_DEV shell input keyevent 4
 sleep 0.8
 # Tap Publish Reflection
-adb -s $LEFT_DEV shell input tap 740 1255
-sleep 1.5
-# Toggle Contrast theme
-adb -s $LEFT_DEV shell input tap 800 95
+adb -s $LEFT_DEV shell input tap 778 1470
+sleep 2.5
+
+echo "=== Step 3: Sensory theme switch on Right ==="
+# Tap theme icon and select Dark
+adb -s $RIGHT_DEV shell input tap 584 226
 sleep 1.0
+adb -s $RIGHT_DEV shell input tap 450 530
+sleep 1.5
+
+echo "=== Step 4: About Belong dialog on Left ==="
 # Tap About info button
-adb -s $LEFT_DEV shell input tap 940 95
+adb -s $LEFT_DEV shell input tap 699 225
 sleep 3.0
-# Tap outside dialog to dismiss
-adb -s $LEFT_DEV shell input tap 540 1800
+# Dismiss dialog by tapping Close button
+adb -s $LEFT_DEV shell input tap 828 1999
 sleep 1.0
 
 echo "Waiting for recordings to finalize..."

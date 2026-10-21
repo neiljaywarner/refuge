@@ -21,6 +21,12 @@ TARGET="${2:-/tmp/screenshot.png}"
 case "$ACTION" in
   screenshot)
     adb -s "$DEVICE" exec-out screencap -p > "$TARGET"
+    if command -v sips >/dev/null 2>&1; then
+      DIM=$(sips -g pixelHeight -g pixelWidth "$TARGET" 2>/dev/null | awk '/pixelHeight/ {h=$2} /pixelWidth/ {w=$2} END {print w"x"h}')
+      if [ "$DIM" = "1080x2424" ]; then
+        sips -c 2160 1080 "$TARGET" --out "$TARGET" >/dev/null 2>&1 || true
+      fi
+    fi
     echo "Screenshot saved to $TARGET"
     ;;
   tap)
@@ -53,7 +59,7 @@ case "$ACTION" in
     echo "Video saved to $DEST"
     ;;
   *)
-    echo "Usage: $0 {screenshot <path>|tap <x> <y>|key <keycode>|text <string>|record <duration> <path>}"
+    echo "Usage: $0 [screenshot <path>|tap <x> <y>|key <keycode>|text <string>|shell <cmd>|record <duration> <path>]"
     exit 1
     ;;
 esac

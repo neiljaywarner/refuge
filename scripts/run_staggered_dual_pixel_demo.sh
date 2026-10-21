@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
 
-# Auto-detect connected devices or accept environment overrides:
-# Usage: [LEFT_DEV=<id>] [RIGHT_DEV=<id>] ./scripts/run_staggered_dual_pixel_demo.sh
-DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" {print $1}'))
+# Auto-detect connected devices dynamically:
+PHYSICAL_DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" && !/emulator/ {print $1}'))
+if [ ${#PHYSICAL_DEVICES[@]} -ge 2 ]; then
+  DEVICES=("${PHYSICAL_DEVICES[@]}")
+else
+  DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" {print $1}'))
+fi
+
 LEFT_DEV="${LEFT_DEV:-${DEVICES[0]}}"
 RIGHT_DEV="${RIGHT_DEV:-${DEVICES[1]}}"
 
@@ -13,8 +18,7 @@ if [ -z "$LEFT_DEV" ] || [ -z "$RIGHT_DEV" ]; then
   exit 1
 fi
 
-echo "=== Preparing Devices ==="
-# Force close any existing screenrecords on devices
+echo "=== Preparing Devices: Left ($LEFT_DEV) and Right ($RIGHT_DEV) ==="
 adb -s $LEFT_DEV shell "pkill -f screenrecord 2>/dev/null || true"
 adb -s $RIGHT_DEV shell "pkill -f screenrecord 2>/dev/null || true"
 adb -s $LEFT_DEV shell "rm -f /sdcard/left_pixel_staggered.mp4"
@@ -38,55 +42,50 @@ echo "Recordings started (PIDs: $LEFT_PID, $RIGHT_PID). Waiting 2s for initial c
 sleep 2.5
 
 echo "=== Action 1: Pixel Right starts composing post ==="
-# Tap composer text box on Right device
-adb -s $RIGHT_DEV shell input tap 500 800
+# Tap composer text box
+adb -s $RIGHT_DEV shell input tap 524 1266
 sleep 1.0
-adb -s $RIGHT_DEV shell "input text 'From%spixel%son%sthe%sright%son%sLTE%ssaying%shi%svia%sServerpod%sCloud!'"
+adb -s $RIGHT_DEV shell "input text 'From%spixel%son%sthe%sright%ssaying%shi%svia%sServerpod%sCloud!'"
 sleep 1.0
-# CLOSE KEYBOARD so full screen and feed are clearly visible!
-adb -s $RIGHT_DEV shell input keyevent 111
-sleep 1.2
-# Tap Publish Reflection (x ~ 740, y ~ 1030)
-adb -s $RIGHT_DEV shell input tap 740 1030
+# Close keyboard
+adb -s $RIGHT_DEV shell input keyevent 4
+sleep 1.0
+# Tap Publish Reflection
+adb -s $RIGHT_DEV shell input tap 778 1470
 sleep 3.5
 
 echo "=== Action 2: Pixel Left reacts to Right's new post ==="
-# On Left device, react to the incoming reflection
-adb -s $LEFT_DEV shell input tap 180 1560
+# On Left device, react to the reflection
+adb -s $LEFT_DEV shell input tap 184 2119
 sleep 2.0
 
 echo "=== Action 3: Pixel Left replies via Serverpod Cloud ==="
 # Tap composer text box on Left device
-adb -s $LEFT_DEV shell input tap 500 800
+adb -s $LEFT_DEV shell input tap 524 1266
 sleep 1.0
 adb -s $LEFT_DEV shell "input text 'From%spixel%son%sthe%sleft:%sreceived%syour%scloud%sreflection!%sFearfully%sand%swonderfully%smade.'"
 sleep 1.0
-# CLOSE KEYBOARD on Left device!
-adb -s $LEFT_DEV shell input keyevent 111
-sleep 1.2
+# Close keyboard on Left device
+adb -s $LEFT_DEV shell input keyevent 4
+sleep 1.0
 # Tap Publish Reflection on Left device
-adb -s $LEFT_DEV shell input tap 740 1030
+adb -s $LEFT_DEV shell input tap 778 1470
 sleep 3.5
 
-echo "=== Action 4: Pixel Right reacts to Left's reply ==="
-# Right device reacts with Support to the top post
-adb -s $RIGHT_DEV shell input tap 380 1560
-sleep 2.0
-
-echo "=== Action 5: Sensory Theme demonstration on Right Device ==="
-# Tap top-right theme icon menu (x 930, y 160)
-adb -s $RIGHT_DEV shell input tap 930 160
+echo "=== Action 4: Sensory Theme demonstration on Right Device ==="
+# Tap top-right theme icon menu
+adb -s $RIGHT_DEV shell input tap 584 226
 sleep 1.2
 # Select Dark theme in popup menu
-adb -s $RIGHT_DEV shell input tap 850 340
+adb -s $RIGHT_DEV shell input tap 450 530
 sleep 2.0
 
-echo "=== Action 6: About Dialog demonstration on Left Device ==="
-# Tap About info icon on Left device (x 1010, y 160)
-adb -s $LEFT_DEV shell input tap 1010 160
+echo "=== Action 5: About Dialog demonstration on Left Device ==="
+# Tap About info icon on Left device
+adb -s $LEFT_DEV shell input tap 699 225
 sleep 3.0
-# Dismiss dialog by tapping outside
-adb -s $LEFT_DEV shell input tap 540 1900
+# Dismiss dialog by tapping Close button
+adb -s $LEFT_DEV shell input tap 828 1999
 sleep 2.0
 
 echo "Waiting for recordings to finalize..."
