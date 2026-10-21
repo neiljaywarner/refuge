@@ -44,10 +44,8 @@ All images are hosted on GitHub and can be directly embedded into any GitHub Iss
 
 ### 7. Progressive Web App (PWA) Walkthrough (#153, PR #158)
 - `pwa_feed_pixel9a.png`
-- `pwa_home_screen_pixel9a.png`
 - `pwa_install_dialog_pixel9a.png`
 - `pwa_install_sheet_pixel9a.png`
-- `pwa_installed_success_pixel9a.png`
 - `pwa_menu_pixel9a.png`
 - `pwa_shortcut_dialog_pixel9a.png`
 - `pwa_standalone_fullscreen_pixel9a.png`
