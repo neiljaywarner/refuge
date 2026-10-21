@@ -166,6 +166,35 @@ void main() {
       expect(unknown.code, 'custom-error');
       expect(unknown.message, 'Custom issue occurred');
     });
+
+    test('FirebaseAuthRepository resiliently creates user and signs in with Neil test email (#199)', () async {
+      final repo = FirebaseAuthRepository();
+
+      final session = await repo.registerWithPassword(
+        email: 'neilwarner+2026Oct20+954pm@gmail.com',
+        password: 'BelongPassword2026!',
+        displayName: 'Neil Warner',
+        icocChurchAffiliation: 'DFW Church',
+        bio: 'Belong Organizer & Disciple',
+      );
+
+      expect(session.isSignedIn, isTrue);
+      expect(session.email, 'neilwarner+2026oct20+954pm@gmail.com');
+      expect(session.displayName, 'Neil Warner');
+      expect(session.icocChurchAffiliation, 'DFW Church');
+
+      await repo.signOut();
+      expect(repo.currentSession().isSignedIn, isFalse);
+
+      final signedIn = await repo.signInWithPassword(
+        email: 'neilwarner+2026Oct20+954pm@gmail.com',
+        password: 'BelongPassword2026!',
+      );
+
+      expect(signedIn.isSignedIn, isTrue);
+      expect(signedIn.displayName, 'Neil Warner');
+      expect(signedIn.email, 'neilwarner+2026oct20+954pm@gmail.com');
+    });
   });
 
   group('Storage Repository Seam Tests (#119)', () {
