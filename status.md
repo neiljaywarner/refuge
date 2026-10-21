@@ -1,7 +1,7 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Tuesday Oct 20, 2026 @ 8:50 PM CDT  
-> **Session State**: 🟢 Active & Caffeinated (40 PRs merged cleanly, 165/165 tests green)  
+> **Current Timestamp**: Tuesday Oct 20, 2026 @ 9:00 PM CDT  
+> **Session State**: 🟢 Active & Caffeinated (41 PRs merged cleanly, 165/165 tests green)  
 > **Overall Grade**: **`B-` (81/100)** *(Pinned to B- per Maintainer instruction until Firebase Analytics & Crashlytics are fully proven on live hardware in Firebase Console)*  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
@@ -18,7 +18,7 @@
 > - **Jog Start Time**: 8:35 PM CDT (Tuesday, Oct 20, 2026)  
 > - **Estimated Return**: 9:35 PM CDT (60-minute window)  
 > - **Power Lock**: Active 8-hour background `caffeinate -dimsu -t 28800` (Task ID `task-7532`).  
-> - **Current Status**: **40 Pull Requests merged to `main`**, **165/165 automated tests green**, **0 static analysis errors**.
+> - **Current Status**: **41 Pull Requests merged to `main`**, **165/165 automated tests green**, **0 static analysis errors**.
 
 ### 📋 Mini-Milestones Completed in This Sprint:
 1. **Firebase Lifecycle Initializer & Error Hook Audit (#183, #184)**: Built `FirebaseInitializer` with platform-appropriate options (Web & mobile), wired into `lib/main.dart` / `runWithFlavor` async startup loop, activated Crashlytics & Analytics collection, and verified framework/async error forwarding with 4 new automated tests.
@@ -156,10 +156,11 @@ To graduate from **B-** back to **A**, complete the following live glass proof:
 
 ---
 
-## 🛠️ Complete Summary of Merged Pull Requests (40 Merged PRs)
+## 🛠️ Complete Summary of Merged Pull Requests (41 Merged PRs)
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#186** | #185 | fix(observability): clean up main re-exports & add 1-tap adb copy in easter egg dialog | ✅ 165 tests passing |
 | **#184** | #183 | feat(firebase): FirebaseInitializer lifecycle, main.dart async wiring, and Crashlytics/Analytics hooks | ✅ 165 tests passing |
 | **#182** | #181 | chore(dashboards): update status.md & CHANGELOG.md for 161 green tests & PR #180 | ✅ Verified |
 | **#180** | #179 | feat(observability): Serverpod Telemetry Backup, Maestro AppId Fix & CLI Audit Utility | ✅ 161 tests passing |
