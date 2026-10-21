@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
 
@@ -44,9 +45,9 @@ void main() {
       expect(brand.warmGoldAccentColor, const Color(0xFFC99F49));
     });
 
-    testWidgets(
+    patrolWidgetTest(
       'Scenario: Custom white-label tenant override in ProviderScope',
-      (tester) async {
+      ($) async {
         const customBrand = CommunityBrandConfig.belong();
         final partnerBrand = customBrand.copyWith(
           tenantId: 'grace_spectrum',
@@ -55,7 +56,7 @@ void main() {
           defaultOrganizerWelcomeTitle: 'Welcome to Grace Spectrum',
         );
 
-        await tester.pumpWidget(
+        await $.pumpWidgetAndSettle(
           ProviderScope(
             overrides: [
               communityBrandConfigProvider.overrideWithValue(partnerBrand),
@@ -64,9 +65,9 @@ void main() {
           ),
         );
 
-        expect(find.text('Grace Spectrum'), findsOneWidget);
-        expect(find.text('Grace Neurodivergent Fellowship'), findsOneWidget);
-        expect(find.text('Welcome to Grace Spectrum'), findsOneWidget);
+        expect($('Grace Spectrum'), findsOneWidget);
+        expect($('Grace Neurodivergent Fellowship'), findsOneWidget);
+        expect($('Welcome to Grace Spectrum'), findsOneWidget);
       },
     );
   });
