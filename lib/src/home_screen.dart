@@ -39,48 +39,54 @@ enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory }
 /// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
 /// architecture (#18, #22, #23, #26, #35).
 class SanctuaryHomeScreen extends HookConsumerWidget {
-  final VoidCallback? onSwitchTheme;
+  final PostRepository? repository;
+  final ThemeNotifier? themeNotifier;
 
-  const SanctuaryHomeScreen({super.key, this.onSwitchTheme});
+  const SanctuaryHomeScreen({super.key, this.repository, this.themeNotifier});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentTab = useState(0);
-    final selectedSpace = useState('general_chat');
-    final activeToneFilter = useState('All');
-    final homeSubView = useState(BelongHomeSubView.feed);
-    final activeComingSoonItem = useState<FellowshipSpaceItem?>(null);
-
-    // 7-tap Observability Easter Egg state
-    final easterEggTapCount = useState(0);
-    final easterEggLastTap = useState<DateTime>(DateTime.now());
-
-    final brand = ref.watch(brandConfigProvider);
-    final theme = ref.watch(sensoryThemeControllerProvider);
+    final brand = ref.watch(communityBrandConfigProvider);
+    final profile = ref.watch(memberProfileProvider);
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
     final analytics = ref.watch(communityAnalyticsServiceProvider);
-    final activeRepository = ref.watch(postRepositoryProvider);
-    final profile = ref.watch(activeUserProfileProvider);
 
-    final isContrast = theme.mode == SensoryMode.highContrast;
-    final primaryColor = isContrast ? Colors.white : brand.primaryColor;
+    final selectedSpace = useState<String>('prayer');
+    final activeFilter = useState<String>('All');
+    final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
+    final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
+    final activeComingSoonItem = useState<BelongSpaceItem?>(null);
+    final easterEggTapCount = useState<int>(0);
+    final easterEggLastTap = useState<DateTime?>(null);
 
-    void handleTabChange(int index) {
-      currentTab.value = index;
-      analytics.logScreenView(switch (index) {
-        0 => 'home_screen',
-        1 => 'spaces_directory',
-        2 => 'direct_messages',
-        3 => 'notifications',
-        _ => 'search',
-      });
-    }
+    final PostRepository activeRepository =
+        repository ?? ref.watch(postRepositoryProvider);
 
-    void handleSelectSpace(String spaceKey) {
-      selectedSpace.value = spaceKey;
-      homeSubView.value = BelongHomeSubView.feed;
-      activeComingSoonItem.value = null;
-      analytics.logSpaceViewed(spaceKey);
+    final postStream = useMemoized(
+      () => activeRepository.watchPosts(spaceKey: selectedSpace.value),
+      [activeRepository, selectedSpace.value],
+    );
+    final quietDigestFuture = useMemoized(
+      () => activeRepository.getQuietDigest(spaceKey: selectedSpace.value),
+      [activeRepository, selectedSpace.value],
+    );
+    final quietDigestSnapshot = useFuture(quietDigestFuture);
+
+    final SensoryMode currentMode =
+        themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
+    final isContrast = currentMode == SensoryMode.contrast;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isLiveServerpod =
+        activeRepository is ServerpodPostRepository &&
+        activeRepository.isLiveConnected;
+
+    void setSensoryMode(SensoryMode mode) {
+      if (themeNotifier != null) {
+        themeNotifier!.setMode(mode);
+      } else {
+        ref.read(sensoryThemeModeProvider.notifier).setMode(mode);
+      }
+      analytics.logSensoryModeChanged(mode.name);
     }
 
     void selectSpace(String spaceKey) {
@@ -126,242 +132,361 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
               homeSubView.value = BelongHomeSubView.membersDirectory;
             } else if (item.isComingSoon) {
               activeComingSoonItem.value = item;
+              homeSubView.value = BelongHomeSubView.comingSoonItem;
             } else {
-              handleSelectSpace(item.slug);
+              selectSpace(item.slug);
             }
           },
         );
       }
 
-      // If a coming soon item was clicked from a drawer or directory
-      if (activeComingSoonItem.value != null) {
+      if (homeSubView.value == BelongHomeSubView.comingSoonItem &&
+          activeComingSoonItem.value != null) {
+        final item = activeComingSoonItem.value!;
+        if (item.slug == 'actually_autistic_events') {
+          return ActuallyAutisticEventsView(
+            onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+          );
+        }
+        final isMobileAppLink =
+            item.slug == 'link_android_app' || item.slug == 'link_ios_app';
+        final extraNote = item.slug == 'link_community_guidelines'
+            ? remoteConfig.communityGuidelinesMarkdown
+            : isMobileAppLink
+            ? 'Tip: You can add Belong directly to your phone Home Screen right now via Safari ("Add to Home Screen") or Chrome ("Install App") with zero App Store wait!'
+            : null;
         return ComingSoonView(
-          item: activeComingSoonItem.value!,
-          onBack: () => activeComingSoonItem.value = null,
+          title: item.title,
+          emoji: item.emoji,
+          description: item.subtitle,
+          trackedIssueNumber: item.trackedIssueNumber,
+          extraMarkdownOrNote: extraNote,
+          showPwaInstallGuide: isMobileAppLink,
+          onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
         );
       }
 
-      // Default: Clean Single-Column Feed with Reflections
-      return StreamBuilder<List<Post>>(
-        stream: activeRepository.watchPosts(spaceKey: selectedSpace.value),
-        builder: (context, snapshot) {
-          final posts = snapshot.data ?? [];
-          final spaceTitle =
-              FellowshipSpaceDirectory.resolveTitle(selectedSpace.value);
-
-          final filteredPosts = activeToneFilter.value == 'All'
-              ? posts
-              : posts.where((p) => p.toneTag == activeToneFilter.value).toList();
-
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: SpaceNavigationBar(
-                  currentSpaceSlug: selectedSpace.value,
-                  onSelectSpace: handleSelectSpace,
-                  onOpenAllSpaces: () =>
-                      homeSubView.value = BelongHomeSubView.spaces,
-                ),
-              ),
-              if (selectedSpace.value == 'general_chat' ||
-                  selectedSpace.value == 'start_here')
-                SliverToBoxAdapter(
-                  child: CommunityAnchorBanner(
-                    remoteConfig: remoteConfig,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                  ),
-                ),
-              SliverToBoxAdapter(
-                child: ToneFilterRow(
-                  activeFilter: activeToneFilter.value,
-                  onSelectFilter: (filter) => activeToneFilter.value = filter,
-                  primaryColor: primaryColor,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: ReflectionComposer(
-                  selectedSpace: selectedSpace.value,
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompactHeight = constraints.maxHeight < 520;
+          return Column(
+            children: [
+              if (!isCompactHeight)
+                CommunityAnchorBanner(
                   primaryColor: primaryColor,
                   isContrast: isContrast,
-                  onSubmit: submitPost,
                 ),
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
               ),
-              if (filteredPosts.isEmpty)
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.all(24.0),
-                    padding: const EdgeInsets.all(20.0),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'No reflections under "${activeToneFilter.value}" yet.\nFeel free to share an unhurried thought above.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 6.0,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final post = filteredPosts[index];
-                        return ReflectionCard(
-                          post: post,
-                          isContrast: isContrast,
-                          onAddReaction: (type) => activeRepository.addReaction(
-                            postId: post.id,
-                            reactionType: type,
+              if (!isCompactHeight)
+                QuietDigestBanner(
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  legacyMessage: quietDigestSnapshot.data,
+                ),
+              ReflectionComposer(
+                selectedSpace: selectedSpace.value,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                onSubmit: submitPost,
+              ),
+              ToneFilterRow(
+                activeFilter: activeFilter.value,
+                onSelectFilter: (f) => activeFilter.value = f,
+              ),
+              Expanded(
+                child: StreamBuilder<List<Post>>(
+                  stream: postStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      );
+                    }
+
+                    var posts = snapshot.data!;
+                    if (activeFilter.value != 'All') {
+                      posts = posts
+                          .where((p) => p.toneTag == activeFilter.value)
+                          .toList();
+                    }
+
+                    if (posts.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Space is quiet right now.\nBe the first to share an unhurried thought.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.6),
                           ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: posts.length,
+                      padding: const EdgeInsets.only(
+                        left: 12.0,
+                        right: 12.0,
+                        top: 8.0,
+                        bottom: 48.0,
+                      ),
+                      itemBuilder: (context, index) {
+                        final p = posts[index];
+                        return ReflectionCard(
+                          post: p,
+                          isContrast: isContrast,
+                          onAddReaction: (reactionType) =>
+                              activeRepository.addReaction(
+                                postId: p.id,
+                                reactionType: reactionType,
+                              ),
                         );
                       },
-                      childCount: filteredPosts.length,
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ),
             ],
           );
         },
       );
     }
 
-    Widget buildCurrentTabBody() {
-      return switch (currentTab.value) {
-        0 => buildHomeBody(),
-        1 => BelongSpacesDirectoryView(
-            selectedSpaceSlug: selectedSpace.value,
-            onSelectSpaceItem: (item) {
-              if (item.slug == 'members_directory') {
-                homeSubView.value = BelongHomeSubView.membersDirectory;
-                currentTab.value = 0;
-              } else if (item.isComingSoon) {
-                activeComingSoonItem.value = item;
-                currentTab.value = 0;
-              } else {
-                handleSelectSpace(item.slug);
-                currentTab.value = 0;
-              }
-            },
-          ),
-        2 => const BelongMessagesView(),
-        3 => const CalmNotificationsView(),
-        _ => const CommunitySearchView(),
-      };
+    Widget buildActiveBottomTabBody() {
+      switch (activeBottomTab.value) {
+        case BelongBottomTab.home:
+          return Column(
+            children: [
+              _BelongSubHeaderBar(
+                activeSubView: homeSubView.value,
+                onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                onSelectSpaces: () =>
+                    homeSubView.value = BelongHomeSubView.spaces,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+              ),
+              Expanded(child: buildHomeBody()),
+            ],
+          );
+        case BelongBottomTab.notifications:
+          return CalmNotificationsView(
+            onBackToHome: () => activeBottomTab.value = BelongBottomTab.home,
+          );
+        case BelongBottomTab.msgs:
+          return const BelongMessagesView();
+        case BelongBottomTab.search:
+          return CommunitySearchView(
+            repository: activeRepository,
+            isContrast: isContrast,
+          );
+      }
     }
 
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: 0,
-        title: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        elevation: 0.5,
+        title: InkWell(
+          key: const Key('belong_app_bar_title_tap_target'),
+          borderRadius: BorderRadius.circular(8),
           onTap: () {
             final now = DateTime.now();
-            final difference = now.difference(easterEggLastTap.value);
-            easterEggLastTap.value = now;
-
-            if (difference < const Duration(milliseconds: 700)) {
-              easterEggTapCount.value++;
-            } else {
+            if (easterEggLastTap.value == null ||
+                now.difference(easterEggLastTap.value!).inSeconds > 4) {
               easterEggTapCount.value = 1;
+            } else {
+              easterEggTapCount.value++;
             }
+            easterEggLastTap.value = now;
 
             if (easterEggTapCount.value >= 7) {
               easterEggTapCount.value = 0;
-              showDialog(
-                context: context,
-                builder: (_) => const ObservabilityEasterEggDialog(),
-              );
+              ObservabilityEasterEggDialog.show(context);
             }
           },
-          child: Row(
-            children: [
-              Image.asset(
-                brand.logoAssetPath,
-                height: 28,
-                width: 28,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.all_inclusive, size: 24, color: Colors.amber),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  brand.communityName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset(
+                    brand.logoAssetPath,
+                    key: const Key('belong_header_logo'),
+                    width: 28,
+                    height: 28,
+                    errorBuilder: (_, _, _) =>
+                        const Text('♾️', style: TextStyle(fontSize: 18)),
                   ),
-                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            brand.shortName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Sanctuary',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isLiveServerpod
+                                   ? const Color(0xFF4CAF50)
+                                  : const Color(0xFF68A67D),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color
+                                    ?.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          PopupMenuButton<SensoryMode>(
+            tooltip: 'Sensory Themes',
+            icon: const Icon(Icons.brightness_6_rounded, size: 20),
+            onSelected: setSensoryMode,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: SensoryMode.clean,
+                child: Row(
+                  children: [
+                    Text('☀️', style: TextStyle(fontSize: 14)),
+                    SizedBox(width: 8),
+                    Text('Clean'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: SensoryMode.sage,
+                child: Row(
+                  children: [
+                    Text('🌿', style: TextStyle(fontSize: 14)),
+                    SizedBox(width: 8),
+                    Text('Sage'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: SensoryMode.charcoal,
+                child: Row(
+                  children: [
+                    Text('🌙', style: TextStyle(fontSize: 14)),
+                    SizedBox(width: 8),
+                    Text('Dark'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: SensoryMode.contrast,
+                child: Row(
+                  children: [
+                    Text('👁️', style: TextStyle(fontSize: 14)),
+                    SizedBox(width: 8),
+                    Text('Contrast'),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        actions: [
           IconButton(
-            tooltip: 'About Belong on the Spectrum',
-            icon: const Icon(Icons.info_outline_rounded, size: 20),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (_) => const AboutRefugeDialog(),
+            tooltip: 'About Belong',
+            icon: const Icon(Icons.info_outline_rounded, size: 18),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => showAboutSanctuaryDialog(
+              context,
+              primaryColor: primaryColor,
+              isContrast: isContrast,
+              currentMode: currentMode,
+              onSelectMode: setSensoryMode,
             ),
           ),
-          IconButton(
-            tooltip: 'Feedback & Feature Voting Board',
-            icon: const Icon(Icons.how_to_vote_outlined, size: 20),
-            onPressed: () => showBelongFeedbackAndVotingSheet(context),
-          ),
+          if (!profile.isSignedIn)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: FilledButton.tonalIcon(
+                key: const Key('home_top_bar_sign_in_button'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 0,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: () => BelongAuthSheet.show(context),
+                icon: const Icon(Icons.login_rounded, size: 15),
+                label: const Text(
+                  'Sign In',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
           Padding(
-            padding: const EdgeInsets.only(right: 8.0, left: 4.0),
+            padding: const EdgeInsets.only(right: 8),
             child: InkWell(
-              borderRadius: BorderRadius.circular(16.0),
-              onTap: () {
-                final auth = ref.read(authServiceProvider);
-                final currentUser = auth.currentUser;
-
-                if (currentUser == null) {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+              key: const Key('belong_profile_avatar_button'),
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => MemberProfileDialog.show(context),
+              child: Tooltip(
+                message: 'Member Profile (${profile.displayName})',
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: isContrast
+                      ? Colors.yellow
+                      : primaryColor.withValues(alpha: 0.2),
+                  child: Text(
+                    profile.initials,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.black : primaryColor,
                     ),
-                    builder: (_) => const BelongAuthSheet(),
-                  );
-                } else {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    builder: (_) => const MemberProfileDialog(),
-                  );
-                }
-              },
-              child: CircleAvatar(
-                radius: 14,
-                backgroundColor: primaryColor.withValues(alpha: 0.2),
-                child: Text(
-                  profile.displayName.isNotEmpty
-                      ? profile.displayName[0].toUpperCase()
-                      : 'B',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
                   ),
                 ),
               ),
@@ -369,11 +494,78 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
           ),
         ],
       ),
-      body: buildCurrentTabBody(),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        left: true,
+        right: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820),
+            child: buildActiveBottomTabBody(),
+          ),
+        ),
+      ),
       bottomNavigationBar: BelongBottomNavBar(
-        currentIndex: currentTab.value,
-        onTap: handleTabChange,
-        primaryColor: primaryColor,
+        currentTab: activeBottomTab.value,
+        isContrast: isContrast,
+        onSelectTab: (tab) {
+          activeBottomTab.value = tab;
+          analytics.logBottomTabSelected(tab.name);
+        },
+      ),
+    );
+  }
+}
+
+/// Alias for SanctuaryHomeScreen to support Refuge / Belong branding.
+typedef RefugeHomeScreen = SanctuaryHomeScreen;
+
+class _BelongSubHeaderBar extends StatelessWidget {
+  const _BelongSubHeaderBar({
+    required this.activeSubView,
+    required this.onSelectFeed,
+    required this.onSelectSpaces,
+    required this.primaryColor,
+    required this.isContrast,
+  });
+
+  final BelongHomeSubView activeSubView;
+  final VoidCallback onSelectFeed;
+  final VoidCallback onSelectSpaces;
+  final Color primaryColor;
+  final bool isContrast;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFeed = activeSubView == BelongHomeSubView.feed;
+    final isSpaces = activeSubView == BelongHomeSubView.spaces;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
+      child: Row(
+        children: [
+          ChoiceChip(
+            key: const Key('subnav_feed_tab'),
+            label: const Text('Feed'),
+            selected: isFeed,
+            onSelected: (_) => onSelectFeed(),
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            key: const Key('subnav_spaces_tab'),
+            label: const Text('Spaces'),
+            selected: isSpaces,
+            onSelected: (_) => onSelectSpaces(),
+          ),
+          const Spacer(),
+          ActionChip(
+            key: const Key('open_feedback_and_voting_button'),
+            avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
+            label: const Text('Vote & Feedback'),
+            onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+          ),
+        ],
       ),
     );
   }
