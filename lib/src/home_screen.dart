@@ -146,9 +146,10 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
             onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
           );
         }
+        final isMobileAppLink = item.slug == 'link_android_app' || item.slug == 'link_ios_app';
         final extraNote = item.slug == 'link_community_guidelines'
             ? remoteConfig.communityGuidelinesMarkdown
-            : item.slug == 'link_android_app' || item.slug == 'link_ios_app'
+            : isMobileAppLink
             ? 'Tip: You can add Belong directly to your phone Home Screen right now via Safari ("Add to Home Screen") or Chrome ("Install App") with zero App Store wait!'
             : null;
         return ComingSoonView(
@@ -157,6 +158,7 @@ class SanctuaryHomeScreen extends HookConsumerWidget {
           description: item.subtitle,
           trackedIssueNumber: item.trackedIssueNumber,
           extraMarkdownOrNote: extraNote,
+          showPwaInstallGuide: isMobileAppLink,
           onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
         );
       }

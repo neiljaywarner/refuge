@@ -7,6 +7,11 @@ All notable changes and planned release milestones leading up to the **October 3
 ## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.9.0-rc` (Oct 20, 2026)]
 
 ### Added
+- **PWA Installation Walkthrough, Video Demo & In-App Guide (`#153`)**:
+  - Full-resolution physical glass video recording (`doc/videos/pwa_walkthrough_pixel9a.mp4`, 5.0 MB) and real-device step-by-step screenshots (`doc/screenshots/*`) on Google Pixel 9a demonstrating 1-tap Chrome WebAPK install and launcher dock placement.
+  - Member-facing educational guides in GitHub Wiki (`PWA-Installation-and-Mobile-Web-Guide.md` and `PWA-Guide-for-Members-and-Organizers.md`) addressing zero storage bloat (< 5 MB), instant updates, and sandboxed calm privacy.
+  - Interactive `ComingSoonView` PWA Guide bottom sheet (`showPwaInstallGuide`) wired to the mobile app store placeholder links in `HomeScreen`.
+  - Comprehensive BDD widget tests in `test/core/presentation/coming_soon_view_test.dart`.
 - **Threaded Comments & Nested Discussion Replies (`#156`)**:
   - Full Circle.so parity for discussion replies under reflections (`Comment` domain model with optional `parentCommentId`).
   - Pluggable `CommentRepository` seam with in-memory broadcast streams (`LocalCommentRepository`) and seeded authentic discussion threads.

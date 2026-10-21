@@ -3,6 +3,7 @@
 * **[📅 Oct 31 Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)**
 * **[🏘️ Belong Community Rooms Guide](Belong-Community-Guide)**
 * **[📱 How to Install on iPhone & Android (PWA)](PWA-Guide-for-Members-and-Organizers)**
+* **[🎥 PWA Visual Installation & Video Guide](PWA-Installation-and-Mobile-Web-Guide)**
 * **[🎛️ Updating Announcements & Welcome Banner Without Coding](Organizer-Remote-Config-Guide)**
 * **[📥 Bringing Over Past Posts (Spreadsheet / CSV Guide)](Circle-CSV-Migration-Guide)**
 * **[🤝 Volunteer & Welcome Team Guide](How-You-Can-Help-Volunteer-Guide)**
