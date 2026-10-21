@@ -10,9 +10,9 @@ import 'main.dart';
 /// agents can drive the app through the Marionette MCP server or CLI (see
 /// `docs/driving_pixels.md`). Release builds and `main_prod.dart` never
 /// include it.
-void main() {
+void main() async {
   if (!kReleaseMode) {
     MarionetteBinding.ensureInitialized();
   }
-  bootstrapBelongApp(flavor: AppFlavor.dev);
+  await bootstrapBelongApp(flavor: AppFlavor.dev);
 }
