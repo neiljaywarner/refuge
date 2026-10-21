@@ -38,7 +38,7 @@ void main() {
     'BDD (patrol_finders): Member navigates Circle Spaces, opens Roadmap & Feedback, and upvotes WIP feature',
     ($) async {
       await $.pumpWidgetAndSettle(
-        SanctuaryApp(repository: LocalPostRepository()),
+        RefugeApp(repository: LocalPostRepository()),
       );
 
       // 1. Verify Belong header and sub-navigation chips
@@ -77,7 +77,7 @@ void main() {
       addTearDown(() => $.tester.binding.setSurfaceSize(null));
 
       await $.pumpWidgetAndSettle(
-        SanctuaryApp(repository: LocalPostRepository()),
+        RefugeApp(repository: LocalPostRepository()),
       );
 
       await $(const Key('subnav_spaces_tab')).tap();

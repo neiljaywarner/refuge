@@ -17,7 +17,7 @@ void main() {
             communityBrandConfigProvider.overrideWithValue(brand),
         ],
         child: MaterialApp(
-          home: home ?? SanctuaryApp(repository: LocalPostRepository()),
+          home: home ?? RefugeApp(repository: LocalPostRepository()),
         ),
       );
     }
@@ -26,7 +26,7 @@ void main() {
       await $.pumpWidgetAndSettle(createTestApp());
 
       // Verify Calm Header
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
       expect($(find.textContaining('Calm Tech')), findsWidgets);
 
       // Verify Tab navigation
