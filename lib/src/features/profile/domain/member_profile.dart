@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -76,9 +78,27 @@ class MemberProfile {
 }
 
 class MemberProfileNotifier extends Notifier<MemberProfile> {
+  StreamSubscription<AuthSession>? _sub;
+
   @override
   MemberProfile build() {
     final repo = ref.watch(authRepositoryProvider);
+    _sub?.cancel();
+    _sub = repo.authStateChanges().listen((session) {
+      state = MemberProfile(
+        displayName: session.displayName,
+        email: session.email,
+        bio: session.bio,
+        comfortBadges: session.comfortBadges,
+        isSignedIn: session.isSignedIn,
+        authMethod: session.authMethod,
+        icocChurchAffiliation: session.icocChurchAffiliation,
+      );
+    });
+    ref.onDispose(() {
+      _sub?.cancel();
+    });
+
     final session = repo.currentSession();
     return MemberProfile(
       displayName: session.displayName,

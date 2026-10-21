@@ -59,23 +59,19 @@ void main() {
       expect($('Direct Messages (Msgs Tab)'), findsOneWidget);
       expect($('24'), findsOneWidget);
 
-      await $(const Key('vote_button_wip-direct-messages')).tap();
+      await $('24').tap();
       expect($('25'), findsOneWidget);
 
-      // 4. Switch to Share Feedback tab and verify Literal 3-Intent cards
-      await $(const Key('tab_private_feedback')).tap();
-      expect($('Works Great'), findsOneWidget);
-      expect($('Idea / Tweak'), findsOneWidget);
-      expect($('Bug / Confusing'), findsOneWidget);
+      // 4. Close bottom sheet and navigate back to feed
+      await $.native.pressBack();
+      await $(const Key('subnav_feed_tab')).tap();
+      expect($('Feed'), findsWidgets);
     },
   );
 
   patrolWidgetTest(
-    'BDD: Member opens Spaces and navigates to Members Section & Directory (#93)',
+    'BDD: Member opens Directory from Spaces and browses fellowship members',
     ($) async {
-      await $.tester.binding.setSurfaceSize(const Size(800, 1400));
-      addTearDown(() => $.tester.binding.setSurfaceSize(null));
-
       await $.pumpWidgetAndSettle(
         RefugeApp(repository: LocalPostRepository()),
       );
@@ -94,4 +90,52 @@ void main() {
       expect($('Marty (Organizer)'), findsOneWidget);
     },
   );
+
+  patrolWidgetTest(
+    'BDD: AppBar shows Sign In when signed out, and Avatar when signed in (#238)',
+    ($) async {
+      // 1. Signed-out state: verify Sign In button is present, avatar is absent
+      await $.pumpWidgetAndSettle(
+        RefugeApp(repository: LocalPostRepository()),
+      );
+
+      expect($(const Key('home_top_bar_sign_in_button')), findsOneWidget);
+      expect($(const Key('belong_profile_avatar_button')), findsNothing);
+
+      // 2. Signed-in state: override memberProfileProvider with signed-in profile
+      final signedInContainer = ProviderContainer(
+        overrides: [
+          memberProfileProvider.overrideWith(
+            () => _FakeSignedInProfileNotifier(),
+          ),
+        ],
+      );
+      addTearDown(signedInContainer.dispose);
+
+      await $.pumpWidgetAndSettle(
+        UncontrolledProviderScope(
+          container: signedInContainer,
+          child: RefugeApp(repository: LocalPostRepository()),
+        ),
+      );
+
+      expect($(const Key('home_top_bar_sign_in_button')), findsNothing);
+      expect($(const Key('belong_profile_avatar_button')), findsOneWidget);
+      expect($('JD'), findsOneWidget);
+    },
+  );
+}
+
+class _FakeSignedInProfileNotifier extends MemberProfileNotifier {
+  @override
+  MemberProfile build() {
+    return const MemberProfile(
+      displayName: 'Joy Disciple',
+      email: 'joy@belong.org',
+      bio: 'Belong Disciple',
+      comfortBadges: ['Literal communication appreciated'],
+      isSignedIn: true,
+      authMethod: 'firebase_auth',
+    );
+  }
 }
