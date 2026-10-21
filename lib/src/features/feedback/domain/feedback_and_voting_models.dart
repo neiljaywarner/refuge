@@ -150,6 +150,15 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     githubIssueNumber: 45,
   ),
   VotableFeatureItem(
+    id: 'idea-realtime-vs-calm-notifications',
+    title: 'Real-Time Instant Alerts vs. Calm Batched Digest Toggle',
+    description:
+        'Let members choose: receive immediate chimes/banners for DMs and replies, or batch everything into a calm quiet digest.',
+    stage: FeatureStage.communityIdea,
+    votes: 32,
+    githubIssueNumber: 243,
+  ),
+  VotableFeatureItem(
     id: 'idea-sensory-audio-rooms',
     title: 'Camera-Off Voice & Text Hangout Rooms',
     description:

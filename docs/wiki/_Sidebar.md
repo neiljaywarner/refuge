@@ -1,5 +1,6 @@
 ### 🌱 Community & Organizers (Start Here — No Coding Needed)
 * **[🏠 Welcome & Overview](Home)**
+* **[❓ Questions for Product & Alpha Testers](Questions-for-Product-Users-and-Alpha-Testers)**
 * **[📅 Oct 31 Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)**
 * **[🏘️ Belong Community Rooms Guide](Belong-Community-Guide)**
 * **[📱 How to Install on iPhone & Android (PWA)](PWA-Guide-for-Members-and-Organizers)**

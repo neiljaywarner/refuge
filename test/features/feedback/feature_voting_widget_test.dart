@@ -48,5 +48,48 @@ void main() {
         );
       },
     );
+
+    patrolWidgetTest(
+      'renders Real-Time Alerts vs. Calm Digest item and toggles vote cleanly (#243)',
+      ($) async {
+        await $.pumpWidgetAndSettle(
+          ProviderScope(
+            overrides: [
+              featureVotingBackendTargetProvider.overrideWithValue(
+                BackendTarget.inMemory,
+              ),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(
+                body: BelongFeedbackAndVotingSheet(),
+              ),
+            ),
+          ),
+        );
+
+        // Scroll down in the ListView to bring the item into view
+        await $.tester.dragUntilVisible(
+          find.byKey(const Key('vote_button_idea-realtime-vs-calm-notifications')),
+          find.byType(ListView).first,
+          const Offset(0, -200),
+        );
+        await $.pumpAndSettle();
+
+        // Verify the item is listed
+        expect(
+          $('Real-Time Instant Alerts vs. Calm Batched Digest Toggle'),
+          findsOneWidget,
+        );
+        expect($('32'), findsOneWidget);
+
+        // Upvote
+        await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
+        expect($('33'), findsOneWidget);
+
+        // Toggle vote back off
+        await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
+        expect($('32'), findsOneWidget);
+      },
+    );
   });
 }
