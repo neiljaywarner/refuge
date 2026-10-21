@@ -4,7 +4,7 @@ Feature: WCAG Sensory Modes and Accessibility
   So that I can read and fellowship without migraines or eye strain
 
   Scenario: Toggling through all 4 sensory themes
-    Given the Sanctuary application is open
+    Given the Refuge application is open
     When I tap on the "Dark" sensory button
     Then the theme should apply Monastic Dark charcoal tones
     When I tap on the "Contrast" sensory button
@@ -13,4 +13,4 @@ Feature: WCAG Sensory Modes and Accessibility
     Then the theme should apply Clean Slate white tones
     When I tap on the "Sage" sensory button
     Then the theme should apply Sage natural green tones
-    And the application title "Sanctuary" should remain clearly visible throughout
+    And the application title "Refuge" should remain clearly visible throughout

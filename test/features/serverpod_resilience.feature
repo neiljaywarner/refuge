@@ -10,6 +10,6 @@ Feature: Serverpod 4 Resilient Client Integration
     And the header should display the "Serverpod 4 (Resilient Mode)" status indicator
 
   Scenario: Server-side Quiet Digest aggregation banner
-    Given the Sanctuary application is open
+    Given the Refuge application is open
     Then I should see the Quiet Digest banner summarizing community care
     And it should display aggregate reflections and care affirmation totals
