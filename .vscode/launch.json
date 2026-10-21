@@ -1,0 +1,64 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Refuge (Dev with Analytics)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APTABASE_KEY=${env:APTABASE_BELONG_KEY}",
+        "--dart-define=POSTHOG_KEY=${env:POSTHOG_BELONG_PROJECT_TOKEN}",
+        "--dart-define=POSTHOG_HOST=https://us.i.posthog.com"
+      ]
+    },
+    {
+      "name": "Refuge (Pixel 1 - Dev)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "56091JEBF14039",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APTABASE_KEY=${env:APTABASE_BELONG_KEY}",
+        "--dart-define=POSTHOG_KEY=${env:POSTHOG_BELONG_PROJECT_TOKEN}",
+        "--dart-define=POSTHOG_HOST=https://us.i.posthog.com"
+      ]
+    },
+    {
+      "name": "Refuge (Pixel 2 - Dev)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "58221JEBF20835",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APTABASE_KEY=${env:APTABASE_BELONG_KEY}",
+        "--dart-define=POSTHOG_KEY=${env:POSTHOG_BELONG_PROJECT_TOKEN}",
+        "--dart-define=POSTHOG_HOST=https://us.i.posthog.com"
+      ]
+    },
+    {
+      "name": "Refuge (Medium Phone Emulator)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "emulator-5554",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APTABASE_KEY=${env:APTABASE_BELONG_KEY}",
+        "--dart-define=POSTHOG_KEY=${env:POSTHOG_BELONG_PROJECT_TOKEN}",
+        "--dart-define=POSTHOG_HOST=https://us.i.posthog.com"
+      ]
+    },
+    {
+      "name": "Refuge (Web Chrome - Dev)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APTABASE_KEY=${env:APTABASE_BELONG_KEY}",
+        "--dart-define=POSTHOG_KEY=${env:POSTHOG_BELONG_PROJECT_TOKEN}",
+        "--dart-define=POSTHOG_HOST=https://us.i.posthog.com"
+      ]
+    }
+  ]
+}
