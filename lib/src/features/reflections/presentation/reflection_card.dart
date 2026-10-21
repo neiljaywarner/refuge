@@ -203,34 +203,28 @@ class ReflectionCard extends ConsumerWidget {
                   ),
                 ],
                 const SizedBox(width: 8),
-                // Threaded Comments Discussion Button
-                Consumer(
-                  builder: (context, ref, _) {
-                    final commentsAsync = ref.watch(commentsForPostProvider(post.id));
-                    final count = commentsAsync.value?.length ?? 0;
+                Builder(
+                  builder: (ctx) {
+                    final countAsync =
+                        ref.watch(postCommentCountStreamProvider(post.id));
+                    final count = countAsync.value ?? 0;
                     return OutlinedButton.icon(
                       key: Key('discussion_button_${post.id}'),
                       style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        foregroundColor: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: onOpenDiscussion ??
-                          () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          () => ThreadedDiscussionSheet.show(
+                                context,
+                                post: post,
                               ),
-                              builder: (_) => ThreadedDiscussionSheet(post: post),
-                            );
-                          },
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 14),
+                      icon: const Text('💬', style: TextStyle(fontSize: 12)),
                       label: Text(
-                        count > 0 ? '$count Replies' : 'Discuss',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        count == 1
+                            ? '1 Reply'
+                            : (count > 1 ? '$count Replies' : 'Reply'),
+                        style: const TextStyle(fontSize: 11),
                       ),
                     );
                   },
