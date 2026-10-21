@@ -13,7 +13,8 @@
 > **Marionette MCP Guide**: [`readme_marionette.md`](readme_marionette.md)  
 > **Manual Testing & UAT Playbook**: [`docs/wiki/Manual-Testing-and-UAT-Flows.md`](docs/wiki/Manual-Testing-and-UAT-Flows.md) ([Issue #122](https://github.com/neiljaywarner/refuge/issues/122))  
 > **Calm Notifications Architecture**: [`docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md`](docs/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM.md)  
-> **Last Updated**: **Monday Oct 19, 2026 @ 8:40 PM CDT**
+> **Current Status Dashboard**: [`status.md`](status.md) (Overall Readiness Grade: **A- 91%**)  
+> **Last Updated**: **Tuesday Oct 20, 2026 @ 8:15 PM CDT**
 
 ---
 
