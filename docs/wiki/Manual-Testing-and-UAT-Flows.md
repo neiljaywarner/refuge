@@ -125,16 +125,22 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
 ---
 
 ### Flow 5: Feature Voting & Community Voice 🗳️
-*Goal: Help shape the roadmap by upvoting upcoming features and sending literal feedback.*
+*Goal: Help shape the roadmap by upvoting upcoming features, submitting community ideas, and voting on notification delivery modes.*
 
 1. **Open the Roadmap & Feedback Sheet**:
-   - Tap the **"Vote & Feedback"** tab at the top of the screen.
-2. **Tab 1: Vote on Features**:
-   - Review upcoming items (e.g., *Audio MP3 Release Notes*, *Calm Ambient Soundscapes*, *Quiet Daily Digest*).
-   - Tap the thumb / vote button on your favorite features.
-   - **Expected**: The vote count increases immediately.
-3. **Tab 2: Share Literal Feedback**:
-   - Tap the **"Share Feedback"** tab.
+   - Tap the **"Vote & Feedback"** button at the top of the screen (or in the Spaces directory).
+2. **Tab 1: Vote on Upcoming Features**:
+   - Locate **"Real-Time Instant Alerts vs. Calm Batched Digest Toggle"** (Issue [#243](https://github.com/neiljaywarner/refuge/issues/243)).
+   - Tap the upvote count button.
+   - **Expected**: The counter increments immediately with green visual highlight.
+   - Tap it again to toggle your vote off (counter decrements).
+3. **Propose a Community Feature**:
+   - Scroll to the bottom of the Feature Voting board.
+   - Type a title (e.g. *"Sensory Timer for Soundscapes"*) and a short description.
+   - Tap **"Propose Feature"**.
+   - **Expected**: Your proposed item appears instantly at the bottom of the voting board with 1 initial vote!
+4. **Tab 2: Share Literal 3-Intent Feedback**:
+   - Tap the **"Private Feedback"** tab.
    - Select one of the 3 clear intent cards:
      - 🌟 **Works Great** (Public praise)
      - 💡 **Idea / Tweak** (Constructive suggestion)
@@ -144,37 +150,57 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
 
 ---
 
-### Flow 6: Offline Resilience & Diagnostics 📴
-*Goal: Confirm the app handles poor connectivity gracefully without crashing.*
+### Flow 6: Responsive Layout & Mobile Web Check 📱
+*Goal: Ensure the layout adapts gracefully across screens without clipping or overflow.*
 
-1. **Simulate Offline Mode**:
-   - On your phone or laptop, turn on **Airplane Mode** or disconnect Wi-Fi.
-   - Navigate through the app and view cached reflections.
-   - **Expected**: An offline banner appears indicating you are viewing offline content. The app remains responsive and does not freeze or crash.
-2. **Diagnostics & Error Logs**:
-   - Tap the about / diagnostics menu option.
-   - Verify that logs are readable and contain no personal passwords or sensitive keys.
-   - If you ever hit an issue, you can copy the log snippet to share with the developers.
-
----
-
-## 📝 4. Jargon-Free Bug Report Template
-
-Found something confusing, awkward, or broken? Copy and paste this simple form into an email to Neil/Marty or post it in our **#bugs** space:
-
-```text
-1. What device were you using? (e.g., iPhone 15 Safari, Samsung Galaxy S23, Windows Chrome)
-2. What were you trying to do? (e.g., "I tapped Save on my profile", "I tried upvoting the audio player")
-3. What did you expect to happen?
-4. What actually happened? (e.g., "The button didn't react", "The text overflowed off the screen")
-5. How did it feel sensory-wise? (e.g., "Great", "Text was too small", "Too bright", "Colors clashed")
-```
+1. **Resize Desktop Browser Window**:
+   - Shrink the window width down to mobile phone size (~380px).
+   - Confirm navigation collapses smoothly into a bottom nav bar.
+   - Expand to tablet/desktop width (~1000px+).
+   - Confirm a clean, spacious centered layout with comfortable margins.
+2. **Rotate Mobile Device**:
+   - Switch between portrait and landscape.
+   - Verify post text wraps cleanly and bottom bars do not obscure content.
 
 ---
 
-## 🏁 Automated Safety Checks in Our Codebase
-For developers and curious mentees: this manual testing playbook is backed by automated tests:
-- **Maestro E2E Script**: `.maestro/auth_and_profile_flow.yaml`
-- **Patrol BDD Widget Suite**: `test/features/uat_cross_platform_flows_test.dart`
-- **Unit Logic Verification**: `test/features/auth/belong_auth_sheet_widget_test.dart`
-- **Physical Glass Verification**: Automated Marionette & Patrol driving on connected Pixel 9a hardware.
+### Flow 7: Google Password Manager & Browser Autofill 🔐
+*Goal: Confirm that credentials save and autofill smoothly with OS password managers.*
+
+1. **Open Auth Sheet**:
+   - Tap **Sign In** from the top bar or profile sheet.
+2. **Enter Credentials**:
+   - Select **Create Account** or **Sign In**.
+   - Type an email address and password.
+3. **Submit Form**:
+   - Tap **"Create Account"** or **"Sign In"**.
+   - **Expected**: The native OS bottom sheet (e.g., *Google Password Manager: "Save password for refuge?"*) appears with "Save" and "Never" options.
+   - Tap **"Save"**.
+4. **Autofill Verification**:
+   - Sign out and return to the sign-in sheet.
+   - Tap the Email or Password field.
+   - **Expected**: The OS suggests the saved account with 1-tap autofill.
+
+---
+
+### Flow 8: Clean Top Bar Auth State 👤
+*Goal: Ensure the top app bar displays a clean, unambiguous state for both guests and authenticated members.*
+
+1. **Guest / Signed-Out State**:
+   - Sign out of your account.
+   - Look at the top-right corner of the app bar.
+   - **Expected**: A single **Sign In** button appears with an icon. No initials avatar is shown.
+2. **Authenticated / Signed-In State**:
+   - Sign in to your account.
+   - Look at the top-right corner of the app bar.
+   - **Expected**: A circular initials avatar (e.g., `NF`) is shown. The redundant **Sign In** button is completely hidden.
+
+---
+
+## 💡 4. How to Submit Feedback
+
+If you find anything confusing, broken, or delightful, please let us know:
+1. **Inside the App**: Use **Flow 5** (Vote & Feedback $\rightarrow$ Share Feedback tab) to send thoughts directly.
+2. **By Email / Message**: Send your notes, screenshots, or screen recordings directly to the Belong Welcome Team.
+
+*Thank you for being part of building a welcoming, sensory-friendly refuge for autistic believers and friends!*
