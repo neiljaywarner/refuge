@@ -7,6 +7,10 @@ All notable changes and planned release milestones leading up to the **October 3
 ## [Unreleased / Active Tonight — `v0.6.0-alpha` -> `v0.9.0-rc` (Oct 20, 2026)]
 
 ### Added
+- **Alpha Self-Testing Brief, Multi-Method Verification Guide & Google Sign-In Preview Mode Gating (`#163`)**:
+  - Gated 1-Tap Google Sign-In behind `previewFeaturesEnabledProvider` so the public default authentication flow is rock-solid Email & Password sign-in/registration (with required ICOC church affiliation selection) and passwordless magic link, while Google Sign-In can be safely toggled in Preview Mode without exposing non-technical Alpha members to unfinished OAuth redirects.
+  - Added `docs/ascii_email_for_self_testing_alpha_verification.txt` containing the complete testing briefing and 8-step self-testing checklist referencing the real-device Pixel 9a walkthrough video (`doc/videos/pwa_walkthrough_pixel9a.mp4`).
+  - Added BDD widget test coverage verifying Google Sign-In visibility adheres to `previewModeUserOverrideProvider`.
 - **Web Push & Native FCM Evaluation with Calm-Tech Digest Ethics (`#154`)**:
   - Background Service Worker (`web/firebase-messaging-sw.js`) implementing W3C Web Push and Firebase Cloud Messaging with calm-tech tags, non-intrusive sound policies, and single-instance digest deduplication.
   - `CalmNotificationPreferences` domain model and `NotificationPermissionsService` StateNotifier (`calmNotificationPreferencesProvider`) featuring 4 predictable schedules (Twice Daily Digest, Morning Only, Immediate Gentle, Muted) and transparent permission guards for Mobile Safari.

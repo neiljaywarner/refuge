@@ -1,0 +1,113 @@
+================================================================================
+           BELONG ON THE SPECTRUM — ALPHA SELF-TESTING & VERIFICATION BRIEF
+================================================================================
+Target Audience : Self-Testing (Neil / Organizers before sharing with Alpha Members)
+Release Target  : v0.8.5-alpha / Cutover Overlap Window (Oct 24 - 31, 2026)
+Platform Targets: Google Pixel 9a (Physical Glass), Android PWA, iOS Safari, Web
+Test Suite State: 146/146 Automated Tests Passing (100% Green)
+================================================================================
+
+Hi Neil,
+
+Here is your comprehensive testing briefing detailing what has been rigorously
+verified across multiple testing tiers (Patrol BDD, Marionette, ADB Physical
+Glass, and Unit Suites) and a concrete, stress-free checklist you can run through
+on your phone before inviting Alpha members.
+
+--------------------------------------------------------------------------------
+1. VIDEO DEMONSTRATION & VISUAL PROOF (WATCH FIRST)
+--------------------------------------------------------------------------------
+Before doing anything, you can watch the physical-glass walkthrough recorded on
+your connected Google Pixel 9a (Android 15):
+
+* Walkthrough Video: doc/videos/pwa_walkthrough_pixel9a.mp4
+  - Resolution: 1080 x 2400 (60 fps)
+  - Demonstrates: Chrome overflow menu -> "Install app" -> Android WebAPK
+    installation -> Belong icon placed in launcher dock -> Fullscreen launch.
+
+* Real-Glass Screenshot Archive (doc/screenshots/):
+  - pwa_feed_pixel9a.png               : Live feed with FM avatar & spaces
+  - pwa_menu_pixel9a.png               : Chrome menu with install shortcut
+  - pwa_install_sheet_pixel9a.png      : Chrome bottom sheet prompt
+  - pwa_install_dialog_pixel9a.png     : Belong on the Spectrum modal dialog
+  - pwa_home_screen_pixel9a.png        : Belong icon on the launcher dock
+  - pwa_standalone_fullscreen_pixel9a.png: Standalone app running full-screen
+
+--------------------------------------------------------------------------------
+2. WHAT HAS BEEN THOROUGHLY TESTED ACROSS MULTIPLE METHODS
+--------------------------------------------------------------------------------
+[x] SIGN IN & REGISTRATION (ROCK SOLID):
+    - Email & Password sign-in validated.
+    - Account registration enforces mandatory ICOC church affiliation selection
+      (or explicit "I am not a member of an ICOC church").
+    - Passwordless Magic Link email generation and validation banner.
+    - Google Sign-In safely gated behind Preview Mode (`previewFeaturesEnabledProvider`)
+      so it can be tested in isolation without blocking regular members.
+
+[x] THREADED COMMENTS & DISCUSSION (CIRCLE.SO PARITY, ISSUE #156):
+    - Nested hierarchical replies under reflections (`↳`).
+    - Care reactions (`🙏`, `🤍`, `🌱`, `😄`) and intent tone tags.
+    - Reply-to targeting and parent comment reference integrity.
+
+[x] PROGRESSIVE WEB APP & MOBILE WEB (ISSUE #153):
+    - Web manifest with maskable adaptive icons.
+    - In-app `ComingSoonView` PWA Install Guide bottom sheet for Android & iOS.
+    - Verified on physical Pixel 9a glass.
+
+[x] SENSORY SOUNDSCAPES & CALM-TECH THEMES:
+    - 4 curated ambient tracks (Brown Noise, Gentle Rain, Forest Stream, Ocean).
+    - Sleep timer (15m, 30m, 45m, 60m) and master volume controls.
+    - 4 WCAG accessibility color themes (Sage, Clean, Dark, Contrast).
+
+[x] 7-TAP OBSERVABILITY & CRASHLYTICS EASTER EGG (ISSUE #155):
+    - Tapping the Belong header/logo 7 times opens the diagnostic dialog.
+    - Verified non-fatal error (NFE) reporting to Crashlytics + AppLogger + Talker.
+
+--------------------------------------------------------------------------------
+3. STEP-BY-STEP SELF-TESTING CHECKLIST (BEFORE ASKING OTHERS)
+--------------------------------------------------------------------------------
+Follow these 8 quick steps on your phone or computer:
+
+[ ] STEP 1: OPEN LIVE WEB APP
+    - Navigate to: https://belongonthespectrum.web.app
+    - Confirm the calm cream background and welcome header load smoothly.
+
+[ ] STEP 2: TEST PWA INSTALLATION
+    - On Android: Chrome 3-dots menu -> "Install app".
+    - On iPhone: Safari Share button -> "Add to Home Screen".
+    - Launch from your home screen and confirm it opens full-screen without URL bars.
+
+[ ] STEP 3: TEST REGISTRATION (SIGN UP)
+    - Tap profile icon in the top right -> tap "Sign In / Register".
+    - Switch to the "Register" tab.
+    - Enter a name, email, and password.
+    - Select your ICOC church affiliation from the dropdown.
+    - Tap "Create Account" and verify instant profile update.
+
+[ ] STEP 4: TEST SIGN OUT & SIGN IN (LOGIN)
+    - Open profile menu -> tap "Sign Out".
+    - Tap "Sign In", enter your credentials, and verify you are signed back in.
+
+[ ] STEP 5: TEST THREADED DISCUSSION
+    - On any reflection card, tap the discussion bubble icon.
+    - Read existing replies and tap "Reply" to post a nested reply.
+    - Tap a care reaction (`🙏` Praying or `🌱` Growing).
+
+[ ] STEP 6: TEST SENSORY SOUNDSCAPES
+    - Tap the music/sound icon in the bottom bar or spaces.
+    - Tap "Warm Brown Noise" -> verify playback starts calmly.
+    - Select the 15-minute sleep timer chip.
+
+[ ] STEP 7: TEST THEME SWITCHER
+    - Tap the sensory theme selector.
+    - Toggle between Sage, Clean, Dark, and Contrast.
+    - Confirm all text remains legible and unclipped.
+
+[ ] STEP 8: TRIGGER 7-TAP EASTER EGG
+    - Rapidly tap the "Belong on the Spectrum" top title 7 times.
+    - Verify the Observability Dialog opens displaying session logs.
+    - Tap "Simulate Handled Error (NFE)" to verify AppLogger error capture.
+
+================================================================================
+You are ready for the October 24-31 Circle.so cutover!
+================================================================================
