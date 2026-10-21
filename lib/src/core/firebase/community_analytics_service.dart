@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
+import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
 
 /// Privacy-safe, zero-PII analytics service backed by [FirebaseAnalytics].
 ///
@@ -9,9 +10,10 @@ import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 /// `prod`) so developer testing never skews production community insights, and
 /// operates as a safe no-op with in-memory event recording during unit/BDD tests.
 class CommunityAnalyticsService {
-  CommunityAnalyticsService({required this.flavor});
+  CommunityAnalyticsService({required this.flavor, this.serverpodBackup});
 
   final AppFlavor flavor;
+  final ServerpodTelemetryBackup? serverpodBackup;
   final List<Map<String, Object>> recordedEventsForTesting = [];
 
   Future<void> logEvent(
@@ -23,6 +25,13 @@ class CommunityAnalyticsService {
       ...?parameters,
     };
     recordedEventsForTesting.add({'name': name, ...enriched});
+
+    // Dual-dispatch to Serverpod backup ring buffer
+    try {
+      await serverpodBackup?.recordAnalyticsEvent(name, parameters: enriched);
+    } catch (_) {
+      // Serverpod backup failures must never interrupt analytics logging.
+    }
 
     if (Firebase.apps.isEmpty) {
       return;
@@ -69,5 +78,6 @@ final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((
   ref,
 ) {
   final flavor = ref.watch(appFlavorProvider);
-  return CommunityAnalyticsService(flavor: flavor);
+  final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
+  return CommunityAnalyticsService(flavor: flavor, serverpodBackup: serverpodBackup);
 });
