@@ -1,14 +1,14 @@
 appId: com.belongonthespectrum.sanctuary
 ---
 # ==============================================================================
-# Sanctuary Calm-Tech Maestro Flow
+# Refuge Calm-Tech Maestro Flow
 # Automated, human-readable E2E verification of fellowship flows
 # ==============================================================================
 - launchApp
 
 # Verify Header, Branding & Calm-Tech Subtitle
 - assertVisible: "Belong"
-- assertVisible: "Sanctuary"
+- assertVisible: "Refuge"
 - assertVisible: "Calm Tech"
 
 # Verify Navigation across Canonical Spaces
@@ -24,15 +24,15 @@ appId: com.belongonthespectrum.sanctuary
 # Verify Sensory Modes (Clean, Dark, Contrast, Sage)
 - tapOn: "Sensory Themes"
 - tapOn: "Dark"
-- assertVisible: "Sanctuary"
+- assertVisible: "Refuge"
 
 - tapOn: "Sensory Themes"
 - tapOn: "Contrast"
-- assertVisible: "Sanctuary"
+- assertVisible: "Refuge"
 
 - tapOn: "Sensory Themes"
 - tapOn: "Sage"
-- assertVisible: "Sanctuary"
+- assertVisible: "Refuge"
 
 # Verify Unhurried Reflection Composer
 - tapOn: "Share what is on your heart in stillness..."

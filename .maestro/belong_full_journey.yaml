@@ -3,7 +3,7 @@ appId: com.belongonthespectrum.sanctuary
 # 📱 Belong on the Spectrum — Comprehensive Maestro End-to-End User Journey
 # Verified across connected physical Google Pixel 9a hardware & Android emulators.
 
-# 1. Launch Belong Sanctuary
+# 1. Launch Belong Refuge
 - launchApp:
     clearState: false
 
