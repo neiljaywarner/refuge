@@ -4,7 +4,7 @@ import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
 
 void main() {
-  group('Sanctuary App & PostRepository Widget Tests', () {
+  group('Refuge App & PostRepository Widget Tests', () {
     late LocalPostRepository repository;
 
     setUp(() {
@@ -18,14 +18,14 @@ void main() {
         $.tester.view.resetPhysicalSize();
         $.tester.view.resetDevicePixelRatio();
       });
-      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
+      await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
-    patrolWidgetTest('Renders Sanctuary header, seeded posts, and space navigation', ($) async {
+    patrolWidgetTest('Renders Refuge header, seeded posts, and space navigation', ($) async {
       await pumpApp($);
 
       // Verify title & calm-tech subtitle
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
       expect($(RegExp('Calm Tech')), findsOneWidget);
 
       // Verify default spaces navigation chips
@@ -75,7 +75,7 @@ void main() {
       await $(find.byTooltip('Sensory Themes')).tap();
       await $('Sage').tap();
 
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
     });
 
     patrolWidgetTest('Publishing a reflection adds it to the top of the feed', ($) async {

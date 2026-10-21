@@ -11,21 +11,21 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpSanctuary(PatrolTester $) async {
+    Future<void> pumpRefuge(PatrolTester $) async {
       $.tester.view.physicalSize = const Size(1200, 1600);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         $.tester.view.resetPhysicalSize();
         $.tester.view.resetDevicePixelRatio();
       });
-      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
+      await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
     patrolWidgetTest(
       'Scenario: Switching between fellowship spaces displays space-specific reflections',
       ($) async {
-        // Given the Sanctuary application is open in default '#prayer-sanctuary' room
-        await pumpSanctuary($);
+        // Given the Refuge application is open in default '#prayer-sanctuary' room
+        await pumpRefuge($);
 
         // Then I should see reflections from 'David M. (UK)'
         expect($('David M. (UK)'), findsOneWidget);
@@ -45,7 +45,7 @@ void main() {
     patrolWidgetTest('Scenario: Visiting an empty fellowship room shows peaceful stillness', (
       $,
     ) async {
-      await pumpSanctuary($);
+      await pumpRefuge($);
 
       // When I tap on '#announcements' space chip
       await $('📢 #announcements').tap();
@@ -59,7 +59,7 @@ void main() {
     patrolWidgetTest('Scenario: Filtering reflections by mindful intent tags', (
       $,
     ) async {
-      await pumpSanctuary($);
+      await pumpRefuge($);
 
       // When I select the '[Comfort Only]' intent filter chip
       final comfortFilter = $(find.widgetWithText(ChoiceChip, '[Comfort Only]'));
@@ -86,53 +86,53 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpSanctuary(PatrolTester $) async {
+    Future<void> pumpRefuge(PatrolTester $) async {
       $.tester.view.physicalSize = const Size(1200, 1600);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         $.tester.view.resetPhysicalSize();
         $.tester.view.resetDevicePixelRatio();
       });
-      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
+      await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
     patrolWidgetTest('Scenario: Toggling through all 4 sensory themes applies appropriate styling', (
       $,
     ) async {
-      await pumpSanctuary($);
+      await pumpRefuge($);
 
       // When I tap 'Dark' via Sensory Themes menu
       await $(find.byTooltip('Sensory Themes')).tap();
       await $('Dark').tap();
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
 
       // When I tap 'Contrast' via Sensory Themes menu
       await $(find.byTooltip('Sensory Themes')).tap();
       await $('Contrast').tap();
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
 
       // When I tap 'Clean' via Sensory Themes menu
       await $(find.byTooltip('Sensory Themes')).tap();
       await $('Clean').tap();
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
 
       // When I tap 'Sage' via Sensory Themes menu
       await $(find.byTooltip('Sensory Themes')).tap();
       await $('Sage').tap();
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
     });
 
     patrolWidgetTest('Scenario: Visual contrast and title persistence across sensory switches', (
       $,
     ) async {
-      await pumpSanctuary($);
+      await pumpRefuge($);
 
       // Tap Contrast mode via Sensory Themes menu
       await $(find.byTooltip('Sensory Themes')).tap();
       await $('Contrast').tap();
 
       // Verify title & calm tech subtitle remain visible and unclipped
-      expect($('Sanctuary'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
       expect($(RegExp('Calm Tech')), findsOneWidget);
     });
   });
@@ -144,20 +144,20 @@ void main() {
       repository = LocalPostRepository();
     });
 
-    Future<void> pumpSanctuary(PatrolTester $) async {
+    Future<void> pumpRefuge(PatrolTester $) async {
       $.tester.view.physicalSize = const Size(1200, 1600);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         $.tester.view.resetPhysicalSize();
         $.tester.view.resetDevicePixelRatio();
       });
-      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repository));
+      await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
     patrolWidgetTest('Scenario: Incrementing qualitative care affirmations atomically', (
       $,
     ) async {
-      await pumpSanctuary($);
+      await pumpRefuge($);
 
       // Initial Praying reaction
       final prayButton = $('6 Praying');
@@ -174,7 +174,7 @@ void main() {
     patrolWidgetTest('Scenario: Publishing an unhurried reflection and resetting composer', (
       $,
     ) async {
-      await pumpSanctuary($);
+      await pumpRefuge($);
 
       const testReflection = 'Finding rest in Scripture and quiet stillness today.';
 
@@ -216,7 +216,7 @@ void main() {
       });
 
       final repo = LocalPostRepository();
-      await $.pumpWidgetAndSettle(SanctuaryApp(repository: repo));
+      await $.pumpWidgetAndSettle(RefugeApp(repository: repo));
 
       // Verify Quiet Digest banner is present
       expect($(RegExp('Gathered in peace')), findsOneWidget);
