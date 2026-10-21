@@ -1,4 +1,6 @@
+import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
@@ -45,6 +47,12 @@ class _RefugeAppContent extends ConsumerWidget {
     debugShowCheckedModeBanner: false,
     title: 'Belong',
     theme: SensoryThemeData.getTheme(themeNotifier.mode),
+    localizationsDelegates: [
+      FirebaseUILocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
     home: RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
   );
 }

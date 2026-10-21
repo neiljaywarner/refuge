@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../auth/presentation/belong_auth_sheet.dart';
+import '../../auth/presentation/belong_firebase_auth_screen.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../../../core/config/preview_mode_provider.dart';
 import '../domain/member_profile.dart';
@@ -31,13 +32,21 @@ class MemberProfileDialog extends HookConsumerWidget {
     ];
 
     return AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       title: Row(
         children: [
           CircleAvatar(
-            radius: 18,
+            radius: 16,
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             child: Text(
               profile.initials,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -46,35 +55,23 @@ class MemberProfileDialog extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Member Profile & Sign-In',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Text(
+                  profile.isSignedIn ? profile.displayName : 'Sign In to Belong',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   profile.isSignedIn
-                      ? 'Signed in to ${brand.fullName} (${profile.displayName})'
-                      : 'Sign in so your reflections carry your name',
-                  style: const TextStyle(fontSize: 11.5),
-                ),
-                if (profile.isSignedIn && profile.icocChurchAffiliation != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      profile.isIcocMember
-                          ? '⛪ ${profile.icocChurchAffiliation}'
-                          : '🌱 ${profile.icocChurchAffiliation}',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
+                      ? '${profile.email} · ${profile.authMethod}'
+                      : 'Stage 1 ("Any Auth") · No password required',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                   ),
+                ),
               ],
             ),
           ),
           IconButton(
-            key: const Key('profile_sheet_close_button'),
             icon: const Icon(Icons.close_rounded, size: 20),
             onPressed: () => Navigator.of(context).pop(),
             tooltip: 'Close',
@@ -82,7 +79,7 @@ class MemberProfileDialog extends HookConsumerWidget {
         ],
       ),
       content: SizedBox(
-        width: 440,
+        width: 380,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -90,68 +87,75 @@ class MemberProfileDialog extends HookConsumerWidget {
             children: [
               if (validationError.value != null) ...[
                 Container(
-                  key: const Key('profile_validation_error_banner'),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, size: 18, color: Colors.red),
+                      const Icon(Icons.info_outline_rounded, size: 16, color: Colors.red),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           validationError.value!,
-                          key: const Key('profile_affiliation_error_text'),
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: const TextStyle(fontSize: 11, color: Colors.red),
                         ),
                       ),
                     ],
                   ),
                 ),
               ],
+              const Text(
+                'Stage 1 ("Any Auth"): Enter your name and email to participate in discussions and vote on features. Your account persists across sessions on this device.',
+                style: TextStyle(fontSize: 11.5),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 key: const Key('profile_display_name_field'),
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Display Name', isDense: true),
+                decoration: const InputDecoration(
+                  labelText: 'Preferred Display Name',
+                  helperText: 'What should other members call you?',
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               TextField(
                 key: const Key('profile_email_field'),
                 controller: emailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  labelText: 'Email Address (Alpha Sign-In)',
+                  labelText: 'Email Address',
+                  helperText: 'For notifications and account recovery',
                   isDense: true,
+                  border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               TextField(
                 key: const Key('profile_bio_field'),
                 controller: bioController,
+                maxLines: 2,
                 decoration: const InputDecoration(
-                  labelText: 'Short Bio / Special Interests',
+                  labelText: 'Bio / Note to Fellowship',
+                  helperText: 'A quiet sentence about yourself',
                   isDense: true,
+                  border: OutlineInputBorder(),
                 ),
               ),
               if (brand.enableFellowshipAffiliationField) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Text(
                       brand.fellowshipAffiliationPrompt,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
-                    const Text(
-                      ' *',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                    ),
+                    const Text(' *', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -198,7 +202,7 @@ class MemberProfileDialog extends HookConsumerWidget {
               ],
               const SizedBox(height: 14),
               const Text(
-                'Firebase Auth & Magic Link (ADR-0009 / Issue #119)',
+                'Official Firebase Auth UI (Google / Firebase Team)',
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
@@ -206,12 +210,23 @@ class MemberProfileDialog extends HookConsumerWidget {
                 key: const Key('profile_open_firebase_auth_button'),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  BelongAuthSheet.show(context);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => profile.isSignedIn
+                          ? const BelongFirebaseProfileScreen()
+                          : const BelongFirebaseSignInScreen(),
+                    ),
+                  );
                 },
-                icon: const Icon(Icons.lock_outline_rounded, size: 16),
-                label: const Text(
-                  'Password or Magic Link Sign-In / Register',
-                  style: TextStyle(fontSize: 11.5),
+                icon: Icon(
+                  profile.isSignedIn ? Icons.account_circle_outlined : Icons.lock_outline_rounded,
+                  size: 16,
+                ),
+                label: Text(
+                  profile.isSignedIn
+                      ? 'Open Firebase Account Profile & Security'
+                      : 'Firebase UI Sign-In, Register & Reset',
+                  style: const TextStyle(fontSize: 11.5),
                 ),
               ),
               const SizedBox(height: 14),

@@ -147,6 +147,11 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     await repo.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
 
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.sendPasswordResetEmail(email: email);
+  }
+
   Future<void> signInWithMagicLink({
     required String email,
     required String emailLink,
