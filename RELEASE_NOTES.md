@@ -24,8 +24,8 @@ Mainstream community platforms (such as Circle, Mighty Networks, and Discord) ch
 
 ### 2. Dual Pixel 9a Live Cloud Demonstration
 * Verified live across two physical Google Pixel 9a devices running on **T-Mobile LTE** communicating over **Serverpod Cloud**:
-  * **Pixel Left (`56091JEBF14039`)**: Wi-Fi `192.168.4.46` / Cellular `192.0.0.4`
-  * **Pixel Right (`58221JEBF20835`)**: Wi-Fi `192.168.4.45` / Cellular `192.0.0.4`
+  * **Pixel Left**: Wi-Fi `192.168.4.46` / Cellular `192.0.0.4`
+  * **Pixel Right**: Wi-Fi `192.168.4.45` / Cellular `192.0.0.4`
 * Screen recordings captured via `adb screenrecord` demonstrate synchronized post publication, tone-tagging, qualitative reactions, and sensory theme toggles.
 
 ### 3. Neurodivergent-Affirming Craft & Sensory Comfort

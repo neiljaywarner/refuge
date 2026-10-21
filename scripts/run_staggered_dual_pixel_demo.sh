@@ -1,8 +1,17 @@
 #!/bin/bash
 set -e
 
-LEFT_DEV="56091JEBF14039"
-RIGHT_DEV="58221JEBF20835"
+# Auto-detect connected devices or accept environment overrides:
+# Usage: [LEFT_DEV=<id>] [RIGHT_DEV=<id>] ./scripts/run_staggered_dual_pixel_demo.sh
+DEVICES=($(adb devices 2>/dev/null | awk '$2=="device" {print $1}'))
+LEFT_DEV="${LEFT_DEV:-${DEVICES[0]}}"
+RIGHT_DEV="${RIGHT_DEV:-${DEVICES[1]}}"
+
+if [ -z "$LEFT_DEV" ] || [ -z "$RIGHT_DEV" ]; then
+  echo "Error: Two connected Android devices are required. Detected: ${#DEVICES[@]}"
+  echo "Specify explicitly via: LEFT_DEV=<dev1> RIGHT_DEV=<dev2> $0"
+  exit 1
+fi
 
 echo "=== Preparing Devices ==="
 # Force close any existing screenrecords on devices

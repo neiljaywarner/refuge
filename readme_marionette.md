@@ -45,8 +45,11 @@ The Marionette MCP server runs via `stdio` transport using the activated pub pac
 Run the dev entrypoint on your target device and copy the VM Service / DTD URI:
 
 ```bash
-# Physical Pixel 9a
-flutter run -t lib/main_dev.dart -d 56091JEBF14039
+# Connected Android Device (auto-detected)
+flutter run -t lib/main_dev.dart -d android
+
+# Specific Android Device or Emulator
+flutter run -t lib/main_dev.dart -d <DEVICE_ID>
 
 # Android Emulator (Medium Phone)
 flutter run -t lib/main_dev.dart -d emulator-5554
