@@ -21,7 +21,7 @@
         "patrol_mcp"
       ],
       "env": {
-        "PROJECT_ROOT": "/Users/neil/belongonthespectrum/refuge_13oct_2026_prototype_for_serverpod_hackathon",
+        "PROJECT_ROOT": "/Users/neil/belongonthespectrum/refuge",
         "PATROL_FLAGS": "",
         "SHOW_TERMINAL": "false"
       }
@@ -48,6 +48,25 @@
       "env": {
         "JAVA_HOME": "/Applications/Android Studio.app/Contents/jbr/Contents/Home",
         "PATH": "/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    },
+    "firebase": {
+      "command": "/opt/homebrew/bin/firebase",
+      "args": [
+        "mcp",
+        "--dir",
+        "/Users/neil/belongonthespectrum/refuge"
+      ]
+    },
+    "posthog": {
+      "command": "/opt/homebrew/bin/npx",
+      "args": [
+        "-y",
+        "@posthog/mcp-server"
+      ],
+      "env": {
+        "POSTHOG_API_KEY": "${POSTHOG_BELONG_PROJECT_TOKEN}",
+        "POSTHOG_HOST": "https://us.i.posthog.com"
       }
     }
   }
