@@ -85,6 +85,7 @@ class ServerpodPostRepository implements PostRepository {
         spaceKey: post.spaceKey,
         toneTag: result.intentTag,
         specialInterestTag: result.specialInterestTag,
+        imageUrl: post.imageUrl,
         content: result.content,
         timestamp: result.createdAt.toLocal(),
         reactions: {

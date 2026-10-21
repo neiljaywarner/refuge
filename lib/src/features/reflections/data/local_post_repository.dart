@@ -96,6 +96,8 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'memes',
         toneTag: '[Autism & Faith Meme]',
         specialInterestTag: 'BiblicalMaps',
+        imageUrl:
+            'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop&q=80',
         content:
             'Me opening the back of my Bible to stare at Paul\'s 3rd Missionary Journey map for 45 minutes straight instead of making small talk in the lobby. 🗺️♾️',
         timestamp: now.subtract(const Duration(minutes: 40)),
