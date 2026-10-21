@@ -54,3 +54,26 @@ To make this repository a joy for non-technical organizers and student mentees t
 - **Chrome Web**: Automated screenshots & recordings via Marionette / Playwright / Flutter Web renderer.
 - **Android (Pixel 9a / Emulator)**: `patrol` MCP `screenshot` tool + `adb shell screenrecord`.
 - **iOS Simulator**: `xcrun simctl io booted screenshot` + `xcrun simctl io booted recordVideo`.
+
+---
+
+## 🤖 4. CodeRabbit Automated AI Review & PR Wait Protocol
+
+Every PR merged to `main` undergoes automated AI code review via `@coderabbitai`. To prevent race conditions and ensure all potential defects are surfaced before merging, all agents and contributors follow this protocol:
+
+### A. The Review Trigger & Cloud Processing Window
+1. **Trigger**: When a PR is created, post `@coderabbitai review` via GitHub issue comment.
+2. **Cloud Processing Wait**: CodeRabbit takes between 60 to 180 seconds to build the AST diff, perform security checks, and post line-by-line review comments.
+3. **Never Squash-Merge While Processing**:
+   - Check `pull_request_read(method: 'get_comments')`.
+   - If CodeRabbit's latest comment is `"Review in progress by coderabbit.ai"` or `"Currently processing new changes in this PR"`, **wait** for the final summary comment.
+   - Premature merging immediately aborts CodeRabbit with `"Action not completed: Pull request is closed"`.
+
+### B. Triage Matrix
+- **Critical / Blocking**: Regressions, unhandled nulls, security vulnerabilities, or broken builds must be fixed immediately in the PR branch.
+- **Polish / Architectural Debt**: Non-critical suggestions are deferred into dedicated GitHub issues or referenced in Issue `#36` (CodeRabbit Release Audit Gate).
+
+### C. Full Codebase Review
+To request a comprehensive architectural and quality review across the full codebase:
+- Use `@coderabbitai full review` or prompt CodeRabbit with specific audit questions directly on a PR comment.
+- Review its findings, triage recommendations, and file dedicated GitHub issues for high-value items.
