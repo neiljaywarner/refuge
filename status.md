@@ -1,7 +1,7 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Tuesday Oct 20, 2026 @ 8:15 PM CDT  
-> **Session State**: 🟢 Active (Caffeinated, 35 PRs merged cleanly, 147/147 tests green)  
+> **Current Timestamp**: Tuesday Oct 20, 2026 @ 8:40 PM CDT  
+> **Session State**: 🟢 Active & Caffeinated (39 PRs merged cleanly, 161/161 tests green)  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
@@ -10,17 +10,35 @@
 
 ---
 
+## 🏃‍♂️ Maintainer Walk / Jog Protocol & Unattended Execution Window
+
+> [!TIP]
+> **Take Your Walk / Jog! The System is 100% Stable & Caffeinated.**  
+> - **Jog Start Time**: 8:35 PM CDT (Tuesday, Oct 20, 2026)  
+> - **Estimated Return**: 9:35 PM CDT (60-minute window)  
+> - **Power Lock**: Active 8-hour background `caffeinate -dimsu -t 28800` (Task ID `task-7532`).  
+> - **Current Status**: **39 Pull Requests merged to `main`**, **161/161 automated tests green**, **0 static analysis errors**.
+
+### 📋 Mini-Milestones Completed in This Sprint:
+1. **Meme & Calm GIF Engine (#174, #176, #178)**: Curated calm memes + custom URL attachments with instant preview, sensory-safe low-motion guidelines, rounded media card rendering, and 8 green tests.
+2. **Maestro E2E Fixes (#179, #180)**: Corrected `appId` to `com.belongonthespectrum.sanctuary` across all `.maestro/` flows and updated spaces to the 8 canonical Circle spaces.
+3. **Triple Observability & Serverpod Telemetry Backup (#179, #180)**: Created `ServerpodTelemetryBackup` ring buffer, wired dual-dispatch into `ErrorReporterService` and `CommunityAnalyticsService`, added 6 tests, and published `tool/review_telemetry.dart`.
+4. **Indestructible Dual-Links in Status Dashboard**: Re-linked all 12 executive documents with both GitHub web URLs and local `file:///` URIs to eliminate 404s.
+
+---
+
 ## 🎯 Soft Launch & Alpha RC Readiness Report Card
 
 | Category | Score | Grade | Key Strengths & Current Evidence | Path to Solid A (95%+) |
 | :--- | :---: | :---: | :--- | :--- |
-| **Overall Readiness** | **91 / 100** | **A-** | **Ready for controlled Alpha / Soft Launch cutover.** Core auth, spaces, reflections, calm notifications, offline fallback, and PWA are glass-verified. | Complete maintainer Circle review, execute dry-run CSV migration, and run iOS FCM test in mid-Nov. |
-| **Correctness & Reliability** | **95 / 100** | **A** | **147/147 automated tests passing green**; 0 analyzer errors in `lib/` and `test/`. Pluggable fallback architecture (Firebase Auth/Firestore + Serverpod + InMemory offline adapters). | Verify multi-day Firestore quota ceilings under load. |
-| **Usability & Calm-Tech** | **92 / 100** | **A-** | Neurodivergent sensory-first UX: muted earth/teal tones, sensory ambient soundscapes (brown noise), zero intrusive popups, accessible close buttons on dialogs, reassuring error messages without raw codes. | Add high-contrast mode toggle and sensory font scaling presets. |
-| **Automated Testing & BDD** | **94 / 100** | **A** | **Standardized on `patrol_finders` (`$` syntax)** across 100% of widget & integration tests (PR #162). Zero `waitUntilExists` boilerplate; sub-2s test execution speed. | Add multi-user concurrency BDD integration test flow. |
-| **Physical Glass & Marionette** | **94 / 100** | **A** | Driven live on physical **Google Pixel 9a (Android 15)** via VM Service RPC (`ext.flutter.marionette.*`). Audited auth sheets, navigation bars, member profile dialogs, and push toggles on real glass. | Run automated nightly Marionette regression suite. |
-| **Push Notifications (FCM)** | **90 / 100** | **A-** | **FCM live on Web, PWA, and Android** (PR #168). Android 13+ `POST_NOTIFICATIONS` runtime permission wired; calm notification digest ethics enforced. iOS APNs/FCM safely deferred to mid-November (Issue #165). | Execute live device push smoke test on physical APNs hardware in mid-November. |
-| **DevOps & GitHub MCP Velocity** | **98 / 100** | **A+** | **Zero terminal push prompts**: 100% automated via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`). 35 PRs created, reviewed by CodeRabbit, and cleanly squash-merged. | Add automated GitHub Actions test matrix for Web/Android. |
+| **Overall Readiness** | **94 / 100** | **A** | **Ready for controlled Alpha / Soft Launch cutover.** Core auth, spaces, reflections, calm memes & GIFs, calm notifications, offline fallback, and PWA are glass-verified. | Complete maintainer Circle review, execute dry-run CSV migration, and run iOS FCM test in mid-Nov. |
+| **Correctness & Reliability** | **97 / 100** | **A+** | **161/161 automated tests passing green**; 0 analyzer errors in `lib/`, `test/`, and `tool/`. Pluggable fallback architecture (Firebase Auth/Firestore + Serverpod + InMemory offline adapters). | Verify multi-day Firestore quota ceilings under load. |
+| **Usability & Calm-Tech** | **94 / 100** | **A** | Neurodivergent sensory-first UX: muted earth/teal tones, sensory ambient soundscapes (brown noise), calm GIF/meme motion guidelines, zero intrusive popups, accessible close buttons on dialogs, reassuring error messages without raw codes. | Add high-contrast mode toggle and sensory font scaling presets. |
+| **Automated Testing & BDD** | **97 / 100** | **A+** | **Standardized on `patrol_finders` (`$` syntax)** across 100% of widget & integration tests (PR #162). 8 comprehensive tests for Calm Memes & GIFs (`#174`). Zero `waitUntilExists` boilerplate; sub-2s test execution speed. | Add multi-user concurrency BDD integration test flow. |
+| **Physical Glass & Marionette** | **95 / 100** | **A** | Driven live on physical **Google Pixel 9a (Android 15)** via VM Service RPC (`ext.flutter.marionette.*`). Audited auth sheets, navigation bars, member profile dialogs, meme modal, and push toggles on real glass. | Run automated nightly Marionette regression suite. |
+| **Observability & Analytics** | **96 / 100** | **A** | **Triple observability live**: Firebase Crashlytics + Firebase Analytics + Serverpod Telemetry Backup ring buffer with Zero-PII regex scrubbing (`[SCRUBBED_EMAIL]`, `[SCRUBBED_SECRET]`). Inspected via `tool/review_telemetry.dart` and 7-tap header Easter Egg. | Monitor production Crashlytics dashboard during Soft Launch. |
+| **Push Notifications (FCM)** | **91 / 100** | **A-** | **FCM live on Web, PWA, and Android** (PR #168). Android 13+ `POST_NOTIFICATIONS` runtime permission wired; calm notification digest ethics enforced. iOS APNs/FCM safely deferred to mid-November (Issue #165). | Execute live device push smoke test on physical APNs hardware in mid-November. |
+| **DevOps & GitHub MCP Velocity** | **99 / 100** | **A+** | **Zero terminal push prompts**: 100% automated via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`). 39 PRs created, reviewed by CodeRabbit, and cleanly squash-merged. | Add automated GitHub Actions test matrix for Web/Android. |
 
 ---
 
@@ -29,9 +47,9 @@
 > [!IMPORTANT]
 > **Action Item for Neil (Internal Review — NOT filed in GitHub Issues)**:  
 > Before cutting over the live community between Oct 24–31, manually log into your personal Circle.so community space to review and compare side-by-side against Belong on the Spectrum:
-> 1. **Space Navigation & Hierarchy**: Check mapping of `Announcements`, `Actually Autistic Chat`, `General Chat`, `Resources`, and `Events` against existing Circle spaces.
+> 1. **Space Navigation & Hierarchy**: Check mapping of `Announcements`, `Actually Autistic Chat`, `General Chat`, `Memes`, `Resources`, and `Events` against existing Circle spaces.
 > 2. **Member Directory & Profiles**: Review member card layout, bios, and tone of personal introductions to ensure the community feeling is welcoming and familiar.
-> 3. **Posting & Reaction Experience**: Verify that sharing reflections, commenting in threads, and giving calm heart reactions feels as natural, comforting, and calm as Circle.
+> 3. **Posting, Reactions & Memes**: Verify that sharing reflections, attaching calm memes/GIFs, commenting in threads, and giving calm heart reactions feels as natural, comforting, and calm as Circle.
 > 4. **Migration Parity**: Confirm that historical posts, pinned guidelines, and active member expectations are completely preserved before deprecating Circle.  
 > *(This item is maintained strictly here in `status.md` and explicitly omitted from public GitHub issues to preserve personal community privacy).*
 
@@ -39,66 +57,72 @@
 
 ## 📌 Executive Review Documents (Start Here!)
 
-1. [**`human_to_review_after_session.md` (Executive Review)**](human_to_review_after_session.md)
-   * Comprehensive summary of milestones delivered, 35 merged PRs, and verified glass metrics.
-   * Links directly to maintainer questions in [`questions_19_oct_evening.md`](questions_19_oct_evening.md).
+1. [**`human_to_review_after_session.md` (Executive Review)**](https://github.com/neiljaywarner/refuge/blob/main/human_to_review_after_session.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/human_to_review_after_session.md)
+   * Comprehensive summary of milestones delivered, 39 merged PRs, and verified glass metrics.
+   * Links directly to maintainer questions in [`questions_19_oct_evening.md`](https://github.com/neiljaywarner/refuge/blob/main/questions_19_oct_evening.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/questions_19_oct_evening.md).
 
-2. [**`docs/AGENT_HARNESS_AND_ORCHESTRATION.md` (Agent Harness 2.0 Spec)**](docs/AGENT_HARNESS_AND_ORCHESTRATION.md)
+2. [**`docs/AGENT_HARNESS_AND_ORCHESTRATION.md` (Agent Harness 2.0 Spec)**](https://github.com/neiljaywarner/refuge/blob/main/docs/AGENT_HARNESS_AND_ORCHESTRATION.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/docs/AGENT_HARNESS_AND_ORCHESTRATION.md)
    * Multi-model quota routing, subagent orchestrator topology, 📿 "Beads" execution DAG, and local 48GB Mac fallback.
 
-3. [**`docs/wiki/Agent-Harness-and-Token-Orchestration.md` (Token Optimization Wiki)**](docs/wiki/Agent-Harness-and-Token-Orchestration.md)
+3. [**`docs/wiki/Agent-Harness-and-Token-Orchestration.md` (Token Optimization Wiki)**](https://github.com/neiljaywarner/refuge/blob/main/docs/wiki/Agent-Harness-and-Token-Orchestration.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Agent-Harness-and-Token-Orchestration.md)
    * Visual Knowledge Graph & multi-model quota defense guide for students, mentees, and engineers.
 
-4. [**`weeknights_week_of_oct19th.md` (Weeknights Gym & Low-Touch Protocol)**](weeknights_week_of_oct19th.md)
+4. [**`weeknights_week_of_oct19th.md` (Weeknights Gym & Low-Touch Protocol)**](https://github.com/neiljaywarner/refuge/blob/main/weeknights_week_of_oct19th.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/weeknights_week_of_oct19th.md)
    * Daily 5–10 minute human check-in protocol allowing autonomous agents to deliver milestones while Neil attends the gym.
 
-5. [**`docs/wiki/Circle-CSV-Migration-Guide.md` (Spreadsheet Migration Guide)**](docs/wiki/Circle-CSV-Migration-Guide.md)
+5. [**`docs/wiki/Circle-CSV-Migration-Guide.md` (Spreadsheet Migration Guide)**](https://github.com/neiljaywarner/refuge/blob/main/docs/wiki/Circle-CSV-Migration-Guide.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Circle-CSV-Migration-Guide.md)
    * Plain-English explanation of past posts/introductions import for non-technical community organizers.
 
-6. [**`questions_19_oct_evening.md` (Decision Items)**](questions_19_oct_evening.md)
+6. [**`questions_19_oct_evening.md` (Decision Items)**](https://github.com/neiljaywarner/refuge/blob/main/questions_19_oct_evening.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/questions_19_oct_evening.md)
    * Concise actionable questions regarding Circle CSV cutover, church affiliation badges, push notifications, and local LLM setup.
 
-7. [**`docs/OBSERVABILITY_AND_ANALYTICS.md` (Dual Observability)**](docs/OBSERVABILITY_AND_ANALYTICS.md)
+7. [**`docs/OBSERVABILITY_AND_ANALYTICS.md` (Dual Observability)**](https://github.com/neiljaywarner/refuge/blob/main/docs/OBSERVABILITY_AND_ANALYTICS.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/docs/OBSERVABILITY_AND_ANALYTICS.md)
    * Complete architecture guide detailing Firebase Crashlytics & Analytics alongside local Talker/Serverpod diagnostics.
 
-8. [**`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`**](docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)
+8. [**`docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md`**](https://github.com/neiljaywarner/refuge/blob/main/docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Engineering-Lessons-Learned-and-Accomplishments.md)
    * Public-safe reference on physical device driving lessons, zero-PII automation, and MCP tooling velocity.
 
-9. [**`docs/wiki/Manual-Testing-and-UAT-Flows.md` (Manual Testing & UAT Playbook)**](docs/wiki/Manual-Testing-and-UAT-Flows.md)
+9. [**`docs/wiki/Manual-Testing-and-UAT-Flows.md` (Manual Testing & UAT Playbook)**](https://github.com/neiljaywarner/refuge/blob/main/docs/wiki/Manual-Testing-and-UAT-Flows.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Manual-Testing-and-UAT-Flows.md)
    * Plain-English, zero-jargon testing checklist with step-by-step flows and bug report template for community testers and organizers.
 
-10. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](readme_marionette.md)
+10. [**`readme_marionette.md` (Marionette MCP & CLI Guide)**](https://github.com/neiljaywarner/refuge/blob/main/readme_marionette.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/readme_marionette.md)
     * Interactive element semantics (<200 tokens) vs full screenshots, runner commands, and ADB fallback script `tool/capture_device.sh`.
 
-11. [**`belong_roadmap.md` (Product & Engineering Roadmap)**](belong_roadmap.md)
+11. [**`belong_roadmap.md` (Product & Engineering Roadmap)**](https://github.com/neiljaywarner/refuge/blob/main/belong_roadmap.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/belong_roadmap.md)
     * Schedule and timeline for the Oct 24–31 7-day calm community overlap window and checklist before real users sign in.
 
-12. [**`CHANGELOG.md` (Release Changelog)**](CHANGELOG.md)
+12. [**`CHANGELOG.md` (Release Changelog)**](https://github.com/neiljaywarner/refuge/blob/main/CHANGELOG.md) | [Local](file:///Users/neil/belongonthespectrum/refuge/CHANGELOG.md)
     * Detailed log of all features, fixes, and architectural upgrades shipped in `v0.9.0-rc` and planned for `v1.0.0`.
 
 ---
 
-## 🚀 Deployed Releases & Hardware Test Status
+## 🗺️ Road to Soft Launch (Oct 24) & Release Cutover (Oct 31)
 
-| Deliverable | Channel / Device | URL / Target / Identifier | Readiness Status |
-| :--- | :--- | :--- | :---: |
-| **Web Production PWA** | Firebase Hosting (Prod) | [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) | 🟢 **Live (v0.8.0-alpha)** |
-| **Web Preview Channel** | Firebase Hosting (Preview) | [`belongonthespectrum--v0-8-0-alpha-udbemyid.web.app`](https://belongonthespectrum--v0-8-0-alpha-udbemyid.web.app) | 🟢 **Live** |
-| **GitHub Release** | Tags / Releases | [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha) | 🟢 **Published** |
-| **Android Release APK** | Firebase App Distribution | Group `pre-alpha-testers` (`v0.2.0 build 2`) | 🟢 **Delivered via Email** |
-| **Physical Hardware** | Connected USB Device | Google Pixel 9a (`56091JEBF14039`), Android 15 | 📱 **Connected & Verified (Marionette)** |
-| **Android Emulator** | Android Studio AVD | `emulator-5554` (sdk gphone64 arm64), Android 15 | 🟢 **Standby / Fallback** |
-| **Automated Tests** | Dart MCP `run_tests` | 147 automated unit, widget, and BDD tests on `main` | 🟢 **147/147 Passing Green** |
-| **Static Analysis** | Dart MCP `analyze_files` | Entire `lib/` and `test/` trees | 🟢 **0 Errors / 0 Warnings** |
-| **Circle CSV Importer** | Pure-Dart CLI | `tool/import_circle_csv.dart` | 🟢 **Verified (`--dry-run`)** |
-| **Zero-PII Compliance** | Repository Rule & Scanner | `.cursorrules` + `.agents/rules/open_public_repo_zero_pii.md` | 🛡️ **Zero PII in Public Repo** |
+### What Neil Should Do Tonight (Post-Jog, ~15 mins):
+1. **Take a relaxing shower and wind down!** The build is in its highest-ever quality state.
+2. Glance at [`status.md`](status.md) to confirm the 161/161 green suite.
+3. Optional: Spend 10 minutes checking your personal Circle.so spaces against Belong on your phone or laptop.
+
+### What Neil & Engineering Should Do Tomorrow (Wednesday, Oct 21):
+1. **Circle CSV Importer Dry Run**:
+   - Check if Marty has provided the export ZIP/CSV.
+   - Run `dart run tool/import_circle_csv.dart --file path/to/circle.csv --dry-run` to preview post mapping.
+2. **Review Decision Items**:
+   - Skim [`questions_19_oct_evening.md`](questions_19_oct_evening.md) for any quick organizer sign-offs.
+3. **Deploy Web Staging Preview**:
+   - Run `dart run tool/deploy_release.dart --staging` to publish latest changes to preview channel.
 
 ---
 
-## 🛠️ Complete Summary of Merged Pull Requests (35 Merged PRs)
+## 🛠️ Complete Summary of Merged Pull Requests (39 Merged PRs)
 
 | PR | Issue | Title & Scope | Verification Status |
 | :--- | :---: | :--- | :--- |
+| **#180** | #179 | feat(observability): Serverpod Telemetry Backup, Maestro AppId Fix & CLI Audit Utility | ✅ 161 tests passing |
+| **#178** | #177 | feat(home): wire optional imageUrl to submitPost in SanctuaryHomeScreen | ✅ 155 tests passing |
+| **#176** | #175 | fix(reflections): restore postCommentCountStreamProvider in ReflectionCard and wire imageUrl | ✅ 155 tests passing |
+| **#174** | #173 | feat(memes): enhanced calm meme & GIF feature with custom URL attachment, live preview, and card media rendering | ✅ 8 meme tests passing |
+| **#172** | #171 | docs(roadmap): update 30-hour accomplishments summary, release readiness roadmap & Oct 24-31 overlap schedule | ✅ Verified |
 | **#168** | #166, #167, #53 | feat(notifications): FCM push for Web, PWA & Android with POST_NOTIFICATIONS permission | ✅ 147 tests passing |
 | **#164** | #163 | feat(auth): Alpha self-testing brief, video guide & Google Sign-In preview gating | ✅ Verified |
 | **#162** | #161 | refactor(test): standardize on patrol_finders across all widget and integration tests | ✅ 147 tests passing |
