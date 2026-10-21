@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "207506875171",
+    "project_id": "belongonthespectrum",
+    "storage_bucket": "belongonthespectrum.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207506875171:android:e578634c4bc21da2b96296",
+        "android_client_info": {
+          "package_name": "com.belongonthespectrum.sanctuary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "207506875171-km2e4n7s4upi2c5afke2qjkubvnukjks.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqQdtP2D3lLGUch5BPExr4apoXaU9v0K0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "207506875171-km2e4n7s4upi2c5afke2qjkubvnukjks.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
