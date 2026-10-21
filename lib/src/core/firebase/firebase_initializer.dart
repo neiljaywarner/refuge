@@ -18,14 +18,24 @@ class FirebaseInitializer {
 
   static bool get isInitialized => _initialized || Firebase.apps.isNotEmpty;
 
-  /// Default public configuration for Belong on the Spectrum Firebase project.
+  /// Default public configuration for Belong on the Spectrum Firebase project (Web PWA).
   static const FirebaseOptions webOptions = FirebaseOptions(
-    apiKey: 'AIzaSyDummyKeyForBackgroundWorkerRefuge4Serverpod',
-    appId: '1:1056581413812:web:calmnotificationsbelong',
-    messagingSenderId: '1056581413812',
+    apiKey: 'AIzaSyBtW8uQckI88rT1TPng459EVC9ynnm2twU',
+    appId: '1:207506875171:web:5a5917af04e2540ab96296',
+    messagingSenderId: '207506875171',
     projectId: 'belongonthespectrum',
     authDomain: 'belongonthespectrum.firebaseapp.com',
-    storageBucket: 'belongonthespectrum.appspot.com',
+    storageBucket: 'belongonthespectrum.firebasestorage.app',
+    measurementId: 'G-CFQY6FYYBM',
+  );
+
+  /// Default configuration for Belong on the Spectrum Firebase project (Android native).
+  static const FirebaseOptions androidOptions = FirebaseOptions(
+    apiKey: 'AIzaSyCqQdtP2D3lLGUch5BPExr4apoXaU9v0K0',
+    appId: '1:207506875171:android:e578634c4bc21da2b96296',
+    messagingSenderId: '207506875171',
+    projectId: 'belongonthespectrum',
+    storageBucket: 'belongonthespectrum.firebasestorage.app',
   );
 
   /// Initializes Firebase and configures Crashlytics + Analytics hooks.
@@ -39,9 +49,15 @@ class FirebaseInitializer {
     try {
       if (kIsWeb) {
         await Firebase.initializeApp(options: webOptions);
+      } else if (defaultTargetPlatform == TargetPlatform.android) {
+        // Native Android reads google-services.json or falls back to verified androidOptions.
+        try {
+          await Firebase.initializeApp();
+        } catch (_) {
+          await Firebase.initializeApp(options: androidOptions);
+        }
       } else {
-        // Native Android/iOS reads google-services.json / GoogleService-Info.plist
-        // or uses fallback options if native assets are unlinked during testing.
+        // Native iOS reads GoogleService-Info.plist or uses webOptions fallback.
         try {
           await Firebase.initializeApp();
         } catch (_) {
