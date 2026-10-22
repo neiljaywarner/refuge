@@ -18,6 +18,7 @@ Whether you have **1 minute** to upvote your favorite upcoming features in the a
 | :--- | :--- | :--- |
 | **[🤝 How You Can Help (Volunteer Guide & Circle Copy/Paste)](How-You-Can-Help-Volunteer-Guide)** | **Everyone** (Members, Welcomers, Organizers) | Ready-to-copy message for our current Circle app + 5 easy ways to help this week without writing a line of code. |
 | **[📅 October 31st Circle.so Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)** | **Non-Technical Organizers & Leaders** | How we save **~\$1,000+/year** over [Circle.so Pricing](https://circle.so/pricing), why we launch by **Oct 24** for a calm 7-day overlap before **Oct 31**, and what works on Day 1. |
+| **[📱 Why No App Store App? (And Why You Don't Need One)](Why-No-App-Store-App)** | **All Members & Disciples** | Empathetic guide with real Pixel 9a screenshots explaining why Belong avoids store passwords, storage bloat, and ad traps. |
 | **[📱 PWA Guide: Install on Your Phone & Store Timeline](PWA-Guide-for-Members-and-Organizers)** | **Members & Organizers** | Step-by-step instructions to add Belong to your iPhone/Android Home Screen today + why we can stay on PWA for months before needing Apple/Google stores. |
 | **[🎛️ Organizer Control Without Coding (Remote Config)](Organizer-Remote-Config-Guide)** | **Community Organizers** | How to update welcome banners and feature announcements instantly using [Firebase Remote Config](https://firebase.google.com/products/remote-config) ([Watch 3-Min Video](https://www.youtube.com/watch?v=_CXXVFPO6f0)). |
 | **[📥 Bringing Over Past Posts (Spreadsheet / CSV Guide)](Circle-CSV-Migration-Guide)** | **Organizers & Volunteers** | Plain-English explanation of how past introductions, prayer requests, and discussions are safely imported from Circle spreadsheets into Belong with zero data loss. |
@@ -31,6 +32,7 @@ Whether you have **1 minute** to upvote your favorite upcoming features in the a
 
 | Technical Resource | Summary |
 | :--- | :--- |
+| **[⚙️ Android APK vs. Web PWA Technical Breakdown](Android-APK-vs-Web-PWA-Details)** | Comprehensive comparison of FCM channels vs Web Push, SQLite vs IndexedDB, cold starts, and WorkManager. |
 | **[🧭 UX Evaluation & Architecture Decision Records (ADRs 0001–0010)](UX-Evaluation-and-ADRs)** | Complete index of architectural ADRs, repository seams, and the calm-tech feedback model. |
 | **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)** | Graded comparison (**A+ / `9.7/10`**) of Piece-by-Piece vs. One-Shot migration and permanent Firebase Hosting/FCM coexistence. |
 | **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)** | Hybrid local notifications + silent background FCM payloads to prevent auditory startle and sensory overload. |
