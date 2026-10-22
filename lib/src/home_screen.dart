@@ -171,218 +171,266 @@ class RefugeHomeScreen extends HookConsumerWidget {
             : null;
         return ComingSoonView(
           title: item.title,
-          description: item.description,
-          icon: item.icon,
-          extraNote: extraNote,
-          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+          emoji: item.emoji,
+          description: item.subtitle,
+          trackedIssueNumber: item.trackedIssueNumber,
+          extraMarkdownOrNote: extraNote,
+          showPwaInstallGuide: isMobileAppLink,
+          onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
         );
       }
 
-      return ListView(
-        padding: const EdgeInsets.only(bottom: 24),
-        children: [
-          CommunityAnchorBanner(
-            title: brand.communityName,
-            subtitle: brand.tagline,
-            primaryColor: primaryColor,
-            isContrast: isContrast,
-          ),
-          SpaceNavigationBar(
-            selectedSpaceKey: selectedSpace.value,
-            onSelectSpace: selectSpace,
-          ),
-          QuietDigestBanner(
-            snapshot: quietDigestSnapshot,
-            isContrast: isContrast,
-          ),
-          ToneFilterRow(
-            activeFilter: activeFilter.value,
-            onFilterSelected: (tag) => activeFilter.value = tag,
-          ),
-          ReflectionComposer(
-            onSubmit: submitPost,
-            primaryColor: primaryColor,
-            isContrast: isContrast,
-          ),
-          StreamBuilder<List<Post>>(
-            stream: postStream,
-            builder: (context, snapshot) {
-              final posts = snapshot.data ?? [];
-              final filteredPosts = activeFilter.value == 'All'
-                  ? posts
-                  : posts.where((p) => p.toneTag == activeFilter.value).toList();
-
-              if (filteredPosts.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Text('No reflections yet. Be the first to share.'),
-                  ),
-                );
-              }
-
-              return Column(
-                children: filteredPosts.map((post) {
-                  return ReflectionCard(
-                    post: post,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    onReact: (reactionKey) =>
-                        activeRepository.addReaction(post.id, reactionKey),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        ],
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () {
-            final now = DateTime.now();
-            final lastTap = easterEggLastTap.value;
-            easterEggLastTap.value = now;
-
-            if (lastTap != null &&
-                now.difference(lastTap) < const Duration(seconds: 2)) {
-              easterEggTapCount.value++;
-            } else {
-              easterEggTapCount.value = 1;
-            }
-
-            if (easterEggTapCount.value >= 7) {
-              easterEggTapCount.value = 0;
-              showObservabilityEasterEggDialog(context);
-            }
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompactHeight = constraints.maxHeight < 520;
+          return Column(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.asset(
-                  'assets/images/belong_logo.png',
-                  width: 24,
-                  height: 24,
-                  errorBuilder: (_, _, _) => const Text(
-                    '♾️',
-                    style: TextStyle(fontSize: 18),
-                  ),
+              if (!isCompactHeight)
+                CommunityAnchorBanner(
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                brand.communityName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              if (isLiveServerpod) ...[
-                const SizedBox(width: 6),
+              if (!profile.isSignedIn)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  key: const Key('demo_mode_banner'),
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.green, width: 0.8),
-                  ),
-                  child: const Text(
-                    'LIVE',
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                      letterSpacing: 0.5,
+                    color: isContrast
+                        ? Colors.black
+                        : primaryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isContrast
+                          ? Colors.white
+                          : primaryColor.withValues(alpha: 0.25),
                     ),
                   ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(28),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: isContrast
-                  ? Colors.yellow.withValues(alpha: 0.15)
-                  : primaryColor.withValues(alpha: 0.08),
-              border: Border(
-                bottom: BorderSide(
-                  color: isContrast
-                      ? Colors.yellow
-                      : primaryColor.withValues(alpha: 0.2),
-                  width: 0.8,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
+                  child: const Row(
                     children: [
-                      Text(
-                        'Partnered with DFW Church',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isContrast ? Colors.yellow : primaryColor,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '•',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Psalm 139:14',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontStyle: FontStyle.italic,
-                          color: Theme.of(context).textTheme.bodySmall?.color,
+                      Text('🎭', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Demo Mode · Sample reflections shown. Sign in to view and share live community reflections.',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    if (homeSubView.value == BelongHomeSubView.spaces) {
-                      homeSubView.value = BelongHomeSubView.feed;
-                    } else {
-                      homeSubView.value = BelongHomeSubView.spaces;
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
+              ),
+              if (!isCompactHeight)
+                QuietDigestBanner(
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  legacyMessage: quietDigestSnapshot.data,
+                ),
+              ReflectionComposer(
+                selectedSpace: selectedSpace.value,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                onSubmit: submitPost,
+              ),
+              ToneFilterRow(
+                activeFilter: activeFilter.value,
+                onSelectFilter: (f) => activeFilter.value = f,
+              ),
+              Expanded(
+                child: StreamBuilder<List<Post>>(
+                  stream: postStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      );
                     }
+
+                    final allPosts = snapshot.data!;
+                    final availablePosts = profile.isSignedIn
+                        ? allPosts.where((p) => !p.isDemo).toList()
+                        : allPosts;
+                    var posts = activeFilter.value == 'All'
+                        ? availablePosts
+                        : availablePosts
+                            .where((p) => p.toneTag == activeFilter.value)
+                            .toList();
+
+                    if (posts.isEmpty) {
+                      return Center(
+                        child: Text(
+                          profile.isSignedIn
+                              ? 'No community reflections yet in this space.'
+                              : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
+                          key: const Key('empty_reflections_placeholder'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: posts.length,
+                      padding: const EdgeInsets.only(
+                        left: 12.0,
+                        right: 12.0,
+                        top: 8.0,
+                        bottom: 48.0,
+                      ),
+                      itemBuilder: (context, index) {
+                        final p = posts[index];
+                        return ReflectionCard(
+                          post: p,
+                          isContrast: isContrast,
+                          onAddReaction: (reactionType) =>
+                              activeRepository.addReaction(
+                                postId: p.id,
+                                reactionType: reactionType,
+                              ),
+                        );
+                      },
+                    );
                   },
-                  child: Row(
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Widget buildActiveBottomTabBody() {
+      switch (activeBottomTab.value) {
+        case BelongBottomTab.home:
+          return Column(
+            children: [
+              _BelongSubHeaderBar(
+                activeSubView: homeSubView.value,
+                onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                onSelectSpaces: () =>
+                    homeSubView.value = BelongHomeSubView.spaces,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+              ),
+              Expanded(child: buildHomeBody()),
+            ],
+          );
+        case BelongBottomTab.notifications:
+          return CalmNotificationsView(
+            onBackToHome: () => activeBottomTab.value = BelongBottomTab.home,
+          );
+        case BelongBottomTab.msgs:
+          return const BelongMessagesView();
+        case BelongBottomTab.search:
+          return CommunitySearchView(
+            repository: activeRepository,
+            isContrast: isContrast,
+          );
+      }
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0.5,
+        title: InkWell(
+          key: const Key('belong_app_bar_title_tap_target'),
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            final now = DateTime.now();
+            if (easterEggLastTap.value == null ||
+                now.difference(easterEggLastTap.value!).inSeconds > 4) {
+              easterEggTapCount.value = 1;
+            } else {
+              easterEggTapCount.value++;
+            }
+            easterEggLastTap.value = now;
+
+            if (easterEggTapCount.value >= 7) {
+              easterEggTapCount.value = 0;
+              ObservabilityEasterEggDialog.show(context);
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset(
+                    brand.logoAssetPath,
+                    key: const Key('belong_header_logo'),
+                    width: 28,
+                    height: 28,
+                    errorBuilder: (_, _, _) =>
+                        const Text('♾️', style: TextStyle(fontSize: 18)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        homeSubView.value == BelongHomeSubView.spaces
-                            ? 'Feed'
-                            : 'Spaces (${remoteConfig.spacesCount})',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: isContrast ? Colors.yellow : primaryColor,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            brand.shortName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Refuge',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        homeSubView.value == BelongHomeSubView.spaces
-                            ? Icons.arrow_back_ios_new_rounded
-                            : Icons.arrow_forward_ios_rounded,
-                        size: 10,
-                        color: isContrast ? Colors.yellow : primaryColor,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isLiveServerpod
+                                   ? const Color(0xFF4CAF50)
+                                  : const Color(0xFF68A67D),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color
+                                    ?.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -392,21 +440,23 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
         ),
         actions: [
-          // 1-Tap Quick High Contrast Mode Toggle (Issue #277)
           IconButton(
             key: const Key('home_high_contrast_toggle_button'),
             tooltip: isContrast
-                ? 'Disable High Contrast'
-                : 'Enable High Contrast (WCAG AAA)',
+                ? 'Switch to Sage Theme'
+                : 'Switch to High Contrast',
             icon: Icon(
-              isContrast ? Icons.contrast_rounded : Icons.contrast_outlined,
-              size: 20,
+              isContrast ? Icons.contrast_rounded : Icons.circle_outlined,
               color: isContrast ? Colors.yellow : null,
+              size: 20,
             ),
-            visualDensity: VisualDensity.compact,
-            onPressed: () => setSensoryMode(
-              isContrast ? SensoryMode.sage : SensoryMode.contrast,
-            ),
+            onPressed: () {
+              if (themeNotifier != null) {
+                themeNotifier!.toggleHighContrast();
+              } else {
+                ref.read(sensoryThemeModeProvider.notifier).toggleHighContrast();
+              }
+            },
           ),
           PopupMenuButton<SensoryMode>(
             tooltip: 'Sensory Themes',
@@ -465,8 +515,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
               isContrast: isContrast,
               currentMode: currentMode,
               onSelectMode: setSensoryMode,
-              currentFontScale: currentFontScale,
-              onSelectFontScale: setSensoryFontScale,
             ),
           ),
           if (!profile.isSignedIn)
@@ -479,59 +527,116 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     horizontal: 10,
                     vertical: 0,
                   ),
-                  minimumSize: const Size(0, 32),
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  visualDensity: VisualDensity.compact,
                 ),
-                onPressed: () => showBelongAuthSheet(context),
-                icon: const Icon(Icons.login_rounded, size: 14),
-                label: const Text('Sign In'),
+                onPressed: () => SimpleAuthScreen.show(context),
+                icon: const Icon(Icons.login_rounded, size: 15),
+                label: const Text(
+                  'Sign In',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
               ),
             )
           else
-            GestureDetector(
-              onTap: () => showMemberProfileSheet(context),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                child: CircleAvatar(
-                  radius: 14,
-                  backgroundColor: isContrast
-                      ? Colors.yellow
-                      : primaryColor.withValues(alpha: 0.2),
-                  child: Text(
-                    profile.initials,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: isContrast ? Colors.black : primaryColor,
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                key: const Key('belong_profile_avatar_button'),
+                borderRadius: BorderRadius.circular(999),
+                onTap: () => MemberProfileDialog.show(context),
+                child: Tooltip(
+                  message: 'Member Profile (${profile.displayName})',
+                  child: CircleAvatar(
+                    radius: 14,
+                    backgroundColor: isContrast
+                        ? Colors.yellow
+                        : primaryColor.withValues(alpha: 0.2),
+                    child: Text(
+                      profile.initials,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isContrast ? Colors.black : primaryColor,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          IconButton(
-            tooltip: 'Search & Fellowship',
-            icon: const Icon(Icons.search_rounded, size: 20),
-            visualDensity: VisualDensity.compact,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const CommunitySearchView()),
-            ),
-          ),
-          const SizedBox(width: 4),
         ],
       ),
-      body: switch (activeBottomTab.value) {
-        BelongBottomTab.home => buildHomeBody(),
-        BelongBottomTab.messages => const BelongMessagesView(),
-        BelongBottomTab.notifications => const CalmNotificationsView(),
-        BelongBottomTab.feedback => const BelongFeedbackAndVotingSheet(),
-      },
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        left: true,
+        right: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820),
+            child: buildActiveBottomTabBody(),
+          ),
+        ),
+      ),
       bottomNavigationBar: BelongBottomNavBar(
         currentTab: activeBottomTab.value,
         isContrast: isContrast,
-        onTabSelected: (tab) => activeBottomTab.value = tab,
+        onSelectTab: (tab) {
+          activeBottomTab.value = tab;
+          analytics.logBottomTabSelected(tab.name);
+        },
+      ),
+    );
+  }
+}
+
+/// Backward-compatible alias for SanctuaryHomeScreen.
+typedef SanctuaryHomeScreen = RefugeHomeScreen;
+
+class _BelongSubHeaderBar extends StatelessWidget {
+  const _BelongSubHeaderBar({
+    required this.activeSubView,
+    required this.onSelectFeed,
+    required this.onSelectSpaces,
+    required this.primaryColor,
+    required this.isContrast,
+  });
+
+  final BelongHomeSubView activeSubView;
+  final VoidCallback onSelectFeed;
+  final VoidCallback onSelectSpaces;
+  final Color primaryColor;
+  final bool isContrast;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFeed = activeSubView == BelongHomeSubView.feed;
+    final isSpaces = activeSubView == BelongHomeSubView.spaces;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
+      child: Row(
+        children: [
+          ChoiceChip(
+            key: const Key('subnav_feed_tab'),
+            label: const Text('Feed'),
+            selected: isFeed,
+            onSelected: (_) => onSelectFeed(),
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            key: const Key('subnav_spaces_tab'),
+            label: const Text('Spaces'),
+            selected: isSpaces,
+            onSelected: (_) => onSelectSpaces(),
+          ),
+          const Spacer(),
+          ActionChip(
+            key: const Key('open_feedback_and_voting_button'),
+            avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
+            label: const Text('Vote & Feedback'),
+            onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+          ),
+        ],
       ),
     );
   }

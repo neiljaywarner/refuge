@@ -10,15 +10,29 @@ import 'package:flutter/material.dart';
 /// 2. [ProfileScreen] showing account email, change password, and sign out.
 /// 3. Zero custom forms or state overhead — plain vanilla Firebase Auth.
 class SimpleAuthScreen extends StatelessWidget {
-  const SimpleAuthScreen({super.key, this.auth});
+  const SimpleAuthScreen({
+    super.key,
+    this.auth,
+    this.onAuthenticated,
+    this.onSignedOut,
+  });
 
   final FirebaseAuth? auth;
+  final VoidCallback? onAuthenticated;
+  final VoidCallback? onSignedOut;
 
   /// Opens the SimpleAuth screen directly via Navigator.
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(
+    BuildContext context, {
+    VoidCallback? onAuthenticated,
+    VoidCallback? onSignedOut,
+  }) {
     return Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => const SimpleAuthScreen(),
+        builder: (_) => SimpleAuthScreen(
+          onAuthenticated: onAuthenticated,
+          onSignedOut: onSignedOut,
+        ),
       ),
     );
   }
@@ -46,10 +60,16 @@ class SimpleAuthScreen extends StatelessWidget {
             providers: providers,
             actions: [
               AuthStateChangeAction<UserCreated>((context, state) {
-                // Successfully created user account
+                onAuthenticated?.call();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
               }),
               AuthStateChangeAction<SignedIn>((context, state) {
-                // Successfully signed in
+                onAuthenticated?.call();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
               }),
             ],
           );
@@ -60,7 +80,10 @@ class SimpleAuthScreen extends StatelessWidget {
           providers: providers,
           actions: [
             SignedOutAction((context) {
-              // Successfully signed out
+              onSignedOut?.call();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
             }),
           ],
           appBar: AppBar(

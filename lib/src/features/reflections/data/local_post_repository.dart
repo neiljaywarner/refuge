@@ -30,6 +30,7 @@ class LocalPostRepository implements PostRepository {
             'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
         timestamp: now.subtract(const Duration(minutes: 35)),
         reactions: {'pray': 6, 'peace': 4},
+        isDemo: true,
       ),
       Post(
         id: '2',
@@ -40,6 +41,7 @@ class LocalPostRepository implements PostRepository {
             'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
         timestamp: now.subtract(const Duration(hours: 2)),
         reactions: {'pray': 11, 'peace': 14},
+        isDemo: true,
       ),
       Post(
         id: '3',
@@ -50,6 +52,7 @@ class LocalPostRepository implements PostRepository {
             'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
         timestamp: now.subtract(const Duration(hours: 5)),
         reactions: {'pray': 5, 'peace': 8},
+        isDemo: true,
       ),
       Post(
         id: '4',
@@ -61,6 +64,7 @@ class LocalPostRepository implements PostRepository {
             'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
         timestamp: now.subtract(const Duration(minutes: 15)),
         reactions: {'pray': 4, 'peace': 8, 'relatable': 18},
+        isDemo: true,
       ),
       Post(
         id: '5',
@@ -72,6 +76,7 @@ class LocalPostRepository implements PostRepository {
             'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
         timestamp: now.subtract(const Duration(hours: 1)),
         reactions: {'pray': 7, 'peace': 9, 'relatable': 14},
+        isDemo: true,
       ),
       Post(
         id: '6',
@@ -83,6 +88,7 @@ class LocalPostRepository implements PostRepository {
             'Welcome to Belong on the Spectrum! Feel free to introduce yourself here at your own pace, share a favorite hobby or special interest, or simply read quietly.',
         timestamp: now.subtract(const Duration(minutes: 10)),
         reactions: {'pray': 9, 'peace': 12, 'encouraged': 15},
+        isDemo: true,
       ),
       Post(
         id: '7',
@@ -93,6 +99,7 @@ class LocalPostRepository implements PostRepository {
             'So grateful for a calm community space without flashing popups or algorithmic timelines. Wishing everyone a peaceful evening!',
         timestamp: now.subtract(const Duration(minutes: 25)),
         reactions: {'pray': 5, 'peace': 10},
+        isDemo: true,
       ),
       Post(
         id: '8',
@@ -106,6 +113,7 @@ class LocalPostRepository implements PostRepository {
             'Me opening the back of my Bible to stare at Paul\'s 3rd Missionary Journey map for 45 minutes straight instead of making small talk in the lobby. 🗺️♾️',
         timestamp: now.subtract(const Duration(minutes: 40)),
         reactions: {'pray': 3, 'peace': 7, 'relatable': 22},
+        isDemo: true,
       ),
       Post(
         id: '9',
@@ -117,6 +125,7 @@ class LocalPostRepository implements PostRepository {
             'Shared a calm 10-minute video guide on creating sensory-friendly church welcome bags and quiet rooms (caption transcript included, zero autoplay).',
         timestamp: now.subtract(const Duration(hours: 3)),
         reactions: {'pray': 4, 'peace': 9, 'encouraged': 11},
+        isDemo: true,
       ),
     ]);
     _notify();

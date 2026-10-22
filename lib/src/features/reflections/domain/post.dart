@@ -9,6 +9,7 @@ class Post {
   final String content;
   final DateTime timestamp;
   final Map<String, int> reactions;
+  final bool isDemo;
 
   const Post({
     required this.id,
@@ -20,6 +21,7 @@ class Post {
     required this.content,
     required this.timestamp,
     required this.reactions,
+    this.isDemo = false,
   });
 
   Post copyWith({
@@ -32,6 +34,7 @@ class Post {
     String? content,
     DateTime? timestamp,
     Map<String, int>? reactions,
+    bool? isDemo,
   }) => Post(
     id: id ?? this.id,
     authorName: authorName ?? this.authorName,
@@ -42,6 +45,7 @@ class Post {
     content: content ?? this.content,
     timestamp: timestamp ?? this.timestamp,
     reactions: reactions ?? Map<String, int>.from(this.reactions),
+    isDemo: isDemo ?? this.isDemo,
   );
 
   @override
@@ -56,7 +60,8 @@ class Post {
           specialInterestTag == other.specialInterestTag &&
           imageUrl == other.imageUrl &&
           content == other.content &&
-          timestamp == other.timestamp;
+          timestamp == other.timestamp &&
+          isDemo == other.isDemo;
 
   @override
   int get hashCode =>
@@ -64,8 +69,10 @@ class Post {
       authorName.hashCode ^
       spaceKey.hashCode ^
       toneTag.hashCode ^
-      (specialInterestTag?.hashCode ?? 0) ^
-      (imageUrl?.hashCode ?? 0) ^
+      specialInterestTag.hashCode ^
+      imageUrl.hashCode ^
       content.hashCode ^
-      timestamp.hashCode;
+      timestamp.hashCode ^
+      reactions.hashCode ^
+      isDemo.hashCode;
 }
