@@ -220,7 +220,7 @@ void main() {
 
       // Verify Quiet Digest banner is present
       expect($(RegExp('Gathered in peace')), findsOneWidget);
-      expect($(RegExp('reflections')), findsOneWidget);
+      expect($(RegExp(r'Gathered in peace.*reflections')), findsOneWidget);
       expect($(RegExp('care affirmations')), findsOneWidget);
     });
   });
