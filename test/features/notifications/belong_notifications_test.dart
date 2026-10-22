@@ -35,10 +35,19 @@ void main() {
       expect(n2.authorInitials, 'ER');
 
       final n3 = n1.copyWith(authorName: 'Pastor Thomas (Melbourne)');
-      expect(n3.authorInitials, 'P(');
+      expect(n3.authorInitials, 'PT');
 
       final n4 = n1.copyWith(authorName: 'Solitary');
       expect(n4.authorInitials, 'S');
+
+      final n5 = n1.copyWith(authorName: 'Dr. Grace Hopper [Admin]');
+      expect(n5.authorInitials, 'DH');
+
+      final n6 = n1.copyWith(authorName: '  ');
+      expect(n6.authorInitials, '?');
+
+      final n7 = n1.copyWith(authorName: 'Mary-Jane Watson');
+      expect(n7.authorInitials, 'MW');
     });
 
     test('displayMessage formats interaction strings properly', () {

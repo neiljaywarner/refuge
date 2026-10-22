@@ -11,6 +11,7 @@
 * **[🤝 Volunteer & Welcome Team Guide](How-You-Can-Help-Volunteer-Guide)**
 * **[🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")](Manual-Testing-and-UAT-Flows)**
 * **[🌿 Sensory Themes & Calm-Tech Philosophy](Calm-Tech-and-Accessibility)**
+* **[🌸 Calm Notifications: Member & Product Guide](Notifications-Product-Guide)**
 
 ### 🛠️ Engineering, Architecture & Mentoring
 * **[🧭 Architecture Overview & ADRs (0001–0010)](UX-Evaluation-and-ADRs)**
@@ -18,6 +19,7 @@
 * **[⚙️ Deep Technical Breakdown: Android APK vs. Web PWA](Android-APK-vs-Web-PWA-Details)**
 * **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
+* **[🔔 Notifications Technical Architecture & State](Notifications-Technical-Architecture)**
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
 * **[📡 Dual Observability, Analytics & Crash Reporting](Observability-Crashlytics-Analytics-and-Diagnostics)**
 * **[🧪 QA, Device Driving & Beta Testing](QA-and-Beta-Testing-Guide)**
