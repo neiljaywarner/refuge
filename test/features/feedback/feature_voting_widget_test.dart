@@ -25,14 +25,26 @@ void main() {
           ),
         );
 
-        // Verify header & WIP roadmap items
+        // Verify header & WIP roadmap items (initialized to 0 votes for clean launch #304)
         expect($('Belong Roadmap & Feedback'), findsOneWidget);
         expect($('Direct Messages (Msgs Tab)'), findsOneWidget);
-        expect($('24'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('vote_button_wip-direct-messages')),
+            matching: find.text('0'),
+          ),
+          findsOneWidget,
+        );
 
-        // Tap upvote on Direct Messages
+        // Tap upvote on Direct Messages (0 -> 1)
         await $(const Key('vote_button_wip-direct-messages')).tap();
-        expect($('25'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('vote_button_wip-direct-messages')),
+            matching: find.text('1'),
+          ),
+          findsOneWidget,
+        );
 
         // Switch to Literal 3-Intent Feedback tab
         await $(const Key('tab_private_feedback')).tap();
@@ -75,20 +87,44 @@ void main() {
         );
         await $.pumpAndSettle();
 
-        // Verify the item is listed
+        // Verify the item is listed with 0 initial votes (#304)
         expect(
           $('Real-Time Instant Alerts vs. Calm Batched Digest Toggle'),
           findsOneWidget,
         );
-        expect($('32'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(
+              const Key('vote_button_idea-realtime-vs-calm-notifications'),
+            ),
+            matching: find.text('0'),
+          ),
+          findsOneWidget,
+        );
 
-        // Upvote
+        // Upvote (0 -> 1)
         await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
-        expect($('33'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(
+              const Key('vote_button_idea-realtime-vs-calm-notifications'),
+            ),
+            matching: find.text('1'),
+          ),
+          findsOneWidget,
+        );
 
-        // Toggle vote back off
+        // Toggle vote back off (1 -> 0)
         await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
-        expect($('32'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(
+              const Key('vote_button_idea-realtime-vs-calm-notifications'),
+            ),
+            matching: find.text('0'),
+          ),
+          findsOneWidget,
+        );
       },
     );
   });

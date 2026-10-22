@@ -73,7 +73,7 @@ class VotableFeatureItem {
     required this.title,
     required this.description,
     required this.stage,
-    required this.votes,
+    this.votes = 0,
     this.userVoted = false,
     this.githubIssueNumber,
   });
@@ -103,6 +103,7 @@ class VotableFeatureItem {
 }
 
 /// Sane default features + active WIP items for the Oct 24–31 Circle cutover preview.
+/// Initialized with 0 votes so community sentiment drives real roadmap prioritization (#304).
 const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-direct-messages',
@@ -110,7 +111,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Calm 1-on-1 member messaging with opt-in boundaries and zero read-receipt pressure.',
     stage: FeatureStage.workInProgress,
-    votes: 24,
+    votes: 0,
     githubIssueNumber: 27,
   ),
   VotableFeatureItem(
@@ -119,7 +120,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Bundled, predictable updates when someone replies to your post or prayer request.',
     stage: FeatureStage.workInProgress,
-    votes: 19,
+    votes: 0,
     githubIssueNumber: 27,
   ),
   VotableFeatureItem(
@@ -128,7 +129,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Sensory-friendly DFW & online meetups, clear expectations, and 1-tap RSVP.',
     stage: FeatureStage.workInProgress,
-    votes: 28,
+    votes: 0,
     githubIssueNumber: 28,
   ),
   VotableFeatureItem(
@@ -137,7 +138,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Frictionless single-tap sign-in alongside Stage 1 email/password accounts.',
     stage: FeatureStage.workInProgress,
-    votes: 17,
+    votes: 0,
     githubIssueNumber: 33,
   ),
   VotableFeatureItem(
@@ -146,7 +147,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Installable store apps alongside our instant Web & Add-to-Home-Screen PWA.',
     stage: FeatureStage.planned,
-    votes: 21,
+    votes: 0,
     githubIssueNumber: 45,
   ),
   VotableFeatureItem(
@@ -155,7 +156,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Let members choose: receive immediate chimes/banners for DMs and replies, or batch everything into a calm quiet digest.',
     stage: FeatureStage.communityIdea,
-    votes: 32,
+    votes: 0,
     githubIssueNumber: 243,
   ),
   VotableFeatureItem(
@@ -164,7 +165,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Low-pressure voice or text-only fellowship rooms where cameras are never required.',
     stage: FeatureStage.communityIdea,
-    votes: 15,
+    votes: 0,
   ),
   VotableFeatureItem(
     id: 'idea-special-interest-galleries',
@@ -172,7 +173,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Dedicated photo & project albums inside Geek Out! for trains, coding, music, and art.',
     stage: FeatureStage.communityIdea,
-    votes: 14,
+    votes: 0,
   ),
   VotableFeatureItem(
     id: 'idea-weekly-calm-digest',
@@ -180,6 +181,6 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     description:
         'Catch up on community highlights once a week without daily notification clutter.',
     stage: FeatureStage.communityIdea,
-    votes: 12,
+    votes: 0,
   ),
 ];
