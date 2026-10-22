@@ -13,8 +13,14 @@ import 'home_screen.dart';
 class RefugeApp extends StatefulWidget {
   final PostRepository repository;
   final List<Override>? overrides;
+  final Widget? homeOverride;
 
-  const RefugeApp({super.key, required this.repository, this.overrides});
+  const RefugeApp({
+    super.key,
+    required this.repository,
+    this.overrides,
+    this.homeOverride,
+  });
 
   @override
   State<RefugeApp> createState() => _RefugeAppState();
@@ -31,8 +37,11 @@ class _RefugeAppState extends State<RefugeApp> {
     overrides: [postRepositoryProvider.overrideWithValue(widget.repository), ...?widget.overrides],
     child: ListenableBuilder(
       listenable: _themeNotifier,
-      builder: (context, _) =>
-          _RefugeAppContent(repository: widget.repository, themeNotifier: _themeNotifier),
+      builder: (context, _) => _RefugeAppContent(
+        repository: widget.repository,
+        themeNotifier: _themeNotifier,
+        homeOverride: widget.homeOverride,
+      ),
     ),
   );
 }
@@ -40,8 +49,13 @@ class _RefugeAppState extends State<RefugeApp> {
 class _RefugeAppContent extends ConsumerWidget {
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
+  final Widget? homeOverride;
 
-  const _RefugeAppContent({required this.repository, required this.themeNotifier});
+  const _RefugeAppContent({
+    required this.repository,
+    required this.themeNotifier,
+    this.homeOverride,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
@@ -66,6 +80,7 @@ class _RefugeAppContent extends ConsumerWidget {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    home: RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
+    home: homeOverride ??
+        RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
   );
 }

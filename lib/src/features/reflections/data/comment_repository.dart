@@ -23,6 +23,12 @@ abstract class CommentRepository {
 
   /// Streams the total comment count for a given post.
   Stream<int> watchCommentCount({required String postId});
+
+  /// Fetches comments authored by a specific member.
+  Future<List<Comment>> getCommentsByAuthor({required String authorName});
+
+  /// Streams comments authored by a specific member.
+  Stream<List<Comment>> watchCommentsByAuthor({required String authorName});
 }
 
 /// Riverpod provider exposing the configured CommentRepository.
