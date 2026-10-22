@@ -316,6 +316,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
+                                raid: 0,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -764,14 +765,25 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     backgroundColor: isContrast
                         ? Colors.yellow
                         : primaryColor.withValues(alpha: 0.2),
-                    child: Text(
-                      profile.initials,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.black : primaryColor,
-                      ),
-                    ),
+                    backgroundImage: (profile.avatarUrl != null &&
+                            profile.avatarUrl!.isNotEmpty)
+                        ? NetworkImage(profile.avatarUrl!)
+                        : null,
+                    onBackgroundImageError: (profile.avatarUrl != null &&
+                            profile.avatarUrl!.isNotEmpty)
+                        ? (_, __) {}
+                        : null,
+                    child: (profile.avatarUrl == null ||
+                            profile.avatarUrl!.isEmpty)
+                        ? Text(
+                            profile.initials,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: isContrast ? Colors.black : primaryColor,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),
