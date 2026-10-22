@@ -55,147 +55,107 @@ class ServerpodPostRepository implements PostRepository {
                'SERVERPOD_URL',
                defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
              ),
-         onFailedCall: (context, error, stackTrace) {
-           talker.handle(error, stackTrace, 'Serverpod RPC ${context.endpointName}.${context.methodName} FAILED');
-           debugPrint(
-             '🚨 [Serverpod RPC FAILED] ${context.endpointName}.${context.methodName}: $error',
-           );
-         },
-         onSucceededCall: (context) {
-           talker.info('Serverpod RPC ${context.endpointName}.${context.methodName} SUCCESS');
-           debugPrint('✅ [Serverpod RPC SUCCESS] ${context.endpointName}.${context.methodName}');
-         },
        );
-
-  String _mapSpaceKey(String key) => switch (key) {
-    'prayer' => 'prayer_care',
-    'study' => 'bible_study',
-    'special_interests' => 'special_interests',
-    'general' => 'main_hall',
-    'announcements' => 'quiet_room',
-    _ => key,
-  };
 
   @override
   Future<List<Post>> getPosts({required String spaceKey}) async {
-    final cached = await _fallback.getPosts(spaceKey: spaceKey);
-    if (cached.isNotEmpty) {
-      return cached;
-    }
-
-    // Dual-redundancy: in production with empty local store, failover to Cloud Firestore
-    final fs = firestore;
-    if (fs != null) {
-      try {
-        final snap = await fs
-            .collection('reflections')
-            .where('spaceKey', isEqualTo: spaceKey)
-            .get();
-        if (snap.docs.isNotEmpty) {
-          final list = snap.docs.map((doc) {
-            final data = doc.data();
-            return Post(
-              id: doc.id,
-              authorName: data['authorName'] as String? ?? 'Fellowship Member',
+    final mappedSpace = _mapSpaceKey(spaceKey);
+    try {
+      talker.info('📥 [Serverpod RPC] Fetching reflections for space: $spaceKey (mapped: $mappedSpace)');
+      final remotePosts = await _client.reflection
+          .getFeed(mappedSpace)
+          .timeout(const Duration(milliseconds: 800));
+      _isLiveConnected = true;
+      talker.info('✅ [Serverpod RPC SUCCESS] Fetched ${remotePosts.length} reflections from live serverpod backend');
+      return remotePosts
+          .map(
+            (spPost) => Post(
+              id: spPost.id?.toString() ?? UniqueKey().toString(),
+              authorName: spPost.authorName,
               spaceKey: spaceKey,
-              toneTag: data['intentTag'] as String? ?? '[Support]',
-              specialInterestTag: data['specialInterestTag'] as String?,
-              content: data['content'] as String? ?? '',
-              timestamp:
-                  DateTime.tryParse(data['createdAt'] as String? ?? '') ??
-                  DateTime.now(),
+              toneTag: spPost.toneTag,
+              specialInterestTag: spPost.specialInterestTag,
+              content: spPost.content,
+              timestamp: spPost.createdAt,
               reactions: {
-                'pray': (data['prayingCount'] as num?)?.toInt() ?? 0,
-                'standing': (data['standingWithCount'] as num?)?.toInt() ?? 0,
-                'peace': (data['peaceCount'] as num?)?.toInt() ?? 0,
-                'encouraged': (data['encouragedCount'] as num?)?.toInt() ?? 0,
-                'relatable': (data['encouragedCount'] as num?)?.toInt() ?? 0,
+                'pray': spPost.prayingCount,
+                'peace': spPost.peaceCount,
+                'encouraged': spPost.encouragedCount,
+                'standing': spPost.standingWithCount,
+                'relatable': spPost.encouragedCount,
               },
-            );
-          }).toList();
-          return list;
-        }
-      } catch (_) {
-        // Fallback gracefully to cached list
-      }
+            ),
+          )
+          .toList();
+    } catch (e, st) {
+      talker.handle(e, st, '🚨 [Serverpod RPC FAILED] getPosts timeout/error, falling back to local');
+      debugPrint('🚨 [Serverpod RPC FAILED] getPosts timeout/error: $e\n$st');
+      _isLiveConnected = false;
+      return _fallback.getPosts(spaceKey: spaceKey);
     }
-
-    return cached;
   }
 
   @override
   Future<Post> createPost(Post post) async {
-    talker.info('📤 [Serverpod RPC] Publishing reflection: tag=[${post.toneTag}] specialInterest=[${post.specialInterestTag}] content="${post.content}"');
+    talker.info('📤 [Serverpod RPC] Publishing reflection: tag=${post.toneTag} specialInterest=${post.specialInterestTag} content="${post.content}"');
 
-    // Dual-dispatch to Firebase Cloud Firestore for cross-cloud redundancy
+    // Dual-redundancy: dispatch to Firebase Cloud Firestore
     final fs = firestore;
     if (fs != null) {
       try {
         await fs.collection('reflections').doc(post.id).set({
           'authorName': post.authorName,
           'spaceKey': post.spaceKey,
-          'intentTag': post.toneTag,
+          'toneTag': post.toneTag,
           'specialInterestTag': post.specialInterestTag,
+          'imageUrl': post.imageUrl,
           'content': post.content,
-          'createdAt': post.timestamp.toIso8601String(),
-          'prayingCount': post.reactions['pray'] ?? 0,
-          'standingWithCount': post.reactions['standing'] ?? 0,
-          'peaceCount': post.reactions['peace'] ?? 0,
-          'encouragedCount': post.reactions['encouraged'] ?? 0,
+          'timestamp': post.timestamp.toIso8601String(),
+          'reactions': post.reactions,
+          'isDemo': post.isDemo,
         });
       } catch (_) {
-        // Cross-cloud edge sync never blocks client UX
+        // Cross-cloud edge sync resilience
       }
     }
 
     try {
-      final spPost = sp.ReflectionPost(
+      final spReflection = sp.ReflectionPost(
         authorName: post.authorName,
         spaceKey: _mapSpaceKey(post.spaceKey),
-        intentTag: post.toneTag,
+        toneTag: post.toneTag,
         specialInterestTag: post.specialInterestTag,
         content: post.content,
-        createdAt: post.timestamp.toUtc(),
+        createdAt: post.timestamp,
         prayingCount: post.reactions['pray'] ?? 0,
         standingWithCount: post.reactions['standing'] ?? 0,
         peaceCount: post.reactions['peace'] ?? 0,
         encouragedCount: post.reactions['encouraged'] ?? 0,
       );
 
-      final result = await _client.reflection
-          .publishReflection(spPost)
-          .timeout(const Duration(milliseconds: 5000));
-
-      talker.info('✅ [Serverpod RPC SUCCESS] Reflection published: id=${result.id} tag=[${result.intentTag}] specialInterest=[${result.specialInterestTag}]');
+      final created = await _client.reflection
+          .publishReflection(spReflection)
+          .timeout(const Duration(milliseconds: 1200));
       _isLiveConnected = true;
-
-      return Post(
-        id: result.id?.toString() ?? post.id,
-        authorName: result.authorName,
-        spaceKey: post.spaceKey,
-        toneTag: result.intentTag,
-        specialInterestTag: result.specialInterestTag,
-        imageUrl: post.imageUrl,
-        content: result.content,
-        timestamp: result.createdAt.toLocal(),
-        reactions: {
-          'pray': result.prayingCount,
-          'standing': result.standingWithCount,
-          'peace': result.peaceCount,
-          'encouraged': result.encouragedCount,
-          'relatable': result.encouragedCount,
-        },
-      );
+      talker.info('✅ [Serverpod RPC SUCCESS] Reflection published with id ${created.id}');
+      return post.copyWith(id: created.id?.toString());
     } catch (e, st) {
-      talker.handle(e, st, '🚨 [Serverpod RPC FAILED] createPost error, falling back to local');
+      talker.handle(e, st, '🚨 [Serverpod RPC FAILED] publishReflection error, falling back to local');
+      debugPrint('🚨 [Serverpod RPC FAILED] publishReflection error: $e\n$st');
       _isLiveConnected = false;
       return _fallback.createPost(post);
     }
   }
 
   @override
-  Future<void> addReaction({required String postId, required String reactionType}) async {
-    // Dual-dispatch to Firebase Cloud Firestore
+  Future<void> addReaction({
+    required String postId,
+    required String reactionType,
+  }) async {
+    // 1. Immediately mirror to local fallback for sub-16ms latency
+    _fallback.addReaction(postId: postId, reactionType: reactionType);
+
+    // Dual-redundancy: dispatch to Firebase Cloud Firestore
     final fs = firestore;
     if (fs != null) {
       try {
@@ -238,35 +198,28 @@ class ServerpodPostRepository implements PostRepository {
     // 1. Instantly yield local fallback so user never sees a blank screen or loading spinner
     yield await _fallback.getPosts(spaceKey: spaceKey);
 
-    // 2. Connect to Serverpod streaming endpoint (persistent WebSocket stream)
+    // 2. Open live streaming subscription to Serverpod endpoint
     try {
       final mappedSpace = _mapSpaceKey(spaceKey);
-      talker.info('🔌 [Serverpod WebSocket] Connecting to live stream for space: $spaceKey (mapped: $mappedSpace)');
-      final stream = _client.reflection.watchSpace(mappedSpace);
-
-      final livePosts = <Post>[];
+      final stream = _client.reflection.watchFeed(mappedSpace);
+      final List<Post> livePosts = List.from(await _fallback.getPosts(spaceKey: spaceKey));
 
       await for (final spPost in stream) {
-        talker.info(
-          '📡 [Serverpod WebSocket EVENT] Received reflection: id=${spPost.id} author="${spPost.authorName}" tag=[${spPost.intentTag}] specialInterest=[${spPost.specialInterestTag}] content="${spPost.content}"',
-        );
-        debugPrint(
-          '📡 [Serverpod Stream EVENT] Received post id=${spPost.id}: "${spPost.content}"',
-        );
         _isLiveConnected = true;
+        talker.info('⚡ [Serverpod WebSocket] Real-time reflection received: "${spPost.content}" by ${spPost.authorName}');
         final post = Post(
           id: spPost.id?.toString() ?? UniqueKey().toString(),
           authorName: spPost.authorName,
           spaceKey: spaceKey,
-          toneTag: spPost.intentTag,
+          toneTag: spPost.toneTag,
           specialInterestTag: spPost.specialInterestTag,
           content: spPost.content,
-          timestamp: spPost.createdAt.toLocal(),
+          timestamp: spPost.createdAt,
           reactions: {
             'pray': spPost.prayingCount,
-            'standing': spPost.standingWithCount,
             'peace': spPost.peaceCount,
             'encouraged': spPost.encouragedCount,
+            'standing': spPost.standingWithCount,
             'relatable': spPost.encouragedCount,
           },
         );
@@ -302,6 +255,27 @@ class ServerpodPostRepository implements PostRepository {
     } catch (e) {
       _isLiveConnected = false;
       return _fallback.getQuietDigest(spaceKey: spaceKey);
+    }
+  }
+
+  @override
+  Future<List<Post>> getPostsByAuthor({required String authorName}) =>
+      _fallback.getPostsByAuthor(authorName: authorName);
+
+  @override
+  Stream<List<Post>> watchPostsByAuthor({required String authorName}) =>
+      _fallback.watchPostsByAuthor(authorName: authorName);
+
+  String _mapSpaceKey(String key) {
+    switch (key) {
+      case 'prayer':
+        return 'prayer';
+      case 'study':
+        return 'study';
+      case 'special_interests':
+        return 'special_interests';
+      default:
+        return 'prayer';
     }
   }
 }
