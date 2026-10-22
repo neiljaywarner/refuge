@@ -1,0 +1,49 @@
+appId: so.circle.circle
+---
+# 📱 Circle App (`so.circle.circle`) — Careful Read-Only UI Discovery Flow
+#
+# ⚠️ SAFETY GUARDRAILS & NON-DESTRUCTIVE EXECUTION POLICY:
+# 1. NEVER clear state (clearState: false) — preserves the maintainer's active community login.
+# 2. Strictly READ-ONLY navigation: only inspect tabs, spaces, and discussion feeds.
+# 3. ZERO MUTATIONS: Never tap "Create", "New Topic", "+", "Post", "Reply", "Publish",
+#    "Leave Space", "Delete", or "Sign Out".
+# 4. ZERO-PII: All captured screenshots must undergo clean-framing (1080x2160 status bar strip)
+#    and member name redaction before repository commit.
+
+# 1. Launch Circle App without clearing state or tokens
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 2. Capture Initial View (Home / Community Spaces)
+- takeScreenshot: screenshots/01_circle_initial_anchor
+
+# 3. Carefully navigate to Spaces / Directory (if present)
+- tapOn:
+    text: "Spaces.*"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: screenshots/02_circle_spaces_list
+
+# 4. Inspect Discussion Feed (Read-only tap on first visible space card)
+- tapOn:
+    point: "50%,40%"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: screenshots/03_circle_discussion_feed
+
+# 5. Return safely to root without leaving any open dialogs or sheets
+- back
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: screenshots/04_circle_safe_return_root
