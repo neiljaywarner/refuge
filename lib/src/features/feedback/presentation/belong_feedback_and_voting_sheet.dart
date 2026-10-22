@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,9 +11,25 @@ import '../domain/feedback_and_voting_models.dart';
 /// State notifier managing community feature votes via the pluggable
 /// [FeatureVotingRepository] (`InMemory`, `Serverpod`, `Appwrite`, or `Firebase`).
 class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
+  StreamSubscription<List<VotableFeatureItem>>? _subscription;
+
   @override
   List<VotableFeatureItem> build() {
     final repo = ref.watch(featureVotingRepositoryProvider);
+    _subscription?.cancel();
+    _subscription = repo.watchFeatures().listen((updatedList) {
+      final currentMap = {for (final item in state) item.id: item};
+      state = [
+        for (final remote in updatedList)
+          if (currentMap.containsKey(remote.id))
+            remote.copyWith(userVoted: currentMap[remote.id]!.userVoted)
+          else
+            remote,
+      ];
+    });
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
     return repo.loadInitialFeatures();
   }
 
@@ -207,32 +225,36 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: item.stage ==
-                                            FeatureStage.workInProgress
-                                        ? colorScheme.primary.withValues(
-                                            alpha: 0.15,
-                                          )
-                                        : colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    item.stage.badgeLabel,
-                                    style: textTheme.labelSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
                                       color: item.stage ==
                                               FeatureStage.workInProgress
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
+                                          ? colorScheme.primary.withValues(
+                                              alpha: 0.15,
+                                            )
+                                          : colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      item.stage.badgeLabel,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: textTheme.labelSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: item.stage ==
+                                                FeatureStage.workInProgress
+                                            ? colorScheme.primary
+                                            : colorScheme.onSurfaceVariant,
+                                      ),
                                     ),
                                   ),
                                 ),
-                                const Spacer(),
+                                const SizedBox(width: 8),
                                 Tooltip(
                                   message: item.userVoted
                                       ? 'Remove your vote'

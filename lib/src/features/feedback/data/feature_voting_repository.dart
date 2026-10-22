@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -26,6 +28,9 @@ abstract interface class FeatureVotingRepository {
   /// Returns initial seed features (or cached snapshot for synchronous UI build).
   List<VotableFeatureItem> loadInitialFeatures();
 
+  /// Emits real-time reactive updates of the community feature voting board (#303, #309).
+  Stream<List<VotableFeatureItem>> watchFeatures();
+
   /// Applies an optimistic vote toggle and persists to the active backend adapter.
   List<VotableFeatureItem> toggleVote(
     List<VotableFeatureItem> current,
@@ -51,6 +56,15 @@ abstract interface class FeatureVotingRepository {
 /// identical optimistic UI behavior across Unit, Widget, Integration & E2E tests.
 mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   final List<Map<String, String>> submittedFeedbackLog = [];
+  StreamController<List<VotableFeatureItem>>? _streamController;
+
+  /// Shared broadcast stream controller for cross-session real-time notifications.
+  StreamController<List<VotableFeatureItem>> get streamController =>
+      _streamController ??=
+          StreamController<List<VotableFeatureItem>>.broadcast();
+
+  @override
+  Stream<List<VotableFeatureItem>> watchFeatures() => streamController.stream;
 
   @override
   List<VotableFeatureItem> loadInitialFeatures() =>
@@ -61,7 +75,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     List<VotableFeatureItem> current,
     String featureId,
   ) {
-    return [
+    final next = [
       for (final item in current)
         if (item.id == featureId)
           item.copyWith(
@@ -71,6 +85,14 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
         else
           item,
     ];
+    if (_streamController != null && !_streamController!.isClosed) {
+      // Remote broadcast reflects updated vote tallies without overriding remote users' local vote flags
+      final remotePayload = [
+        for (final item in next) item.copyWith(userVoted: false),
+      ];
+      _streamController!.add(remotePayload);
+    }
+    return next;
   }
 
   @override
@@ -91,6 +113,13 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       votes: 1,
       userVoted: true,
     );
+    if (_streamController != null && !_streamController!.isClosed) {
+      final remotePayload = [
+        for (final item in current) item.copyWith(userVoted: false),
+        newItem.copyWith(userVoted: false),
+      ];
+      _streamController!.add(remotePayload);
+    }
     return [...current, newItem];
   }
 
@@ -123,6 +152,14 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
 class InMemoryFeatureVotingRepository
     with FeatureVotingStateTransformMixin
     implements FeatureVotingRepository {
+  InMemoryFeatureVotingRepository({
+    StreamController<List<VotableFeatureItem>>? customStreamController,
+  }) {
+    if (customStreamController != null) {
+      _streamController = customStreamController;
+    }
+  }
+
   @override
   BackendTarget get target => BackendTarget.inMemory;
 }
@@ -178,6 +215,35 @@ class FirebaseFeatureVotingRepository
 
   @override
   BackendTarget get target => BackendTarget.firebase;
+
+  @override
+  Stream<List<VotableFeatureItem>> watchFeatures() {
+    final fs = firestore;
+    if (fs == null) {
+      return super.watchFeatures();
+    }
+    try {
+      return fs.collection(featuresCollectionPath).snapshots().map((snapshot) {
+        final remoteVotes = <String, int>{};
+        for (final doc in snapshot.docs) {
+          final data = doc.data();
+          if (data.containsKey('votes')) {
+            remoteVotes[doc.id] = (data['votes'] as num).toInt();
+          }
+        }
+        final base = loadInitialFeatures();
+        return [
+          for (final item in base)
+            if (remoteVotes.containsKey(item.id))
+              item.copyWith(votes: remoteVotes[item.id]!)
+            else
+              item,
+        ];
+      });
+    } catch (_) {
+      return super.watchFeatures();
+    }
+  }
 
   @override
   List<VotableFeatureItem> toggleVote(
