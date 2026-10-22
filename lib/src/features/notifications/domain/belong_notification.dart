@@ -48,12 +48,33 @@ class BelongNotification extends Equatable {
     this.isRead = false,
   });
 
-  /// Author initials for the Avatar widget fallback.
+  /// Author initials for the Avatar widget fallback, stripping parentheses,
+  /// punctuation, and bracketed qualifiers (e.g. "Pastor Thomas (Melbourne)" -> "PT").
   String get authorInitials {
-    final parts = authorName.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts[0].isEmpty) return '?';
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    final cleanName =
+        authorName.replaceAll(RegExp(r'[\(\[\{].*?[\)\]\}]'), '').trim();
+    final parts = cleanName
+        .split(RegExp(r'[\s_.-]+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) {
+      final fallbackParts =
+          authorName.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+      if (fallbackParts.isEmpty) return '?';
+      final firstChar =
+          fallbackParts[0].replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+      return firstChar.isNotEmpty ? firstChar[0].toUpperCase() : '?';
+    }
+
+    final firstLetter = parts[0].replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    if (parts.length == 1) {
+      return firstLetter.isNotEmpty ? firstLetter[0].toUpperCase() : '?';
+    }
+    final lastLetter = parts.last.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    if (firstLetter.isEmpty && lastLetter.isEmpty) return '?';
+    if (firstLetter.isEmpty) return lastLetter[0].toUpperCase();
+    if (lastLetter.isEmpty) return firstLetter[0].toUpperCase();
+    return (firstLetter[0] + lastLetter[0]).toUpperCase();
   }
 
   /// Human-readable title message following the user's specification:
@@ -99,27 +120,42 @@ class BelongNotification extends Equatable {
 
   static String _formatMonthDay(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
-    final month = months[dt.month - 1];
+    final monthStr = months[dt.month - 1];
     final day = dt.day;
-    final suffix = _daySuffix(day);
-    return '$month $day$suffix';
-  }
 
-  static String _daySuffix(int day) {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-      case 1:
-        return 'st';
-      case 2:
-        return 'nd';
-      case 3:
-        return 'rd';
-      default:
-        return 'th';
+    String suffix;
+    if (day >= 11 && day <= 13) {
+      suffix = 'th';
+    } else {
+      switch (day % 10) {
+        case 1:
+          suffix = 'st';
+          break;
+        case 2:
+          suffix = 'nd';
+          break;
+        case 3:
+          suffix = 'rd';
+          break;
+        default:
+          suffix = 'th';
+      }
     }
+
+    return '$monthStr $day$suffix';
   }
 
   BelongNotification copyWith({
@@ -146,13 +182,13 @@ class BelongNotification extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        authorName,
-        authorAvatarUrl,
-        type,
-        postTitle,
-        commentSnippet,
-        timestamp,
-        isRead,
-      ];
+    id,
+    authorName,
+    authorAvatarUrl,
+    type,
+    postTitle,
+    commentSnippet,
+    timestamp,
+    isRead,
+  ];
 }
