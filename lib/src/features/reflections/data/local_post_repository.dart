@@ -7,6 +7,7 @@ import 'post_repository.dart';
 /// Seeds both the original Sanctuary spaces and the Circle.so-style Belong spaces.
 class LocalPostRepository implements PostRepository {
   final List<Post> _store = [];
+  final Set<String> _savedPostIds = {};
   final StreamController<List<Post>> _controller =
       StreamController<List<Post>>.broadcast();
 
@@ -183,6 +184,39 @@ class LocalPostRepository implements PostRepository {
       yield _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
       yield* _controller.stream.map(
         (posts) => posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
+  }
+
+  @override
+  Future<void> toggleSavePost({required String postId}) async {
+    final isCurrentlySaved = _savedPostIds.contains(postId);
+    if (isCurrentlySaved) {
+      _savedPostIds.remove(postId);
+    } else {
+      _savedPostIds.add(postId);
+    }
+
+    final index = _store.indexWhere((p) => p.id == postId);
+    if (index != -1) {
+      _store[index] = _store[index].copyWith(isSaved: !isCurrentlySaved);
+    }
+    _notify();
+  }
+
+  @override
+  Future<List<Post>> getSavedPosts() async {
+    return _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
+  }
+
+  @override
+  Stream<List<Post>> watchSavedPosts() {
+    Stream<List<Post>> generator() async* {
+      yield _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
+      yield* _controller.stream.map(
+        (posts) => posts.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList(),
       );
     }
 
