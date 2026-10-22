@@ -3,6 +3,7 @@
 * **[❓ Questions for Product & Alpha Testers](Questions-for-Product-Users-and-Alpha-Testers)**
 * **[📅 Oct 31 Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)**
 * **[🏘️ Belong Community Rooms Guide](Belong-Community-Guide)**
+* **[📱 Why Isn't Belong in the App Store? (And Why You Don't Need One)](Why-No-App-Store-App)**
 * **[📱 How to Install on iPhone & Android (PWA)](PWA-Guide-for-Members-and-Organizers)**
 * **[🎥 PWA Visual Installation & Video Guide](PWA-Installation-and-Mobile-Web-Guide)**
 * **[🎛️ Updating Announcements & Welcome Banner Without Coding](Organizer-Remote-Config-Guide)**
@@ -13,6 +14,7 @@
 
 ### 🛠️ Engineering, Architecture & Mentoring
 * **[🧭 Architecture Overview & ADRs (0001–0010)](UX-Evaluation-and-ADRs)**
+* **[⚙️ Deep Technical Breakdown: Android APK vs. Web PWA](Android-APK-vs-Web-PWA-Details)**
 * **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**

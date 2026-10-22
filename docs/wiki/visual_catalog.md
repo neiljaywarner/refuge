@@ -17,6 +17,7 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
 7. [Save for Later (Private Bookmarking) & Quick (+) Post Composer](#7-save-for-later-private-bookmarking--quick--post-composer)
 8. [Cross-Device Real-Time Synchronization (Dual Google Pixels)](#8-cross-device-real-time-synchronization-dual-google-pixels)
 9. [Prettier Sensory Authentication & Guest State](#9-prettier-sensory-authentication--guest-state)
+10. [Progressive Web App (PWA) Direct Installation Flow (Google Pixel 9a)](#10-progressive-web-app-pwa-direct-installation-flow-google-pixel-9a)
 
 ---
 
@@ -52,76 +53,76 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
 
 ### 3. Sensory Themes & High-Contrast Mode
 
-![Sensory Themes & High Contrast](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/sensory_themes.png)
+![Sensory Themes & High-Contrast Mode](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/sensory_theme_menu.png)
 
-- **Purpose**: Neurodivergent-first accessibility accommodating photophobia, astigmatism, visual glare, and low-vision processing needs.
+- **Purpose**: Accommodating wide spectrums of neurodivergent sensory profiles (photophobia, visual crowding, high-contrast visual needs, nighttime sensory recovery).
 - **What to Look For**:
-  - **Four Sensory Modes**:
-    1. **Clean (☀️)**: Soft warm paper theme with gentle off-white surfaces (`#FBFBFB`).
-    2. **Sage (🌿)**: Calming herbal tone with muted green accents to soothe nervous system overstimulation.
-    3. **Charcoal / Dark (🌙)**: Low-light theme eliminating blue light for quiet evening reading.
-    4. **High Contrast (👁️)**: True `#000000` deep black background with vivid `#FFEB3B` yellow outlines, pure white text, and zero fuzzy gradients.
-  - **Sensory Font Scaling**: Preset slider options (`Calm (100%)`, `Comfortable (115%)`, `Spacious (130%)`, `Maximum (145%)`) allowing instant text enlargement without screen overflows.
-- **Associated GitHub Issue**: [#268: Sensory Theme Controller & 1-Tap High Contrast Toggle](https://github.com/neiljaywarner/refuge/issues/268)
-- **Associated Wiki Page**: [Calm Tech and Accessibility Guide](https://github.com/neiljaywarner/refuge/wiki/Calm-Tech-and-Accessibility)
+  - **Herbal Sage (Default)**: Restful nature tones avoiding intense blue light.
+  - **Warm Desert**: Earthy sand tones comforting for migraine and light sensitivities.
+  - **Charcoal Dark**: Deep neutral dark mode without harsh neon borders.
+  - **Clean Paper**: High readability neutral background.
+  - **High Contrast**: WCAG AAA certified black/white ratio for visual accessibility.
+  - **Sensory Font Scaling**: Instant adjustment between 1.0x, 1.15x, 1.30x, and 1.50x font scales.
+- **Associated GitHub Issue**: [#277: High-Contrast Mode Toggle & Sensory Font Scaling Presets](https://github.com/neiljaywarner/refuge/issues/277)
+- **Associated Wiki Page**: [Calm Tech and Accessibility](https://github.com/neiljaywarner/refuge/wiki/Calm-Tech-and-Accessibility)
 
 ---
 
 ### 4. Community Feature Voting & Literal Feedback
 
-![Feature Voting Board](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/feature_voting_sheet.png)
+![Community Feature Voting & Literal Feedback](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/feature_voting.png)
 
-- **Purpose**: Transparent, collaborative roadmap shaping where neurodivergent members vote on community features and provide literal, ambiguity-free feedback.
+- **Purpose**: Transparent, neurodivergent-friendly roadmap prioritization where disciples guide features directly without corporate obfuscation.
 - **What to Look For**:
-  - **1-Tap Voting**: Incrementing vote counts with subtle haptic affirmation and zero modal popups.
-  - **Roadmap Status Chips**: Distinct, non-overlapping status badges (`In Progress`, `Under Consideration`, `Planned`).
-  - **Literal 3-Intent Feedback**: Form allowing members to categorize feedback strictly by intent: `Praise / What Works Well`, `Frustration / Sensory Glitch`, or `Feature Request`.
-  - **Zero Algorithmic Bias**: Items are sorted by community votes, not engagement metrics or commercial tracking.
-- **Associated GitHub Issue**: [Epic #302: Community Feature Roadmap & Real-Time Voting](https://github.com/neiljaywarner/refuge/issues/302)
-- **Associated Wiki Page**: [QA and Beta Testing Guide](https://github.com/neiljaywarner/refuge/wiki/QA-and-Beta-Testing-Guide)
+  - **Literal Status Badges**: `WIP · Shipping Before Oct 31`, `Planned · Community Prioritized`, `Community Idea · Vote to Prioritize`.
+  - **Reactive Live Stream Sync**: Multi-user concurrency updates vote counters across clients in real-time.
+  - **Sensory Soundscapes Item**: Upcoming ambient sound generator with nature noise loops.
+  - **Private Feedback Seam**: Decoupled bug report routing directly into private GitHub issues.
+- **Associated GitHub Issues**: [#302: Epic: Community Feature Roadmap & Real-Time Voting](https://github.com/neiljaywarner/refuge/issues/302), [#303: Multi-User Concurrency E2E Test & Reactive Broadcast Sync](https://github.com/neiljaywarner/refuge/issues/303), [#304: Reset Feature Vote Counts to Zero](https://github.com/neiljaywarner/refuge/issues/304)
+- **Associated Wiki Page**: [Questions for Product Users and Alpha Testers](https://github.com/neiljaywarner/refuge/wiki/Questions-for-Product-Users-and-Alpha-Testers)
 
 ---
 
 ### 5. Member Profile & Activity Counters Drill-Down
 
-![Member Profile Activity Counters](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/member_profile_counters.png)
+![Member Profile & Activity Counters](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/member_profile.png)
 
-- **Purpose**: Respectful member transparency and connection allowing community members to view authored posts and comments without performative vanity metrics or clout culture.
+- **Purpose**: Rich community connection allowing members to share their story, church congregation affiliation, communication preferences, and browse fellow disciples' authored posts and comments.
 - **What to Look For**:
-  - **Author Header**: Member name, church affiliation (ICOC / Visiting Ally), member since date, and bio/tagline.
-  - **Activity Badges**: `Posts (X)` and `Comments (Y)` interactive tabs.
-  - **Inline Drill-Down**: Tapping the count tabs reveals the exact list of reflections or discussion replies authored by the member.
-  - **Direct Interaction**: Members can like a post or open the threaded discussion directly from the member's profile dialog.
-- **Associated GitHub Issue**: [#300: Member Profile Activity Counters & Drill-Down Navigation](https://github.com/neiljaywarner/refuge/issues/300)
-- **Associated Wiki Page**: [Belong Community Guide](https://github.com/neiljaywarner/refuge/wiki/Belong-Community-Guide)
+  - **Profile Header**: Avatar, Display Name, Church Affiliation Badge (`⛪ DFW Church` / `🌱 Welcoming Visitor`), and Profile Tagline.
+  - **Activity Counters**: Interactive chips displaying total Posts and Comments count.
+  - **Activity Drill-Down Modal**: Tapping Posts opens their authored reflections with real-time care affirmations and direct comment navigation.
+  - **Sensory Communication Comfort**: Explicit badges: `Prefer Direct Questions`, `Low Energy / Slow Responses OK`, `No Phone Calls`.
+- **Associated GitHub Issue**: [#300: Member Profile Activity Counters & Drill-Down](https://github.com/neiljaywarner/refuge/issues/300)
+- **Associated Wiki Page**: [Community Leader Brainstorms](https://github.com/neiljaywarner/refuge/wiki/Community-Leader-Brainstorms)
 
 ---
 
 ### 6. Calm Notification Ethics & Filterable Inbox
 
-![Calm Notification Ethics](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/notifications_inbox.png)
+![Calm Notifications View](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/notifications_inbox.png)
 
-- **Purpose**: Respecting cognitive bandwidth by rejecting manipulative red alert dots, clickbait notifications, and late-night interruptions.
+- **Purpose**: Mindful notification management preventing auditory startle, dopamine reward loops, or anxiety-inducing badge pileups.
 - **What to Look For**:
-  - **Filter Chips**: Filter by `All`, `Mentions`, `Threads`, and `Following`.
-  - **Action Avatar Badges**: Small sub-badges on the bottom-right of the member avatar (`❤️` for care reaction, `↩️` for reply, `@` for mention).
-  - **Relative Timestamps**: Calm, plain-language times (`1 hr ago`, `2 days ago`).
-  - **Quiet Mark as Read**: Clean checkmark button in the upper right, disabled when all notifications are read.
-- **Associated GitHub Issue**: [#286: Notification Bell, Launcher Badge & Filterable Inbox](https://github.com/neiljaywarner/refuge/issues/286)
-- **Associated Wiki Page**: [ADR-0010: Notifications Architecture & Calm Ethics](https://github.com/neiljaywarner/refuge/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM)
+  - **Bottom Navigation Bell Badge**: Subtle unread counter badge synchronized with the mobile OS launcher icon.
+  - **Filter Chips**: `Inbox`, `Mentions` (`＠`), `Threads` (`↩️`), and `Following` (`❤️`).
+  - **Avatar Context Badges**: Visual indicator in the lower-right corner of author avatars representing the exact notification event.
+  - **Mark All as Read Action**: Upper-right action button that cleans in-app and launcher unread states; greyed out when unread count is 0.
+- **Associated GitHub Issue**: [#286: Bottom Nav Bell Badge, Filtered Inbox & Launcher Badging](https://github.com/neiljaywarner/refuge/issues/286)
+- **Associated Wiki Page**: [Calm Notifications Architecture (ADR-0010)](https://github.com/neiljaywarner/refuge/wiki/ADR-0010-Notifications-Local-Awesome-vs-FCM)
 
 ---
 
 ### 7. Save for Later (Private Bookmarking) & Quick (+) Post Composer
 
-![Save for Later & Quick Post](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/bookmarks_and_composer.png)
+![Save for Later & Quick Post Composer](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/saved_for_later_and_composer.png)
 
-- **Purpose**: Enabling members to save deep biblical studies, reflections, or resources during moments of sensory overload for quiet evening reading, plus an instant `(+)` composer button.
+- **Purpose**: Private thought preservation and effortless reflection sharing directly from the main AppBar.
 - **What to Look For**:
-  - **Bookmark Ribbon**: Located on each `ReflectionCard` header; toggles between outline (`Icons.bookmark_border_rounded`) and filled (`Icons.bookmark_rounded`).
-  - **100% Private**: Bookmarks are strictly private to the user; no public save counts or performative ribbons.
-  - **Top-Right Quick Button**: Easy `(+)` button beside the profile avatar opens a bottom sheet with the full `ReflectionComposer` from any view.
-  - **Peaceful Empty State**: When no items are saved, displays a calm message explaining how to save reflections for unhurried retrieval.
+  - **Quick (+) Post Composer**: Circular primary action button situated beside the member avatar in the top AppBar for instant reflection drafting.
+  - **1-Tap Bookmark Action**: Bookmark ribbon icon (`🔖`) on every reflection card. Tapping toggles private saved status with a gentle, non-blocking toast.
+  - **Saved for Later Space**: Dedicated space filter chip in the home feed displaying only your privately bookmarked reflections.
+  - **Offline Persistence**: Bookmarks persist across sessions and offline restarts via reactive Riverpod state and local storage.
 - **Associated GitHub Issue**: [#155: Save for Later (Private Bookmarking of Posts & Reflections)](https://github.com/neiljaywarner/refuge/issues/155)
 - **Associated Wiki Page**: [Threaded Comments and Discussion Architecture](https://github.com/neiljaywarner/refuge/wiki/Threaded-Comments-and-Discussion-Architecture)
 
@@ -151,3 +152,21 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
   - **Offline Resilience**: Clean card presentation with one-tap entry button during offline testing or local development.
 - **Associated GitHub Issue**: [#155 & #284: Prettier Authentication & Home Callback](https://github.com/neiljaywarner/refuge/issues/155)
 - **Associated Wiki Page**: [PWA Guide for Members and Organizers](https://github.com/neiljaywarner/refuge/wiki/PWA-Guide-for-Members-and-Organizers)
+
+---
+
+### 10. Progressive Web App (PWA) Direct Installation Flow (Google Pixel 9a)
+
+![PWA Installation & Standalone](https://raw.githubusercontent.com/neiljaywarner/refuge/main/doc/screenshots/pwa_standalone_fullscreen_pixel9a.png)
+
+- **Purpose**: Direct device installation without corporate App Store friction, store passwords, credit card prompts, or 150MB+ download bloat.
+- **What to Look For**:
+  - **Native WebAPK Provisioning**: Android creates an official OS-level app launcher icon alongside native apps.
+  - **Zero Browser Clutter**: Removes URL address bar, search tabs, and bottom navigation pills for a true fullscreen sanctuary.
+  - **Instant Under-5MB Footprint**: Installs in under 3 seconds with zero disk overhead.
+- **Associated GitHub Issues**:
+  - [#312: Human-readable guide — Why There's No App Store App & Why You Don't Need One](https://github.com/neiljaywarner/refuge/issues/312)
+  - [#313: Deep Technical Breakdown: Android APK vs. Web PWA](https://github.com/neiljaywarner/refuge/issues/313)
+- **Associated Wiki Pages**:
+  - [Why Isn't Belong in the App Store?](https://github.com/neiljaywarner/refuge/wiki/Why-No-App-Store-App)
+  - [Android APK vs. Web PWA Technical Breakdown](https://github.com/neiljaywarner/refuge/wiki/Android-APK-vs-Web-PWA-Details)
