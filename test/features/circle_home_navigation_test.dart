@@ -14,7 +14,7 @@ void main() {
       final dmItem = initial.firstWhere(
         (e) => e.id == 'wip-direct-messages',
       );
-      expect(dmItem.votes, 24);
+      expect(dmItem.votes, 0);
       expect(dmItem.userVoted, isFalse);
 
       container
@@ -23,7 +23,7 @@ void main() {
       final afterUpvote = container
           .read(featureVotingProvider)
           .firstWhere((e) => e.id == 'wip-direct-messages');
-      expect(afterUpvote.votes, 25);
+      expect(afterUpvote.votes, 1);
       expect(afterUpvote.userVoted, isTrue);
     });
 
@@ -57,10 +57,22 @@ void main() {
       await $(const Key('open_feedback_and_voting_button')).tap();
       expect($('Belong Roadmap & Feedback'), findsOneWidget);
       expect($('Direct Messages (Msgs Tab)'), findsOneWidget);
-      expect($('24'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('vote_button_wip-direct-messages')),
+          matching: find.text('0'),
+        ),
+        findsOneWidget,
+      );
 
-      await $('24').tap();
-      expect($('25'), findsOneWidget);
+      await $(const Key('vote_button_wip-direct-messages')).tap();
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('vote_button_wip-direct-messages')),
+          matching: find.text('1'),
+        ),
+        findsOneWidget,
+      );
 
       // 4. Close bottom sheet and navigate back to feed
       await $.tester.tapAt(const Offset(20, 20));

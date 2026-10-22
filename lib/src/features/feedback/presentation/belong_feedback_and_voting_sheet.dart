@@ -233,35 +233,42 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   ),
                                 ),
                                 const Spacer(),
-                                OutlinedButton.icon(
-                                  key: Key('vote_button_${item.id}'),
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: item.userVoted
-                                        ? colorScheme.primaryContainer
-                                        : null,
-                                  ),
-                                  onPressed: () {
-                                    HapticFeedback.selectionClick();
-                                    ref
-                                        .read(featureVotingProvider.notifier)
-                                        .toggleVote(item.id);
-                                  },
-                                  icon: Icon(
-                                    item.userVoted
-                                        ? Icons.thumb_up
-                                        : Icons.thumb_up_alt_outlined,
-                                    size: 16,
-                                    color: item.userVoted
-                                        ? colorScheme.primary
-                                        : null,
-                                  ),
-                                  label: Text(
-                                    '${item.votes}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                Tooltip(
+                                  message: item.userVoted
+                                      ? 'Remove your vote'
+                                      : (item.votes == 0
+                                          ? 'Be the first to vote'
+                                          : 'Vote for this feature'),
+                                  child: OutlinedButton.icon(
+                                    key: Key('vote_button_${item.id}'),
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: item.userVoted
+                                          ? colorScheme.primaryContainer
+                                          : null,
+                                    ),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      ref
+                                          .read(featureVotingProvider.notifier)
+                                          .toggleVote(item.id);
+                                    },
+                                    icon: Icon(
+                                      item.userVoted
+                                          ? Icons.thumb_up
+                                          : Icons.thumb_up_alt_outlined,
+                                      size: 16,
                                       color: item.userVoted
                                           ? colorScheme.primary
                                           : null,
+                                    ),
+                                    label: Text(
+                                      '${item.votes}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: item.userVoted
+                                            ? colorScheme.primary
+                                            : null,
+                                      ),
                                     ),
                                   ),
                                 ),
