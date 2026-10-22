@@ -173,6 +173,33 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
+  Future<List<Post>> getPostsByAuthor({required String authorName}) async {
+    return _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
+  }
+
+  @override
+  Stream<List<Post>> watchPostsByAuthor({required String authorName}) {
+    Stream<List<Post>> generator() async* {
+      yield _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
+      yield* _controller.stream.map(
+        (posts) => posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
+  }
+
+  static bool _matchesAuthor(String postAuthor, String targetAuthor) {
+    final a = postAuthor.trim().toLowerCase();
+    final b = targetAuthor.trim().toLowerCase();
+    if (a == b) return true;
+    final aFirst = a.split(RegExp(r'[\s(]')).first;
+    final bFirst = b.split(RegExp(r'[\s(]')).first;
+    if (aFirst.isNotEmpty && bFirst.isNotEmpty && aFirst == bFirst) return true;
+    return a.contains(b) || b.contains(a);
+  }
+
+  @override
   Future<String?> getQuietDigest({required String spaceKey}) async {
     final posts = _store.where((p) => p.spaceKey == spaceKey).toList();
     if (posts.isEmpty) {

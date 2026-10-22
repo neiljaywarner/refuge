@@ -40,3 +40,13 @@ final postCommentsStreamProvider = StreamProvider.autoDispose.family<List<Commen
 final postCommentCountStreamProvider = StreamProvider.autoDispose.family<int, String>(
   (ref, postId) => ref.watch(commentRepositoryProvider).watchCommentCount(postId: postId),
 );
+
+/// StreamProvider yielding posts authored by a specific member.
+final memberPostsStreamProvider = StreamProvider.autoDispose.family<List<Post>, String>(
+  (ref, authorName) => ref.watch(postRepositoryProvider).watchPostsByAuthor(authorName: authorName),
+);
+
+/// StreamProvider yielding comments authored by a specific member.
+final memberCommentsStreamProvider = StreamProvider.autoDispose.family<List<Comment>, String>(
+  (ref, authorName) => ref.watch(commentRepositoryProvider).watchCommentsByAuthor(authorName: authorName),
+);

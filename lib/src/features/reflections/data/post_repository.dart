@@ -9,6 +9,8 @@ abstract class PostRepository {
   Future<void> addReaction({required String postId, required String reactionType});
   Stream<List<Post>> watchPosts({required String spaceKey});
   Future<String?> getQuietDigest({required String spaceKey});
+  Future<List<Post>> getPostsByAuthor({required String authorName});
+  Stream<List<Post>> watchPostsByAuthor({required String authorName});
 }
 
 /// Riverpod Provider for accessing the active PostRepository instance.

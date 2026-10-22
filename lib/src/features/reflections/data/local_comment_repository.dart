@@ -188,6 +188,33 @@ class LocalCommentRepository implements CommentRepository {
   Stream<int> watchCommentCount({required String postId}) =>
       watchComments(postId: postId).map((comments) => comments.length);
 
+  @override
+  Future<List<Comment>> getCommentsByAuthor({required String authorName}) async {
+    return _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
+  }
+
+  @override
+  Stream<List<Comment>> watchCommentsByAuthor({required String authorName}) {
+    Stream<List<Comment>> generator() async* {
+      yield _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
+      yield* _controller.stream.map(
+        (comments) => comments.where((c) => _matchesAuthor(c.authorName, authorName)).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
+  }
+
+  static bool _matchesAuthor(String commentAuthor, String targetAuthor) {
+    final a = commentAuthor.trim().toLowerCase();
+    final b = targetAuthor.trim().toLowerCase();
+    if (a == b) return true;
+    final aFirst = a.split(RegExp(r'[\s(]')).first;
+    final bFirst = b.split(RegExp(r'[\s(]')).first;
+    if (aFirst.isNotEmpty && bFirst.isNotEmpty && aFirst == bFirst) return true;
+    return a.contains(b) || b.contains(a);
+  }
+
   /// Returns comments ordered hierarchically: top-level comments first,
   /// immediately followed by their child replies.
   List<Comment> _getOrderedThread(String postId) {

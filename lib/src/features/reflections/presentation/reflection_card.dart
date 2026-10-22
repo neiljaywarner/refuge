@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/presentation/other_member_profile_dialog.dart';
 import '../domain/post.dart';
 import 'reflections_providers.dart';
 import 'threaded_discussion_sheet.dart';
@@ -43,9 +44,38 @@ class ReflectionCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                post.authorName,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              InkWell(
+                key: Key('author_tap_target_${post.id}'),
+                borderRadius: BorderRadius.circular(4),
+                onTap: () => OtherMemberProfileDialog.show(
+                  context,
+                  authorName: post.authorName,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                        child: Text(
+                          _getInitials(post.authorName),
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        post.authorName,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
@@ -235,5 +265,12 @@ class ReflectionCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  static String _getInitials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return 'M';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'.toUpperCase();
   }
 }
