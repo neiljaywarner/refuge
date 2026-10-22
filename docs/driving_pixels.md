@@ -20,6 +20,36 @@ How humans and AI agents run, drive, and verify **Belong on the Spectrum** on ph
 
 ## 3. Recipes
 
+### ⚡ Single-Command Turnkey Hardware Regression Runner
+To execute the complete physical glass regression suite (screen wake, Patrol BDD, Maestro journeys, clean-frame 1080x2160 screenshots, and audit report generation) in one command:
+
+```bash
+# Auto-detects connected Pixel and runs full regression suite
+./tool/run_physical_glass_regression.sh
+
+# Dry-run inspection without triggering UI taps
+./tool/run_physical_glass_regression.sh --dry-run
+```
+
+### 🔔 Physical Device Plug-In Detector & Reminder CLI
+Since physical devices are not always connected or awake for automated nightly cron runs, use `tool/device_reminder.dart` to monitor USB events, format reminders to `neilwarner@gmail.com`, or trigger runs upon plugging in:
+
+```bash
+# Inspect connected hardware
+dart run tool/device_reminder.dart
+
+# Detect device and trigger regression suite
+dart run tool/device_reminder.dart --run
+
+# Preview formatted maintainer email reminder
+dart run tool/device_reminder.dart --email-preview
+
+# Continuous USB watch mode (alerts in terminal when phone is connected)
+dart run tool/device_reminder.dart --watch
+```
+
+### 🛠️ Individual Manual Commands
+
 ```bash
 # Auto-detect device ID
 DEVICE=$(adb devices | grep -v "List" | grep "device$" | head -n 1 | awk '{print $1}')
