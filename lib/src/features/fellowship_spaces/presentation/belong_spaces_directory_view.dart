@@ -3,6 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/firebase/organizer_remote_config_service.dart';
+import '../../notifications/data/notification_permissions_service.dart';
+import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
 import '../domain/fellowship_space.dart';
 
 /// Circle.so-style structured Spaces directory & navigation drawer view for
@@ -51,62 +53,93 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
+    final notificationPrefs = ref.watch(calmNotificationPreferencesProvider);
     final primary = Theme.of(context).colorScheme.primary;
+    final isMutedInSettings = notificationPrefs.isSystemPermissionDenied;
 
-    return ListView.builder(
+    return ListView(
       key: const Key('belong_spaces_directory_list'),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: kBelongSpaceSections.length,
-      itemBuilder: (context, sectionIndex) {
-        final section = kBelongSpaceSections[sectionIndex];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(
-                  section.heading,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.9,
-                    color: primary.withValues(alpha: 0.8),
+      children: [
+        for (final section in kBelongSpaceSections)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    section.heading,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.9,
+                      color: primary.withValues(alpha: 0.8),
+                    ),
                   ),
                 ),
-              ),
-              Card(
-                elevation: 0,
-                margin: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: primary.withValues(alpha: 0.18)),
-                ),
-                child: Column(
-                  children: [
-                    for (var i = 0; i < section.items.length; i++) ...[
-                      if (i > 0)
-                        Divider(
-                          height: 1,
-                          color: primary.withValues(alpha: 0.1),
+                Card(
+                  elevation: 0,
+                  margin: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: primary.withValues(alpha: 0.18)),
+                  ),
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < section.items.length; i++) ...[
+                        if (i > 0)
+                          Divider(
+                            height: 1,
+                            color: primary.withValues(alpha: 0.1),
+                          ),
+                        _SpaceRowTile(
+                          item: section.items[i],
+                          isSelected:
+                              selectedSpaceSlug == section.items[i].slug &&
+                              section.heading != 'PINNED',
+                          onTap: () =>
+                              _handleTap(context, section.items[i], remoteConfig),
                         ),
-                      _SpaceRowTile(
-                        item: section.items[i],
-                        isSelected:
-                            selectedSpaceSlug == section.items[i].slug &&
-                            section.heading != 'PINNED',
-                        onTap: () =>
-                            _handleTap(context, section.items[i], remoteConfig),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        if (isMutedInSettings)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 24),
+            child: Card(
+              key: const Key('notifications_muted_spaces_tile'),
+              elevation: 0,
+              color: primary.withValues(alpha: 0.05),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: primary.withValues(alpha: 0.2)),
+              ),
+              child: ListTile(
+                dense: true,
+                leading: const Text('🔕', style: TextStyle(fontSize: 18)),
+                title: const Text(
+                  'Notifications muted in system settings',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Tap to adjust calm digest schedules or re-enable later',
+                  style: TextStyle(fontSize: 11.5),
+                ),
+                trailing: const Icon(Icons.tune_rounded, size: 18),
+                onTap: () => CalmNotificationPreferencesSheet.show(context),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

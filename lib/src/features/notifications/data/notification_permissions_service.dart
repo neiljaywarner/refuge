@@ -92,21 +92,31 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
         }
         state = state.copyWith(
           enabled: true,
+          isSystemPermissionDenied: false,
           fcmToken: token ?? 'fcm_token_calm_digest_alpha_preview',
         );
         return true;
       } else {
-        state = state.copyWith(enabled: false);
+        state = state.copyWith(
+          enabled: false,
+          isSystemPermissionDenied: true,
+        );
         return false;
       }
     } catch (_) {
       // Graceful fallback for mock/test environments or uninitialized Firebase
       state = state.copyWith(
         enabled: true,
+        isSystemPermissionDenied: false,
         fcmToken: 'fcm_token_calm_digest_alpha_preview',
       );
       return true;
     }
+  }
+
+  /// Manually marks whether system permissions are denied (e.g. from system settings detection).
+  void setSystemPermissionDenied(bool denied) {
+    state = state.copyWith(isSystemPermissionDenied: denied);
   }
 }
 
