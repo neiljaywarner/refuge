@@ -10,6 +10,13 @@ import 'package:refuge4serverpod/src/features/profile/presentation/member_profil
 void main() {
   group('MemberProfileDialog BDD Widget Tests (#93)', () {
     patrolWidgetTest('displays validation error if saved without selecting church affiliation', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
@@ -52,6 +59,13 @@ void main() {
     });
 
     patrolWidgetTest('signs in successfully when an ICOC church is selected', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
@@ -92,6 +106,13 @@ void main() {
     });
 
     patrolWidgetTest('signs in successfully when selecting "I am not a member of an ICOC church"', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),

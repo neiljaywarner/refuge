@@ -57,7 +57,7 @@ class MemberProfileDialog extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  profile.isSignedIn ? profile.displayName : 'Sign In to Belong',
+                  profile.isSignedIn ? profile.displayName : 'Member Profile & Sign-In',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -73,6 +73,7 @@ class MemberProfileDialog extends HookConsumerWidget {
             ),
           ),
           IconButton(
+            key: const Key('profile_sheet_close_button'),
             icon: const Icon(Icons.close_rounded, size: 20),
             onPressed: () => Navigator.of(context).pop(),
             tooltip: 'Close',
@@ -83,7 +84,7 @@ class MemberProfileDialog extends HookConsumerWidget {
         width: 380,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: minAxisSize,
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (validationError.value != null) ...[
@@ -102,6 +103,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                       Expanded(
                         child: Text(
                           validationError.value!,
+                          key: const Key('profile_affiliation_error_text'),
                           style: const TextStyle(fontSize: 11, color: Colors.red),
                         ),
                       ),
