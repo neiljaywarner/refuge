@@ -25,6 +25,8 @@ class ServerpodPostRepository implements PostRepository {
 
   bool get isLiveConnected => _isLiveConnected;
 
+  String get collectionName => isDevMode ? 'reflections_dev' : 'reflections';
+
   FirebaseFirestore? get firestore {
     if (customFirestore != null) return customFirestore;
     try {
@@ -68,7 +70,7 @@ class ServerpodPostRepository implements PostRepository {
     if (fs != null) {
       try {
         final snap = await fs
-            .collection('reflections')
+            .collection(collectionName)
             .where('spaceKey', isEqualTo: spaceKey)
             .get();
         if (snap.docs.isNotEmpty) {
@@ -107,7 +109,7 @@ class ServerpodPostRepository implements PostRepository {
     final fs = firestore;
     if (fs != null) {
       try {
-        await fs.collection('reflections').doc(post.id).set({
+        await fs.collection(collectionName).doc(post.id).set({
           'authorName': post.authorName,
           'spaceKey': post.spaceKey,
           'toneTag': post.toneTag,
@@ -163,7 +165,7 @@ class ServerpodPostRepository implements PostRepository {
     final fs = firestore;
     if (fs != null) {
       try {
-        await fs.collection('reflections').doc(postId).update({
+        await fs.collection(collectionName).doc(postId).update({
           '${reactionType}Count': FieldValue.increment(1),
         });
       } catch (_) {
