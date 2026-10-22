@@ -8,6 +8,7 @@ import '../../auth/presentation/simple_auth.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../../../core/config/preview_mode_provider.dart';
 import '../domain/member_profile.dart';
+import 'avatar_picker_sheet.dart';
 
 /// Upper-right Member Profile & Stage 1 ("Any Auth") Sign-In Dialog/Sheet
 /// built as a [HookConsumerWidget] (#23, #26, #35, ADR-0009).
@@ -38,15 +39,56 @@ class MemberProfileDialog extends HookConsumerWidget {
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       title: Row(
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Text(
-              profile.initials,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+          Tooltip(
+            message: 'Change profile avatar',
+            child: InkWell(
+              key: const Key('edit_avatar_button'),
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => AvatarPickerSheet.show(context),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    backgroundImage: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
+                        ? NetworkImage(profile.avatarUrl!)
+                        : null,
+                    onBackgroundImageError: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
+                        ? (_, __) {}
+                        : null,
+                    child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
+                        ? Text(
+                            profile.initials,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                          )
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: -2,
+                    right: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).cardColor,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        size: 9,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -110,7 +152,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                       ),
                     ],
                   ),
-                ),
+                  ),
               ],
               const Text(
                 'Stage 1 ("Any Auth"): Enter your name and email to participate in discussions and vote on features. Your account persists across sessions on this device.',

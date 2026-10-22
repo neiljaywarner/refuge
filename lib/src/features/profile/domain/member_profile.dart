@@ -19,6 +19,7 @@ class MemberProfile {
     this.authMethod = 'guest',
     this.icocChurchAffiliation,
     this.tagline,
+    this.avatarUrl,
   });
 
   const MemberProfile.guest()
@@ -29,7 +30,8 @@ class MemberProfile {
       isSignedIn = false,
       authMethod = 'guest',
       icocChurchAffiliation = null,
-      tagline = 'Exploring Belong on the Spectrum';
+      tagline = 'Exploring Belong on the Spectrum',
+      avatarUrl = null;
 
   final String displayName;
   final String email;
@@ -39,6 +41,7 @@ class MemberProfile {
   final String authMethod;
   final String? icocChurchAffiliation;
   final String? tagline;
+  final String? avatarUrl;
 
   /// Effective tagline for community display.
   String get effectiveTagline =>
@@ -73,6 +76,7 @@ class MemberProfile {
     String? authMethod,
     String? icocChurchAffiliation,
     String? tagline,
+    String? avatarUrl,
   }) {
     return MemberProfile(
       displayName: displayName ?? this.displayName,
@@ -84,6 +88,7 @@ class MemberProfile {
       icocChurchAffiliation:
           icocChurchAffiliation ?? this.icocChurchAffiliation,
       tagline: tagline ?? this.tagline,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
 }
@@ -211,6 +216,10 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       authMethod: session.authMethod,
       icocChurchAffiliation: session.icocChurchAffiliation,
     );
+  }
+
+  void setAvatarUrl(String? url) {
+    state = state.copyWith(avatarUrl: url);
   }
 
   void signOut() {
