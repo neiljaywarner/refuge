@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
+import '../../notifications/presentation/notifications_controller.dart';
+
 /// Primary 4-tab Bottom Navigation Bar for **Belong on the Spectrum**
 /// (`Home`, `Notifications`, `Msgs`, `Search`) vetted in ADR 0005 (#18).
 enum BelongBottomTab {
@@ -35,6 +37,7 @@ class BelongBottomNavBar extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final primary = Theme.of(context).colorScheme.primary;
     final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -63,10 +66,24 @@ class BelongBottomNavBar extends HookConsumerWidget {
           items: [
             for (final tab in BelongBottomTab.values)
               SalomonBottomBarItem(
-                icon: Icon(
-                  tab.icon,
-                  key: Key('bottom_nav_icon_${tab.name}'),
-                ),
+                icon: (tab == BelongBottomTab.notifications &&
+                        unreadNotificationsCount > 0)
+                    ? Badge.count(
+                        key: const Key('bottom_nav_notifications_badge'),
+                        count: unreadNotificationsCount,
+                        backgroundColor:
+                            isContrast ? Colors.yellow : primary,
+                        textColor:
+                            isContrast ? Colors.black : Colors.white,
+                        child: Icon(
+                          tab.icon,
+                          key: Key('bottom_nav_icon_${tab.name}'),
+                        ),
+                      )
+                    : Icon(
+                        tab.icon,
+                        key: Key('bottom_nav_icon_${tab.name}'),
+                      ),
                 title: Text(tab.label),
               ),
           ],
