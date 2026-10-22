@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -49,6 +50,8 @@ abstract interface class FeatureVotingRepository {
     required FeedbackSentiment sentiment,
     required String message,
     String? contactEmail,
+    String? attachmentUrl,
+    Uint8List? screenshotAttachment,
   });
 }
 
@@ -130,6 +133,8 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     required FeedbackSentiment sentiment,
     required String message,
     String? contactEmail,
+    String? attachmentUrl,
+    Uint8List? screenshotAttachment,
   }) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty) return;
@@ -144,6 +149,10 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       'message': trimmed,
       if (contactEmail != null && contactEmail.trim().isNotEmpty)
         'contactEmail': contactEmail.trim(),
+      if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty)
+        'attachmentUrl': attachmentUrl.trim(),
+      if (screenshotAttachment != null)
+        'hasScreenshotAttachment': 'true',
     });
   }
 }
@@ -278,11 +287,15 @@ class FirebaseFeatureVotingRepository
     required FeedbackSentiment sentiment,
     required String message,
     String? contactEmail,
+    String? attachmentUrl,
+    Uint8List? screenshotAttachment,
   }) async {
     await super.submitFeedback(
       sentiment: sentiment,
       message: message,
       contactEmail: contactEmail,
+      attachmentUrl: attachmentUrl,
+      screenshotAttachment: screenshotAttachment,
     );
 
     final fs = firestore;
@@ -298,6 +311,10 @@ class FirebaseFeatureVotingRepository
           'message': message.trim(),
           if (contactEmail != null && contactEmail.trim().isNotEmpty)
             'contactEmail': contactEmail.trim(),
+          if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty)
+            'attachmentUrl': attachmentUrl.trim(),
+          if (screenshotAttachment != null)
+            'hasScreenshotAttachment': true,
           'createdAt': FieldValue.serverTimestamp(),
         });
       } catch (_) {
