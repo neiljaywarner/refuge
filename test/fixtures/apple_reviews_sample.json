@@ -1,0 +1,98 @@
+{
+  "feed": {
+    "author": {
+      "name": { "label": "iTunes Store" },
+      "uri": { "label": "http://www.apple.com/itunes/" }
+    },
+    "entry": [
+      {
+        "id": { "label": "1506475653" },
+        "title": { "label": "Circle Communities" },
+        "im:name": { "label": "Circle Communities" },
+        "im:price": { "label": "Get", "attributes": { "amount": "0.00000", "currency": "USD" } }
+      },
+      {
+        "author": {
+          "name": { "label": "CommunityLearner88" },
+          "uri": { "label": "https://itunes.apple.com/us/reviews/id1001" }
+        },
+        "im:version": { "label": "3.12.0" },
+        "im:rating": { "label": "1" },
+        "id": { "label": "rev-001" },
+        "title": { "label": "Notification spam is unbearable" },
+        "content": {
+          "label": "The app spams my phone with push notifications for every single comment in every channel. I had to turn off all alerts in iOS settings, which means now I miss important direct messages.",
+          "attributes": { "type": "text" }
+        },
+        "im:voteSum": { "label": "12" },
+        "im:voteCount": { "label": "12" }
+      },
+      {
+        "author": {
+          "name": { "label": "VideoStudent" },
+          "uri": { "label": "https://itunes.apple.com/us/reviews/id1002" }
+        },
+        "im:version": { "label": "3.11.2" },
+        "im:rating": { "label": "2" },
+        "id": { "label": "rev-002" },
+        "title": { "label": "Video freezes and navigation is confusing" },
+        "content": {
+          "label": "Whenever I try to watch course video lectures, the player freezes after two minutes. Going back also takes me completely out of the space instead of back to the lesson index. Very frustrating navigation.",
+          "attributes": { "type": "text" }
+        },
+        "im:voteSum": { "label": "8" },
+        "im:voteCount": { "label": "9" }
+      },
+      {
+        "author": {
+          "name": { "label": "DevSubscriber" },
+          "uri": { "label": "https://itunes.apple.com/us/reviews/id1003" }
+        },
+        "im:version": { "label": "3.10.1" },
+        "im:rating": { "label": "2" },
+        "id": { "label": "rev-003" },
+        "title": { "label": "Paywall not found error when renewing" },
+        "content": {
+          "label": "My subscription expired and when I clicked renew in the mobile app, it gave an error saying paywall not found. I had to log in via Safari desktop mode to fix my account.",
+          "attributes": { "type": "text" }
+        },
+        "im:voteSum": { "label": "5" },
+        "im:voteCount": { "label": "5" }
+      },
+      {
+        "author": {
+          "name": { "label": "DesignerFan" },
+          "uri": { "label": "https://itunes.apple.com/us/reviews/id1004" }
+        },
+        "im:version": { "label": "3.12.0" },
+        "im:rating": { "label": "4" },
+        "id": { "label": "rev-004" },
+        "title": { "label": "Great spaces, but drains battery" },
+        "content": {
+          "label": "I love the community spaces and discussions. It is so much cleaner than Facebook Groups. Only complaint is that the battery drain is noticeable on longer sessions.",
+          "attributes": { "type": "text" }
+        },
+        "im:voteSum": { "label": "3" },
+        "im:voteCount": { "label": "3" }
+      },
+      {
+        "author": {
+          "name": { "label": "CohortMember" },
+          "uri": { "label": "https://itunes.apple.com/us/reviews/id1005" }
+        },
+        "im:version": { "label": "3.12.0" },
+        "im:rating": { "label": "5" },
+        "id": { "label": "rev-005" },
+        "title": { "label": "Best community platform hands down" },
+        "content": {
+          "label": "The structured spaces, rich text formatting, and direct messages make connecting with my cohort so natural. Love having discussions and events in one place.",
+          "attributes": { "type": "text" }
+        },
+        "im:voteSum": { "label": "15" },
+        "im:voteCount": { "label": "15" }
+      }
+    ],
+    "updated": { "label": "2026-10-21T18:00:00-07:00" },
+    "title": { "label": "iTunes Store: Customer Reviews" }
+  }
+}
