@@ -68,7 +68,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
         repository ?? ref.watch(postRepositoryProvider);
 
     final postStream = useMemoized(
-      () => activeRepository.watchPosts(spaceKey: selectedSpace.value),
+      () => activeRepository
+          .watchPosts(spaceKey: selectedSpace.value)
+          .asBroadcastStream(),
       [activeRepository, selectedSpace.value],
     );
     final quietDigestFuture = useMemoized(
@@ -411,7 +413,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isLiveServerpod
-                                   ? const Color(0xFF4CAF50)
+                                  ? const Color(0xFF4CAF50)
                                   : const Color(0xFF68A67D),
                             ),
                           ),
