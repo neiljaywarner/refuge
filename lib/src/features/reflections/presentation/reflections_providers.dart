@@ -4,10 +4,24 @@ import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../data/comment_repository.dart';
 import '../data/post_repository.dart';
 import '../domain/comment.dart';
+import '../domain/feed_sort_option.dart';
 import '../domain/post.dart';
 
 /// Riverpod StateProvider for filtering reflections by intent tone tag ('All', '[Prayer Request]', etc.)
 final activeFilterProvider = StateProvider<String>((ref) => 'All');
+
+/// Riverpod StateProvider for sorting feed reflections.
+final feedSortOptionProvider = StateProvider<FeedSortOption>((ref) => FeedSortOption.latest);
+
+/// FutureProvider resolving latest discussion activity timestamps across posts.
+final postActivityTimestampsProvider = FutureProvider<Map<String, DateTime>>((ref) {
+  return ref.watch(commentRepositoryProvider).getLatestActivityTimestamps();
+});
+
+/// FutureProvider resolving total comment counts across all posts.
+final allCommentCountsProvider = FutureProvider<Map<String, int>>((ref) {
+  return ref.watch(commentRepositoryProvider).getAllCommentCounts();
+});
 
 /// StreamProvider that yields posts for a given fellowship space.
 final postsStreamProvider = StreamProvider.autoDispose.family<List<Post>, String>(

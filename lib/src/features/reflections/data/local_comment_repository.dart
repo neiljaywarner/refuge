@@ -240,4 +240,25 @@ class LocalCommentRepository implements CommentRepository {
 
     return result;
   }
+
+  @override
+  Future<Map<String, DateTime>> getLatestActivityTimestamps() async {
+    final map = <String, DateTime>{};
+    for (final c in _store) {
+      final existing = map[c.postId];
+      if (existing == null || c.timestamp.isAfter(existing)) {
+        map[c.postId] = c.timestamp;
+      }
+    }
+    return map;
+  }
+
+  @override
+  Future<Map<String, int>> getAllCommentCounts() async {
+    final map = <String, int>{};
+    for (final c in _store) {
+      map[c.postId] = (map[c.postId] ?? 0) + 1;
+    }
+    return map;
+  }
 }

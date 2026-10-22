@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
-import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
-import 'package:refuge4serverpod/src/home_screen.dart';
 
 void main() {
   group('Circle-Style Post Creation Menu & Flows (Epic #315)', () {
@@ -16,6 +14,13 @@ void main() {
     patrolWidgetTest(
       'Top AppBar "+" button opens Circle-style menu with Create Post and Create Image Post',
       ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
         await $.pumpWidget(
           RefugeApp(
             repository: repo,
@@ -45,6 +50,13 @@ void main() {
     patrolWidgetTest(
       'Selecting "Create Post" opens text reflection composer and publishes to feed',
       ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
         await $.pumpWidget(
           RefugeApp(
             repository: repo,
@@ -70,7 +82,7 @@ void main() {
         await $.pumpAndSettle();
 
         // Tap publish
-        await $(Key('publish_reflection_button')).tap();
+        await $(Key('publish_reflection_button')).last.tap();
         await $.pumpAndSettle();
 
         // Verify modal dismissed and post appears in feed
@@ -81,6 +93,13 @@ void main() {
     patrolWidgetTest(
       'Selecting "Create Image Post" opens image composer with URL & alt-text fields and publishes',
       ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
         await $.pumpWidget(
           RefugeApp(
             repository: repo,
@@ -104,7 +123,7 @@ void main() {
         // Enter image details
         await $(Key('image_post_url_input')).enterText('https://images.unsplash.com/photo-nature-calm');
         await $(Key('image_post_alt_text_input')).enterText('Quiet stream flowing over smooth mossy stones in morning light');
-        await $(Key('reflection_composer_input')).enterText('He leads me beside quiet waters. (Psalm 23:2)');
+        await $(Key('reflection_composer_input')).last.enterText('He leads me beside quiet waters. (Psalm 23:2)');
         await $.pumpAndSettle();
 
         // Verify preview container appeared
@@ -112,7 +131,7 @@ void main() {
         expect($(Key('remove_image_button')), findsOneWidget);
 
         // Tap publish
-        await $(Key('publish_reflection_button')).tap();
+        await $(Key('publish_reflection_button')).last.tap();
         await $.pumpAndSettle();
 
         // Verify post rendered with text and alt-text tag
@@ -124,6 +143,13 @@ void main() {
     patrolWidgetTest(
       'Bug #321 verification: Empty text with no image shows gentle snackbar feedback',
       ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
         await $.pumpWidget(
           RefugeApp(
             repository: repo,
@@ -139,7 +165,7 @@ void main() {
         await $.pumpAndSettle();
 
         // Tap publish with empty text
-        await $(Key('publish_reflection_button')).tap();
+        await $(Key('publish_reflection_button')).last.tap();
         await $.pumpAndSettle();
 
         // Verify snackbar is displayed informing author gently

@@ -125,8 +125,8 @@ class ReflectionComposer extends HookWidget {
     final hasActiveImage = customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-      padding: const EdgeInsets.all(12.0),
+      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
+      padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14.0),
@@ -325,6 +325,7 @@ class ReflectionComposer extends HookWidget {
                   InkWell(
                     key: const Key('remove_attached_meme_button'),
                     onTap: () => attachedMeme.value = null,
+                    child: const Icon(Icons.close, size: 14),
                   ),
                 ],
               ),

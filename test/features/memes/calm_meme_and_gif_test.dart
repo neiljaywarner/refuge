@@ -202,6 +202,13 @@ void main() {
 
   group('ReflectionComposer Meme Publishing Flow Tests', () {
     patrolWidgetTest('attaches meme and submits imageUrl with reflection', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       String? submittedContent;
       String? submittedTone;
       String? submittedImage;

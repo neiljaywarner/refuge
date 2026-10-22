@@ -22,11 +22,15 @@ import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/reflections/data/serverpod_post_repository.dart';
+import 'features/reflections/domain/feed_sort_option.dart';
+import 'features/reflections/domain/feed_sort_service.dart';
 import 'features/reflections/domain/post.dart';
 import 'features/reflections/presentation/community_anchor_banner.dart';
+import 'features/reflections/presentation/feed_sort_row.dart';
 import 'features/reflections/presentation/quiet_digest_banner.dart';
 import 'features/reflections/presentation/reflection_card.dart';
 import 'features/reflections/presentation/reflection_composer.dart';
+import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
@@ -58,6 +62,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
     final selectedSpace = useState<String>('prayer');
     final activeFilter = useState<String>('All');
+    final activeSort = useState<FeedSortOption>(FeedSortOption.latest);
+    final activityTimestampsAsync = ref.watch(postActivityTimestampsProvider);
+    final commentCountsAsync = ref.watch(allCommentCountsProvider);
     final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
     final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
     final activeComingSoonItem = useState<BelongSpaceItem?>(null);
@@ -249,6 +256,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 activeFilter: activeFilter.value,
                 onSelectFilter: (f) => activeFilter.value = f,
               ),
+              FeedSortRow(
+                activeSort: activeSort.value,
+                isContrast: isContrast,
+                onSelectSort: (s) {
+                  activeSort.value = s;
+                  ref.read(feedSortOptionProvider.notifier).state = s;
+                  analytics.logEvent(
+                    'feed_sort_changed',
+                    parameters: {'sort': s.name},
+                  );
+                },
+              ),
               Expanded(
                 child: StreamBuilder<List<Post>>(
                   stream: postStream,
@@ -263,11 +282,27 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     final availablePosts = profile.isSignedIn
                         ? allPosts.where((p) => !p.isDemo).toList()
                         : allPosts;
-                    var posts = activeFilter.value == 'All'
+                    final filteredPosts = activeFilter.value == 'All'
                         ? availablePosts
                         : availablePosts
                             .where((p) => p.toneTag == activeFilter.value)
                             .toList();
+
+                    final userInterests = {
+                      ...profile.comfortBadges,
+                      if (profile.bio.isNotEmpty)
+                        ...profile.bio.split(RegExp(r'[\s,.]+')),
+                      if (profile.tagline != null)
+                        ...profile.tagline!.split(RegExp(r'[\s,.]+')),
+                    };
+
+                    final posts = FeedSortService.sortPosts(
+                      filteredPosts,
+                      sortOption: activeSort.value,
+                      latestActivityByPost: activityTimestampsAsync.value,
+                      commentCounts: commentCountsAsync.value,
+                      userInterests: userInterests,
+                    );
 
                     if (posts.isEmpty) {
                       if (selectedSpace.value == 'saved_for_later') {
