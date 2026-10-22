@@ -27,6 +27,9 @@ class MessageThread {
     required this.avatarInitials,
     required this.previewSnippet,
     required this.lastActivity,
+    this.subject,
+    this.messageType = 'Direct',
+    this.recipientNames = const [],
     this.unreadCount = 0,
     this.isBatchedDigest = true,
     this.messages = const [],
@@ -37,9 +40,42 @@ class MessageThread {
   final String avatarInitials;
   final String previewSnippet;
   final DateTime lastActivity;
+  final String? subject;
+  final String? messageType;
+  final List<String> recipientNames;
   final int unreadCount;
   final bool isBatchedDigest;
   final List<DirectMessage> messages;
+
+  /// Returns friendly relative date formatting:
+  /// e.g. "Just now", "15m ago", "2 hrs ago", "2 days ago", "Sep 7th".
+  String formattedDate([DateTime? clockNow]) {
+    final now = clockNow ?? DateTime.now();
+    final diff = now.difference(lastActivity);
+
+    if (diff.isNegative || diff.inSeconds < 60) {
+      return 'Just now';
+    }
+    if (diff.inMinutes < 60) {
+      return '${diff.inMinutes}m ago';
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return '$h hr${h == 1 ? '' : 's'} ago';
+    }
+    if (diff.inDays < 7) {
+      final d = diff.inDays;
+      return '$d day${d == 1 ? '' : 's'} ago';
+    }
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final month = months[lastActivity.month - 1];
+    final day = lastActivity.day;
+    return '$month $day';
+  }
 
   MessageThread copyWith({
     String? id,
@@ -47,6 +83,9 @@ class MessageThread {
     String? avatarInitials,
     String? previewSnippet,
     DateTime? lastActivity,
+    String? subject,
+    String? messageType,
+    List<String>? recipientNames,
     int? unreadCount,
     bool? isBatchedDigest,
     List<DirectMessage>? messages,
@@ -57,6 +96,9 @@ class MessageThread {
       avatarInitials: avatarInitials ?? this.avatarInitials,
       previewSnippet: previewSnippet ?? this.previewSnippet,
       lastActivity: lastActivity ?? this.lastActivity,
+      subject: subject ?? this.subject,
+      messageType: messageType ?? this.messageType,
+      recipientNames: recipientNames ?? this.recipientNames,
       unreadCount: unreadCount ?? this.unreadCount,
       isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
       messages: messages ?? this.messages,
@@ -71,6 +113,9 @@ class MessageThread {
         id: 'thread-welcome',
         participantName: 'Marty & Community Team',
         avatarInitials: 'MC',
+        subject: 'Welcome to Belong Fellowship',
+        messageType: 'Fellowship',
+        recipientNames: const ['Marty (Organizer)'],
         previewSnippet: 'Welcome to Belong on the Spectrum! Glad you are here with us.',
         lastActivity: now.subtract(const Duration(minutes: 15)),
         unreadCount: 1,
@@ -89,6 +134,9 @@ class MessageThread {
         id: 'thread-board-games',
         participantName: 'Sensory Game Night Group',
         avatarInitials: 'SG',
+        subject: 'Wingspan & Cascadia Setup',
+        messageType: 'Group',
+        recipientNames: const ['Alex K.', 'Hannah M.'],
         previewSnippet: 'Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
         lastActivity: now.subtract(const Duration(hours: 2)),
         unreadCount: 0,
@@ -107,6 +155,9 @@ class MessageThread {
         id: 'thread-quiet-cowork',
         participantName: 'Silent Co-Presence Fellowship',
         avatarInitials: 'CP',
+        subject: 'Tomorrow 2 PM Coworking',
+        messageType: 'Group',
+        recipientNames: const ['Jordan P.'],
         previewSnippet: 'Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
         lastActivity: now.subtract(const Duration(hours: 6)),
         unreadCount: 0,

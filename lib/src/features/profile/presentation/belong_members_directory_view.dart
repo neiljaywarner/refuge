@@ -15,6 +15,7 @@ class DevFellowshipMember {
     required this.churchAffiliation,
     required this.isIcocMember,
     required this.comfortBadges,
+    this.tagline,
   });
 
   final String name;
@@ -23,6 +24,9 @@ class DevFellowshipMember {
   final String churchAffiliation;
   final bool isIcocMember;
   final List<String> comfortBadges;
+  final String? tagline;
+
+  String get effectiveTagline => tagline ?? role;
 
   String get initials {
     final parts = name.trim().split(RegExp(r'\s+'));
@@ -37,6 +41,7 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
   DevFellowshipMember(
     name: 'Marty (Organizer)',
     role: 'Community Organizer & Founder',
+    tagline: 'Championing neurodiversity in faith communities',
     bio: 'Championing neurodiversity in faith communities. Let’s make church quiet, authentic, and welcoming for autistic Christians.',
     churchAffiliation: 'DFW Church (Partner)',
     isIcocMember: true,
@@ -45,6 +50,7 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
   DevFellowshipMember(
     name: 'Hannah M.',
     role: 'Creative Arts & Botany',
+    tagline: 'Sensory-friendly contemplative prayer & botanical art',
     bio: 'Autistic artist exploring sensory-friendly contemplative prayer and botanical illustrations.',
     churchAffiliation: 'Austin Christian Church',
     isIcocMember: true,
@@ -53,6 +59,7 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
   DevFellowshipMember(
     name: 'Alex K.',
     role: 'Peer Chat Facilitator',
+    tagline: 'Retro computing & unhurried theological reflection',
     bio: 'Actually Autistic Chat host and software tinkerer. Passionate about retro computing and unhurried theological reflection.',
     churchAffiliation: 'Boston Church of Christ',
     isIcocMember: true,
@@ -61,6 +68,7 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
   DevFellowshipMember(
     name: 'Jordan P.',
     role: 'Friend & Ally of Fellowship',
+    tagline: 'Neurodivergent seeker finding calm, grace-filled Christian fellowship',
     bio: 'Neurodivergent seeker finding calm, grace-filled Christian fellowship and honest community.',
     churchAffiliation: 'I am not a member of an ICOC church',
     isIcocMember: false,

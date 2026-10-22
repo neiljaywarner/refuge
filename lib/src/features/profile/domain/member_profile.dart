@@ -18,6 +18,7 @@ class MemberProfile {
     required this.isSignedIn,
     this.authMethod = 'guest',
     this.icocChurchAffiliation,
+    this.tagline,
   });
 
   const MemberProfile.guest()
@@ -27,7 +28,8 @@ class MemberProfile {
       comfortBadges = const ['Literal communication appreciated'],
       isSignedIn = false,
       authMethod = 'guest',
-      icocChurchAffiliation = null;
+      icocChurchAffiliation = null,
+      tagline = 'Exploring Belong on the Spectrum';
 
   final String displayName;
   final String email;
@@ -36,6 +38,13 @@ class MemberProfile {
   final bool isSignedIn;
   final String authMethod;
   final String? icocChurchAffiliation;
+  final String? tagline;
+
+  /// Effective tagline for community display.
+  String get effectiveTagline =>
+      (tagline != null && tagline!.trim().isNotEmpty)
+          ? tagline!
+          : (bio.isNotEmpty ? bio : 'Fellowship member');
 
   /// Returns true if the member has confirmed affiliation with an ICOC church congregation.
   bool get isIcocMember =>
@@ -63,6 +72,7 @@ class MemberProfile {
     bool? isSignedIn,
     String? authMethod,
     String? icocChurchAffiliation,
+    String? tagline,
   }) {
     return MemberProfile(
       displayName: displayName ?? this.displayName,
@@ -73,6 +83,7 @@ class MemberProfile {
       authMethod: authMethod ?? this.authMethod,
       icocChurchAffiliation:
           icocChurchAffiliation ?? this.icocChurchAffiliation,
+      tagline: tagline ?? this.tagline,
     );
   }
 }
