@@ -1,23 +1,23 @@
 # 🌱 Welcome to the Belong on the Spectrum & Refuge Wiki
 
-**Belong on the Spectrum** ([belongonthespectrum.com](https://www.belongonthespectrum.com/), partnered with [DFW Church](https://dfwchurch.org)) is a calm, sensory-safe digital community built with and for autistic and neurodivergent adults, friends, and families.
+> **Belong on the Spectrum** (powered by Refuge)  
+> *A calm, sensory-safe, unhurried community platform for neurodivergent adults, autistic believers, friends, families, and pastoral care ministries.*  
+> **Production Live Web**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
+> **Source Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)
 
 ---
 
-## 🤝 Wondering How You Can Help Tonight? (Start Here — Zero Tech Skills Needed!)
+## 🧭 Fast Navigation: Start Here
 
-👉 **[Read: How You Can Help & Copy-Paste Message for Our Current Circle App](How-You-Can-Help-Volunteer-Guide)**
+If you are new to the community or leading a transition from Circle.so, select your role below:
 
-Whether you have **1 minute** to upvote your favorite upcoming features in the app, **3 minutes** to test adding the app to your phone's Home Screen, or **5 minutes** to post a warm "Hello" during our October 24–31 transition week, your voice shapes our new home!
+### 🌱 For Community Organizers, Pastors & Leaders
+* **Zero coding needed**: You can manage announcements, update guidelines, and welcome members directly without touching terminal code or cloud databases.
 
----
-
-## 🧭 Non-Technical Guides for Community Members & Organizers (Zero Coding Needed)
-
-| Guide | Who It's For | What You'll Learn |
+| Essential Guide | Who It's For | Key Takeaways |
 | :--- | :--- | :--- |
-| **[🤝 How You Can Help (Volunteer Guide & Circle Copy/Paste)](How-You-Can-Help-Volunteer-Guide)** | **Everyone** (Members, Welcomers, Organizers) | Ready-to-copy message for our current Circle app + 5 easy ways to help this week without writing a line of code. |
-| **[📅 October 31st Circle.so Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)** | **Non-Technical Organizers & Leaders** | How we save **~\$1,000+/year** over [Circle.so Pricing](https://circle.so/pricing), why we launch by **Oct 24** for a calm 7-day overlap before **Oct 31**, and what works on Day 1. |
+| **[❓ Maintainer & Alpha Tester Questions](Questions-for-Product-Users-and-Alpha-Testers)** | **Community Leadership** | High-level non-technical roadmap, pricing rationale, and FAQs. |
+| **[📅 October 31st Circle.so Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)** | **Non-Technical Organizers & Leaders** | How we save **~$1,000+/year** over [Circle.so Pricing](https://circle.so/pricing), why we launch by **Oct 24** for a calm 7-day overlap before **Oct 31**, and what works on Day 1. |
 | **[📱 Why No App Store App? (And Why You Don't Need One)](Why-No-App-Store-App)** | **All Members & Disciples** | Empathetic guide with real Pixel 9a screenshots explaining why Belong avoids store passwords, storage bloat, and ad traps. |
 | **[📱 PWA Guide: Install on Your Phone & Store Timeline](PWA-Guide-for-Members-and-Organizers)** | **Members & Organizers** | Step-by-step instructions to add Belong to your iPhone/Android Home Screen today + why we can stay on PWA for months before needing Apple/Google stores. |
 | **[🎛️ Organizer Control Without Coding (Remote Config)](Organizer-Remote-Config-Guide)** | **Community Organizers** | How to update welcome banners and feature announcements instantly using [Firebase Remote Config](https://firebase.google.com/products/remote-config) ([Watch 3-Min Video](https://www.youtube.com/watch?v=_CXXVFPO6f0)). |
@@ -25,6 +25,7 @@ Whether you have **1 minute** to upvote your favorite upcoming features in the a
 | **[🏘️ Belong Community Spaces & Guidelines](Belong-Community-Guide)** | **All Community Members** | Tour of our familiar rooms (*Start Here*, *Announcements*, *General Chat*, *Memes*, *Online Resources / Videos*, *Actually Autistic Chat*, *Friends Chat*, *Family Chat*, and *Links*). |
 | **[🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")](Manual-Testing-and-UAT-Flows)** | **Community Testers & Organizers** | Complete, non-technical step-by-step checklist to test Belong across Web PWA, Android, and iOS — zero coding knowledge required! |
 | **[🌿 Calm Technology & Sensory Safety](Calm-Tech-and-Accessibility)** | **Members & Designers** | Why Belong has zero autoplay video, predictable navigation, literal feedback cards, and neurodivergent-affirming design. |
+| **[🌸 Calm Notifications: Member & Product Guide](Notifications-Product-Guide)** | **All Members & Leaders** | Unhurried notification batching, quiet hours, gentle interaction badges, and eliminating sensory notification overload. |
 
 ---
 
@@ -37,6 +38,7 @@ Whether you have **1 minute** to upvote your favorite upcoming features in the a
 | **[🧭 UX Evaluation & Architecture Decision Records (ADRs 0001–0010)](UX-Evaluation-and-ADRs)** | Complete index of architectural ADRs, repository seams, and the calm-tech feedback model. |
 | **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)** | Graded comparison (**A+ / `9.7/10`**) of Piece-by-Piece vs. One-Shot migration and permanent Firebase Hosting/FCM coexistence. |
 | **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)** | Hybrid local notifications + silent background FCM payloads to prevent auditory startle and sensory overload. |
+| **[🔔 Notifications Technical Architecture & State](Notifications-Technical-Architecture)** | Deep architectural reference on Riverpod state, MethodChannel launcher badges, domain models, and Patrol E2E testing. |
 | **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)** | Under-the-hood map of Firestore collections (`users`, `posts`, `feedback`), indexes, security rules, and Serverpod RPC mapping. |
 | **[📡 Dual Observability & Diagnostics](Observability-Crashlytics-Analytics-and-Diagnostics)** | Dual-channel error reporting across Firebase Crashlytics & Analytics (cloud) and Talker ring buffers (100% offline fallback) with automated PII scrubbing. |
 | **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)** | Public-safe reference on physical device glass testing (Pixel 9a), zero-PII discipline, and token quota routing. |
