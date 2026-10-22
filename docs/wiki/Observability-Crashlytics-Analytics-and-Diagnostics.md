@@ -69,3 +69,42 @@ All logs pass through client-side regex sanitization before transmission:
 - Member email addresses are replaced with `[SCRUBBED_EMAIL]`.
 - Auth session tokens and headers are replaced with `[SCRUBBED_SECRET]`.
 - Complies strictly with community privacy rules (`.agents/rules/open_public_repo_zero_pii.md`).
+
+---
+
+## 📊 Post-October 31 Telemetry Architecture Analysis (Issue #293)
+
+### The Core Architectural Question
+> *"Once the October 31 cutover is stable, should we consolidate strictly onto Firebase Crashlytics + Analytics, or migrate error logs to self-hosted Appwrite Functions / PostHog?"*
+
+### Maintainer Recommendation & Decision
+1. **Retain Firebase Crashlytics indefinitely**:
+   - **Zero Free Tier Bill Shock**: Crashlytics ingestion has no event caps on the Firebase Spark (free) plan.
+   - **Native Device Diagnostics**: Crashlytics provides automatic native symbol mapping (ProGuard/R8 mapping files on Android, dSYMs on iOS), NDK crash unwinding, battery/thermal telemetry, and background crash grouping across physical hardware (Pixels, iPhones). Neither PostHog nor generic serverless functions replicate native mobile crash symbolication.
+2. **Adopt PostHog for Product Analytics & Sensory Funnels**:
+   - **Product Insight**: PostHog is purpose-built for user session paths, conversion funnels (e.g. `reflection_published`, `sensory_theme_changed`, `vote_cast`), and cohort analysis.
+   - **Privacy & Autonomy**: PostHog provides generous cloud tiers (1M events/month free) with one-click export or self-hosted deployment on Docker/Kubernetes.
+   - **Action**: Keep Google Analytics as a baseline, but use PostHog (`POSTHOG_KEY`) as our primary deep product analytics collector.
+3. **Appwrite Functions Role Assessment**:
+   - **What are Appwrite Functions?** Appwrite Functions are containerized serverless runtimes (similar to AWS Lambda or Google Cloud Functions) executing code snippets (Node, Dart, Python, PHP, Ruby) triggered by HTTP requests, cron schedules, or database events.
+   - **Why Serverpod Already Fulfills This Role**: Belong on the Spectrum is built natively with **Serverpod** as its backend architecture. Serverpod endpoints, database models, and streaming sockets are written in 100% typed Dart. Deploying Appwrite Functions strictly as a secondary log ingestion webhook would introduce operational fragmentation, double maintenance, and redundant container overhead.
+   - **Conclusion**: We will not introduce Appwrite Functions for error logging. Instead, Serverpod's PostgreSQL `error_log` table and client ring buffer will remain our self-hosted, zero-quota telemetry fallback.
+
+### Technology Comparison Matrix
+
+| Capability | Firebase Crashlytics | Firebase Analytics | PostHog | Appwrite Functions | Serverpod Backup (Existing) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Primary Focus** | Native fatal & non-fatal crash symbolication | High-level user journeys & Google Ads/Play attribution | Product funnels, session analytics, feature flags | Serverless event-driven compute | Typed Dart RPC, ORM, streaming & ring buffers |
+| **Pricing & Quota** | **100% Free** on Spark plan (no event ingestion limits) | **100% Free** (unlimited reporting, 500 event types) | **1M events/mo free**; self-hostable | Depends on compute; self-hostable | **Included in Serverpod VPS** ($5-10/mo flat) |
+| **Mobile Symbolication** | **Superior** (NDK, ProGuard, dSYM automated uploads) | N/A | Basic JS/Flutter sourcemaps (requires manual API) | None (must build custom symbolicator) | Dart stack trace string preservation |
+| **Privacy / PII** | Closed cloud; relies on client scrubbing | Closed cloud | Open-source, GDPR-compliant, EU or self-hosted | Open-source, self-hosted | 100% owned PostgreSQL database |
+| **Recommended Verdict** | **Keep as primary crash reporter** | **Keep as passive baseline** | **Adopt for feature & sensory analytics** | **Defer / Unnecessary with Serverpod** | **Retain as offline & server fallback** |
+
+---
+
+## 🚀 Post-October 31 Implementation Roadmap
+- [x] Client-side Talker ring buffer with PII regex scrubbing ([`error_reporter_service.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/error_reporter_service.dart)).
+- [x] Passive dual-reporting to Serverpod backup stream ([`serverpod_telemetry_backup.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/serverpod_telemetry_backup.dart)).
+- [x] Dedicated CLI inspection utility ([`tool/review_telemetry.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/review_telemetry.dart)).
+- [ ] Connect PostHog Flutter SDK (`posthog_flutter`) using `--dart-define=POSTHOG_KEY=...` for production sensory usage tracking.
+- [ ] Evaluate long-term archiving of Serverpod error buffer into self-hosted Grafana / Loki if community member count exceeds 10,000 active members.
