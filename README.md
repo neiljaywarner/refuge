@@ -8,6 +8,7 @@
 ---
 
 ## 🔗 Quick Executive & Engineering Links
+- 🧠 **[Community Leader & Pastoral Brainstorms (`docs/wiki/Community-Leader-Brainstorms.md`)](docs/wiki/Community-Leader-Brainstorms.md)**: Thoughtful calm-tech design trade-offs, church affiliation badge placement (Feed vs. Directory), notification cadence, and autistic-first norms ([Issue #265](https://github.com/neiljaywarner/refuge/issues/265)).
 - 🚀 **[Release Readiness Gate & Progress Dashboard (`#261`)](https://github.com/neiljaywarner/refuge/issues/261)**: Real-time and async launch gate covering Web, PWA (WebAPK), Android APK, and documentation synchronization.
 - 📣 **[Circle Migration Overlap Welcome Post (`docs/circle_migration_invitation_post.md`)](docs/circle_migration_invitation_post.md)**: Ready-to-copy announcement post for Circle.so to initiate the Oct 24–31 overlap week ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).
 - 📊 **[Circle App Store Review Learnings (`docs/benchmarks/circle_app_store_review_learnings.md`)](docs/benchmarks/circle_app_store_review_learnings.md)**: Competitive sentiment audit, pitfalls to avoid (notification spam, webview latency, back-stack bugs), and beloved patterns to replicate.
@@ -53,6 +54,7 @@ Its flagship community is **[Belong on the Spectrum](https://www.belongonthespec
 
 | Guide | Audience | Description |
 | :--- | :--- | :--- |
+| **[🧠 Leadership & Pastoral Brainstorms](docs/wiki/Community-Leader-Brainstorms.md)** | **Pastors & Organizers** | Open design questions: church badge placement (Feed vs. Directory), calm notification digests, and icebreaker prompts. |
 | **[📅 Oct 31 Circle.so Cutover Schedule](docs/wiki/Non-Technical-Roadmap-to-Oct-31.md)** | **Organizers & Pastors** | Plain-English day-by-day schedule from Oct 18 to Oct 31, 2026 (final day of Circle.so subscription). |
 | **[⚖️ Backend Migration & Hybrid Grading (ADR-0009)](docs/wiki/Backend-Migration-Strategy-Serverpod-Appwrite-Firebase.md)** | **Engineers & Architects** | Why Appwrite Core (Auth/DB/Realtime) + Firebase Edge (Hosting/FCM/Audiences) scores **A+ (`9.7/10`)**, and Piece-by-Piece vs. One-Shot grading. |
 | **[🛠️ Refuge CLI (`tool/refuge_cli.dart`)](docs/wiki/Refuge-CLI.md)** | **Engineers & Mentees** | `ship-pr` (CodeRabbit-gated merges), `privacy-scan`, `sync-wiki`, exit codes & FAQ. Run `dart run tool/refuge_cli.dart help`. |
