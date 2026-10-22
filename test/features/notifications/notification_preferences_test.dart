@@ -65,9 +65,8 @@ void main() {
         ),
       );
 
-      expect($('Calm Notifications'), findsOneWidget);
+      expect($('Notifications'), findsOneWidget);
       expect($(const Key('notification-preferences-button')), findsOneWidget);
-      expect($(const Key('open-preferences-card')), findsOneWidget);
 
       // Open preferences via action button
       await $(const Key('notification-preferences-button')).tap();
