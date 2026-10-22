@@ -73,3 +73,68 @@ Observability logic is strictly verified with unit tests in `test/features/obser
 - Records handled non-fatal exceptions and logs to analytics.
 - Captures unhandled fatal exceptions gracefully.
 - Verifies automatic PII scrubbing on sample payloads containing emails and Bearer tokens.
+
+---
+
+## ⚖️ Post-Cutover Architecture Analysis: Crashlytics vs. PostHog vs. Appwrite Functions (Issue #269)
+
+### 1. Executive Summary & The Core Question
+> *"Once the October 31 cutover is stable, should we consolidate strictly onto Firebase Crashlytics + Analytics, or migrate error logs to self-hosted Appwrite Functions / PostHog?"*
+
+**The TL;DR Answer**:
+- **Keep Firebase Crashlytics** for all mobile fatal crashes, native NDK exceptions, and ANRs. It is free, maintenance-free, and irreplaceable for native mobile symbolication.
+- **Adopt PostHog** for product analytics, funnel conversion, and sensory theme retention. It is vastly superior to Google Analytics 4 (GA4).
+- **Use Appwrite Functions for Backend Automation, NOT Crash Logging**. Appwrite Functions are serverless compute workers (like AWS Lambda); they cannot capture low-level native OS crashes and introduce an unnecessary self-hosting failure risk if used for telemetry ingestion.
+
+---
+
+### 2. Side-by-Side Architectural Matrix
+
+| Capability / Dimension | Firebase Crashlytics | PostHog (Cloud / Self-Hosted) | Appwrite Functions (Self-Hosted / Cloud) |
+| :--- | :--- | :--- | :--- |
+| **Primary Purpose** | Real-time crash diagnostics, ANRs, native stacktraces | Product analytics, user journey funnels, retention | Event-driven serverless compute (backend workers) |
+| **Native Crash Symbolication** | 🏆 **Best-in-Class**: Automated dSYM & ProGuard/R8 deobfuscation | ⚠️ Web/JS source maps only; basic mobile exception tracing | ❌ **None**: No native mobile crash symbolication engine |
+| **Low-Level Crash Capture** | ✅ Captures C++/NDK segfaults, OOM kills, and OS terminations | ⚠️ Only catches handled Flutter/Dart runtime errors | ❌ Only logs if the client successfully completes an HTTP POST |
+| **Product Funnels & UX Insights** | ❌ Poor (GA4 is cumbersome, slow, and sampled) | 🏆 **Best-in-Class**: 1-click funnels, paths, and retention graphs | ❌ None (Requires custom SQL/schema development) |
+| **Maintenance Burden** | 🟢 **Zero**: Fully managed Google Cloud infrastructure | 🟢 **Zero** (on Cloud free tier) to 🟡 **Moderate** (if self-hosted) | 🔴 **High**: Requires Docker, server maintenance, and backups |
+| **Cost Profile** | 🆓 **100% Free** (unlimited crash reports on Spark/Blaze) | 🆓 **1 Million events/month free** | 💲 Host server costs ($5–$20/mo) + disk storage for logs |
+
+---
+
+### 3. Understanding Appwrite Functions: What Are They?
+
+**Appwrite Functions** are isolated, containerized execution environments running on top of Docker. They allow developers to execute custom code in response to:
+1. **HTTP Requests**: Calling a REST or GraphQL webhook endpoint.
+2. **Database Events**: Automatically executing when a document is created or updated in Appwrite Database.
+3. **Cron Schedules**: Running recurring jobs (e.g., every morning at 9:00 AM).
+
+#### ❌ Why Appwrite Functions Should NOT Be Used for Mobile Crash Reporting:
+1. **Startup Crash Blindness**: If the Flutter engine crashes on cold start (e.g. native library load failure or corrupted asset), Dart code never executes, meaning no HTTP call to your Appwrite Function will ever be dispatched.
+2. **Obfuscated Stack Traces**: Production Android release builds are obfuscated with R8; iOS release builds use dSYMs. Crashlytics automatically maps obfuscated memory addresses (`at a.b.c(Unknown Source:12)`) back to human-readable code (`at MemberProfileDialog.save(member_profile_dialog.dart:84)`). Appwrite Functions have no built-in deobfuscation engine.
+3. **Single Point of Failure (SPOF)**: If your self-hosted Appwrite server experiences high load or restarts, incoming crash logs are permanently dropped. In contrast, Crashlytics buffers crash reports on device flash memory and uploads them automatically upon network reconnect.
+
+#### ✅ Where Appwrite Functions Excel in Belong on the Spectrum:
+- **Calm Digest Batching (ADR-0010)**: A scheduled Appwrite Function executing at 9:00 AM & 6:00 PM local time to aggregate unread discussions and dispatch the batch push payload.
+- **Weekly Community Summaries**: Generating plain-text email digests for senior members or parents who prefer email over mobile apps.
+- **Automated Data Maintenance**: Purging temporary preview media, pruning rate-limit counters, or syncing backups.
+
+---
+
+### 4. Recommended Post-Cutover Telemetry Architecture
+
+```
+                                  Belong Client Application (Flutter)
+                                                  │
+                 ┌────────────────────────────────┼────────────────────────────────┐
+                 │                                │                                │
+                 ▼                                ▼                                ▼
+    [ Fatal & Native Crashes ]       [ User Funnels & Product UX ]    [ Scheduled Backend Automation ]
+                 │                                │                                │
+                 ▼                                ▼                                ▼
+       Firebase Crashlytics                    PostHog                     Appwrite Functions
+     (Symbolicated stacktraces,          (Sensory theme usage,           (Cron-triggered 9 AM & 6 PM
+      ANRs, zero maintenance,             room discovery funnels,         calm digests, email summaries,
+      100% free forever)                  1M events/month free)           database maintenance)
+```
+
+By following this clean division of responsibilities, Belong on the Spectrum achieves enterprise-grade reliability and zero vendor lock-in without incurring unnecessary server maintenance costs.

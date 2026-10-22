@@ -82,6 +82,17 @@ Every visual element, notification, and profile field has a cognitive cost. This
 
 ---
 
+### 📡 Brainstorm 6: Post-Cutover Telemetry & Crash Reporting (Crashlytics vs. PostHog vs. Appwrite Functions)
+
+* **The Question**: Once the Oct 31 cutover is stable, should we consolidate strictly onto Firebase Crashlytics + Analytics, or migrate error logs to self-hosted Appwrite Functions / PostHog?
+* **Leadership Guidance & Analysis**:
+  1. **Keep Firebase Crashlytics for Crashes (Recommended)**: Unlimited free tier, automated native symbolication for Google Pixel and iOS hardware, and zero server maintenance burden.
+  2. **Adopt PostHog for Product Analytics (Recommended)**: Far better than GA4 for seeing which spaces members visit, how sensory themes are adopted, and where onboarding drops off (1M events/month free).
+  3. **Use Appwrite Functions for Backend Tasks (Not Crash Logging)**: Appwrite Functions are serverless compute workers (like AWS Lambda). They are ideal for compiling morning/evening calm digest batches, but cannot capture native mobile OS crashes.
+* **Full Architecture Guide**: Read the comprehensive breakdown in [`docs/OBSERVABILITY_AND_ANALYTICS.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/OBSERVABILITY_AND_ANALYTICS.md#post-cutover-consolidation-analysis-crashlytics-vs-posthog-vs-appwrite-functions-issue-269) ([Issue #269](https://github.com/neiljaywarner/refuge/issues/269)).
+
+---
+
 ## 3. How to Submit Feedback on These Brainstorms
 
 Organizers and leadership team members can share thoughts anytime:
