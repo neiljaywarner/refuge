@@ -1,27 +1,27 @@
 Feature: Multi-User Concurrency & Real-Time Sync in Christian Fellowship
-  As neurodivergent Christian disciples (Alice in Dallas & Bob in Fort Worth)
+  As neurodivergent Christian disciples (Disciple Alpha & Disciple Beta)
   We want to share prayer reflections and encourage one another in real time
   So that our fellowship remains calm, synchronized, and free of race conditions or lost updates.
 
   Background:
     Given the Belong on the Spectrum shared reactive comment and reflection store is active
-    And Alice is signed in representing "Dallas Church of Christ"
-    And Bob is signed in representing "Fort Worth Church of Christ"
+    And Disciple Alpha is signed in representing a Dallas fellowship
+    And Disciple Beta is signed in representing a Fort Worth fellowship
     And both disciples are viewing the discussion for reflection "1" (David M. prayer request)
 
   Scenario: Real-Time Stream Synchronization Across Concurrent Disciples
-    When Alice posts a reflection comment "Praying for gentle rhythms today, brother." with tag "[Prayer]"
-    Then Bob's active discussion view receives Alice's comment in real time without refreshing
-    And Alice's church badge and name "Alice M. (Dallas)" are visible to Bob
+    When Disciple Alpha posts a reflection comment "Praying for gentle rhythms today, brother." with tag "[Prayer]"
+    Then Disciple Beta's active discussion view receives the comment in real time without refreshing
+    And Disciple Alpha's name "Disciple Alpha (Dallas)" is visible to Disciple Beta
 
   Scenario: Nested Reply Propagation Under Concurrent Multi-Client Browsing
-    Given Bob sees Alice's reflection comment in his live stream
-    When Bob posts a nested reply "Amen Alice! Psalm 23:2 brings so much comfort." to Alice's comment
-    Then Alice's active discussion view immediately renders Bob's nested reply with indicator "↳"
+    Given Disciple Beta sees Disciple Alpha's reflection comment in the live stream
+    When Disciple Beta posts a nested reply "Amen! Psalm 23:2 brings so much comfort." to Disciple Alpha's comment
+    Then Disciple Alpha's active discussion view immediately renders the nested reply with indicator "↳"
     And both disciples see the total reply count incremented synchronously
 
   Scenario: Concurrent Reaction Tally Reconciliation Without Lost Updates
-    When Alice adds a "pray" reaction to a comment simultaneously as Bob adds a "peace" reaction
+    When Disciple Alpha adds a "pray" reaction to a comment simultaneously as Disciple Beta adds a "peace" reaction
     Then the comment repository registers both reactions atomically
-    And both Alice's view and Bob's view reflect accurate reaction tallies
+    And both disciples' views reflect accurate reaction tallies
     And no race condition or overwrite occurs between the concurrent disciples

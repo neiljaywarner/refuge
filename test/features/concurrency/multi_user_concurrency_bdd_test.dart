@@ -25,18 +25,18 @@ void main() {
     late LocalCommentRepository sharedCommentRepo;
     late Post testPost;
 
-    const aliceProfile = MemberProfile(
-      displayName: 'Alice M. (Dallas)',
-      email: 'alice@example.com',
+    const discipleAlphaProfile = MemberProfile(
+      displayName: 'Disciple Alpha (Dallas)',
+      email: 'disciple.alpha@example.com',
       bio: 'Autistic disciple & botanist',
       comfortBadges: ['Quiet fellowship'],
       isSignedIn: true,
       icocChurchAffiliation: 'Dallas Church of Christ',
     );
 
-    const bobProfile = MemberProfile(
-      displayName: 'Bob T. (Fort Worth)',
-      email: 'bob@example.com',
+    const discipleBetaProfile = MemberProfile(
+      displayName: 'Disciple Beta (Fort Worth)',
+      email: 'disciple.beta@example.com',
       bio: 'Audio engineer & disciple',
       comfortBadges: ['Sensory room'],
       isSignedIn: true,
@@ -73,7 +73,7 @@ void main() {
     }
 
     patrolWidgetTest(
-      'Scenario: Real-Time Stream Synchronization Across Concurrent Disciples (Alice posts, Bob receives live)',
+      'Scenario: Real-Time Stream Synchronization Across Concurrent Disciples (Alpha posts, Beta receives live)',
       ($) async {
         $.tester.view.devicePixelRatio = 1.0;
         $.tester.view.physicalSize = const Size(1200, 2400);
@@ -82,37 +82,37 @@ void main() {
           $.tester.view.resetDevicePixelRatio();
         });
 
-        // 1. Mount Bob's client viewing the discussion thread
+        // 1. Mount Beta's client viewing the discussion thread
         await $.pumpWidget(
           createClientApp(
-            profile: bobProfile,
+            profile: discipleBetaProfile,
             child: ThreadedDiscussionSheet(post: testPost),
           ),
         );
         await $.pumpAndSettle();
 
-        // Verify initial seeded comments are rendered in Bob's view
+        // Verify initial seeded comments are rendered in Beta's view
         expect($('Pastor Thomas (Melbourne)'), findsOneWidget);
-        expect($('Alice M. (Dallas)'), findsNothing);
+        expect($('Disciple Alpha (Dallas)'), findsNothing);
 
-        // 2. Alice concurrently submits a new comment via the shared repository
-        final aliceComment = Comment(
-          id: 'c_alice_live_1',
+        // 2. Alpha concurrently submits a new comment via the shared repository
+        final alphaComment = Comment(
+          id: 'c_alpha_live_1',
           postId: testPost.id,
-          authorName: aliceProfile.displayName,
+          authorName: discipleAlphaProfile.displayName,
           content: 'Praying for gentle rhythms today, brother.',
           toneTag: '[Prayer]',
           timestamp: DateTime.now(),
         );
 
-        await sharedCommentRepo.addComment(aliceComment);
+        await sharedCommentRepo.addComment(alphaComment);
 
-        // 3. Pump Bob's view to process the stream emission
+        // 3. Pump Beta's view to process the stream emission
         await $.pump();
         await $.pumpAndSettle();
 
-        // 4. Verify Bob's live UI immediately reflects Alice's reflection comment without page refresh
-        expect($('Alice M. (Dallas)'), findsOneWidget);
+        // 4. Verify Beta's live UI immediately reflects Alpha's reflection comment without page refresh
+        expect($('Disciple Alpha (Dallas)'), findsOneWidget);
         expect($('Praying for gentle rhythms today, brother.'), findsOneWidget);
         expect($('[Prayer]'), findsWidgets);
       },
@@ -128,47 +128,47 @@ void main() {
           $.tester.view.resetDevicePixelRatio();
         });
 
-        // Seed Alice's root comment
-        final aliceComment = Comment(
-          id: 'c_alice_thread_1',
+        // Seed Alpha's root comment
+        final alphaComment = Comment(
+          id: 'c_alpha_thread_1',
           postId: testPost.id,
-          authorName: aliceProfile.displayName,
+          authorName: discipleAlphaProfile.displayName,
           content: 'Does anyone have calm sensory advice for Sunday fellowship?',
           toneTag: '[Comfort Only]',
           timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
         );
-        await sharedCommentRepo.addComment(aliceComment);
+        await sharedCommentRepo.addComment(alphaComment);
 
-        // 1. Mount Alice's client viewing the thread
+        // 1. Mount Alpha's client viewing the thread
         await $.pumpWidget(
           createClientApp(
-            profile: aliceProfile,
+            profile: discipleAlphaProfile,
             child: ThreadedDiscussionSheet(post: testPost),
           ),
         );
         await $.pumpAndSettle();
 
         expect($('Does anyone have calm sensory advice for Sunday fellowship?'), findsOneWidget);
-        expect($('Bob T. (Fort Worth)'), findsNothing);
+        expect($('Disciple Beta (Fort Worth)'), findsNothing);
 
-        // 2. Bob concurrently adds a nested reply targeting Alice's comment
-        final bobReply = Comment(
-          id: 'c_bob_reply_1',
+        // 2. Beta concurrently adds a nested reply targeting Alpha's comment
+        final betaReply = Comment(
+          id: 'c_beta_reply_1',
           postId: testPost.id,
-          parentCommentId: 'c_alice_thread_1',
-          authorName: bobProfile.displayName,
+          parentCommentId: 'c_alpha_thread_1',
+          authorName: discipleBetaProfile.displayName,
           content: 'Loop earplugs and stepping into the sensory quiet room helped me!',
           toneTag: '[Relatable]',
           timestamp: DateTime.now(),
         );
-        await sharedCommentRepo.addComment(bobReply);
+        await sharedCommentRepo.addComment(betaReply);
 
-        // 3. Stream emits to Alice's active view
+        // 3. Stream emits to Alpha's active view
         await $.pump();
         await $.pumpAndSettle();
 
-        // 4. Verify nested reply renders in Alice's view with child indicator
-        expect($('Bob T. (Fort Worth)'), findsOneWidget);
+        // 4. Verify nested reply renders in Alpha's view with child indicator
+        expect($('Disciple Beta (Fort Worth)'), findsOneWidget);
         expect(
           $('Loop earplugs and stepping into the sensory quiet room helped me!'),
           findsOneWidget,
@@ -190,7 +190,7 @@ void main() {
         // Mount view
         await $.pumpWidget(
           createClientApp(
-            profile: bobProfile,
+            profile: discipleBetaProfile,
             child: ThreadedDiscussionSheet(post: testPost),
           ),
         );
@@ -202,7 +202,7 @@ void main() {
         expect(c1Initial.reactions['pray'], 4);
         expect(c1Initial.reactions['peace'], 3);
 
-        // Concurrent atomic updates fired simultaneously by Alice and Bob
+        // Concurrent atomic updates fired simultaneously by Alpha and Beta
         await Future.wait([
           sharedCommentRepo.addReaction(commentId: 'c1_1', reactionType: 'pray'),
           sharedCommentRepo.addReaction(commentId: 'c1_1', reactionType: 'peace'),
@@ -229,20 +229,20 @@ void main() {
           $.tester.view.resetDevicePixelRatio();
         });
 
-        // 1. Mount Alice's client UI
+        // 1. Mount Alpha's client UI
         await $.pumpWidget(
           createClientApp(
-            key: const Key('alice_client_scope'),
-            profile: aliceProfile,
+            key: const Key('alpha_client_scope'),
+            profile: discipleAlphaProfile,
             child: ThreadedDiscussionSheet(
-              key: const Key('alice_sheet'),
+              key: const Key('alpha_sheet'),
               post: testPost,
             ),
           ),
         );
         await $.pumpAndSettle();
 
-        // Alice writes a comment through the actual UI
+        // Alpha writes a comment through the actual UI
         await $(const Key('comment_input_field')).enterText(
           'Grace and peace to our neurodivergent fellowship tonight.',
         );
@@ -257,29 +257,29 @@ void main() {
           findsOneWidget,
         );
 
-        // 2. Switch/Mount Bob's client UI using the same shared repo
+        // 2. Switch/Mount Beta's client UI using the same shared repo
         await $.pumpWidget(
           createClientApp(
-            key: const Key('bob_client_scope'),
-            profile: bobProfile,
+            key: const Key('beta_client_scope'),
+            profile: discipleBetaProfile,
             child: ThreadedDiscussionSheet(
-              key: const Key('bob_sheet'),
+              key: const Key('beta_sheet'),
               post: testPost,
             ),
           ),
         );
         await $.pumpAndSettle();
 
-        // Verify Bob sees Alice's comment immediately on mount
+        // Verify Beta sees Alpha's comment immediately on mount
         expect(
           $('Grace and peace to our neurodivergent fellowship tonight.'),
           findsOneWidget,
         );
-        expect($('Alice M. (Dallas)'), findsOneWidget);
+        expect($('Disciple Alpha (Dallas)'), findsOneWidget);
 
-        // Bob replies via the actual UI
+        // Beta replies via the actual UI
         await $(const Key('comment_input_field')).enterText(
-          'Amen Alice! Standing with you from Fort Worth.',
+          'Amen! Standing with you from Fort Worth.',
         );
         await $.pumpAndSettle();
         await $(ChoiceChip).$('[Relatable]').tap();
@@ -287,12 +287,16 @@ void main() {
         await $(const Key('submit_comment_button')).tap();
         await $.pumpAndSettle();
 
-        // 3. Both comments are visible and ordered chronologically
+        // 3. Both Alpha's and Beta's comments remain visible and ordered chronologically
         expect(
-          $('Amen Alice! Standing with you from Fort Worth.'),
+          $('Grace and peace to our neurodivergent fellowship tonight.'),
           findsOneWidget,
         );
-        expect($('Bob T. (Fort Worth)'), findsOneWidget);
+        expect(
+          $('Amen! Standing with you from Fort Worth.'),
+          findsOneWidget,
+        );
+        expect($('Disciple Beta (Fort Worth)'), findsOneWidget);
       },
     );
   });
