@@ -32,6 +32,7 @@ Whether you have **1 minute** to upvote your favorite upcoming features in the a
 
 | Technical Resource | Summary |
 | :--- | :--- |
+| **[🎨 Circle Post Creation Pattern & Calm Improvements](Circle-Post-Creation-Pattern-Improvement)** | Benchmarks Circle.so's `+` creation pattern, confirms strengths, and details calm-tech upgrades (intent tags, alt-text, autosave). |
 | **[⚙️ Android APK vs. Web PWA Technical Breakdown](Android-APK-vs-Web-PWA-Details)** | Comprehensive comparison of FCM channels vs Web Push, SQLite vs IndexedDB, cold starts, and WorkManager. |
 | **[🧭 UX Evaluation & Architecture Decision Records (ADRs 0001–0010)](UX-Evaluation-and-ADRs)** | Complete index of architectural ADRs, repository seams, and the calm-tech feedback model. |
 | **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)** | Graded comparison (**A+ / `9.7/10`**) of Piece-by-Piece vs. One-Shot migration and permanent Firebase Hosting/FCM coexistence. |
