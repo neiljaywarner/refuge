@@ -1,10 +1,10 @@
 # 🧭 Master Project Status Dashboard (`status.md`)
 
-> **Current Timestamp**: Wednesday Oct 21, 2026 @ 9:25 AM CDT  
-> **Session State**: 🟢 Active, Caffeinated & Verified (53 PRs merged cleanly, 175/175 tests green)  
-> **Overall Grade**: **`A` (95 / 100)** *(Real Firebase Auth live on Google Pixel 9a & dual Pixels; CodeRabbit wait protocol enforced; FCM calm notification digests verified; 175/175 green tests; Local LLM wiki guide live)*  
+> **Current Timestamp**: Wednesday Oct 21, 2026 @ 9:05 PM CDT  
+> **Session State**: 🟢 Active, Caffeinated & Verified (56 PRs merged cleanly, 175/175 tests green)  
+> **Overall Grade**: **`A` (96 / 100)** *(Real Firebase Auth live on Google Pixel 9a & dual Pixels; CodeRabbit wait protocol enforced; Circle app store review audit CLI live; Circle welcome post live; Member profile & auth 32/32 tests green)*  
 > **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
-> **Latest Release**: [`v0.8.0-alpha`](https://github.com/neiljaywarner/refuge/releases/tag/v0.8.0-alpha)  
+> **Current Release**: [`v0.9.5-rc` (Release Readiness Gate)](https://github.com/neiljaywarner/refuge/releases)  
 > **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
 > **GitHub Wiki (30+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
 > **Executive Review & Artifacts**: [`human_to_review_after_session.md`](human_to_review_after_session.md)  
@@ -18,7 +18,7 @@
 > [!TIP]
 > **The System is 100% Stable, Caffeinated & Verified.**  
 > - **Power Lock**: Active background `caffeinate -dimsu -t 28800`.  
-> - **Current Status**: **53 Pull Requests merged to `main`**, **175/175 automated tests green**, **0 static analysis errors**.
+> - **Current Status**: **56 Pull Requests merged to `main`**, **175/175 automated tests green**, **0 static analysis errors**.
 
 ### 📋 Mini-Milestones Completed in This Sprint:
 1. **Firebase Lifecycle Initializer & Error Hook Audit (#183, #184)**: Built `FirebaseInitializer` with platform-appropriate options (Web & mobile), wired into `lib/main.dart` / `runWithFlavor` async startup loop, activated Crashlytics & Analytics collection, and verified framework/async error forwarding with 4 new automated tests.
@@ -36,6 +36,11 @@
 13. **Real-Time Instant Alerts vs. Calm Batched Digest Preferences (#243, PR #244)**: Added delivery schedule sheet (`CalmNotificationPreferencesSheet`) allowing members to toggle push digests, choose between immediate cards or morning/evening batched summaries, and upvoted in Feature Voting.
 14. **Personal Home Screen Privacy Removal (#245, PR #246)**: Purged all home screen screenshots and references to uphold Zero-PII discipline.
 15. **CodeRabbit Completion Wait Protocol Enforced (#247, PR #248)**: Mandated minimum 90–180 second polling window before squash-merging, resolving premature merge aborts and passing all AI quality gates.
+16. **Circle App Store Sentiment Benchmark CLI (#255, PR #256)**: Created `tool/analyze_app_reviews.dart` to ingest public Apple Customer Reviews RSS JSON, compute sentiment distributions, and mask reviewer PII, with competitive matrix in `docs/benchmarks/circle_app_store_review_learnings.md`.
+17. **Careful Pixel 9a Maestro Discovery Flow (#255, PR #256)**: Authored `.maestro/circle_app_discovery_careful.yaml` with strict `clearState: false` and Zero-PII clean-framing protocol in `docs/benchmarks/circle_maestro_driving_guide.md`.
+18. **Official Circle Welcome Post & Documentation Repair (#257, PR #258)**: Authored `docs/circle_migration_invitation_post.md` resolving 404 for Oct 24–31 overlap week announcement ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).
+19. **Member Profile Typo Repair & 32/32 Auth/Profile Tests Green (#259, PR #260)**: Fixed `mainAxisSize: MainAxisSize.min` typo in `MemberProfileDialog`, restored widget keys and titles, achieving 100% green tests across all 32 auth/profile tests.
+20. **Release Readiness Gate & Wiki Sync (#261)**: Real-time and async progress dashboard tracking Web, PWA, Android APK, changelogs, and schedule synchronizations.
 
 ---
 
@@ -47,7 +52,7 @@
 | **2. Automated Test Suite & Patrol BDD** | **92 / 100** | **A-** | **95 / 100 (A)** | **175/175 tests green**; standardized on `patrol_finders` (`$` syntax); sub-2s execution; human-readable Marionette Gherkin specs (`test/features/*_feature.txt`); sociable testing across Riverpod provider scopes. | 1. Elevate test count from 175 to 200+ by adding sociable golden tests for all 4 sensory themes (`test/features/goldens/`).<br>2. Wire automated 2:00 AM regression runner via `.agents/skills/antigravity-overnight-qa/SKILL.md`.<br>3. Add `patrol_finders` error boundary tests for `CalmNotificationPreferencesSheet` and `SimpleAuthScreen`. |
 | **3. Agent Operations & GitHub MCP Velocity** | **96 / 100** | **A** | **98 / 100 (A+)** | **100% Zero Terminal Push Prompts**; all 53 PRs created, reviewed, and squash-merged via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`); strict `1 Issue = 1 Worktree = 1 PR` hygiene; CodeRabbit wait protocol (90–180s) verified on PR #248. | 1. Maintain zero race conditions with CodeRabbit by enforcing 90–180s wait window on 100% of PRs.<br>2. Automate local branch and worktree pruning after squash-merges.<br>3. Expand GitHub Actions CI matrix to test on macOS, Ubuntu, and Windows runners in parallel. |
 | **4. UX, Calm-Tech & Neurodivergent Flow** | **87 / 100** | **B+** | **90 / 100 (A-)** | 4 WCAG AAA sensory themes (Clean Slate, Sage Botanical, Monastic Dark, High Contrast); Scripture anchor (Psalm 139:14); single-avatar AppBar state (PR #240); Google Password Manager autofill hints (PR #241); calm notification digest preferences (PR #244); calm meme engine with low-motion rules. | 1. Execute Issue #239: Feed simplification ("When in doubt, leave it out") to reduce visual density on small screens.<br>2. Add tactile haptic feedback preferences toggle (`HapticFeedback.lightImpact` on reaction affirmations, with zero-haptic calm mode).<br>3. Verify custom text-scale factors (up to 200% dynamic font scaling) without RenderFlex overflow. |
-| **5** | **90 / 100** | **A-** | **93 / 100 (A)** | Web Push service worker (`web/firebase-messaging-sw.js`); W3C manifest; zero-PII screenshots in `doc/screenshots/`; responsive design tested on Chrome and mobile viewports. | 1. Test full offline service worker caching on Chromium with network throttling (offline mode).<br>2. Add custom PWA install prompt banner ("Add Belong to Home Screen" bottom toast with calm dismiss).<br>3. Complete Lighthouse PWA audit achieving 100/100 PWA score. |
+| **5. PWA & Mobile Web Installation** | **90 / 100** | **A-** | **93 / 100 (A)** | Web Push service worker (`web/firebase-messaging-sw.js`); W3C manifest; zero-PII screenshots in `doc/screenshots/`; responsive design tested on Chrome and mobile viewports. | 1. Test full offline service worker caching on Chromium with network throttling (offline mode).<br>2. Add custom PWA install prompt banner ("Add Belong to Home Screen" bottom toast with calm dismiss).<br>3. Complete Lighthouse PWA audit achieving 100/100 PWA score. |
 | **6. Backend Persistence & Cloud Verification** | **82 / 100** | **B** | **85 / 100 (B+)** | Real production `google-services.json` (Project #207506875171); live Firebase Auth (user `neilwarner+21oct1253am@gmail.com`); Firestore sync; Firebase Analytics collection hooks; Serverpod 4 dual-redundancy. | 1. Verify real-time Cloud Firestore snapshot synchronization across two independent browser sessions / emulators.<br>2. Implement automated retry with exponential backoff for Firestore and Serverpod network timeouts.<br>3. Add multi-tenant space scoping security rules audit in `firestore.rules`. |
 | **Push Notifications (FCM)** | **93 / 100** | **A** | **95 / 100 (A)** | **FCM live on Web, PWA, and Android**. Android 13+ `POST_NOTIFICATIONS` runtime permission wired; calm notification digest schedule sheet verified; live APK smoke test and dual Pixel verification completed. iOS APNs/FCM safely deferred to mid-November (Issue #165). | Execute live device push smoke test on physical APNs hardware in mid-November. |
 | **DevOps & GitHub MCP Velocity** | **99 / 100** | **A+** | **99 / 100 (A+)** | **Zero terminal push prompts**: 100% automated via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`). 53 PRs created, reviewed, and cleanly squash-merged. | Continuous GitHub Actions auto-sync. |

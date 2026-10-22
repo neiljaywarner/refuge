@@ -4,7 +4,46 @@ All notable changes, accomplishments, and planned release milestones leading up 
 
 ---
 
-## [Current Release — `v0.9.1-rc` / Pre-1.0 Telemetry, Maestro & DM Epic (Oct 21, 2026)]
+## [Current Release — `v0.9.5-rc` / Release Readiness Gate & Cutover Sync (Oct 21–22, 2026)]
+
+### 🚀 Major Accomplishments & Cutover Enhancements (Oct 21–22, 2026)
+
+#### 1. Circle App Store Review Sentiment Audit & Benchmark CLI (PR #256 / #255)
+- **Competitive Synthesis (`docs/benchmarks/circle_app_store_review_learnings.md`)**:
+  - Audited Google Play Store (`so.circle.circle`, 1M+ downloads) and Apple App Store (`id=1506475653`) user reviews.
+  - Documented top mistakes made by Circle to avoid: aggressive notification barrage, sluggish webview scroll jitter, deep back-stack disorientation, renewal/paywall dead-ends, and video freezes.
+  - Formulated calm-tech counter-measures: opt-in digests, 100% native Flutter Impeller 60/120fps engine, persistent bottom navigation tabs, and sensory theme controls.
+- **Pure-Dart Review Ingestion CLI (`tool/analyze_app_reviews.dart`)**:
+  - Implemented zero-dependency CLI tool parsing public Apple Customer Reviews RSS JSON feeds.
+  - Automatically classifies feedback into 6 taxonomy buckets and enforces Zero-PII author masking (`C****************8`).
+  - Added unit test suite in `test/tool/analyze_app_reviews_test.dart` (4/4 passed).
+
+#### 2. Non-Destructive Pixel 9a Maestro Discovery Flow (PR #256 / #255)
+- **Defensive Declarative Flow (`.maestro/circle_app_discovery_careful.yaml`)**:
+  - Designed read-only discovery flow targeting `appId: so.circle.circle` on connected Google Pixel 9a hardware.
+  - Strictly enforces `clearState: false` to preserve the maintainer's live community login.
+  - Zero state mutations: never taps post, publish, leave, or sign-out touchpoints.
+  - Established clean-framing protocol (`sips` 1080x2160 crop) to strip status bars and navigation pills.
+  - Created operational runbook in `docs/benchmarks/circle_maestro_driving_guide.md`.
+
+#### 3. Circle Migration Welcome Announcement & Documentation Repair (PR #258 / #257)
+- **Community Invitation Post (`docs/circle_migration_invitation_post.md`)**:
+  - Authored official ready-to-copy community welcome post for Circle.so to initiate the Oct 24–31 overlap week ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).
+  - Resolved 404 dead link across `docs/wiki/Circle-CSV-Migration-Guide.md`, `docs/wiki/How-You-Can-Help-Volunteer-Guide.md`, and maintainer dashboards.
+  - Verified all internal and external markdown links resolve without error.
+
+#### 4. Member Profile & Auth Suite Hardening (PR #260 / #259)
+- **Compilation Typo & Test Suite Repair**:
+  - Fixed `mainAxisSize: minAxisSize` syntax bug in `lib/src/features/profile/presentation/member_profile_sheet.dart`.
+  - Restored `'Member Profile & Sign-In'` title and required widget keys (`profile_sheet_close_button`, `profile_affiliation_error_text`).
+  - 100% green: **32/32 tests passing** across profile and auth suites (`member_profile_test`, `member_profile_widget_test`, `belong_auth_sheet_widget_test`, `firebase_auth_repository_test`, `stage_1_auth_test`, `simple_auth_test`).
+
+#### 5. CodeRabbit Completion Wait Protocol Enforced (PR #248 / #247)
+- Codified minimum 90–180s review wait protocol in `AGENTS.md`, `GEMINI.md`, and `QA-and-Beta-Testing-Guide.md` to guarantee zero premature squash-merges while CodeRabbit analyzes AST diffs in the cloud.
+
+---
+
+## [Release — `v0.9.1-rc` / Pre-1.0 Telemetry, Maestro & DM Epic (Oct 21, 2026)]
 
 ### 🚀 Major Accomplishments (Oct 21, 2026)
 

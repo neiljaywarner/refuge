@@ -1,13 +1,17 @@
 # ♾️ Refuge — Powering Belong on the Spectrum
 
 > *"I praise you because I am fearfully and wonderfully made."* — **Psalm 139:14**  
-> **Live Web & PWA**: **[`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)**  
+> **Current Release**: **`v0.9.5-rc` (Release Readiness Gate)** · **Live Web & PWA**: **[`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)**  
 > **First Community**: **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** (partnered with **[DFW Church](https://dfwchurch.org)**)  
-> **Circle.so Overlap Window**: **October 24 – October 30, 2026** · **Final Cutover**: **Saturday, October 31, 2026**
+> **Circle.so Overlap Window**: **October 24 – October 31, 2026** · **Final Cutover**: **Saturday, October 31, 2026**
 
 ---
 
 ## 🔗 Quick Executive & Engineering Links
+- 🚀 **[Release Readiness Gate & Progress Dashboard (`#261`)](https://github.com/neiljaywarner/refuge/issues/261)**: Real-time and async launch gate covering Web, PWA (WebAPK), Android APK, and documentation synchronization.
+- 📣 **[Circle Migration Overlap Welcome Post (`docs/circle_migration_invitation_post.md`)](docs/circle_migration_invitation_post.md)**: Ready-to-copy announcement post for Circle.so to initiate the Oct 24–31 overlap week ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).
+- 📊 **[Circle App Store Review Learnings (`docs/benchmarks/circle_app_store_review_learnings.md`)](docs/benchmarks/circle_app_store_review_learnings.md)**: Competitive sentiment audit, pitfalls to avoid (notification spam, webview latency, back-stack bugs), and beloved patterns to replicate.
+- 🧭 **[Careful Maestro Driving Guide (`docs/benchmarks/circle_maestro_driving_guide.md`)](docs/benchmarks/circle_maestro_driving_guide.md)**: Non-destructive, read-only device discovery on Google Pixel 9a (`so.circle.circle`) with Zero-PII clean-framing protocol.
 - 🎨 **[Golden Testing & Visual Regression Guide (`docs/wiki/Golden-Testing-and-Visual-Regression-Guide.md`)](docs/wiki/Golden-Testing-and-Visual-Regression-Guide.md)**: Headless font loading (`TestFontLoader`), Martin Fowler sociable widget goldens, and pixel-fidelity regression verification.
 - 📋 **[Maintainer Review After Session (`human_to_review_after_session.md`)](human_to_review_after_session.md)**: Executive breakdown of Milestones, Live Releases, ADRs (`0001`–`0010`), and verified device metrics.
 - 📡 **[Observability & Analytics (`docs/OBSERVABILITY_AND_ANALYTICS.md`)](docs/OBSERVABILITY_AND_ANALYTICS.md)**: Dual/Triple-observability across Firebase Crashlytics/Analytics & local Serverpod/Talker diagnostics.
