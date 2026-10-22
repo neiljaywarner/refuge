@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
-import 'package:refuge4serverpod/src/features/auth/presentation/belong_auth_sheet.dart';
 
 void main() {
   group('Comprehensive UAT Cross-Platform Flow Verification (Patrol BDD)', () {
@@ -42,6 +41,8 @@ void main() {
     });
 
     patrolWidgetTest('Flow 2: Member Profile & Marty the Organizer ICOC Church Question', ($) async {
+      await $.tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => $.tester.binding.setSurfaceSize(null));
       await $.pumpWidgetAndSettle(
         createTestApp(home: const Scaffold(body: MemberProfileDialog())),
       );

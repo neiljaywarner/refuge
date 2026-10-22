@@ -161,11 +161,15 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Stream<List<Post>> watchPosts({required String spaceKey}) async* {
-    yield _store.where((p) => p.spaceKey == spaceKey).toList();
-    yield* _controller.stream.map(
-      (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
-    );
+  Stream<List<Post>> watchPosts({required String spaceKey}) {
+    Stream<List<Post>> generator() async* {
+      yield _store.where((p) => p.spaceKey == spaceKey).toList();
+      yield* _controller.stream.map(
+        (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
   }
 
   @override

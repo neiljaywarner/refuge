@@ -86,7 +86,6 @@ void main() {
     });
 
     testWidgets('About dialog displays High Contrast switch and 4 font scaling chips', (tester) async {
-      SensoryMode? selectedMode;
       SensoryFontScale? selectedScale;
 
       await tester.pumpWidget(
@@ -99,7 +98,7 @@ void main() {
                   primaryColor: Colors.teal,
                   isContrast: false,
                   currentMode: SensoryMode.sage,
-                  onSelectMode: (mode) => selectedMode = mode,
+                  onSelectMode: (_) {},
                   currentFontScale: SensoryFontScale.standard,
                   onSelectFontScale: (scale) => selectedScale = scale,
                 ),

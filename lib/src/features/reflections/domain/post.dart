@@ -73,6 +73,5 @@ class Post {
       imageUrl.hashCode ^
       content.hashCode ^
       timestamp.hashCode ^
-      reactions.hashCode ^
       isDemo.hashCode;
 }

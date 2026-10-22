@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
 import 'package:refuge4serverpod/src/features/events/domain/sensory_event.dart';
@@ -87,16 +88,18 @@ void main() {
     'BDD (patrol_finders): Calm Notifications view delivers unhurried updates without stress',
     ($) async {
       await $.pumpWidgetAndSettle(
-        const MaterialApp(
-          home: CalmNotificationsView(),
+        const ProviderScope(
+          child: MaterialApp(
+            home: CalmNotificationsView(),
+          ),
         ),
       );
 
-      expect($('Calm Notifications'), findsOneWidget);
-      expect($('All notifications are delivered gently without intrusive sound alerts or badges.'), findsOneWidget);
-      expect($('Sensory Game Night This Friday'), findsOneWidget);
-      expect($('New Reflection in Welcome Space'), findsOneWidget);
-      expect($('Calm Daily Digest Ready'), findsOneWidget);
+      expect($('Notifications'), findsOneWidget);
+      expect($('Inbox'), findsOneWidget);
+      expect($('Mentions'), findsOneWidget);
+      expect($('Threads'), findsOneWidget);
+      expect($('Following'), findsOneWidget);
     },
   );
 

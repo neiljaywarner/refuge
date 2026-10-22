@@ -89,6 +89,7 @@ class MemberProfileDialog extends HookConsumerWidget {
             children: [
               if (validationError.value != null) ...[
                 Container(
+                  key: const Key('profile_validation_error_banner'),
                   padding: const EdgeInsets.all(8),
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
