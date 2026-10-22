@@ -30,6 +30,7 @@ import 'features/reflections/presentation/reflection_composer.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
+import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
@@ -47,6 +48,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (themeNotifier != null) {
+      useListenable(themeNotifier!);
+    }
     final brand = ref.watch(communityBrandConfigProvider);
     final profile = ref.watch(memberProfileProvider);
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
@@ -75,6 +79,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
     final SensoryMode currentMode =
         themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
+    final SensoryFontScale currentFontScale =
+        themeNotifier?.fontScale ?? ref.watch(sensoryFontScaleProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isLiveServerpod =
@@ -88,6 +94,13 @@ class RefugeHomeScreen extends HookConsumerWidget {
         ref.read(sensoryThemeModeProvider.notifier).setMode(mode);
       }
       analytics.logSensoryModeChanged(mode.name);
+    }
+
+    void setSensoryFontScale(SensoryFontScale scale) {
+      if (themeNotifier != null) {
+        themeNotifier!.setFontScale(scale);
+      }
+      ref.read(sensoryFontScaleProvider.notifier).setScale(scale);
     }
 
     void selectSpace(String spaceKey) {
@@ -158,228 +171,218 @@ class RefugeHomeScreen extends HookConsumerWidget {
             : null;
         return ComingSoonView(
           title: item.title,
-          emoji: item.emoji,
-          description: item.subtitle,
-          trackedIssueNumber: item.trackedIssueNumber,
-          extraMarkdownOrNote: extraNote,
-          showPwaInstallGuide: isMobileAppLink,
-          onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
+          description: item.description,
+          icon: item.icon,
+          extraNote: extraNote,
+          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final isCompactHeight = constraints.maxHeight < 520;
-          return Column(
-            children: [
-              if (!isCompactHeight)
-                CommunityAnchorBanner(
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                ),
-              SpaceNavigationBar(
-                selectedSpace: selectedSpace.value,
-                onSelectSpace: selectSpace,
-              ),
-              if (!isCompactHeight)
-                QuietDigestBanner(
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  legacyMessage: quietDigestSnapshot.data,
-                ),
-              ReflectionComposer(
-                selectedSpace: selectedSpace.value,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-                onSubmit: submitPost,
-              ),
-              ToneFilterRow(
-                activeFilter: activeFilter.value,
-                onSelectFilter: (f) => activeFilter.value = f,
-              ),
-              Expanded(
-                child: StreamBuilder<List<Post>>(
-                  stream: postStream,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator.adaptive(),
-                      );
-                    }
-
-                    var posts = snapshot.data!;
-                    if (activeFilter.value != 'All') {
-                      posts = posts
-                          .where((p) => p.toneTag == activeFilter.value)
-                          .toList();
-                    }
-
-                    if (posts.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      itemCount: posts.length,
-                      padding: const EdgeInsets.only(
-                        left: 12.0,
-                        right: 12.0,
-                        top: 8.0,
-                        bottom: 48.0,
-                      ),
-                      itemBuilder: (context, index) {
-                        final p = posts[index];
-                        return ReflectionCard(
-                          post: p,
-                          isContrast: isContrast,
-                          onAddReaction: (reactionType) =>
-                              activeRepository.addReaction(
-                                postId: p.id,
-                                reactionType: reactionType,
-                              ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    Widget buildActiveBottomTabBody() {
-      switch (activeBottomTab.value) {
-        case BelongBottomTab.home:
-          return Column(
-            children: [
-              _BelongSubHeaderBar(
-                activeSubView: homeSubView.value,
-                onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
-                onSelectSpaces: () =>
-                    homeSubView.value = BelongHomeSubView.spaces,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-              ),
-              Expanded(child: buildHomeBody()),
-            ],
-          );
-        case BelongBottomTab.notifications:
-          return CalmNotificationsView(
-            onBackToHome: () => activeBottomTab.value = BelongBottomTab.home,
-          );
-        case BelongBottomTab.msgs:
-          return const BelongMessagesView();
-        case BelongBottomTab.search:
-          return CommunitySearchView(
-            repository: activeRepository,
+      return ListView(
+        padding: const EdgeInsets.only(bottom: 24),
+        children: [
+          CommunityAnchorBanner(
+            title: brand.communityName,
+            subtitle: brand.tagline,
+            primaryColor: primaryColor,
             isContrast: isContrast,
-          );
-      }
+          ),
+          SpaceNavigationBar(
+            selectedSpaceKey: selectedSpace.value,
+            onSelectSpace: selectSpace,
+          ),
+          QuietDigestBanner(
+            snapshot: quietDigestSnapshot,
+            isContrast: isContrast,
+          ),
+          ToneFilterRow(
+            activeFilter: activeFilter.value,
+            onFilterSelected: (tag) => activeFilter.value = tag,
+          ),
+          ReflectionComposer(
+            onSubmit: submitPost,
+            primaryColor: primaryColor,
+            isContrast: isContrast,
+          ),
+          StreamBuilder<List<Post>>(
+            stream: postStream,
+            builder: (context, snapshot) {
+              final posts = snapshot.data ?? [];
+              final filteredPosts = activeFilter.value == 'All'
+                  ? posts
+                  : posts.where((p) => p.toneTag == activeFilter.value).toList();
+
+              if (filteredPosts.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Text('No reflections yet. Be the first to share.'),
+                  ),
+                );
+              }
+
+              return Column(
+                children: filteredPosts.map((post) {
+                  return ReflectionCard(
+                    post: post,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                    onReact: (reactionKey) =>
+                        activeRepository.addReaction(post.id, reactionKey),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ],
+      );
     }
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 0.5,
-        title: InkWell(
-          key: const Key('belong_app_bar_title_tap_target'),
-          borderRadius: BorderRadius.circular(8),
+        title: GestureDetector(
           onTap: () {
             final now = DateTime.now();
-            if (easterEggLastTap.value == null ||
-                now.difference(easterEggLastTap.value!).inSeconds > 4) {
-              easterEggTapCount.value = 1;
-            } else {
-              easterEggTapCount.value++;
-            }
+            final lastTap = easterEggLastTap.value;
             easterEggLastTap.value = now;
+
+            if (lastTap != null &&
+                now.difference(lastTap) < const Duration(seconds: 2)) {
+              easterEggTapCount.value++;
+            } else {
+              easterEggTapCount.value = 1;
+            }
 
             if (easterEggTapCount.value >= 7) {
               easterEggTapCount.value = 0;
-              ObservabilityEasterEggDialog.show(context);
+              showObservabilityEasterEggDialog(context);
             }
           },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.asset(
-                    brand.logoAssetPath,
-                    key: const Key('belong_header_logo'),
-                    width: 28,
-                    height: 28,
-                    errorBuilder: (_, _, _) =>
-                        const Text('♾️', style: TextStyle(fontSize: 18)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  'assets/images/belong_logo.png',
+                  width: 24,
+                  height: 24,
+                  errorBuilder: (_, _, _) => const Text(
+                    '♾️',
+                    style: TextStyle(fontSize: 18),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                brand.communityName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              if (isLiveServerpod) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.green, width: 0.8),
+                  ),
+                  child: const Text(
+                    'LIVE',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(28),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: isContrast
+                  ? Colors.yellow.withValues(alpha: 0.15)
+                  : primaryColor.withValues(alpha: 0.08),
+              border: Border(
+                bottom: BorderSide(
+                  color: isContrast
+                      ? Colors.yellow
+                      : primaryColor.withValues(alpha: 0.2),
+                  width: 0.8,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Text(
+                        'Partnered with DFW Church',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isContrast ? Colors.yellow : primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '•',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Psalm 139:14',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (homeSubView.value == BelongHomeSubView.spaces) {
+                      homeSubView.value = BelongHomeSubView.feed;
+                    } else {
+                      homeSubView.value = BelongHomeSubView.spaces;
+                    }
+                  },
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            brand.shortName,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Refuge',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        homeSubView.value == BelongHomeSubView.spaces
+                            ? 'Feed'
+                            : 'Spaces (${remoteConfig.spacesCount})',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isContrast ? Colors.yellow : primaryColor,
+                        ),
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isLiveServerpod
-                                   ? const Color(0xFF4CAF50)
-                                  : const Color(0xFF68A67D),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Flexible(
-                            child: Text(
-                              'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color
-                                    ?.withValues(alpha: 0.7),
-                              ),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 2),
+                      Icon(
+                        homeSubView.value == BelongHomeSubView.spaces
+                            ? Icons.arrow_back_ios_new_rounded
+                            : Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: isContrast ? Colors.yellow : primaryColor,
                       ),
                     ],
                   ),
@@ -389,6 +392,22 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
         ),
         actions: [
+          // 1-Tap Quick High Contrast Mode Toggle (Issue #277)
+          IconButton(
+            key: const Key('home_high_contrast_toggle_button'),
+            tooltip: isContrast
+                ? 'Disable High Contrast'
+                : 'Enable High Contrast (WCAG AAA)',
+            icon: Icon(
+              isContrast ? Icons.contrast_rounded : Icons.contrast_outlined,
+              size: 20,
+              color: isContrast ? Colors.yellow : null,
+            ),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => setSensoryMode(
+              isContrast ? SensoryMode.sage : SensoryMode.contrast,
+            ),
+          ),
           PopupMenuButton<SensoryMode>(
             tooltip: 'Sensory Themes',
             icon: const Icon(Icons.brightness_6_rounded, size: 20),
@@ -446,6 +465,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
               isContrast: isContrast,
               currentMode: currentMode,
               onSelectMode: setSensoryMode,
+              currentFontScale: currentFontScale,
+              onSelectFontScale: setSensoryFontScale,
             ),
           ),
           if (!profile.isSignedIn)
@@ -458,116 +479,59 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     horizontal: 10,
                     vertical: 0,
                   ),
-                  visualDensity: VisualDensity.compact,
+                  minimumSize: const Size(0, 32),
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                onPressed: () => SimpleAuthScreen.show(context),
-                icon: const Icon(Icons.login_rounded, size: 15),
-                label: const Text(
-                  'Sign In',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
+                onPressed: () => showBelongAuthSheet(context),
+                icon: const Icon(Icons.login_rounded, size: 14),
+                label: const Text('Sign In'),
               ),
             )
           else
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InkWell(
-                key: const Key('belong_profile_avatar_button'),
-                borderRadius: BorderRadius.circular(999),
-                onTap: () => MemberProfileDialog.show(context),
-                child: Tooltip(
-                  message: 'Member Profile (${profile.displayName})',
-                  child: CircleAvatar(
-                    radius: 14,
-                    backgroundColor: isContrast
-                        ? Colors.yellow
-                        : primaryColor.withValues(alpha: 0.2),
-                    child: Text(
-                      profile.initials,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.black : primaryColor,
-                      ),
+            GestureDetector(
+              onTap: () => showMemberProfileSheet(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: isContrast
+                      ? Colors.yellow
+                      : primaryColor.withValues(alpha: 0.2),
+                  child: Text(
+                    profile.initials,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.black : primaryColor,
                     ),
                   ),
                 ),
               ),
             ),
+          IconButton(
+            tooltip: 'Search & Fellowship',
+            icon: const Icon(Icons.search_rounded, size: 20),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CommunitySearchView()),
+            ),
+          ),
+          const SizedBox(width: 4),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        bottom: true,
-        left: true,
-        right: true,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: buildActiveBottomTabBody(),
-          ),
-        ),
-      ),
+      body: switch (activeBottomTab.value) {
+        BelongBottomTab.home => buildHomeBody(),
+        BelongBottomTab.messages => const BelongMessagesView(),
+        BelongBottomTab.notifications => const CalmNotificationsView(),
+        BelongBottomTab.feedback => const BelongFeedbackAndVotingSheet(),
+      },
       bottomNavigationBar: BelongBottomNavBar(
         currentTab: activeBottomTab.value,
         isContrast: isContrast,
-        onSelectTab: (tab) {
-          activeBottomTab.value = tab;
-          analytics.logBottomTabSelected(tab.name);
-        },
-      ),
-    );
-  }
-}
-
-/// Backward-compatible alias for SanctuaryHomeScreen.
-typedef SanctuaryHomeScreen = RefugeHomeScreen;
-
-class _BelongSubHeaderBar extends StatelessWidget {
-  const _BelongSubHeaderBar({
-    required this.activeSubView,
-    required this.onSelectFeed,
-    required this.onSelectSpaces,
-    required this.primaryColor,
-    required this.isContrast,
-  });
-
-  final BelongHomeSubView activeSubView;
-  final VoidCallback onSelectFeed;
-  final VoidCallback onSelectSpaces;
-  final Color primaryColor;
-  final bool isContrast;
-
-  @override
-  Widget build(BuildContext context) {
-    final isFeed = activeSubView == BelongHomeSubView.feed;
-    final isSpaces = activeSubView == BelongHomeSubView.spaces;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
-      child: Row(
-        children: [
-          ChoiceChip(
-            key: const Key('subnav_feed_tab'),
-            label: const Text('Feed'),
-            selected: isFeed,
-            onSelected: (_) => onSelectFeed(),
-          ),
-          const SizedBox(width: 8),
-          ChoiceChip(
-            key: const Key('subnav_spaces_tab'),
-            label: const Text('Spaces'),
-            selected: isSpaces,
-            onSelected: (_) => onSelectSpaces(),
-          ),
-          const Spacer(),
-          ActionChip(
-            key: const Key('open_feedback_and_voting_button'),
-            avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
-            label: const Text('Vote & Feedback'),
-            onPressed: () => BelongFeedbackAndVotingSheet.show(context),
-          ),
-        ],
+        onTabSelected: (tab) => activeBottomTab.value = tab,
       ),
     );
   }

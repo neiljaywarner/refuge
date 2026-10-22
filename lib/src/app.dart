@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
 import 'features/reflections/data/post_repository.dart';
+import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 import 'home_screen.dart';
 
@@ -47,6 +48,18 @@ class _RefugeAppContent extends ConsumerWidget {
     debugShowCheckedModeBanner: false,
     title: 'Belong',
     theme: SensoryThemeData.getTheme(themeNotifier.mode),
+    builder: (context, child) {
+      final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
+      final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
+          ? themeNotifier.fontScale
+          : riverpodFontScale;
+      return MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(activeScale.scaleFactor),
+        ),
+        child: child!,
+      );
+    },
     localizationsDelegates: [
       FirebaseUILocalizations.delegate,
       GlobalMaterialLocalizations.delegate,

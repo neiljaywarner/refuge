@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import '../../../core/logging/app_logger.dart';
+import '../../sensory_themes/domain/sensory_font_scale.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 
 /// Shows the About Belong on the Spectrum & Sensory Settings dialog
@@ -13,6 +14,8 @@ void showAboutRefugeDialog(
   required bool isContrast,
   SensoryMode currentMode = SensoryMode.sage,
   ValueChanged<SensoryMode>? onSelectMode,
+  SensoryFontScale currentFontScale = SensoryFontScale.standard,
+  ValueChanged<SensoryFontScale>? onSelectFontScale,
 }) {
   showDialog(
     context: context,
@@ -63,7 +66,7 @@ void showAboutRefugeDialog(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const .all(10),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isContrast
                       ? Colors.yellow.withValues(alpha: 0.1)
@@ -81,8 +84,27 @@ void showAboutRefugeDialog(
                 ),
               ),
               const Gap(12),
+              // Dedicated High Contrast Mode Toggle (Issue #277)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: const Text(
+                  'High Contrast Mode (WCAG AAA)',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Stark black & yellow palette for maximum visual clarity',
+                  style: TextStyle(fontSize: 11),
+                ),
+                value: currentMode == SensoryMode.contrast,
+                onChanged: (val) {
+                  onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
+                  Navigator.pop(ctx);
+                },
+              ),
+              const Gap(6),
               const Text(
-                'Sensory Theme Settings (WCAG AAA):',
+                'Sensory Theme Palettes:',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const Gap(6),
@@ -122,6 +144,33 @@ void showAboutRefugeDialog(
                       Navigator.pop(ctx);
                     },
                   ),
+                ],
+              ),
+              const Gap(12),
+              // Sensory Font Scaling Presets (Issue #277)
+              const Text(
+                'Sensory Font Scaling (Visual Ergonomics):',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const Gap(4),
+              const Text(
+                'Adjust typography size to relieve visual crowding and reading fatigue:',
+                style: TextStyle(fontSize: 11),
+              ),
+              const Gap(6),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: [
+                  for (final scale in SensoryFontScale.values)
+                    ChoiceChip(
+                      label: Text('${scale.label} (${scale.percentage})'),
+                      selected: currentFontScale == scale,
+                      onSelected: (_) {
+                        onSelectFontScale?.call(scale);
+                        Navigator.pop(ctx);
+                      },
+                    ),
                 ],
               ),
               const Divider(height: 20),
@@ -172,6 +221,8 @@ void showAboutSanctuaryDialog(
   required bool isContrast,
   SensoryMode currentMode = SensoryMode.sage,
   ValueChanged<SensoryMode>? onSelectMode,
+  SensoryFontScale currentFontScale = SensoryFontScale.standard,
+  ValueChanged<SensoryFontScale>? onSelectFontScale,
 }) =>
     showAboutRefugeDialog(
       context,
@@ -179,4 +230,6 @@ void showAboutSanctuaryDialog(
       isContrast: isContrast,
       currentMode: currentMode,
       onSelectMode: onSelectMode,
+      currentFontScale: currentFontScale,
+      onSelectFontScale: onSelectFontScale,
     );
