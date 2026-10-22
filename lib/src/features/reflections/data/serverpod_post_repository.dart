@@ -59,40 +59,44 @@ class ServerpodPostRepository implements PostRepository {
 
   @override
   Future<List<Post>> getPosts({required String spaceKey}) async {
-    final mappedSpace = _mapSpaceKey(spaceKey);
-    try {
-      talker.info('📥 [Serverpod RPC] Fetching reflections for space: $spaceKey (mapped: $mappedSpace)');
-      final remotePosts = await _client.reflection
-          .getFeed(mappedSpace)
-          .timeout(const Duration(milliseconds: 800));
-      _isLiveConnected = true;
-      talker.info('✅ [Serverpod RPC SUCCESS] Fetched ${remotePosts.length} reflections from live serverpod backend');
-      return remotePosts
-          .map(
-            (spPost) => Post(
-              id: spPost.id?.toString() ?? UniqueKey().toString(),
-              authorName: spPost.authorName,
-              spaceKey: spaceKey,
-              toneTag: spPost.toneTag,
-              specialInterestTag: spPost.specialInterestTag,
-              content: spPost.content,
-              timestamp: spPost.createdAt,
-              reactions: {
-                'pray': spPost.prayingCount,
-                'peace': spPost.peaceCount,
-                'encouraged': spPost.encouragedCount,
-                'standing': spPost.standingWithCount,
-                'relatable': spPost.encouragedCount,
-              },
-            ),
-          )
-          .toList();
-    } catch (e, st) {
-      talker.handle(e, st, '🚨 [Serverpod RPC FAILED] getPosts timeout/error, falling back to local');
-      debugPrint('🚨 [Serverpod RPC FAILED] getPosts timeout/error: $e\n$st');
-      _isLiveConnected = false;
-      return _fallback.getPosts(spaceKey: spaceKey);
+    final cached = await _fallback.getPosts(spaceKey: spaceKey);
+    if (cached.isNotEmpty) {
+      return cached;
     }
+
+    final fs = firestore;
+    if (fs != null) {
+      try {
+        final snap = await fs
+            .collection('reflections')
+            .where('spaceKey', isEqualTo: spaceKey)
+            .get();
+        if (snap.docs.isNotEmpty) {
+          return snap.docs.map((doc) {
+            final data = doc.data();
+            return Post(
+              id: doc.id,
+              authorName: data['authorName'] as String? ?? 'Fellowship Member',
+              spaceKey: spaceKey,
+              toneTag: data['intentTag'] as String? ?? '[Support]',
+              specialInterestTag: data['specialInterestTag'] as String?,
+              content: data['content'] as String? ?? '',
+              timestamp:
+                  DateTime.tryParse(data['createdAt'] as String? ?? '') ??
+                  DateTime.now(),
+              reactions: {
+                'pray': (data['prayingCount'] as num?)?.toInt() ?? 0,
+                'standing': (data['standingWithCount'] as num?)?.toInt() ?? 0,
+                'peace': (data['peaceCount'] as num?)?.toInt() ?? 0,
+                'encouraged': (data['encouragedCount'] as num?)?.toInt() ?? 0,
+                'relatable': (data['encouragedCount'] as num?)?.toInt() ?? 0,
+              },
+            );
+          }).toList();
+        }
+      } catch (_) {}
+    }
+    return cached;
   }
 
   @override
@@ -123,7 +127,7 @@ class ServerpodPostRepository implements PostRepository {
       final spReflection = sp.ReflectionPost(
         authorName: post.authorName,
         spaceKey: _mapSpaceKey(post.spaceKey),
-        toneTag: post.toneTag,
+        intentTag: post.toneTag,
         specialInterestTag: post.specialInterestTag,
         content: post.content,
         createdAt: post.timestamp,
@@ -201,7 +205,7 @@ class ServerpodPostRepository implements PostRepository {
     // 2. Open live streaming subscription to Serverpod endpoint
     try {
       final mappedSpace = _mapSpaceKey(spaceKey);
-      final stream = _client.reflection.watchFeed(mappedSpace);
+      final stream = _client.reflection.watchSpace(mappedSpace);
       final List<Post> livePosts = List.from(await _fallback.getPosts(spaceKey: spaceKey));
 
       await for (final spPost in stream) {
@@ -211,7 +215,7 @@ class ServerpodPostRepository implements PostRepository {
           id: spPost.id?.toString() ?? UniqueKey().toString(),
           authorName: spPost.authorName,
           spaceKey: spaceKey,
-          toneTag: spPost.toneTag,
+          toneTag: spPost.intentTag,
           specialInterestTag: spPost.specialInterestTag,
           content: spPost.content,
           timestamp: spPost.createdAt,
@@ -265,6 +269,16 @@ class ServerpodPostRepository implements PostRepository {
   @override
   Stream<List<Post>> watchPostsByAuthor({required String authorName}) =>
       _fallback.watchPostsByAuthor(authorName: authorName);
+
+  @override
+  Future<void> toggleSavePost({required String postId}) =>
+      _fallback.toggleSavePost(postId: postId);
+
+  @override
+  Future<List<Post>> getSavedPosts() => _fallback.getSavedPosts();
+
+  @override
+  Stream<List<Post>> watchSavedPosts() => _fallback.watchSavedPosts();
 
   String _mapSpaceKey(String key) {
     switch (key) {

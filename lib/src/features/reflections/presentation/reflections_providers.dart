@@ -50,3 +50,8 @@ final memberPostsStreamProvider = StreamProvider.autoDispose.family<List<Post>, 
 final memberCommentsStreamProvider = StreamProvider.autoDispose.family<List<Comment>, String>(
   (ref, authorName) => ref.watch(commentRepositoryProvider).watchCommentsByAuthor(authorName: authorName),
 );
+
+/// StreamProvider yielding reflections bookmarked / saved for later.
+final savedPostsStreamProvider = StreamProvider.autoDispose<List<Post>>(
+  (ref) => ref.watch(postRepositoryProvider).watchSavedPosts(),
+);
