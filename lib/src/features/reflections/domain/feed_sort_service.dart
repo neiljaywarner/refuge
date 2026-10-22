@@ -103,10 +103,11 @@ class FeedSortService {
     final content = post.content.toLowerCase();
     for (final interest in userInterests) {
       final i = interest.toLowerCase().trim();
-      if (i.isEmpty) continue;
-      if (tag != null && tag.contains(i)) return true;
-      if (tone.contains(i)) return true;
-      if (content.contains(i)) return true;
+      if (i.length < 4) continue;
+      final pattern = RegExp('\\b${RegExp.escape(i)}\\b');
+      if (tag != null && pattern.hasMatch(tag)) return true;
+      if (pattern.hasMatch(tone)) return true;
+      if (pattern.hasMatch(content)) return true;
     }
     return false;
   }

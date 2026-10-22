@@ -80,8 +80,9 @@ void main() {
         expect(latestChip.selected, isTrue);
 
         // Default latest ordering: Sarah (newest) -> David -> Hannah (oldest)
-        final cardTitles = find.byType(Text);
-        expect($(find.textContaining('Morning meditation on Psalm 139:14.')), findsOneWidget);
+        final sarahY = $.tester.getTopLeft(find.textContaining('Morning meditation on Psalm 139:14.')).dy;
+        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
+        expect(sarahY, lessThan(hannahY));
       },
     );
 
@@ -113,9 +114,10 @@ void main() {
         );
         expect(oldestChip.selected, isTrue);
 
-        // Under Oldest, Hannah (earliest post) is first
-        expect($('Hannah'), findsOneWidget);
-        expect($('Zebras and peaceful evening rest.'), findsOneWidget);
+        // Under Oldest, Hannah (earliest post) is first above Sarah
+        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
+        final sarahY = $.tester.getTopLeft(find.textContaining('Morning meditation on Psalm 139:14.')).dy;
+        expect(hannahY, lessThan(sarahY));
       },
     );
 
@@ -151,9 +153,10 @@ void main() {
         );
         expect(likesChip.selected, isTrue);
 
-        // Under Likes, Hannah (30 likes) appears above David (5 likes) and Sarah (1 like)
-        expect($('Hannah'), findsOneWidget);
-        expect($('Zebras and peaceful evening rest.'), findsOneWidget);
+        // Under Likes, Hannah (30 likes) appears above David (5 likes)
+        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
+        final davidY = $.tester.getTopLeft(find.text('Apples of gold in settings of silver.')).dy;
+        expect(hannahY, lessThan(davidY));
       },
     );
 
@@ -189,8 +192,10 @@ void main() {
         );
         expect(alphaChip.selected, isTrue);
 
-        // Content starting with 'A' (David's Apples of gold) is top
-        expect($('Apples of gold in settings of silver.'), findsOneWidget);
+        // Content starting with 'A' (David's Apples of gold) is top above Sarah ('Morning...')
+        final davidY = $.tester.getTopLeft(find.text('Apples of gold in settings of silver.')).dy;
+        final sarahY = $.tester.getTopLeft(find.textContaining('Morning meditation on Psalm 139:14.')).dy;
+        expect(davidY, lessThan(sarahY));
       },
     );
 
@@ -229,6 +234,11 @@ void main() {
           find.byKey(const Key('feed_sort_chip_popular')),
         );
         expect(popChip.selected, isTrue);
+
+        // Verify reordering under Popular (Hannah 30 likes is above David 5 likes)
+        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
+        final davidY = $.tester.getTopLeft(find.text('Apples of gold in settings of silver.')).dy;
+        expect(hannahY, lessThan(davidY));
       },
     );
   });
