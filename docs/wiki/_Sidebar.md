@@ -12,9 +12,11 @@
 * **[🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")](Manual-Testing-and-UAT-Flows)**
 * **[🌿 Sensory Themes & Calm-Tech Philosophy](Calm-Tech-and-Accessibility)**
 * **[🌸 Calm Notifications: Member & Product Guide](Notifications-Product-Guide)**
+* **[📋 Notes for First Meeting with Human Reviewer](https://github.com/neiljaywarner/refuge/blob/main/notes_for_first_meeting_with_human_reviewer.md)**
 
 ### 🛠️ Engineering, Architecture & Mentoring
 * **[🧭 Architecture Overview & ADRs (0001–0010)](UX-Evaluation-and-ADRs)**
+* **[🐛 Bug Reporting & In-App Feedback SDK Evaluation](Bug-Reporting-SDKs-Evaluation)**
 * **[🎨 Circle Post Creation Pattern & Calm Improvements](Circle-Post-Creation-Pattern-Improvement)**
 * **[⚙️ Deep Technical Breakdown: Android APK vs. Web PWA](Android-APK-vs-Web-PWA-Details)**
 * **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
