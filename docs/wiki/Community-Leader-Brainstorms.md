@@ -41,6 +41,10 @@ Every visual element, notification, and profile field has a cognitive cost. This
   2. *Calm Batched Digests (Recommended)*: Summarizes new reflections twice daily (e.g. 9:00 AM Morning Reflection & 6:00 PM Evening Fellowship).
   3. *Organizer High-Priority Override*: Allows pastors/organizers to flag genuine emergencies (e.g. weather cancellations or urgent prayer requests) for immediate delivery.
 * **Leadership Recommendation**: Default all new members to **Calm Batched Digest**, with an explicit toggle in their settings ([PR #244](https://github.com/neiljaywarner/refuge/pull/244)).
+* **Handling "Don't Allow" on Android 13+ (Spaces Drawer Policy)**:
+  - *The Question*: If a member taps "Don't allow" on the system notification dialog, should the app remain completely silent forever, or show a gentle recovery toggle?
+  - *Leadership Decision*: **Show a gentle, low-contrast toggle in the Spaces drawer (`"Notifications muted in system settings"` with subtitle `"Tap to adjust calm digest schedules or re-enable later"`).**
+  - *Calm-Tech Balance*: The app NEVER interrupts members with repeated full-screen popups or guilt banners. The gentle tile lives quietly at the bottom of Spaces where members can discover and adjust it on their own terms ([PR #268](https://github.com/neiljaywarner/refuge/pull/268)).
 
 ---
 

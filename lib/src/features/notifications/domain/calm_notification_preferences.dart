@@ -49,6 +49,7 @@ class CalmNotificationPreferences extends Equatable {
     this.fcmToken,
     this.isWebPwaInstalled = false,
     this.isIosWebWithoutPwa = false,
+    this.isSystemPermissionDenied = false,
   });
 
   /// Whether member has opted into receiving push/local digests.
@@ -67,12 +68,17 @@ class CalmNotificationPreferences extends Equatable {
   /// (Apple strictly requires "Add to Home Screen" before Web Push can activate).
   final bool isIosWebWithoutPwa;
 
+  /// Whether the user has denied system notification permission (e.g. Android 13+ "Don't allow").
+  /// Used to surface a gentle re-enable toggle in the Spaces drawer without nagging.
+  final bool isSystemPermissionDenied;
+
   CalmNotificationPreferences copyWith({
     bool? enabled,
     CalmDigestSchedule? schedule,
     String? fcmToken,
     bool? isWebPwaInstalled,
     bool? isIosWebWithoutPwa,
+    bool? isSystemPermissionDenied,
   }) {
     return CalmNotificationPreferences(
       enabled: enabled ?? this.enabled,
@@ -80,6 +86,8 @@ class CalmNotificationPreferences extends Equatable {
       fcmToken: fcmToken ?? this.fcmToken,
       isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
       isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
+      isSystemPermissionDenied:
+          isSystemPermissionDenied ?? this.isSystemPermissionDenied,
     );
   }
 
@@ -90,5 +98,6 @@ class CalmNotificationPreferences extends Equatable {
         fcmToken,
         isWebPwaInstalled,
         isIosWebWithoutPwa,
+        isSystemPermissionDenied,
       ];
 }
