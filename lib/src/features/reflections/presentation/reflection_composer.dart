@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-import '../domain/calm_meme.dart';
-import 'meme_gallery_modal.dart';
+import '../../memes/domain/calm_meme.dart';
+import '../../memes/presentation/meme_gallery_modal.dart';
 
-/// Unhurried reflection composer widget with tone selectors and optional calm meme/GIF picker.
+/// Intent / tone tags available in the dropdown
+const kToneOptions = [
+  '[Prayer Request]',
+  '[Comfort Only]',
+  '[Bible Deep Dive]',
+  '[Special Interest]',
+  '[Autism & Faith Meme]',
+  '[Praise Report]',
+];
+
+/// Composes unhurried reflections using declarative Flutter Hooks for text editing controllers.
 class ReflectionComposer extends HookWidget {
   final String selectedSpace;
   final Color primaryColor;
@@ -14,7 +24,8 @@ class ReflectionComposer extends HookWidget {
     required String toneTag,
     String? specialInterestTag,
     String? imageUrl,
-  }) onSubmit;
+  })
+  onSubmit;
 
   const ReflectionComposer({
     super.key,
@@ -47,78 +58,55 @@ class ReflectionComposer extends HookWidget {
       final text = contentController.text.trim();
       if (text.isEmpty) return;
 
-      await onSubmit(
-        content: text,
-        toneTag: selectedTone.value,
-        specialInterestTag: specialInterestController.text.trim().isEmpty
-            ? null
-            : specialInterestController.text.trim(),
-        imageUrl: attachedMeme.value?.imageUrl,
-      );
+      final specialInterest = specialInterestController.text.trim().isNotEmpty
+          ? specialInterestController.text.trim()
+          : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
+
+      final memeUrl = attachedMeme.value?.imageUrl;
 
       contentController.clear();
       specialInterestController.clear();
       attachedMeme.value = null;
-    }
 
-    final toneOptions = selectedSpace == 'memes'
-        ? const ['[Autism & Faith Meme]', '[Special Interest]', '[Humor & Grace]']
-        : const [
-            '[Prayer Request]',
-            '[Praise & Joy]',
-            '[Comfort Only]',
-            '[Question]',
-            '[Bible Deep-Dive]',
-            '[Special Interest]',
-          ];
+      await onSubmit(
+        content: text,
+        toneTag: selectedTone.value,
+        specialInterestTag: specialInterest,
+        imageUrl: memeUrl,
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
-          color: isContrast
-              ? Colors.white
-              : Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+          width: isContrast ? 2.0 : 1.0,
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(
-                'Intent / Tone:',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: isContrast ? Colors.yellow : primaryColor,
-                ),
+              const Text(
+                'Intent Tag: ',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedTone.value,
-                    isDense: true,
-                    isExpanded: true,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                    items: toneOptions
-                        .map((tone) => DropdownMenuItem(
-                              value: tone,
-                              child: Text(tone),
-                            ))
-                        .toList(),
-                    onChanged: (newTone) {
-                      if (newTone != null) selectedTone.value = newTone;
-                    },
-                  ),
-                ),
+              DropdownButton<String>(
+                value: selectedTone.value,
+                isDense: true,
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
+                underline: const SizedBox(),
+                items: kToneOptions.map((tone) {
+                  return DropdownMenuItem(value: tone, child: Text(tone));
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) selectedTone.value = val;
+                },
               ),
             ],
           ),
@@ -157,7 +145,6 @@ class ReflectionComposer extends HookWidget {
               contentPadding: const EdgeInsets.all(12.0),
             ),
           ),
-          const SizedBox(height: 8),
           if (attachedMeme.value != null) ...[
             Container(
               key: const Key('attached_meme_banner'),
@@ -231,12 +218,12 @@ class ReflectionComposer extends HookWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: isContrast ? Colors.black : Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
                 onPressed: handlePublish,
                 icon: const Icon(Icons.send_rounded, size: 14),
                 label: const Text(
-                  'Share Reflection',
+                  'Publish Reflection',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
