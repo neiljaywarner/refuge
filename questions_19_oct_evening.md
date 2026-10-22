@@ -27,6 +27,9 @@
 - **Questions**:
   1. If a member taps "Don't allow" on the Android 13+ permission dialog, should the app remain completely silent and never mention notifications again, or show a gentle toggle in the Spaces drawer (*"Notifications muted in system settings"* for those who want to re-enable later)?
   2. For the "Quiet Daily Digest", what default time of day is calmest for the community? (e.g., 7:00 PM evening wind-down vs. 9:00 AM morning anchor).
+- **Decision & TL;DR Guidance (Maintainer Consensus)**:
+  - **Spaces Drawer Gentle Toggle**: Show a gentle toggle in the Spaces drawer (*"Notifications muted in system settings"*) allowing members who initially tapped "Don't allow" to comfortably re-enable notifications later without nagging popups or pressure.
+  - **Quiet Daily Digest Default**: 7:00 PM evening wind-down summary.
 
 ---
 
@@ -42,7 +45,11 @@
 
 ---
 
-### 5. Local Offline LLM Setup for 48GB Apple Silicon (`#92`)
+### 5. Local Offline LLM Setup for 48GB Apple Silicon (`#92`, `#271`, `#272`)
 - **Background**: With 48GB unified RAM, ~36GB VRAM is comfortably available for local GPU inference via Metal shaders with zero cloud token limits.
 - **Question**:
   1. Shall we proceed with installing Ollama (`brew install ollama`) and pulling `qwen2.5-coder:32b` (~20GB VRAM) for local offline coding fallbacks when you return to your terminal?
+- **Decision & Implementation Plan (Maintainer Consensus)**:
+  - **Yes, approved with two distinct phases**:
+    - **Phase 1 (Completed in `#271` / PR `#273`)**: Turnkey shell installer (`tool/setup_ollama.sh`), Metal health check CLI (`tool/verify_ollama.dart`), and getting started guide ([`Local-LLMs-Phase-1-Getting-Started.md`](docs/wiki/Local-LLMs-Phase-1-Getting-Started.md)) targeting `qwen2.5-coder:14b` and `qwen2.5-coder:32b`.
+    - **Phase 2 (Tracked in `#272`)**: Heuristic task routing ("How do we know when to use Ollama wisely vs cloud models?"), benchmark suite (`tool/benchmark_local_llm.dart`), and multi-model quota preservation.
