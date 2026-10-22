@@ -26,7 +26,7 @@ class ToneFilterRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const .symmetric(horizontal: 14.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 2.0),
       child: Row(
         children: [
           const Text('Filter: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
@@ -38,7 +38,7 @@ class ToneFilterRow extends ConsumerWidget {
                 children: kToneFilters.map((f) {
                   final isSelected = activeFilter == f;
                   return Padding(
-                    padding: const .only(right: 6.0),
+                    padding: const EdgeInsets.only(right: 6.0),
                     child: ChoiceChip(
                       visualDensity: VisualDensity.compact,
                       label: Text(f, style: const TextStyle(fontSize: 10)),

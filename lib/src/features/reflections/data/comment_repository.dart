@@ -29,6 +29,12 @@ abstract class CommentRepository {
 
   /// Streams comments authored by a specific member.
   Stream<List<Comment>> watchCommentsByAuthor({required String authorName});
+
+  /// Fetches a map of post ID to latest discussion reply timestamp.
+  Future<Map<String, DateTime>> getLatestActivityTimestamps();
+
+  /// Fetches a map of post ID to total comment count.
+  Future<Map<String, int>> getAllCommentCounts();
 }
 
 /// Riverpod provider exposing the configured CommentRepository.
