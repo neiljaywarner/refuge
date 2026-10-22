@@ -68,9 +68,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
         repository ?? ref.watch(postRepositoryProvider);
 
     final postStream = useMemoized(
-      () => activeRepository
-          .watchPosts(spaceKey: selectedSpace.value)
-          .asBroadcastStream(),
+      () => selectedSpace.value == 'saved_for_later'
+          ? activeRepository.watchSavedPosts().asBroadcastStream()
+          : activeRepository
+              .watchPosts(spaceKey: selectedSpace.value)
+              .asBroadcastStream(),
       [activeRepository, selectedSpace.value],
     );
     final quietDigestFuture = useMemoized(
@@ -118,11 +120,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
       String? specialInterestTag,
       String? imageUrl,
     }) async {
+      final targetSpace = selectedSpace.value == 'saved_for_later'
+          ? 'general_chat'
+          : selectedSpace.value;
       await activeRepository.createPost(
         Post(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           authorName: profile.displayName,
-          spaceKey: selectedSpace.value,
+          spaceKey: targetSpace,
           toneTag: toneTag,
           specialInterestTag: specialInterestTag,
           imageUrl: imageUrl,
@@ -265,6 +270,37 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             .toList();
 
                     if (posts.isEmpty) {
+                      if (selectedSpace.value == 'saved_for_later') {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.bookmark_border_rounded,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
+                                  key: const Key('empty_saved_reflections_placeholder'),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color
+                                        ?.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
                       return Center(
                         child: Text(
                           profile.isSignedIn
@@ -519,6 +555,25 @@ class RefugeHomeScreen extends HookConsumerWidget {
               onSelectMode: setSensoryMode,
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: IconButton.filledTonal(
+              key: const Key('home_top_bar_create_post_button'),
+              tooltip: 'Create Post or Image Post (+)',
+              style: IconButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.all(6),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 20),
+              onPressed: () => _showCreatePostModal(
+                context: context,
+                selectedSpace: selectedSpace.value,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                onSubmit: submitPost,
+              ),
+            ),
+          ),
           if (!profile.isSignedIn)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -642,4 +697,96 @@ class _BelongSubHeaderBar extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showCreatePostModal({
+  required BuildContext context,
+  required String selectedSpace,
+  required Color primaryColor,
+  required bool isContrast,
+  required Future<void> Function({
+    required String content,
+    required String toneTag,
+    String? specialInterestTag,
+    String? imageUrl,
+  })
+  onSubmit,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.post_add_rounded,
+                            size: 20,
+                            color: primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Create Reflection or Image Post',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                      ),
+                    ],
+                  ),
+                ),
+                ReflectionComposer(
+                  selectedSpace: selectedSpace,
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  onSubmit: ({
+                    required String content,
+                    required String toneTag,
+                    String? specialInterestTag,
+                    String? imageUrl,
+                  }) async {
+                    await onSubmit(
+                      content: content,
+                      toneTag: toneTag,
+                      specialInterestTag: specialInterestTag,
+                      imageUrl: imageUrl,
+                    );
+                    if (ctx.mounted) {
+                      Navigator.of(ctx).pop();
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

@@ -9,6 +9,7 @@ const Map<String, String> kFellowshipSpaces = {
   'announcements': '📢 #announcements',
   'special_interests': '🧩 #special-interests-memes',
   'general': '🌿 #main-hall',
+  'saved_for_later': '🔖 #saved-for-later',
 };
 
 /// Represents a single space or external/pending link in the Circle.so-style
@@ -80,6 +81,12 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
   BelongSpaceSection(
     heading: 'COMMUNITY',
     items: [
+      BelongSpaceItem(
+        slug: 'saved_for_later',
+        title: 'Saved for Later',
+        emoji: '🔖',
+        subtitle: 'Private bookmarks — unhurried reflections saved for quiet reading',
+      ),
       BelongSpaceItem(
         slug: 'members_directory',
         title: 'Members Section & Directory',

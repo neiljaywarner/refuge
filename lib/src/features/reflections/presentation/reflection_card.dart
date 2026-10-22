@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/presentation/other_member_profile_dialog.dart';
+import '../data/post_repository.dart';
 import '../domain/post.dart';
 import 'reflections_providers.dart';
 import 'threaded_discussion_sheet.dart';
@@ -77,22 +78,49 @@ class ReflectionCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
-                decoration: BoxDecoration(
-                  color: isMeme
-                      ? Colors.amber.withValues(alpha: 0.2)
-                      : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6.0),
-                ),
-                child: Text(
-                  post.toneTag,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: isMeme ? Colors.amber.shade800 : Theme.of(context).colorScheme.primary,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                    decoration: BoxDecoration(
+                      color: isMeme
+                          ? Colors.amber.withValues(alpha: 0.2)
+                          : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    child: Text(
+                      post.toneTag,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isMeme ? Colors.amber.shade800 : Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    key: Key('save_post_button_${post.id}'),
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    tooltip: post.isSaved
+                        ? 'Remove from Saved'
+                        : 'Save for Later (Private)',
+                    onPressed: () => ref
+                        .read(postRepositoryProvider)
+                        .toggleSavePost(postId: post.id),
+                    icon: Icon(
+                      post.isSaved
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                      size: 18,
+                      color: post.isSaved
+                          ? (isContrast ? Colors.yellow : Theme.of(context).colorScheme.primary)
+                          : (isContrast ? Colors.white70 : Colors.grey.shade600),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

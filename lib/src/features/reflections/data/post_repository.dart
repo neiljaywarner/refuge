@@ -11,6 +11,9 @@ abstract class PostRepository {
   Future<String?> getQuietDigest({required String spaceKey});
   Future<List<Post>> getPostsByAuthor({required String authorName});
   Stream<List<Post>> watchPostsByAuthor({required String authorName});
+  Future<void> toggleSavePost({required String postId});
+  Future<List<Post>> getSavedPosts();
+  Stream<List<Post>> watchSavedPosts();
 }
 
 /// Riverpod Provider for accessing the active PostRepository instance.

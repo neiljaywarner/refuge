@@ -10,6 +10,7 @@ class Post {
   final DateTime timestamp;
   final Map<String, int> reactions;
   final bool isDemo;
+  final bool isSaved;
 
   const Post({
     required this.id,
@@ -22,6 +23,7 @@ class Post {
     required this.timestamp,
     required this.reactions,
     this.isDemo = false,
+    this.isSaved = false,
   });
 
   Post copyWith({
@@ -35,6 +37,7 @@ class Post {
     DateTime? timestamp,
     Map<String, int>? reactions,
     bool? isDemo,
+    bool? isSaved,
   }) => Post(
     id: id ?? this.id,
     authorName: authorName ?? this.authorName,
@@ -46,6 +49,7 @@ class Post {
     timestamp: timestamp ?? this.timestamp,
     reactions: reactions ?? Map<String, int>.from(this.reactions),
     isDemo: isDemo ?? this.isDemo,
+    isSaved: isSaved ?? this.isSaved,
   );
 
   @override
@@ -61,7 +65,8 @@ class Post {
           imageUrl == other.imageUrl &&
           content == other.content &&
           timestamp == other.timestamp &&
-          isDemo == other.isDemo;
+          isDemo == other.isDemo &&
+          isSaved == other.isSaved;
 
   @override
   int get hashCode =>
@@ -73,5 +78,6 @@ class Post {
       imageUrl.hashCode ^
       content.hashCode ^
       timestamp.hashCode ^
-      isDemo.hashCode;
+      isDemo.hashCode ^
+      isSaved.hashCode;
 }
