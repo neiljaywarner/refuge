@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -45,12 +46,16 @@ class PrivateIssuePayload {
     required this.title,
     required this.body,
     required this.labels,
+    this.attachmentUrl,
+    this.attachmentBytes,
   });
 
   final String repository;
   final String title;
   final String body;
   final List<String> labels;
+  final String? attachmentUrl;
+  final Uint8List? attachmentBytes;
 }
 
 /// Service that routes member feedback:
@@ -81,6 +86,8 @@ class PrivateFeedbackRouter {
     required FeedbackSentiment sentiment,
     required String message,
     String? contactEmail,
+    String? attachmentUrl,
+    Uint8List? attachmentBytes,
     DateTime? timestamp,
   }) {
     final now = timestamp ?? DateTime.now();
@@ -109,6 +116,13 @@ class PrivateFeedbackRouter {
       buffer.writeln('- **Contact Info**: `${contactEmail.trim()}`');
     }
 
+    if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Annotated Screenshot / Scribble Attachment')
+        ..writeln('![Annotated Screenshot]($attachmentUrl)');
+    }
+
     buffer
       ..writeln()
       ..writeln('### Feedback Note')
@@ -119,6 +133,8 @@ class PrivateFeedbackRouter {
       title: title,
       body: buffer.toString(),
       labels: ['user-feedback', label],
+      attachmentUrl: attachmentUrl,
+      attachmentBytes: attachmentBytes,
     );
   }
 }

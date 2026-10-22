@@ -23,6 +23,12 @@ abstract interface class StorageRepository {
     required String filename,
   });
 
+  /// Uploads feedback attachment screenshot and returns the download URL.
+  Future<String> uploadFeedbackAttachment({
+    required Uint8List bytes,
+    required String filename,
+  });
+
   /// Deletes a previously uploaded media asset.
   Future<void> deleteMedia(String downloadUrl);
 }
@@ -52,6 +58,16 @@ class InMemoryStorageRepository implements StorageRepository {
     required String filename,
   }) async {
     final path = 'spaces/$spaceSlug/$filename';
+    _storage[path] = bytes;
+    return 'https://storage.belongonthespectrum.com/$path';
+  }
+
+  @override
+  Future<String> uploadFeedbackAttachment({
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    final path = 'feedback/attachments/$filename';
     _storage[path] = bytes;
     return 'https://storage.belongonthespectrum.com/$path';
   }
@@ -95,6 +111,17 @@ class FirebaseStorageRepository implements StorageRepository {
   }) async {
     return _fallback.uploadPostMedia(
       spaceSlug: spaceSlug,
+      bytes: bytes,
+      filename: filename,
+    );
+  }
+
+  @override
+  Future<String> uploadFeedbackAttachment({
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    return _fallback.uploadFeedbackAttachment(
       bytes: bytes,
       filename: filename,
     );

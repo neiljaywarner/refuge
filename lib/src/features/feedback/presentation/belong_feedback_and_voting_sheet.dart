@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../storage/data/storage_repository.dart';
 import '../data/feature_voting_repository.dart';
 import '../domain/feedback_and_voting_models.dart';
+import 'feedback_drawing_canvas.dart';
 
 /// State notifier managing community feature votes via the pluggable
 /// [FeatureVotingRepository] (`InMemory`, `Serverpod`, `Appwrite`, or `Firebase`).
@@ -54,12 +57,16 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     required FeedbackSentiment sentiment,
     required String message,
     String? contactEmail,
+    String? attachmentUrl,
+    Uint8List? screenshotAttachment,
   }) {
     final repo = ref.read(featureVotingRepositoryProvider);
     return repo.submitFeedback(
       sentiment: sentiment,
       message: message,
       contactEmail: contactEmail,
+      attachmentUrl: attachmentUrl,
+      screenshotAttachment: screenshotAttachment,
     );
   }
 }
@@ -111,6 +118,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     );
     final feedbackController = useTextEditingController();
     final contactController = useTextEditingController();
+    final drawingAttachment = useState<Uint8List?>(null);
+    final isSubmitting = useState<bool>(false);
     final submittedMessage = useState<String?>(null);
 
     final features = ref.watch(featureVotingProvider);
@@ -439,6 +448,69 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
+                          // Scribble / Drawing Attachment affordance
+                          if (drawingAttachment.value != null) ...[
+                            Container(
+                              key: const Key('attached_scribble_preview_container'),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: colorScheme.outlineVariant),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.memory(
+                                      drawingAttachment.value!,
+                                      key: const Key('attached_scribble_thumbnail'),
+                                      width: 60,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                          'Scribble Annotated Screenshot',
+                                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          '${drawingAttachment.value!.lengthInBytes ~/ 1024} KB attached for private triage',
+                                          style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    key: const Key('remove_scribble_attachment_button'),
+                                    tooltip: 'Remove scribble',
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () => drawingAttachment.value = null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ] else ...[
+                            OutlinedButton.icon(
+                              key: const Key('open_feedback_drawing_button'),
+                              onPressed: () async {
+                                final result = await FeedbackDrawingDialog.show(context);
+                                if (result != null && result.isNotEmpty) {
+                                  drawingAttachment.value = result;
+                                }
+                              },
+                              icon: const Icon(Icons.draw_outlined, size: 18),
+                              label: const Text('Draw / Annotate on Screenshot', style: TextStyle(fontSize: 12)),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                           if (submittedMessage.value != null) ...[
                             Container(
                               padding: const EdgeInsets.all(10),
@@ -462,36 +534,66 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             children: [
                               FilledButton.icon(
                                 key: const Key('submit_feedback_button'),
-                                onPressed: () async {
-                                  final text = feedbackController.text.trim();
-                                  if (text.isEmpty) {
-                                    submittedMessage.value =
-                                        'Please enter a short note above so we can read your thoughts.';
-                                    return;
-                                  }
-                                  final sentiment = selectedSentiment.value;
-                                  final contact = contactController.text.trim();
-                                  await ref
-                                      .read(featureVotingProvider.notifier)
-                                      .submitFeedback(
-                                        sentiment: sentiment,
-                                        message: text,
-                                        contactEmail:
-                                            contact.isNotEmpty ? contact : null,
-                                      );
-                                  final summary =
-                                      '[Belong ${sentiment.label} (${sentiment.subtitle})] '
-                                      '$text '
-                                      '${contact.isNotEmpty ? "(From: $contact)" : ""}';
-                                  await Clipboard.setData(
-                                    ClipboardData(text: summary),
-                                  );
-                                  submittedMessage.value = sentiment.isPrivateTriage
-                                      ? 'Thank you! Your note was securely routed to our private triage queue (belong_feedback) so your privacy is 100% protected.'
-                                      : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
-                                  feedbackController.clear();
-                                },
-                                icon: const Icon(Icons.send_rounded, size: 18),
+                                onPressed: isSubmitting.value
+                                    ? null
+                                    : () async {
+                                        final text = feedbackController.text.trim();
+                                        if (text.isEmpty) {
+                                          submittedMessage.value =
+                                              'Please enter a short note above so we can read your thoughts.';
+                                          return;
+                                        }
+                                        isSubmitting.value = true;
+                                        try {
+                                          final sentiment = selectedSentiment.value;
+                                          final contact = contactController.text.trim();
+                                          String? attachmentUrl;
+                                          final attachmentBytes = drawingAttachment.value;
+
+                                          if (attachmentBytes != null) {
+                                            final storageRepo = ref.read(storageRepositoryProvider);
+                                            attachmentUrl = await storageRepo.uploadFeedbackAttachment(
+                                              bytes: attachmentBytes,
+                                              filename: 'scribble_${DateTime.now().millisecondsSinceEpoch}.png',
+                                            );
+                                          }
+
+                                          await ref
+                                              .read(featureVotingProvider.notifier)
+                                              .submitFeedback(
+                                                sentiment: sentiment,
+                                                message: text,
+                                                contactEmail:
+                                                    contact.isNotEmpty ? contact : null,
+                                                attachmentUrl: attachmentUrl,
+                                                screenshotAttachment: attachmentBytes,
+                                              );
+
+                                          final summary =
+                                              '[Belong ${sentiment.label} (${sentiment.subtitle})] '
+                                              '$text '
+                                              '${contact.isNotEmpty ? "(From: $contact)" : ""}'
+                                              '${attachmentUrl != null ? " [Attachment: $attachmentUrl]" : ""}';
+                                          try {
+                                            await Clipboard.setData(
+                                              ClipboardData(text: summary),
+                                            ).timeout(const Duration(milliseconds: 100));
+                                          } catch (_) {}
+
+                                          submittedMessage.value = sentiment.isPrivateTriage
+                                              ? 'Thank you! Your note was securely routed to our private triage queue (belong_feedback) so your privacy is 100% protected.'
+                                              : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                          feedbackController.clear();
+                                          drawingAttachment.value = null;
+                                        } catch (e) {
+                                          submittedMessage.value = 'Could not submit feedback: $e';
+                                        } finally {
+                                          isSubmitting.value = false;
+                                        }
+                                      },
+                                icon: isSubmitting.value
+                                    ? const Icon(Icons.hourglass_empty_rounded, size: 18)
+                                    : const Icon(Icons.send_rounded, size: 18),
                                 label: Text(
                                   selectedSentiment.value.isPrivateTriage
                                       ? 'Send Private Feedback'
