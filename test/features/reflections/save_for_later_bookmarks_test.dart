@@ -120,8 +120,13 @@ void main() {
         await $(createPostBtn).tap();
         await $.pumpAndSettle();
 
+        // Verify Circle-style popup menu appears and tap Create Post
+        expect($(Key('menu_item_create_post')), findsOneWidget);
+        await $(Key('menu_item_create_post')).tap();
+        await $.pumpAndSettle();
+
         // Verify bottom sheet title and reflection composer input exist
-        expect($('Create Reflection or Image Post'), findsOneWidget);
+        expect($('Create Reflection Post'), findsOneWidget);
         expect($(Key('reflection_composer_input')), findsWidgets);
       },
     );

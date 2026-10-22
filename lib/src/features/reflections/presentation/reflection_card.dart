@@ -164,6 +164,7 @@ class ReflectionCard extends ConsumerWidget {
                 child: Image.network(
                   post.imageUrl!,
                   fit: BoxFit.cover,
+                  semanticLabel: post.specialInterestTag ?? 'Community reflection image',
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
@@ -236,63 +237,63 @@ class ReflectionCard extends ConsumerWidget {
                   const SizedBox(width: 8),
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                    onPressed: () => onAddReaction('encouraged'),
-                    icon: const Text('🌱', style: TextStyle(fontSize: 12)),
-                    label: Text(
-                      '${post.reactions['encouraged'] ?? 0} Encouraged',
-                      style: const TextStyle(fontSize: 11),
-                    ),
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
+                  onPressed: () => onAddReaction('encouraged'),
+                  icon: const Text('🌱', style: TextStyle(fontSize: 12)),
+                  label: Text(
+                    '${post.reactions['encouraged'] ?? 0} Encouraged',
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => onAddReaction('relatable'),
+                  icon: const Text('😄', style: TextStyle(fontSize: 12)),
+                  label: Text(
+                    '${post.reactions['relatable'] ?? 0} Relatable',
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 8),
+              Builder(
+                builder: (ctx) {
+                  final countAsync =
+                      ref.watch(postCommentCountStreamProvider(post.id));
+                  final count = countAsync.value ?? 0;
+                  return OutlinedButton.icon(
+                    key: Key('discussion_button_${post.id}'),
                     style: OutlinedButton.styleFrom(
                       visualDensity: VisualDensity.compact,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
-                    onPressed: () => onAddReaction('relatable'),
-                    icon: const Text('😄', style: TextStyle(fontSize: 12)),
+                    onPressed: onOpenDiscussion ??
+                        () => ThreadedDiscussionSheet.show(
+                              context,
+                              post: post,
+                            ),
+                    icon: const Text('💬', style: TextStyle(fontSize: 12)),
                     label: Text(
-                      '${post.reactions['relatable'] ?? 0} Relatable',
+                      count == 1
+                          ? '1 Reply'
+                          : (count > 1 ? '$count Replies' : 'Reply'),
                       style: const TextStyle(fontSize: 11),
                     ),
-                  ),
-                ],
-                const SizedBox(width: 8),
-                Builder(
-                  builder: (ctx) {
-                    final countAsync =
-                        ref.watch(postCommentCountStreamProvider(post.id));
-                    final count = countAsync.value ?? 0;
-                    return OutlinedButton.icon(
-                      key: Key('discussion_button_${post.id}'),
-                      style: OutlinedButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      onPressed: onOpenDiscussion ??
-                          () => ThreadedDiscussionSheet.show(
-                                context,
-                                post: post,
-                              ),
-                      icon: const Text('💬', style: TextStyle(fontSize: 12)),
-                      label: Text(
-                        count == 1
-                            ? '1 Reply'
-                            : (count > 1 ? '$count Replies' : 'Reply'),
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
 
   static String _getInitials(String name) {

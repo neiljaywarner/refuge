@@ -19,6 +19,7 @@ class ReflectionComposer extends HookWidget {
   final String selectedSpace;
   final Color primaryColor;
   final bool isContrast;
+  final bool isImagePost;
   final Future<void> Function({
     required String content,
     required String toneTag,
@@ -32,49 +33,96 @@ class ReflectionComposer extends HookWidget {
     required this.selectedSpace,
     required this.primaryColor,
     required this.isContrast,
+    this.isImagePost = false,
     required this.onSubmit,
   });
 
   @override
   Widget build(BuildContext context) {
-    final initialTone = selectedSpace == 'memes'
-        ? '[Autism & Faith Meme]'
-        : '[Prayer Request]';
+    final initialTone = isImagePost
+        ? (selectedSpace == 'memes' ? '[Autism & Faith Meme]' : '[Special Interest]')
+        : (selectedSpace == 'memes' ? '[Autism & Faith Meme]' : '[Prayer Request]');
     final selectedTone = useState(initialTone);
     final attachedMeme = useState<CalmMeme?>(null);
     final contentController = useTextEditingController();
     final specialInterestController = useTextEditingController();
+    final imageUrlController = useTextEditingController();
+    final altTextController = useTextEditingController();
+    final customImageUrl = useState<String>('');
+
+    useEffect(() {
+      void listener() {
+        customImageUrl.value = imageUrlController.text.trim();
+      }
+      imageUrlController.addListener(listener);
+      return () => imageUrlController.removeListener(listener);
+    }, [imageUrlController]);
 
     void handleSelectMeme(CalmMeme meme) {
       attachedMeme.value = meme;
+      if (meme.imageUrl != null) {
+        imageUrlController.text = meme.imageUrl!;
+      }
       selectedTone.value = '[Autism & Faith Meme]';
       specialInterestController.text = meme.tag;
+      if (altTextController.text.trim().isEmpty) {
+        altTextController.text = meme.title;
+      }
       if (contentController.text.trim().isEmpty) {
         contentController.text = '${meme.icon} "${meme.title}"\n\n${meme.body}';
       }
     }
 
     Future<void> handlePublish() async {
-      final text = contentController.text.trim();
-      if (text.isEmpty) return;
+      var text = contentController.text.trim();
+      final effectiveImageUrl = customImageUrl.value.isNotEmpty
+          ? customImageUrl.value
+          : attachedMeme.value?.imageUrl;
+
+      // Bug #321 fix: Check if text is empty with zero user feedback
+      if (text.isEmpty) {
+        if (effectiveImageUrl != null && effectiveImageUrl.isNotEmpty) {
+          text = 'Shared an image reflection';
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              key: const Key('empty_reflection_warning_snackbar'),
+              content: const Text(
+                'Please write a thought or reflection before publishing.',
+                style: TextStyle(fontSize: 12),
+              ),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          return;
+        }
+      }
+
+      final altText = altTextController.text.trim();
+      if (altText.isNotEmpty) {
+        text = '$text\n\n[Image Description: $altText]';
+      }
 
       final specialInterest = specialInterestController.text.trim().isNotEmpty
           ? specialInterestController.text.trim()
           : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
 
-      final memeUrl = attachedMeme.value?.imageUrl;
-
       contentController.clear();
       specialInterestController.clear();
+      imageUrlController.clear();
+      altTextController.clear();
       attachedMeme.value = null;
 
       await onSubmit(
         content: text,
         toneTag: selectedTone.value,
         specialInterestTag: specialInterest,
-        imageUrl: memeUrl,
+        imageUrl: effectiveImageUrl,
       );
     }
+
+    final hasActiveImage = customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
@@ -110,16 +158,19 @@ class ReflectionComposer extends HookWidget {
               ),
             ],
           ),
-          if (selectedTone.value.contains('Special Interest') ||
+          if (isImagePost ||
+              selectedTone.value.contains('Special Interest') ||
               selectedTone.value.contains('Meme') ||
               selectedSpace == 'special_interests' ||
               selectedSpace == 'memes') ...[
             const SizedBox(height: 6),
             TextField(
+              key: const Key('special_interest_tag_input'),
               controller: specialInterestController,
               decoration: InputDecoration(
-                hintText:
-                    'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Biblical Maps)...',
+                hintText: isImagePost
+                    ? 'Image Tag / Topic (e.g. Christian Memes, Scripture Art, Church Architecture)...'
+                    : 'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Biblical Maps)...',
                 hintStyle: const TextStyle(fontSize: 11),
                 isDense: true,
                 border: OutlineInputBorder(
@@ -130,13 +181,98 @@ class ReflectionComposer extends HookWidget {
               ),
             ),
           ],
+          if (isImagePost) ...[
+            const SizedBox(height: 6),
+            TextField(
+              key: const Key('image_post_url_input'),
+              controller: imageUrlController,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.link_rounded, size: 16),
+                hintText: 'Paste Image URL (https://...) or tap Add Meme below',
+                hintStyle: const TextStyle(fontSize: 11),
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              key: const Key('image_post_alt_text_input'),
+              controller: altTextController,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.accessibility_new_rounded, size: 16),
+                hintText: 'Image description / alt-text (for screen readers & sensory comfort)...',
+                hintStyle: const TextStyle(fontSize: 11),
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            ),
+          ],
+          if (hasActiveImage) ...[
+            const SizedBox(height: 8),
+            Container(
+              key: const Key('image_post_preview_container'),
+              constraints: const BoxConstraints(maxHeight: 140),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(color: Colors.amber.shade300),
+              ),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      customImageUrl.value.isNotEmpty
+                          ? customImageUrl.value
+                          : attachedMeme.value!.imageUrl!,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 60,
+                        alignment: Alignment.center,
+                        child: const Text('🖼️ [Image Attached]', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: InkWell(
+                      key: const Key('remove_image_button'),
+                      onTap: () {
+                        imageUrlController.clear();
+                        attachedMeme.value = null;
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           TextField(
             key: const Key('reflection_composer_input'),
             controller: contentController,
-            maxLines: 3,
+            maxLines: isImagePost ? 2 : 3,
             decoration: InputDecoration(
-              hintText: 'Share an unhurried thought, Scripture insight, or relatable reflection...',
+              hintText: isImagePost
+                  ? 'Add an optional caption, thought, or context for this image...'
+                  : 'Share an unhurried thought, Scripture insight, or relatable reflection...',
               hintStyle: const TextStyle(fontSize: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -145,10 +281,10 @@ class ReflectionComposer extends HookWidget {
               contentPadding: const EdgeInsets.all(12.0),
             ),
           ),
-          if (attachedMeme.value != null) ...[
+          if (attachedMeme.value != null && !isImagePost) ...[
             Container(
               key: const Key('attached_meme_banner'),
-              margin: const EdgeInsets.only(bottom: 8.0),
+              margin: const EdgeInsets.only(top: 8.0),
               padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
               decoration: BoxDecoration(
                 color: Colors.amber.withValues(alpha: 0.15),
@@ -189,12 +325,12 @@ class ReflectionComposer extends HookWidget {
                   InkWell(
                     key: const Key('remove_attached_meme_button'),
                     onTap: () => attachedMeme.value = null,
-                    child: const Icon(Icons.close, size: 14),
                   ),
                 ],
               ),
             ),
           ],
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -221,10 +357,13 @@ class ReflectionComposer extends HookWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
                 onPressed: handlePublish,
-                icon: const Icon(Icons.send_rounded, size: 14),
-                label: const Text(
-                  'Publish Reflection',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                icon: Icon(
+                  isImagePost ? Icons.photo_library_outlined : Icons.send_rounded,
+                  size: 14,
+                ),
+                label: Text(
+                  isImagePost ? 'Publish Image Post' : 'Publish Reflection',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

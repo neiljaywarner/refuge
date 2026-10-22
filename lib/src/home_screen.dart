@@ -281,7 +281,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                ),
+                                );
                                 const SizedBox(height: 8),
                                 Text(
                                   'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
@@ -557,20 +557,141 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            child: IconButton.filledTonal(
+            child: PopupMenuButton<String>(
               key: const Key('home_top_bar_create_post_button'),
-              tooltip: 'Create Post or Image Post (+)',
-              style: IconButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.all(6),
+              tooltip: 'Create post or image post (+)',
+              offset: const Offset(0, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(
+                  color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+                ),
               ),
-              icon: const Icon(Icons.add_rounded, size: 20),
-              onPressed: () => _showCreatePostModal(
-                context: context,
-                selectedSpace: selectedSpace.value,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-                onSubmit: submitPost,
+              onSelected: (action) {
+                if (action == 'create_post') {
+                  _showCreatePostModal(
+                    context: context,
+                    selectedSpace: selectedSpace.value,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                    isImagePost: false,
+                    onSubmit: submitPost,
+                  );
+                } else if (action == 'create_image_post') {
+                  _showCreatePostModal(
+                    context: context,
+                    selectedSpace: selectedSpace.value,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                    isImagePost: true,
+                    onSubmit: submitPost,
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  key: const Key('menu_item_create_post'),
+                  value: 'create_post',
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.edit_note_rounded,
+                          color: primaryColor,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Create Post',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Share an unhurried thought or prayer',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  key: const Key('menu_item_create_image_post'),
+                  value: 'create_image_post',
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: Colors.amber,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Create Image Post',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Share a meme, photo, or scripture art',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add_rounded,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
               ),
             ),
           ),
@@ -704,6 +825,7 @@ void _showCreatePostModal({
   required String selectedSpace,
   required Color primaryColor,
   required bool isContrast,
+  bool isImagePost = false,
   required Future<void> Function({
     required String content,
     required String toneTag,
@@ -738,14 +860,14 @@ void _showCreatePostModal({
                       Row(
                         children: [
                           Icon(
-                            Icons.post_add_rounded,
+                            isImagePost ? Icons.image_outlined : Icons.post_add_rounded,
                             size: 20,
                             color: primaryColor,
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            'Create Reflection or Image Post',
-                            style: TextStyle(
+                          Text(
+                            isImagePost ? 'Create Image Post' : 'Create Reflection Post',
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
@@ -764,6 +886,7 @@ void _showCreatePostModal({
                   selectedSpace: selectedSpace,
                   primaryColor: primaryColor,
                   isContrast: isContrast,
+                  isImagePost: isImagePost,
                   onSubmit: ({
                     required String content,
                     required String toneTag,
