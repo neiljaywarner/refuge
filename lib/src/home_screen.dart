@@ -281,7 +281,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                );
+                                ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
