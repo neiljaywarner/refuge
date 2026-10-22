@@ -30,10 +30,15 @@
 
 ---
 
-### 4. Telemetry & Error Reporting Consolidation (`#86`)
+### 4. Telemetry & Error Reporting Consolidation (`#86`, `#293`)
 - **Background**: Dual/triple observability is active across Firebase Crashlytics, Firebase Analytics, and local Serverpod/Talker ring buffers with automated PII regex scrubbing.
 - **Question**:
   1. Once the October 31 cutover is stable, should we consolidate strictly onto Firebase Crashlytics + Analytics, or migrate error logs to self-hosted Appwrite Functions / PostHog?
+- **Decision & TL;DR Guidance (Maintainer Consensus)**:
+  - **Keep Firebase Crashlytics**: Crashlytics has zero ingestion quotas on the free Firebase Spark plan and provides unrivaled native Android (NDK/JVM) and iOS symbolication and crash aggregation that no general-purpose tool can match.
+  - **Adopt PostHog for Analytics & User Journeys**: Use PostHog for product telemetry, sensory mode adoption, and navigation funnels. PostHog provides generous free quotas (1M events/month), session replay, and privacy-preserving self-hosting options.
+  - **Appwrite Functions Role & Status**: Appwrite Functions are serverless compute runtimes (executing Dart/Node/Python functions in response to webhooks or cron). Because **Serverpod** already serves as our primary Dart backend, ORM, and database interface, introducing Appwrite Functions solely for error ingestion would duplicate infrastructure. We will rely on Serverpod's PostgreSQL ring buffer as the self-hosted fallback.
+  - **Architecture Reference**: Detailed comparison documented in [`Observability-Crashlytics-Analytics-and-Diagnostics.md`](docs/wiki/Observability-Crashlytics-Analytics-and-Diagnostics.md#post-october-31-telemetry-architecture-analysis-issue-293) and tracking Issue [#293](https://github.com/neiljaywarner/refuge/issues/293).
 
 ---
 
