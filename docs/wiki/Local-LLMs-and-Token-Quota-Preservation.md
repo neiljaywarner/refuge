@@ -1,60 +1,65 @@
-# 🤖 Local LLMs & Token Quota Preservation Strategy Guide
+# 🤖 Local LLMs & Token Quota Preservation Strategy
 
-> **Target Audience**: Maintainers, AI Coding Agents, and Contributors  
-> **Primary Hardware**: 48GB Unified Memory Apple Silicon (M-series Mac)  
-> **Related Issues**: [#234](https://github.com/neiljaywarner/refuge/issues/234), [#233](https://github.com/neiljaywarner/refuge/issues/233), [#197](https://github.com/neiljaywarner/refuge/issues/197), [#92](https://github.com/neiljaywarner/refuge/issues/92)  
-> **Master Dashboard**: [`status.md`](https://github.com/neiljaywarner/refuge/blob/main/status.md)
-
----
-
-## 1. 🎯 Executive Summary & Purpose
-
-Frontier cloud language models (e.g., Gemini 1.5 Pro, Claude 3.5 Sonnet, GPT-4o) possess remarkable architectural reasoning, but their API calls are constrained by **strict weekly token quotas and rate limits**. When exhausted or throttled, development velocity grinds to a halt unless an offline or zero-cost alternative is available.
-
-With **48GB of unified memory on Apple Silicon**, we have approximately **36GB to 40GB of high-bandwidth VRAM** directly accessible to Apple's Metal GPU shaders. This enables running state-of-the-art open coding models (such as **Qwen 2.5 Coder 32B/14B** and **DeepSeek R1**) entirely locally:
-- **Zero Cost**: $0.00 cloud API bills.
-- **Zero Rate Limits**: Unlimited tokens day or night.
-- **Zero Network Latency**: Blazing fast token generation completely offline.
-- **Privacy & Zero-PII**: Sensitive data never leaves the local machine.
-
-This guide outlines our **Task Delegation Taxonomy**, benchmarking data, setup commands, and integration patterns to ensure cloud tokens are preserved strictly for high-leverage architectural reasoning while mechanical work is offloaded to local models.
+> **Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
+> **Audience**: Engineers, Mentors, and Autonomous Coding Agents  
+> **Hardware Context**: 48GB Unified RAM Apple Silicon Mac (`arm64`)  
+> **Linked Skills**: [`token-quota-routing`](.agents/skills/token-quota-routing/SKILL.md)  
+> **Linked Architecture**: [`docs/AGENT_HARNESS_AND_ORCHESTRATION.md`](../AGENT_HARNESS_AND_ORCHESTRATION.md)  
+> **Status**: Production Operational Runbook
 
 ---
 
-## 2. 💻 Hardware Sizing & Benchmarks (48GB Apple Silicon Unified RAM)
+## 1. Executive Summary
 
-Apple Silicon's unified memory architecture allows CPU and GPU to share the same ultra-high-bandwidth memory bus without PCI express bottlenecks.
+Belong on the Spectrum is built using high-velocity agentic workflows. As the release approaches (**October 31, 2026**), preserving frontier cloud model quotas (e.g. Gemini 1.5 Pro / Claude 3.5 Sonnet 5-hour rolling limits and 7-day weekly caps) while maintaining rapid development momentum is paramount.
 
-| Model Tier | Model Name | Quantization | VRAM Required | Token Generation Speed | Recommended Use Case |
-|---|---|---|---|---|---|
-| **Tier 1 (Workhorse)** | `qwen2.5-coder:32b` | `Q4_K_M` | ~20 GB | **25 – 35 tokens/sec** | Complex Dart/Flutter refactoring, BDD widget tests, Riverpod notifiers, full feature implementation. |
-| **Tier 2 (High-Speed)** | `qwen2.5-coder:14b` | `Q8_0` | ~16 GB | **50 – 75 tokens/sec** | Rapid unit test iteration, mechanical package renames, lint fixes (`dart fix`), docstrings. |
-| **Tier 3 (Lightweight)** | `qwen2.5-coder:7b` | `Q4_K_M` | ~5 GB | **90 – 120 tokens/sec** | Single-file edits, regex transformations, JSON mapping, commit message drafting. |
-| **Tier 4 (Reasoning)** | `deepseek-r1:32b` or `14b` | `Q4_K_M` | ~20 GB | **20 – 30 tokens/sec** | Algorithmic optimization, complex test failure triage, logic verification. |
-
-> [!TIP]
-> On macOS with 48GB unified RAM, system services and dev tools (IDE, Android emulators, Chrome) consume ~8GB. Running a 32B `Q4_K_M` model (~20GB VRAM) leaves ~20GB free for Flutter compilation and real-device ADB/Maestro automation with zero paging or swapping!
+By leveraging **48GB of unified RAM on Apple Silicon**, we possess **~36GB of comfortably available VRAM** for local GPU inference via Metal shaders. This enables running state-of-the-art coding LLMs locally with **$0 API cost, zero rate limits, and zero cloud dependency**.
 
 ---
 
-## 3. ⚖️ Task Delegation Taxonomy: What to Run Locally vs. Cloud
+## 2. Hardware Capabilities & Local Model Benchmarks (48GB Mac)
 
-To maximize development velocity and protect cloud quota, follow this strict task separation:
+On Apple Silicon (`M-series`), unified memory allows the GPU to access system RAM directly without PCIe transfer bottlenecks.
+
+| Model | Quantization | Parameter Count | VRAM Footprint | Generation Speed (Metal) | Strengths / Capabilities |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **`qwen2.5-coder:32b`** | Q4_K_M | 32.5 Billion | **~20 GB** | **25 – 35 tok/sec** | Flagship code model; Dart 3 pattern matching, complex Riverpod 2.x notifier refactors, full BDD scenario generation. |
+| **`qwen2.5-coder:14b`** | Q8_0 / Q4_K_M | 14.7 Billion | **~9 GB** | **45 – 60 tok/sec** | Blazing-fast utility model; unit test authoring, mechanical renaming, lint resolution, regex patterns. |
+| **`qwen2.5-coder:7b`** | Q8_0 | 7.6 Billion | **~5 GB** | **70 – 90 tok/sec** | Instant code generation; single-function edits, docstring generation, JSON schema definitions. |
+| **`deepseek-coder-v2:16b`** | Q4_K_M | 15.7 Billion (MoE) | **~10 GB** | **40 – 55 tok/sec** | Multi-file reasoning, refactoring large Flutter presentation widgets. |
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                      48 GB Unified System Memory                       │
+├─────────────────────────┬─────────────────────────┬────────────────────┤
+│   macOS & Dev Tools     │   Local LLM Inference   │ Free Buffer / Apps │
+│   (Android Studio,      │   (qwen2.5-coder:32b)   │ (Chrome, Terminal, │
+│    Pixel 9a Emulator)   │                         │  Slack, etc.)      │
+│         ~12 GB          │         ~20 GB          │       ~16 GB       │
+└─────────────────────────┴─────────────────────────┴────────────────────┘
+```
+
+---
+
+## 3. The 3-Tier Task Delegation Taxonomy
+
+To optimize both developer time and cloud token usage, all engineering tasks must be routed according to cognitive complexity:
 
 ```mermaid
 flowchart TD
-    Task[Incoming Coding Task] --> Decision{Requires Global Multi-System Reasoning?}
-    Decision -- Yes --> Cloud[Frontier Cloud Models\nGemini 1.5 Pro / Claude Sonnet]
-    Decision -- No --> Mechanical{Mechanical / Local Scope?}
-    Mechanical -- Yes --> Local[Local LLM via Ollama\nQwen 2.5 Coder 32B / 14B]
-    Mechanical -- No --> Cloud
+    Task[Incoming Engineering Task] --> Complexity{Is this deep architectural design\nor multi-device orchestration?}
 
-    subgraph "Local LLM Strengths ($0 Cost / Unlimited)"
-        Local --> T1[Mechanical Package Renames e.g. #233]
-        Local --> T2[Unit & Widget Test Writing]
-        Local --> T3[Boilerplate Data Models & Notifiers]
-        Local --> T4[Static Analysis & Dart Fixes]
-        Local --> T5[Documentation & Wiki Authoring]
+    Complexity -- No --> Mechanical{Is this a mechanical refactor,\nunit test, or doc update?}
+    Mechanical -- Yes --> Local[Local LLM via Ollama\nQwen 2.5 Coder 32B / 14B]
+    Mechanical -- No --> Subagent[Cloud Flash Subagent\nGemini 1.5 Flash]
+
+    Complexity -- Yes --> CloudLead[Cloud Frontier Model\nGemini 1.5 Pro / Claude 3.5 Sonnet]
+
+    subgraph "Local LLM Strengths ($0 Cost)"
+        Local --> L1[Mechanical Package Renames e.g. Issue #233]
+        Local --> L2[Unit Tests for Domain & Data Layers]
+        Local --> L3[Dart Lint Fixes & Constructor Cleanups]
+        Local --> L4[Markdown Documentation & Changelogs]
     end
 
     subgraph "Cloud Model Strengths (Conserve Quota)"
@@ -91,73 +96,76 @@ flowchart TD
 
 ## 4. 🚀 Quickstart Setup Guide (macOS / Apple Silicon)
 
+> [!TIP]
+> **Phase 1 Automation**: Run `./tool/setup_ollama.sh` to automatically install, launch, and verify Ollama.  
+> Read the complete guide in [Local-LLMs-Phase-1-Getting-Started.md](Local-LLMs-Phase-1-Getting-Started.md) ([Issue #271](https://github.com/neiljaywarner/refuge/issues/271)).  
+> Tracking Phase 2 (Advanced Routing Heuristics): [Issue #272](https://github.com/neiljaywarner/refuge/issues/272).
+
 ### Step 1: Install Ollama
-Using Homebrew:
+Using the automated script:
+```bash
+./tool/setup_ollama.sh
+```
+Or manually via Homebrew:
 ```bash
 brew install ollama
 brew services start ollama
 ```
 Or download the native macOS app with menu-bar controls from [ollama.com](https://ollama.com/download).
 
-### Step 2: Pull Target Models
+### Step 2: Pull the Coding Specialist Models
 ```bash
-# Workhorse 32B coding model (~20GB download):
+# Flagship model (32.5B params, ~20GB download/VRAM)
 ollama pull qwen2.5-coder:32b
 
-# High-speed 14B model for fast iteration (~9GB download):
+# High-speed utility model (14.7B params, ~9GB download/VRAM)
 ollama pull qwen2.5-coder:14b
 ```
 
-### Step 3: Test Local Inference
-Verify Metal GPU acceleration by asking for a Dart snippet:
+### Step 3: Run Interactive Test Query
+Test the local inference directly from your terminal:
 ```bash
 ollama run qwen2.5-coder:14b "Write a Riverpod Notifier in Dart for switching between Calm Teal and Lavender themes"
 ```
 
-### Step 4: Configure OpenAI-Compatible Endpoint in Agent Tools
+### Step 4: OpenAI-Compatible API Endpoint
 Ollama automatically provides an OpenAI-compatible HTTP API at:
-```
+```text
 http://localhost:11434/v1
 ```
-You can point Antigravity, Cursor, Continue.dev, or Aider to this URL with:
 - **Base URL**: `http://localhost:11434/v1`
-- **Model**: `qwen2.5-coder:32b` or `qwen2.5-coder:14b`
+- **Model Name**: `qwen2.5-coder:32b` or `qwen2.5-coder:14b`
 - **API Key**: `ollama` (any non-empty string)
 
 ---
 
-## 5. 📋 Execution Blueprint: Issue #233 Package Rename (`refuge4serverpod` $\rightarrow$ `refuge`)
+## 5. Integrating with Antigravity & Development Tools
 
-This template is checked into Issue [#233](https://github.com/neiljaywarner/refuge/issues/233) for local LLM execution:
+### Option A: Local Coding Subagent Configuration
+You can register a custom subagent in `.gemini/antigravity/` pointing to your local Ollama endpoint:
 
+```json
+{
+  "name": "local-coder",
+  "description": "Offline mechanical Dart coder running on Apple Silicon Metal GPU",
+  "api_base": "http://localhost:11434/v1",
+  "model": "qwen2.5-coder:32b",
+  "temperature": 0.2
+}
+```
+
+### Option B: Terminal CLI Quick Fixes
+For quick mechanical tasks when quota is low, pipe code into Ollama directly:
 ```bash
-# 1. Checkout dedicated worktree
-cd /Users/neil/belongonthespectrum/.worktrees/issue-233-rename-package-refuge4serverpod
-
-# 2. Update pubspec.yaml name field
-sed -i '' 's/^name: refuge4serverpod/name: refuge/' pubspec.yaml
-
-# 3. Global import rename across Dart files
-find lib test tool -name "*.dart" -exec sed -i '' 's/package:refuge4serverpod\//package:refuge\//g' {} +
-
-# 4. Clean and regenerate dependencies
-flutter clean && flutter pub get
-
-# 5. Verification
-dart analyze
-flutter test
+cat lib/src/features/reflections/domain/reflection.dart | \
+  ollama run qwen2.5-coder:14b "Add copyWith and equality operators using modern Dart 3"
 ```
 
 ---
 
-## 6. 🧪 Documented Live Test Accounts (Zero-PII)
+## 6. Golden Rules for Token Preservation
 
-During our end-to-end Firebase Auth live-glass testing on Google Pixel 9a (`58221JEBF20835`), the following test accounts were created and verified:
-
-| Account Email | Initial Role / Profile | Verification State | Verification Tested | Purpose |
-|---|---|---|---|---|
-| `neilwarner+21oct1253am@gmail.com` | `Neil (Belong Founder)` | `emailVerified: false` | Resend verification email sent & verified | Live registration, profile edit, sign-out & sign-in e2e |
-| `neilwarner@gmail.com` | Community Maintainer | Verified | Password reset link received & verified | Forgot Password live test |
-
-> [!NOTE]
-> All test accounts are managed under the official Firebase Project `belongonthespectrum` (Project Number `207506875171`). Future requirement for email verification enforcement is tracked in Issue [#236](https://github.com/neiljaywarner/refuge/issues/236).
+1. **Never use Cloud Frontier models for mechanical edits** (regex search-and-replace, package renaming, import reorganization).
+2. **Run `/compact` every 2–3 merged PRs** to prevent bloated chat contexts from compounding input token costs.
+3. **Use Flash subagents for file reading and broad grep**, keeping the parent orchestrator context lean.
+4. **When 5-hour cloud rolling limits approach 80%**, switch to **Local Ollama** or take a deliberate 15-minute maintainer walk/break (`take-a-break` skill) while the window replenishes.
