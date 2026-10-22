@@ -147,6 +147,13 @@ void main() {
     });
 
     patrolWidgetTest('Calm-tech meme gallery allows selecting and dismissing meme', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       await pumpApp($);
 
       // Verify 'Add Meme / GIF' button is present
