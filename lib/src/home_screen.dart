@@ -87,7 +87,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     // other bottom tabs and back. A broadcast stream does not replay its last
     // event to a fresh listener, so re-subscribing via a StreamBuilder that
     // was unmounted left the feed stuck on a spinner / grey screen (#402).
-    final postsSnapshot = useStream(postStream);
+    final postsSnapshot = useStream(postStream, preserveState: false);
     final quietDigestFuture = useMemoized(
       () => activeRepository.getQuietDigest(spaceKey: selectedSpace.value),
       [activeRepository, selectedSpace.value],
