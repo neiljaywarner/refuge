@@ -13,7 +13,7 @@ final DateTime _knownSentAt = DateTime(2020, 10, 20, 15, 30);
 
 void main() {
   patrolWidgetTest(
-    'Scenario: a post with a known DateTime shows its timestamp beside the content',
+    'A post created on 20 Oct shows Oct 20 beside the author, not inside the post',
     ($) async {
       const body = 'The quiet room is reserved for anyone who needs a break.';
       final post = Post(
@@ -26,9 +26,12 @@ void main() {
         reactions: const {},
       );
 
+      // Given a post by David M. created on 20 Oct
+      // And the post body does not contain that date
       expect(body.contains('Oct 20'), isFalse);
       expect(post.formattedDate(DateTime(2026, 10, 23, 12)), 'Oct 20');
 
+      // When the post card is shown
       await $.pumpWidgetAndSettle(
         ProviderScope(
           child: MaterialApp(
@@ -44,6 +47,7 @@ void main() {
         ),
       );
 
+      // Then the card shows "Oct 20" beside the author, not inside the post body
       expect($('David M.'), findsOneWidget);
       expect($(body), findsOneWidget);
       expect($('Oct 20'), findsOneWidget);
@@ -52,7 +56,7 @@ void main() {
   );
 
   patrolWidgetTest(
-    'Scenario: a direct message with a known DateTime shows its timestamp beside the content',
+    'A direct message sent on 20 Oct shows Oct 20 beside the message, not inside the text',
     ($) async {
       const body = 'Glad you are here. No need to reply until you are ready.';
       final message = DirectMessage(
@@ -71,18 +75,21 @@ void main() {
         messages: [message],
       );
 
+      // Given a direct message from Fellow Member sent on 20 Oct
+      // And the message text does not contain that date
       expect(body.contains('Oct 20'), isFalse);
       expect(message.formattedDate(DateTime(2026, 10, 23, 12)), 'Oct 20');
 
+      // When the conversation is opened
       await $.pumpWidgetAndSettle(
         MaterialApp(
           theme: ThemeData.light(),
           home: BelongMessagesView(initialThreads: [thread]),
         ),
       );
-
       await $(const Key('thread-dm-timestamp')).tap();
 
+      // Then "Oct 20" appears beside the message, not inside the message text
       expect($('Fellow Member'), findsWidgets);
       expect($(body), findsOneWidget);
       expect($('Oct 20'), findsOneWidget);

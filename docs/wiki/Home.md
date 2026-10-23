@@ -27,6 +27,8 @@ If you are new to the community or leading a transition from Circle.so, select y
 | **[🌿 Calm Technology & Sensory Safety](Calm-Tech-and-Accessibility)** | **Members & Designers** | Why Belong has zero autoplay video, predictable navigation, literal feedback cards, and neurodivergent-affirming design. |
 | **[🌸 Calm Notifications: Member & Product Guide](Notifications-Product-Guide)** | **All Members & Leaders** | Unhurried notification batching, quiet hours, gentle interaction badges, and eliminating sensory notification overload. |
 
+The community flows already checked — post dates, message dates, the feedback sheet above the Android navigation bar, and sample-data checks for voting, the bell, messages, and publishing — are listed in [Flows we checked](Flows-We-Checked).
+
 ---
 
 ## 🛠️ Engineering, Architecture & Mentoring Portals
