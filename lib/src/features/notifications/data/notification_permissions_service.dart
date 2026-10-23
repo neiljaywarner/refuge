@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
+import 'package:refuge4serverpod/src/features/notifications/domain/calm_push_constants.dart';
 
 /// Service managing neurodivergent-first notification permissions and calm digest schedules.
 class NotificationPermissionsService extends StateNotifier<CalmNotificationPreferences> {
@@ -89,6 +90,11 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
           );
         } catch (_) {
           // Token retrieval may fail if offline or VAPID key not configured yet
+        }
+        try {
+          await messaging.subscribeToTopic(kCalmFcmPreviewTopic);
+        } catch (_) {
+          // Topic subscribe may fail in tests or offline harnesses.
         }
         state = state.copyWith(
           enabled: true,

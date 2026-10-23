@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/core/presentation/system_insets.dart';
+import 'package:refuge4serverpod/src/features/notifications/data/calm_local_notification_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/notification_permissions_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
 
@@ -161,6 +163,26 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                   },
                 ),
 
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: Semantics(
+                    button: true,
+                    identifier: 'preview-calm-shade-notification-button',
+                    label: 'Preview shade notification debug',
+                    child: OutlinedButton(
+                      key: const ValueKey('preview-calm-shade-notification-button'),
+                      onPressed: () async {
+                      await showCalmPreviewDirectMessage(
+                        ref.read(calmLocalNotificationServiceProvider),
+                      );
+                    },
+                      child: const Text('Preview shade notification (debug)'),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,

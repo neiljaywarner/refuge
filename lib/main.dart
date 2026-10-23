@@ -1,9 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'src/app.dart';
+import 'src/features/notifications/data/fcm_background_handler.dart';
+import 'src/features/notifications/data/fcm_messaging_service.dart';
 import 'src/core/config/app_flavor.dart';
 import 'src/core/firebase/community_analytics_service.dart';
 import 'src/core/firebase/firebase_initializer.dart';
@@ -68,10 +71,15 @@ Future<void> bootstrapBelongApp({required AppFlavor flavor}) async {
 Future<void> runWithFlavor(AppFlavor flavor) async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
+
   // 1. Initialize Firebase lifecycle (Crashlytics + Analytics)
   await FirebaseInitializer.initialize(flavor: flavor);
 
   final analytics = CommunityAnalyticsService(flavor: flavor);
+  await FcmMessagingService.ensureInitialized(analytics: analytics);
   final errorReporter = ErrorReporterService(flavor: flavor, analyticsService: analytics);
 
   // 2. Global Flutter framework error hook
