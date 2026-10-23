@@ -29,6 +29,12 @@ abstract interface class StorageRepository {
     required String filename,
   });
 
+  /// Uploads diagnostic session logs / replay dump and returns the download URL.
+  Future<String> uploadDiagnosticLogs({
+    required Uint8List bytes,
+    required String filename,
+  });
+
   /// Deletes a previously uploaded media asset.
   Future<void> deleteMedia(String downloadUrl);
 }
@@ -73,6 +79,16 @@ class InMemoryStorageRepository implements StorageRepository {
   }
 
   @override
+  Future<String> uploadDiagnosticLogs({
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    final path = 'diagnostics/logs/$filename';
+    _storage[path] = bytes;
+    return 'https://storage.belongonthespectrum.com/$path';
+  }
+
+  @override
   Future<void> deleteMedia(String downloadUrl) async {
     _storage.removeWhere((key, _) => downloadUrl.endsWith(key));
   }
@@ -95,7 +111,6 @@ class FirebaseStorageRepository implements StorageRepository {
     required Uint8List bytes,
     required String filename,
   }) async {
-    // Falls back gracefully to structured path when offline or in test mode
     return _fallback.uploadAvatar(
       userId: userId,
       bytes: bytes,
@@ -122,6 +137,17 @@ class FirebaseStorageRepository implements StorageRepository {
     required String filename,
   }) async {
     return _fallback.uploadFeedbackAttachment(
+      bytes: bytes,
+      filename: filename,
+    );
+  }
+
+  @override
+  Future<String> uploadDiagnosticLogs({
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    return _fallback.uploadDiagnosticLogs(
       bytes: bytes,
       filename: filename,
     );
