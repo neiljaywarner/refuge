@@ -5,7 +5,7 @@
 > **Community**: [Belong on the Spectrum](https://belongonthespectrum.com) (Christian & Neurodivergent-Affirming digital fellowship)  
 > **Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
 > **Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (also custom domain `belongonthespectrum.com`)  
-> **Private Triage Repository**: not wired. Notes go to Firestore. Drawings are a placeholder URL ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+> **Private Triage Repository**: not wired. Notes go to Firestore. Drawings stay with the note and are not presented as https://storage.belongonthespectrum.com uploads. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
@@ -27,7 +27,7 @@ Tonight's review focuses on operational readiness: verifying that authentication
 - **Serverpod**: Still the default post backend. Cloud Firestore is still the second copy. The teardown guide is not started. Appwrite has not replaced either backend. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 - **No App Store Friction**: Belong runs instantly in any mobile or desktop web browser, and prompts users with 1-tap "Add to Home Screen" (Progressive Web App / WebAPK), bypassing App Store / Play Store gatekeeping.
 - **Neurodivergent-First**: Replaces high-anxiety social media patterns (like 1–5 star ratings, endless unread notification counts, and algorithmic outrage feeds) with literal 3-intent feedback, chronological unhurried feeds, and quiet sensory themes (Sage, Clean, Charcoal, High Contrast).
-- **Private Feedback**: Members can draw on a note in the app. The note is written to Firestore. The drawing is a placeholder storage URL, not a GitHub issue attachment ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+- **Private Feedback**: Members can draw on a note in the app. The note is written to Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
@@ -49,10 +49,10 @@ Tonight's review focuses on operational readiness: verifying that authentication
 ### Q4: How does private feedback protect user privacy?
 **A**: Many open-source platforms accidentally publish bug reports with user email addresses, IP addresses, or device IDs on public GitHub issues. Belong solves this with **Split Routing**:
 - **💚 Public Praise** ("Works Great") routes to the public encouragement counter.
-- **🛠️ Bug Reports & 💡 Ideas** are written to Firestore. They do not open a GitHub issue. The drawing is a placeholder storage URL ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+- **🛠️ Bug Reports & 💡 Ideas** are written to Firestore. They do not open a GitHub issue. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ### Q5: Can users draw on screenshots when submitting feedback?
-**A**: Members can open a drawing canvas, sketch, and attach that sketch to the in-app note. The stored drawing is a placeholder URL, not a file on GitHub ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+**A**: Members can open a drawing canvas, sketch, and attach that sketch to the in-app note. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
@@ -181,7 +181,7 @@ Use this checklist during tonight's walkthrough on real devices:
        - Scribble an arrow or circle with the pen, tap "Attach Scribble".
        - Type "hi, feedback from 20-octoberpm".
        - Tap "Send Private Feedback".
-       - Confirm the note is stored in Firestore. Do not expect a new GitHub issue. The drawing URL is a placeholder ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+       - Confirm the note is stored in Firestore. Do not expect a new GitHub issue. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 [ ] 6. PROGRESSIVE WEB APP (PWA) EXPERIENCE
        - Open https://belongonthespectrum.web.app on your phone browser.
@@ -195,7 +195,7 @@ Use this checklist during tonight's walkthrough on real devices:
 
 - **Frontend Architecture**: Flutter 3.47 / Dart 3.13, Riverpod 2.6 (`HookConsumerWidget`), feature-first package structure (`lib/src/features/*`).
 - **Backend & Cloud**: Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. It has not replaced Serverpod. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
-- **Privacy Architecture**: Feedback notes go to Firestore. Drawings are a placeholder URL, not a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)). The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+- **Privacy Architecture**: Feedback notes go to Firestore. Drawings stay with the note and are not presented as https://storage.belongonthespectrum.com uploads. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)). The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 - **Architectural Decision Records**:
   - `docs/adr/0001-sensory-modes.md`: High contrast and sensory calm mode specifications.
   - `docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`: 3-intent feedback vs. 5-star ratings.

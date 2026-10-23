@@ -62,7 +62,7 @@ On native iOS and Android, apps often call `in_app_review` (`SKStoreReviewContro
 
 ### How Our Unified 1–5 Star + 3-Intent Smart Routing Funnel Works
 
-In [`BelongFeedbackAndVotingSheet`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart) (Tab 2: **Share Feedback**), the sheet collects a star rating and a literal intent. As of 22 October 2026 the note is written to Firestore. The drawing is a placeholder storage URL and is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)):
+In [`BelongFeedbackAndVotingSheet`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart) (Tab 2: **Share Feedback**), the sheet collects a star rating and a literal intent. As of 22 October 2026 the note is written to Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)):
 
 ```mermaid
 flowchart TD

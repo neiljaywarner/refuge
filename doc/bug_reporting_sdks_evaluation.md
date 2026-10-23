@@ -11,7 +11,7 @@
 For our soft launch and community cutover, **our custom in-house module (`FeedbackDrawingCanvas` + `PrivateFeedbackRouter`) is the winner and default choice**:
 - **\$0/month forever** (Zero vendor lock-in or recurring SaaS invoices).
 - **100% Cross-Platform**: Works identically across Flutter Web, PWA, Android, and iOS.
-- **Privacy First**: Private notes are written to Firestore. The drawing is a placeholder storage URL, not a file on a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+- **Privacy First**: Private notes are written to Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 - **Zero Heavy SDK Dependencies**: No bloated native binaries or binary tracking SDKs running in the background.
 
 If leadership desires deeper automated crash symbolication and network stack traces in the future, **Sentry** is the recommended external SDK due to its generous **permanent free tier** (5,000 errors/month free) and official `sentry_flutter` web support, accessible via an opt-in toggle in the app Settings screen.
@@ -61,5 +61,5 @@ If leadership desires deeper automated crash symbolication and network stack tra
   - Lets members draw arrows, circles, and handwritten notes on captured screenshots.
   - Offers 6 calm, sensory-friendly palette colors and fine/bold pen widths.
   - Automatically formats GitHub-flavored markdown with embedded image attachment.
-  - The note is stored in Firestore. The drawing URL is a placeholder and is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+  - The note is stored in Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
   - 17/17 automated unit and Patrol widget tests passing green.

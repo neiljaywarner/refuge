@@ -77,7 +77,7 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
   - **Literal Status Badges**: `WIP · Shipping Before Oct 31`, `Planned · Community Prioritized`, `Community Idea · Vote to Prioritize`.
   - **Reactive Live Stream Sync**: Multi-user concurrency updates vote counters across clients in real-time.
   - **Sensory Soundscapes Item**: Upcoming ambient sound generator with nature noise loops.
-  - **Private Feedback Seam**: The note is written to Firestore. The drawing is a placeholder storage URL, not a GitHub issue attachment ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+  - **Private Feedback Seam**: The note is written to Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 - **Associated GitHub Issues**: [#302: Epic: Community Feature Roadmap & Real-Time Voting](https://github.com/neiljaywarner/refuge/issues/302), [#303: Multi-User Concurrency E2E Test & Reactive Broadcast Sync](https://github.com/neiljaywarner/refuge/issues/303), [#304: Reset Feature Vote Counts to Zero](https://github.com/neiljaywarner/refuge/issues/304)
 - **Associated Wiki Page**: [Questions for Product Users and Alpha Testers](https://github.com/neiljaywarner/refuge/wiki/Questions-for-Product-Users-and-Alpha-Testers)
 
