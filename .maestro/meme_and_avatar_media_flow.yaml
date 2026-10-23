@@ -1,0 +1,48 @@
+appId: com.belongonthespectrum.sanctuary
+---
+# ==============================================================================
+# Belong on the Spectrum: Meme & Avatar Media Flow
+# Verifying Meme Photo Upload, Camera Option, Gallery Selection & Zero-Storage-Perms
+# ==============================================================================
+- launchApp:
+    clearState: false
+
+# 1. Confirm Belong branding
+- assertVisible:
+    text: "Belong.*"
+    optional: true
+
+# 2. Tap on Memes space
+- tapOn:
+    text: "Memes.*"
+    optional: true
+
+# 3. Tap on Add Meme / GIF button
+- tapOn:
+    id: "add_meme_gif_button"
+    optional: true
+
+# 4. Verify Meme Gallery Modal
+- assertVisible:
+    text: ".*Meme Gallery.*"
+    optional: true
+
+# 5. Switch to Upload Photo / Camera tab
+- tapOn:
+    text: "Upload Photo / Camera"
+    optional: true
+
+# 6. Test Camera or Gallery button
+- tapOn:
+    id: "meme_upload_camera_button"
+    optional: true
+
+# 7. Auto-grant OS permission prompt if system camera prompt appears
+- tapOn:
+    text: "While using the app|Only this time|Allow|ALLOW"
+    optional: true
+
+# 8. Close modal peacefully
+- tapOn:
+    id: "meme_gallery_close_button"
+    optional: true

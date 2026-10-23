@@ -36,6 +36,7 @@ dependencies:
   cloud_firestore: ^7.0.0
   gap: ^3.0.1
   http: ^1.2.0
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:

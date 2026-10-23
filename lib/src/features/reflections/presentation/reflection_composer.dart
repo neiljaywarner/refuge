@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../../core/widgets/calm_media_image.dart';
 import '../../memes/domain/calm_meme.dart';
 import '../../memes/presentation/meme_gallery_modal.dart';
 
@@ -300,11 +301,12 @@ class ReflectionComposer extends HookWidget {
                         width: 24,
                         height: 24,
                         color: Colors.amber.withValues(alpha: 0.2),
-                        child: Image.network(
-                          attachedMeme.value!.imageUrl!,
+                        child: CalmMediaImage(
+                          imageUrl: attachedMeme.value!.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 14)),
+                          fallbackWidget: Center(
+                            child: Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 14)),
+                          ),
                         ),
                       ),
                     )

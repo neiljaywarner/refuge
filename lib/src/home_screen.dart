@@ -316,7 +316,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                raid: 0,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(

@@ -181,8 +181,8 @@ void main() {
           ),
           if (initialNotifications != null)
             belongNotificationsProvider.overrideWith(
-              (ref) => BelongNotificationsNotifier(
-                badgeService: ref.read(appLauncherBadgeServiceProvider),
+              () => BelongNotificationsNotifier(
+                badgeService: FakeLauncherBadgeService(),
                 initialList: initialNotifications,
               ),
             ),

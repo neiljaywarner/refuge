@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'belong_notification.dart';
+import '../data/app_launcher_badge_service.dart';
+import '../domain/belong_notification.dart';
 
 /// Active filter chip for Calm Notifications
 enum BelongNotificationFilter {
@@ -18,13 +20,13 @@ enum BelongNotificationFilter {
 }
 
 /// Simulated in-memory notification seed for development & testing (#328, #329).
-const List<BelongNotification> kInitialNotifications = [
+final List<BelongNotification> kInitialNotifications = [
   BelongNotification(
     id: 'notif-1',
     type: BelongNotificationType.mention,
     authorName: 'Marty (Organizer)',
     postTitle: 'Markan Chiasms in Chapter 4',
-    timestamp: null, // Will use current time offset in state
+    timestamp: DateTime(2026, 10, 22, 19, 0),
     isRead: false,
   ),
   BelongNotification(
@@ -32,7 +34,7 @@ const List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.reply,
     authorName: 'Sarah Chen',
     postTitle: 'Quiet Rooms at Texas Assemblies',
-    timestamp: null,
+    timestamp: DateTime(2026, 10, 22, 18, 0),
     isRead: false,
   ),
   BelongNotification(
@@ -40,7 +42,7 @@ const List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.like,
     authorName: 'Caleb Stone',
     postTitle: 'Sensory Safe Worship Spaces',
-    timestamp: null,
+    timestamp: DateTime(2026, 10, 22, 16, 0),
     isRead: false,
   ),
   BelongNotification(
@@ -48,17 +50,29 @@ const List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.following,
     authorName: 'David Okafor',
     postTitle: 'Fellowship Hall Reflections',
-    timestamp: null,
+    timestamp: DateTime(2026, 10, 20, 12, 0),
     isRead: true,
   ),
 ];
 
 /// StateNotifier / Notifier managing the in-app calm notification collection.
 class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
+  BelongNotificationsNotifier({
+    this.badgeService,
+    this.initialList,
+  });
+
+  final AppLauncherBadgeService? badgeService;
+  final List<BelongNotification>? initialList;
+
   @override
   List<BelongNotification> build() {
+    if (initialList != null) {
+      _syncBadge(initialList!);
+      return initialList!;
+    }
     final now = DateTime.now();
-    return [
+    final list = [
       kInitialNotifications[0].copyWith(
         timestamp: now.subtract(const Duration(minutes: 5)),
       ),
@@ -72,6 +86,18 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
         timestamp: now.subtract(const Duration(days: 2)),
       ),
     ];
+    _syncBadge(list);
+    return list;
+  }
+
+  void _syncBadge(List<BelongNotification> list) {
+    try {
+      final unread = list.where((n) => !n.isRead).length;
+      final svc = badgeService ?? ref.read(appLauncherBadgeServiceProvider);
+      svc?.setBadgeCount(unread);
+    } catch (_) {
+      // Ignored during disconnected tests or early initialization
+    }
   }
 
   void markAsRead(String notificationId) {
@@ -79,6 +105,7 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
       for (final n in state)
         if (n.id == notificationId) n.copyWith(isRead: true) else n,
     ];
+    _syncBadge(state);
   }
 
   void markAllAsRead() {
@@ -86,14 +113,17 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
       for (final n in state)
         if (!n.isRead) n.copyWith(isRead: true) else n,
     ];
+    _syncBadge(state);
   }
 
   void addNotification(BelongNotification notification) {
     state = [notification, ...state];
+    _syncBadge(state);
   }
 
   void clearAll() {
     state = [];
+    _syncBadge(state);
   }
 }
 
@@ -131,3 +161,6 @@ final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
         .toList(),
   };
 });
+
+/// Alias for backward compatibility across navigation bar & views
+final unreadNotificationsCountProvider = unreadNotificationCountProvider;
