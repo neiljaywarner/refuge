@@ -513,7 +513,9 @@ class BelongMessagesView extends HookWidget {
                           key: Key('direct_message_timestamp_${msg.id}'),
                           style: TextStyle(
                             color: msg.isFromMe
-                                ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
+                                ? theme.colorScheme.onPrimary.withValues(
+                                    alpha: 0.7,
+                                  )
                                 : theme.colorScheme.onSurfaceVariant,
                             fontSize: 10,
                           ),
@@ -652,6 +654,7 @@ class _NewMessageModalSheet extends HookWidget {
                   ],
                 ),
                 IconButton(
+                  tooltip: 'Close new message',
                   icon: const Icon(Icons.close, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
                 ),

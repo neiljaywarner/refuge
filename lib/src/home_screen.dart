@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -435,6 +436,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
         titleSpacing: 8,
         title: InkWell(
           key: const Key('belong_app_bar_title_tap_target'),
+          excludeFromSemantics: true,
           borderRadius: BorderRadius.circular(8),
           onTap: () {
             final now = DateTime.now();
@@ -473,31 +475,35 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              brand.shortName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                      Semantics(
+                        container: true,
+                        explicitChildNodes: true,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                brand.shortName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 5),
-                          const Text(
-                            'Refuge',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                            const SizedBox(width: 5),
+                            const Text(
+                              'Refuge',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -514,16 +520,24 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           ),
                           const SizedBox(width: 5),
                           Flexible(
-                            child: Text(
-                              'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color
-                                    ?.withValues(alpha: 0.7),
+                            child: Semantics(
+                              identifier:
+                                  'active_sensory_theme_${currentMode.name}',
+                              label:
+                                  'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
+                              container: true,
+                              explicitChildNodes: true,
+                              child: Text(
+                                'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color
+                                      ?.withValues(alpha: 0.7),
+                                ),
                               ),
                             ),
                           ),
@@ -557,63 +571,49 @@ class RefugeHomeScreen extends HookConsumerWidget {
               }
             },
           ),
-          PopupMenuButton<SensoryMode>(
-            tooltip: 'Sensory Themes',
-            icon: const Icon(Icons.brightness_6_rounded, size: 20),
-            onSelected: setSensoryMode,
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: SensoryMode.clean,
-                child: Row(
-                  children: [
-                    Text('☀️', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Clean'),
-                  ],
+          Semantics(
+            identifier: 'sensory_theme_toggle_button',
+            child: PopupMenuButton<SensoryMode>(
+              tooltip: 'Sensory Themes',
+              icon: const Icon(Icons.brightness_6_rounded, size: 20),
+              onSelected: setSensoryMode,
+              itemBuilder: (context) => [
+                _sensoryThemeMenuItem(
+                  mode: SensoryMode.clean,
+                  emoji: '☀️',
+                  label: 'Clean',
                 ),
-              ),
-              PopupMenuItem(
-                value: SensoryMode.sage,
-                child: Row(
-                  children: [
-                    Text('🌿', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Sage'),
-                  ],
+                _sensoryThemeMenuItem(
+                  mode: SensoryMode.sage,
+                  emoji: '🌿',
+                  label: 'Sage',
                 ),
-              ),
-              PopupMenuItem(
-                value: SensoryMode.charcoal,
-                child: Row(
-                  children: [
-                    Text('🌙', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Dark'),
-                  ],
+                _sensoryThemeMenuItem(
+                  mode: SensoryMode.charcoal,
+                  emoji: '🌙',
+                  label: 'Dark',
                 ),
-              ),
-              PopupMenuItem(
-                value: SensoryMode.contrast,
-                child: Row(
-                  children: [
-                    Text('👁️', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Contrast'),
-                  ],
+                _sensoryThemeMenuItem(
+                  mode: SensoryMode.contrast,
+                  emoji: '👁️',
+                  label: 'Contrast',
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          IconButton(
-            tooltip: 'About Belong',
-            icon: const Icon(Icons.info_outline_rounded, size: 18),
-            visualDensity: VisualDensity.compact,
-            onPressed: () => showAboutRefugeDialog(
-              context,
-              primaryColor: primaryColor,
-              isContrast: isContrast,
-              currentMode: currentMode,
-              onSelectMode: setSensoryMode,
+          Semantics(
+            identifier: 'about_belong_info_button',
+            child: IconButton(
+              tooltip: 'About Belong',
+              icon: const Icon(Icons.info_outline_rounded, size: 18),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => showAboutRefugeDialog(
+                context,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                currentMode: currentMode,
+                onSelectMode: setSensoryMode,
+              ),
             ),
           ),
           Padding(
@@ -877,25 +877,42 @@ class _BelongSubHeaderBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
       child: Row(
         children: [
-          ChoiceChip(
-            key: const Key('subnav_feed_tab'),
-            label: const Text('Feed'),
+          _webSemanticsTarget(
+            label: 'Feed',
+            identifier: 'feed_tab',
             selected: isFeed,
-            onSelected: (_) => onSelectFeed(),
+            onTap: onSelectFeed,
+            child: ChoiceChip(
+              key: const Key('subnav_feed_tab'),
+              label: const Text('Feed'),
+              selected: isFeed,
+              onSelected: (_) => onSelectFeed(),
+            ),
           ),
           const SizedBox(width: 8),
-          ChoiceChip(
-            key: const Key('subnav_spaces_tab'),
-            label: const Text('Spaces'),
+          _webSemanticsTarget(
+            label: 'Spaces',
+            identifier: 'spaces_tab',
             selected: isSpaces,
-            onSelected: (_) => onSelectSpaces(),
+            onTap: onSelectSpaces,
+            child: ChoiceChip(
+              key: const Key('subnav_spaces_tab'),
+              label: const Text('Spaces'),
+              selected: isSpaces,
+              onSelected: (_) => onSelectSpaces(),
+            ),
           ),
           const Spacer(),
-          ActionChip(
-            key: const Key('open_feedback_and_voting_button'),
-            avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
-            label: const Text('Vote & Feedback'),
-            onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+          _webSemanticsTarget(
+            label: 'Vote & Feedback',
+            identifier: 'vote_feedback_button',
+            onTap: () => BelongFeedbackAndVotingSheet.show(context),
+            child: ActionChip(
+              key: const Key('open_feedback_and_voting_button'),
+              avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
+              label: const Text('Vote & Feedback'),
+              onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+            ),
           ),
         ],
       ),
@@ -997,5 +1014,67 @@ void _showCreatePostModal({
         ),
       );
     },
+  );
+}
+
+/// Web Maestro reads semantics identifiers even when a chip's label text is
+/// dropped from the accessibility tree. Mobile keeps the chip unchanged.
+Widget _webSemanticsTarget({
+  required String label,
+  required String identifier,
+  required VoidCallback onTap,
+  bool selected = false,
+  required Widget child,
+}) {
+  if (!kIsWeb) return child;
+  return Semantics(
+    label: label,
+    identifier: identifier,
+    button: true,
+    selected: selected,
+    container: true,
+    excludeSemantics: true,
+    onTap: onTap,
+    child: child,
+  );
+}
+
+/// Short accessible name for [mode]. Menu items and the calm-tech status
+/// use the same words so Maestro can assert the theme that was just chosen.
+String _sensoryThemeLabel(SensoryMode mode) => switch (mode) {
+  SensoryMode.clean => 'Clean',
+  SensoryMode.sage => 'Sage',
+  SensoryMode.charcoal => 'Dark',
+  SensoryMode.contrast => 'Contrast',
+};
+
+/// Popup rows whose accessible name is exactly [label].
+///
+/// The emoji is decorative. Leaving it in the semantics tree makes the
+/// menuitem's name "🌙 Dark", which Maestro's full-string match will not
+/// hit with `tapOn: "Dark"`. [PopupMenuItem] already exposes a tappable
+/// menuitem; a tooltip on the row would only prepend another copy of the
+/// same word.
+PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
+  required SensoryMode mode,
+  required String emoji,
+  required String label,
+}) {
+  return PopupMenuItem<SensoryMode>(
+    value: mode,
+    child: Semantics(
+      identifier: 'sensory_theme_${mode.name}',
+      label: label,
+      button: true,
+      child: Row(
+        children: [
+          ExcludeSemantics(
+            child: Text(emoji, style: const TextStyle(fontSize: 14)),
+          ),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    ),
   );
 }

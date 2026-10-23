@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -173,16 +174,24 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
         ),
         TabBar(
           controller: tabController,
-          tabs: const [
+          tabs: [
             Tab(
-              key: Key('tab_feature_voting'),
-              icon: Icon(Icons.thumb_up_alt_outlined, size: 18),
-              text: 'Vote on Features (WIP)',
+              key: const Key('tab_feature_voting'),
+              child: _webLabeledButton(
+                label: 'Vote on Features (WIP)',
+                identifier: 'tab_vote_on_features',
+                onTap: () => tabController.animateTo(0),
+                child: const Text('Vote on Features (WIP)'),
+              ),
             ),
             Tab(
-              key: Key('tab_private_feedback'),
-              icon: Icon(Icons.chat_bubble_outline_rounded, size: 18),
-              text: 'Share Feedback',
+              key: const Key('tab_private_feedback'),
+              child: _webLabeledButton(
+                label: 'Share Feedback',
+                identifier: 'tab_share_feedback',
+                onTap: () => tabController.animateTo(1),
+                child: const Text('Share Feedback'),
+              ),
             ),
           ],
         ),
@@ -274,41 +283,53 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                Tooltip(
-                                  message: item.userVoted
-                                      ? 'Remove your vote'
-                                      : (item.votes == 0
-                                            ? 'Be the first to vote'
-                                            : 'Vote for this feature'),
-                                  child: OutlinedButton.icon(
-                                    key: Key('vote_button_${item.id}'),
-                                    style: OutlinedButton.styleFrom(
-                                      backgroundColor: item.userVoted
-                                          ? colorScheme.primaryContainer
-                                          : null,
-                                    ),
-                                    onPressed: () {
-                                      HapticFeedback.selectionClick();
-                                      ref
-                                          .read(featureVotingProvider.notifier)
-                                          .toggleVote(item.id);
-                                    },
-                                    icon: Icon(
-                                      item.userVoted
-                                          ? Icons.thumb_up
-                                          : Icons.thumb_up_alt_outlined,
-                                      size: 16,
-                                      color: item.userVoted
-                                          ? colorScheme.primary
-                                          : null,
-                                    ),
-                                    label: Text(
-                                      '${item.votes}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                _webLabeledButton(
+                                  label: item.userVoted
+                                      ? 'Remove vote for ${item.title}'
+                                      : 'Vote for ${item.title}',
+                                  identifier: 'vote_${item.id}',
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    ref
+                                        .read(featureVotingProvider.notifier)
+                                        .toggleVote(item.id);
+                                  },
+                                  child: Tooltip(
+                                    message: item.userVoted
+                                        ? 'Remove vote for ${item.title}'
+                                        : 'Vote for ${item.title}',
+                                    child: OutlinedButton.icon(
+                                      key: Key('vote_button_${item.id}'),
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: item.userVoted
+                                            ? colorScheme.primaryContainer
+                                            : null,
+                                      ),
+                                      onPressed: () {
+                                        HapticFeedback.selectionClick();
+                                        ref
+                                            .read(
+                                              featureVotingProvider.notifier,
+                                            )
+                                            .toggleVote(item.id);
+                                      },
+                                      icon: Icon(
+                                        item.userVoted
+                                            ? Icons.thumb_up
+                                            : Icons.thumb_up_alt_outlined,
+                                        size: 16,
                                         color: item.userVoted
                                             ? colorScheme.primary
                                             : null,
+                                      ),
+                                      label: Text(
+                                        '${item.votes}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: item.userVoted
+                                              ? colorScheme.primary
+                                              : null,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -625,8 +646,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             OutlinedButton.icon(
                               key: const Key('open_feedback_drawing_button'),
                               onPressed: () async {
+                                final screenshot =
+                                    await captureEnclosingScreenshot(context);
+                                if (!context.mounted) return;
                                 final result = await FeedbackDrawingDialog.show(
                                   context,
+                                  screenshotBytes: screenshot,
                                 );
                                 if (result != null && result.isNotEmpty) {
                                   drawingAttachment.value = result;
@@ -647,11 +672,16 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 color: colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Text(
-                                submittedMessage.value!,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onPrimaryContainer,
-                                  fontWeight: FontWeight.w600,
+                              child: Semantics(
+                                identifier: 'feedback_submit_result',
+                                label: submittedMessage.value,
+                                container: true,
+                                child: Text(
+                                  submittedMessage.value!,
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onPrimaryContainer,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
@@ -789,4 +819,24 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       ],
     );
   }
+}
+
+/// Web Maestro drops some button labels. This node keeps [label] as the
+/// accessible name and [identifier] as the resource id. Mobile is unchanged.
+Widget _webLabeledButton({
+  required String label,
+  required String identifier,
+  required VoidCallback onTap,
+  required Widget child,
+}) {
+  if (!kIsWeb) return child;
+  return Semantics(
+    label: label,
+    identifier: identifier,
+    button: true,
+    container: true,
+    excludeSemantics: true,
+    onTap: onTap,
+    child: child,
+  );
 }

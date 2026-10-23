@@ -1,0 +1,104 @@
+url: http://127.0.0.1:8095
+name: Belong web spaces and member directory
+---
+# Read-only. Does not publish, RSVP, or open external links.
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 120000
+- tapOn:
+    id: "spaces_tab"
+- extendedWaitUntil:
+    visible: ".*General Chat.*"
+    timeout: 20000
+- assertVisible: ".*Memes.*"
+- scrollUntilVisible:
+    element: ".*Online Resources.*"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 40
+- takeScreenshot: web_directory_spaces
+
+- tapOn:
+    text: ".*General Chat.*"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "feed_tab"
+    timeout: 15000
+- assertVisible: "Belong"
+- tapOn:
+    id: "spaces_tab"
+
+- scrollUntilVisible:
+    element: ".*Memes.*"
+    direction: DOWN
+    timeout: 20000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible:
+      id: "feed_tab"
+    timeout: 15000
+- tapOn:
+    id: "spaces_tab"
+
+- scrollUntilVisible:
+    element: ".*Members Section & Directory.*"
+    direction: DOWN
+    timeout: 30000
+    visibilityPercentage: 40
+- tapOn: ".*Members Section & Directory.*"
+- extendedWaitUntil:
+    visible: ".*Member Directory.*"
+    timeout: 15000
+- assertVisible: "Search by name, church, or comfort badge..."
+- takeScreenshot: web_directory_members
+
+- tapOn: "Organizers"
+- extendedWaitUntil:
+    visible: ".*Marty.*"
+    timeout: 10000
+- tapOn: "All"
+- tapOn: "Search by name, church, or comfort badge..."
+- inputText: "Sarah"
+- extendedWaitUntil:
+    visible: ".*Sarah Chen.*"
+    timeout: 10000
+- takeScreenshot: web_directory_search_sarah
+- tapOn: ".*Sarah Chen.*"
+- extendedWaitUntil:
+    visible: "Close Profile"
+    timeout: 10000
+- takeScreenshot: web_directory_profile
+- tapOn: "Close Profile"
+- tapOn: "Back to Spaces"
+
+- scrollUntilVisible:
+    element: ".*Actually Autistic Events.*"
+    direction: DOWN
+    timeout: 30000
+    visibilityPercentage: 40
+- tapOn: ".*Actually Autistic Events.*"
+- extendedWaitUntil:
+    visible: ".*Sensory-Friendly.*"
+    timeout: 15000
+- assertVisible: "Actually Autistic Events"
+- assertVisible: "Back to Spaces"
+- takeScreenshot: web_directory_events
+- tapOn: "Back to Spaces"
+
+- scrollUntilVisible:
+    element: ".*Community Guidelines.*"
+    direction: DOWN
+    timeout: 30000
+    visibilityPercentage: 40
+- tapOn: ".*Community Guidelines.*"
+- extendedWaitUntil:
+    visible: "Return to Feed"
+    timeout: 15000
+- assertVisible: "Return to Feed"
+- takeScreenshot: web_directory_guidelines
+- tapOn: "Return to Feed"
+- assertVisible:
+    id: "feed_tab"
+- assertVisible: "Belong"

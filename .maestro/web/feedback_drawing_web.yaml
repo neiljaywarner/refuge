@@ -1,0 +1,65 @@
+url: http://127.0.0.1:8095
+name: Belong web feedback screenshot drawing
+---
+# Submits one praise note with a scribble. Owner approved this test data.
+# Contact email is left empty.
+- launchApp
+- extendedWaitUntil:
+    visible: "Vote & Feedback"
+    timeout: 120000
+- tapOn:
+    id: "vote_feedback_button"
+- extendedWaitUntil:
+    visible:
+      id: "tab_share_feedback"
+    timeout: 20000
+- tapOn:
+    id: "tab_share_feedback"
+- extendedWaitUntil:
+    visible: "Share what you love.*"
+    timeout: 15000
+- tapOn: "Share what you love.*"
+- inputText: "hi from bot"
+- tapOn: "Draw / Annotate on Screenshot"
+- extendedWaitUntil:
+    visible: "Annotating a screenshot of this screen. Draw on it, then attach."
+    timeout: 20000
+- assertVisible: "Feedback drawing canvas, 0 strokes"
+- takeScreenshot: web_feedback_screenshot_open
+# Strokes approximate the letters "hi" on the canvas.
+- swipe:
+    start: "42%, 62%"
+    end: "42%, 50%"
+    duration: 400
+- swipe:
+    start: "42%, 56%"
+    end: "48%, 56%"
+    duration: 300
+- swipe:
+    start: "48%, 62%"
+    end: "48%, 50%"
+    duration: 400
+- swipe:
+    start: "54%, 62%"
+    end: "54%, 50%"
+    duration: 400
+- swipe:
+    start: "58%, 52%"
+    end: "58%, 62%"
+    duration: 300
+- extendedWaitUntil:
+    visible: "Feedback drawing canvas, [1-9].*"
+    timeout: 10000
+- takeScreenshot: web_feedback_scribble
+- tapOn: "Attach Scribble"
+- extendedWaitUntil:
+    visible: "Remove scribble"
+    timeout: 15000
+- takeScreenshot: web_feedback_attached
+- tapOn: "Share Praise & Encouragement"
+- extendedWaitUntil:
+    visible:
+      id: "feedback_submit_result"
+    timeout: 30000
+- takeScreenshot: web_feedback_submitted
+- tapOn: "Close"

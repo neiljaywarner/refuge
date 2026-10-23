@@ -1,0 +1,30 @@
+url: http://127.0.0.1:8095
+name: Belong web feature voting
+---
+# Casts one real vote. Owner approved submitting this test data.
+- launchApp
+- extendedWaitUntil:
+    visible: "Vote & Feedback"
+    timeout: 120000
+- tapOn:
+    id: "vote_feedback_button"
+- extendedWaitUntil:
+    visible: "Belong Roadmap & Feedback"
+    timeout: 20000
+- assertVisible:
+    id: "tab_vote_on_features"
+- scrollUntilVisible:
+    element:
+      id: "vote_wip-direct-messages"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 40
+- takeScreenshot: web_voting_before
+- tapOn:
+    id: "vote_wip-direct-messages"
+- extendedWaitUntil:
+    visible: "Remove vote for Direct Messages \\(Msgs Tab\\)"
+    timeout: 20000
+- assertVisible: "Remove vote for Direct Messages \\(Msgs Tab\\)"
+- takeScreenshot: web_voting_after
+- tapOn: "Close"

@@ -1,0 +1,82 @@
+url: http://127.0.0.1:8095
+name: grokbot direct message notification
+tags:
+  - known-gap
+---
+# Credentials come from the shell environment. No addresses are stored here.
+# Expects both accounts to already exist.
+#
+# Known product gap: https://github.com/neiljaywarner/refuge/issues/441
+# The new-message picker only lists sample members, so a real account cannot
+# be selected. Tagged known-gap so directory runs
+# (`maestro test .maestro/web`) and the default suite in
+# tool/run_maestro_verification.dart skip this file. See .maestro/config.yaml.
+# Passing this file path still runs it.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Member Profile.*"
+    commands:
+      - tapOn: ".*Member Profile.*"
+      - tapOn: "Sign Out"
+      - extendedWaitUntil:
+          visible: "Sign In"
+          timeout: 20000
+
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${GROKBOT1_EMAIL}
+- tapOn: "Password"
+- inputText: ${GROKBOT_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 40000
+- assertNotVisible: "Verify your email"
+- tapOn: "(?s).*Messages.*"
+- extendedWaitUntil:
+    visible: "Direct Messages"
+    timeout: 15000
+- tapOn: "New Message"
+- extendedWaitUntil:
+    visible: "Search members \\(single or multiple\\).*"
+    timeout: 15000
+- tapOn: "Search members \\(single or multiple\\).*"
+- inputText: "grokbot2"
+- takeScreenshot: grokbot1_dm_recipient_search
+- tapOn: "Send Message"
+- takeScreenshot: grokbot1_dm_send_result
+- tapOn:
+    text: "Close new message"
+    optional: true
+- tapOn: ".*Member Profile.*"
+- tapOn: "Sign Out"
+- extendedWaitUntil:
+    visible: "Sign In"
+    timeout: 20000
+
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${GROKBOT2_EMAIL}
+- tapOn: "Password"
+- inputText: ${GROKBOT_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 40000
+- tapOn: "(?s).*Notifications.*"
+- extendedWaitUntil:
+    visible: "Mark all read"
+    timeout: 15000
+- takeScreenshot: grokbot2_bell_after_dm
+- assertVisible: ".*sent you a direct message.*"

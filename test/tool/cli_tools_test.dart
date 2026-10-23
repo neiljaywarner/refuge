@@ -195,6 +195,29 @@ Current Battery Service state:
       final code = await runner.run(['--list']);
       expect(code, equals(0));
     });
+
+    test('known-gap tag is excluded from the default suite', () {
+      expect(
+        excludesFromDefaultSuite('''
+url: http://127.0.0.1:8095
+tags:
+  - known-gap
+---
+- launchApp
+'''),
+        isTrue,
+      );
+      expect(
+        excludesFromDefaultSuite('''
+appId: com.belongonthespectrum.sanctuary
+tags:
+  - regression
+---
+- launchApp
+'''),
+        isFalse,
+      );
+    });
   });
 
   group('OllamaSetupRunner', () {
