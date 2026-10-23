@@ -152,6 +152,50 @@ void main() {
       expect(profile.isIcocMember, isFalse);
     });
 
+    patrolWidgetTest('signs in successfully when typing a custom free-form church affiliation into the blank required field', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
+      final container = ProviderContainer(
+        overrides: [
+          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await $.pumpWidgetAndSettle(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: Scaffold(
+              body: MemberProfileDialog(),
+            ),
+          ),
+        ),
+      );
+
+      await $(const Key('profile_display_name_field')).enterText('London Disciple');
+      await $(const Key('profile_email_field')).enterText('london@belongonthespectrum.com');
+
+      // Enter a free-form custom ICOC congregation
+      await $(const Key('profile_church_affiliation_dropdown')).enterText('London International Church of Christ');
+      await $.pumpAndSettle();
+
+      // Tap save
+      await $(const Key('profile_save_sign_in_button')).tap();
+      await $.pumpAndSettle();
+
+      final profile = container.read(memberProfileProvider);
+      expect(profile.isSignedIn, isTrue);
+      expect(profile.displayName, 'London Disciple');
+      expect(profile.icocChurchAffiliation, 'London International Church of Christ');
+      expect(profile.isIcocMember, isTrue);
+    });
+
     patrolWidgetTest('renders accessible close button in header (#167)', ($) async {
       await $.pumpWidgetAndSettle(
         const ProviderScope(
