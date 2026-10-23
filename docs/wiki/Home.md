@@ -33,6 +33,7 @@ If you are new to the community or leading a transition from Circle.so, select y
 
 | Technical Resource | Summary |
 | :--- | :--- |
+| **[⭐ App Review Sentiment Audit, Competitive Benchmark & PWA/Mobile Star Rating UX](App-Review-Sentiment-Audit-and-Action-Plan)** | Findings from our 60-review Circle audit & 20-review Belong audit, our custom 1–5 Star + 3-Intent UX for PWA/Web/Mobile (#386), and the December v1.0 Android/iOS launch runbook (#385). |
 | **[🎨 Circle Post Creation Pattern & Calm Improvements](Circle-Post-Creation-Pattern-Improvement)** | Benchmarks Circle.so's `+` creation pattern, confirms strengths, and details calm-tech upgrades (intent tags, alt-text, autosave). |
 | **[⚙️ Android APK vs. Web PWA Technical Breakdown](Android-APK-vs-Web-PWA-Details)** | Comprehensive comparison of FCM channels vs Web Push, SQLite vs IndexedDB, cold starts, and WorkManager. |
 | **[🧭 UX Evaluation & Architecture Decision Records (ADRs 0001–0010)](UX-Evaluation-and-ADRs)** | Complete index of architectural ADRs, repository seams, and the calm-tech feedback model. |

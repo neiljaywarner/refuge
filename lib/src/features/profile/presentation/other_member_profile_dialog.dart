@@ -10,6 +10,9 @@ import '../../reflections/presentation/reflections_providers.dart';
 import '../../reflections/presentation/threaded_discussion_sheet.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
+import '../../../core/firebase/organizer_remote_config_service.dart';
+import '../../admin/data/admin_banning_repository.dart';
+import '../../profile/domain/member_profile.dart';
 import 'belong_members_directory_view.dart';
 
 /// Modal dialog/sheet displaying another member's profile, including:
@@ -46,6 +49,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
     final currentMode = ref.watch(sensoryThemeModeProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primary = Theme.of(context).colorScheme.primary;
+    final isAdmin = ref.watch(isAdminProvider);
 
     final activeTab = useState<String>('posts');
 
@@ -68,6 +72,8 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
           isIcocMember: true,
           comfortBadges: ['Community Member', 'Gentle fellowship'],
         );
+
+    final isBanned = ref.watch(isMemberBannedProvider(effectiveMember.name));
 
     final posts = postsAsync.value ?? <Post>[];
     final comments = commentsAsync.value ?? <Comment>[];
@@ -126,6 +132,33 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                         ),
                       ),
                     ),
+                    if (isAdmin) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        key: const Key('admin_mode_badge'),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.shield_rounded, size: 10, color: Colors.purple),
+                            SizedBox(width: 3),
+                            Text(
+                              'Admin View',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 Text(
@@ -155,6 +188,34 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (isBanned) ...[
+                Container(
+                  key: const Key('banned_member_banner'),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block_rounded, size: 16, color: Colors.redAccent),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'This user has been soft-deleted and banned from community fellowship.',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red[800] ?? Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               // Bio
               Text(
                 effectiveMember.bio,
@@ -437,6 +498,55 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
         ),
       ),
       actions: [
+        if (isAdmin) ...[
+          if (!isBanned)
+            TextButton.icon(
+              key: const Key('admin_ban_member_button'),
+              icon: const Icon(Icons.block_rounded, size: 16, color: Colors.redAccent),
+              label: const Text(
+                'Ban Member',
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () => _confirmBanMember(context, ref, effectiveMember),
+            )
+          else
+            TextButton.icon(
+              key: const Key('admin_unban_member_button'),
+              icon: const Icon(Icons.restore_rounded, size: 16, color: Colors.green),
+              label: const Text(
+                'Restore Member',
+                style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () async {
+                try {
+                  await ref
+                      .read(adminBanningRepositoryProvider)
+                      .unbanUser(effectiveMember.name);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${effectiveMember.name} restored to active fellowship.',
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to restore member: $e'),
+                        backgroundColor: Colors.redAccent,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+        ],
         TextButton(
           key: const Key('profile_done_button'),
           onPressed: () => Navigator.of(context).pop(),
@@ -444,6 +554,94 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
         ),
       ],
     );
+  }
+
+  static Future<void> _confirmBanMember(
+    BuildContext context,
+    WidgetRef ref,
+    DevFellowshipMember member,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.gavel_rounded, color: Colors.redAccent, size: 22),
+            SizedBox(width: 8),
+            Text('Soft-Delete & Ban Member', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to ban ${member.name}?\n\n'
+              'Their information will be moved to the remote DB soft-delete table '
+              '("soft_deleted_users") and quarantined from fellowship interactions.',
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            key: const Key('cancel_ban_button'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const Key('confirm_ban_button'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Confirm Ban'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final currentProfile = ref.read(memberProfileProvider);
+      final adminEmail = currentProfile.email;
+
+      try {
+        await ref.read(adminBanningRepositoryProvider).banUser(
+              userId: member.name,
+              displayName: member.name,
+              bannedByAdminEmail: adminEmail,
+              reason: 'Violating calm community guidelines',
+              additionalData: {
+                'role': member.role,
+                'bio': member.bio,
+                'churchAffiliation': member.churchAffiliation,
+                'comfortBadges': member.comfortBadges,
+                'tagline': member.tagline,
+              },
+            );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${member.name} moved to remote soft-delete table.'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to ban member: $e'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
   }
 
   static String _formatTime(DateTime dt) {

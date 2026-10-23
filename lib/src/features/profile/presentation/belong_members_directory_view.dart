@@ -156,7 +156,7 @@ class _BelongMembersDirectoryViewState
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Back to Spaces',
-          onPressed: widget.onBackToSpaces ?? () => Navigator.maybePop(context),
+          onPressed: widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
         ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,

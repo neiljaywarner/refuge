@@ -86,11 +86,15 @@ class FeedbackDrawingCanvas extends StatefulWidget {
   FeedbackDrawingCanvasState createState() => FeedbackDrawingCanvasState();
 }
 
-class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas> {
+class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
+    with AutomaticKeepAliveClientMixin {
   late List<DrawnStroke> _strokes;
   DrawnStroke? _activeStroke;
   Color _selectedColor = Colors.redAccent;
   double _selectedWidth = 4.0;
+
+  @override
+  bool get wantKeepAlive => true;
 
   static const List<Color> palette = [
     Colors.redAccent,
@@ -166,6 +170,7 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final bgColor = widget.backgroundColor ??
         (Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1A1F24)
@@ -323,25 +328,25 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final responsiveCanvasHeight = (screenHeight * 0.42).clamp(150.0, 260.0);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.draw_rounded, color: theme.colorScheme.primary, size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Draw / Annotate Feedback',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
+              Icon(Icons.draw_rounded, color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Draw / Annotate Feedback',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
               IconButton(
                 visualDensity: VisualDensity.compact,
@@ -362,7 +367,7 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
           FeedbackDrawingCanvas(
             key: _canvasKey,
             initialStrokes: widget.initialStrokes,
-            canvasHeight: 260,
+            canvasHeight: responsiveCanvasHeight,
             onChanged: (strokes) {
               setState(() {
                 _hasStrokes = strokes.isNotEmpty;
@@ -370,15 +375,16 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
             },
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               TextButton(
                 key: const Key('drawing_dialog_cancel_button'),
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('Cancel'),
               ),
-              const SizedBox(width: 8),
               FilledButton.icon(
                 key: const Key('drawing_dialog_attach_button'),
                 onPressed: _hasStrokes
