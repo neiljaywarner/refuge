@@ -45,36 +45,41 @@ class ReflectionCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              InkWell(
-                key: Key('author_tap_target_${post.id}'),
-                borderRadius: BorderRadius.circular(4),
-                onTap: () => OtherMemberProfileDialog.show(
-                  context,
-                  authorName: post.authorName,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 10,
-                        backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                        child: Text(
-                          _getInitials(post.authorName),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
+              Flexible(
+                child: InkWell(
+                  key: Key('author_tap_target_${post.id}'),
+                  borderRadius: BorderRadius.circular(4),
+                  onTap: () => OtherMemberProfileDialog.show(
+                    context,
+                    authorName: post.authorName,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 10,
+                          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                          child: Text(
+                            _getInitials(post.authorName),
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        post.authorName,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            post.authorName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 
 /// Immutable snapshot of community organizer settings controlled via
 /// **Firebase Remote Config** (`docs/wiki/Organizer-Remote-Config-Guide.md`).
@@ -23,6 +24,7 @@ class OrganizerRemoteConfig {
     required this.androidAppDownloadUrl,
     required this.iosAppDownloadUrl,
     this.previewModeEnabled = false,
+    this.adminEmailsCsv = 'neilwarner@gmail.com',
   });
 
   factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) => OrganizerRemoteConfig(
@@ -34,6 +36,7 @@ class OrganizerRemoteConfig {
     androidAppDownloadUrl: '',
     iosAppDownloadUrl: '',
     previewModeEnabled: false,
+    adminEmailsCsv: 'neilwarner@gmail.com',
   );
 
   static const String _defaultGuidelines = '''
@@ -52,6 +55,22 @@ class OrganizerRemoteConfig {
   final String androidAppDownloadUrl;
   final String iosAppDownloadUrl;
   final bool previewModeEnabled;
+  final String adminEmailsCsv;
+
+  /// Parsed list of administrator email addresses, normalized to lower case.
+  List<String> get adminEmails => adminEmailsCsv
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .where((e) => e.isNotEmpty)
+      .toList();
+
+  /// Returns true if [email] is present in the admin emails list.
+  bool isAdminEmail(String? email) {
+    if (email == null) return false;
+    final normalized = email.trim().toLowerCase();
+    if (normalized.isEmpty) return false;
+    return adminEmails.contains(normalized);
+  }
 
   OrganizerRemoteConfig copyWith({
     String? welcomeTitle,
@@ -62,6 +81,7 @@ class OrganizerRemoteConfig {
     String? androidAppDownloadUrl,
     String? iosAppDownloadUrl,
     bool? previewModeEnabled,
+    String? adminEmailsCsv,
   }) => OrganizerRemoteConfig(
     welcomeTitle: welcomeTitle ?? this.welcomeTitle,
     welcomeMessage: welcomeMessage ?? this.welcomeMessage,
@@ -71,6 +91,7 @@ class OrganizerRemoteConfig {
     androidAppDownloadUrl: androidAppDownloadUrl ?? this.androidAppDownloadUrl,
     iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
     previewModeEnabled: previewModeEnabled ?? this.previewModeEnabled,
+    adminEmailsCsv: adminEmailsCsv ?? this.adminEmailsCsv,
   );
 }
 
@@ -97,6 +118,7 @@ class OrganizerRemoteConfigService {
       final iosUrl = rc.getString('ios_app_download_url').trim();
       final enabledStr = rc.getString('organizer_banner_enabled').trim();
       final previewModeStr = rc.getString('organizer_preview_mode_enabled').trim();
+      final adminEmailsStr = rc.getString('admin_emails_csv').trim();
 
       return OrganizerRemoteConfig(
         welcomeTitle: title.isNotEmpty ? title : defaults.welcomeTitle,
@@ -113,6 +135,9 @@ class OrganizerRemoteConfigService {
         previewModeEnabled: previewModeStr.isEmpty
             ? defaults.previewModeEnabled
             : previewModeStr.toLowerCase() == 'true',
+        adminEmailsCsv: adminEmailsStr.isNotEmpty
+            ? adminEmailsStr
+            : defaults.adminEmailsCsv,
       );
     } catch (_) {
       return defaults;
@@ -123,4 +148,13 @@ class OrganizerRemoteConfigService {
 final organizerRemoteConfigProvider = Provider<OrganizerRemoteConfig>((ref) {
   final brand = ref.watch(communityBrandConfigProvider);
   return OrganizerRemoteConfigService(brand).readCurrent();
+});
+
+/// Evaluates whether the currently signed-in user is recognized as an Admin
+/// based on the Firebase Remote Config [adminEmailsCsv] list.
+final isAdminProvider = Provider<bool>((ref) {
+  final remoteConfig = ref.watch(organizerRemoteConfigProvider);
+  final profile = ref.watch(memberProfileProvider);
+  if (!profile.isSignedIn) return false;
+  return remoteConfig.isAdminEmail(profile.email);
 });

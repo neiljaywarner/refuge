@@ -259,15 +259,8 @@ class _BelongMembersDirectoryViewState
                         member: member,
                         onTap: () => OtherMemberProfileDialog.show(
                           context,
-                          member: MemberProfile(
-                            displayName: member.name,
-                            email: '',
-                            bio: member.bio,
-                            comfortBadges: member.comfortBadges,
-                            isSignedIn: false,
-                            icocChurchAffiliation: member.churchAffiliation,
-                            tagline: member.tagline,
-                          ),
+                          authorName: member.name,
+                          member: member,
                         ),
                       ),
                       const SizedBox(height: 10),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'belong_notification.dart';
+import '../domain/belong_notification.dart';
 
 /// Active filter chip for Calm Notifications
 enum BelongNotificationFilter {
@@ -18,13 +19,13 @@ enum BelongNotificationFilter {
 }
 
 /// Simulated in-memory notification seed for development & testing (#328, #329).
-const List<BelongNotification> kInitialNotifications = [
+final List<BelongNotification> kInitialNotifications = [
   BelongNotification(
     id: 'notif-1',
     type: BelongNotificationType.mention,
     authorName: 'Marty (Organizer)',
     postTitle: 'Markan Chiasms in Chapter 4',
-    timestamp: null, // Will use current time offset in state
+    timestamp: DateTime(2026, 10, 22, 12, 0),
     isRead: false,
   ),
   BelongNotification(
@@ -32,7 +33,7 @@ const List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.reply,
     authorName: 'Sarah Chen',
     postTitle: 'Quiet Rooms at Texas Assemblies',
-    timestamp: null,
+    timestamp: DateTime(2026, 10, 22, 11, 30),
     isRead: false,
   ),
   BelongNotification(
@@ -40,7 +41,7 @@ const List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.like,
     authorName: 'Caleb Stone',
     postTitle: 'Sensory Safe Worship Spaces',
-    timestamp: null,
+    timestamp: DateTime(2026, 10, 22, 10, 0),
     isRead: false,
   ),
   BelongNotification(
@@ -48,7 +49,7 @@ const List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.following,
     authorName: 'David Okafor',
     postTitle: 'Fellowship Hall Reflections',
-    timestamp: null,
+    timestamp: DateTime(2026, 10, 20, 14, 0),
     isRead: true,
   ),
 ];
@@ -112,6 +113,9 @@ final unreadNotificationCountProvider = Provider<int>((ref) {
   final list = ref.watch(belongNotificationsProvider);
   return list.where((n) => !n.isRead).length;
 });
+
+/// Alias for backward compatibility across navigation bar and views.
+final unreadNotificationsCountProvider = unreadNotificationCountProvider;
 
 /// Computed provider filtering the notification feed according to active filter chip.
 final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
