@@ -87,11 +87,16 @@ class CalmNotificationsView extends HookConsumerWidget {
               ],
             ),
           ),
-          IconButton(
-            key: const Key('notification-preferences-button'),
-            icon: const Icon(Icons.tune_rounded),
-            tooltip: 'Calm Notification Preferences',
-            onPressed: () => CalmNotificationPreferencesSheet.show(context),
+          Semantics(
+            button: true,
+            identifier: 'notification-preferences-button',
+            label: 'Calm Notification Preferences',
+            child: IconButton(
+              key: const Key('notification-preferences-button'),
+              icon: const Icon(Icons.tune_rounded),
+              tooltip: 'Calm Notification Preferences',
+              onPressed: () => CalmNotificationPreferencesSheet.show(context),
+            ),
           ),
         ],
       ),

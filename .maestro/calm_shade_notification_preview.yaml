@@ -1,0 +1,40 @@
+appId: com.belongonthespectrum.sanctuary
+name: "Calm shade notification preview (debug APK)"
+tags:
+  - notifications
+  - fcm
+  - regression
+---
+- setPermissions:
+    permissions:
+      notifications: allow
+
+- launchApp:
+    clearState: false
+
+- startRecording: calm_shade_preview.mp4
+
+- tapOn:
+    id: "bottom_nav_tab_notifications"
+- assertVisible: "Notifications"
+
+- tapOn:
+    id: "notification-preferences-button"
+
+- assertVisible: "Calm Notification Ethics"
+
+- tapOn:
+    id: "preview-calm-shade-notification-button"
+
+- pressKey: Home
+
+- swipe:
+    start: "50%, 2%"
+    end: "50%, 55%"
+    duration: 400
+
+- assertVisible:
+    text: ".*Fellow Member.*"
+    optional: true
+
+- stopRecording
