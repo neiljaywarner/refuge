@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import '../../../core/presentation/system_insets.dart';
 import '../application/sensory_soundscape_service.dart';
 import '../domain/sensory_soundscape.dart';
 
@@ -12,8 +14,10 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CalmSoundscapeSheet(),
+      builder: (context) =>
+          const SystemBottomInset(child: CalmSoundscapeSheet()),
     );
   }
 
@@ -113,7 +117,9 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFF2E6B56).withAlpha(25)
-                          : theme.colorScheme.surfaceContainerHighest.withAlpha(128),
+                          : theme.colorScheme.surfaceContainerHighest.withAlpha(
+                              128,
+                            ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isSelected

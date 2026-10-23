@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../../core/presentation/system_insets.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
 import '../domain/message_thread.dart';
 
@@ -8,11 +9,7 @@ import '../domain/message_thread.dart';
 /// Supports message searching, thread list with avatars, dates, subjects,
 /// and cute "Add Msg" compose modal with multi-recipient autocomplete member selection.
 class BelongMessagesView extends HookWidget {
-  const BelongMessagesView({
-    super.key,
-    this.initialThreads,
-    this.onBackToHome,
-  });
+  const BelongMessagesView({super.key, this.initialThreads, this.onBackToHome});
 
   final List<MessageThread>? initialThreads;
   final VoidCallback? onBackToHome;
@@ -73,39 +70,42 @@ class BelongMessagesView extends HookWidget {
       showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
+        useSafeArea: true,
         backgroundColor: Colors.transparent,
-        builder: (ctx) => _NewMessageModalSheet(
-          onSendMessage: (recipients, subject, content) {
-            final now = DateTime.now();
-            final participantName = recipients.length == 1
-                ? recipients.first.name
-                : '${recipients.first.name} & ${recipients.length - 1} others';
-            final initials = recipients.first.initials;
+        builder: (ctx) => SystemBottomInset(
+          child: _NewMessageModalSheet(
+            onSendMessage: (recipients, subject, content) {
+              final now = DateTime.now();
+              final participantName = recipients.length == 1
+                  ? recipients.first.name
+                  : '${recipients.first.name} & ${recipients.length - 1} others';
+              final initials = recipients.first.initials;
 
-            final newThread = MessageThread(
-              id: 'thread-${now.millisecondsSinceEpoch}',
-              participantName: participantName,
-              avatarInitials: initials,
-              subject: subject.trim().isEmpty ? null : subject.trim(),
-              messageType: recipients.length > 1 ? 'Group' : 'Direct',
-              recipientNames: recipients.map((r) => r.name).toList(),
-              previewSnippet: content,
-              lastActivity: now,
-              unreadCount: 0,
-              messages: [
-                DirectMessage(
-                  id: 'msg-${now.millisecondsSinceEpoch}',
-                  senderName: 'You',
-                  isFromMe: true,
-                  content: content,
-                  sentAt: now,
-                ),
-              ],
-            );
+              final newThread = MessageThread(
+                id: 'thread-${now.millisecondsSinceEpoch}',
+                participantName: participantName,
+                avatarInitials: initials,
+                subject: subject.trim().isEmpty ? null : subject.trim(),
+                messageType: recipients.length > 1 ? 'Group' : 'Direct',
+                recipientNames: recipients.map((r) => r.name).toList(),
+                previewSnippet: content,
+                lastActivity: now,
+                unreadCount: 0,
+                messages: [
+                  DirectMessage(
+                    id: 'msg-${now.millisecondsSinceEpoch}',
+                    senderName: 'You',
+                    isFromMe: true,
+                    content: content,
+                    sentAt: now,
+                  ),
+                ],
+              );
 
-            threads.value = [newThread, ...threads.value];
-            activeThread.value = newThread;
-          },
+              threads.value = [newThread, ...threads.value];
+              activeThread.value = newThread;
+            },
+          ),
         ),
       );
     }
@@ -136,10 +136,7 @@ class BelongMessagesView extends HookWidget {
           IconButton(
             key: const Key('add_new_message_button'),
             tooltip: 'New Message',
-            icon: const Icon(
-              Icons.maps_ugc_rounded,
-              size: 23,
-            ),
+            icon: const Icon(Icons.maps_ugc_rounded, size: 23),
             onPressed: openNewMessageModal,
           ),
           const SizedBox(width: 4),
@@ -156,7 +153,10 @@ class BelongMessagesView extends HookWidget {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Search messages, subjects, or members...',
-                hintStyle: TextStyle(fontSize: 12.5, color: Colors.grey.shade500),
+                hintStyle: TextStyle(
+                  fontSize: 12.5,
+                  color: Colors.grey.shade500,
+                ),
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 suffixIcon: searchQuery.value.isNotEmpty
                     ? IconButton(
@@ -171,14 +171,19 @@ class BelongMessagesView extends HookWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+                  borderSide: BorderSide(
+                    color: theme.dividerColor.withValues(alpha: 0.15),
+                  ),
                 ),
               ),
               onChanged: (val) => searchQuery.value = val,
@@ -196,7 +201,11 @@ class BelongMessagesView extends HookWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.spa_outlined, color: Color(0xFF2E6B56), size: 18),
+                const Icon(
+                  Icons.spa_outlined,
+                  color: Color(0xFF2E6B56),
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -232,7 +241,10 @@ class BelongMessagesView extends HookWidget {
                 ),
                 Text(
                   '${filteredThreads.length} conversation${filteredThreads.length == 1 ? '' : 's'}',
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, color: Colors.grey.shade500),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
                 ),
               ],
             ),
@@ -250,26 +262,41 @@ class BelongMessagesView extends HookWidget {
                             : 'No conversations yet.\nTap the message icon above to start one.',
                         key: const Key('empty_messages_placeholder'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ),
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     itemCount: filteredThreads.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
+                    separatorBuilder: (_, _) =>
+                        const Divider(height: 1, indent: 64),
                     itemBuilder: (context, index) {
                       final thread = filteredThreads[index];
                       return ListTile(
                         key: Key('thread-${thread.id}'),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         leading: CircleAvatar(
                           backgroundColor: primary.withValues(alpha: 0.12),
                           foregroundColor: primary,
                           child: Text(
                             thread.avatarInitials,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                         title: Row(
@@ -277,14 +304,22 @@ class BelongMessagesView extends HookWidget {
                             Expanded(
                               child: Text(
                                 thread.participantName,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13.5,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (thread.messageType != null) ...[
                               Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1.5,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade200,
                                   borderRadius: BorderRadius.circular(6),
@@ -302,19 +337,29 @@ class BelongMessagesView extends HookWidget {
                             Text(
                               thread.formattedDate(),
                               key: Key('thread_date_${thread.id}'),
-                              style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: Colors.grey.shade500,
+                              ),
                             ),
                             if (thread.unreadCount > 0) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: primary,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
                                   '${thread.unreadCount}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
@@ -329,8 +374,12 @@ class BelongMessagesView extends HookWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: thread.unreadCount > 0 ? Colors.black87 : Colors.grey.shade600,
-                              fontWeight: thread.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                              color: thread.unreadCount > 0
+                                  ? Colors.black87
+                                  : Colors.grey.shade600,
+                              fontWeight: thread.unreadCount > 0
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
                               fontSize: 12,
                             ),
                           ),
@@ -370,8 +419,9 @@ class BelongMessagesView extends HookWidget {
           children: [
             CircleAvatar(
               radius: 16,
-              backgroundColor:
-                  theme.colorScheme.primary.withValues(alpha: 0.12),
+              backgroundColor: theme.colorScheme.primary.withValues(
+                alpha: 0.12,
+              ),
               child: Text(
                 thread.avatarInitials,
                 style: TextStyle(
@@ -398,8 +448,10 @@ class BelongMessagesView extends HookWidget {
                   if (thread.subject != null)
                     Text(
                       thread.subject!,
-                      style:
-                          TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                 ],
@@ -418,8 +470,9 @@ class BelongMessagesView extends HookWidget {
               itemBuilder: (context, index) {
                 final msg = thread.messages[index];
                 return Align(
-                  alignment:
-                      msg.isFromMe ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: msg.isFromMe
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.symmetric(
@@ -509,15 +562,14 @@ class BelongMessagesView extends HookWidget {
 /// Compose modal sheet supporting single or multi-recipient autocomplete selection
 /// with Member Name as title and Member Profile Tagline as subtitle.
 class _NewMessageModalSheet extends HookWidget {
-  const _NewMessageModalSheet({
-    required this.onSendMessage,
-  });
+  const _NewMessageModalSheet({required this.onSendMessage});
 
   final void Function(
     List<DevFellowshipMember> recipients,
     String subject,
     String content,
-  ) onSendMessage;
+  )
+  onSendMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -532,7 +584,9 @@ class _NewMessageModalSheet extends HookWidget {
 
     // Filter available members excluding already selected ones
     final availableMembers = kDevFellowshipMembers.where((m) {
-      final notAlreadySelected = !selectedRecipients.value.any((s) => s.name == m.name);
+      final notAlreadySelected = !selectedRecipients.value.any(
+        (s) => s.name == m.name,
+      );
       final q = recipientQuery.value.trim().toLowerCase();
       if (q.isEmpty) return notAlreadySelected;
       final nameMatches = m.name.toLowerCase().contains(q);
@@ -589,7 +643,10 @@ class _NewMessageModalSheet extends HookWidget {
                   return InputChip(
                     key: Key('selected_recipient_chip_${m.name}'),
                     avatar: CircleAvatar(
-                      child: Text(m.initials, style: const TextStyle(fontSize: 10)),
+                      child: Text(
+                        m.initials,
+                        style: const TextStyle(fontSize: 10),
+                      ),
                     ),
                     label: Text(m.name, style: const TextStyle(fontSize: 11.5)),
                     onDeleted: () {
@@ -616,7 +673,10 @@ class _NewMessageModalSheet extends HookWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -649,24 +709,39 @@ class _NewMessageModalSheet extends HookWidget {
                         visualDensity: VisualDensity.compact,
                         leading: CircleAvatar(
                           radius: 14,
-                          child: Text(member.initials, style: const TextStyle(fontSize: 10)),
+                          child: Text(
+                            member.initials,
+                            style: const TextStyle(fontSize: 10),
+                          ),
                         ),
                         // Title: Member Name
                         title: Text(
                           member.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
                         ),
                         // Subtitle: Member's Profile Tagline!
                         subtitle: Text(
                           member.effectiveTagline,
                           key: Key('member_tagline_${member.name}'),
-                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Colors.grey.shade600,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: const Icon(Icons.add_circle_outline_rounded, size: 16),
+                        trailing: const Icon(
+                          Icons.add_circle_outline_rounded,
+                          size: 16,
+                        ),
                         onTap: () {
-                          selectedRecipients.value = [...selectedRecipients.value, member];
+                          selectedRecipients.value = [
+                            ...selectedRecipients.value,
+                            member,
+                          ];
                           recipientSearchController.clear();
                           recipientQuery.value = '';
                         },
@@ -687,7 +762,10 @@ class _NewMessageModalSheet extends HookWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -722,20 +800,29 @@ class _NewMessageModalSheet extends HookWidget {
                 backgroundColor: primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               icon: const Icon(Icons.send_rounded, size: 16),
-              label: const Text('Send Message', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Send Message',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               onPressed: () {
                 if (selectedRecipients.value.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please select at least one recipient.')),
+                    const SnackBar(
+                      content: Text('Please select at least one recipient.'),
+                    ),
                   );
                   return;
                 }
                 if (contentController.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please write a message content.')),
+                    const SnackBar(
+                      content: Text('Please write a message content.'),
+                    ),
                   );
                   return;
                 }

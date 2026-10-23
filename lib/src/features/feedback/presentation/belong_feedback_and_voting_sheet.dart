@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/presentation/system_insets.dart';
 import '../../storage/data/storage_repository.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
@@ -88,9 +89,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (_) => SafeArea(
-        top: false,
-        bottom: true,
+      builder: (_) => SystemBottomInset(
         child: FractionallySizedBox(
           heightFactor: 0.88,
           child: BelongFeedbackAndVotingSheet(initialTabIndex: initialTabIndex),
@@ -134,7 +133,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final features = ref.watch(featureVotingProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final bottomInset = SystemInsets.bottom(MediaQuery.of(context));
     final listPadding = EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset);
 
     return Column(
