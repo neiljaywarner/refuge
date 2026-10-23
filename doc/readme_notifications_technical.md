@@ -100,7 +100,7 @@ The central immutable notification entity (`equatable`):
 ## 4. State Management (Riverpod)
 
 The notifications architecture uses hook-compatible Riverpod providers:
-1. `belongNotificationsProvider`: `StateNotifierProvider<BelongNotificationsNotifier, List<BelongNotification>>` maintaining the notification list and updating the launcher badge via `AppLauncherBadgeService`.
+1. `belongNotificationsProvider`: `StateNotifierProvider<BelongNotificationsNotifier, List<BelongNotification>>` maintaining the in-app notification list. It also calls `AppLauncherBadgeService`, which has no native handler ([#411](https://github.com/neiljaywarner/refuge/issues/411)).
 2. `unreadNotificationsCountProvider`: Derived `Provider<int>` counting notifications where `!isRead`.
 3. `notificationActiveFilterProvider`: `StateProvider<BelongNotificationFilter>` controlling active filtering tab (`inbox`, `mentions`, `threads`, `following`).
 4. `filteredNotificationsProvider`: Derived `Provider<List<BelongNotification>>` calculating the active subset for rendering.
@@ -112,11 +112,11 @@ The notifications architecture uses hook-compatible Riverpod providers:
 ## 5. Native Platform Synchronization
 
 ### 5.1 App Launcher Badges (`AppLauncherBadgeService`)
-Synchronizes the unread count to the physical device launcher icon:
+The Dart service calls a MethodChannel. There is no native handler, so the phone launcher dot does not change ([#411](https://github.com/neiljaywarner/refuge/issues/411)):
 - **MethodChannel**: `com.belongonthespectrum.sanctuary/badge`
 - **Method**: `setBadgeCount({'count': int})`
-- **Clearing**: When `count == 0`, automatically clears launcher badge.
-- **Resilience**: Web and unsupported desktop runners catch channel errors gracefully with zero app disruption.
+- **In-app only**: "Mark all read" clears the in-app unread count. It does not clear a launcher icon dot.
+- **FCM**: permission requests set `badge: false`. Calm FCM delivery is not fully verified on device.
 
 ### 5.2 FCM & Mobile Web Push (`NotificationPermissionsService`)
 - Mobile Safari on iOS cannot grant Web Push in standard browser tabs. The service detects `isIosWebWithoutPwa` and guides users to Add to Home Screen first.

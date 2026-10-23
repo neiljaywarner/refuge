@@ -55,7 +55,7 @@ Each notification tile contains:
 - Located in the upper right of the app bar.
 - Features both a clean checkbox and a textual button (`Mark all read`).
 - **Smart Grey-Out**: When there are zero unread notifications, the checkbox and button automatically grey out and become non-clickable, providing clear visual closure that your inbox is peaceful and up to date.
-- Tapping `Mark all read` immediately clears the bottom navigation badge and updates the native phone launcher badge.
+- Tapping `Mark all read` clears the in-app unread count. It does not update the phone launcher icon. The badge MethodChannel has no native handler ([#411](https://github.com/neiljaywarner/refuge/issues/411)).
 
 ---
 
@@ -76,7 +76,7 @@ Tapping the tune icon (🎛️) in the upper right opens the **Calm Notification
 
 | Platform | Notification Delivery | Behavior & Notes |
 | :--- | :--- | :--- |
-| **Android APK** | FCM + Local Engine | Full support for background push, quiet hours, and launcher badge counter dots. |
+| **Android APK** | FCM permission request sets `badge: false` | In-app bell exists. Launcher dots and calm FCM delivery are not fully verified on device ([#411](https://github.com/neiljaywarner/refuge/issues/411)). |
 | **Android Chrome PWA** | Web Push | Full support when added to home screen or run in Chrome. |
 | **iOS Safari PWA** | APNs Web Push | Apple requires adding Belong to the Home Screen via Safari (*"Add to Home Screen"*) to enable push alerts. Regular Safari tabs cannot receive notifications. |
 | **Desktop Web** | Browser Notifications | Silent browser toasts conforming to OS Do-Not-Disturb settings. |

@@ -62,7 +62,7 @@ On native iOS and Android, apps often call `in_app_review` (`SKStoreReviewContro
 
 ### How Our Unified 1–5 Star + 3-Intent Smart Routing Funnel Works
 
-In [`BelongFeedbackAndVotingSheet`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart) (Tab 2: **Share Feedback**), we combine an industry-standard **1–5 Star Rating Bar** (`How do you like Belong on the Spectrum?`) with **Explicit Literal Meaning Pills** and **Automatic 3-Intent Routing**:
+In [`BelongFeedbackAndVotingSheet`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart) (Tab 2: **Share Feedback**), the sheet collects a star rating and a literal intent. As of 22 October 2026 the note is written to Firestore. The drawing is a placeholder storage URL and is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)):
 
 ```mermaid
 flowchart TD
@@ -71,7 +71,7 @@ flowchart TD
     User --> StarBar
 
     StarBar -->|"⭐⭐⭐⭐⭐ (5 ★ · Love it! Works great)\n⭐⭐⭐⭐ (4 ★ · Good experience)"| Happy["💚 Works Great (Public Praise)\nAuto-selected · Encouragement & Store Review Ready"]
-    StarBar -->|"⭐⭐⭐ (3 ★ · It's okay, could be better)"| Neutral["💡 Idea / Tweak (Private Suggestion)\nAuto-selected · Routed to Private Triage (belong_feedback)"]
+    StarBar -->|"⭐⭐⭐ (3 ★ · It's okay, could be better)"| Neutral["💡 Idea / Tweak (Private Suggestion)\nAuto-selected · Firestore member_feedback (#407)"]
     StarBar -->|"⭐⭐ (2 ★ · Frustrating / Needs work)\n⭐ (1 ★ · Broken / Very confusing)"| Sad["🛠️ Bug / Confusing (Private Triage)\nAuto-selected · Scribble Screenshot + Private Triage"]
 
     Happy --> Store["Saved to Firestore 'member_feedback' with rating (4–5) & sentiment='happy'"]
@@ -87,9 +87,9 @@ flowchart TD
 | :--- | :--- | :--- | :--- |
 | **⭐⭐⭐⭐⭐ (`5 ★`)** | `5 ★ · Love it! Works great` | `💚 Works Great` | Public Praise & Organizer Encouragement (`rating: 5`) |
 | **⭐⭐⭐⭐ (`4 ★`)** | `4 ★ · Good experience` | `💚 Works Great` | Public Praise & Organizer Encouragement (`rating: 4`) |
-| **⭐⭐⭐ (`3 ★`)** | `3 ★ · It's okay, could be better` | `💡 Idea / Tweak` | Private Triage Queue (`neiljaywarner/belong_feedback`, `rating: 3`) |
-| **⭐⭐ (`2 ★`)** | `2 ★ · Frustrating / Needs work` | `🛠️ Bug / Confusing` | Private Triage Queue (`neiljaywarner/belong_feedback`, `rating: 2`) |
-| **⭐ (`1 ★`)** | `1 ★ · Broken / Very confusing` | `🛠️ Bug / Confusing` | Private Triage Queue (`neiljaywarner/belong_feedback`, `rating: 1`) |
+| **⭐⭐⭐ (`3 ★`)** | `3 ★ · It's okay, could be better` | `💡 Idea / Tweak` | Firestore `member_feedback` (`rating: 3`). Not a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)) |
+| **⭐⭐ (`2 ★`)** | `2 ★ · Frustrating / Needs work` | `🛠️ Bug / Confusing` | Firestore `member_feedback` (`rating: 2`). Not a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)) |
+| **⭐ (`1 ★`)** | `1 ★ · Broken / Very confusing` | `🛠️ Bug / Confusing` | Firestore `member_feedback` (`rating: 1`). Not a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)) |
 
 * **Bidirectional Sync**: Tapping any star (`1★–5★`) automatically selects the matching intent card below it, and tapping any intent card (`Works Great`, `Idea / Tweak`, `Bug / Confusing`) automatically syncs the star bar (`5★`, `3★`, or `1★`) if not already in range.
 * **Zero-Configuration CLI Compatibility**: Every submission writes both `rating` (`1..5`) and `sentiment` (`happy` / `neutral` / `sad`) to Firestore (`member_feedback`), which [`tool/analyze_app_reviews.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/analyze_app_reviews.dart) ingests directly via `--in-app=<path>.json`.

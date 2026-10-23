@@ -22,7 +22,7 @@ While both targets share **98% of business logic, domain models, Riverpod state 
 | :--- | :--- | :--- |
 | **Notification Engine** | Native Firebase Cloud Messaging (FCM) + Android Notification Channels | W3C Web Push API + Service Worker (`firebase-messaging-sw.js`) |
 | **Background Wakeup When Killed** | High-priority FCM intents wake app process in background | Limited; mobile browsers aggressively kill service workers to save battery |
-| **App Icon Launcher Badges** | Native hardware badge counter (`flutter_app_badger`) on Nova/Pixel launcher | Badging API (`navigator.setAppBadge`) supported on Android WebAPK, not mobile Safari |
+| **App Icon Launcher Badges** | Not verified. The Dart MethodChannel has no native handler ([#411](https://github.com/neiljaywarner/refuge/issues/411)) | Not verified. Do not treat the Badging API as confirmed on device |
 | **Notification Sound & Vibration** | Custom calm sound files in `res/raw/` + custom haptic vibration patterns | Browser-default chime or silent; cannot play custom local audio when screen off |
 | **iOS Notification Support** | Native APNs (scheduled for Mid-Nov v1.1) | **Only works if user adds to Home Screen** (iOS 16.4+ requirement) |
 | **Local Data Persistence** | Direct disk SQLite (`sqflite`/`drift`) & Android `SharedPreferences` | Browser IndexedDB (`idb`) & CacheStorage API |
@@ -55,7 +55,7 @@ While both targets share **98% of business logic, domain models, Riverpod state 
       vibrationPattern = longArrayOf(0, 80, 80, 80) // Gentle double-tap
   }
   ```
-- **Killed-State Delivery**: When a user swipes Belong out of their Android Recent Apps list, the Android OS terminates the Flutter UI isolate. However, when an FCM message arrives with `priority: high`, the native Android FCM client (`FirebaseMessagingService`) wakes up a background thread, executes native Dart background entrypoints, displays the heads-up notification, and increments the hardware launcher badge counter via `flutter_app_badger`.
+- **Killed-state delivery is not fully verified.** FCM permission requests set `badge: false`. The launcher-dot MethodChannel has no native handler, and `flutter_app_badger` is not the live badge path. Device checks are open in [#411](https://github.com/neiljaywarner/refuge/issues/411).
 - **Sensory Sound Overrides**: The native APK can bind custom calm audio chimes packaged in `android/app/src/main/res/raw/calm_chime.mp3`, completely bypassing harsh system alert klaxons.
 
 #### Web PWA Behavior:

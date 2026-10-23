@@ -4,15 +4,17 @@
 > **Status**: Living Engineering Architecture & Data Dictionary  
 > **Target Audiences**: Organizers, Mentors, Student Apprentices, Backend Engineers  
 
+> **Live on `main` (22 October 2026).** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+
 ---
 
 ## 1. Executive Summary & Under-the-Hood Map
 
 **Belong on the Spectrum** (powered by **Refuge / Sanctuary**) is built with a **pluggable multi-backend architecture** (ADR-0009). The frontend consumes repositories (`PostRepository`, `FeatureVotingRepository`, `AuthRepository`) through Riverpod providers, allowing seamless operation across:
 
-1. **Cloud Firestore / Firebase** (Flagship alpha/beta production data store).
-2. **Serverpod RPC & PostgreSQL** (`refuge4serverpod_server/` for high-throughput typed Dart backend services).
-3. **Appwrite Cloud** (Stage 2 OAuth2 migration target vetted in ADR-0009).
+1. **Serverpod RPC & PostgreSQL** (default post backend on `main`).
+2. **Cloud Firestore / Firebase** (second copy of posts, plus profiles, votes, and feedback notes).
+3. **Appwrite** (on `main` via [PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`; off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set; [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed).
 4. **Deterministic In-Memory Repositories** (Local dev, BDD widget tests, and CI/CD with zero cloud dependencies).
 
 ```
@@ -29,8 +31,8 @@
             │                       │                         │
             ▼                       ▼                         ▼
 ┌──────────────────────┐  ┌───────────────────┐  ┌───────────────────────┐
-│   Cloud Firestore    │  │ Serverpod RPC     │  │ Appwrite / In-Memory  │
-│   (Production Cloud) │  │ (Dart + Postgres) │  │ (Local Dev & Tests)   │
+│   Serverpod RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
+│   (Default posts)    │  │ (Second copy)     │  │ Appwrite opt-in only  │
 └──────────────────────┘  └───────────────────┘  └───────────────────────┘
 ```
 
