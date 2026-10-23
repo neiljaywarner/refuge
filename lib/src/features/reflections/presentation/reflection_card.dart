@@ -46,42 +46,59 @@ class ReflectionCard extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                child: InkWell(
-                  key: Key('author_tap_target_${post.id}'),
-                  borderRadius: BorderRadius.circular(4),
-                  onTap: () => OtherMemberProfileDialog.show(
-                    context,
-                    authorName: post.authorName,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                          child: Text(
-                            _getInitials(post.authorName),
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: InkWell(
+                        key: Key('author_tap_target_${post.id}'),
+                        borderRadius: BorderRadius.circular(4),
+                        onTap: () => OtherMemberProfileDialog.show(
+                          context,
+                          authorName: post.authorName,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircleAvatar(
+                                radius: 10,
+                                backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                                child: Text(
+                                  _getInitials(post.authorName),
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  post.authorName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            post.authorName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Text(
+                      post.formattedDate(),
+                      key: Key('post_timestamp_${post.id}'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isContrast
+                            ? Colors.white70
+                            : Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Row(

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/formatting/relative_date.dart';
+
 /// Represents a single message exchange in a direct message thread.
 @immutable
 class DirectMessage {
@@ -16,6 +18,11 @@ class DirectMessage {
   final bool isFromMe;
   final String content;
   final DateTime sentAt;
+
+  /// Same relative or calendar label as [MessageThread.formattedDate],
+  /// using this message's [sentAt].
+  String formattedDate([DateTime? clockNow]) =>
+      formatRelativeDate(sentAt, clockNow);
 }
 
 /// A conversation thread between members in the Belong community.
@@ -48,34 +55,9 @@ class MessageThread {
   final List<DirectMessage> messages;
 
   /// Returns friendly relative date formatting:
-  /// e.g. "Just now", "15m ago", "2 hrs ago", "2 days ago", "Sep 7th".
-  String formattedDate([DateTime? clockNow]) {
-    final now = clockNow ?? DateTime.now();
-    final diff = now.difference(lastActivity);
-
-    if (diff.isNegative || diff.inSeconds < 60) {
-      return 'Just now';
-    }
-    if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
-    }
-    if (diff.inHours < 24) {
-      final h = diff.inHours;
-      return '$h hr${h == 1 ? '' : 's'} ago';
-    }
-    if (diff.inDays < 7) {
-      final d = diff.inDays;
-      return '$d day${d == 1 ? '' : 's'} ago';
-    }
-
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    final month = months[lastActivity.month - 1];
-    final day = lastActivity.day;
-    return '$month $day';
-  }
+  /// e.g. "Just now", "15m ago", "2 hrs ago", "3 days ago", "Sep 7".
+  String formattedDate([DateTime? clockNow]) =>
+      formatRelativeDate(lastActivity, clockNow);
 
   MessageThread copyWith({
     String? id,

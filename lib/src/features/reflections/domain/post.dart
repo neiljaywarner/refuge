@@ -1,3 +1,5 @@
+import '../../../core/formatting/relative_date.dart';
+
 /// Domain model representing an unhurried reflection with intent, tone, and optional calm media/GIF.
 class Post {
   final String id;
@@ -25,6 +27,10 @@ class Post {
     this.isDemo = false,
     this.isSaved = false,
   });
+
+  /// Same relative or calendar label as a direct message, using [timestamp].
+  String formattedDate([DateTime? clockNow]) =>
+      formatRelativeDate(timestamp, clockNow);
 
   Post copyWith({
     String? id,

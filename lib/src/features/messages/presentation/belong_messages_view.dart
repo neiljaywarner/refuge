@@ -435,12 +435,27 @@ class BelongMessagesView extends HookWidget {
                           : const Color(0xFFF1F3F4),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Text(
-                      msg.content,
-                      style: TextStyle(
-                        color: msg.isFromMe ? Colors.white : Colors.black87,
-                        fontSize: 13,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          msg.content,
+                          style: TextStyle(
+                            color: msg.isFromMe ? Colors.white : Colors.black87,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          msg.formattedDate(),
+                          key: Key('direct_message_timestamp_${msg.id}'),
+                          style: TextStyle(
+                            color: msg.isFromMe ? Colors.white70 : Colors.black54,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
