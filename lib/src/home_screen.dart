@@ -316,7 +316,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                raid: 0,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -417,401 +416,401 @@ class RefugeHomeScreen extends HookConsumerWidget {
       appBar: AppBar(
         elevation: 0.5,
         title: InkWell(
-          key: const Key('belong_app_bar_title_tap_target'),
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            final now = DateTime.now();
-            if (easterEggLastTap.value == null ||
-                now.difference(easterEggLastTap.value!).inSeconds > 4) {
-              easterEggTapCount.value = 1;
-            } else {
-              easterEggTapCount.value++;
-            }
-            easterEggLastTap.value = now;
-
-            if (easterEggTapCount.value >= 7) {
-              easterEggTapCount.value = 0;
-              ObservabilityEasterEggDialog.show(context);
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.asset(
-                    brand.logoAssetPath,
-                    key: const Key('belong_header_logo'),
-                    width: 28,
-                    height: 28,
-                    errorBuilder: (_, _, _) =>
-                        const Text('♾️', style: TextStyle(fontSize: 18)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            brand.shortName,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Refuge',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isLiveServerpod
-                                  ? const Color(0xFF4CAF50)
-                                  : const Color(0xFF68A67D),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Flexible(
-                            child: Text(
-                              'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color
-                                    ?.withValues(alpha: 0.7),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            key: const Key('home_high_contrast_toggle_button'),
-            tooltip: isContrast
-                ? 'Switch to Sage Theme'
-                : 'Switch to High Contrast',
-            icon: Icon(
-              isContrast ? Icons.contrast_rounded : Icons.circle_outlined,
-              color: isContrast ? Colors.yellow : null,
-              size: 20,
-            ),
-            onPressed: () {
-              if (themeNotifier != null) {
-                themeNotifier!.toggleHighContrast();
+            key: const Key('belong_app_bar_title_tap_target'),
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              final now = DateTime.now();
+              if (easterEggLastTap.value == null ||
+                  now.difference(easterEggLastTap.value!).inSeconds > 4) {
+                easterEggTapCount.value = 1;
               } else {
-                ref.read(sensoryThemeModeProvider.notifier).toggleHighContrast();
+                easterEggTapCount.value++;
+              }
+              easterEggLastTap.value = now;
+
+              if (easterEggTapCount.value >= 7) {
+                easterEggTapCount.value = 0;
+                ObservabilityEasterEggDialog.show(context);
               }
             },
-          ),
-          PopupMenuButton<SensoryMode>(
-            tooltip: 'Sensory Themes',
-            icon: const Icon(Icons.brightness_6_rounded, size: 20),
-            onSelected: setSensoryMode,
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: SensoryMode.clean,
-                child: Row(
-                  children: [
-                    Text('☀️', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Clean'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: SensoryMode.sage,
-                child: Row(
-                  children: [
-                    Text('🌿', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Sage'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: SensoryMode.charcoal,
-                child: Row(
-                  children: [
-                    Text('🌙', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Dark'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: SensoryMode.contrast,
-                child: Row(
-                  children: [
-                    Text('👁️', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
-                    Text('Contrast'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          IconButton(
-            tooltip: 'About Belong',
-            icon: const Icon(Icons.info_outline_rounded, size: 18),
-            visualDensity: VisualDensity.compact,
-            onPressed: () => showAboutRefugeDialog(
-              context,
-              primaryColor: primaryColor,
-              isContrast: isContrast,
-              currentMode: currentMode,
-              onSelectMode: setSensoryMode,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            child: PopupMenuButton<String>(
-              key: const Key('home_top_bar_create_post_button'),
-              tooltip: 'Create post or image post (+)',
-              offset: const Offset(0, 40),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-                side: BorderSide(
-                  color: isContrast ? Colors.white : Theme.of(context).dividerColor,
-                ),
-              ),
-              onSelected: (action) {
-                if (action == 'create_post') {
-                  _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: false,
-                    onSubmit: submitPost,
-                  );
-                } else if (action == 'create_image_post') {
-                  _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: true,
-                    onSubmit: submitPost,
-                  );
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem<String>(
-                  key: const Key('menu_item_create_post'),
-                  value: 'create_post',
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.edit_note_rounded,
-                          color: primaryColor,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      brand.logoAssetPath,
+                      key: const Key('belong_header_logo'),
+                      width: 28,
+                      height: 28,
+                      errorBuilder: (_, _, _) =>
+                          const Text('♾️', style: TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'Create Post',
-                              style: TextStyle(
-                                fontSize: 13,
+                            Text(
+                              brand.shortName,
+                              style: const TextStyle(
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(
-                              'Share an unhurried thought or prayer',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Refuge',
                               style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isLiveServerpod
+                                    ? const Color(0xFF4CAF50)
+                                    : const Color(0xFF68A67D),
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color
+                                      ?.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            IconButton(
+              key: const Key('home_high_contrast_toggle_button'),
+              tooltip: isContrast
+                  ? 'Switch to Sage Theme'
+                  : 'Switch to High Contrast',
+              icon: Icon(
+                isContrast ? Icons.contrast_rounded : Icons.circle_outlined,
+                color: isContrast ? Colors.yellow : null,
+                size: 20,
+              ),
+              onPressed: () {
+                if (themeNotifier != null) {
+                  themeNotifier!.toggleHighContrast();
+                } else {
+                  ref.read(sensoryThemeModeProvider.notifier).toggleHighContrast();
+                }
+              },
+            ),
+            PopupMenuButton<SensoryMode>(
+              tooltip: 'Sensory Themes',
+              icon: const Icon(Icons.brightness_6_rounded, size: 20),
+              onSelected: setSensoryMode,
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: SensoryMode.clean,
+                  child: Row(
+                    children: [
+                      Text('☀️', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 8),
+                      Text('Clean'),
                     ],
                   ),
                 ),
-                const PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  key: const Key('menu_item_create_image_post'),
-                  value: 'create_image_post',
+                PopupMenuItem(
+                  value: SensoryMode.sage,
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          color: Colors.amber,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Create Image Post',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Share a meme, photo, or scripture art',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      Text('🌿', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 8),
+                      Text('Sage'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: SensoryMode.charcoal,
+                  child: Row(
+                    children: [
+                      Text('🌙', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 8),
+                      Text('Dark'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: SensoryMode.contrast,
+                  child: Row(
+                    children: [
+                      Text('👁️', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 8),
+                      Text('Contrast'),
                     ],
                   ),
                 ),
               ],
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  shape: BoxShape.circle,
+            ),
+            IconButton(
+              tooltip: 'About Belong',
+              icon: const Icon(Icons.info_outline_rounded, size: 18),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => showAboutRefugeDialog(
+                context,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                currentMode: currentMode,
+                onSelectMode: setSensoryMode,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: PopupMenuButton<String>(
+                key: const Key('home_top_bar_create_post_button'),
+                tooltip: 'Create post or image post (+)',
+                offset: const Offset(0, 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(
+                    color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+                  ),
                 ),
-                child: Icon(
-                  Icons.add_rounded,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                onSelected: (action) {
+                  if (action == 'create_post') {
+                    _showCreatePostModal(
+                      context: context,
+                      selectedSpace: selectedSpace.value,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      isImagePost: false,
+                      onSubmit: submitPost,
+                    );
+                  } else if (action == 'create_image_post') {
+                    _showCreatePostModal(
+                      context: context,
+                      selectedSpace: selectedSpace.value,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      isImagePost: true,
+                      onSubmit: submitPost,
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    key: const Key('menu_item_create_post'),
+                    value: 'create_post',
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.edit_note_rounded,
+                            color: primaryColor,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Create Post',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Share an unhurried thought or prayer',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<String>(
+                    key: const Key('menu_item_create_image_post'),
+                    value: 'create_image_post',
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            color: Colors.amber,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Create Image Post',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Share a meme, photo, or scripture art',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.add_rounded,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ),
             ),
-          ),
-          if (!profile.isSignedIn)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-              child: FilledButton.tonalIcon(
-                key: const Key('home_top_bar_sign_in_button'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 0,
+            if (!profile.isSignedIn)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                child: FilledButton.tonalIcon(
+                  key: const Key('home_top_bar_sign_in_button'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 0,
+                    ),
+                    visualDensity: VisualDensity.compact,
                   ),
-                  visualDensity: VisualDensity.compact,
-                ),
-                onPressed: () => SimpleAuthScreen.show(context),
-                icon: const Icon(Icons.login_rounded, size: 15),
-                label: const Text(
-                  'Sign In',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InkWell(
-                key: const Key('belong_profile_avatar_button'),
-                borderRadius: BorderRadius.circular(999),
-                onTap: () => MemberProfileDialog.show(context),
-                child: Tooltip(
-                  message: 'Member Profile (${profile.displayName})',
-                  child: CircleAvatar(
-                    radius: 14,
-                    backgroundColor: isContrast
-                        ? Colors.yellow
-                        : primaryColor.withValues(alpha: 0.2),
-                    backgroundImage: (profile.avatarUrl != null &&
-                            profile.avatarUrl!.isNotEmpty)
-                        ? NetworkImage(profile.avatarUrl!)
-                        : null,
-                    onBackgroundImageError: (profile.avatarUrl != null &&
-                            profile.avatarUrl!.isNotEmpty)
-                        ? (_, __) {}
-                        : null,
-                    child: (profile.avatarUrl == null ||
-                            profile.avatarUrl!.isEmpty)
-                        ? Text(
-                            profile.initials,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: isContrast ? Colors.black : primaryColor,
-                            ),
-                          )
-                        : null,
+                  onPressed: () => SimpleAuthScreen.show(context),
+                  icon: const Icon(Icons.login_rounded, size: 15),
+                  label: const Text(
+                    'Sign In',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  key: const Key('belong_profile_avatar_button'),
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => MemberProfileDialog.show(context),
+                  child: Tooltip(
+                    message: 'Member Profile (${profile.displayName})',
+                    child: CircleAvatar(
+                      radius: 14,
+                      backgroundColor: isContrast
+                          ? Colors.yellow
+                          : primaryColor.withValues(alpha: 0.2),
+                      backgroundImage: (profile.avatarUrl != null &&
+                              profile.avatarUrl!.isNotEmpty)
+                          ? NetworkImage(profile.avatarUrl!)
+                          : null,
+                      onBackgroundImageError: (profile.avatarUrl != null &&
+                              profile.avatarUrl!.isNotEmpty)
+                          ? (_, __) {}
+                          : null,
+                      child: (profile.avatarUrl == null ||
+                              profile.avatarUrl!.isEmpty)
+                          ? Text(
+                              profile.initials,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isContrast ? Colors.black : primaryColor,
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
               ),
+          ],
+        ),
+        body: SafeArea(
+          top: false,
+          bottom: true,
+          left: true,
+          right: true,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: buildActiveBottomTabBody(),
             ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        bottom: true,
-        left: true,
-        right: true,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: buildActiveBottomTabBody(),
           ),
         ),
-      ),
-      bottomNavigationBar: BelongBottomNavBar(
-        currentTab: activeBottomTab.value,
-        isContrast: isContrast,
-        onSelectTab: (tab) {
-          activeBottomTab.value = tab;
-          analytics.logBottomTabSelected(tab.name);
-        },
-      ),
-    );
-  }
+        bottomNavigationBar: BelongBottomNavBar(
+          currentTab: activeBottomTab.value,
+          isContrast: isContrast,
+          onSelectTab: (tab) {
+            activeBottomTab.value = tab;
+            analytics.logBottomTabSelected(tab.name);
+          },
+        ),
+      );
+    }
 }
 
 /// Backward-compatible alias for SanctuaryHomeScreen.
