@@ -50,7 +50,7 @@ packages:
     source: hosted
     version: "1.0.5"
   args:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: args
       sha256: d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04
@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  charcode:
+    dependency: transitive
+    description:
+      name: charcode
+      sha256: fb0f1107cac15a5ea6ef0a6ef71a807b9e4267c713bb93e00e92d737cc8dbd8a
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
   clock:
     dependency: transitive
     description:
@@ -668,6 +676,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.3"
+  io:
+    dependency: transitive
+    description:
+      name: io
+      sha256: "2635216ca6a737e60de577ffa1a48a0bec76ca8a62917cfc1bb88c14c570646f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   jni:
     dependency: transitive
     description:
@@ -908,6 +924,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.6"
+  prompts:
+    dependency: transitive
+    description:
+      name: prompts
+      sha256: "3773b845e85a849f01e793c4fc18a45d52d7783b4cb6c0569fad19f9d0a774a1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   pub_semver:
     dependency: transitive
     description:
@@ -932,6 +956,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
+  rps:
+    dependency: "direct dev"
+    description:
+      name: rps
+      sha256: "0ace6102743504a790f509056a03284386fa8c3164f43613e40c8422d879c96e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.10.1"
   salomon_bottom_bar:
     dependency: "direct main"
     description:

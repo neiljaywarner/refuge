@@ -30,7 +30,6 @@ class BelongNotification extends Equatable {
     this.isRead = false,
     this.spaceKey,
     this.postId,
-    this.commentSnippet,
   });
 
   final String id;
@@ -43,7 +42,6 @@ class BelongNotification extends Equatable {
   final bool isRead;
   final String? spaceKey;
   final String? postId;
-  final String? commentSnippet;
 
   @override
   List<Object?> get props => [
@@ -175,7 +173,6 @@ class BelongNotification extends Equatable {
     bool? isRead,
     String? spaceKey,
     String? postId,
-    String? commentSnippet,
   }) {
     return BelongNotification(
       id: id ?? this.id,
@@ -188,7 +185,6 @@ class BelongNotification extends Equatable {
       isRead: isRead ?? this.isRead,
       spaceKey: spaceKey ?? this.spaceKey,
       postId: postId ?? this.postId,
-      commentSnippet: commentSnippet ?? this.commentSnippet,
     );
   }
 }
