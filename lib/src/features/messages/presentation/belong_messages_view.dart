@@ -195,15 +195,21 @@ class BelongMessagesView extends HookWidget {
             margin: const EdgeInsets.fromLTRB(14, 6, 14, 6),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F7F5),
+              color: theme.brightness == Brightness.dark
+                  ? theme.colorScheme.surfaceContainerHighest
+                  : const Color(0xFFF3F7F5),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFDCECE4)),
+              border: Border.all(
+                color: theme.brightness == Brightness.dark
+                    ? theme.dividerColor
+                    : const Color(0xFFDCECE4),
+              ),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.spa_outlined,
-                  color: Color(0xFF2E6B56),
+                  color: theme.colorScheme.primary,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -211,7 +217,7 @@ class BelongMessagesView extends HookWidget {
                   child: Text(
                     'Calm Batched Digest is ${calmDigestEnabled.value ? "Active (quiet daily summary)" : "Disabled (realtime alerts)"}',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF1E4638),
+                      color: theme.colorScheme.onSurface,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -219,7 +225,7 @@ class BelongMessagesView extends HookWidget {
                 ),
                 Switch.adaptive(
                   value: calmDigestEnabled.value,
-                  activeTrackColor: const Color(0xFF2E6B56),
+                  activeTrackColor: theme.colorScheme.primary,
                   onChanged: (val) => calmDigestEnabled.value = val,
                 ),
               ],
@@ -375,8 +381,8 @@ class BelongMessagesView extends HookWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: thread.unreadCount > 0
-                                  ? Colors.black87
-                                  : Colors.grey.shade600,
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.onSurfaceVariant,
                               fontWeight: thread.unreadCount > 0
                                   ? FontWeight.w500
                                   : FontWeight.normal,
@@ -485,7 +491,7 @@ class BelongMessagesView extends HookWidget {
                     decoration: BoxDecoration(
                       color: msg.isFromMe
                           ? theme.colorScheme.primary
-                          : const Color(0xFFF1F3F4),
+                          : theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(
@@ -495,7 +501,9 @@ class BelongMessagesView extends HookWidget {
                         Text(
                           msg.content,
                           style: TextStyle(
-                            color: msg.isFromMe ? Colors.white : Colors.black87,
+                            color: msg.isFromMe
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.onSurface,
                             fontSize: 13,
                           ),
                         ),
@@ -504,7 +512,9 @@ class BelongMessagesView extends HookWidget {
                           msg.formattedDate(),
                           key: Key('direct_message_timestamp_${msg.id}'),
                           style: TextStyle(
-                            color: msg.isFromMe ? Colors.white70 : Colors.black54,
+                            color: msg.isFromMe
+                                ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
+                                : theme.colorScheme.onSurfaceVariant,
                             fontSize: 10,
                           ),
                         ),

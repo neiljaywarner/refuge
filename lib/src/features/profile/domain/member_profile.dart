@@ -64,10 +64,12 @@ class MemberProfile {
   /// - "Dr. Grace Hopper" -> "GH"
   /// - "" or whitespace -> "B" (Default monogram for a "Belong" community member)
   String get initials {
-    final parts = displayName
-        .trim()
+    final cleaned = displayName.replaceAll(RegExp(r'\([^)]*\)'), '').trim();
+    final parts = cleaned
         .split(RegExp(r'\s+'))
+        .map((p) => p.replaceAll(RegExp(r'^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$'), ''))
         .where((p) => p.isNotEmpty)
+        .where((p) => !isHonorificToken(p))
         .toList();
     return switch (parts) {
       [] => 'B', // Default 'B' monogram for Belong fellowship members
@@ -75,6 +77,11 @@ class MemberProfile {
       [final first, ..., final last] => '${first[0]}${last[0]}'.toUpperCase(),
     };
   }
+
+  /// Skips title tokens like `Dr.` when forming fellowship monograms.
+  static bool isHonorificToken(String token) =>
+      RegExp(r'^(dr|mr|mrs|ms|miss|prof)\.?$', caseSensitive: false)
+          .hasMatch(token);
 
   MemberProfile copyWith({
     String? displayName,

@@ -432,6 +432,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
+        titleSpacing: 8,
         title: InkWell(
           key: const Key('belong_app_bar_title_tap_target'),
           borderRadius: BorderRadius.circular(8),
@@ -475,16 +476,22 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            brand.shortName,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: Text(
+                              brand.shortName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           const Text(
                             'Refuge',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
