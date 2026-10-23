@@ -8,6 +8,7 @@
 ---
 
 ## 🔗 Quick Executive & Engineering Links
+- 📱 **[Real Device Driving & Maestro Automation (`docs/real_device_driving_and_automation.md`)](docs/real_device_driving_and_automation.md)**: Real hardware fleet (Pixel 9a, Pixel 8, emulator), Maestro MCP Server, live screen viewer (`http://127.0.0.1:9999/`), and Patrol BDD tests.
 - 🧠 **[Community Leader & Pastoral Brainstorms (`docs/wiki/Community-Leader-Brainstorms.md`)](docs/wiki/Community-Leader-Brainstorms.md)**: Thoughtful calm-tech design trade-offs, church affiliation badge placement (Feed vs. Directory), notification cadence, and autistic-first norms ([Issue #265](https://github.com/neiljaywarner/refuge/issues/265)).
 - 🚀 **[Release Readiness Gate & Progress Dashboard (`#261`)](https://github.com/neiljaywarner/refuge/issues/261)**: Real-time and async launch gate covering Web, PWA (WebAPK), Android APK, and documentation synchronization.
 - 📣 **[Circle Migration Overlap Welcome Post (`docs/circle_migration_invitation_post.md`)](docs/circle_migration_invitation_post.md)**: Ready-to-copy announcement post for Circle.so to initiate the Oct 24–31 overlap week ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).

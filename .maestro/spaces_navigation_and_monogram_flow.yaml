@@ -1,0 +1,27 @@
+appId: com.belongonthespectrum.sanctuary
+---
+# Spaces Navigation & Member Directory Monogram Flow
+- launchApp:
+    clearState: false
+
+# 1. Verify Home feed is loaded
+- assertVisible: "Feed"
+- assertVisible: "Spaces"
+
+# 2. Tap on Spaces tab
+- tapOn: "Spaces"
+- assertVisible: "COMMUNITY"
+
+# 3. Tap on Members Section & Directory
+- tapOn: ".*Members Section & Directory.*"
+- assertVisible: "Members Section & Directory"
+
+# 4. Verify Monogram Initials and Member Cards
+- assertVisible: ".*Marty.*"
+- assertVisible: ".*Community Organizer.*"
+
+# 5. Return to Spaces & Feed
+- tapOn:
+    point: "10%,18%" # Back button in AppBar
+- tapOn: "Feed"
+- assertVisible: "Feed"
