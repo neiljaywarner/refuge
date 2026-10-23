@@ -2,7 +2,7 @@ name: refuge4serverpod
 description: "Sanctuary (Refuge) - Calm-tech digital community platform for Belong on the Spectrum built with Serverpod 4."
 publish_to: 'none'
 
-version: 0.2.0+2
+version: 0.9.0+1
 
 environment:
   sdk: ^3.13.5
