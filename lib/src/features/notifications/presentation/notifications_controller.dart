@@ -1,4 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../data/app_launcher_badge_service.dart';
 import '../domain/belong_notification.dart';
