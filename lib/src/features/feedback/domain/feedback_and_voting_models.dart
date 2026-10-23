@@ -11,8 +11,7 @@ enum FeedbackSentiment {
     label: 'Works Great',
     subtitle: 'Public Praise',
     promptTitle: 'What feels calm, clear, or welcoming?',
-    promptHint:
-        'Share what you love so our organizers know which features and spaces to protect!',
+    promptHint: 'Share what you love so our organizers know which features and spaces to protect!',
     isPrivateTriage: false,
   ),
 
@@ -22,8 +21,7 @@ enum FeedbackSentiment {
     label: 'Idea / Tweak',
     subtitle: 'Private Suggestion',
     promptTitle: 'What would make Belong clearer or calmer for you?',
-    promptHint:
-        'Suggest a feature, a clearer label, or a sensory improvement (sent privately to organizers).',
+    promptHint: 'Suggest a feature, a clearer label, or a sensory improvement. Saved for organizers. The app does not file a GitHub issue.',
     isPrivateTriage: true,
   ),
 
@@ -33,8 +31,7 @@ enum FeedbackSentiment {
     label: 'Bug / Confusing',
     subtitle: 'Private Triage',
     promptTitle: 'What felt broken, confusing, or overwhelming?',
-    promptHint:
-        'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
+    promptHint: 'Tell us what happened. Organizers can read the saved note. The app does not file a GitHub issue.',
     isPrivateTriage: true,
   );
 
@@ -86,10 +83,7 @@ class VotableFeatureItem {
   final bool userVoted;
   final int? githubIssueNumber;
 
-  VotableFeatureItem copyWith({
-    int? votes,
-    bool? userVoted,
-  }) {
+  VotableFeatureItem copyWith({int? votes, bool? userVoted}) {
     return VotableFeatureItem(
       id: id,
       title: title,
@@ -108,8 +102,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-direct-messages',
     title: 'Direct Messages (Msgs Tab)',
-    description:
-        'Calm 1-on-1 member messaging with opt-in boundaries and zero read-receipt pressure.',
+    description: 'Calm 1-on-1 member messaging with opt-in boundaries and zero read-receipt pressure.',
     stage: FeatureStage.workInProgress,
     votes: 0,
     githubIssueNumber: 27,
@@ -117,8 +110,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-notifications-bell',
     title: 'Calm Notification Bell',
-    description:
-        'Bundled, predictable updates when someone replies to your post or prayer request.',
+    description: 'Bundled, predictable updates when someone replies to your post or prayer request.',
     stage: FeatureStage.workInProgress,
     votes: 0,
     githubIssueNumber: 27,
@@ -126,8 +118,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-autistic-events',
     title: 'Actually Autistic Events Calendar',
-    description:
-        'Sensory-friendly DFW & online meetups, clear expectations, and 1-tap RSVP.',
+    description: 'Sensory-friendly DFW & online meetups, clear expectations, and 1-tap RSVP.',
     stage: FeatureStage.workInProgress,
     votes: 0,
     githubIssueNumber: 28,
@@ -135,8 +126,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-google-apple-auth',
     title: '1-Tap Google & Apple Sign-In',
-    description:
-        'Frictionless single-tap sign-in alongside Stage 1 email/password accounts.',
+    description: 'Frictionless single-tap sign-in alongside Stage 1 email/password accounts.',
     stage: FeatureStage.workInProgress,
     votes: 0,
     githubIssueNumber: 33,
@@ -144,8 +134,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'planned-native-store-apps',
     title: 'Native iOS App Store & Google Play Apps',
-    description:
-        'Installable store apps alongside our instant Web & Add-to-Home-Screen PWA.',
+    description: 'Installable store apps alongside our instant Web & Add-to-Home-Screen PWA.',
     stage: FeatureStage.planned,
     votes: 0,
     githubIssueNumber: 45,
@@ -153,8 +142,7 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'idea-realtime-vs-calm-notifications',
     title: 'Real-Time Instant Alerts vs. Calm Batched Digest Toggle',
-    description:
-        'Let members choose: receive immediate chimes/banners for DMs and replies, or batch everything into a calm quiet digest.',
+    description: 'Let members choose: receive immediate chimes/banners for DMs and replies, or batch everything into a calm quiet digest.',
     stage: FeatureStage.communityIdea,
     votes: 0,
     githubIssueNumber: 243,
@@ -162,24 +150,21 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'idea-sensory-audio-rooms',
     title: 'Camera-Off Voice & Text Hangout Rooms',
-    description:
-        'Low-pressure voice or text-only fellowship rooms where cameras are never required.',
+    description: 'Low-pressure voice or text-only fellowship rooms where cameras are never required.',
     stage: FeatureStage.communityIdea,
     votes: 0,
   ),
   VotableFeatureItem(
     id: 'idea-special-interest-galleries',
     title: 'Special Interest Showcase Galleries',
-    description:
-        'Dedicated photo & project albums inside Geek Out! for trains, coding, music, and art.',
+    description: 'Dedicated photo & project albums inside Geek Out! for trains, coding, music, and art.',
     stage: FeatureStage.communityIdea,
     votes: 0,
   ),
   VotableFeatureItem(
     id: 'idea-weekly-calm-digest',
     title: 'Single Weekly Calm Digest Email',
-    description:
-        'Catch up on community highlights once a week without daily notification clutter.',
+    description: 'Catch up on community highlights once a week without daily notification clutter.',
     stage: FeatureStage.communityIdea,
     votes: 0,
   ),

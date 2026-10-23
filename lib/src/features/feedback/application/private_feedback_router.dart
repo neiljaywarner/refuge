@@ -1,8 +1,10 @@
 import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../domain/feedback_and_voting_models.dart';
+import 'feedback_attachment_ref.dart';
 
 /// Destination target for user-submitted feedback.
 sealed class FeedbackDestination {
@@ -58,18 +60,20 @@ class PrivateIssuePayload {
   final Uint8List? attachmentBytes;
 }
 
-/// Service that routes member feedback:
-/// - Public praise (💚 "Works Great") -> Community board / public encouragement.
-/// - Private triage (💡 "Idea / Tweak", 🛠️ "Bug / Confusing") -> Confidential
-///   sibling repository (`neiljaywarner/belong_feedback`), safeguarding member
-///   privacy and preventing PII leakage in the open public repository.
+/// Formats member feedback for an organizer handoff.
+///
+/// Public praise stays on the community board. Private notes are saved in
+/// Firestore `member_feedback` and can be pasted into
+/// `neiljaywarner/belong_feedback` by an organizer. This class does not call
+/// the GitHub API and does not store an API token.
 class PrivateFeedbackRouter {
   const PrivateFeedbackRouter({
     this.privateRepository = defaultPrivateRepository,
   });
 
   /// Default private sibling repository for confidential triage.
-  static const String defaultPrivateRepository = 'neiljaywarner/belong_feedback';
+  static const String defaultPrivateRepository =
+      'neiljaywarner/belong_feedback';
 
   final String privateRepository;
 
@@ -108,7 +112,9 @@ class PrivateFeedbackRouter {
     final buffer = StringBuffer()
       ..writeln('## Community Feedback Submission')
       ..writeln()
-      ..writeln('- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})')
+      ..writeln(
+        '- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})',
+      )
       ..writeln('- **Submitted At**: `${now.toIso8601String()}`')
       ..writeln('- **Target Triage Repo**: `$privateRepository`');
 
@@ -119,8 +125,15 @@ class PrivateFeedbackRouter {
     if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty) {
       buffer
         ..writeln()
-        ..writeln('### Annotated Screenshot / Scribble Attachment')
-        ..writeln('![Annotated Screenshot]($attachmentUrl)');
+        ..writeln('### Annotated Screenshot / Scribble Attachment');
+      if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl)) {
+        buffer.writeln('![Annotated Screenshot]($attachmentUrl)');
+      } else {
+        buffer.writeln(
+          'A drawing was kept with this note for an organizer handoff. '
+          'It was not uploaded, and this text is not a download link.',
+        );
+      }
     }
 
     buffer
