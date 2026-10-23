@@ -3,9 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/core/config/preview_mode_provider.dart';
+import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/auth/presentation/belong_auth_sheet.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 
 void main() {
   group('BelongAuthSheet Widget & BDD Tests (#119, #163)', () {
@@ -86,6 +89,53 @@ void main() {
         $('Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".'),
         findsOneWidget,
       );
+    });
+
+    patrolWidgetTest('registers successfully with a free-form custom church affiliation', ($) async {
+      $.tester.view.physicalSize = const Size(800, 1200);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
+      final container = ProviderContainer(
+        overrides: [
+          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await $.pumpWidgetAndSettle(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: Scaffold(
+              body: BelongAuthSheet(),
+            ),
+          ),
+        ),
+      );
+
+      // Switch to Register tab
+      await $(const Key('auth_tab_register')).tap();
+      await $.pumpAndSettle();
+
+      await $(const Key('auth_register_display_name_field')).enterText('Marcus Disciple');
+      await $(const Key('auth_register_email_field')).enterText('marcus@belong.org');
+      await $(const Key('auth_register_password_field')).enterText('belongPassword789');
+
+      // Free-form church entry into the blank required field
+      await $(const Key('auth_register_church_affiliation_dropdown')).enterText('Sydney Church of Christ');
+
+      await $(const Key('auth_register_submit_button')).tap();
+      await $.pumpAndSettle();
+
+      final profile = container.read(memberProfileProvider);
+      expect(profile.isSignedIn, isTrue);
+      expect(profile.displayName, 'Marcus Disciple');
+      expect(profile.icocChurchAffiliation, 'Sydney Church of Christ');
+      expect(profile.isIcocMember, isTrue);
     });
 
     patrolWidgetTest('sends magic link and displays calm success banner', ($) async {

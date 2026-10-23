@@ -52,6 +52,9 @@ class BelongAuthSheet extends HookConsumerWidget {
     final magicLinkInputController = useTextEditingController();
 
     // Church affiliation for registration
+    final churchAffiliationController = useTextEditingController(
+      text: currentProfile.icocChurchAffiliation ?? '',
+    );
     final selectedAffiliation = useState<String?>(
       currentProfile.icocChurchAffiliation,
     );
@@ -112,7 +115,7 @@ class BelongAuthSheet extends HookConsumerWidget {
       final email = emailController.text.trim();
       final password = passwordController.text;
       final displayName = displayNameController.text.trim();
-      final affiliation = selectedAffiliation.value;
+      final affiliation = churchAffiliationController.text.trim();
 
       if (displayName.isEmpty) {
         errorMessage.value = 'Please enter a name or nickname you would like to be called.';
@@ -127,7 +130,7 @@ class BelongAuthSheet extends HookConsumerWidget {
         return;
       }
       if (brand.enableFellowshipAffiliationField &&
-          (affiliation == null || affiliation.trim().isEmpty)) {
+          affiliation.isEmpty) {
         errorMessage.value =
             'Please select which ICOC church you attend, or choose "${brand.fellowshipNonMemberOption}".';
         return;
@@ -140,7 +143,7 @@ class BelongAuthSheet extends HookConsumerWidget {
               email: email,
               password: password,
               displayName: displayName,
-              icocChurchAffiliation: affiliation ?? brand.fellowshipNonMemberOption,
+              icocChurchAffiliation: affiliation,
             );
         if (context.mounted) {
           Navigator.of(context).pop();
@@ -545,37 +548,56 @@ class BelongAuthSheet extends HookConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
+                  TextFormField(
                     key: const Key('auth_register_church_affiliation_dropdown'),
-                    initialValue: allAffiliationOptions.contains(selectedAffiliation.value)
-                        ? selectedAffiliation.value
-                        : null,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
+                    controller: churchAffiliationController,
+                    decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      border: OutlineInputBorder(),
-                      hintText: 'Select your church affiliation...',
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      border: const OutlineInputBorder(),
+                      hintText: 'Enter your church affiliation (or select below)...',
+                      hintStyle: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).hintColor,
+                      ),
+                      suffixIcon: churchAffiliationController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 16),
+                              onPressed: () {
+                                churchAffiliationController.clear();
+                                selectedAffiliation.value = '';
+                              },
+                            )
+                          : null,
                     ),
-                    items: allAffiliationOptions.map((opt) {
-                      final isNonMember = opt == brand.fellowshipNonMemberOption;
-                      return DropdownMenuItem<String>(
-                        value: opt,
-                        child: Text(
-                          opt,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
-                          ),
-                        ),
-                      );
-                    }).toList(),
                     onChanged: (val) {
                       selectedAffiliation.value = val;
-                      if (val != null && val.isNotEmpty) {
+                      if (val.trim().isNotEmpty) {
                         errorMessage.value = null;
                       }
                     },
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: allAffiliationOptions.map((opt) {
+                      final isNonMember = opt == brand.fellowshipNonMemberOption;
+                      return ActionChip(
+                        label: Text(
+                          opt,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                          ),
+                        ),
+                        onPressed: () {
+                          churchAffiliationController.text = opt;
+                          selectedAffiliation.value = opt;
+                          errorMessage.value = null;
+                        },
+                      );
+                    }).toList(),
                   ),
                 ],
                 const SizedBox(height: 16),

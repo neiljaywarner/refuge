@@ -25,6 +25,9 @@ class MemberProfileDialog extends HookConsumerWidget {
     final nameController = useTextEditingController(text: profile.displayName);
     final emailController = useTextEditingController(text: profile.email);
     final bioController = useTextEditingController(text: profile.bio);
+    final churchAffiliationController = useTextEditingController(
+      text: profile.icocChurchAffiliation ?? '',
+    );
     final selectedAffiliation = useState<String?>(profile.icocChurchAffiliation);
     final validationError = useState<String?>(null);
 
@@ -213,37 +216,56 @@ class MemberProfileDialog extends HookConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
+                TextFormField(
                   key: const Key('profile_church_affiliation_dropdown'),
-                  initialValue: allAffiliationOptions.contains(selectedAffiliation.value)
-                      ? selectedAffiliation.value
-                      : null,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
+                  controller: churchAffiliationController,
+                  decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    border: OutlineInputBorder(),
-                    hintText: 'Select your church affiliation...',
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    border: const OutlineInputBorder(),
+                    hintText: 'Enter your church affiliation (or select below)...',
+                    hintStyle: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).hintColor,
+                    ),
+                    suffixIcon: churchAffiliationController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 16),
+                            onPressed: () {
+                              churchAffiliationController.clear();
+                              selectedAffiliation.value = '';
+                            },
+                          )
+                        : null,
                   ),
-                  items: allAffiliationOptions.map((opt) {
-                    final isNonMember = opt == brand.fellowshipNonMemberOption;
-                    return DropdownMenuItem<String>(
-                      value: opt,
-                      child: Text(
-                        opt,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
-                        ),
-                      ),
-                    );
-                  }).toList(),
                   onChanged: (val) {
                     selectedAffiliation.value = val;
-                    if (val != null && val.isNotEmpty) {
+                    if (val.trim().isNotEmpty) {
                       validationError.value = null;
                     }
                   },
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: allAffiliationOptions.map((opt) {
+                    final isNonMember = opt == brand.fellowshipNonMemberOption;
+                    return ActionChip(
+                      label: Text(
+                        opt,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                        ),
+                      ),
+                      onPressed: () {
+                        churchAffiliationController.text = opt;
+                        selectedAffiliation.value = opt;
+                        validationError.value = null;
+                      },
+                    );
+                  }).toList(),
                 ),
               ],
               const SizedBox(height: 14),
@@ -342,9 +364,10 @@ class MemberProfileDialog extends HookConsumerWidget {
         FilledButton(
           key: const Key('profile_save_sign_in_button'),
           onPressed: () {
-            if (brand.enableFellowshipAffiliationField &&
-                (selectedAffiliation.value == null || selectedAffiliation.value!.trim().isEmpty)) {
-              validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
+            final affiliation = churchAffiliationController.text.trim();
+            if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
+              validationError.value =
+                  'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
               return;
             }
 
@@ -354,7 +377,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   displayName: nameController.text,
                   email: emailController.text,
                   bio: bioController.text,
-                  icocChurchAffiliation: selectedAffiliation.value,
+                  icocChurchAffiliation: affiliation,
                 );
             Navigator.of(context).pop();
           },
