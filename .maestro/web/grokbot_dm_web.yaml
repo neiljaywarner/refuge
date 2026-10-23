@@ -6,8 +6,9 @@ tags:
 # Credentials come from the shell environment. No addresses are stored here.
 # Expects both accounts to already exist.
 #
-# Known product gap: the new-message picker only lists sample members, so a
-# real account cannot be selected. Tagged known-gap so directory runs
+# Known product gap: https://github.com/neiljaywarner/refuge/issues/441
+# The new-message picker only lists sample members, so a real account cannot
+# be selected. Tagged known-gap so directory runs
 # (`maestro test .maestro/web`) and the default suite in
 # tool/run_maestro_verification.dart skip this file. See .maestro/config.yaml.
 # Passing this file path still runs it.
