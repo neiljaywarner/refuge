@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,6 +55,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
   Future<void> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
+    int? rating,
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
@@ -64,6 +64,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     return repo.submitFeedback(
       sentiment: sentiment,
       message: message,
+      rating: rating,
       contactEmail: contactEmail,
       attachmentUrl: attachmentUrl,
       screenshotAttachment: screenshotAttachment,
@@ -107,6 +108,22 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     );
   }
 
+  static String starLiteralDescription(int stars) {
+    return switch (stars) {
+      5 => '5 ★ · Love it! Works great',
+      4 => '4 ★ · Good experience',
+      3 => "3 ★ · It's okay, could be better",
+      2 => '2 ★ · Frustrating / Needs work',
+      _ => '1 ★ · Broken / Very confusing',
+    };
+  }
+
+  static FeedbackSentiment sentimentForStars(int stars) {
+    if (stars >= 4) return FeedbackSentiment.happy;
+    if (stars == 3) return FeedbackSentiment.neutral;
+    return FeedbackSentiment.sad;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabController = useTabController(
@@ -116,6 +133,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final selectedSentiment = useState<FeedbackSentiment>(
       FeedbackSentiment.happy,
     );
+    final selectedStarRating = useState<int>(5);
     final feedbackController = useTextEditingController();
     final contactController = useTextEditingController();
     final drawingAttachment = useState<Uint8List?>(null);
@@ -326,24 +344,109 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                 ],
               ),
 
-              // TAB 2: Literal 3-Intent Feedback Funnel
+              // TAB 2: Industry-Standard 1-5 Star Rating + Literal 3-Intent Feedback Funnel (PWA, Web & Mobile)
               ListView(
                 padding: listPadding,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
+                  // 1-5 Star Rating Card ("How do you like Belong on the Spectrum?")
+                  Card(
+                    key: const Key('star_rating_bar'),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: colorScheme.outlineVariant),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'No 1–5 star ratings or guesswork. Pick what best matches your experience:',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                    color: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.45,
+                    ),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.stars_rounded,
+                                color: colorScheme.primary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'How do you like Belong on the Spectrum?',
+                                  style: textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tap a star (1–5) or pick a category below. Every star has a clear literal meaning — works on Web, PWA, Android & iOS:',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              for (int star = 1; star <= 5; star++)
+                                IconButton(
+                                  key: Key('star_rating_$star'),
+                                  tooltip: starLiteralDescription(star),
+                                  onPressed: () {
+                                    HapticFeedback.selectionClick();
+                                    selectedStarRating.value = star;
+                                    selectedSentiment.value = sentimentForStars(
+                                      star,
+                                    );
+                                    submittedMessage.value = null;
+                                  },
+                                  iconSize: 32,
+                                  icon: Icon(
+                                    star <= selectedStarRating.value
+                                        ? Icons.star_rounded
+                                        : Icons.star_outline_rounded,
+                                    color: star <= selectedStarRating.value
+                                        ? Colors.amber.shade600
+                                        : colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Center(
+                            child: Container(
+                              key: const Key('star_rating_literal_label'),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer.withValues(
+                                  alpha: 0.6,
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                starLiteralDescription(
+                                  selectedStarRating.value,
+                                ),
+                                style: textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
                   // Sentiment Cards (Works Great / Idea / Bug)
                   for (final sentiment in FeedbackSentiment.values)
                     Card(
@@ -366,6 +469,17 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                         onTap: () {
                           selectedSentiment.value = sentiment;
+                          selectedStarRating.value = switch (sentiment) {
+                            FeedbackSentiment.happy =>
+                              selectedStarRating.value >= 4
+                                  ? selectedStarRating.value
+                                  : 5,
+                            FeedbackSentiment.neutral => 3,
+                            FeedbackSentiment.sad =>
+                              selectedStarRating.value <= 2
+                                  ? selectedStarRating.value
+                                  : 1,
+                          };
                           feedbackController.clear();
                           submittedMessage.value = null;
                         },
@@ -563,6 +677,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                               .submitFeedback(
                                                 sentiment: sentiment,
                                                 message: text,
+                                                rating: selectedStarRating.value,
                                                 contactEmail:
                                                     contact.isNotEmpty ? contact : null,
                                                 attachmentUrl: attachmentUrl,
@@ -570,7 +685,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                               );
 
                                           final summary =
-                                              '[Belong ${sentiment.label} (${sentiment.subtitle})] '
+                                              '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] '
                                               '$text '
                                               '${contact.isNotEmpty ? "(From: $contact)" : ""}'
                                               '${attachmentUrl != null ? " [Attachment: $attachmentUrl]" : ""}';

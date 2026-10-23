@@ -70,5 +70,41 @@ void main() {
       expect(FeedbackSentiment.neutral.isPrivateTriage, isTrue);
       expect(FeedbackSentiment.sad.isPrivateTriage, isTrue);
     });
+
+    test('resolveStarRating and submitFeedback persist 1-5 star ratings for PWA/Web/Mobile audit (#386)', () async {
+      final repo = InMemoryFeatureVotingRepository();
+
+      // Default star mapping when rating is omitted
+      expect(
+        FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.happy, null),
+        5,
+      );
+      expect(
+        FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.neutral, null),
+        3,
+      );
+      expect(
+        FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.sad, null),
+        1,
+      );
+
+      // Explicit 4-star rating on happy sentiment
+      await repo.submitFeedback(
+        sentiment: FeedbackSentiment.happy,
+        rating: 4,
+        message: 'PWA works great on my iPad Home Screen!',
+      );
+      expect(repo.submittedFeedbackLog.last['rating'], '4');
+      expect(repo.submittedFeedbackLog.last['sentiment'], 'happy');
+
+      // Explicit 2-star rating on sad sentiment
+      await repo.submitFeedback(
+        sentiment: FeedbackSentiment.sad,
+        rating: 2,
+        message: 'Landscape rotation test',
+      );
+      expect(repo.submittedFeedbackLog.last['rating'], '2');
+      expect(repo.submittedFeedbackLog.last['sentiment'], 'sad');
+    });
   });
 }
