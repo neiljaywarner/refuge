@@ -44,6 +44,7 @@ class ServerpodPostRepository implements PostRepository {
     LocalPostRepository? fallback,
     this.customFirestore,
     this.isDevMode = true,
+    sp.Client? client,
   }) : serverUrl =
            serverUrl ??
            const String.fromEnvironment(
@@ -51,13 +52,14 @@ class ServerpodPostRepository implements PostRepository {
              defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
            ),
        _fallback = fallback ?? LocalPostRepository(isDevMode: isDevMode),
-       _client = sp.Client(
-         serverUrl ??
-             const String.fromEnvironment(
-               'SERVERPOD_URL',
-               defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
-             ),
-       );
+       _client = client ??
+           sp.Client(
+             serverUrl ??
+                 const String.fromEnvironment(
+                   'SERVERPOD_URL',
+                   defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
+                 ),
+           );
 
   @override
   Future<List<Post>> getPosts({required String spaceKey}) async {
