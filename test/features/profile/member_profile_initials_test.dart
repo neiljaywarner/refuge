@@ -25,7 +25,12 @@ void main() {
 
     test('extracts first and last initials for multi-word name (e.g. Dr. Grace Hopper)', () {
       final profile = _createProfile('Dr. Grace Hopper');
-      expect(profile.initials, 'DH');
+      expect(profile.initials, 'GH');
+    });
+
+    test('strips parenthetical role/location suffix before initials', () {
+      final profile = _createProfile('David M. (Colorado)');
+      expect(profile.initials, 'DM');
     });
 
     test('extracts uppercase initials when input is lowercase', () {
@@ -59,7 +64,7 @@ void main() {
         isIcocMember: true,
         comfortBadges: [],
       );
-      expect(member.initials, 'M(');
+      expect(member.initials, 'M');
     });
 
     test('extracts single initial for single name', () {

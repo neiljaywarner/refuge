@@ -43,6 +43,7 @@
 /// the App Distribution group in the Firebase console.
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 const _project = 'belongonthespectrum';
@@ -99,6 +100,7 @@ Future<void> main(List<String> args) async {
   if (!skipBuild) {
     _log('Building Flutter Web...');
     await _run(_bin('flutter'), ['build', 'web', '--release']);
+    await _writeWebVersionJson(version);
     if (android) {
       _log('Building release APK...');
       await _run(_bin('flutter'), ['build', 'apk', '--release']);
@@ -209,6 +211,33 @@ Future<List<String>> _changesSinceLastTag() async {
       .map((l) => l.trim())
       .where((l) => l.isNotEmpty)
       .toList();
+}
+
+/// Writes `build/web/version.json` so hosting and smoke tests expose the
+/// deployed release tag (not only the pubspec default).
+Future<void> _writeWebVersionJson(String version) async {
+  final pubspec = File('pubspec.yaml').readAsStringSync();
+  final versionLine = RegExp(r'^version:\s*(.+)$', multiLine: true)
+      .firstMatch(pubspec)
+      ?.group(1)
+      ?.trim();
+  final buildNumber = versionLine?.contains('+') == true
+      ? versionLine!.split('+').last
+      : '0';
+  final tagVersion = version.startsWith('v') ? version.substring(1) : version;
+  final payload = {
+    'app_name': 'refuge4serverpod',
+    'version': tagVersion,
+    'build_number': buildNumber,
+    'package_name': 'refuge4serverpod',
+    'release_tag': version,
+  };
+  final out = File('build/web/version.json');
+  if (!out.parent.existsSync()) {
+    await out.parent.create(recursive: true);
+  }
+  await out.writeAsString('${jsonEncode(payload)}\n');
+  _log('Wrote ${out.path} ($tagVersion+$buildNumber)');
 }
 
 Future<File> _writeNotes(String version,

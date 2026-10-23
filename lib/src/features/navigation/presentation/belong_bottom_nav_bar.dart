@@ -158,6 +158,7 @@ class _BottomNavItem extends StatelessWidget {
 
     return Semantics(
       button: true,
+      identifier: 'bottom_nav_tab_${tab.name}',
       selected: isSelected,
       label: '${tab.label} tab${isSelected ? ", active" : ""}',
       child: Tooltip(

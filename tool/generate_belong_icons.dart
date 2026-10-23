@@ -9,7 +9,10 @@ import 'dart:io';
 ///    Belong Cross + Gold Infinity mark into the 66% safe zone (`676x676` centered inside
 ///    `1024x1024` `#F3EFE6`) so circular, squircle, and teardrop launcher masks never
 ///    clip the vertical `BELONG` letters or gold `∞` loop.
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  if (args.isNotEmpty) {
+    Directory.current = Directory(args.first);
+  }
   const src = 'assets/images/belong_logo.png';
   const ffmpeg = '/opt/homebrew/bin/ffmpeg';
 
@@ -22,13 +25,13 @@ Future<void> main() async {
   const opaqueMaster = 'build/icon_gen/belong_opaque_1024.png';
   const safeZoneMaster = 'build/icon_gen/belong_safezone_1024.png';
 
-  // 1. Generate 1024x1024 opaque master (RGB24, #F3EFE6 background, zero alpha)
+  // 1. Generate 1024x1024 opaque master (RGB24, #F2EEE2 background, zero alpha)
   await _run(ffmpeg, [
     '-y',
     '-f',
     'lavfi',
     '-i',
-    'color=c=0xF3EFE6:s=1024x1024',
+    'color=c=0xF2EEE2:s=1024x1024',
     '-i',
     src,
     '-filter_complex',
@@ -44,7 +47,7 @@ Future<void> main() async {
     '-f',
     'lavfi',
     '-i',
-    'color=c=0xF3EFE6:s=1024x1024',
+    'color=c=0xF2EEE2:s=1024x1024',
     '-i',
     src,
     '-filter_complex',
@@ -80,7 +83,7 @@ Future<void> main() async {
   for (final entry in androidSizes.entries) {
     final dir = 'android/app/src/main/res/${entry.key}';
     Directory(dir).createSync(recursive: true);
-    await _scale(safeZoneMaster, '$dir/ic_launcher.png', entry.value);
+    await _scale(opaqueMaster, '$dir/ic_launcher.png', entry.value);
   }
   for (final entry in androidAdaptiveSizes.entries) {
     final dir = 'android/app/src/main/res/${entry.key}';
@@ -91,6 +94,11 @@ Future<void> main() async {
       entry.value,
     );
   }
+
+  // 4b. Android Native Splash Screen Logo (pre-API 31 & API 31+ SplashScreen API)
+  const drawableDir = 'android/app/src/main/res/drawable';
+  Directory(drawableDir).createSync(recursive: true);
+  await _scale(safeZoneMaster, '$drawableDir/launch_logo.png', 288);
 
   // 5. iOS AppIcon.appiconset (Opaque RGB24 per Apple HIG)
   const iosIcons = <String, int>{

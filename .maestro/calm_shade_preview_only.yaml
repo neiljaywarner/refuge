@@ -1,0 +1,14 @@
+appId: com.belongonthespectrum.sanctuary
+name: "Calm shade preview tap only"
+---
+- setPermissions:
+    permissions:
+      notifications: allow
+- launchApp:
+    clearState: false
+- tapOn:
+    id: "bottom_nav_tab_notifications"
+- tapOn:
+    id: "notification-preferences-button"
+- tapOn:
+    id: "preview-calm-shade-notification-button"

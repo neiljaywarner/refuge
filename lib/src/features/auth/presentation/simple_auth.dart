@@ -70,19 +70,7 @@ class SimpleAuthScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary
-                              .withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.spa_rounded,
-                          size: 36,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
+                      _belongLogo(context, size: 56),
                       const SizedBox(height: 12),
                       const Text(
                         'Belong on the Spectrum',
@@ -126,90 +114,88 @@ class SimpleAuthScreen extends StatelessWidget {
       builder: (context, snapshot) {
         final user = snapshot.data ?? effectiveAuth.currentUser;
         if (user == null) {
-          return SignInScreen(
-            auth: effectiveAuth,
-            providers: providers,
-            headerBuilder: (context, constraints, shrinkOffset) {
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Sign In to Belong'),
+              centerTitle: true,
+            ),
+            body: SignInScreen(
+              auth: effectiveAuth,
+              providers: providers,
+              headerMaxExtent: 120,
+              headerBuilder: (context, constraints, shrinkOffset) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _belongLogo(context, size: 52),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Belong on the Spectrum',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              subtitleBuilder: (context, action) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    action == AuthAction.signIn
+                        ? 'Sign in to access your reflections, spaces, and private saved items.'
+                        : 'Join our calm Christian fellowship. No algorithmic rush.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                );
+              },
+              footerBuilder: (context, action) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary
-                              .withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.spa_rounded,
-                          size: 36,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                      Icon(
+                        Icons.shield_outlined,
+                        size: 14,
+                        color: Theme.of(context).colorScheme.outline,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(width: 6),
                       Text(
-                        'Belong on the Spectrum',
-                        style: Theme.of(context).textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        'Safe, sensory-friendly & private',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              );
-            },
-            subtitleBuilder: (context, action) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  action == AuthAction.signIn
-                      ? 'Sign in to access your reflections, spaces, and private saved items.'
-                      : 'Join our calm Christian fellowship. No algorithmic rush.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              );
-            },
-            footerBuilder: (context, action) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.shield_outlined,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Safe, sensory-friendly & private',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-            actions: [
-              AuthStateChangeAction<UserCreated>((context, state) {
-                onAuthenticated?.call();
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              }),
-              AuthStateChangeAction<SignedIn>((context, state) {
-                onAuthenticated?.call();
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              }),
-            ],
+                );
+              },
+              actions: [
+                AuthStateChangeAction<UserCreated>((context, state) {
+                  onAuthenticated?.call();
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }),
+                AuthStateChangeAction<SignedIn>((context, state) {
+                  onAuthenticated?.call();
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }),
+              ],
+            ),
           );
         }
 
@@ -227,6 +213,22 @@ class SimpleAuthScreen extends StatelessWidget {
           appBar: AppBar(title: const Text('Account Profile')),
         );
       },
+    );
+  }
+
+  static Widget _belongLogo(BuildContext context, {required double size}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size * 0.28),
+      child: Image.asset(
+        'assets/images/belong_logo.png',
+        width: size,
+        height: size,
+        errorBuilder: (_, _, _) => Icon(
+          Icons.spa_rounded,
+          size: size * 0.65,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     );
   }
 }

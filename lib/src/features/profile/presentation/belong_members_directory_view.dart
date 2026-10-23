@@ -34,10 +34,12 @@ class DevFellowshipMember {
   ///
   /// Fallback: Returns 'B' for a Belong fellowship member when name is unset.
   String get initials {
-    final parts = name
-        .trim()
+    final cleaned = name.replaceAll(RegExp(r'\([^)]*\)'), '').trim();
+    final parts = cleaned
         .split(RegExp(r'\s+'))
+        .map((p) => p.replaceAll(RegExp(r'^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$'), ''))
         .where((p) => p.isNotEmpty)
+        .where((p) => !MemberProfile.isHonorificToken(p))
         .toList();
     return switch (parts) {
       [] => 'B',
