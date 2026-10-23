@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 import '../../notifications/presentation/notifications_controller.dart';
 
 /// Primary 4-tab Bottom Navigation Bar for **Belong on the Spectrum**
-/// (`Home`, `Notifications`, `Msgs`, `Search`) vetted in ADR 0005 (#18).
+/// (`Home`, `Notifications`, `Messages`, `Search`) vetted in ADR 0005 (#18, #362).
 enum BelongBottomTab {
   home('Home', Icons.home_rounded),
   notifications('Notifications', Icons.notifications_none_rounded),
-  msgs('Msgs', Icons.chat_bubble_outline_rounded),
+  msgs('Messages', Icons.chat_bubble_outline_rounded),
   search('Search', Icons.search_rounded);
 
   const BelongBottomTab(this.label, this.icon);
@@ -35,58 +34,169 @@ class BelongBottomNavBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
     final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
 
+    final backgroundColor = isContrast ? Colors.black : theme.scaffoldBackgroundColor;
+    final topBorderColor = isContrast ? Colors.yellow : primary.withValues(alpha: 0.18);
+
     return DecoratedBox(
+      key: const Key('belong_bottom_nav_bar'),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: backgroundColor,
         border: Border(
           top: BorderSide(
-            color: isContrast ? Colors.yellow : primary.withValues(alpha: 0.2),
+            color: topBorderColor,
+            width: isContrast ? 2.0 : 1.0,
           ),
         ),
       ),
       child: SafeArea(
         top: false,
-        child: SalomonBottomBar(
-          key: const Key('belong_bottom_nav_bar'),
-          currentIndex: currentTab.index,
-          onTap: (index) => onSelectTab(BelongBottomTab.values[index]),
-          duration: disableAnimations
-              ? Duration.zero
-              : const Duration(milliseconds: 250),
-          selectedItemColor: isContrast ? Colors.yellow : primary,
-          unselectedItemColor: isContrast
-              ? Colors.white70
-              : Theme.of(context).textTheme.bodyMedium?.color?.withValues(
-                  alpha: 0.7,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final tab in BelongBottomTab.values)
+                Expanded(
+                  child: _BottomNavItem(
+                    tab: tab,
+                    isSelected: tab == currentTab,
+                    isContrast: isContrast,
+                    primaryColor: primary,
+                    unreadCount: tab == BelongBottomTab.notifications
+                        ? unreadNotificationsCount
+                        : 0,
+                    disableAnimations: disableAnimations,
+                    onTap: () => onSelectTab(tab),
+                  ),
                 ),
-          items: [
-            for (final tab in BelongBottomTab.values)
-              SalomonBottomBarItem(
-                icon: (tab == BelongBottomTab.notifications &&
-                        unreadNotificationsCount > 0)
-                    ? Badge.count(
-                        key: const Key('bottom_nav_notifications_badge'),
-                        count: unreadNotificationsCount,
-                        backgroundColor:
-                            isContrast ? Colors.yellow : primary,
-                        textColor:
-                            isContrast ? Colors.black : Colors.white,
-                        child: Icon(
-                          tab.icon,
-                          key: Key('bottom_nav_icon_${tab.name}'),
-                        ),
-                      )
-                    : Icon(
-                        tab.icon,
-                        key: Key('bottom_nav_icon_${tab.name}'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  const _BottomNavItem({
+    required this.tab,
+    required this.isSelected,
+    required this.isContrast,
+    required this.primaryColor,
+    required this.unreadCount,
+    required this.disableAnimations,
+    required this.onTap,
+  });
+
+  final BelongBottomTab tab;
+  final bool isSelected;
+  final bool isContrast;
+  final Color primaryColor;
+  final int unreadCount;
+  final bool disableAnimations;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final animationDuration = disableAnimations
+        ? Duration.zero
+        : const Duration(milliseconds: 180);
+
+    // Active & inactive color schemes adhering to WCAG AAA
+    final Color activeColor = isContrast ? Colors.yellow : primaryColor;
+    final Color inactiveColor = isContrast
+        ? Colors.white
+        : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ??
+            Colors.grey.shade600);
+
+    final Color currentColor = isSelected ? activeColor : inactiveColor;
+
+    final BoxDecoration pillDecoration = isSelected
+        ? BoxDecoration(
+            color: isContrast
+                ? Colors.black
+                : primaryColor.withValues(alpha: 0.14),
+            border: isContrast
+                ? Border.all(color: Colors.yellow, width: 2)
+                : null,
+            borderRadius: BorderRadius.circular(16),
+          )
+        : const BoxDecoration(
+            color: Colors.transparent,
+          );
+
+    final Widget iconWidget = (tab == BelongBottomTab.notifications && unreadCount > 0)
+        ? Badge.count(
+            key: const Key('bottom_nav_notifications_badge'),
+            count: unreadCount,
+            backgroundColor: isContrast ? Colors.yellow : primaryColor,
+            textColor: isContrast ? Colors.black : Colors.white,
+            child: Icon(
+              tab.icon,
+              key: Key('bottom_nav_icon_${tab.name}'),
+              color: currentColor,
+              size: 22,
+            ),
+          )
+        : Icon(
+            tab.icon,
+            key: Key('bottom_nav_icon_${tab.name}'),
+            color: currentColor,
+            size: 22,
+          );
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: '${tab.label} tab${isSelected ? ", active" : ""}',
+      child: Tooltip(
+        message: tab.label,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: Key('bottom_nav_tab_${tab.name}'),
+            borderRadius: BorderRadius.circular(12),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: animationDuration,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 3,
+                    ),
+                    decoration: pillDecoration,
+                    child: iconWidget,
+                  ),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      tab.label,
+                      key: Key('bottom_nav_label_${tab.name}'),
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: currentColor,
+                        letterSpacing: 0.1,
                       ),
-                title: Text(tab.label),
+                    ),
+                  ),
+                ],
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );

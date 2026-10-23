@@ -20,7 +20,7 @@ void main() {
       // 2. Verify bottom navigation tabs are present
       expect($('Home'), findsOneWidget);
       expect($('Spaces'), findsOneWidget);
-      expect($('Msgs'), findsOneWidget);
+      expect($('Messages'), findsOneWidget);
       expect($('Notifications'), findsOneWidget);
 
       // 3. Verify intent filter row

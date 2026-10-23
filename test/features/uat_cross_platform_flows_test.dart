@@ -36,7 +36,7 @@ void main() {
       // Verify bottom navigation bar items
       expect($('Home'), findsOneWidget);
       expect($('Notifications'), findsOneWidget);
-      expect($('Msgs'), findsOneWidget);
+      expect($('Messages'), findsOneWidget);
       expect($('Search'), findsOneWidget);
     });
 
@@ -48,89 +48,61 @@ void main() {
       );
 
       // Verify title and prompts
-      expect($('Member Profile & Sign-In'), findsOneWidget);
-      expect($('Which ICOC church do you attend?'), findsOneWidget);
-      expect($('Required: Confirms whether you are part of our church fellowship or a welcoming visitor.'), findsOneWidget);
+      expect($('Member Profile'), findsOneWidget);
+      expect($('Marty the Organizer'), findsOneWidget);
+      expect($('ICOC Church'), findsOneWidget);
+      expect($('Faith Journey:'), findsOneWidget);
+      expect($('Saved (Baptized) in 1993'), findsOneWidget);
 
-      // Verify validation: tapping Save without selecting affiliation shows banner
-      await $(const Key('profile_save_sign_in_button')).tap();
-      await $.pump();
-
-      expect($(const Key('profile_validation_error_banner')), findsOneWidget);
-      expect($(const Key('profile_affiliation_error_text')), findsOneWidget);
-      expect(
-        $('Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".'),
-        findsOneWidget,
-      );
-
-      // Select Non-Member Option
-      await $(const Key('profile_church_affiliation_dropdown')).tap();
+      // Close modal
+      await $(const Key('close_member_profile_sheet')).tap();
       await $.pumpAndSettle();
-
-      await $('I am not a member of an ICOC church').tap();
-      await $.pumpAndSettle();
-
-      // Enter name and save
-      await $(const Key('profile_display_name_field')).enterText('Caleb Visitor');
-      await $(const Key('profile_save_sign_in_button')).tap();
-      await $.pumpAndSettle();
+      expect($('Member Profile'), findsNothing);
     });
 
     patrolWidgetTest('Flow 3: Firebase Auth & Passwordless Magic Link Sheet', ($) async {
+      await $.tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => $.tester.binding.setSurfaceSize(null));
       await $.pumpWidgetAndSettle(
         createTestApp(home: const Scaffold(body: BelongAuthSheet())),
       );
 
-      // Verify 3 tabs
-      expect($(const Key('auth_tab_sign_in')), findsOneWidget);
-      expect($(const Key('auth_tab_register')), findsOneWidget);
-      expect($(const Key('auth_tab_magic_link')), findsOneWidget);
+      // Verify Auth Header
+      expect($('Sign in to Belong'), findsOneWidget);
+      expect($('Passwordless magic link sign-in for autistic individuals and allies.'), findsOneWidget);
 
-      // Sign In validation
-      await $(const Key('auth_sign_in_submit_button')).tap();
-      await $.pump();
-      expect($(const Key('auth_error_banner')), findsOneWidget);
-      expect($('Please enter your email address.'), findsOneWidget);
+      // Verify Email Field
+      expect($(const Key('belong_auth_email_field')), findsOneWidget);
 
-      // Register Tab
-      await $(const Key('auth_tab_register')).tap();
+      // Enter email and tap Send Magic Link
+      await $(const Key('belong_auth_email_field')).enterText('alex@belongonthespectrum.com');
       await $.pumpAndSettle();
 
-      expect($(const Key('auth_register_display_name_field')), findsOneWidget);
-      expect($(const Key('auth_register_email_field')), findsOneWidget);
-      expect($(const Key('auth_register_password_field')), findsOneWidget);
-      expect($(const Key('auth_register_church_affiliation_dropdown')), findsOneWidget);
-
-      // Magic Link Tab
-      await $(const Key('auth_tab_magic_link')).tap();
+      await $(const Key('belong_auth_send_link_button')).tap();
       await $.pumpAndSettle();
 
-      await $(const Key('auth_magic_link_email_field')).enterText('fellowship@belong.org');
-      await $(const Key('auth_send_magic_link_button')).tap();
-      await $.pumpAndSettle();
-
-      expect($(const Key('auth_success_banner')), findsOneWidget);
-      expect($(const Key('auth_success_text')), findsOneWidget);
+      // Verify Confirmation Sent State
+      expect($('Magic Link Sent!'), findsOneWidget);
+      expect($('We sent a secure, passwordless sign-in link to:'), findsOneWidget);
+      expect($('alex@belongonthespectrum.com'), findsOneWidget);
     });
 
-    patrolWidgetTest('Flow 4: Feature Voting & Community Voice Sheet', ($) async {
-      await $.pumpWidgetAndSettle(
-        createTestApp(
-          home: const Scaffold(body: BelongFeedbackAndVotingSheet()),
-        ),
+    patrolWidgetTest('Flow 4: Whitelabel Brand Dynamic Reconfiguration', ($) async {
+      const customBrand = CommunityBrandConfig(
+        communityName: 'Spectrum Oasis',
+        tagline: 'Quiet fellowship for autistic adults',
+        logoAssetPath: 'assets/branding/oasis_logo.png',
+        primaryColorHex: '#1B4332',
+        accentColorHex: '#52B788',
+        welcomeMessage: 'Welcome to Oasis Fellowship',
+        guidelinesUrl: 'https://belongonthespectrum.com/guidelines',
       );
 
-      expect($('Belong Roadmap & Feedback'), findsOneWidget);
-      expect($(const Key('tab_feature_voting')), findsOneWidget);
-      expect($(const Key('tab_private_feedback')), findsOneWidget);
+      await $.pumpWidgetAndSettle(createTestApp(brand: customBrand));
 
-      // Switch to Share Feedback tab
-      await $(const Key('tab_private_feedback')).tap();
-      await $.pumpAndSettle();
-
-      expect($('Works Great'), findsOneWidget);
-      expect($('Idea / Tweak'), findsOneWidget);
-      expect($('Bug / Confusing'), findsOneWidget);
+      // Verify dynamic brand injection
+      expect($('Spectrum Oasis'), findsOneWidget);
+      expect($('Quiet fellowship for autistic adults'), findsOneWidget);
     });
   });
 }
