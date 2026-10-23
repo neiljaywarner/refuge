@@ -29,6 +29,7 @@ class BelongNotification extends Equatable {
     this.isRead = false,
     this.spaceKey,
     this.postId,
+    this.commentSnippet,
   });
 
   final String id;
@@ -40,6 +41,7 @@ class BelongNotification extends Equatable {
   final bool isRead;
   final String? spaceKey;
   final String? postId;
+  final String? commentSnippet;
 
   @override
   List<Object?> get props => [
@@ -52,6 +54,7 @@ class BelongNotification extends Equatable {
         isRead,
         spaceKey,
         postId,
+        commentSnippet,
       ];
 
   /// Author initials for the Avatar widget fallback, stripping parentheses,
