@@ -88,10 +88,10 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
 class BelongMembersDirectoryView extends ConsumerStatefulWidget {
   const BelongMembersDirectoryView({
     super.key,
-    required this.onBackToSpaces,
+    this.onBackToSpaces,
   });
 
-  final VoidCallback onBackToSpaces;
+  final VoidCallback? onBackToSpaces;
 
   @override
   ConsumerState<BelongMembersDirectoryView> createState() =>
@@ -138,7 +138,7 @@ class _BelongMembersDirectoryViewState
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Back to Spaces',
-          onPressed: widget.onBackToSpaces,
+          onPressed: widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
         ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,15 +259,8 @@ class _BelongMembersDirectoryViewState
                         member: member,
                         onTap: () => OtherMemberProfileDialog.show(
                           context,
-                          member: MemberProfile(
-                            displayName: member.name,
-                            email: '',
-                            bio: member.bio,
-                            comfortBadges: member.comfortBadges,
-                            isSignedIn: false,
-                            icocChurchAffiliation: member.churchAffiliation,
-                            tagline: member.tagline,
-                          ),
+                          authorName: member.name,
+                          member: member,
                         ),
                       ),
                       const SizedBox(height: 10),
