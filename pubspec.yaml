@@ -90,6 +90,11 @@ scripts:
     setup: dart run tool/setup_ollama.dart
     verify: dart run tool/verify_ollama.dart
     status: dart run tool/setup_ollama.dart --check-only
+  server:
+    $description: "Serverpod backend development, analysis, and testing"
+    test: "cd sanctuary_server/sanctuary_server_server && dart test"
+    analyze: "cd sanctuary_server/sanctuary_server_server && dart analyze"
+    generate: "cd sanctuary_server/sanctuary_server_server && serverpod generate"
 
 dependency_overrides:
   firebase_core: ^5.0.0
