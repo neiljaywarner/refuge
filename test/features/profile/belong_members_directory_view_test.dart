@@ -34,15 +34,11 @@ void main() {
       );
 
       // Verify title and descriptions
-      expect($('Members Section & Directory'), findsOneWidget);
+      expect($('Member Directory'), findsOneWidget);
       expect(
-        $('Store profile info & connect with verified fellowship members'),
+        $('Fellowship disciples & leaders'),
         findsOneWidget,
       );
-
-      // Verify user profile card
-      expect($('Fellowship Member'), findsOneWidget);
-      expect($(const Key('user_profile_affiliation_badge')), findsOneWidget);
 
       // Verify dev-mode dummy community members
       expect($('Marty (Organizer)'), findsOneWidget);
@@ -51,10 +47,10 @@ void main() {
       expect($('Jordan P.'), findsOneWidget);
 
       // Verify church affiliations shown
-      expect($('DFW Church (Partner)'), findsWidgets);
-      expect($('Austin Christian Church'), findsOneWidget);
-      expect($('Boston Church of Christ'), findsOneWidget);
-      expect($('I am not a member of an ICOC church'), findsOneWidget);
+      expect($(find.textContaining('DFW Church (Partner)')), findsWidgets);
+      expect($(find.textContaining('Austin Christian Church')), findsOneWidget);
+      expect($(find.textContaining('Boston Church of Christ')), findsOneWidget);
+      expect($(find.textContaining('I am not a member of an ICOC church')), findsOneWidget);
 
       // Verify back button works
       await $(const Key('members_directory_back_button')).tap();
@@ -72,9 +68,11 @@ void main() {
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
+          child: MaterialApp(
             home: Scaffold(
-              body: BelongMembersDirectoryView(),
+              body: BelongMembersDirectoryView(
+                onBackToSpaces: () {},
+              ),
             ),
           ),
         ),

@@ -55,6 +55,69 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
     comfortBadges: ['Community Organizer', 'Literal communication appreciated'],
   ),
   DevFellowshipMember(
+    name: 'Hannah M.',
+    role: 'Creative Arts & Botany',
+    tagline: 'Sensory-friendly contemplative prayer & botanical art',
+    bio: 'Autistic artist exploring sensory-friendly contemplative prayer and botanical illustrations.',
+    churchAffiliation: 'Austin Christian Church',
+    isIcocMember: true,
+    comfortBadges: ['Visual Artist', 'Sensory-sensitive'],
+  ),
+  DevFellowshipMember(
+    name: 'Alex K.',
+    role: 'Peer Chat Facilitator',
+    tagline: 'Retro computing & unhurried theological reflection',
+    bio: 'Actually Autistic Chat host and software tinkerer. Passionate about retro computing and unhurried theological reflection.',
+    churchAffiliation: 'Boston Church of Christ',
+    isIcocMember: true,
+    comfortBadges: ['Chat Facilitator', 'Special Interest: Computing'],
+  ),
+  DevFellowshipMember(
+    name: 'Jordan P.',
+    role: 'Friend & Ally of Fellowship',
+    tagline: 'Neurodivergent seeker finding calm, grace-filled Christian fellowship',
+    bio: 'Neurodivergent seeker finding calm, grace-filled Christian fellowship and honest community.',
+    churchAffiliation: 'I am not a member of an ICOC church',
+    isIcocMember: false,
+    comfortBadges: ['Ally & Visitor', 'Low-stimulus preferred'],
+  ),
+  DevFellowshipMember(
+    name: 'David M. (UK)',
+    role: 'Contemplative Prayer & Routine Support',
+    tagline: 'Finding peace in routine transitions and Scripture meditation',
+    bio: 'Neurodivergent believer navigating routine transitions and learning that rest in Christ is spiritual.',
+    churchAffiliation: 'London Church of Christ (ICOC)',
+    isIcocMember: true,
+    comfortBadges: ['Contemplative Prayer', 'Routine Stability'],
+  ),
+  DevFellowshipMember(
+    name: 'Elena R. (Colorado)',
+    role: 'Sensory Fatigue Care & Mutual Aid',
+    tagline: 'Holding safe space after sensory overload',
+    bio: 'Creating calm spaces for autistic believers recovering from sensory fatigue and fluorescent lighting.',
+    churchAffiliation: 'Denver Church of Christ',
+    isIcocMember: true,
+    comfortBadges: ['Sensory Sensitive', 'Quiet Fellowship'],
+  ),
+  DevFellowshipMember(
+    name: 'Pastor Thomas (Melbourne)',
+    role: 'Teaching & Scripture Anchor',
+    tagline: 'Theology of quiet waters and biblical rest',
+    bio: 'Pastor exploring neurodivergent-affirming hermeneutics and contemplative biblical study.',
+    churchAffiliation: 'Melbourne Church of Christ (ICOC)',
+    isIcocMember: true,
+    comfortBadges: ['Teaching Ministry', 'Theology of Rest'],
+  ),
+  DevFellowshipMember(
+    name: 'Nathan K. (Texas)',
+    role: 'Church Acoustics & Music Fellowship',
+    tagline: 'Church Acoustics & Reverberation Control',
+    bio: 'Audio engineer researching acoustic treatment and earplug-friendly Sunday sanctuaries.',
+    churchAffiliation: 'DFW Church (Partner)',
+    isIcocMember: true,
+    comfortBadges: ['Sensory Sensitive', 'Acoustic Specialist'],
+  ),
+  DevFellowshipMember(
     name: 'Caleb Stone',
     role: 'Audio & Visual Ministry',
     tagline: 'Soundscapes, calm lighting, and tech seams',
@@ -88,10 +151,10 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
 class BelongMembersDirectoryView extends ConsumerStatefulWidget {
   const BelongMembersDirectoryView({
     super.key,
-    required this.onBackToSpaces,
+    this.onBackToSpaces,
   });
 
-  final VoidCallback onBackToSpaces;
+  final VoidCallback? onBackToSpaces;
 
   @override
   ConsumerState<BelongMembersDirectoryView> createState() =>
@@ -135,9 +198,10 @@ class _BelongMembersDirectoryViewState
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
+          key: const Key('members_directory_back_button'),
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Back to Spaces',
-          onPressed: widget.onBackToSpaces,
+          onPressed: widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
         ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,6 +216,18 @@ class _BelongMembersDirectoryViewState
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            key: const Key('members_edit_profile_button'),
+            tooltip: currentProfile.isSignedIn ? 'Edit Profile' : 'Sign In / Profile',
+            icon: Icon(
+              currentProfile.isSignedIn
+                  ? Icons.account_circle_outlined
+                  : Icons.login_rounded,
+            ),
+            onPressed: () => MemberProfileDialog.show(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -411,6 +487,7 @@ class _FellowshipMemberCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return InkWell(
+      key: Key('dev_member_card_${member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}'),
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Card(

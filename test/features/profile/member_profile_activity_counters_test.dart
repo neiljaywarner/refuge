@@ -116,8 +116,10 @@ void main() {
 
         await $.pumpWidget(
           buildHarness(
-            home: const Scaffold(
-              body: BelongMembersDirectoryView(),
+            home: Scaffold(
+              body: BelongMembersDirectoryView(
+                onBackToSpaces: () {},
+              ),
             ),
           ),
         );
