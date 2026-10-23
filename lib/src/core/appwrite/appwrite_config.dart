@@ -27,12 +27,13 @@ class AppwriteConfig {
   final String projectId;
   final String databaseId;
 
-  /// True only when a real endpoint and project id were provided.
+  /// True only when a real https endpoint and project id were provided.
   bool get isConfigured {
     final trimmedEndpoint = endpoint.trim();
     final trimmedProject = projectId.trim();
     if (trimmedEndpoint.isEmpty || trimmedProject.isEmpty) return false;
-    if (!trimmedEndpoint.startsWith('https://')) return false;
+    final uri = Uri.tryParse(trimmedEndpoint);
+    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) return false;
     if (trimmedEndpoint.contains('<') || trimmedProject.contains('your-')) {
       return false;
     }

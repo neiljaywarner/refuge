@@ -11,14 +11,23 @@ void main() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(pathProvider, (call) async => '.');
 
-  test('default Appwrite config stays off so Serverpod remains the live backend', () {
-    expect(AppwriteConfig.fromEnvironment.isConfigured, isFalse);
-    expect(createAppwriteServices(AppwriteConfig.fromEnvironment), isNull);
-    expect(configuredBackendMode, BackendMode.serverpod);
-    expect(
-      PostRepositoryFactory.create(),
-      isA<ServerpodPostRepository>(),
+  test(
+    'default Appwrite config stays off so Serverpod remains the live backend',
+    () {
+      expect(AppwriteConfig.fromEnvironment.isConfigured, isFalse);
+      expect(createAppwriteServices(AppwriteConfig.fromEnvironment), isNull);
+      expect(configuredBackendMode, BackendMode.serverpod);
+      expect(PostRepositoryFactory.create(), isA<ServerpodPostRepository>());
+    },
+  );
+
+  test('https without a host is not treated as configured', () {
+    const config = AppwriteConfig(
+      endpoint: 'https://',
+      projectId: 'belong-dev',
     );
+    expect(config.isConfigured, isFalse);
+    expect(createAppwriteServices(config), isNull);
   });
 
   test('placeholder endpoint and project id are not treated as configured', () {
