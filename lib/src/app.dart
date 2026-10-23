@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
+import 'core/presentation/system_insets.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
@@ -34,7 +35,10 @@ class _RefugeAppState extends State<RefugeApp> {
 
   @override
   Widget build(BuildContext context) => ProviderScope(
-    overrides: [postRepositoryProvider.overrideWithValue(widget.repository), ...?widget.overrides],
+    overrides: [
+      postRepositoryProvider.overrideWithValue(widget.repository),
+      ...?widget.overrides,
+    ],
     child: ListenableBuilder(
       listenable: _themeNotifier,
       builder: (context, _) => _RefugeAppContent(
@@ -67,11 +71,19 @@ class _RefugeAppContent extends ConsumerWidget {
       final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
           ? themeNotifier.fontScale
           : riverpodFontScale;
+      final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
+          .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
+      final theme = Theme.of(context);
       return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(activeScale.scaleFactor),
+        data: repaired,
+        child: Theme(
+          data: theme.copyWith(
+            dialogTheme: theme.dialogTheme.copyWith(
+              insetPadding: SystemInsets.dialogInsetPadding(repaired),
+            ),
+          ),
+          child: child!,
         ),
-        child: child!,
       );
     },
     localizationsDelegates: [
@@ -80,7 +92,8 @@ class _RefugeAppContent extends ConsumerWidget {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    home: homeOverride ??
+    home:
+        homeOverride ??
         RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
   );
 }

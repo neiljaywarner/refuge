@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/presentation/system_insets.dart';
 import '../../notifications/presentation/notifications_controller.dart';
 
 /// Primary 4-tab Bottom Navigation Bar for **Belong on the Spectrum**
@@ -36,25 +37,30 @@ class BelongBottomNavBar extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
+    final disableAnimations =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final unreadNotificationsCount = ref.watch(
+      unreadNotificationsCountProvider,
+    );
 
-    final backgroundColor = isContrast ? Colors.black : theme.scaffoldBackgroundColor;
-    final topBorderColor = isContrast ? Colors.yellow : primary.withValues(alpha: 0.18);
+    final backgroundColor = isContrast
+        ? Colors.black
+        : theme.scaffoldBackgroundColor;
+    final topBorderColor = isContrast
+        ? Colors.yellow
+        : primary.withValues(alpha: 0.18);
+    final bottomInset = SystemInsets.navigationBar(MediaQuery.of(context));
 
     return DecoratedBox(
       key: const Key('belong_bottom_nav_bar'),
       decoration: BoxDecoration(
         color: backgroundColor,
         border: Border(
-          top: BorderSide(
-            color: topBorderColor,
-            width: isContrast ? 2.0 : 1.0,
-          ),
+          top: BorderSide(color: topBorderColor, width: isContrast ? 2.0 : 1.0),
         ),
       ),
-      child: SafeArea(
-        top: false,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
         child: SizedBox(
           height: 64,
           child: Row(
@@ -113,7 +119,7 @@ class _BottomNavItem extends StatelessWidget {
     final Color inactiveColor = isContrast
         ? Colors.white
         : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ??
-            Colors.grey.shade600);
+              Colors.grey.shade600);
 
     final Color currentColor = isSelected ? activeColor : inactiveColor;
 
@@ -127,11 +133,10 @@ class _BottomNavItem extends StatelessWidget {
                 : null,
             borderRadius: BorderRadius.circular(16),
           )
-        : const BoxDecoration(
-            color: Colors.transparent,
-          );
+        : const BoxDecoration(color: Colors.transparent);
 
-    final Widget iconWidget = (tab == BelongBottomTab.notifications && unreadCount > 0)
+    final Widget iconWidget =
+        (tab == BelongBottomTab.notifications && unreadCount > 0)
         ? Badge.count(
             key: const Key('bottom_nav_notifications_badge'),
             count: unreadCount,
@@ -187,7 +192,9 @@ class _BottomNavItem extends StatelessWidget {
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: currentColor,
                         letterSpacing: 0.1,
                       ),

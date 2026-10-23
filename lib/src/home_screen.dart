@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'core/firebase/community_analytics_service.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
+import 'core/presentation/system_insets.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/belong_auth_sheet.dart';
 import 'features/auth/presentation/simple_auth.dart';
@@ -78,8 +79,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
       () => selectedSpace.value == 'saved_for_later'
           ? activeRepository.watchSavedPosts().asBroadcastStream()
           : activeRepository
-              .watchPosts(spaceKey: selectedSpace.value)
-              .asBroadcastStream(),
+                .watchPosts(spaceKey: selectedSpace.value)
+                .asBroadcastStream(),
       [activeRepository, selectedSpace.value],
     );
     // Subscribe at the screen level (not inside the feed sub-view) so the
@@ -213,8 +214,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
               if (!profile.isSignedIn)
                 Container(
                   key: const Key('demo_mode_banner'),
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isContrast
                         ? Colors.black
@@ -291,8 +298,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     final filteredPosts = activeFilter.value == 'All'
                         ? availablePosts
                         : availablePosts
-                            .where((p) => p.toneTag == activeFilter.value)
-                            .toList();
+                              .where((p) => p.toneTag == activeFilter.value)
+                              .toList();
 
                     final userInterests = {
                       ...profile.comfortBadges,
@@ -314,7 +321,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       if (selectedSpace.value == 'saved_for_later') {
                         return Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -326,7 +335,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
-                                  key: const Key('empty_saved_reflections_placeholder'),
+                                  key: const Key(
+                                    'empty_saved_reflections_placeholder',
+                                  ),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 12,
@@ -533,7 +544,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
               if (themeNotifier != null) {
                 themeNotifier!.toggleHighContrast();
               } else {
-                ref.read(sensoryThemeModeProvider.notifier).toggleHighContrast();
+                ref
+                    .read(sensoryThemeModeProvider.notifier)
+                    .toggleHighContrast();
               }
             },
           ),
@@ -605,7 +618,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
                 side: BorderSide(
-                  color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+                  color: isContrast
+                      ? Colors.white
+                      : Theme.of(context).dividerColor,
                 ),
               ),
               onSelected: (action) {
@@ -666,7 +681,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color,
                               ),
                             ),
                           ],
@@ -712,7 +730,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color,
                               ),
                             ),
                           ],
@@ -770,15 +791,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     backgroundColor: isContrast
                         ? Colors.yellow
                         : primaryColor.withValues(alpha: 0.2),
-                    backgroundImage: (profile.avatarUrl != null &&
+                    backgroundImage:
+                        (profile.avatarUrl != null &&
                             profile.avatarUrl!.isNotEmpty)
                         ? NetworkImage(profile.avatarUrl!)
                         : null,
-                    onBackgroundImageError: (profile.avatarUrl != null &&
+                    onBackgroundImageError:
+                        (profile.avatarUrl != null &&
                             profile.avatarUrl!.isNotEmpty)
                         ? (_, __) {}
                         : null,
-                    child: (profile.avatarUrl == null ||
+                    child:
+                        (profile.avatarUrl == null ||
                             profile.avatarUrl!.isEmpty)
                         ? Text(
                             profile.initials,
@@ -889,15 +913,13 @@ void _showCreatePostModal({
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-        ),
+      return SystemBottomInset(
         child: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -912,13 +934,17 @@ void _showCreatePostModal({
                       Row(
                         children: [
                           Icon(
-                            isImagePost ? Icons.image_outlined : Icons.post_add_rounded,
+                            isImagePost
+                                ? Icons.image_outlined
+                                : Icons.post_add_rounded,
                             size: 20,
                             color: primaryColor,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            isImagePost ? 'Create Image Post' : 'Create Reflection Post',
+                            isImagePost
+                                ? 'Create Image Post'
+                                : 'Create Reflection Post',
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -939,22 +965,23 @@ void _showCreatePostModal({
                   primaryColor: primaryColor,
                   isContrast: isContrast,
                   isImagePost: isImagePost,
-                  onSubmit: ({
-                    required String content,
-                    required String toneTag,
-                    String? specialInterestTag,
-                    String? imageUrl,
-                  }) async {
-                    await onSubmit(
-                      content: content,
-                      toneTag: toneTag,
-                      specialInterestTag: specialInterestTag,
-                      imageUrl: imageUrl,
-                    );
-                    if (ctx.mounted) {
-                      Navigator.of(ctx).pop();
-                    }
-                  },
+                  onSubmit:
+                      ({
+                        required String content,
+                        required String toneTag,
+                        String? specialInterestTag,
+                        String? imageUrl,
+                      }) async {
+                        await onSubmit(
+                          content: content,
+                          toneTag: toneTag,
+                          specialInterestTag: specialInterestTag,
+                          imageUrl: imageUrl,
+                        );
+                        if (ctx.mounted) {
+                          Navigator.of(ctx).pop();
+                        }
+                      },
                 ),
                 const SizedBox(height: 12),
               ],

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/firebase/community_analytics_service.dart';
+import '../../../core/presentation/system_insets.dart';
 import '../../../core/firebase/firebase_installations_service.dart';
 import '../../../core/firebase/in_app_messaging/in_app_messaging_service.dart';
 import '../../../core/observability/diagnostic_log_service.dart';
@@ -23,9 +24,9 @@ class ObservabilityEasterEggDialog extends ConsumerStatefulWidget {
   const ObservabilityEasterEggDialog({super.key});
 
   static Future<void> show(BuildContext context) => showDialog(
-        context: context,
-        builder: (_) => const ObservabilityEasterEggDialog(),
-      );
+    context: context,
+    builder: (_) => const ObservabilityEasterEggDialog(),
+  );
 
   @override
   ConsumerState<ObservabilityEasterEggDialog> createState() =>
@@ -76,19 +77,22 @@ class _ObservabilityEasterEggDialogState
             // -----------------------------------------------------------------
             Text(
               'Firebase Installation ID (Troubleshooting):',
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: theme.colorScheme.outlineVariant
-                    .withValues(alpha: 0.5),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
               ),
               child: installationsAsync.when(
@@ -133,8 +137,10 @@ class _ObservabilityEasterEggDialogState
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                       SizedBox(width: 8),
-                      Text('Fetching Installation ID...',
-                          style: TextStyle(fontSize: 11)),
+                      Text(
+                        'Fetching Installation ID...',
+                        style: TextStyle(fontSize: 11),
+                      ),
                     ],
                   ),
                 ),
@@ -211,9 +217,7 @@ class _ObservabilityEasterEggDialogState
                               action: SnackBarAction(
                                 label: 'Copy Link',
                                 onPressed: () {
-                                  Clipboard.setData(
-                                    ClipboardData(text: url),
-                                  );
+                                  Clipboard.setData(ClipboardData(text: url));
                                 },
                               ),
                               duration: const Duration(seconds: 4),
@@ -248,11 +252,11 @@ class _ObservabilityEasterEggDialogState
             if (_uploadedLogUrl != null) ...[
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer
-                      .withValues(alpha: 0.4),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.4,
+                  ),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -293,8 +297,8 @@ class _ObservabilityEasterEggDialogState
             OutlinedButton.icon(
               key: const Key('easter_egg_view_replay_button'),
               onPressed: () async {
-                final replay =
-                    await diagnosticLogService.generateReplayBundle();
+                final replay = await diagnosticLogService
+                    .generateReplayBundle();
                 if (context.mounted) {
                   _showSessionReplaySheet(context, replay);
                 }
@@ -391,15 +395,17 @@ class _ObservabilityEasterEggDialogState
             // ADB DebugView Help
             Text(
               'ADB Analytics DebugView Mode:',
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
@@ -417,14 +423,12 @@ class _ObservabilityEasterEggDialogState
                     onPressed: () {
                       Clipboard.setData(
                         const ClipboardData(
-                          text:
-                              'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.refuge',
+                          text: 'adb shell setprop debug.firebase.analytics.app com.belongonthespectrum.refuge',
                         ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content:
-                              Text('📋 ADB command copied to clipboard'),
+                          content: Text('📋 ADB command copied to clipboard'),
                           duration: Duration(seconds: 2),
                         ),
                       );
@@ -436,17 +440,20 @@ class _ObservabilityEasterEggDialogState
             const SizedBox(height: 8),
             Text(
               'Recent In-Memory Errors (${errorReporter.recordedErrorsForTesting.length}):',
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               errorReporter.recordedErrorsForTesting.isEmpty
                   ? 'No errors recorded in this session.'
                   : errorReporter.recordedErrorsForTesting
-                      .map((e) =>
-                          '• [${e['fatal'] == true ? 'FATAL' : 'HANDLED'}] ${e['reason']}')
-                      .join('\n'),
+                        .map(
+                          (e) =>
+                              '• [${e['fatal'] == true ? 'FATAL' : 'HANDLED'}] ${e['reason']}',
+                        )
+                        .join('\n'),
               style: const TextStyle(fontSize: 10, fontFamily: 'monospace'),
             ),
           ],
@@ -469,65 +476,68 @@ class _ObservabilityEasterEggDialogState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        maxChildSize: 0.95,
-        minChildSize: 0.4,
-        expand: false,
-        builder: (_, scrollController) => Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.replay_circle_filled_outlined,
-                    color: Colors.blueAccent,
-                  ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Diagnostic Session Replay',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+      useSafeArea: true,
+      builder: (ctx) => SystemBottomInset(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          maxChildSize: 0.95,
+          minChildSize: 0.4,
+          expand: false,
+          builder: (_, scrollController) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.replay_circle_filled_outlined,
+                      color: Colors.blueAccent,
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Diagnostic Session Replay',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      key: const Key('easter_egg_copy_full_replay_button'),
+                      icon: const Icon(Icons.copy, size: 18),
+                      tooltip: 'Copy Session Replay',
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(text: replay.toFormattedText()),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              '📋 Session replay copied to clipboard',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const Divider(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: SelectableText(
+                      replay.toFormattedText(),
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 11,
                       ),
                     ),
                   ),
-                  IconButton(
-                    key: const Key('easter_egg_copy_full_replay_button'),
-                    icon: const Icon(Icons.copy, size: 18),
-                    tooltip: 'Copy Session Replay',
-                    onPressed: () {
-                      Clipboard.setData(
-                        ClipboardData(text: replay.toFormattedText()),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            '📋 Session replay copied to clipboard',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const Divider(),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: SelectableText(
-                    replay.toFormattedText(),
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 11,
-                    ),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/system_insets.dart';
+
 /// Minimal, plain-vanilla wrapper around the official [firebase_ui_auth] example.
 ///
 /// Provides out-of-the-box:
@@ -29,9 +31,11 @@ class SimpleAuthScreen extends StatelessWidget {
   }) {
     return Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => SimpleAuthScreen(
-          onAuthenticated: onAuthenticated,
-          onSignedOut: onSignedOut,
+        builder: (_) => SystemBottomInset(
+          child: SimpleAuthScreen(
+            onAuthenticated: onAuthenticated,
+            onSignedOut: onSignedOut,
+          ),
         ),
       ),
     );
@@ -40,7 +44,8 @@ class SimpleAuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final providers = [EmailAuthProvider()];
-    final effectiveAuth = auth ?? (Firebase.apps.isNotEmpty ? FirebaseAuth.instance : null);
+    final effectiveAuth =
+        auth ?? (Firebase.apps.isNotEmpty ? FirebaseAuth.instance : null);
 
     if (effectiveAuth == null) {
       // In headless unit tests or when Firebase is uninitialized
@@ -68,7 +73,8 @@ class SimpleAuthScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                          color: Theme.of(context).colorScheme.primary
+                              .withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -80,7 +86,10 @@ class SimpleAuthScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       const Text(
                         'Belong on the Spectrum',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -98,7 +107,9 @@ class SimpleAuthScreen extends StatelessWidget {
                           Navigator.of(context).pop();
                         },
                         icon: const Icon(Icons.login_rounded, size: 16),
-                        label: const Text('Enter Community (Offline / Test Mode)'),
+                        label: const Text(
+                          'Enter Community (Offline / Test Mode)',
+                        ),
                       ),
                     ],
                   ),
@@ -128,7 +139,8 @@ class SimpleAuthScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                          color: Theme.of(context).colorScheme.primary
+                              .withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -140,9 +152,8 @@ class SimpleAuthScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Belong on the Spectrum',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -157,8 +168,8 @@ class SimpleAuthScreen extends StatelessWidget {
                       ? 'Sign in to access your reflections, spaces, and private saved items.'
                       : 'Join our calm Christian fellowship. No algorithmic rush.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               );
             },
@@ -213,9 +224,7 @@ class SimpleAuthScreen extends StatelessWidget {
               }
             }),
           ],
-          appBar: AppBar(
-            title: const Text('Account Profile'),
-          ),
+          appBar: AppBar(title: const Text('Account Profile')),
         );
       },
     );

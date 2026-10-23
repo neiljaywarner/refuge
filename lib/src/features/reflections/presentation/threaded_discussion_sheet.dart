@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/presentation/system_insets.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/comment_repository.dart';
 import '../domain/comment.dart';
@@ -20,7 +21,8 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
         isScrollControlled: true,
         useSafeArea: true,
         backgroundColor: Colors.transparent,
-        builder: (context) => ThreadedDiscussionSheet(post: post),
+        builder: (context) =>
+            SystemBottomInset(child: ThreadedDiscussionSheet(post: post)),
       );
 
   static const List<String> availableToneTags = [
@@ -116,14 +118,18 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
             decoration: BoxDecoration(
               color: theme.cardColor.withValues(alpha: isDark ? 0.7 : 0.9),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+              border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.5),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 14,
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  backgroundColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.15,
+                  ),
                   child: Text(
                     post.authorName.isNotEmpty ? post.authorName[0] : 'P',
                     style: TextStyle(
@@ -199,9 +205,8 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
           Expanded(
             child: commentsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(
-                child: Text('Error loading comments: $err'),
-              ),
+              error: (err, stack) =>
+                  Center(child: Text('Error loading comments: $err')),
               data: (comments) {
                 if (comments.isEmpty) {
                   return Center(
@@ -239,7 +244,10 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
                     final comment = comments[index];
@@ -287,7 +295,9 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                           horizontal: 16,
                           vertical: 6,
                         ),
-                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.08,
+                        ),
                         child: Row(
                           children: [
                             const Icon(Icons.reply, size: 14),
@@ -326,7 +336,10 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                           return Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: ChoiceChip(
-                              label: Text(tag, style: const TextStyle(fontSize: 10)),
+                              label: Text(
+                                tag,
+                                style: const TextStyle(fontSize: 10),
+                              ),
                               selected: isSelected,
                               visualDensity: VisualDensity.compact,
                               materialTapTargetSize:
@@ -392,7 +405,8 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                     final text = textController.text.trim();
                                     if (text.isEmpty) return;
 
-                                    final author = currentProfile.displayName.isNotEmpty
+                                    final author =
+                                        currentProfile.displayName.isNotEmpty
                                         ? currentProfile.displayName
                                         : 'Fellowship Member';
 
@@ -505,7 +519,9 @@ class _CommentTile extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
