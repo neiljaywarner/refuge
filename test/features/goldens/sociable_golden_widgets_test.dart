@@ -39,7 +39,7 @@ void main() {
         expect($(BelongBottomNavBar), findsOneWidget);
         expect($('Home'), findsOneWidget);
         expect($('Notifications'), findsOneWidget);
-        expect($('Msgs'), findsOneWidget);
+        expect($('Messages'), findsOneWidget);
         expect($('Search'), findsOneWidget);
       },
     );

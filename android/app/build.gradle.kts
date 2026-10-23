@@ -40,8 +40,12 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JVM_17
     }
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
 }
 
 flutter {
