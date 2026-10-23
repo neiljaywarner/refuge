@@ -1,137 +1,139 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/app_launcher_badge_service.dart';
 import '../domain/belong_notification.dart';
 
-/// Active filter chip for Calm Notifications
-enum BelongNotificationFilter {
-  inbox,
-  mentions,
-  threads,
-  following;
-
-  String get label => switch (this) {
-        BelongNotificationFilter.inbox => 'Inbox',
-        BelongNotificationFilter.mentions => 'Mentions',
-        BelongNotificationFilter.threads => 'Threads',
-        BelongNotificationFilter.following => 'Following',
-      };
-}
+/// Provider for the active filter chip in the Notifications inbox.
+final notificationActiveFilterProvider =
+    StateProvider<BelongNotificationFilter>(
+  (ref) => BelongNotificationFilter.inbox,
+);
 
 /// Simulated in-memory notification seed for development & testing (#328, #329).
 final List<BelongNotification> kInitialNotifications = [
   BelongNotification(
-    id: 'notif-1',
+    id: 'notif-mention-1',
+    authorName: 'John Doe',
     type: BelongNotificationType.mention,
-    authorName: 'Marty (Organizer)',
-    postTitle: 'Markan Chiasms in Chapter 4',
-    timestamp: DateTime(2026, 10, 22, 12, 0),
+    postTitle: 'Markan Chiasms',
+    commentSnippet: 'Thanks @rachel for highlighting Mark 2:27!',
+    timestamp: DateTime.now().subtract(const Duration(hours: 1)),
     isRead: false,
   ),
   BelongNotification(
-    id: 'notif-2',
+    id: 'notif-reply-1',
+    authorName: 'Elena R.',
     type: BelongNotificationType.reply,
-    authorName: 'Sarah Chen',
-    postTitle: 'Quiet Rooms at Texas Assemblies',
-    timestamp: DateTime(2026, 10, 22, 10, 30),
+    postTitle: 'Prayer & Healing',
+    commentSnippet: 'Praying for soothing rest after your errands today.',
+    timestamp: DateTime.now().subtract(const Duration(days: 2)),
     isRead: false,
   ),
   BelongNotification(
-    id: 'notif-3',
+    id: 'notif-like-1',
+    authorName: 'David M.',
     type: BelongNotificationType.like,
-    authorName: 'Caleb Stone',
-    postTitle: 'Sensory Safe Worship Spaces',
-    timestamp: DateTime(2026, 10, 21, 15, 0),
+    postTitle: 'Sensory Friendly Worship',
+    timestamp: DateTime.now().subtract(const Duration(days: 3)),
     isRead: false,
   ),
   BelongNotification(
-    id: 'notif-4',
+    id: 'notif-following-1',
+    authorName: 'Pastor Thomas',
     type: BelongNotificationType.following,
-    authorName: 'David Okafor',
-    postTitle: 'Fellowship Hall Reflections',
-    timestamp: DateTime(2026, 10, 20, 9, 0),
+    postTitle: 'Psalm 23 Meditations',
+    commentSnippet: 'Gathering by quiet waters this Wednesday evening.',
+    timestamp: DateTime(DateTime.now().year, 9, 7, 14, 30),
     isRead: true,
   ),
 ];
 
-/// StateNotifier / Notifier managing the in-app calm notification collection.
-class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
-  @override
-  List<BelongNotification> build() {
-    final now = DateTime.now();
-    return [
-      kInitialNotifications[0].copyWith(
-        timestamp: now.subtract(const Duration(minutes: 5)),
-      ),
-      kInitialNotifications[1].copyWith(
-        timestamp: now.subtract(const Duration(hours: 1)),
-      ),
-      kInitialNotifications[2].copyWith(
-        timestamp: now.subtract(const Duration(hours: 3)),
-      ),
-      kInitialNotifications[3].copyWith(
-        timestamp: now.subtract(const Duration(days: 2)),
-      ),
-    ];
+/// State notifier managing the list of calm notifications.
+class BelongNotificationsNotifier
+    extends StateNotifier<List<BelongNotification>> {
+  final AppLauncherBadgeService? badgeService;
+
+  BelongNotificationsNotifier({
+    this.badgeService,
+    List<BelongNotification>? initialList,
+  }) : super(initialList ?? kInitialNotifications) {
+    _syncLauncherBadge();
   }
 
-  void markAsRead(String notificationId) {
-    state = [
-      for (final n in state)
-        if (n.id == notificationId) n.copyWith(isRead: true) else n,
-    ];
-  }
-
+  /// Marks all notifications as read and clears badges.
   void markAllAsRead() {
     state = [
       for (final n in state)
         if (!n.isRead) n.copyWith(isRead: true) else n,
     ];
+    _syncLauncherBadge();
   }
 
+  /// Marks an individual notification as read.
+  void markAsRead(String id) {
+    state = [
+      for (final n in state)
+        if (n.id == id) n.copyWith(isRead: true) else n,
+    ];
+    _syncLauncherBadge();
+  }
+
+  /// Adds a new notification and increments unread count.
   void addNotification(BelongNotification notification) {
     state = [notification, ...state];
+    _syncLauncherBadge();
   }
 
   void clearAll() {
     state = [];
+    _syncLauncherBadge();
+  }
+
+  void _syncLauncherBadge() {
+    final unread = state.where((n) => !n.isRead).length;
+    badgeService?.setBadgeCount(unread);
   }
 }
 
-/// Main provider for calm notifications.
-final belongNotificationsProvider =
-    NotifierProvider<BelongNotificationsNotifier, List<BelongNotification>>(
-      BelongNotificationsNotifier.new,
-    );
+/// Primary provider for notifications list.
+final belongNotificationsProvider = StateNotifierProvider<
+    BelongNotificationsNotifier, List<BelongNotification>>(
+  (ref) {
+    final badgeService = ref.watch(appLauncherBadgeServiceProvider);
+    return BelongNotificationsNotifier(badgeService: badgeService);
+  },
+);
 
-/// Active filter chip state provider.
-final notificationActiveFilterProvider =
-    StateProvider<BelongNotificationFilter>((ref) => BelongNotificationFilter.inbox);
-
-/// Computed provider returning total count of unread notifications.
-final unreadNotificationCountProvider = Provider<int>((ref) {
+/// Computed provider for unread notifications count.
+final unreadNotificationsCountProvider = Provider<int>((ref) {
   final list = ref.watch(belongNotificationsProvider);
   return list.where((n) => !n.isRead).length;
 });
 
 /// Alias for computed provider returning total count of unread notifications.
-final unreadNotificationsCountProvider = unreadNotificationCountProvider;
+final unreadNotificationCountProvider = unreadNotificationsCountProvider;
 
 /// Computed provider filtering the notification feed according to active filter chip.
 final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
   final list = ref.watch(belongNotificationsProvider);
   final filter = ref.watch(notificationActiveFilterProvider);
 
-  return switch (filter) {
-    BelongNotificationFilter.inbox => list,
-    BelongNotificationFilter.mentions =>
-      list.where((n) => n.type == BelongNotificationType.mention).toList(),
-    BelongNotificationFilter.threads =>
-      list.where((n) => n.type == BelongNotificationType.reply).toList(),
-    BelongNotificationFilter.following => list
-        .where((n) =>
-            n.type == BelongNotificationType.following ||
-            n.type == BelongNotificationType.like)
-        .toList(),
-  };
+  switch (filter) {
+    case BelongNotificationFilter.inbox:
+      return list;
+    case BelongNotificationFilter.mentions:
+      return list
+          .where((n) => n.type == BelongNotificationType.mention)
+          .toList();
+    case BelongNotificationFilter.threads:
+      return list
+          .where((n) => n.type == BelongNotificationType.reply)
+          .toList();
+    case BelongNotificationFilter.following:
+      return list
+          .where((n) =>
+              n.type == BelongNotificationType.following ||
+              n.type == BelongNotificationType.like)
+          .toList();
+  }
 });

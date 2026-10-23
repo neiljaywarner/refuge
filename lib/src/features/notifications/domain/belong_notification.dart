@@ -26,10 +26,10 @@ class BelongNotification extends Equatable {
     required this.postTitle,
     required this.timestamp,
     this.authorAvatarUrl,
+    this.commentSnippet,
     this.isRead = false,
     this.spaceKey,
     this.postId,
-    this.commentSnippet,
   });
 
   final String id;
@@ -38,10 +38,10 @@ class BelongNotification extends Equatable {
   final String postTitle;
   final DateTime timestamp;
   final String? authorAvatarUrl;
+  final String? commentSnippet;
   final bool isRead;
   final String? spaceKey;
   final String? postId;
-  final String? commentSnippet;
 
   @override
   List<Object?> get props => [
@@ -51,10 +51,10 @@ class BelongNotification extends Equatable {
         postTitle,
         timestamp,
         authorAvatarUrl,
+        commentSnippet,
         isRead,
         spaceKey,
         postId,
-        commentSnippet,
       ];
 
   /// Author initials for the Avatar widget fallback, stripping parentheses,
@@ -168,6 +168,7 @@ class BelongNotification extends Equatable {
     String? postTitle,
     DateTime? timestamp,
     String? authorAvatarUrl,
+    String? commentSnippet,
     bool? isRead,
     String? spaceKey,
     String? postId,
@@ -179,6 +180,7 @@ class BelongNotification extends Equatable {
       postTitle: postTitle ?? this.postTitle,
       timestamp: timestamp ?? this.timestamp,
       authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
+      commentSnippet: commentSnippet ?? this.commentSnippet,
       isRead: isRead ?? this.isRead,
       spaceKey: spaceKey ?? this.spaceKey,
       postId: postId ?? this.postId,
