@@ -146,7 +146,7 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
      - 💡 **Idea / Tweak** (Constructive suggestion)
      - ⚠️ **Bug / Confusing** (Something felt awkward or broken)
    - Type your thought and tap **"Send Feedback"**.
-   - **Expected**: A confirmation message appears. The note is stored in Firestore. The drawing is a placeholder storage URL and is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+   - **Expected**: A confirmation message appears. The note is stored in Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
