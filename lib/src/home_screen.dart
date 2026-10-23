@@ -316,7 +316,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                raid: 0,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -606,13 +605,13 @@ class RefugeHomeScreen extends HookConsumerWidget {
               onSelected: (action) {
                 if (action == 'create_post') {
                   _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: false,
-                    onSubmit: submitPost,
-                  );
+                     context: context,
+                     selectedSpace: selectedSpace.value,
+                     primaryColor: primaryColor,
+                     isContrast: isContrast,
+                     isImagePost: false,
+                     onSubmit: submitPost,
+                   );
                 } else if (action == 'create_image_post') {
                   _showCreatePostModal(
                     context: context,

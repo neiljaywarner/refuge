@@ -32,5 +32,11 @@ service cloud.firestore {
       allow create: if request.auth != null || true;
       allow update, delete: if request.auth != null;
     }
+
+    // 6. Admin Soft-Deleted Users Table (#356)
+    match /soft_deleted_users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
   }
 }

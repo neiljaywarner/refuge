@@ -113,7 +113,6 @@ class _BelongMembersDirectoryViewState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final brand = ref.watch(communityBrandConfigProvider);
     final currentProfile = ref.watch(memberProfileProvider);
 
     final filteredMembers = kDevFellowshipMembers.where((m) {
@@ -259,15 +258,8 @@ class _BelongMembersDirectoryViewState
                         member: member,
                         onTap: () => OtherMemberProfileDialog.show(
                           context,
-                          member: MemberProfile(
-                            displayName: member.name,
-                            email: '',
-                            bio: member.bio,
-                            comfortBadges: member.comfortBadges,
-                            isSignedIn: false,
-                            icocChurchAffiliation: member.churchAffiliation,
-                            tagline: member.tagline,
-                          ),
+                          authorName: member.name,
+                          member: member,
                         ),
                       ),
                       const SizedBox(height: 10),
