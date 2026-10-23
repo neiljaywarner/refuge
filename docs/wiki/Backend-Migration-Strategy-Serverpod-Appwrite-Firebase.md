@@ -4,7 +4,7 @@
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 > **Deployment Runbook**: [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md)
 
-> **Proposal only (22 October 2026).** The grades below are a future migration sketch. They are not the live stack. Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. The opt-in client seam is [PR #412](https://github.com/neiljaywarner/refuge/pull/412) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. That pull request is not merged.
+> **Proposal only (22 October 2026).** The grades below are a future migration sketch. They are not the live stack. Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
 
 ---
 
@@ -40,5 +40,5 @@ Because all data access in `lib/src/features/` sits behind **Riverpod Repository
 Every feature module exposes 4 pluggable adapters verified by the exact same Unit, Widget BDD (`patrolWidgetTest`), Integration, and Maestro E2E tests:
 1. **`InMemory*Repository`**: Deterministic offline/test adapter.
 2. **`Serverpod*Repository`**: Still the default post backend on `main` (22 October 2026).
-3. **`Appwrite*Repository`**: Not on `main`. Opt-in only in open [PR #412](https://github.com/neiljaywarner/refuge/pull/412), and off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set.
+3. **`Appwrite*Repository`**: On `main` via [PR #412](https://github.com/neiljaywarner/refuge/pull/412) (`fc71fd4`). Stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. It has not replaced Serverpod. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
 4. **`Firebase*Repository`**: Cloud Firestore remains the second copy of posts, plus Analytics where a build is configured.
