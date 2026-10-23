@@ -28,6 +28,8 @@ dependencies:
   firebase_messaging: ^17.0.0
   firebase_performance: ^0.12.0
   firebase_app_check: ^0.5.0
+  firebase_in_app_messaging: ^0.10.0
+  firebase_app_installations: ^0.5.0
   firebase_ui_auth: ^3.1.1
   salomon_bottom_bar: ^3.3.2
   url_launcher: ^6.3.3
@@ -44,52 +46,6 @@ dev_dependencies:
   patrol_finders: ^3.6.0
   integration_test:
     sdk: flutter
-  args: ^2.5.0
-  rps: ^0.10.1
-
-scripts:
-  test:
-    $description: "Runs the test suite across unit, widget, and feature domains"
-    $default: flutter test
-    unit: flutter test test/unit
-    widget: flutter test test/widget
-    features: flutter test test/features
-    concurrency: flutter test test/features/concurrency
-    tool: flutter test test/tool
-  analyze:
-    $description: "Performs static analysis with zero lint warnings"
-    $default: flutter analyze
-  format:
-    $description: "Checks or formats Dart code styling"
-    $default: dart format --output=none --set-exit-if-changed .
-    apply: dart format .
-  check:
-    $description: "Full local pre-flight gate: format check, static analysis, and tests"
-    $script:
-      - rps format
-      - rps analyze
-      - rps test
-  cli:
-    $description: "Pure-Dart Refuge automation CLI for PR hygiene, wiki sync, and audits"
-    $default: dart run tool/refuge_cli.dart
-    help: dart run tool/refuge_cli.dart help
-    privacy: dart run tool/refuge_cli.dart privacy-scan
-    review: dart run tool/refuge_cli.dart review-status
-    merge: dart run tool/refuge_cli.dart merge-pr
-  device:
-    $description: "Hardware driving, Maestro flows, and physical glass regression"
-    $default: dart run tool/run_physical_glass_regression.dart
-    regression: dart run tool/run_physical_glass_regression.dart
-    dry-run: dart run tool/run_physical_glass_regression.dart --dry-run
-    maestro: dart run tool/run_maestro_verification.dart
-    dual-demo: dart run tool/run_dual_pixel_demo.dart
-    staggered-demo: dart run tool/run_dual_pixel_demo.dart --staggered --record
-  ollama:
-    $description: "Local Apple Silicon offline AI and LLM orchestration"
-    $default: dart run tool/setup_ollama.dart
-    setup: dart run tool/setup_ollama.dart
-    verify: dart run tool/verify_ollama.dart
-    status: dart run tool/setup_ollama.dart --check-only
 
 dependency_overrides:
   firebase_core: ^5.0.0

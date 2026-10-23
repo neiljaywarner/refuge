@@ -5,6 +5,8 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../config/app_flavor.dart';
 import '../logging/app_logger.dart';
+import 'firebase_installations_service.dart';
+import 'in_app_messaging/in_app_messaging_service.dart';
 
 /// Centralized, resilient Firebase lifecycle initializer.
 ///
@@ -98,6 +100,18 @@ class FirebaseInitializer {
       FirebaseUIAuth.configureProviders([
         EmailAuthProvider(),
       ]);
+
+      // 4. Configure In-App Messaging (Conditional on mobile, graceful stub on web)
+      final fiam = createInAppMessagingService();
+      await fiam.initialize();
+
+      // 5. Query and record unique Firebase Installation ID for device troubleshooting
+      final installationsService = FirebaseInstallationsService();
+      final fid = await installationsService.getInstallationsId();
+      await FirebaseAnalytics.instance.setUserProperty(name: 'installations_id', value: fid);
+      if (!kIsWeb) {
+        await FirebaseCrashlytics.instance.setCustomKey('installations_id', fid);
+      }
     } catch (e) {
       talker.warning('⚠️ [FirebaseInitializer] Error configuring Firebase services: $e');
     }
