@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 import 'src/app.dart';
 import 'src/core/config/app_flavor.dart';
@@ -53,6 +54,23 @@ export 'src/features/sensory_themes/domain/sensory_mode.dart';
 export 'src/features/sensory_themes/presentation/sensory_theme_controller.dart';
 export 'src/home_screen.dart';
 
+/// Held for the process lifetime. Disposing it turns the web semantics tree
+/// back off, which is what leaves Maestro unable to see any text.
+SemanticsHandle? _webSemanticsHandle;
+
+/// Flutter web paints to a canvas and does not publish the semantics DOM until
+/// a screen reader toggles it (or this call). Maestro's web driver reads that
+/// DOM, so without it `assertVisible` fails on text that is clearly on screen.
+///
+/// Mobile keeps the default: TalkBack, VoiceOver, and Maestro enable semantics
+/// through the platform accessibility bridge. Forcing it there is unnecessary.
+void enableWebSemanticsForAutomation() {
+  if (!kIsWeb) {
+    return;
+  }
+  _webSemanticsHandle ??= SemanticsBinding.instance.ensureSemantics();
+}
+
 /// Entrypoint with runtime flavor resolution for Dev, TestFlight/Play Beta,
 /// and Production (#52, ADR-0006).
 void main() async {
@@ -67,12 +85,16 @@ Future<void> bootstrapBelongApp({required AppFlavor flavor}) async {
 
 Future<void> runWithFlavor(AppFlavor flavor) async {
   WidgetsFlutterBinding.ensureInitialized();
+  enableWebSemanticsForAutomation();
 
   // 1. Initialize Firebase lifecycle (Crashlytics + Analytics)
   await FirebaseInitializer.initialize(flavor: flavor);
 
   final analytics = CommunityAnalyticsService(flavor: flavor);
-  final errorReporter = ErrorReporterService(flavor: flavor, analyticsService: analytics);
+  final errorReporter = ErrorReporterService(
+    flavor: flavor,
+    analyticsService: analytics,
+  );
 
   // 2. Global Flutter framework error hook
   FlutterError.onError = (FlutterErrorDetails details) {

@@ -19,197 +19,224 @@ void showAboutRefugeDialog(
 }) {
   showDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              'assets/images/belong_logo.png',
-              width: 32,
-              height: 32,
-              errorBuilder: (_, _, _) =>
-                  const Text('♾️', style: TextStyle(fontSize: 22)),
+    builder: (ctx) => Semantics(
+      namesRoute: true,
+      scopesRoute: true,
+      explicitChildNodes: true,
+      container: true,
+      label: 'About Belong',
+      child: AlertDialog(
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/belong_logo.png',
+                width: 32,
+                height: 32,
+                errorBuilder: (_, _, _) =>
+                    const Text('♾️', style: TextStyle(fontSize: 22)),
+              ),
             ),
-          ),
-          const Gap(10),
-          Expanded(
+            const Gap(10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Belong on the Spectrum (v0.8.0-alpha)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.yellow : primaryColor,
+                    ),
+                  ),
+                  Text(
+                    'belongonthespectrum.com • Partnered with DFW Church',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Belong on the Spectrum (v0.8.0-alpha)',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isContrast ? Colors.yellow : primaryColor,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isContrast
+                        ? Colors.yellow.withValues(alpha: 0.1)
+                        : primaryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isContrast
+                          ? Colors.yellow
+                          : primaryColor.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Semantics(
+                        label: 'Psalm 139:14',
+                        excludeSemantics: true,
+                        child: Text(
+                          '— Psalm 139:14',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'belongonthespectrum.com • Partnered with DFW Church',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
+                const Gap(12),
+                // Dedicated High Contrast Mode Toggle (Issue #277)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: const Text(
+                    'High Contrast Mode (WCAG AAA)',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
+                  subtitle: const Text(
+                    'Stark black & yellow palette for maximum visual clarity',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  value: currentMode == SensoryMode.contrast,
+                  onChanged: (val) {
+                    onSelectMode?.call(
+                      val ? SensoryMode.contrast : SensoryMode.sage,
+                    );
+                    Navigator.pop(ctx);
+                  },
+                ),
+                const Gap(6),
+                const Text(
+                  'Sensory Theme Palettes:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(6),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: [
+                    ChoiceChip(
+                      label: const Text('☀️ Clean Slate'),
+                      selected: currentMode == SensoryMode.clean,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.clean);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    ChoiceChip(
+                      label: const Text('🌿 Sage Botanical'),
+                      selected: currentMode == SensoryMode.sage,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.sage);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    ChoiceChip(
+                      label: const Text('🌘 Monastic Dark'),
+                      selected: currentMode == SensoryMode.charcoal,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.charcoal);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    ChoiceChip(
+                      label: const Text('👁️ High Contrast'),
+                      selected: currentMode == SensoryMode.contrast,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.contrast);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  ],
+                ),
+                const Gap(12),
+                // Sensory Font Scaling Presets (Issue #277)
+                const Text(
+                  'Sensory Font Scaling (Visual Ergonomics):',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(4),
+                const Text(
+                  'Adjust typography size to relieve visual crowding and reading fatigue:',
+                  style: TextStyle(fontSize: 11),
+                ),
+                const Gap(6),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: [
+                    for (final scale in SensoryFontScale.values)
+                      ChoiceChip(
+                        label: Text('${scale.label} (${scale.percentage})'),
+                        selected: currentFontScale == scale,
+                        onSelected: (_) {
+                          onSelectFontScale?.call(scale);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                  ],
+                ),
+                const Divider(height: 20),
+                const Text(
+                  'About Belong on the Spectrum:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(4),
+                const Text(
+                  '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
+                  '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
+                  '• Organizers can update community announcements live via Firebase Remote Config.',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
                 ),
               ],
             ),
           ),
+        ),
+        actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => TalkerScreen(talker: talker)),
+              );
+            },
+            icon: const Icon(Icons.receipt_long_rounded, size: 16),
+            label: const Text(
+              'Diagnostics & Logs',
+              style: TextStyle(fontSize: 12),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
         ],
       ),
-      content: SizedBox(
-        width: 520,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isContrast
-                      ? Colors.yellow.withValues(alpha: 0.1)
-                      : primaryColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isContrast
-                        ? Colors.yellow
-                        : primaryColor.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: const Text(
-                  '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."\n— Psalm 139:14',
-                  style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
-                ),
-              ),
-              const Gap(12),
-              // Dedicated High Contrast Mode Toggle (Issue #277)
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-                title: const Text(
-                  'High Contrast Mode (WCAG AAA)',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-                subtitle: const Text(
-                  'Stark black & yellow palette for maximum visual clarity',
-                  style: TextStyle(fontSize: 11),
-                ),
-                value: currentMode == SensoryMode.contrast,
-                onChanged: (val) {
-                  onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
-                  Navigator.pop(ctx);
-                },
-              ),
-              const Gap(6),
-              const Text(
-                'Sensory Theme Palettes:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(6),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: [
-                  ChoiceChip(
-                    label: const Text('☀️ Clean Slate'),
-                    selected: currentMode == SensoryMode.clean,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.clean);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  ChoiceChip(
-                    label: const Text('🌿 Sage Botanical'),
-                    selected: currentMode == SensoryMode.sage,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.sage);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  ChoiceChip(
-                    label: const Text('🌘 Monastic Dark'),
-                    selected: currentMode == SensoryMode.charcoal,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.charcoal);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  ChoiceChip(
-                    label: const Text('👁️ High Contrast'),
-                    selected: currentMode == SensoryMode.contrast,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.contrast);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                ],
-              ),
-              const Gap(12),
-              // Sensory Font Scaling Presets (Issue #277)
-              const Text(
-                'Sensory Font Scaling (Visual Ergonomics):',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(4),
-              const Text(
-                'Adjust typography size to relieve visual crowding and reading fatigue:',
-                style: TextStyle(fontSize: 11),
-              ),
-              const Gap(6),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: [
-                  for (final scale in SensoryFontScale.values)
-                    ChoiceChip(
-                      label: Text('${scale.label} (${scale.percentage})'),
-                      selected: currentFontScale == scale,
-                      onSelected: (_) {
-                        onSelectFontScale?.call(scale);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                ],
-              ),
-              const Divider(height: 20),
-              const Text(
-                'About Belong on the Spectrum:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(4),
-              const Text(
-                '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
-                '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
-                '• Organizers can update community announcements live via Firebase Remote Config.',
-                style: TextStyle(fontSize: 11.5, height: 1.4),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        OutlinedButton.icon(
-          onPressed: () {
-            Navigator.of(ctx).pop();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => TalkerScreen(talker: talker),
-              ),
-            );
-          },
-          icon: const Icon(Icons.receipt_long_rounded, size: 16),
-          label: const Text(
-            'Diagnostics & Logs',
-            style: TextStyle(fontSize: 12),
-          ),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Close'),
-        ),
-      ],
     ),
   );
 }
@@ -223,13 +250,12 @@ void showAboutSanctuaryDialog(
   ValueChanged<SensoryMode>? onSelectMode,
   SensoryFontScale currentFontScale = SensoryFontScale.standard,
   ValueChanged<SensoryFontScale>? onSelectFontScale,
-}) =>
-    showAboutRefugeDialog(
-      context,
-      primaryColor: primaryColor,
-      isContrast: isContrast,
-      currentMode: currentMode,
-      onSelectMode: onSelectMode,
-      currentFontScale: currentFontScale,
-      onSelectFontScale: onSelectFontScale,
-    );
+}) => showAboutRefugeDialog(
+  context,
+  primaryColor: primaryColor,
+  isContrast: isContrast,
+  currentMode: currentMode,
+  onSelectMode: onSelectMode,
+  currentFontScale: currentFontScale,
+  onSelectFontScale: onSelectFontScale,
+);

@@ -1,6 +1,43 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+
+/// Captures the nearest repaint boundary as PNG bytes so the drawing dialog
+/// can annotate the screen the member was looking at.
+///
+/// Widget tests often have no rasterizer; a failure returns null and the
+/// dialog stays usable without a background.
+Future<Uint8List?> captureEnclosingScreenshot(BuildContext context) async {
+  try {
+    final boundary = context
+        .findAncestorRenderObjectOfType<RenderRepaintBoundary>();
+    if (boundary == null || !boundary.hasSize) {
+      return null;
+    }
+    final binding = WidgetsBinding.instance;
+    // Widget tests have no rasterizer. toImage waits for a frame that the
+    // test will not flush while this callback is paused, so skip capture.
+    if (binding.runtimeType.toString().contains('Test')) {
+      return null;
+    }
+    binding.scheduleFrame();
+    await binding.endOfFrame.timeout(
+      const Duration(milliseconds: 500),
+      onTimeout: () {},
+    );
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data?.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
+  } catch (_) {
+    return null;
+  }
+}
 
 /// Single stroke drawn by a member on the feedback canvas.
 @immutable
@@ -15,7 +52,11 @@ class DrawnStroke {
   final Color color;
   final double strokeWidth;
 
-  DrawnStroke copyWith({List<Offset>? points, Color? color, double? strokeWidth}) {
+  DrawnStroke copyWith({
+    List<Offset>? points,
+    Color? color,
+    double? strokeWidth,
+  }) {
     return DrawnStroke(
       points: points ?? this.points,
       color: color ?? this.color,
@@ -29,14 +70,23 @@ class FeedbackDrawingPainter extends CustomPainter {
   FeedbackDrawingPainter({
     required this.strokes,
     this.backgroundColor = Colors.transparent,
+    this.backgroundImage,
   });
 
   final List<DrawnStroke> strokes;
   final Color backgroundColor;
+  final ui.Image? backgroundImage;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (backgroundColor != Colors.transparent) {
+    if (backgroundImage != null) {
+      paintImage(
+        canvas: canvas,
+        rect: Offset.zero & size,
+        image: backgroundImage!,
+        fit: BoxFit.cover,
+      );
+    } else if (backgroundColor != Colors.transparent) {
       final bgPaint = Paint()..color = backgroundColor;
       canvas.drawRect(Offset.zero & size, bgPaint);
     }
@@ -52,9 +102,14 @@ class FeedbackDrawingPainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
 
       if (stroke.points.length == 1) {
-        canvas.drawCircle(stroke.points.first, stroke.strokeWidth / 2, paint..style = PaintingStyle.fill);
+        canvas.drawCircle(
+          stroke.points.first,
+          stroke.strokeWidth / 2,
+          paint..style = PaintingStyle.fill,
+        );
       } else {
-        final path = Path()..moveTo(stroke.points.first.dx, stroke.points.first.dy);
+        final path = Path()
+          ..moveTo(stroke.points.first.dx, stroke.points.first.dy);
         for (int i = 1; i < stroke.points.length; i++) {
           path.lineTo(stroke.points[i].dx, stroke.points[i].dy);
         }
@@ -75,12 +130,14 @@ class FeedbackDrawingCanvas extends StatefulWidget {
     this.initialStrokes = const [],
     this.canvasHeight = 240,
     this.backgroundColor,
+    this.backgroundImage,
   });
 
   final ValueChanged<List<DrawnStroke>>? onChanged;
   final List<DrawnStroke> initialStrokes;
   final double canvasHeight;
   final Color? backgroundColor;
+  final ui.Image? backgroundImage;
 
   @override
   FeedbackDrawingCanvasState createState() => FeedbackDrawingCanvasState();
@@ -113,6 +170,12 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
 
   List<DrawnStroke> get strokes => List.unmodifiable(_strokes);
 
+  String get canvasSemanticsLabel {
+    final count = _strokes.length;
+    final noun = count == 1 ? 'stroke' : 'strokes';
+    return 'Feedback drawing canvas, $count $noun';
+  }
+
   void clear() {
     setState(() {
       _strokes.clear();
@@ -125,9 +188,15 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
     if (_strokes.isNotEmpty) {
       setState(() {
         _strokes.removeLast();
+        _activeStroke = null;
       });
       widget.onChanged?.call(_strokes);
     }
+  }
+
+  void _finishStroke() {
+    _activeStroke = null;
+    widget.onChanged?.call(_strokes);
   }
 
   /// Exports the canvas strokes into a PNG image byte buffer.
@@ -140,12 +209,15 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
       final painter = FeedbackDrawingPainter(
         strokes: _strokes,
         backgroundColor: widget.backgroundColor ?? const Color(0xFF1E2429),
+        backgroundImage: widget.backgroundImage,
       );
       painter.paint(canvas, size);
 
       final picture = recorder.endRecording();
       // If running under AutomatedTestWidgetsFlutterBinding without rasterizer, use fallback sample png
-      if (WidgetsBinding.instance.runtimeType.toString().contains('TestWidgetsFlutterBinding')) {
+      if (WidgetsBinding.instance.runtimeType.toString().contains(
+        'TestWidgetsFlutterBinding',
+      )) {
         return _fallbackSamplePng();
       }
 
@@ -159,19 +231,81 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
 
   static Uint8List _fallbackSamplePng() {
     return Uint8List.fromList([
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-      0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-      0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-      0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-      0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+      0x89,
+      0x50,
+      0x4E,
+      0x47,
+      0x0D,
+      0x0A,
+      0x1A,
+      0x0A,
+      0x00,
+      0x00,
+      0x00,
+      0x0D,
+      0x49,
+      0x48,
+      0x44,
+      0x52,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x08,
+      0x06,
+      0x00,
+      0x00,
+      0x00,
+      0x1F,
+      0x15,
+      0xC4,
+      0x89,
+      0x00,
+      0x00,
+      0x00,
+      0x0A,
+      0x49,
+      0x44,
+      0x41,
+      0x54,
+      0x78,
+      0x9C,
+      0x63,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0x05,
+      0x00,
+      0x01,
+      0x0D,
+      0x0A,
+      0x2D,
+      0xB4,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x49,
+      0x45,
+      0x4E,
+      0x44,
+      0xAE,
+      0x42,
+      0x60,
+      0x82,
     ]);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final bgColor = widget.backgroundColor ??
+    final bgColor =
+        widget.backgroundColor ??
         (Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1A1F24)
             : const Color(0xFFF3F6F8));
@@ -184,7 +318,8 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
           ),
           child: Row(
@@ -220,7 +355,9 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
                 icon: Icon(
                   Icons.edit,
                   size: 16,
-                  color: _selectedWidth == 2.0 ? Theme.of(context).colorScheme.primary : null,
+                  color: _selectedWidth == 2.0
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
                 ),
                 onPressed: () => setState(() => _selectedWidth = 2.0),
               ),
@@ -231,7 +368,9 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
                 icon: Icon(
                   Icons.brush,
                   size: 20,
-                  color: _selectedWidth == 6.0 ? Theme.of(context).colorScheme.primary : null,
+                  color: _selectedWidth == 6.0
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
                 ),
                 onPressed: () => setState(() => _selectedWidth = 6.0),
               ),
@@ -255,43 +394,60 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
+          child: Text(
+            canvasSemanticsLabel,
+            key: const Key('feedback_drawing_stroke_count'),
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
+          ),
+        ),
         // Interactive Drawing Canvas
         ClipRRect(
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(12),
+          ),
           child: Container(
             height: widget.canvasHeight,
             color: bgColor,
-            child: GestureDetector(
-              key: const Key('feedback_drawing_touch_area'),
-              onPanStart: (details) {
-                final point = details.localPosition;
-                setState(() {
-                  _activeStroke = DrawnStroke(
-                    points: [point],
-                    color: _selectedColor,
-                    strokeWidth: _selectedWidth,
-                  );
-                  _strokes.add(_activeStroke!);
-                });
-                widget.onChanged?.call(_strokes);
-              },
-              onPanUpdate: (details) {
-                if (_activeStroke == null) return;
-                final point = details.localPosition;
-                setState(() {
-                  _activeStroke!.points.add(point);
-                });
-              },
-              onPanEnd: (_) {
-                _activeStroke = null;
-                widget.onChanged?.call(_strokes);
-              },
-              child: CustomPaint(
-                painter: FeedbackDrawingPainter(
-                  strokes: _strokes,
-                  backgroundColor: bgColor,
+            child: Semantics(
+              identifier: 'feedback_drawing_canvas',
+              label: canvasSemanticsLabel,
+              container: true,
+              child: Listener(
+                key: const Key('feedback_drawing_touch_area'),
+                behavior: HitTestBehavior.opaque,
+                onPointerDown: (event) {
+                  final point = event.localPosition;
+                  setState(() {
+                    _activeStroke = DrawnStroke(
+                      points: [point],
+                      color: _selectedColor,
+                      strokeWidth: _selectedWidth,
+                    );
+                    _strokes.add(_activeStroke!);
+                  });
+                  widget.onChanged?.call(_strokes);
+                },
+                onPointerMove: (event) {
+                  if (_activeStroke == null) return;
+                  setState(() {
+                    _activeStroke!.points.add(event.localPosition);
+                  });
+                },
+                onPointerUp: (_) => _finishStroke(),
+                onPointerCancel: (_) => _finishStroke(),
+                child: CustomPaint(
+                  painter: FeedbackDrawingPainter(
+                    strokes: _strokes,
+                    backgroundColor: bgColor,
+                    backgroundImage: widget.backgroundImage,
+                  ),
+                  child: const SizedBox.expand(),
                 ),
-                size: Size.infinite,
               ),
             ),
           ),
@@ -303,16 +459,26 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
 
 /// Modal dialog allowing members to draw/annotate feedback before attaching.
 class FeedbackDrawingDialog extends StatefulWidget {
-  const FeedbackDrawingDialog({super.key, this.initialStrokes = const []});
+  const FeedbackDrawingDialog({
+    super.key,
+    this.initialStrokes = const [],
+    this.screenshotBytes,
+  });
 
   final List<DrawnStroke> initialStrokes;
 
-  static Future<Uint8List?> show(BuildContext context) {
+  /// PNG of the screen behind this dialog. Null when capture is unavailable.
+  final Uint8List? screenshotBytes;
+
+  static Future<Uint8List?> show(
+    BuildContext context, {
+    Uint8List? screenshotBytes,
+  }) {
     return showDialog<Uint8List>(
       context: context,
-      builder: (_) => const Dialog(
-        insetPadding: EdgeInsets.all(16),
-        child: FeedbackDrawingDialog(),
+      builder: (_) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),
       ),
     );
   }
@@ -322,8 +488,43 @@ class FeedbackDrawingDialog extends StatefulWidget {
 }
 
 class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
-  final GlobalKey<FeedbackDrawingCanvasState> _canvasKey = GlobalKey<FeedbackDrawingCanvasState>();
+  final GlobalKey<FeedbackDrawingCanvasState> _canvasKey =
+      GlobalKey<FeedbackDrawingCanvasState>();
   bool _hasStrokes = true;
+  ui.Image? _screenshot;
+
+  bool get _hasScreenshot =>
+      widget.screenshotBytes != null && widget.screenshotBytes!.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    final bytes = widget.screenshotBytes;
+    if (bytes != null && bytes.isNotEmpty) {
+      _decodeScreenshot(bytes);
+    }
+  }
+
+  Future<void> _decodeScreenshot(Uint8List bytes) async {
+    try {
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      if (!mounted) {
+        frame.image.dispose();
+        return;
+      }
+      setState(() => _screenshot = frame.image);
+    } catch (_) {
+      // The status line still reports that a screenshot was captured.
+    }
+  }
+
+  @override
+  void dispose() {
+    _screenshot?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -339,7 +540,11 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
         children: [
           Row(
             children: [
-              Icon(Icons.draw_rounded, color: theme.colorScheme.primary, size: 20),
+              Icon(
+                Icons.draw_rounded,
+                color: theme.colorScheme.primary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -349,6 +554,7 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
                 ),
               ),
               IconButton(
+                tooltip: 'Close drawing',
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.close_rounded, size: 20),
                 onPressed: () => Navigator.of(context).pop(),
@@ -357,7 +563,9 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Circle a button, point out an issue, or draw what you expected.',
+            _hasScreenshot
+                ? 'Annotating a screenshot of this screen. Draw on it, then attach.'
+                : 'Circle a button, point out an issue, or draw what you expected.',
             style: TextStyle(
               fontSize: 12,
               color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
@@ -368,6 +576,7 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
             key: _canvasKey,
             initialStrokes: widget.initialStrokes,
             canvasHeight: responsiveCanvasHeight,
+            backgroundImage: _screenshot,
             onChanged: (strokes) {
               setState(() {
                 _hasStrokes = strokes.isNotEmpty;
@@ -389,7 +598,8 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
                 key: const Key('drawing_dialog_attach_button'),
                 onPressed: _hasStrokes
                     ? () async {
-                        final bytes = await _canvasKey.currentState?.exportPngBytes();
+                        final bytes = await _canvasKey.currentState
+                            ?.exportPngBytes();
                         if (context.mounted) {
                           Navigator.of(context).pop(bytes);
                         }

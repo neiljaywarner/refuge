@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+
 import '../domain/sensory_event.dart';
 
 /// Presentation view for Actually Autistic Events Calendar (Issue #28).
@@ -41,6 +42,7 @@ class ActuallyAutisticEventsView extends HookWidget {
         leading: onBackToSpaces != null
             ? IconButton(
                 key: const Key('events-back-button'),
+                tooltip: 'Back to Spaces',
                 icon: const Icon(Icons.arrow_back),
                 onPressed: onBackToSpaces,
               )
@@ -60,7 +62,11 @@ class ActuallyAutisticEventsView extends HookWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.spa_outlined, color: Color(0xFF2E6B56), size: 20),
+                const Icon(
+                  Icons.spa_outlined,
+                  color: Color(0xFF2E6B56),
+                  size: 20,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -98,11 +104,15 @@ class ActuallyAutisticEventsView extends HookWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
-                  color: event.userRsvpd ? const Color(0xFF2E6B56) : Colors.grey.shade200,
+                  color: event.userRsvpd
+                      ? const Color(0xFF2E6B56)
+                      : Colors.grey.shade200,
                   width: event.userRsvpd ? 1.5 : 1,
                 ),
               ),
-              color: event.userRsvpd ? const Color(0xFFFAFCFA) : const Color(0xFFFAFAFA),
+              color: event.userRsvpd
+                  ? const Color(0xFFFAFCFA)
+                  : const Color(0xFFFAFAFA),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -113,7 +123,10 @@ class ActuallyAutisticEventsView extends HookWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE8ECEF),
                             borderRadius: BorderRadius.circular(6),
@@ -129,7 +142,10 @@ class ActuallyAutisticEventsView extends HookWidget {
                         ),
                         if (event.userRsvpd)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF2E6B56),
                               borderRadius: BorderRadius.circular(6),
@@ -159,12 +175,19 @@ class ActuallyAutisticEventsView extends HookWidget {
                     // Location
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade600),
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: Colors.grey.shade600,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             event.location,
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
                         ),
                       ],
@@ -174,7 +197,10 @@ class ActuallyAutisticEventsView extends HookWidget {
                     // Description
                     Text(
                       event.description,
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade800,
+                      ),
                     ),
                     const SizedBox(height: 12),
 
@@ -210,31 +236,46 @@ class ActuallyAutisticEventsView extends HookWidget {
                       children: [
                         Text(
                           '${event.rsvpCount} members attending',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                         OutlinedButton.icon(
                           key: Key('rsvp-button-${event.id}'),
                           icon: Icon(
-                            event.userRsvpd ? Icons.check_circle : Icons.event_available,
+                            event.userRsvpd
+                                ? Icons.check_circle
+                                : Icons.event_available,
                             size: 16,
-                            color: event.userRsvpd ? Colors.white : const Color(0xFF2E6B56),
+                            color: event.userRsvpd
+                                ? Colors.white
+                                : const Color(0xFF2E6B56),
                           ),
                           label: Text(
-                            event.userRsvpd ? 'Attending (Quiet RSVP)' : 'RSVP (Sensory-Friendly)',
+                            event.userRsvpd
+                                ? 'Attending (Quiet RSVP)'
+                                : 'RSVP (Sensory-Friendly)',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: event.userRsvpd ? Colors.white : const Color(0xFF2E6B56),
+                              color: event.userRsvpd
+                                  ? Colors.white
+                                  : const Color(0xFF2E6B56),
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            backgroundColor:
-                                event.userRsvpd ? const Color(0xFF2E6B56) : Colors.transparent,
+                            backgroundColor: event.userRsvpd
+                                ? const Color(0xFF2E6B56)
+                                : Colors.transparent,
                             side: const BorderSide(color: Color(0xFF2E6B56)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                           ),
                           onPressed: () => toggleRsvp(event.id),
                         ),
@@ -252,10 +293,7 @@ class ActuallyAutisticEventsView extends HookWidget {
 }
 
 class _SensoryBadge extends StatelessWidget {
-  const _SensoryBadge({
-    required this.icon,
-    required this.label,
-  });
+  const _SensoryBadge({required this.icon, required this.label});
 
   final IconData icon;
   final String label;

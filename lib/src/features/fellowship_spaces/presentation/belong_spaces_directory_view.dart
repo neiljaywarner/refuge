@@ -68,7 +68,10 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Text(
                     section.heading,
                     style: TextStyle(
@@ -99,8 +102,11 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
                           isSelected:
                               selectedSpaceSlug == section.items[i].slug &&
                               section.heading != 'PINNED',
-                          onTap: () =>
-                              _handleTap(context, section.items[i], remoteConfig),
+                          onTap: () => _handleTap(
+                            context,
+                            section.items[i],
+                            remoteConfig,
+                          ),
                         ),
                       ],
                     ],
@@ -125,10 +131,7 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
                 leading: const Text('🔕', style: TextStyle(fontSize: 18)),
                 title: const Text(
                   'Notifications muted in system settings',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                 ),
                 subtitle: const Text(
                   'Tap to adjust calm digest schedules or re-enable later',
@@ -161,7 +164,9 @@ class _SpaceRowTile extends StatelessWidget {
     return ListTile(
       dense: true,
       selected: isSelected,
-      leading: Text(item.emoji, style: const TextStyle(fontSize: 18)),
+      leading: ExcludeSemantics(
+        child: Text(item.emoji, style: const TextStyle(fontSize: 18)),
+      ),
       title: Text(
         item.title,
         style: TextStyle(
@@ -169,10 +174,7 @@ class _SpaceRowTile extends StatelessWidget {
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
         ),
       ),
-      subtitle: Text(
-        item.subtitle,
-        style: const TextStyle(fontSize: 11.5),
-      ),
+      subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 11.5)),
       trailing: item.externalUrl != null
           ? Icon(Icons.open_in_new_rounded, size: 16, color: primary)
           : item.isComingSoon

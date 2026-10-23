@@ -1,0 +1,68 @@
+url: http://127.0.0.1:8095
+name: Belong web calm-tech walkthrough
+---
+# Read-only. Does not publish a reflection.
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 45000
+- assertVisible: "Refuge"
+- assertVisible: "Calm Tech.*"
+- assertVisible:
+    id: "active_sensory_theme_sage"
+
+- tapOn: "Sensory Themes"
+- extendedWaitUntil:
+    visible:
+      id: "sensory_theme_charcoal"
+    timeout: 10000
+- tapOn:
+    id: "sensory_theme_charcoal"
+- extendedWaitUntil:
+    visible:
+      id: "active_sensory_theme_charcoal"
+    timeout: 10000
+- assertVisible:
+    id: "active_sensory_theme_charcoal"
+
+- tapOn: "Sensory Themes"
+- tapOn:
+    id: "sensory_theme_contrast"
+- extendedWaitUntil:
+    visible:
+      id: "active_sensory_theme_contrast"
+    timeout: 10000
+- assertVisible: "Switch to Sage Theme"
+
+- tapOn: "Sensory Themes"
+- tapOn:
+    id: "sensory_theme_clean"
+- extendedWaitUntil:
+    visible:
+      id: "active_sensory_theme_clean"
+    timeout: 10000
+
+- tapOn: "Sensory Themes"
+- tapOn:
+    id: "sensory_theme_sage"
+- extendedWaitUntil:
+    visible:
+      id: "active_sensory_theme_sage"
+    timeout: 10000
+
+- tapOn:
+    id: "spaces_tab"
+- extendedWaitUntil:
+    visible: ".*General Chat.*"
+    timeout: 15000
+- tapOn:
+    id: "feed_tab"
+- assertVisible: ".*Share an unhurried thought.*"
+
+- tapOn: "About Belong"
+- extendedWaitUntil:
+    visible: "Psalm 139:14"
+    timeout: 10000
+- tapOn: "Close"
+- assertNotVisible: "Psalm 139:14"
+- assertVisible: ".*Share an unhurried thought.*"

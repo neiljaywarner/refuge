@@ -1,0 +1,73 @@
+url: http://127.0.0.1:8095
+name: grokbot direct message notification
+---
+# Credentials come from the shell environment. No addresses are stored here.
+# Expects both accounts to already exist.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Member Profile.*"
+    commands:
+      - tapOn: ".*Member Profile.*"
+      - tapOn: "Sign Out"
+      - extendedWaitUntil:
+          visible: "Sign In"
+          timeout: 20000
+
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${GROKBOT1_EMAIL}
+- tapOn: "Password"
+- inputText: ${GROKBOT_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 40000
+- assertNotVisible: "Verify your email"
+- tapOn: "(?s).*Messages.*"
+- extendedWaitUntil:
+    visible: "Direct Messages"
+    timeout: 15000
+- tapOn: "New Message"
+- extendedWaitUntil:
+    visible: "Search members \\(single or multiple\\).*"
+    timeout: 15000
+- tapOn: "Search members \\(single or multiple\\).*"
+- inputText: "grokbot2"
+- takeScreenshot: grokbot1_dm_recipient_search
+- tapOn: "Send Message"
+- takeScreenshot: grokbot1_dm_send_result
+- tapOn:
+    text: "Close new message"
+    optional: true
+- tapOn: ".*Member Profile.*"
+- tapOn: "Sign Out"
+- extendedWaitUntil:
+    visible: "Sign In"
+    timeout: 20000
+
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${GROKBOT2_EMAIL}
+- tapOn: "Password"
+- inputText: ${GROKBOT_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 40000
+- tapOn: "(?s).*Notifications.*"
+- extendedWaitUntil:
+    visible: "Mark all read"
+    timeout: 15000
+- takeScreenshot: grokbot2_bell_after_dm
+- assertVisible: ".*sent you a direct message.*"
