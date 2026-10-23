@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/calm_media_image.dart';
 import '../../profile/presentation/other_member_profile_dialog.dart';
 import '../data/post_repository.dart';
 import '../domain/post.dart';
@@ -167,25 +168,11 @@ class ReflectionCard extends ConsumerWidget {
                         : (isContrast ? Colors.white70 : Colors.grey.shade300),
                   ),
                 ),
-                child: Image.network(
-                  post.imageUrl!,
+                child: CalmMediaImage(
+                  imageUrl: post.imageUrl!,
                   fit: BoxFit.cover,
                   semanticLabel: post.specialInterestTag ?? 'Community reflection image',
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 120,
-                      alignment: Alignment.center,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.0,
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  fallbackWidget: Container(
                     padding: const EdgeInsets.all(12.0),
                     alignment: Alignment.center,
                     child: Row(

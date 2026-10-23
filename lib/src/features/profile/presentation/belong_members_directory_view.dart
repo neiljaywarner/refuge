@@ -81,6 +81,24 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
     isIcocMember: true,
     comfortBadges: ['Calm Tech Supporter', 'Clear expectations preferred'],
   ),
+  DevFellowshipMember(
+    name: 'David M. (UK)',
+    role: 'Prayer Fellowship Deacon',
+    tagline: 'Finding peace in routine transitions',
+    bio: 'Serving autistic adults & young families. Passionate about removing sensory barriers from Sunday assemblies.',
+    churchAffiliation: 'London Church',
+    isIcocMember: true,
+    comfortBadges: ['Calm Tech Supporter', 'Clear expectations preferred'],
+  ),
+  DevFellowshipMember(
+    name: 'Nathan K. (Texas)',
+    role: 'Scripture Meditation Leader',
+    tagline: 'Scripture memory, quiet rooms, and sensory balance',
+    bio: 'Leading quiet meditation walks and sensory-safe scripture reading in Austin.',
+    churchAffiliation: 'Austin Church',
+    isIcocMember: true,
+    comfortBadges: ['Scripture Memory', 'Quiet Environments'],
+  ),
 ];
 
 /// A dedicated member directory view allowing disciples to browse fellow community members,
@@ -411,7 +429,9 @@ class _FellowshipMemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final slug = member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
     return InkWell(
+      key: Key('dev_member_card_$slug'),
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Card(

@@ -55,6 +55,7 @@ class BelongNotification extends Equatable {
         isRead,
         spaceKey,
         postId,
+        commentSnippet,
       ];
 
   /// Author initials for the Avatar widget fallback, stripping parentheses,

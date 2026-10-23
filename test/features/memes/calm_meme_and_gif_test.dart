@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:refuge4serverpod/src/core/widgets/calm_media_image.dart';
 import 'package:refuge4serverpod/src/features/memes/domain/calm_meme.dart';
 import 'package:refuge4serverpod/src/features/memes/presentation/meme_gallery_modal.dart';
+import 'package:refuge4serverpod/src/features/profile/data/avatar_upload_service.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/avatar_models.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_composer.dart';
@@ -65,18 +68,23 @@ void main() {
   });
 
   group('MemeGalleryModal Widget Tests', () {
-    patrolWidgetTest('renders curated memes list and selects a meme', ($) async {
-      CalmMeme? selectedMeme;
-
-      await $.pumpWidget(
-        MaterialApp(
+    Widget buildModalHarness({
+      required ValueChanged<CalmMeme> onSelectedMeme,
+      FakeAvatarUploadService? avatarService,
+    }) {
+      final fake = avatarService ?? FakeAvatarUploadService();
+      return ProviderScope(
+        overrides: [
+          avatarUploadServiceProvider.overrideWithValue(fake),
+        ],
+        child: MaterialApp(
           home: Scaffold(
             body: Builder(
               builder: (ctx) => ElevatedButton(
                 key: const Key('open_gallery_button'),
                 onPressed: () => showMemeGalleryModal(
                   ctx,
-                  onSelectedMeme: (meme) => selectedMeme = meme,
+                  onSelectedMeme: onSelectedMeme,
                 ),
                 child: const Text('Open Gallery'),
               ),
@@ -84,11 +92,29 @@ void main() {
           ),
         ),
       );
+    }
 
+    setUp(() {
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      binding.platformDispatcher.implicitView?.physicalSize = const Size(1080, 2400);
+      binding.platformDispatcher.implicitView?.devicePixelRatio = 1.0;
+    });
+
+    tearDown(() {
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      binding.platformDispatcher.implicitView?.resetPhysicalSize();
+      binding.platformDispatcher.implicitView?.resetDevicePixelRatio();
+    });
+
+    patrolWidgetTest('renders curated memes list and selects a meme', ($) async {
+      CalmMeme? selectedMeme;
+
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme));
       await $('Open Gallery').tap();
       expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
       expect($('Curated Calm Memes'), findsOneWidget);
       expect($('Attach Custom GIF / URL'), findsOneWidget);
+      expect($('Upload Photo / Camera'), findsOneWidget);
 
       // Tap curated Elijah meme
       await $('Elijah Under the Broom Tree').tap();
@@ -101,22 +127,7 @@ void main() {
     patrolWidgetTest('attaches custom meme via preset button with live preview', ($) async {
       CalmMeme? selectedMeme;
 
-      await $.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (ctx) => ElevatedButton(
-                onPressed: () => showMemeGalleryModal(
-                  ctx,
-                  onSelectedMeme: (meme) => selectedMeme = meme,
-                ),
-                child: const Text('Open Gallery'),
-              ),
-            ),
-          ),
-        ),
-      );
-
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme));
       await $('Open Gallery').tap();
 
       // Switch to custom GIF / URL tab
@@ -136,6 +147,121 @@ void main() {
       expect(selectedMeme, isNotNull);
       expect(selectedMeme!.title, contains('Elijah'));
       expect(selectedMeme!.imageUrl, contains('images.unsplash.com'));
+    });
+
+    patrolWidgetTest('captures photo with camera and attaches to reflection', ($) async {
+      CalmMeme? selectedMeme;
+      final fakeService = FakeAvatarUploadService();
+
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (meme) => selectedMeme = meme,
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
+
+      // Switch to Upload Photo / Camera tab
+      await $(const Key('tab_upload_photo')).tap();
+      expect($(const Key('meme_upload_camera_button')), findsOneWidget);
+      expect($(const Key('meme_upload_gallery_button')), findsOneWidget);
+
+      // Tap camera button
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
+
+      // Verify photo preview is displayed
+      expect($(const Key('uploaded_photo_preview')), findsOneWidget);
+      expect($(const Key('meme_upload_caption_input')), findsOneWidget);
+
+      // Change caption
+      await $(const Key('meme_upload_caption_input')).enterText('My Sanctuary Moment');
+
+      // Attach photo
+      await $(const Key('attach_uploaded_photo_button')).tap();
+
+      expect(selectedMeme, isNotNull);
+      expect(selectedMeme!.title, equals('My Sanctuary Moment'));
+      expect(selectedMeme!.imageUrl, startsWith('data:image/png;base64,'));
+      expect(selectedMeme!.icon, equals('📷'));
+    });
+
+    patrolWidgetTest('selects photo from gallery, previews, and allows removal', ($) async {
+      CalmMeme? selectedMeme;
+      final fakeService = FakeAvatarUploadService();
+
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (meme) => selectedMeme = meme,
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
+
+      // Switch to Upload Photo / Camera tab
+      await $(const Key('tab_upload_photo')).tap();
+
+      // Tap gallery button
+      await $(const Key('meme_upload_gallery_button')).tap();
+      await $.pumpAndSettle();
+
+      // Verify preview
+      expect($(const Key('uploaded_photo_preview')), findsOneWidget);
+
+      // Remove photo
+      await $(const Key('remove_uploaded_photo_button')).tap();
+      await $.pumpAndSettle();
+
+      // Verify preview is gone
+      expect($(const Key('uploaded_photo_preview')), findsNothing);
+    });
+
+    patrolWidgetTest('handles camera permission denial gracefully without crash', ($) async {
+      final fakeService = FakeAvatarUploadService(
+        cameraPermission: AvatarPermissionStatus.denied,
+      );
+
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (_) {},
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
+
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
+
+      // Verify denial banner
+      expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
+      expect($('Camera permission was denied. Please allow access if you wish to use a photo.'), findsOneWidget);
+      expect($(const Key('uploaded_photo_preview')), findsNothing);
+    });
+
+    patrolWidgetTest('handles camera permanent denial and allows opening settings', ($) async {
+      final fakeService = FakeAvatarUploadService(
+        cameraPermission: AvatarPermissionStatus.permanentlyDenied,
+      );
+
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (_) {},
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
+
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
+
+      // Verify permanent denial banner and open settings button
+      expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
+      expect($(const Key('meme_open_settings_button')), findsOneWidget);
+
+      await $(const Key('meme_open_settings_button')).tap();
+      expect(fakeService.appSettingsOpened, isTrue);
     });
   });
 
@@ -169,6 +295,39 @@ void main() {
       expect($('Hannah W.'), findsOneWidget);
       expect($('[Autism & Faith Meme]'), findsOneWidget);
       expect($(const Key('post_meme_image_post_meme_1')), findsOneWidget);
+    });
+
+    patrolWidgetTest('renders data URI base64 images without network errors', ($) async {
+      // 1x1 transparent PNG data URI
+      const dataUri =
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+      final postWithDataUri = Post(
+        id: 'post_meme_data_uri',
+        authorName: 'Daniel S.',
+        spaceKey: 'memes',
+        toneTag: '[Autism & Faith Meme]',
+        content: 'Snapshot from quiet prayer time.',
+        imageUrl: dataUri,
+        timestamp: DateTime.now(),
+        reactions: {'relatable': 1},
+      );
+
+      await $.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ReflectionCard(
+                post: postWithDataUri,
+                isContrast: false,
+                onAddReaction: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect($(const Key('post_meme_image_post_meme_data_uri')), findsOneWidget);
     });
 
     patrolWidgetTest('omits image container when imageUrl is null', ($) async {
@@ -214,22 +373,24 @@ void main() {
       String? submittedImage;
 
       await $.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ReflectionComposer(
-              selectedSpace: 'memes',
-              primaryColor: Colors.teal,
-              isContrast: false,
-              onSubmit: ({
-                required content,
-                required toneTag,
-                specialInterestTag,
-                imageUrl,
-              }) async {
-                submittedContent = content;
-                submittedTone = toneTag;
-                submittedImage = imageUrl;
-              },
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ReflectionComposer(
+                selectedSpace: 'memes',
+                primaryColor: Colors.teal,
+                isContrast: false,
+                onSubmit: ({
+                  required content,
+                  required toneTag,
+                  specialInterestTag,
+                  imageUrl,
+                }) async {
+                  submittedContent = content;
+                  submittedTone = toneTag;
+                  submittedImage = imageUrl;
+                },
+              ),
             ),
           ),
         ),
@@ -259,6 +420,102 @@ void main() {
 
       // Banner is reset after publishing
       expect($(const Key('attached_meme_banner')), findsNothing);
+    });
+
+    patrolWidgetTest('attaches uploaded photo and submits reflection with data URI', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
+      String? submittedContent;
+      String? submittedTone;
+      String? submittedImage;
+
+      final fakeService = FakeAvatarUploadService();
+
+      await $.pumpWidget(
+        ProviderScope(
+          overrides: [
+            avatarUploadServiceProvider.overrideWithValue(fakeService),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ReflectionComposer(
+                selectedSpace: 'memes',
+                primaryColor: Colors.teal,
+                isContrast: false,
+                onSubmit: ({
+                  required content,
+                  required toneTag,
+                  specialInterestTag,
+                  imageUrl,
+                }) async {
+                  submittedContent = content;
+                  submittedTone = toneTag;
+                  submittedImage = imageUrl;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Open meme gallery
+      await $(const Key('add_meme_gif_button')).tap();
+
+      // Switch to Upload Photo tab
+      await $(const Key('tab_upload_photo')).tap();
+
+      // Tap Use Camera
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
+
+      // Tap Attach Photo
+      await $(const Key('attach_uploaded_photo_button')).tap();
+      await $.pumpAndSettle();
+
+      // Verify banner
+      expect($(const Key('attached_meme_banner')), findsOneWidget);
+
+      // Publish
+      await $(const Key('publish_reflection_button')).tap();
+
+      expect(submittedContent, isNotNull);
+      expect(submittedImage, startsWith('data:image/png;base64,'));
+    });
+  });
+
+  group('CalmMediaImage Widget Unit Tests', () {
+    testWidgets('renders fallback widget on empty or broken image', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: 'broken_or_empty',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.image_outlined), findsOneWidget);
+    });
+
+    testWidgets('renders custom fallbackWidget when provided', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: '',
+              fallbackWidget: Text('Custom Fallback Calm'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Custom Fallback Calm'), findsOneWidget);
     });
   });
 }

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/avatar_models.dart';
@@ -28,11 +29,14 @@ abstract class AvatarUploadService {
 /// Production implementation of [AvatarUploadService].
 class PlatformAvatarUploadService implements AvatarUploadService {
   PlatformAvatarUploadService({
+    ImagePicker? picker,
     AvatarPermissionStatus? initialCameraPermission,
     AvatarPermissionStatus? initialGalleryPermission,
-  })  : _cameraPermission = initialCameraPermission ?? AvatarPermissionStatus.granted,
+  })  : _picker = picker ?? ImagePicker(),
+        _cameraPermission = initialCameraPermission ?? AvatarPermissionStatus.granted,
         _galleryPermission = initialGalleryPermission ?? AvatarPermissionStatus.granted;
 
+  final ImagePicker _picker;
   AvatarPermissionStatus _cameraPermission;
   AvatarPermissionStatus _galleryPermission;
 
@@ -54,7 +58,6 @@ class PlatformAvatarUploadService implements AvatarUploadService {
   Future<AvatarPermissionStatus> requestPermission(AvatarImageSource source) async {
     final current = await checkPermission(source);
     if (current.isPermanentlyDenied) return current;
-    // By default simulate user grant unless overridden in tests
     return current;
   }
 
@@ -63,8 +66,24 @@ class PlatformAvatarUploadService implements AvatarUploadService {
     final status = await requestPermission(source);
     if (!status.isGranted) return null;
 
-    // Default sample 1x1 png or fallback pattern if platform picker is not mounted
-    return _generateSampleAvatarBytes();
+    try {
+      final imageSource = source == AvatarImageSource.camera
+          ? ImageSource.camera
+          : ImageSource.gallery;
+      final xFile = await _picker.pickImage(
+        source: imageSource,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (xFile != null) {
+        return await xFile.readAsBytes();
+      }
+      return null;
+    } catch (e) {
+      debugPrint('ℹ️ [AvatarUploadService] Fallback to sample avatar: $e');
+      return _generateSampleAvatarBytes();
+    }
   }
 
   @override
