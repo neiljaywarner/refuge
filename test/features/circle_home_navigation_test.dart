@@ -97,7 +97,7 @@ void main() {
       await $.pumpAndSettle();
 
       expect(
-        $('Store profile info & connect with verified fellowship members'),
+        $('Fellowship disciples & leaders'),
         findsOneWidget,
       );
       expect($('Marty (Organizer)'), findsOneWidget);

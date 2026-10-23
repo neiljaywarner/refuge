@@ -143,7 +143,6 @@ void main() {
     setUp(() {
       badgeService = FakeLauncherBadgeService();
       notifier = BelongNotificationsNotifier(badgeService: badgeService);
-      notifier.build();
     });
 
     test('Initial unread count is 3 and badge is synchronized', () {
@@ -160,55 +159,18 @@ void main() {
     });
 
     test('markAsRead marks individual item read', () {
-      final firstId = notifier.state.first.id;
-      notifier.markAsRead(firstId);
-      final notif = notifier.state.firstWhere((n) => n.id == firstId);
+      notifier.markAsRead('notif-mention-1');
+      final notif = notifier.state.firstWhere((n) => n.id == 'notif-mention-1');
       expect(notif.isRead, isTrue);
       expect(badgeService.recordedBadge, 2);
     });
   });
 
   group('Calm Notifications BDD Widget Tests', () {
-    final testSeedNotifications = [
-      BelongNotification(
-        id: '1',
-        authorName: 'John Doe',
-        type: BelongNotificationType.mention,
-        postTitle: 'Markan Chiasms',
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        isRead: false,
-      ),
-      BelongNotification(
-        id: '2',
-        authorName: 'Elena R.',
-        type: BelongNotificationType.reply,
-        postTitle: 'Prayer & Healing',
-        timestamp: DateTime.now().subtract(const Duration(days: 2)),
-        isRead: false,
-      ),
-      BelongNotification(
-        id: '3',
-        authorName: 'David M.',
-        type: BelongNotificationType.like,
-        postTitle: 'Sensory Friendly Worship',
-        timestamp: DateTime.now().subtract(const Duration(days: 3)),
-        isRead: false,
-      ),
-      BelongNotification(
-        id: '4',
-        authorName: 'Pastor Thomas',
-        type: BelongNotificationType.following,
-        postTitle: 'Psalm 23 Meditations',
-        timestamp: DateTime(2026, 9, 7, 10, 0),
-        isRead: true,
-      ),
-    ];
-
     Widget buildTestHarness({
       Widget? home,
       List<BelongNotification>? initialNotifications,
     }) {
-      final notifications = initialNotifications ?? testSeedNotifications;
       return ProviderScope(
         overrides: [
           postRepositoryProvider.overrideWithValue(
@@ -217,11 +179,12 @@ void main() {
           appLauncherBadgeServiceProvider.overrideWithValue(
             FakeLauncherBadgeService(),
           ),
-          belongNotificationsProvider.overrideWith(
-            () => BelongNotificationsNotifier(
-              initialList: notifications,
+          if (initialNotifications != null)
+            belongNotificationsProvider.overrideWith(
+              () => BelongNotificationsNotifier(
+                initialList: initialNotifications,
+              ),
             ),
-          ),
         ],
         child: MaterialApp(
           home: home ?? const RefugeHomeScreen(),

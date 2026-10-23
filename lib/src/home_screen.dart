@@ -465,15 +465,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Flexible(
-                            child: Text(
-                              'Refuge',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Refuge',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -608,13 +605,13 @@ class RefugeHomeScreen extends HookConsumerWidget {
               onSelected: (action) {
                 if (action == 'create_post') {
                   _showCreatePostModal(
-                     context: context,
-                     selectedSpace: selectedSpace.value,
-                     primaryColor: primaryColor,
-                     isContrast: isContrast,
-                     isImagePost: false,
-                     onSubmit: submitPost,
-                   );
+                    context: context,
+                    selectedSpace: selectedSpace.value,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                    isImagePost: false,
+                    onSubmit: submitPost,
+                  );
                 } else if (action == 'create_image_post') {
                   _showCreatePostModal(
                     context: context,

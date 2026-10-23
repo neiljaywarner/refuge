@@ -1,0 +1,29 @@
+# Calm FCM Notification Opt-In & Ethics BDD Specification
+# Driver: Marionette MCP / CLI / PatrolWidgetTest
+# Neurodivergent Target: Zero anxiety, zero unexpected OS prompts on startup.
+# Rule: FCM must NEVER prompt for system permission until the user is explicitly informed why and opts in.
+
+Feature: Calm FCM Push Notification Opt-In
+  As an autistic adult using Belong on the Spectrum
+  I want the app to respect my nervous system and never surprise me with notification popups on launch
+  And I want clear, unhurried explanation of notification ethics before opting into push digests
+  So that I stay in full control of my sensory environment and attention
+
+  # Driven interactively via Marionette MCP and verified via patrol_finders (patrolWidgetTest)
+  Scenario: App launches peacefully without triggering OS notification permissions
+    Given the Belong on the Spectrum app is freshly launched
+    Then I see the "Belong" header logo and "Refuge" subtitle
+    And no OS notification permission dialog is requested
+    And the push notifications state remains disabled by default
+
+  Scenario: User reviews Calm Notification Ethics and deliberately opts in
+    Given the Belong on the Spectrum app is running
+    When I tap the "Notifications" tab in the bottom navigation bar (#bottom_nav_icon_notifications)
+    Then I see the "Notifications" view
+    When I tap the notification preferences gear (#notification-preferences-button)
+    Then I see the "Calm Notification Ethics" banner
+    And I see "Belong respects your attention and sensory peace"
+    And I see the "Receive Push Digests" toggle (#toggle-notifications-switch) is off
+    When I tap the "Receive Push Digests" toggle (#toggle-notifications-switch)
+    Then the app requests system push notification permissions with calm-tech defaults
+    And I see the digest schedule options ("Twice daily", "Daily evening", "Weekly quiet summary")
