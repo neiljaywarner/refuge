@@ -316,7 +316,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                raid: 0,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -459,11 +458,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            brand.shortName,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: Text(
+                              brand.shortName,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -485,7 +487,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isLiveServerpod
-                                  ? const Color(0xFF4CAF50)
+                                   ? const Color(0xFF4CAF50)
                                   : const Color(0xFF68A67D),
                             ),
                           ),
