@@ -6,12 +6,13 @@ import 'post_repository.dart';
 /// Resilient local-first in-memory implementation with asynchronous broadcast streams.
 /// Seeds both the original Sanctuary spaces and the Circle.so-style Belong spaces.
 class LocalPostRepository implements PostRepository {
+  final bool isDevMode;
   final List<Post> _store = [];
   final Set<String> _savedPostIds = {};
   final StreamController<List<Post>> _controller =
       StreamController<List<Post>>.broadcast();
 
-  LocalPostRepository({bool isDevMode = true, List<Post>? initialPosts}) {
+  LocalPostRepository({this.isDevMode = true, List<Post>? initialPosts}) {
     if (initialPosts != null) {
       _store.addAll(initialPosts);
     } else if (isDevMode) {
