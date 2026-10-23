@@ -204,26 +204,26 @@ void main() {
           findsOneWidget,
         );
 
-        expect($('Hannah M.'), findsOneWidget);
+        expect($('Caleb Stone'), findsOneWidget);
         expect(
-          $('Sensory-friendly contemplative prayer & botanical art'),
+          $('Soundscapes, calm lighting, and tech seams'),
           findsOneWidget,
         );
 
-        expect($('Alex K.'), findsOneWidget);
+        expect($('Sarah Chen'), findsOneWidget);
         expect(
-          $('Retro computing & unhurried theological reflection'),
+          $('Deep dive Greek word studies and chiasms'),
           findsOneWidget,
         );
 
-        // 1. Select multiple recipients (Hannah M. and Alex K.)
-        await $(const Key('member_picker_item_Hannah M.')).tap();
+        // 1. Select two members who are in the current fellowship directory.
+        await $(const Key('member_picker_item_Caleb Stone')).tap();
         await $.pumpAndSettle();
-        expect($(const Key('selected_recipient_chip_Hannah M.')), findsOneWidget);
+        expect($(const Key('selected_recipient_chip_Caleb Stone')), findsOneWidget);
 
-        await $(const Key('member_picker_item_Alex K.')).tap();
+        await $(const Key('member_picker_item_Sarah Chen')).tap();
         await $.pumpAndSettle();
-        expect($(const Key('selected_recipient_chip_Alex K.')), findsOneWidget);
+        expect($(const Key('selected_recipient_chip_Sarah Chen')), findsOneWidget);
 
         // 2. Fill in subject and content
         await $(const Key('new_message_subject_input')).enterText('Friday Fellowship');
@@ -256,7 +256,7 @@ void main() {
         await $(const Key('back-to-messages-list')).tap();
         await $.pumpAndSettle();
 
-        expect($('Hannah M. & 1 others'), findsOneWidget);
+        expect($('Caleb Stone & 1 others'), findsOneWidget);
         expect(
           $('Friday Fellowship: Will bring teas!'),
           findsOneWidget,
