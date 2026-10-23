@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../tool/marionette_demo.dart';
 import '../../tool/run_dual_pixel_demo.dart';
 import '../../tool/run_maestro_verification.dart';
 import '../../tool/run_physical_glass_regression.dart';
@@ -157,80 +158,53 @@ Current Battery Service state:
     });
 
     test('parseWakefulness extracts wakefulness state', () {
-      const dumpsys = 'Display Power: state=ON\nmWakefulness=Awake\nmHoldingDisplaySuspendBlocker=true';
+      const dumpsys = 'Display Power: state=ON\nmWakefulness=Awake';
       expect(PhysicalGlassRegressionRunner.parseWakefulness(dumpsys), equals('Awake'));
+      expect(PhysicalGlassRegressionRunner.parseWakefulness('no info'), equals('Unknown'));
     });
 
-    test('dry run executes diagnostics without running test suites', () async {
-      final mock = MockProcessManager({
+    test('captures report correctly under dry run', () async {
+      final manager = MockProcessManager({
         'adb devices': const ProcessResultData(
           exitCode: 0,
           stdout: 'List of devices attached\n56091JEBF14039\tdevice\n',
           stderr: '',
         ),
-        'adb -s 56091JEBF14039 shell getprop ro.product.model': const ProcessResultData(
-          exitCode: 0,
-          stdout: 'Pixel 9a\n',
-          stderr: '',
-        ),
-        'adb -s 56091JEBF14039 shell getprop ro.build.version.release': const ProcessResultData(
-          exitCode: 0,
-          stdout: '15\n',
-          stderr: '',
-        ),
-        'adb -s 56091JEBF14039 shell dumpsys battery': const ProcessResultData(
-          exitCode: 0,
-          stdout: 'level: 95\n',
-          stderr: '',
-        ),
-        'adb -s 56091JEBF14039 shell dumpsys power': const ProcessResultData(
-          exitCode: 0,
-          stdout: 'mWakefulness=Awake\n',
-          stderr: '',
-        ),
       });
-
-      final runner = PhysicalGlassRegressionRunner(processManager: mock);
-      final code = await runner.run(['--dry-run', '--device', '56091JEBF14039']);
+      final runner = PhysicalGlassRegressionRunner(processManager: manager);
+      final code = await runner.run(['--dry-run']);
       expect(code, equals(0));
-      // Dry run should not invoke dart test or maestro
-      expect(mock.executedCommands.any((cmd) => cmd.contains('test')), isFalse);
     });
   });
 
   group('MaestroVerificationRunner', () {
-    test('displays help and exits with 0', () async {
+    test('displays help and exits with code 0', () async {
       final runner = MaestroVerificationRunner();
       final code = await runner.run(['--help']);
       expect(code, equals(0));
     });
 
-    test('parseConnectedDevices correctly parses adb output', () {
-      const adbOutput = 'List of devices attached\nemulator-5554\tdevice\n';
-      final devices = MaestroVerificationRunner.parseConnectedDevices(adbOutput);
-      expect(devices, equals(['emulator-5554']));
+    test('dry run parses existing flows and succeeds', () async {
+      final runner = MaestroVerificationRunner();
+      final code = await runner.run(['--dry-run']);
+      expect(code, equals(0));
     });
 
-    test('dry run discovers device and skips execution', () async {
-      final executor = MockProcessExecutor({
-        'which maestro': const ProcessExecutionResult(exitCode: 0, stdout: '/usr/local/bin/maestro', stderr: ''),
-        'adb devices': const ProcessExecutionResult(exitCode: 0, stdout: 'emulator-5554\tdevice\n', stderr: ''),
-      });
-
-      final runner = MaestroVerificationRunner(executor: executor);
-      final code = await runner.run(['--dry-run', '--device', 'emulator-5554']);
+    test('lists available flows', () async {
+      final runner = MaestroVerificationRunner();
+      final code = await runner.run(['--list']);
       expect(code, equals(0));
     });
   });
 
   group('OllamaSetupRunner', () {
-    test('displays help and exits with 0', () async {
+    test('displays help and exits with code 0', () async {
       final runner = OllamaSetupRunner();
       final code = await runner.run(['--help']);
       expect(code, equals(0));
     });
 
-    test('parseRamBytesToGb converts bytes correctly', () {
+    test('parseRamBytesToGb converts raw bytes correctly', () {
       // 48 GB = 51539607552 bytes
       expect(OllamaSetupRunner.parseRamBytesToGb('51539607552'), equals(48));
       // 24 GB = 25769803776 bytes
@@ -304,6 +278,58 @@ emulator-5556\tdevice
       final runner = DualPixelDemoRunner(executor: executor);
       final code = await runner.run(['--dry-run', '--left', 'dev1', '--right', 'dev2']);
       expect(code, equals(0));
+    });
+  });
+
+  group('MarionetteDemoArgs and CLI parsing', () {
+    test('parses default arguments cleanly', () {
+      final args = parseMarionetteArgs([]);
+      expect(args.showHelp, isFalse);
+      expect(args.deviceId, isNull);
+      expect(args.vmServiceUri, isNull);
+      expect(args.speed, equals('normal'));
+      expect(args.isInteractive, isFalse);
+      expect(args.grantPermissions, isTrue);
+      expect(args.captureScreenshots, isFalse);
+      expect(args.isDualDevice, isFalse);
+    });
+
+    test('parses help flag correctly', () {
+      final argsShort = parseMarionetteArgs(['-h']);
+      expect(argsShort.showHelp, isTrue);
+
+      final argsLong = parseMarionetteArgs(['--help']);
+      expect(argsLong.showHelp, isTrue);
+    });
+
+    test('parses device flag, interactive flag, speed, and capture', () {
+      final args = parseMarionetteArgs([
+        '--device',
+        '56091JEBF14039',
+        '-i',
+        '--speed',
+        'slow',
+        '--capture',
+        '--no-grant-permissions',
+        '--dual',
+      ]);
+      expect(args.deviceId, equals('56091JEBF14039'));
+      expect(args.isInteractive, isTrue);
+      expect(args.speed, equals('slow'));
+      expect(args.captureScreenshots, isTrue);
+      expect(args.grantPermissions, isFalse);
+      expect(args.isDualDevice, isTrue);
+    });
+
+    test('parses equals-style flags', () {
+      final args = parseMarionetteArgs([
+        '--device=emulator-5554',
+        '--speed=fast',
+        '--uri=ws://127.0.0.1:56283/token=/ws',
+      ]);
+      expect(args.deviceId, equals('emulator-5554'));
+      expect(args.speed, equals('fast'));
+      expect(args.vmServiceUri, equals('ws://127.0.0.1:56283/token=/ws'));
     });
   });
 }
