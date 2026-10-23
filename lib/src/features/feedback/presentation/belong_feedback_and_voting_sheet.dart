@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../storage/data/storage_repository.dart';
+import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
 import '../domain/feedback_and_voting_models.dart';
 import 'feedback_drawing_canvas.dart';
@@ -40,16 +41,9 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     state = repo.toggleVote(state, featureId);
   }
 
-  void proposeFeature({
-    required String title,
-    required String description,
-  }) {
+  void proposeFeature({required String title, required String description}) {
     final repo = ref.read(featureVotingRepositoryProvider);
-    state = repo.proposeFeature(
-      state,
-      title: title,
-      description: description,
-    );
+    state = repo.proposeFeature(state, title: title, description: description);
   }
 
   Future<void> submitFeedback({
@@ -88,10 +82,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
   final int initialTabIndex;
 
-  static Future<void> show(
-    BuildContext context, {
-    int initialTabIndex = 0,
-  }) {
+  static Future<void> show(BuildContext context, {int initialTabIndex = 0}) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -259,7 +250,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                       vertical: 3,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: item.stage ==
+                                      color:
+                                          item.stage ==
                                               FeatureStage.workInProgress
                                           ? colorScheme.primary.withValues(
                                               alpha: 0.15,
@@ -273,7 +265,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: textTheme.labelSmall?.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        color: item.stage ==
+                                        color:
+                                            item.stage ==
                                                 FeatureStage.workInProgress
                                             ? colorScheme.primary
                                             : colorScheme.onSurfaceVariant,
@@ -286,8 +279,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   message: item.userVoted
                                       ? 'Remove your vote'
                                       : (item.votes == 0
-                                          ? 'Be the first to vote'
-                                          : 'Vote for this feature'),
+                                            ? 'Be the first to vote'
+                                            : 'Vote for this feature'),
                                   child: OutlinedButton.icon(
                                     key: Key('vote_button_${item.id}'),
                                     style: OutlinedButton.styleFrom(
@@ -457,7 +450,9 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           color: selectedSentiment.value == sentiment
                               ? colorScheme.primary
                               : colorScheme.outlineVariant,
-                          width: selectedSentiment.value == sentiment ? 2.0 : 1.0,
+                          width: selectedSentiment.value == sentiment
+                              ? 2.0
+                              : 1.0,
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -556,8 +551,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             key: const Key('feedback_contact_input'),
                             controller: contactController,
                             decoration: const InputDecoration(
-                              labelText:
-                                  'Optional name or email (if you would like a reply)',
+                              labelText: 'Optional name or email (if you would like a reply)',
                               border: OutlineInputBorder(),
                             ),
                           ),
@@ -565,12 +559,17 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           // Scribble / Drawing Attachment affordance
                           if (drawingAttachment.value != null) ...[
                             Container(
-                              key: const Key('attached_scribble_preview_container'),
+                              key: const Key(
+                                'attached_scribble_preview_container',
+                              ),
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                color: colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: colorScheme.outlineVariant),
+                                border: Border.all(
+                                  color: colorScheme.outlineVariant,
+                                ),
                               ),
                               child: Row(
                                 children: [
@@ -578,7 +577,9 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     borderRadius: BorderRadius.circular(6),
                                     child: Image.memory(
                                       drawingAttachment.value!,
-                                      key: const Key('attached_scribble_thumbnail'),
+                                      key: const Key(
+                                        'attached_scribble_thumbnail',
+                                      ),
                                       width: 60,
                                       height: 40,
                                       fit: BoxFit.cover,
@@ -587,25 +588,35 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         const Text(
                                           'Scribble Annotated Screenshot',
-                                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                         Text(
-                                          '${drawingAttachment.value!.lengthInBytes ~/ 1024} KB attached for private triage',
-                                          style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+                                          '${drawingAttachment.value!.lengthInBytes ~/ 1024} KB kept with this note (not uploaded)',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
                                   IconButton(
-                                    key: const Key('remove_scribble_attachment_button'),
+                                    key: const Key(
+                                      'remove_scribble_attachment_button',
+                                    ),
                                     tooltip: 'Remove scribble',
                                     icon: const Icon(Icons.close, size: 18),
-                                    onPressed: () => drawingAttachment.value = null,
+                                    onPressed: () =>
+                                        drawingAttachment.value = null,
                                   ),
                                 ],
                               ),
@@ -615,13 +626,18 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             OutlinedButton.icon(
                               key: const Key('open_feedback_drawing_button'),
                               onPressed: () async {
-                                final result = await FeedbackDrawingDialog.show(context);
+                                final result = await FeedbackDrawingDialog.show(
+                                  context,
+                                );
                                 if (result != null && result.isNotEmpty) {
                                   drawingAttachment.value = result;
                                 }
                               },
                               icon: const Icon(Icons.draw_outlined, size: 18),
-                              label: const Text('Draw / Annotate on Screenshot', style: TextStyle(fontSize: 12)),
+                              label: const Text(
+                                'Draw / Annotate on Screenshot',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                             const SizedBox(height: 12),
                           ],
@@ -651,63 +667,108 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 onPressed: isSubmitting.value
                                     ? null
                                     : () async {
-                                        final text = feedbackController.text.trim();
+                                        final text = feedbackController.text
+                                            .trim();
                                         if (text.isEmpty) {
-                                          submittedMessage.value =
-                                              'Please enter a short note above so we can read your thoughts.';
+                                          submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
                                           return;
                                         }
                                         isSubmitting.value = true;
                                         try {
-                                          final sentiment = selectedSentiment.value;
-                                          final contact = contactController.text.trim();
+                                          final sentiment =
+                                              selectedSentiment.value;
+                                          final contact = contactController.text
+                                              .trim();
                                           String? attachmentUrl;
-                                          final attachmentBytes = drawingAttachment.value;
+                                          final attachmentBytes =
+                                              drawingAttachment.value;
 
                                           if (attachmentBytes != null) {
-                                            final storageRepo = ref.read(storageRepositoryProvider);
-                                            attachmentUrl = await storageRepo.uploadFeedbackAttachment(
-                                              bytes: attachmentBytes,
-                                              filename: 'scribble_${DateTime.now().millisecondsSinceEpoch}.png',
+                                            final storageRepo = ref.read(
+                                              storageRepositoryProvider,
                                             );
+                                            attachmentUrl = await storageRepo
+                                                .uploadFeedbackAttachment(
+                                                  bytes: attachmentBytes,
+                                                  filename:
+                                                      'scribble_${DateTime.now().millisecondsSinceEpoch}.png',
+                                                );
                                           }
 
                                           await ref
-                                              .read(featureVotingProvider.notifier)
+                                              .read(
+                                                featureVotingProvider.notifier,
+                                              )
                                               .submitFeedback(
                                                 sentiment: sentiment,
                                                 message: text,
-                                                rating: selectedStarRating.value,
-                                                contactEmail:
-                                                    contact.isNotEmpty ? contact : null,
+                                                rating:
+                                                    selectedStarRating.value,
+                                                contactEmail: contact.isNotEmpty
+                                                    ? contact
+                                                    : null,
                                                 attachmentUrl: attachmentUrl,
-                                                screenshotAttachment: attachmentBytes,
+                                                screenshotAttachment:
+                                                    attachmentBytes,
                                               );
 
-                                          final summary =
-                                              '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] '
-                                              '$text '
-                                              '${contact.isNotEmpty ? "(From: $contact)" : ""}'
-                                              '${attachmentUrl != null ? " [Attachment: $attachmentUrl]" : ""}';
+                                          final hostedUpload =
+                                              FeedbackAttachmentRef.isHostedUpload(
+                                                attachmentUrl,
+                                              );
+                                          final summary = StringBuffer()
+                                            ..writeln(
+                                              '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] $text',
+                                            );
+                                          if (contact.isNotEmpty) {
+                                            summary.writeln('From: $contact');
+                                          }
+                                          summary.writeln(
+                                            'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
+                                          );
+                                          if (attachmentBytes != null &&
+                                              !hostedUpload) {
+                                            summary.writeln(
+                                              'Drawing: kept with this note, not uploaded.',
+                                            );
+                                          } else if (hostedUpload) {
+                                            summary.writeln(
+                                              'Attachment: $attachmentUrl',
+                                            );
+                                          }
                                           try {
                                             await Clipboard.setData(
-                                              ClipboardData(text: summary),
-                                            ).timeout(const Duration(milliseconds: 100));
+                                              ClipboardData(
+                                                text: summary.toString(),
+                                              ),
+                                            ).timeout(
+                                              const Duration(milliseconds: 100),
+                                            );
                                           } catch (_) {}
 
-                                          submittedMessage.value = sentiment.isPrivateTriage
-                                              ? 'Thank you! Your note was securely routed to our private triage queue (belong_feedback) so your privacy is 100% protected.'
+                                          final saved =
+                                              sentiment.isPrivateTriage
+                                              ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
                                               : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                          submittedMessage.value =
+                                              attachmentBytes != null &&
+                                                  !hostedUpload
+                                              ? '$saved The drawing stayed with the note and was not uploaded.'
+                                              : saved;
                                           feedbackController.clear();
                                           drawingAttachment.value = null;
                                         } catch (e) {
-                                          submittedMessage.value = 'Could not submit feedback: $e';
+                                          submittedMessage.value =
+                                              'Could not submit feedback: $e';
                                         } finally {
                                           isSubmitting.value = false;
                                         }
                                       },
                                 icon: isSubmitting.value
-                                    ? const Icon(Icons.hourglass_empty_rounded, size: 18)
+                                    ? const Icon(
+                                        Icons.hourglass_empty_rounded,
+                                        size: 18,
+                                      )
                                     : const Icon(Icons.send_rounded, size: 18),
                                 label: Text(
                                   selectedSentiment.value.isPrivateTriage

@@ -1,6 +1,8 @@
 import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../feedback/application/feedback_attachment_ref.dart';
 import '../../feedback/data/feature_voting_repository.dart';
 
 /// Pluggable storage repository seam supporting:
@@ -43,6 +45,9 @@ abstract interface class StorageRepository {
 class InMemoryStorageRepository implements StorageRepository {
   final Map<String, Uint8List> _storage = {};
 
+  /// Paths whose bytes are held in this process.
+  Iterable<String> get retainedPaths => _storage.keys;
+
   @override
   BackendTarget get target => BackendTarget.inMemory;
 
@@ -75,7 +80,7 @@ class InMemoryStorageRepository implements StorageRepository {
   }) async {
     final path = 'feedback/attachments/$filename';
     _storage[path] = bytes;
-    return 'https://storage.belongonthespectrum.com/$path';
+    return FeedbackAttachmentRef.localHandoff(filename);
   }
 
   @override
@@ -96,9 +101,8 @@ class InMemoryStorageRepository implements StorageRepository {
 
 /// Production Firebase Cloud Storage repository seam.
 class FirebaseStorageRepository implements StorageRepository {
-  FirebaseStorageRepository({
-    InMemoryStorageRepository? fallback,
-  }) : _fallback = fallback ?? InMemoryStorageRepository();
+  FirebaseStorageRepository({InMemoryStorageRepository? fallback})
+    : _fallback = fallback ?? InMemoryStorageRepository();
 
   final InMemoryStorageRepository _fallback;
 
@@ -136,10 +140,7 @@ class FirebaseStorageRepository implements StorageRepository {
     required Uint8List bytes,
     required String filename,
   }) async {
-    return _fallback.uploadFeedbackAttachment(
-      bytes: bytes,
-      filename: filename,
-    );
+    return _fallback.uploadFeedbackAttachment(bytes: bytes, filename: filename);
   }
 
   @override
@@ -147,10 +148,7 @@ class FirebaseStorageRepository implements StorageRepository {
     required Uint8List bytes,
     required String filename,
   }) async {
-    return _fallback.uploadDiagnosticLogs(
-      bytes: bytes,
-      filename: filename,
-    );
+    return _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
   }
 
   @override

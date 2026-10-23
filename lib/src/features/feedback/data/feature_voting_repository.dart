@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../application/feedback_attachment_ref.dart';
 import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
 
@@ -142,6 +143,18 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
 
   PrivateFeedbackRouter get privateRouter => const PrivateFeedbackRouter();
 
+  String _attachmentDelivery(
+    String? attachmentUrl,
+    Uint8List? screenshotAttachment,
+  ) {
+    if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl)) return 'hosted';
+    final hasDrawing =
+        screenshotAttachment != null ||
+        (attachmentUrl != null && attachmentUrl.trim().isNotEmpty);
+    if (!hasDrawing) return 'none';
+    return 'local_only';
+  }
+
   @override
   Future<void> submitFeedback({
     required FeedbackSentiment sentiment,
@@ -166,10 +179,15 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       'message': trimmed,
       if (contactEmail != null && contactEmail.trim().isNotEmpty)
         'contactEmail': contactEmail.trim(),
-      if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty)
-        'attachmentUrl': attachmentUrl.trim(),
-      if (screenshotAttachment != null)
-        'hasScreenshotAttachment': 'true',
+      if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl))
+        'attachmentUrl': attachmentUrl!.trim(),
+      if (screenshotAttachment != null) 'hasScreenshotAttachment': 'true',
+      'attachmentDelivery': _attachmentDelivery(
+        attachmentUrl,
+        screenshotAttachment,
+      ),
+      'githubIssueCreated': 'false',
+      'storedIn': 'member_feedback',
     });
   }
 }
@@ -335,10 +353,15 @@ class FirebaseFeatureVotingRepository
           'message': message.trim(),
           if (contactEmail != null && contactEmail.trim().isNotEmpty)
             'contactEmail': contactEmail.trim(),
-          if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty)
-            'attachmentUrl': attachmentUrl.trim(),
-          if (screenshotAttachment != null)
-            'hasScreenshotAttachment': true,
+          if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl))
+            'attachmentUrl': attachmentUrl!.trim(),
+          if (screenshotAttachment != null) 'hasScreenshotAttachment': true,
+          'attachmentDelivery': _attachmentDelivery(
+            attachmentUrl,
+            screenshotAttachment,
+          ),
+          'githubIssueCreated': false,
+          'storedIn': feedbackCollectionPath,
           'createdAt': FieldValue.serverTimestamp(),
         });
       } catch (_) {
@@ -355,7 +378,9 @@ final featureVotingBackendTargetProvider = Provider<BackendTarget>(
 );
 
 /// Provides the active [FeatureVotingRepository] implementation.
-final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) {
+final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((
+  ref,
+) {
   final target = ref.watch(featureVotingBackendTargetProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryFeatureVotingRepository(),
