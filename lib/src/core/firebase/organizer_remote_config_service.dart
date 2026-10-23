@@ -24,7 +24,7 @@ class OrganizerRemoteConfig {
     required this.androidAppDownloadUrl,
     required this.iosAppDownloadUrl,
     this.previewModeEnabled = false,
-    this.adminEmailsCsv = 'neilwarner@gmail.com',
+    this.adminEmailsCsv = '',
   });
 
   factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) => OrganizerRemoteConfig(
@@ -36,7 +36,7 @@ class OrganizerRemoteConfig {
     androidAppDownloadUrl: '',
     iosAppDownloadUrl: '',
     previewModeEnabled: false,
-    adminEmailsCsv: 'neilwarner@gmail.com',
+    adminEmailsCsv: '',
   );
 
   static const String _defaultGuidelines = '''

@@ -81,7 +81,7 @@ void main() {
     });
 
     patrolWidgetTest(
-        'admin (neilwarner@gmail.com) sees admin badge, can ban member into soft-delete table and unban',
+        'admin user sees admin badge, can ban member into soft-delete table and unban',
         ($) async {
       $.tester.view.physicalSize = const Size(1080, 2400);
       $.tester.view.devicePixelRatio = 1.0;
@@ -100,13 +100,13 @@ void main() {
           organizerRemoteConfigProvider.overrideWithValue(
             OrganizerRemoteConfig.defaults(
               const CommunityBrandConfig.belong(),
-            ),
+            ).copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
           ),
           memberProfileProvider.overrideWith(
             () => _StaticProfileNotifier(
               const MemberProfile(
-                displayName: 'Neil Warner',
-                email: 'neilwarner@gmail.com',
+                displayName: 'Fellow Member',
+                email: 'organizer@belongonthespectrum.com',
                 bio: 'Community Administrator',
                 comfortBadges: [],
                 isSignedIn: true,

@@ -518,19 +518,31 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                 style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
               ),
               onPressed: () async {
-                await ref
-                    .read(adminBanningRepositoryProvider)
-                    .unbanUser(effectiveMember.name);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${effectiveMember.name} restored to active fellowship.',
+                try {
+                  await ref
+                      .read(adminBanningRepositoryProvider)
+                      .unbanUser(effectiveMember.name);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${effectiveMember.name} restored to active fellowship.',
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 3),
                       ),
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to restore member: $e'),
+                        backgroundColor: Colors.redAccent,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
                 }
               },
             ),
@@ -592,32 +604,42 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
 
     if (confirmed == true && context.mounted) {
       final currentProfile = ref.read(memberProfileProvider);
-      final adminEmail = currentProfile.email.isNotEmpty
-          ? currentProfile.email
-          : 'neilwarner@gmail.com';
+      final adminEmail = currentProfile.email;
 
-      await ref.read(adminBanningRepositoryProvider).banUser(
-            userId: member.name,
-            displayName: member.name,
-            bannedByAdminEmail: adminEmail,
-            reason: 'Violating calm community guidelines',
-            additionalData: {
-              'role': member.role,
-              'bio': member.bio,
-              'churchAffiliation': member.churchAffiliation,
-              'comfortBadges': member.comfortBadges,
-              'tagline': member.tagline,
-            },
+      try {
+        await ref.read(adminBanningRepositoryProvider).banUser(
+              userId: member.name,
+              displayName: member.name,
+              bannedByAdminEmail: adminEmail,
+              reason: 'Violating calm community guidelines',
+              additionalData: {
+                'role': member.role,
+                'bio': member.bio,
+                'churchAffiliation': member.churchAffiliation,
+                'comfortBadges': member.comfortBadges,
+                'tagline': member.tagline,
+              },
+            );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${member.name} moved to remote soft-delete table.'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
           );
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${member.name} moved to remote soft-delete table.'),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to ban member: $e'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }

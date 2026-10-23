@@ -83,7 +83,13 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
 
   @override
   Future<void> unbanUser(String userId) async {
-    _bannedUsers.remove(userId.toLowerCase());
+    final q = userId.trim().toLowerCase();
+    _bannedUsers.removeWhere(
+      (key, u) =>
+          key == q ||
+          u.userId.toLowerCase() == q ||
+          u.displayName.toLowerCase() == q,
+    );
     _controller.add(_bannedUsers.values.toSet().toList());
   }
 
@@ -140,14 +146,11 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
     };
 
     if (fs != null) {
-      try {
-        await fs.collection(collectionName).doc(userId).set(payload);
-        AppLogger.info(
-          'Moved user "$displayName" ($userId) into remote soft-delete collection by $bannedByAdminEmail',
-        );
-      } catch (e) {
-        AppLogger.warning('Firestore ban write failed, caching locally: $e');
-      }
+      await fs.collection(collectionName).doc(userId).set(payload);
+      AppLogger.info(
+        'Moved user "$displayName" ($userId) into remote soft-delete collection by $bannedByAdminEmail',
+      );
+      return;
     }
 
     await _fallback.banUser(
@@ -164,17 +167,14 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   Future<bool> isUserBanned(String userIdOrName) async {
     final fs = firestore;
     if (fs != null) {
-      try {
-        final doc = await fs.collection(collectionName).doc(userIdOrName).get();
-        if (doc.exists) {
-          final data = doc.data();
-          if (data != null && data['softDeleted'] == true) {
-            return true;
-          }
+      final doc = await fs.collection(collectionName).doc(userIdOrName).get();
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null && data['softDeleted'] == true) {
+          return true;
         }
-      } catch (_) {
-        // Fall back to local check
       }
+      return false;
     }
     return _fallback.isUserBanned(userIdOrName);
   }
@@ -183,19 +183,15 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   Stream<List<SoftDeletedUser>> watchBannedUsers() {
     final fs = firestore;
     if (fs != null) {
-      try {
-        return fs
-            .collection(collectionName)
-            .where('softDeleted', isEqualTo: true)
-            .snapshots()
-            .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            return SoftDeletedUser.fromMap(doc.data(), id: doc.id);
-          }).toList();
-        });
-      } catch (_) {
-        // Fallback below
-      }
+      return fs
+          .collection(collectionName)
+          .where('softDeleted', isEqualTo: true)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) {
+          return SoftDeletedUser.fromMap(doc.data(), id: doc.id);
+        }).toList();
+      });
     }
     return _fallback.watchBannedUsers();
   }
@@ -204,12 +200,11 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   Future<void> unbanUser(String userId) async {
     final fs = firestore;
     if (fs != null) {
-      try {
-        await fs.collection(collectionName).doc(userId).update({
-          'softDeleted': false,
-          'unbannedAt': FieldValue.serverTimestamp(),
-        });
-      } catch (_) {}
+      await fs.collection(collectionName).doc(userId).update({
+        'softDeleted': false,
+        'unbannedAt': FieldValue.serverTimestamp(),
+      });
+      return;
     }
     await _fallback.unbanUser(userId);
   }

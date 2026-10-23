@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:equatable/equatable.dart';
 
 /// Represents a user whose account and profile information has been moved into
@@ -19,6 +20,8 @@ class SoftDeletedUser extends Equatable {
     DateTime date;
     if (rawDate is DateTime) {
       date = rawDate;
+    } else if (rawDate is Timestamp) {
+      date = rawDate.toDate();
     } else if (rawDate is String) {
       date = DateTime.tryParse(rawDate) ?? DateTime.now();
     } else {

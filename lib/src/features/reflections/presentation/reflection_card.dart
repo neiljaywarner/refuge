@@ -74,6 +74,7 @@ class ReflectionCard extends ConsumerWidget {
                         Flexible(
                           child: Text(
                             post.authorName,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                           ),

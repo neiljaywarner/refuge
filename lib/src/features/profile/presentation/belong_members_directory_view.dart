@@ -113,7 +113,6 @@ class _BelongMembersDirectoryViewState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final brand = ref.watch(communityBrandConfigProvider);
     final currentProfile = ref.watch(memberProfileProvider);
 
     final filteredMembers = kDevFellowshipMembers.where((m) {
