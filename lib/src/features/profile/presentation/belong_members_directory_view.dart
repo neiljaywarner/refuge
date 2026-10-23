@@ -82,22 +82,13 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
     comfortBadges: ['Calm Tech Supporter', 'Clear expectations preferred'],
   ),
   DevFellowshipMember(
-    name: 'David M. (UK)',
-    role: 'Prayer Fellowship Deacon',
-    tagline: 'Finding peace in routine transitions',
-    bio: 'Serving autistic adults & young families. Passionate about removing sensory barriers from Sunday assemblies.',
-    churchAffiliation: 'London Church',
-    isIcocMember: true,
-    comfortBadges: ['Calm Tech Supporter', 'Clear expectations preferred'],
-  ),
-  DevFellowshipMember(
     name: 'Nathan K. (Texas)',
-    role: 'Scripture Meditation Leader',
-    tagline: 'Scripture memory, quiet rooms, and sensory balance',
-    bio: 'Leading quiet meditation walks and sensory-safe scripture reading in Austin.',
-    churchAffiliation: 'Austin Church',
+    role: 'Acoustic Specialist',
+    tagline: 'Church Acoustics and quiet fellowship',
+    bio: 'Passionate about church acoustics and removing sensory barriers from worship assemblies.',
+    churchAffiliation: 'DFW Church (Partner)',
     isIcocMember: true,
-    comfortBadges: ['Scripture Memory', 'Quiet Environments'],
+    comfortBadges: ['Church Acoustics', 'Sensory Sensitive'],
   ),
 ];
 
@@ -154,6 +145,7 @@ class _BelongMembersDirectoryViewState
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
+          key: const Key('members_directory_back_button'),
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Back to Spaces',
           onPressed: widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
@@ -381,6 +373,7 @@ class _SelfMemberCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
+                  key: const Key('members_edit_profile_button'),
                   icon: const Icon(Icons.edit_outlined, size: 18),
                   tooltip: 'Edit Profile & Tagline',
                   onPressed: () => MemberProfileDialog.show(context),
@@ -429,9 +422,8 @@ class _FellowshipMemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final slug = member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
     return InkWell(
-      key: Key('dev_member_card_$slug'),
+      key: Key('dev_member_card_${member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}'),
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Card(

@@ -22,35 +22,35 @@ enum BelongNotificationFilter {
 /// Simulated in-memory notification seed for development & testing (#328, #329).
 final List<BelongNotification> kInitialNotifications = [
   BelongNotification(
-    id: 'notif-1',
+    id: 'notif-mention-1',
     type: BelongNotificationType.mention,
-    authorName: 'Marty (Organizer)',
-    postTitle: 'Markan Chiasms in Chapter 4',
-    timestamp: DateTime(2026, 10, 22, 12, 0),
+    authorName: 'John Doe',
+    postTitle: 'Markan Chiasms',
+    timestamp: DateTime(2026, 10, 22, 11, 55),
     isRead: false,
   ),
   BelongNotification(
-    id: 'notif-2',
+    id: 'notif-reply-1',
     type: BelongNotificationType.reply,
-    authorName: 'Sarah Chen',
-    postTitle: 'Quiet Rooms at Texas Assemblies',
-    timestamp: DateTime(2026, 10, 22, 11, 30),
+    authorName: 'Elena R.',
+    postTitle: 'Prayer & Healing',
+    timestamp: DateTime(2026, 10, 22, 11, 0),
     isRead: false,
   ),
   BelongNotification(
-    id: 'notif-3',
+    id: 'notif-like-1',
     type: BelongNotificationType.like,
-    authorName: 'Caleb Stone',
-    postTitle: 'Sensory Safe Worship Spaces',
-    timestamp: DateTime(2026, 10, 22, 10, 0),
+    authorName: 'David M.',
+    postTitle: 'Sensory Friendly Worship',
+    timestamp: DateTime(2026, 10, 22, 9, 0),
     isRead: false,
   ),
   BelongNotification(
-    id: 'notif-4',
+    id: 'notif-following-1',
     type: BelongNotificationType.following,
-    authorName: 'David Okafor',
-    postTitle: 'Fellowship Hall Reflections',
-    timestamp: DateTime(2026, 10, 20, 14, 0),
+    authorName: 'Pastor Thomas',
+    postTitle: 'Psalm 23 Meditations',
+    timestamp: DateTime(2026, 10, 20, 12, 0),
     isRead: true,
   ),
 ];
@@ -60,63 +60,77 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
   BelongNotificationsNotifier({
     this.badgeService,
     this.initialList,
-  });
+  }) {
+    if (badgeService != null) {
+      _explicitBadgeService = badgeService;
+    }
+    if (initialList != null) {
+      _explicitInitialList = initialList;
+    }
+  }
 
   final AppLauncherBadgeService? badgeService;
   final List<BelongNotification>? initialList;
 
-  List<BelongNotification>? _testState;
+  AppLauncherBadgeService? _explicitBadgeService;
+  List<BelongNotification>? _explicitInitialList;
+  List<BelongNotification>? _unitTestState;
 
   @override
   List<BelongNotification> get state {
     try {
       return super.state;
     } catch (_) {
-      return _testState ?? initialList ?? _defaultList();
+      return _unitTestState ?? build();
     }
   }
 
   @override
   set state(List<BelongNotification> value) {
+    _unitTestState = value;
     try {
       super.state = value;
-    } catch (_) {
-      _testState = value;
+    } catch (_) {}
+    _syncBadge(value);
+  }
+
+  void _syncBadge(List<BelongNotification> list) {
+    final unread = list.where((n) => !n.isRead).length;
+    AppLauncherBadgeService? badge = _explicitBadgeService;
+    if (badge == null) {
+      try {
+        badge = ref.read(appLauncherBadgeServiceProvider);
+      } catch (_) {}
     }
+    badge?.setBadgeCount(unread);
   }
 
   @override
   List<BelongNotification> build() {
-    final list = initialList ?? _defaultList();
-    final unread = list.where((n) => !n.isRead).length;
-    _syncBadge(unread);
-    return list;
-  }
-
-  List<BelongNotification> _defaultList() {
     final now = DateTime.now();
-    return [
-      kInitialNotifications[0].copyWith(
-        timestamp: now.subtract(const Duration(minutes: 5)),
-      ),
-      kInitialNotifications[1].copyWith(
-        timestamp: now.subtract(const Duration(hours: 1)),
-      ),
-      kInitialNotifications[2].copyWith(
-        timestamp: now.subtract(const Duration(hours: 3)),
-      ),
-      kInitialNotifications[3].copyWith(
-        timestamp: now.subtract(const Duration(days: 2)),
-      ),
-    ];
-  }
-
-  void _syncBadge(int count) {
-    final service = badgeService ??
-        (ref.exists(appLauncherBadgeServiceProvider)
-            ? ref.read(appLauncherBadgeServiceProvider)
-            : null);
-    service?.setBadgeCount(count);
+    final items = _explicitInitialList ??
+        initialList ??
+        [
+          kInitialNotifications[0].copyWith(
+            id: 'notif-mention-1',
+            timestamp: now.subtract(const Duration(minutes: 5)),
+          ),
+          kInitialNotifications[1].copyWith(
+            id: 'notif-reply-1',
+            timestamp: now.subtract(const Duration(hours: 1)),
+          ),
+          kInitialNotifications[2].copyWith(
+            id: 'notif-like-1',
+            timestamp: now.subtract(const Duration(hours: 3)),
+          ),
+          kInitialNotifications[3].copyWith(
+            id: 'notif-following-1',
+            timestamp: now.subtract(const Duration(days: 2)),
+          ),
+        ];
+    _unitTestState = items;
+    _syncBadge(items);
+    return items;
   }
 
   void markAsRead(String notificationId) {
@@ -124,8 +138,6 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
       for (final n in state)
         if (n.id == notificationId) n.copyWith(isRead: true) else n,
     ];
-    final unread = state.where((n) => !n.isRead).length;
-    _syncBadge(unread);
   }
 
   void markAllAsRead() {
@@ -133,18 +145,14 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
       for (final n in state)
         if (!n.isRead) n.copyWith(isRead: true) else n,
     ];
-    _syncBadge(0);
   }
 
   void addNotification(BelongNotification notification) {
     state = [notification, ...state];
-    final unread = state.where((n) => !n.isRead).length;
-    _syncBadge(unread);
   }
 
   void clearAll() {
     state = [];
-    _syncBadge(0);
   }
 }
 
@@ -164,7 +172,7 @@ final unreadNotificationCountProvider = Provider<int>((ref) {
   return list.where((n) => !n.isRead).length;
 });
 
-/// Alias for backward compatibility across navigation bar and views.
+/// Alias provider for backwards compatibility (#356, #328).
 final unreadNotificationsCountProvider = unreadNotificationCountProvider;
 
 /// Computed provider filtering the notification feed according to active filter chip.
