@@ -1,0 +1,24 @@
+appId: com.belongonthespectrum.sanctuary
+---
+# Feed Bookmark Ribbon & Multi-Criteria Sort Flow
+- launchApp:
+    clearState: false
+
+# 1. Verify Feed is active
+- assertVisible: "Feed"
+
+# 2. Tap on Sort: For you
+- tapOn: ".*For you.*"
+
+# 3. Tap on Sort: New Activity
+- tapOn: ".*New Activity.*"
+
+# 4. Tap on Sort: Latest
+- tapOn: ".*Latest.*"
+
+# 5. Tap on Spaces
+- tapOn: "Spaces"
+- assertVisible: ".*Saved for Later.*"
+
+# 6. Return to Feed
+- tapOn: "Feed"
