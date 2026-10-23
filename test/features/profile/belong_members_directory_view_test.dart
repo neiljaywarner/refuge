@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:refuge4serverpod/main.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/belong_members_directory_view.dart';
@@ -12,6 +13,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
         ],
       );
       addTearDown(container.dispose);
@@ -34,37 +36,32 @@ void main() {
       );
 
       // Verify title and descriptions
-      expect($('Members Section & Directory'), findsOneWidget);
+      expect($('Member Directory'), findsOneWidget);
       expect(
-        $('Store profile info & connect with verified fellowship members'),
+        $('Fellowship disciples & leaders'),
         findsOneWidget,
       );
 
-      // Verify user profile card
-      expect($('Fellowship Member'), findsOneWidget);
-      expect($(const Key('user_profile_affiliation_badge')), findsOneWidget);
-
       // Verify dev-mode dummy community members
       expect($('Marty (Organizer)'), findsOneWidget);
-      expect($('Hannah M.'), findsOneWidget);
-      expect($('Alex K.'), findsOneWidget);
-      expect($('Jordan P.'), findsOneWidget);
+      expect($('Caleb Stone'), findsOneWidget);
+      expect($('Sarah Chen'), findsOneWidget);
+      expect($('David Okafor'), findsOneWidget);
 
       // Verify church affiliations shown
-      expect($('DFW Church (Partner)'), findsWidgets);
-      expect($('Austin Christian Church'), findsOneWidget);
-      expect($('Boston Church of Christ'), findsOneWidget);
-      expect($('I am not a member of an ICOC church'), findsOneWidget);
+      expect($('DFW Church (Partner) • Community Organizer & Founder'), findsOneWidget);
+      expect($('Boston Church • Bible Teacher & Scholar'), findsOneWidget);
 
       // Verify back button works
-      await $(const Key('members_directory_back_button')).tap();
+      await $(Icons.arrow_back_rounded).tap();
       expect(backTapped, isTrue);
     });
 
-    patrolWidgetTest('tapping Edit Profile opens MemberProfileDialog', ($) async {
+    patrolWidgetTest('tapping a member card opens OtherMemberProfileDialog', ($) async {
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
         ],
       );
       addTearDown(container.dispose);
@@ -72,19 +69,23 @@ void main() {
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
+          child: MaterialApp(
             home: Scaffold(
-              body: BelongMembersDirectoryView(),
+              body: BelongMembersDirectoryView(
+                onBackToSpaces: () {},
+              ),
             ),
           ),
         ),
       );
 
-      await $(const Key('members_edit_profile_button')).tap();
+      // Tap Marty (Organizer) card
+      await $('Marty (Organizer)').tap();
       await $.pumpAndSettle();
 
-      expect($('Member Profile & Sign-In'), findsOneWidget);
-      expect($('Which ICOC church do you attend?'), findsOneWidget);
+      // Dialog opens showing other member profile details
+      expect($(const Key('other_member_profile_name')), findsOneWidget);
+      expect($('ICOC'), findsWidgets);
     });
   });
 }
