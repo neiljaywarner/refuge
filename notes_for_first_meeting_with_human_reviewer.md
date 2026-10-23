@@ -21,8 +21,10 @@ Tonight's review focuses on operational readiness: verifying that authentication
 
 ## 2. TL;DR (Too Long; Didn't Read)
 
-- **The Software Works Now**: 175+ automated unit, widget, and device BDD tests pass green on every commit. Zero static analysis errors.
+- **The Software Works Now**: 226+ automated unit, widget, and device BDD tests pass green on every commit. Zero static analysis errors.
+- **Hardware Verified Live**: Driven across 2 physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and 2 Android emulators (`emulator-5554`, `emulator-5556`) using Maestro MCP and the Marionette live demo showcase runner (`devices.md`).
 - **Save \$1,000+/year**: By hosting on Firebase Edge (Google Cloud free tier), hosting costs are \$0/month for our community scale.
+- **Serverpod Teardown & Cost Optimization**: Clean 20-day turn-off roadmap in place to eliminate the \$5/mo Serverpod Cloud cluster before trial renewal (`--dart-define=ENABLE_SERVERPOD=false` enabled, boilerplate endpoints cleanly removed).
 - **No App Store Friction**: Belong runs instantly in any mobile or desktop web browser, and prompts users with 1-tap "Add to Home Screen" (Progressive Web App / WebAPK), bypassing App Store / Play Store gatekeeping.
 - **Neurodivergent-First**: Replaces high-anxiety social media patterns (like 1–5 star ratings, endless unread notification counts, and algorithmic outrage feeds) with literal 3-intent feedback, chronological unhurried feeds, and quiet sensory themes (Sage, Clean, Charcoal, High Contrast).
 - **Private Feedback**: Private bug reports and ideas automatically route to a confidential private repository (`neiljaywarner/belong_feedback`), ensuring zero member PII is leaked in public trackers. Members can draw, circle, and annotate directly on screenshots before sending.
@@ -90,8 +92,20 @@ Phase:       Soft Launch         Circle Cutover     Initial Feedback     Analyti
 - [x] Bookmarking / Save for Later space (#155).
 - [x] In-app Avatar photo capture, gallery upload, square cropping, and polite permission handling (#333).
 - [x] Draw-on feedback canvas with scribble screenshot attachment and private repository dispatch (`neiljaywarner/belong_feedback`) (#335).
+- [x] Firebase In-App Messaging (FIAM) with Web stubbing, Installation ID (FID) troubleshooting inspection, and Cloud Storage Diagnostic Session Replay (#360 / PR #378).
+- [x] Remote Config Admin Mode with user soft-deletion / banning (#356).
+- [x] Belong & Circle review sentiment benchmark auditor with automated reporting (#357).
+- [x] Non-destructive testing hygiene: Removed asset-mutating `render_icons_test` from automated suites and relocated to standalone tool script (#364 / PR #388).
+- [x] StateNotifier notifications controller restoration and launcher app badge synchronization (#368 / PR #390).
+- [x] Interactive Marionette Live Demo Showcase CLI driver, bash launcher, and AI skill (`tool/marionette_demo.dart`, `.agents/skills/marionette-live-showcase/SKILL.md`) (#380 / PR #391).
+- [x] Serverpod Cloud Deprecation Roadmap, turn-off checklist, `$0.00/mo` cost savings guide, and `greeting_endpoint.dart` removal (#383 / PR #397).
+- [x] Appwrite Backend Migration architectural foundation and Riverpod repository provider adapters (#384).
 
-### C. Stuff to Finish Before Soft Launch (Saturday, October 24, 2026) 🗓️
+### C. Active / In-Progress Ahead of Soft Launch (Saturday, October 24, 2026) 🗓️
+- [ ] **In-App Material Banner for DMs & @-Mentions + Dual-Pixel Shade Verification** (`feat(notifications)` #382):
+  Surface gentle top banner when receiving a DM or @-mention while actively browsing or composing, plus automated shade verification across Pixel 1 & Pixel 2.
+- [ ] **Persistent Bottom Navigation Labels** (`feat(navigation)` #362):
+  Always show labels across all 4 bottom tabs ("Home", "Notifications", "Msgs", "Search") to reduce cognitive load.
 - [ ] **Unified General Settings Screen** (`feat(settings)` #336):
   Consolidate sensory themes, font scaling, notification thresholds, and developer preview toggles into one clean settings screen.
 - [ ] **Marty / Leadership Circle Review**:
@@ -182,7 +196,7 @@ Use this checklist during tonight's walkthrough on real devices:
 
 - **Frontend Architecture**: Flutter 3.47 / Dart 3.13, Riverpod 2.6 (`HookConsumerWidget`), feature-first package structure (`lib/src/features/*`).
 - **Backend & Cloud**: Google Cloud Firebase Edge (Firestore, Firebase Authentication, Firebase Storage, Cloud Functions, Remote Config).
-- **Test Automation Suite**: 175 tests (BDD feature specs via `patrol_finders`, unit tests via `package:test`, real hardware device driving via Maestro MCP & Patrol MCP).
+- **Test Automation Suite**: 226+ tests (BDD feature specs via `patrol_finders`, unit tests via `package:test`, real hardware device driving via Maestro MCP & Patrol MCP).
 - **Privacy Architecture**: Zero-PII policy in public repositories. Confidential feedback isolation via `neiljaywarner/belong_feedback`.
 - **Architectural Decision Records**:
   - `docs/adr/0001-sensory-modes.md`: High contrast and sensory calm mode specifications.
