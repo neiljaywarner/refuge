@@ -1,98 +1,1058 @@
 {
   "feed": {
     "author": {
-      "name": { "label": "iTunes Store" },
-      "uri": { "label": "http://www.apple.com/itunes/" }
+      "name": {
+        "label": "iTunes Store"
+      },
+      "uri": {
+        "label": "http://www.apple.com/itunes/"
+      }
     },
     "entry": [
       {
-        "id": { "label": "1506475653" },
-        "title": { "label": "Circle Communities" },
-        "im:name": { "label": "Circle Communities" },
-        "im:price": { "label": "Get", "attributes": { "amount": "0.00000", "currency": "USD" } }
+        "id": {
+          "label": "1506475653"
+        },
+        "title": {
+          "label": "Circle Communities"
+        },
+        "im:name": {
+          "label": "Circle Communities"
+        },
+        "im:price": {
+          "label": "Get",
+          "attributes": {
+            "amount": "0.00000",
+            "currency": "USD"
+          }
+        }
       },
       {
         "author": {
-          "name": { "label": "CommunityLearner88" },
-          "uri": { "label": "https://itunes.apple.com/us/reviews/id1001" }
+          "name": {
+            "label": "CommunityLearner88"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1001"
+          }
         },
-        "im:version": { "label": "3.12.0" },
-        "im:rating": { "label": "1" },
-        "id": { "label": "rev-001" },
-        "title": { "label": "Notification spam is unbearable" },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "1"
+        },
+        "id": {
+          "label": "rev-001"
+        },
+        "title": {
+          "label": "Notification spam is unbearable"
+        },
         "content": {
           "label": "The app spams my phone with push notifications for every single comment in every channel. I had to turn off all alerts in iOS settings, which means now I miss important direct messages.",
-          "attributes": { "type": "text" }
+          "attributes": {
+            "type": "text"
+          }
         },
-        "im:voteSum": { "label": "12" },
-        "im:voteCount": { "label": "12" }
+        "im:voteSum": {
+          "label": "12"
+        },
+        "im:voteCount": {
+          "label": "12"
+        }
       },
       {
         "author": {
-          "name": { "label": "VideoStudent" },
-          "uri": { "label": "https://itunes.apple.com/us/reviews/id1002" }
+          "name": {
+            "label": "VideoStudent"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1002"
+          }
         },
-        "im:version": { "label": "3.11.2" },
-        "im:rating": { "label": "2" },
-        "id": { "label": "rev-002" },
-        "title": { "label": "Video freezes and navigation is confusing" },
+        "im:version": {
+          "label": "3.11.2"
+        },
+        "im:rating": {
+          "label": "2"
+        },
+        "id": {
+          "label": "rev-002"
+        },
+        "title": {
+          "label": "Video freezes and navigation is confusing"
+        },
         "content": {
           "label": "Whenever I try to watch course video lectures, the player freezes after two minutes. Going back also takes me completely out of the space instead of back to the lesson index. Very frustrating navigation.",
-          "attributes": { "type": "text" }
+          "attributes": {
+            "type": "text"
+          }
         },
-        "im:voteSum": { "label": "8" },
-        "im:voteCount": { "label": "9" }
+        "im:voteSum": {
+          "label": "8"
+        },
+        "im:voteCount": {
+          "label": "9"
+        }
       },
       {
         "author": {
-          "name": { "label": "DevSubscriber" },
-          "uri": { "label": "https://itunes.apple.com/us/reviews/id1003" }
+          "name": {
+            "label": "DevSubscriber"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1003"
+          }
         },
-        "im:version": { "label": "3.10.1" },
-        "im:rating": { "label": "2" },
-        "id": { "label": "rev-003" },
-        "title": { "label": "Paywall not found error when renewing" },
+        "im:version": {
+          "label": "3.10.1"
+        },
+        "im:rating": {
+          "label": "2"
+        },
+        "id": {
+          "label": "rev-003"
+        },
+        "title": {
+          "label": "Paywall not found error when renewing"
+        },
         "content": {
           "label": "My subscription expired and when I clicked renew in the mobile app, it gave an error saying paywall not found. I had to log in via Safari desktop mode to fix my account.",
-          "attributes": { "type": "text" }
+          "attributes": {
+            "type": "text"
+          }
         },
-        "im:voteSum": { "label": "5" },
-        "im:voteCount": { "label": "5" }
+        "im:voteSum": {
+          "label": "5"
+        },
+        "im:voteCount": {
+          "label": "5"
+        }
       },
       {
         "author": {
-          "name": { "label": "DesignerFan" },
-          "uri": { "label": "https://itunes.apple.com/us/reviews/id1004" }
+          "name": {
+            "label": "DesignerFan"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1004"
+          }
         },
-        "im:version": { "label": "3.12.0" },
-        "im:rating": { "label": "4" },
-        "id": { "label": "rev-004" },
-        "title": { "label": "Great spaces, but drains battery" },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-004"
+        },
+        "title": {
+          "label": "Great spaces, but drains battery"
+        },
         "content": {
           "label": "I love the community spaces and discussions. It is so much cleaner than Facebook Groups. Only complaint is that the battery drain is noticeable on longer sessions.",
-          "attributes": { "type": "text" }
+          "attributes": {
+            "type": "text"
+          }
         },
-        "im:voteSum": { "label": "3" },
-        "im:voteCount": { "label": "3" }
+        "im:voteSum": {
+          "label": "3"
+        },
+        "im:voteCount": {
+          "label": "3"
+        }
       },
       {
         "author": {
-          "name": { "label": "CohortMember" },
-          "uri": { "label": "https://itunes.apple.com/us/reviews/id1005" }
+          "name": {
+            "label": "CohortMember"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1005"
+          }
         },
-        "im:version": { "label": "3.12.0" },
-        "im:rating": { "label": "5" },
-        "id": { "label": "rev-005" },
-        "title": { "label": "Best community platform hands down" },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-005"
+        },
+        "title": {
+          "label": "Best community platform hands down"
+        },
         "content": {
           "label": "The structured spaces, rich text formatting, and direct messages make connecting with my cohort so natural. Love having discussions and events in one place.",
-          "attributes": { "type": "text" }
+          "attributes": {
+            "type": "text"
+          }
         },
-        "im:voteSum": { "label": "15" },
-        "im:voteCount": { "label": "15" }
+        "im:voteSum": {
+          "label": "15"
+        },
+        "im:voteCount": {
+          "label": "15"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "AudioBookworm"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1006"
+          }
+        },
+        "im:version": {
+          "label": "3.12.1"
+        },
+        "im:rating": {
+          "label": "1"
+        },
+        "id": {
+          "label": "rev-006"
+        },
+        "title": {
+          "label": "Background audio stops immediately when leaving screen"
+        },
+        "content": {
+          "label": "I listen to community podcast recordings while walking, but the audio cuts off the second I switch apps or lock the screen. Why does a modern app not support lockscreen audio controls?",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "11"
+        },
+        "im:voteCount": {
+          "label": "11"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "SensorySeeker"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1007"
+          }
+        },
+        "im:version": {
+          "label": "3.11.0"
+        },
+        "im:rating": {
+          "label": "1"
+        },
+        "id": {
+          "label": "rev-007"
+        },
+        "title": {
+          "label": "Jarring notifications and no quiet hours"
+        },
+        "content": {
+          "label": "Ping ping ping all night long. There is no in-app schedule for quiet hours or silent digests. I wake up with dozens of notifications that overwhelm me.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "14"
+        },
+        "im:voteCount": {
+          "label": "14"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "ProductMarketer"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1008"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "1"
+        },
+        "id": {
+          "label": "rev-008"
+        },
+        "title": {
+          "label": "WebView crash loops on complex posts"
+        },
+        "content": {
+          "label": "Threads with multiple image attachments and video embeds crash repeatedly on my iPhone 13. Feels like a slow web page stuffed inside an app shell.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "9"
+        },
+        "im:voteCount": {
+          "label": "10"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "QuietLearner"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1009"
+          }
+        },
+        "im:version": {
+          "label": "3.12.2"
+        },
+        "im:rating": {
+          "label": "1"
+        },
+        "id": {
+          "label": "rev-009"
+        },
+        "title": {
+          "label": "Cannot find my bookmarks or saved drafts"
+        },
+        "content": {
+          "label": "I wrote a long thoughtful reply to a discussion, accidentally tapped outside the sheet, and everything disappeared! Zero autosave or draft recovery. So disappointing.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "7"
+        },
+        "im:voteCount": {
+          "label": "7"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "TeacherDan"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1010"
+          }
+        },
+        "im:version": {
+          "label": "3.9.5"
+        },
+        "im:rating": {
+          "label": "2"
+        },
+        "id": {
+          "label": "rev-010"
+        },
+        "title": {
+          "label": "Navigation back button takes me to root instead of parent"
+        },
+        "content": {
+          "label": "When I am 3 levels deep in a course lesson and tap back, it kicks me to the community home space instead of the module index. Navigation hierarchy is badly broken.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "6"
+        },
+        "im:voteCount": {
+          "label": "6"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "DigitalNomad22"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1011"
+          }
+        },
+        "im:version": {
+          "label": "3.11.1"
+        },
+        "im:rating": {
+          "label": "2"
+        },
+        "id": {
+          "label": "rev-011"
+        },
+        "title": {
+          "label": "Offline mode is non-existent"
+        },
+        "content": {
+          "label": "If you lose Wi-Fi or cellular for even a second on the train, the whole app throws a blank screen with a retry button. Cannot read previously loaded posts offline.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "8"
+        },
+        "im:voteCount": {
+          "label": "8"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "UXResearcher1"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1012"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "2"
+        },
+        "id": {
+          "label": "rev-012"
+        },
+        "title": {
+          "label": "Search is sluggish and misses discussion comments"
+        },
+        "content": {
+          "label": "The search only indexes top-level post titles, not the nested comment discussions where the actual answers are. Takes 4 seconds to return query results.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "4"
+        },
+        "im:voteCount": {
+          "label": "5"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "StudioLead"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1013"
+          }
+        },
+        "im:version": {
+          "label": "3.10.0"
+        },
+        "im:rating": {
+          "label": "2"
+        },
+        "id": {
+          "label": "rev-013"
+        },
+        "title": {
+          "label": "Repeated login prompts via magic link"
+        },
+        "content": {
+          "label": "Every few days the session expires and forces me to wait for a magic link email. Sometimes the email takes 10 minutes to arrive in my inbox.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "5"
+        },
+        "im:voteCount": {
+          "label": "6"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "CasualBrowsing"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1014"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "3"
+        },
+        "id": {
+          "label": "rev-014"
+        },
+        "title": {
+          "label": "Good community, but desktop web is so much better"
+        },
+        "content": {
+          "label": "On desktop Circle is a 5-star product, but on mobile iOS it is cramped and laggy. The video player has small controls and scrolling long threads drops frames.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "10"
+        },
+        "im:voteCount": {
+          "label": "10"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "BookClubModerator"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1015"
+          }
+        },
+        "im:version": {
+          "label": "3.11.3"
+        },
+        "im:rating": {
+          "label": "3"
+        },
+        "id": {
+          "label": "rev-015"
+        },
+        "title": {
+          "label": "Moderation tools are missing on mobile"
+        },
+        "content": {
+          "label": "As a community moderator, I cannot pin posts, hide comments, or manage member permissions from my phone. I have to open my laptop every time.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "3"
+        },
+        "im:voteCount": {
+          "label": "4"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "TechAuthor"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1016"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "3"
+        },
+        "id": {
+          "label": "rev-016"
+        },
+        "title": {
+          "label": "Decent forum, needs better dark mode contrast"
+        },
+        "content": {
+          "label": "Dark mode is a harsh blueish grey rather than true dark or warm theme. The text contrast is a bit low for nighttime reading in dark rooms.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "2"
+        },
+        "im:voteCount": {
+          "label": "2"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "StartupFounder"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1017"
+          }
+        },
+        "im:version": {
+          "label": "3.12.1"
+        },
+        "im:rating": {
+          "label": "3"
+        },
+        "id": {
+          "label": "rev-017"
+        },
+        "title": {
+          "label": "Passable mobile companion"
+        },
+        "content": {
+          "label": "Fine for quick direct messages or checking community alerts, but editing long formatted markdown posts on mobile is painful without undo/redo.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "1"
+        },
+        "im:voteCount": {
+          "label": "1"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "CreativeDirector"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1018"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-018"
+        },
+        "title": {
+          "label": "Much better than Discord for organized cohorts"
+        },
+        "content": {
+          "label": "Having structured spaces, syllabus materials, and threaded comments keeps our cohort focused without the chaotic meme firehose of Discord.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "6"
+        },
+        "im:voteCount": {
+          "label": "6"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "PhotographyPro"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1019"
+          }
+        },
+        "im:version": {
+          "label": "3.11.2"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-019"
+        },
+        "title": {
+          "label": "Crisp photo rendering in community feed"
+        },
+        "content": {
+          "label": "Image uploads look great in the gallery view. Just wish notifications had a gentle digest mode so my phone does not buzz after every photo share.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "4"
+        },
+        "im:voteCount": {
+          "label": "4"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "FaithJourney"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1020"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-020"
+        },
+        "title": {
+          "label": "Heartwarming fellowship spaces"
+        },
+        "content": {
+          "label": "Our church small group uses this to share prayer requests and weekly scripture studies. It feels like a safe walled garden away from social media noise.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "7"
+        },
+        "im:voteCount": {
+          "label": "7"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "FitnessCoach"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1021"
+          }
+        },
+        "im:version": {
+          "label": "3.12.1"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-021"
+        },
+        "title": {
+          "label": "Members love the event calendar"
+        },
+        "content": {
+          "label": "The calendar sync with iOS calendar works reliably. Livestream integration is smooth when the video player does not stutter.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "3"
+        },
+        "im:voteCount": {
+          "label": "3"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "AgileCoach"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1022"
+          }
+        },
+        "im:version": {
+          "label": "3.11.0"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-022"
+        },
+        "title": {
+          "label": "Rich markdown and code block support"
+        },
+        "content": {
+          "label": "Being able to read formatted code snippets and tables on my phone makes technical discussions easy. Just need better swipe gestures to go back.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "5"
+        },
+        "im:voteCount": {
+          "label": "5"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "MindfulnessGuide"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1023"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-023"
+        },
+        "title": {
+          "label": "A haven for mindful group discussions"
+        },
+        "content": {
+          "label": "Our meditation circle loves the unhurried vibe of the forums. Spaces allow people to reflect deeply before replying.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "12"
+        },
+        "im:voteCount": {
+          "label": "12"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "SoftwareMentor"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1024"
+          }
+        },
+        "im:version": {
+          "label": "3.12.2"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-024"
+        },
+        "title": {
+          "label": "Seamless direct messaging with mentees"
+        },
+        "content": {
+          "label": "DMs are responsive, image attachments are clean, and member bios give great context. A huge upgrade over email threads.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "8"
+        },
+        "im:voteCount": {
+          "label": "8"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "WriterCircle"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1025"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-025"
+        },
+        "title": {
+          "label": "Perfect platform for authors and readers"
+        },
+        "content": {
+          "label": "Running our book discussion group here has been a dream. The threaded comments keep chapters organized without getting lost.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "9"
+        },
+        "im:voteCount": {
+          "label": "9"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "IndieDevGal"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1026"
+          }
+        },
+        "im:version": {
+          "label": "3.12.1"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-026"
+        },
+        "title": {
+          "label": "Clean design and great typography"
+        },
+        "content": {
+          "label": "Very clean aesthetic that puts content front and center. iOS biometric FaceID login is super convenient.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "6"
+        },
+        "im:voteCount": {
+          "label": "6"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "ParentCoach"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1027"
+          }
+        },
+        "im:version": {
+          "label": "3.11.4"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-027"
+        },
+        "title": {
+          "label": "Warm community feel"
+        },
+        "content": {
+          "label": "The member directory and bio cards help parents connect and build genuine friendships. Best community software around.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "10"
+        },
+        "im:voteCount": {
+          "label": "10"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "PastorMichael"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1028"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-028"
+        },
+        "title": {
+          "label": "Quiet, dignified space for church groups"
+        },
+        "content": {
+          "label": "We moved away from noisy commercial platforms into Circle and our members are thriving. Threaded reflections allow deep pastoral care.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "13"
+        },
+        "im:voteCount": {
+          "label": "13"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "StudyFellow"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1029"
+          }
+        },
+        "im:version": {
+          "label": "3.12.2"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "rev-029"
+        },
+        "title": {
+          "label": "Inspiring discussions every day"
+        },
+        "content": {
+          "label": "The ability to participate in courses and discussion threads alongside other disciples has brought so much spiritual encouragement to my week.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "7"
+        },
+        "im:voteCount": {
+          "label": "7"
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "GlobalLearner"
+          },
+          "uri": {
+            "label": "https://itunes.apple.com/us/reviews/id1030"
+          }
+        },
+        "im:version": {
+          "label": "3.12.0"
+        },
+        "im:rating": {
+          "label": "4"
+        },
+        "id": {
+          "label": "rev-030"
+        },
+        "title": {
+          "label": "Solid app, push notifications could be calmer"
+        },
+        "content": {
+          "label": "Really enjoy checking into my spaces every evening. Giving users a digest mode for notifications would turn this into an easy 5-star experience.",
+          "attributes": {
+            "type": "text"
+          }
+        },
+        "im:voteSum": {
+          "label": "5"
+        },
+        "im:voteCount": {
+          "label": "5"
+        }
       }
     ],
-    "updated": { "label": "2026-10-21T18:00:00-07:00" },
-    "title": { "label": "iTunes Store: Customer Reviews" }
+    "updated": {
+      "label": "2026-10-22T19:00:00-07:00"
+    },
+    "title": {
+      "label": "iTunes Store: Customer Reviews"
+    }
   }
 }

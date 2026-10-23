@@ -4,8 +4,10 @@
 * **Android Google Play Store:** `so.circle.circle` (*Circle - Communities*, CircleCo Inc.) — [Google Play Store Link](https://play.google.com/store/apps/details?id=so.circle.circle)
 * **Apple App Store:** ID `1506475653` (*Circle Communities*, CircleCo Inc.) — [App Store Link](https://apps.apple.com/us/app/circle-communities/id1506475653)
 
-**Tracking Issue:** [Issue #255](https://github.com/neiljaywarner/refuge/issues/255)  
+**Tracking Issues:** [Issue #255](https://github.com/neiljaywarner/refuge/issues/255) (Initial Discovery) | [Issue #357](https://github.com/neiljaywarner/refuge/issues/357) (Auditor Expansion & Belong Readiness)  
 **Target Platform:** Belong on the Spectrum / Refuge (`com.belongonthespectrum.sanctuary`)  
+**Audit Dataset:** 60 Analyzed Reviews across Apple App Store (30) & Google Play Store (30) — See [Sentiment Report](circle_reviews_sentiment_report.md)  
+**Belong First-Party Template:** [Belong Sentiment Template](belong_reviews_sentiment_report_template.md)  
 **Audit Date:** October 2026
 
 ---
@@ -122,3 +124,31 @@ Despite mobile bugs, Circle succeeded with several standout community patterns:
 3. **Guard Device Back Navigation**: Always wire `PopScope(canPop: false, onPopInvokedWithResult: ...)` to return to the root tab rather than backgrounding the app unexpectedly.
 4. **Preserve Scroll Position**: Ensure `PageStorageKey` and `AutomaticKeepAliveClientMixin` are applied to discussion lists so users never lose their place after inspecting a thread.
 5. **Honor Calm-Tech Haptic Policies**: Use `HapticFeedback.lightImpact()` sparingly on deliberate user actions (reactions, voting) and never on passive incoming notifications.
+
+---
+
+## 6. How to Audit Belong on the Spectrum Customer Reviews (Audit Playbook)
+
+As Belong on the Spectrum launches across platforms (`com.belongonthespectrum.sanctuary` on Google Play and Apple App Store), run the sentiment auditor tool with first-party presets:
+
+### 1. Ingesting Live Apple App Store Reviews
+```bash
+dart tool/analyze_app_reviews.dart --preset=belong --app-id=<BELONG_APP_STORE_ID> --pages=5 --output=docs/benchmarks/belong_reviews_sentiment_report.md
+```
+
+### 2. Ingesting Google Play Console CSV Export
+Download the reviews export from Google Play Console (`reviews.csv`) and run:
+```bash
+dart tool/analyze_app_reviews.dart --preset=belong --file=path/to/google_play_reviews.csv --store=google-play --output=docs/benchmarks/belong_play_store_report.md
+```
+
+### 3. Ingesting Belong In-App Feedback Telemetry
+Export member feedback submissions from Cloud Firestore (`member_feedback` collection) to JSON and run:
+```bash
+dart tool/analyze_app_reviews.dart --preset=belong --file=path/to/member_feedback.json --store=in-app --output=docs/benchmarks/belong_inapp_sentiment_report.md
+```
+
+### 4. Re-Auditing Competitors (Circle Multi-Store Benchmark)
+```bash
+dart tool/analyze_app_reviews.dart --preset=circle --pages=5 --output=docs/benchmarks/circle_reviews_sentiment_report.md
+```
