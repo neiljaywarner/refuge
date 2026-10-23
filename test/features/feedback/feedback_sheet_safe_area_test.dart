@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/core/presentation/system_insets.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
@@ -10,17 +11,17 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<void> openVotingSheet(
-    WidgetTester tester, {
+    PatrolTester $, {
     required double paddingBottom,
     required double viewPaddingBottom,
     double viewInsetsBottom = 0,
   }) async {
-    tester.view.physicalSize = const Size(400, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    $.tester.view.physicalSize = const Size(400, 800);
+    $.tester.view.devicePixelRatio = 1;
+    addTearDown($.tester.view.resetPhysicalSize);
+    addTearDown($.tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
+    await $.pumpWidget(
       ProviderScope(
         overrides: [
           featureVotingBackendTargetProvider.overrideWithValue(
@@ -56,68 +57,83 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Open sheet'));
-    await tester.pumpAndSettle();
+    await $('Open sheet').tap();
+    await $.pumpAndSettle();
   }
 
-  testWidgets(
-    'voting sheet keeps bottom viewPadding when MediaQuery.padding is zero',
-    (tester) async {
-      await openVotingSheet(tester, paddingBottom: 0, viewPaddingBottom: 48);
-
-      final inset = tester.widget<Padding>(
-        find.byKey(SystemBottomInset.insetKey),
-      );
-      expect(inset.padding, const EdgeInsets.only(bottom: 48));
-
-      final sheet = tester.getRect(find.byType(BelongFeedbackAndVotingSheet));
-      expect(800 - sheet.bottom, greaterThanOrEqualTo(48));
-
-      final list = tester.widget<ListView>(find.byType(ListView).first);
-      expect(list.padding, const EdgeInsets.fromLTRB(16, 16, 16, 24));
-    },
-  );
-
-  testWidgets('voting sheet does not stack padding and viewPadding', (
-    tester,
+  patrolWidgetTest('The feedback sheet clears the Android navigation bar', (
+    $,
   ) async {
-    await openVotingSheet(tester, paddingBottom: 48, viewPaddingBottom: 48);
+    // Given the Android navigation bar is 48 pixels
+    // And the sheet's own bottom padding is empty
+    // When a member opens Vote on Features
+    await openVotingSheet($, paddingBottom: 0, viewPaddingBottom: 48);
 
-    final inset = tester.widget<Padding>(
+    // Then the sheet sits above the navigation bar
+    final inset = $.tester.widget<Padding>(
       find.byKey(SystemBottomInset.insetKey),
     );
     expect(inset.padding, const EdgeInsets.only(bottom: 48));
 
-    final list = tester.widget<ListView>(find.byType(ListView).first);
+    final sheet = $.tester.getRect(find.byType(BelongFeedbackAndVotingSheet));
+    expect(800 - sheet.bottom, greaterThanOrEqualTo(48));
+
+    // And the list inside the sheet keeps its own spacing
+    final list = $.tester.widget<ListView>(find.byType(ListView).first);
     expect(list.padding, const EdgeInsets.fromLTRB(16, 16, 16, 24));
   });
 
-  testWidgets(
-    'voting sheet uses the keyboard inset without adding the nav bar',
-    (tester) async {
+  patrolWidgetTest('The feedback sheet does not add the navigation bar twice', (
+    $,
+  ) async {
+    // Given the navigation bar is already counted once
+    // When a member opens Vote on Features
+    await openVotingSheet($, paddingBottom: 48, viewPaddingBottom: 48);
+
+    // Then the sheet adds that bar only once
+    final inset = $.tester.widget<Padding>(
+      find.byKey(SystemBottomInset.insetKey),
+    );
+    expect(inset.padding, const EdgeInsets.only(bottom: 48));
+
+    // And the list inside the sheet keeps its own spacing
+    final list = $.tester.widget<ListView>(find.byType(ListView).first);
+    expect(list.padding, const EdgeInsets.fromLTRB(16, 16, 16, 24));
+  });
+
+  patrolWidgetTest(
+    'The feedback sheet uses the keyboard space and does not also add the navigation bar',
+    ($) async {
+      // Given the keyboard is open and the navigation bar is behind it
+      // When a member opens Vote on Features
       await openVotingSheet(
-        tester,
+        $,
         paddingBottom: 0,
         viewPaddingBottom: 48,
         viewInsetsBottom: 300,
       );
 
-      final inset = tester.widget<Padding>(
+      // Then the sheet uses the keyboard space
+      // And it does not add the navigation bar on top of the keyboard
+      final inset = $.tester.widget<Padding>(
         find.byKey(SystemBottomInset.insetKey),
       );
       expect(inset.padding, const EdgeInsets.only(bottom: 300));
     },
   );
 
-  testWidgets(
-    'bottom nav keeps one inset and the scaffold body does not add another',
-    (tester) async {
-      tester.view.physicalSize = const Size(400, 800);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  patrolWidgetTest(
+    'The home bottom bar keeps one inset and the page body does not add another',
+    ($) async {
+      // Given the home screen has a bottom navigation bar
+      // And the system navigation bar is 48 pixels while the page padding is 0
+      $.tester.view.physicalSize = const Size(400, 800);
+      $.tester.view.devicePixelRatio = 1;
+      addTearDown($.tester.view.resetPhysicalSize);
+      addTearDown($.tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
+      // When the page is shown
+      await $.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             builder: (context, child) {
@@ -147,7 +163,8 @@ void main() {
         ),
       );
 
-      final bodySafeArea = tester.widget<Padding>(
+      // Then the page body does not add a second gap
+      final bodySafeArea = $.tester.widget<Padding>(
         find
             .descendant(
               of: find.byType(SafeArea),
@@ -157,7 +174,8 @@ void main() {
       );
       expect((bodySafeArea.padding as EdgeInsets).bottom, 0);
 
-      final navInset = tester.widget<Padding>(
+      // And the bottom bar clears the system bar once
+      final navInset = $.tester.widget<Padding>(
         find
             .descendant(
               of: find.byKey(const Key('belong_bottom_nav_bar')),
