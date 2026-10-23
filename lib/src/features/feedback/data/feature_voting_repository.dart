@@ -45,10 +45,12 @@ abstract interface class FeatureVotingRepository {
     required String description,
   });
 
-  /// Records a literal 3-intent feedback submission (`happy`, `neutral`, `sad`).
+  /// Records a literal 3-intent feedback submission (`happy`, `neutral`, `sad`)
+  /// alongside an optional 1–5 star rating (`rating`) for unified Web/PWA/Mobile auditing.
   Future<void> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
+    int? rating,
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
@@ -60,6 +62,18 @@ abstract interface class FeatureVotingRepository {
 mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   final List<Map<String, String>> submittedFeedbackLog = [];
   StreamController<List<VotableFeatureItem>>? _streamController;
+
+  /// Resolves an explicit 1–5 star rating or falls back to the default rating for [sentiment].
+  static int resolveStarRating(FeedbackSentiment sentiment, int? rating) {
+    if (rating != null) {
+      return rating.clamp(1, 5);
+    }
+    return switch (sentiment) {
+      FeedbackSentiment.happy => 5,
+      FeedbackSentiment.neutral => 3,
+      FeedbackSentiment.sad => 1,
+    };
+  }
 
   /// Shared broadcast stream controller for cross-session real-time notifications.
   StreamController<List<VotableFeatureItem>> get streamController =>
@@ -132,16 +146,19 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   Future<void> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
+    int? rating,
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
   }) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty) return;
+    final resolvedRating = resolveStarRating(sentiment, rating);
     final destination = privateRouter.resolveDestination(sentiment);
     submittedFeedbackLog.add({
       'backend': target.name,
       'sentiment': sentiment.name,
+      'rating': '$resolvedRating',
       'isPrivateTriage': '${sentiment.isPrivateTriage}',
       'destination': destination is PrivateRepoDestination
           ? destination.repository
@@ -286,13 +303,19 @@ class FirebaseFeatureVotingRepository
   Future<void> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
+    int? rating,
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
   }) async {
+    final resolvedRating = FeatureVotingStateTransformMixin.resolveStarRating(
+      sentiment,
+      rating,
+    );
     await super.submitFeedback(
       sentiment: sentiment,
       message: message,
+      rating: resolvedRating,
       contactEmail: contactEmail,
       attachmentUrl: attachmentUrl,
       screenshotAttachment: screenshotAttachment,
@@ -304,6 +327,7 @@ class FirebaseFeatureVotingRepository
         final destination = privateRouter.resolveDestination(sentiment);
         await fs.collection(feedbackCollectionPath).add({
           'sentiment': sentiment.name,
+          'rating': resolvedRating,
           'isPrivateTriage': sentiment.isPrivateTriage,
           'targetRepository': destination is PrivateRepoDestination
               ? destination.repository

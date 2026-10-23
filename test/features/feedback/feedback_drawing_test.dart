@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -67,6 +66,43 @@ void main() {
       key.currentState?.undo();
       await tester.pumpAndSettle();
       expect(key.currentState?.strokes.isEmpty, isTrue);
+    });
+
+    testWidgets('FeedbackDrawingDialog preserves strokes and avoids overflow on landscape rotation (#386)', (tester) async {
+      // Start in portrait orientation
+      tester.view.physicalSize = const Size(420, 840);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Dialog(
+              insetPadding: EdgeInsets.all(16),
+              child: FeedbackDrawingDialog(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Draw a stroke in portrait
+      final touchArea = find.byKey(const Key('feedback_drawing_touch_area'));
+      await tester.drag(touchArea, const Offset(45, 35));
+      await tester.pumpAndSettle();
+
+      final canvasState = tester.state<FeedbackDrawingCanvasState>(
+        find.byType(FeedbackDrawingCanvas),
+      );
+      expect(canvasState.strokes.length, 1);
+
+      // Rotate to compact landscape viewport
+      tester.view.physicalSize = const Size(840, 380);
+      await tester.pumpAndSettle();
+
+      // Verify zero overflow exceptions and stroke is preserved
+      expect(tester.takeException(), isNull);
+      expect(canvasState.strokes.length, 1);
     });
   });
 

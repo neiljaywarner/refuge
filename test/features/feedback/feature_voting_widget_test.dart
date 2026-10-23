@@ -17,7 +17,7 @@ void main() {
                 BackendTarget.appwrite,
               ),
             ],
-            child: const MaterialApp(
+          child: const MaterialApp(
               home: Scaffold(
                 body: BelongFeedbackAndVotingSheet(),
               ),
@@ -125,6 +125,73 @@ void main() {
           ),
           findsOneWidget,
         );
+      },
+    );
+
+    patrolWidgetTest(
+      '1-5 star rating bar auto-routes sentiment with literal labels and persists star rating (#386)',
+      ($) async {
+        $.tester.view.physicalSize = const Size(1000, 1600);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown($.tester.view.resetPhysicalSize);
+
+        final inMemoryRepo = InMemoryFeatureVotingRepository();
+
+        await $.pumpWidgetAndSettle(
+          ProviderScope(
+            overrides: [
+              featureVotingRepositoryProvider.overrideWithValue(inMemoryRepo),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(
+                body: BelongFeedbackAndVotingSheet(initialTabIndex: 1),
+              ),
+            ),
+          ),
+        );
+
+        // Verify 1-5 Star Rating Bar is visible with default 5-star literal label
+        expect($(const Key('star_rating_bar')), findsOneWidget);
+        expect($('How do you like Belong on the Spectrum?'), findsOneWidget);
+        expect($('5 ★ · Love it! Works great'), findsOneWidget);
+
+        // Tap 2 stars -> auto-selects Bug / Confusing (sad)
+        await $(const Key('star_rating_2')).tap();
+        await $.pumpAndSettle();
+        expect($('2 ★ · Frustrating / Needs work'), findsOneWidget);
+        expect(
+          $('What felt broken, confusing, or overwhelming?'),
+          findsOneWidget,
+        );
+
+        // Tap 3 stars -> auto-selects Idea / Tweak (neutral)
+        await $(const Key('star_rating_3')).tap();
+        await $.pumpAndSettle();
+        expect($("3 ★ · It's okay, could be better"), findsOneWidget);
+        expect(
+          $('What would make Belong clearer or calmer for you?'),
+          findsOneWidget,
+        );
+
+        // Tap 4 stars -> auto-selects Works Great (happy)
+        await $(const Key('star_rating_4')).tap();
+        await $.pumpAndSettle();
+        expect($('4 ★ · Good experience'), findsOneWidget);
+        expect(
+          $('What feels calm, clear, or welcoming?'),
+          findsOneWidget,
+        );
+
+        // Submit 4-star feedback and verify rating is persisted
+        await $(const Key('feedback_message_input')).enterText(
+          'Love the calm PWA star rating flow!',
+        );
+        await $(const Key('submit_feedback_button')).tap();
+        await $.pumpAndSettle();
+
+        expect(inMemoryRepo.submittedFeedbackLog.length, 1);
+        expect(inMemoryRepo.submittedFeedbackLog.first['rating'], '4');
+        expect(inMemoryRepo.submittedFeedbackLog.first['sentiment'], 'happy');
       },
     );
   });
