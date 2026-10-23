@@ -68,3 +68,4 @@ scratch/
 # Strict Zero-PII: Never commit member CSV exports (only synthetic test fixture allowed)
 **/*.csv
 !test/fixtures/sample_anonymized_circle_export.csv
+!test/fixtures/google_play_reviews_sample.csv
