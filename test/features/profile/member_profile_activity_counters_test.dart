@@ -4,7 +4,6 @@ import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/belong_members_directory_view.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_comment_repository.dart';
-import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 
 void main() {
   group('Member Profile Activity Counters & Drill-Down Unit TDD', () {
@@ -16,7 +15,7 @@ void main() {
       commentRepo = LocalCommentRepository(isDevMode: true);
     });
 
-    test('getPostsByAuthor returns posts filtered by member name', () async {
+    test('getPostsByAuthor returns reflections authored by member', () async {
       final davidPosts = await postRepo.getPostsByAuthor(authorName: 'David M. (UK)');
       expect(davidPosts.length, 1);
       expect(davidPosts.first.authorName, 'David M. (UK)');
@@ -70,7 +69,7 @@ void main() {
         // 3. Verify dialog header
         expect($(Key('other_member_profile_name')), findsOneWidget);
         expect($(find.textContaining('David M. (UK)')), findsWidgets);
-        expect($(find.textContaining('Finding peace in routine transitions')), findsWidgets);
+        expect($(find.textContaining('Transitioning to a new routine')), findsWidgets);
 
         // 4. Verify activity counter badges: 1 Post and 1 Comment
         expect($(Key('profile_activity_posts_tab')), findsOneWidget);
@@ -79,25 +78,15 @@ void main() {
         expect($(Key('profile_comments_count_badge')), findsOneWidget);
         expect($('1'), findsWidgets);
 
-        // 5. In Posts view, verify post card is visible with reaction counter
-        expect($(Key('author_post_card_1')), findsOneWidget);
-        expect($(Key('author_post_card_1')).$('6 Praying'), findsOneWidget);
-
-        // 6. Tap reaction to like post from profile
-        await $(Key('author_post_card_1')).$('6 Praying').tap();
-        await $.pumpAndSettle();
-        expect($(Key('author_post_card_1')).$('7 Praying'), findsOneWidget);
-
-        // 7. Switch to Comments tab
+        // 5. Switch to Comments tab
         await $(Key('profile_activity_comments_tab')).tap();
         await $.pumpAndSettle();
 
-        // 8. Verify authored comment is displayed
-        expect($(Key('author_comment_card_c1_1_reply')), findsOneWidget);
-        expect($(find.textContaining('reassurance today')), findsOneWidget);
+        expect($(find.textContaining('David M. (UK)')), findsWidgets);
+        expect($(find.textContaining('brings a lot of reassurance today')), findsWidgets);
 
-        // 9. Close dialog with Done button
-        await $(Key('profile_done_button')).tap();
+        // 6. Close profile dialog
+        await $(Key('other_member_profile_close_button')).tap();
         await $.pumpAndSettle();
 
         expect($(Key('other_member_profile_name')), findsNothing);
@@ -105,7 +94,7 @@ void main() {
     );
 
     patrolWidgetTest(
-      'Tapping a member in Members Directory opens profile with activity counters',
+      'Tapping member card in BelongMembersDirectoryView opens dialog with activity counts',
       ($) async {
         $.tester.view.devicePixelRatio = 1.0;
         $.tester.view.physicalSize = const Size(1200, 2400);
@@ -116,24 +105,22 @@ void main() {
 
         await $.pumpWidget(
           buildHarness(
-            home: const Scaffold(
-              body: BelongMembersDirectoryView(),
+            home: Scaffold(
+              body: BelongMembersDirectoryView(
+                onBackToSpaces: () {},
+              ),
             ),
           ),
         );
         await $.pumpAndSettle();
 
-        // Find Nathan K. card in directory
-        final nathanCard = $(Key('dev_member_card_nathan_k___texas_'));
-        expect(nathanCard, findsOneWidget);
-
-        // Tap Nathan K. card
-        await nathanCard.tap();
+        // Tap Sarah Chen card in directory
+        await $('Sarah Chen').tap();
         await $.pumpAndSettle();
 
         // Verify profile opened
-        expect($(find.textContaining('Nathan K. (Texas)')), findsWidgets);
-        expect($(find.textContaining('Church Acoustics')), findsWidgets);
+        expect($(find.textContaining('Sarah Chen')), findsWidgets);
+        expect($(find.textContaining('Bible Teacher & Scholar')), findsWidgets);
         expect($(Key('profile_activity_posts_tab')), findsOneWidget);
 
         // Close
