@@ -29,11 +29,17 @@ class DevFellowshipMember {
 
   String get effectiveTagline => tagline ?? role;
 
+  /// Extracts a 1- or 2-letter uppercase monogram initial string for directory avatars.
+  ///
+  /// Fallback: Returns 'B' for a Belong fellowship member when name is unset.
   String get initials {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty) return 'M';
-    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'.toUpperCase();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    return switch (parts) {
+      [] => 'B',
+      [final single] => single[0].toUpperCase(),
+      [final first, ..., final last] => '${first[0]}${last[0]}'.toUpperCase(),
+    };
   }
 }
 
@@ -49,516 +55,489 @@ const List<DevFellowshipMember> kDevFellowshipMembers = [
     comfortBadges: ['Community Organizer', 'Literal communication appreciated'],
   ),
   DevFellowshipMember(
-    name: 'Hannah M.',
-    role: 'Creative Arts & Botany',
-    tagline: 'Sensory-friendly contemplative prayer & botanical art',
-    bio: 'Autistic artist exploring sensory-friendly contemplative prayer and botanical illustrations.',
-    churchAffiliation: 'Austin Christian Church',
+    name: 'Caleb Stone',
+    role: 'Audio & Visual Ministry',
+    tagline: 'Soundscapes, calm lighting, and tech seams',
+    bio: 'Audio tech & lighting designer. Obsessed with low-sensory sanctuary environments, chiasms, and soundscapes.',
+    churchAffiliation: 'DFW Church',
     isIcocMember: true,
-    comfortBadges: ['Visual Artist', 'Sensory-sensitive'],
+    comfortBadges: ['Sensory Sensitive', 'Direct communication'],
   ),
   DevFellowshipMember(
-    name: 'Alex K.',
-    role: 'Peer Chat Facilitator',
-    tagline: 'Retro computing & unhurried theological reflection',
-    bio: 'Actually Autistic Chat host and software tinkerer. Passionate about retro computing and unhurried theological reflection.',
-    churchAffiliation: 'Boston Church of Christ',
+    name: 'Sarah Chen',
+    role: 'Bible Teacher & Scholar',
+    tagline: 'Deep dive Greek word studies and chiasms',
+    bio: 'Hebrew & Greek linguistic enthusiast. Exploring chiasms in Mark and quiet contemplative prayer.',
+    churchAffiliation: 'Boston Church',
     isIcocMember: true,
-    comfortBadges: ['Chat Facilitator', 'Special Interest: Computing'],
+    comfortBadges: ['Special Interest: Biblical Greek', 'No small talk please'],
   ),
   DevFellowshipMember(
-    name: 'Jordan P.',
-    role: 'Friend & Ally of Fellowship',
-    tagline: 'Neurodivergent seeker finding calm, grace-filled Christian fellowship',
-    bio: 'Neurodivergent seeker finding calm, grace-filled Christian fellowship and honest community.',
-    churchAffiliation: 'I am not a member of an ICOC church',
-    isIcocMember: false,
-    comfortBadges: ['Ally & Visitor', 'Low-stimulus preferred'],
-  ),
-  DevFellowshipMember(
-    name: 'David M. (UK)',
-    role: 'Contemplative Prayer & Routine Support',
-    tagline: 'Finding peace in routine transitions and Scripture meditation',
-    bio: 'Neurodivergent believer navigating routine transitions and learning that rest in Christ is spiritual.',
-    churchAffiliation: 'London Church of Christ (ICOC)',
+    name: 'David Okafor',
+    role: 'Fellowship Deacon',
+    tagline: 'Patience, gentle hospitality, and prayer',
+    bio: 'Serving autistic adults & young families. Passionate about removing sensory barriers from Sunday assemblies.',
+    churchAffiliation: 'London Church',
     isIcocMember: true,
-    comfortBadges: ['Contemplative Prayer', 'Routine Stability'],
-  ),
-  DevFellowshipMember(
-    name: 'Elena R. (Colorado)',
-    role: 'Sensory Fatigue Care & Mutual Aid',
-    tagline: 'Holding safe space after sensory overload',
-    bio: 'Creating calm spaces for autistic believers recovering from sensory fatigue and fluorescent lighting.',
-    churchAffiliation: 'Denver Church of Christ',
-    isIcocMember: true,
-    comfortBadges: ['Sensory Sensitive', 'Quiet Fellowship'],
-  ),
-  DevFellowshipMember(
-    name: 'Pastor Thomas (Melbourne)',
-    role: 'Teaching & Scripture Anchor',
-    tagline: 'Theology of quiet waters and biblical rest',
-    bio: 'Pastor exploring neurodivergent-affirming hermeneutics and contemplative biblical study.',
-    churchAffiliation: 'Melbourne Church of Christ (ICOC)',
-    isIcocMember: true,
-    comfortBadges: ['Teaching Ministry', 'Theology of Rest'],
-  ),
-  DevFellowshipMember(
-    name: 'Nathan K. (Texas)',
-    role: 'Church Acoustics & Music Fellowship',
-    tagline: 'Loop earplugs advocate calculating reverberation decay in worship',
-    bio: 'Sound enthusiast celebrating sensory accommodations in worship services.',
-    churchAffiliation: 'DFW Church (Partner)',
-    isIcocMember: true,
-    comfortBadges: ['Acoustics & Sound', 'Loop Earplugs Advocate'],
-  ),
-  DevFellowshipMember(
-    name: 'Caleb T. (Fort Worth)',
-    role: 'Biblical Geography & Special Interests',
-    tagline: 'Staring at Paul\'s missionary journey maps in the lobby',
-    bio: 'Passionate about biblical topography, history, and neurodivergent Christian fellowship.',
-    churchAffiliation: 'Fort Worth Church of Christ',
-    isIcocMember: true,
-    comfortBadges: ['Biblical Maps', 'Direct Communication'],
-  ),
-  DevFellowshipMember(
-    name: 'Hannah W. (Dallas)',
-    role: 'Sensory Gardening & Botany',
-    tagline: 'Sensory gardening, native wildflowers, and calm fellowship',
-    bio: 'Connecting with God through botany, quiet gardening, and calm tech community spaces.',
-    churchAffiliation: 'DFW Church (Partner)',
-    isIcocMember: true,
-    comfortBadges: ['Gardening & Botany', 'Nature Fellowship'],
-  ),
-  DevFellowshipMember(
-    name: 'Sarah L. (Oxford)',
-    role: 'Literary Chiasms & Hermeneutics',
-    tagline: 'Special interest: Literary chiasms in Mark & systematic clarity',
-    bio: 'Delighting in the systematic structure and rhetorical symmetries of Scripture.',
-    churchAffiliation: 'Oxford Church of Christ (ICOC)',
-    isIcocMember: true,
-    comfortBadges: ['Markan Chiasms', 'Systematic Clarity'],
-  ),
-  DevFellowshipMember(
-    name: 'Rachel S. (Arlington)',
-    role: 'Sensory-Friendly Worship Resources',
-    tagline: 'Sensory welcome bags, quiet rooms, and church accessibility',
-    bio: 'Advocating for quiet rooms, accessible worship guides, and sensory accommodations in church fellowships.',
-    churchAffiliation: 'DFW Church (Partner)',
-    isIcocMember: true,
-    comfortBadges: ['Sensory Bags', 'Quiet Rooms'],
+    comfortBadges: ['Calm Tech Supporter', 'Clear expectations preferred'],
   ),
 ];
 
-/// Members Section & Directory view for **Belong on the Spectrum** (#93)
-/// allowing members to store profile info, review their ICOC fellowship status,
-/// and browse fellow community members.
-class BelongMembersDirectoryView extends HookConsumerWidget {
+/// A dedicated member directory view allowing disciples to browse fellow community members,
+/// view church affiliations, comfort badges, and taglines.
+class BelongMembersDirectoryView extends ConsumerStatefulWidget {
   const BelongMembersDirectoryView({
     super.key,
-    this.onBackToSpaces,
+    required this.onBackToSpaces,
   });
 
-  final VoidCallback? onBackToSpaces;
+  final VoidCallback onBackToSpaces;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final brand = ref.watch(communityBrandConfigProvider);
-    final profile = ref.watch(memberProfileProvider);
-    final primary = Theme.of(context).colorScheme.primary;
+  ConsumerState<BelongMembersDirectoryView> createState() =>
+      _BelongMembersDirectoryViewState();
+}
 
-    return Column(
-      children: [
-        // Sub-header navigation
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(
-              bottom: BorderSide(
-                color: primary.withValues(alpha: 0.15),
+class _BelongMembersDirectoryViewState
+    extends ConsumerState<BelongMembersDirectoryView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedFilter = 'All';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final brand = ref.watch(communityBrandConfigProvider);
+    final currentProfile = ref.watch(memberProfileProvider);
+
+    final filteredMembers = kDevFellowshipMembers.where((m) {
+      final matchesQuery = _searchQuery.isEmpty ||
+          m.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          m.role.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          m.churchAffiliation.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          m.effectiveTagline.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          m.comfortBadges.any((b) => b.toLowerCase().contains(_searchQuery.toLowerCase()));
+
+      final matchesFilter = switch (_selectedFilter) {
+        'ICOC Affiliated' => m.isIcocMember,
+        'Organizers' => m.role.toLowerCase().contains('organizer'),
+        _ => true,
+      };
+
+      return matchesQuery && matchesFilter;
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'Back to Spaces',
+          onPressed: widget.onBackToSpaces,
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Member Directory',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Fellowship disciples & leaders',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Search field
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                key: const Key('members_directory_search_field'),
+                decoration: InputDecoration(
+                  hintText: 'Search by name, church, or comfort badge...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onChanged: (val) => setState(() => _searchQuery = val),
               ),
             ),
-          ),
-          child: Row(
-            children: [
-              if (onBackToSpaces != null)
-                IconButton(
-                  key: const Key('members_directory_back_button'),
-                  icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                  onPressed: onBackToSpaces,
-                  tooltip: 'Back to Spaces Directory',
-                ),
-              const SizedBox(width: 4),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Members Section & Directory',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+
+            // Filter chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  for (final f in ['All', 'ICOC Affiliated', 'Organizers']) ...[
+                    ChoiceChip(
+                      label: Text(f, style: const TextStyle(fontSize: 12)),
+                      selected: _selectedFilter == f,
+                      onSelected: (_) => setState(() => _selectedFilter = f),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Directory list
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                children: [
+                  // Current user's card (if signed in)
+                  if (currentProfile.isSignedIn) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Your Community Card',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    Text(
-                      'Store profile info & connect with verified fellowship members',
-                      style: TextStyle(fontSize: 11),
+                    _SelfMemberCard(profile: currentProfile),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Fellowship Disciples (${filteredMembers.length})',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
-                ),
-              ),
-              FilledButton.tonalIcon(
-                key: const Key('members_edit_profile_button'),
-                onPressed: () => MemberProfileDialog.show(context),
-                icon: const Icon(Icons.edit_note_rounded, size: 16),
-                label: Text(
-                  profile.isSignedIn ? 'Edit Profile' : 'Sign In',
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-        ),
 
-        // Body content
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.all(14),
-            children: [
-              // User's own profile card
-              Card(
-                elevation: 0,
-                color: primary.withValues(alpha: 0.06),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: primary.withValues(alpha: 0.25)),
+                  if (filteredMembers.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const Icon(Icons.people_outline_rounded, size: 48, color: Colors.grey),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No members match "$_searchQuery"',
+                              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    for (final member in filteredMembers) ...[
+                      _FellowshipMemberCard(
+                        member: member,
+                        onTap: () => OtherMemberProfileDialog.show(
+                          context,
+                          member: MemberProfile(
+                            displayName: member.name,
+                            email: '',
+                            bio: member.bio,
+                            comfortBadges: member.comfortBadges,
+                            isSignedIn: false,
+                            icocChurchAffiliation: member.churchAffiliation,
+                            tagline: member.tagline,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SelfMemberCard extends StatelessWidget {
+  const _SelfMemberCard({required this.profile});
+
+  final MemberProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+      ),
+      color: theme.colorScheme.primary.withValues(alpha: 0.04),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  backgroundImage: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
+                      ? NetworkImage(profile.avatarUrl!)
+                      : null,
+                  child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
+                      ? Text(
+                          profile.initials,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        )
+                      : null,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 22,
+                          Flexible(
                             child: Text(
-                              profile.initials,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              profile.displayName,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        profile.displayName,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    if (profile.isSignedIn)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: const Text(
-                                          'Active',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  profile.email.isNotEmpty
-                                      ? profile.email
-                                      : 'Guest Member (Alpha Session)',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
-                                        ?.withValues(alpha: 0.7),
-                                  ),
-                                ),
-                              ],
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'You',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        profile.bio,
-                        style: const TextStyle(fontSize: 12.5),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Church Affiliation Badge
-                      if (brand.enableFellowshipAffiliationField)
-                        Container(
-                          key: const Key('user_profile_affiliation_badge'),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: profile.isIcocMember
-                                ? primary.withValues(alpha: 0.12)
-                                : Colors.amber.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: profile.isIcocMember
-                                  ? primary.withValues(alpha: 0.3)
-                                  : Colors.amber.withValues(alpha: 0.4),
-                            ),
+                      if (profile.effectiveTagline.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          profile.effectiveTagline,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: theme.textTheme.bodySmall?.color,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                profile.isIcocMember
-                                    ? Icons.church_rounded
-                                    : Icons.spa_rounded,
-                                size: 14,
-                                color: profile.isIcocMember
-                                    ? primary
-                                    : Colors.amber[900],
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                profile.icocChurchAffiliation != null &&
-                                        profile.icocChurchAffiliation!.isNotEmpty
-                                    ? profile.icocChurchAffiliation!
-                                    : 'Affiliation not set (Tap Edit Profile)',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: profile.isIcocMember
-                                      ? primary
-                                      : Colors.amber[900],
-                                ),
-                              ),
-                            ],
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: profile.comfortBadges.map((badge) {
-                          return Chip(
-                            label: Text(badge, style: const TextStyle(fontSize: 10.5)),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          );
-                        }).toList(),
-                      ),
+                      ],
                     ],
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 18),
-              const Row(
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  tooltip: 'Edit Profile & Tagline',
+                  onPressed: () => MemberProfileDialog.show(context),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+            if (profile.comfortBadges.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
                 children: [
-                  Icon(Icons.group_rounded, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Community Members & Organizers',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
-                  ),
+                  for (final badge in profile.comfortBadges)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        badge,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Browse fellow autistic Christians, allies, and church leaders in our fellowship.',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.color
-                      ?.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-              // Dev member list
-              for (final member in kDevFellowshipMembers)
-                InkWell(
-                  key: Key('dev_member_card_${member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}'),
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: () => OtherMemberProfileDialog.show(
-                    context,
-                    member: member,
-                    authorName: member.name,
-                  ),
-                  child: Card(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+class _FellowshipMemberCard extends StatelessWidget {
+  const _FellowshipMemberCard({
+    required this.member,
+    required this.onTap,
+  });
+
+  final DevFellowshipMember member;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                    child: Text(
+                      member.initials,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSecondaryContainer,
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 16,
-                                child: Text(
-                                  member.initials,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                member.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      member.name,
-                                      style: const TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      member.role,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.color
-                                            ?.withValues(alpha: 0.8),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            ),
+                            if (member.isIcocMember) ...[
+                              const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 3),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: member.isIcocMember
-                                      ? primary.withValues(alpha: 0.1)
-                                      : Colors.grey.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: Text(
-                                  member.isIcocMember ? 'ICOC Member' : 'Fellowship Guest',
+                                child: const Text(
+                                  'ICOC',
                                   style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: member.isIcocMember ? primary : Colors.grey[800],
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2E7D32),
                                   ),
                                 ),
                               ),
                             ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          member.effectiveTagline,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: theme.textTheme.bodySmall?.color,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            member.bio,
-                            style: const TextStyle(fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${member.churchAffiliation} • ${member.role}',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(
-                                member.isIcocMember
-                                    ? Icons.church_rounded
-                                    : Icons.spa_rounded,
-                                size: 13,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color
-                                    ?.withValues(alpha: 0.7),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  member.churchAffiliation,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: member.isIcocMember
-                                        ? FontStyle.normal
-                                        : FontStyle.italic,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
-                                        ?.withValues(alpha: 0.8),
-                                  ),
-                                ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'View Activity',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: primary,
-                                    ),
-                                  ),
-                                  Icon(Icons.chevron_right_rounded, size: 14, color: primary),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: member.comfortBadges.map((badge) {
-                              return Chip(
-                                label: Text(badge, style: const TextStyle(fontSize: 9.5)),
-                                padding: EdgeInsets.zero,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+                  const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                member.bio,
+                style: const TextStyle(fontSize: 11.5, height: 1.3),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (member.comfortBadges.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    for (final badge in member.comfortBadges)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          badge,
+                          style: const TextStyle(fontSize: 10),
+                        ),
+                      ),
+                  ],
                 ),
+              ],
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

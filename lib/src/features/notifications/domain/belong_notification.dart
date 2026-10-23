@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'package:equatable/equatable.dart';
 
-/// Supported notification interaction types for Belong on the Spectrum.
+/// Interaction category for Belong calm notifications (#327).
 enum BelongNotificationType {
   mention,
   reply,
@@ -8,45 +10,49 @@ enum BelongNotificationType {
   following;
 
   String get label => switch (this) {
-    BelongNotificationType.mention => 'Mentions',
-    BelongNotificationType.reply => 'Threads',
-    BelongNotificationType.like => 'Likes',
-    BelongNotificationType.following => 'Following',
-  };
+        BelongNotificationType.mention => 'Mention',
+        BelongNotificationType.reply => 'Reply',
+        BelongNotificationType.like => 'Like',
+        BelongNotificationType.following => 'Following',
+      };
 }
 
-/// Filter categories for the Calm Notifications inbox.
-enum BelongNotificationFilter {
-  inbox('Inbox'),
-  mentions('Mentions'),
-  threads('Threads'),
-  following('Following');
-
-  const BelongNotificationFilter(this.label);
-  final String label;
-}
-
-/// Rich notification model for the Belong Calm Notifications feed.
+/// Domain model for a calm notification item in **Belong on the Spectrum** (#327, #329).
 class BelongNotification extends Equatable {
-  final String id;
-  final String authorName;
-  final String? authorAvatarUrl;
-  final BelongNotificationType type;
-  final String postTitle;
-  final String? commentSnippet;
-  final DateTime timestamp;
-  final bool isRead;
-
   const BelongNotification({
     required this.id,
-    required this.authorName,
-    this.authorAvatarUrl,
     required this.type,
+    required this.authorName,
     required this.postTitle,
-    this.commentSnippet,
     required this.timestamp,
+    this.authorAvatarUrl,
     this.isRead = false,
+    this.spaceKey,
+    this.postId,
   });
+
+  final String id;
+  final BelongNotificationType type;
+  final String authorName;
+  final String postTitle;
+  final DateTime timestamp;
+  final String? authorAvatarUrl;
+  final bool isRead;
+  final String? spaceKey;
+  final String? postId;
+
+  @override
+  List<Object?> get props => [
+        id,
+        type,
+        authorName,
+        postTitle,
+        timestamp,
+        authorAvatarUrl,
+        isRead,
+        spaceKey,
+        postId,
+      ];
 
   /// Author initials for the Avatar widget fallback, stripping parentheses,
   /// punctuation, and bracketed qualifiers (e.g. "Pastor Thomas (Melbourne)" -> "PT").
@@ -79,18 +85,16 @@ class BelongNotification extends Equatable {
 
   /// Human-readable title message following the user's specification:
   /// e.g. "John Doe mentioned you in a comment on 'Markan Chiasms'"
-  String get displayMessage {
-    switch (type) {
-      case BelongNotificationType.mention:
-        return '$authorName mentioned you in a comment on "$postTitle"';
-      case BelongNotificationType.reply:
-        return '$authorName replied to your comment on "$postTitle"';
-      case BelongNotificationType.like:
-        return '$authorName liked your reflection on "$postTitle"';
-      case BelongNotificationType.following:
-        return '$authorName posted a new reflection in "$postTitle"';
-    }
-  }
+  String get displayMessage => switch (type) {
+        BelongNotificationType.mention =>
+          '$authorName mentioned you in a comment on "$postTitle"',
+        BelongNotificationType.reply =>
+          '$authorName replied to your comment on "$postTitle"',
+        BelongNotificationType.like =>
+          '$authorName liked your reflection on "$postTitle"',
+        BelongNotificationType.following =>
+          '$authorName posted a new reflection in "$postTitle"',
+      };
 
   /// Relative human-readable timestamp:
   /// e.g. "1 hr ago", "2 days ago", "Sep 7th", "Just now"
@@ -114,11 +118,10 @@ class BelongNotification extends Equatable {
       return '$d day${d == 1 ? '' : 's'} ago';
     }
 
-    // Older than 7 days, format as "Sep 7th"
-    return _formatMonthDay(timestamp);
+    return _formatCalendarDate(timestamp);
   }
 
-  static String _formatMonthDay(DateTime dt) {
+  static String _formatCalendarDate(DateTime dt) {
     const months = [
       'Jan',
       'Feb',
@@ -133,13 +136,12 @@ class BelongNotification extends Equatable {
       'Nov',
       'Dec',
     ];
-    final monthStr = months[dt.month - 1];
+    final monthName = months[dt.month - 1];
     final day = dt.day;
 
-    String suffix;
-    if (day >= 11 && day <= 13) {
-      suffix = 'th';
-    } else {
+    // Ordinal suffix (1st, 2nd, 3rd, 4th...)
+    String suffix = 'th';
+    if (day < 11 || day > 13) {
       switch (day % 10) {
         case 1:
           suffix = 'st';
@@ -150,45 +152,33 @@ class BelongNotification extends Equatable {
         case 3:
           suffix = 'rd';
           break;
-        default:
-          suffix = 'th';
       }
     }
 
-    return '$monthStr $day$suffix';
+    return '$monthName $day$suffix';
   }
 
   BelongNotification copyWith({
     String? id,
-    String? authorName,
-    String? authorAvatarUrl,
     BelongNotificationType? type,
+    String? authorName,
     String? postTitle,
-    String? commentSnippet,
     DateTime? timestamp,
+    String? authorAvatarUrl,
     bool? isRead,
+    String? spaceKey,
+    String? postId,
   }) {
     return BelongNotification(
       id: id ?? this.id,
-      authorName: authorName ?? this.authorName,
-      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
       type: type ?? this.type,
+      authorName: authorName ?? this.authorName,
       postTitle: postTitle ?? this.postTitle,
-      commentSnippet: commentSnippet ?? this.commentSnippet,
       timestamp: timestamp ?? this.timestamp,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
       isRead: isRead ?? this.isRead,
+      spaceKey: spaceKey ?? this.spaceKey,
+      postId: postId ?? this.postId,
     );
   }
-
-  @override
-  List<Object?> get props => [
-    id,
-    authorName,
-    authorAvatarUrl,
-    type,
-    postTitle,
-    commentSnippet,
-    timestamp,
-    isRead,
-  ];
 }

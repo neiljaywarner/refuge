@@ -56,15 +56,24 @@ class MemberProfile {
       icocChurchAffiliation != 'I am not a member of an ICOC church' &&
       icocChurchAffiliation != 'I am not a member of this fellowship';
 
+  /// Extracts a 1- or 2-letter uppercase monogram initial string for avatars.
+  ///
+  /// Examples:
+  /// - "Marty Organizer" -> "MO"
+  /// - "Neil" -> "N"
+  /// - "Dr. Grace Hopper" -> "GH"
+  /// - "" or whitespace -> "B" (Default monogram for a "Belong" community member)
   String get initials {
-    final trimmed = displayName.trim();
-    if (trimmed.isEmpty) return 'BM';
-    final parts = trimmed.split(RegExp(r'\s+'));
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
-        .toUpperCase();
+    final parts = displayName
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+    return switch (parts) {
+      [] => 'B', // Default 'B' monogram for Belong fellowship members
+      [final single] => single[0].toUpperCase(),
+      [final first, ..., final last] => '${first[0]}${last[0]}'.toUpperCase(),
+    };
   }
 
   MemberProfile copyWith({
