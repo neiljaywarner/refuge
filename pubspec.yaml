@@ -39,6 +39,10 @@ dependencies:
   cloud_firestore: ^7.0.0
   gap: ^3.0.1
   http: ^1.2.0
+  appwrite: ^28.1.0
+  image_picker: ^1.2.4
+  firebase_in_app_messaging: ^0.10.0
+  firebase_app_installations: ^0.5.0
 
 dev_dependencies:
   flutter_test:

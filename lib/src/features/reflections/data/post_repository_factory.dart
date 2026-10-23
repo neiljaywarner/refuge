@@ -5,6 +5,12 @@ import 'serverpod_post_repository.dart';
 
 /// Backend runtime environment determined via --dart-define=BACKEND=...
 /// or toggled via --dart-define=ENABLE_SERVERPOD=false.
+///
+/// The default remains [BackendMode.serverpod]. That repository writes each
+/// reflection to Serverpod and a second copy to Cloud Firestore. Selecting
+/// `appwrite` still uses the local repository until a later migration; the
+/// Appwrite SDK is only constructed when `APPWRITE_ENDPOINT` and
+/// `APPWRITE_PROJECT_ID` are both set.
 enum BackendMode { local, serverpod, sqlite, appwrite }
 
 BackendMode get configuredBackendMode {
