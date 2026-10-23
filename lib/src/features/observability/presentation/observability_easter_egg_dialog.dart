@@ -62,7 +62,7 @@ class _ObservabilityEasterEggDialogState
       ),
       content: SingleChildScrollView(
         child: Column(
-          mainAxisSize: dynamic,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(

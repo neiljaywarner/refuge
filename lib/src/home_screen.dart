@@ -82,6 +82,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
               .asBroadcastStream(),
       [activeRepository, selectedSpace.value],
     );
+    // Subscribe at the screen level (not inside the feed sub-view) so the
+    // subscription and its latest snapshot survive switching to Spaces /
+    // other bottom tabs and back. A broadcast stream does not replay its last
+    // event to a fresh listener, so re-subscribing via a StreamBuilder that
+    // was unmounted left the feed stuck on a spinner / grey screen (#402).
+    final postsSnapshot = useStream(postStream, preserveState: false);
     final quietDigestFuture = useMemoized(
       () => activeRepository.getQuietDigest(spaceKey: selectedSpace.value),
       [activeRepository, selectedSpace.value],
@@ -269,9 +275,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 },
               ),
               Expanded(
-                child: StreamBuilder<List<Post>>(
-                  stream: postStream,
-                  builder: (context, snapshot) {
+                child: Builder(
+                  builder: (context) {
+                    final snapshot = postsSnapshot;
                     if (!snapshot.hasData) {
                       return const Center(
                         child: CircularProgressIndicator.adaptive(),
