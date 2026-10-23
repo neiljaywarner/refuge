@@ -11,7 +11,7 @@
 For our soft launch and community cutover, **our custom in-house module (`FeedbackDrawingCanvas` + `PrivateFeedbackRouter`) is the winner and default choice**:
 - **\$0/month forever** (Zero vendor lock-in or recurring SaaS invoices).
 - **100% Cross-Platform**: Works identically across Flutter Web, PWA, Android, and iOS.
-- **Privacy First**: Private submissions route directly to our confidential sibling repository ([`neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)), protecting neurodivergent members from public PII leaks.
+- **Privacy First**: Private notes are written to Firestore. The drawing is a placeholder storage URL, not a file on a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 - **Zero Heavy SDK Dependencies**: No bloated native binaries or binary tracking SDKs running in the background.
 
 If leadership desires deeper automated crash symbolication and network stack traces in the future, **Sentry** is the recommended external SDK due to its generous **permanent free tier** (5,000 errors/month free) and official `sentry_flutter` web support, accessible via an opt-in toggle in the app Settings screen.
@@ -25,7 +25,7 @@ If leadership desires deeper automated crash symbolication and network stack tra
 | **Free Tier Allowance** | ❌ Trial only / \$99+/mo | ⚠️ 10 reports/mo | 🟢 **5,000 errors/mo free forever** | 🟢 **Unlimited free forever (\$0)** |
 | **Flutter Web / PWA Support** | ❌ Incomplete | ❌ Mobile only | 🟢 **First-class Web + Mobile** | 🟢 **100% First-Class Everywhere** |
 | **Drawing / Markup Canvas** | ✅ Built-in | ✅ Built-in | ⚠️ Basic text prompt | 🟢 **Custom sensory canvas** |
-| **Private Repo Dispatch** | ❌ Proprietary portal | ❌ Proprietary portal | ⚠️ Webhook required | 🟢 **Direct to `belong_feedback`** |
+| **Private Repo Dispatch** | ❌ Proprietary portal | ❌ Proprietary portal | ⚠️ Webhook required | ⚠️ **Firestore note only. GitHub attachment is open in [#407](https://github.com/neiljaywarner/refuge/issues/407)** |
 | **Member Privacy (Zero-PII)** | ⚠️ Captures full video | ⚠️ Captures screen | 🟢 Text masking available | 🟢 **100% Member-Controlled** |
 | **App Bundle Impact** | Heavy (~8-12 MB) | Medium (~4-6 MB) | Lightweight (~2-3 MB) | **0 MB (Pure Flutter `dart:ui`)** |
 
@@ -61,5 +61,5 @@ If leadership desires deeper automated crash symbolication and network stack tra
   - Lets members draw arrows, circles, and handwritten notes on captured screenshots.
   - Offers 6 calm, sensory-friendly palette colors and fine/bold pen widths.
   - Automatically formats GitHub-flavored markdown with embedded image attachment.
-  - Seamlessly routes private feedback to confidential repository `neiljaywarner/belong_feedback` (verified in Issue #1).
+  - The note is stored in Firestore. The drawing URL is a placeholder and is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
   - 17/17 automated unit and Patrol widget tests passing green.

@@ -1,9 +1,11 @@
 # 🔔 Notifications Technical Architecture
 
 > **Belong on the Spectrum** (powered by Refuge)  
-> **Source Directory**: [`lib/src/features/notifications/`](file:///Users/neil/belongonthespectrum/refuge/lib/src/features/notifications/)  
+> **Source Directory**: `lib/src/features/notifications/`  
 > **Related Architecture ADR**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]  
 > **Product Companion Guide**: [[Notifications-Product-Guide]]
+
+> **Status (22 October 2026).** The in-app bell exists. `AppLauncherBadgeService` calls MethodChannel `com.belongonthespectrum.sanctuary/badge`, and that channel has no native handler, so the phone launcher dot does not update. FCM permission requests set `badge: false`. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) is open. Launcher badges and calm FCM are not fully verified on device.
 
 ---
 
@@ -99,7 +101,7 @@ Future<bool> setBadgeCount(int count) async {
   return await _channel.invokeMethod<bool>('setBadgeCount', {'count': count});
 }
 ```
-When `count == 0` (e.g. after tapping *"Mark all read"*), the launcher badge is cleared.
+When `count == 0` (e.g. after tapping *"Mark all read"*), the Dart service asks the channel to clear a count. There is no native handler, so the launcher icon dot does not change. The in-app unread count does clear.
 
 ---
 

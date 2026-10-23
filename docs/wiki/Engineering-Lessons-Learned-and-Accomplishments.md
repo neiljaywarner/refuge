@@ -48,7 +48,7 @@ Unit and widget tests run in a synthetic Flutter test environment with ideal con
 Using the **GitHub MCP Server** (`push_files`, `create_pull_request`, `merge_pull_request`) eliminated hundreds of repetitive terminal approval prompts. Similarly, using the **Dart MCP Server** (`analyze_files`, `run_tests`) delivered sub-second feedback loops without shell escaping bugs.
 
 ### Lesson 3: Clean Repository Seams Decouple Architecture from Infrastructure
-By defining clean abstract interfaces (`FeatureVotingRepository`, `PostRepository`, `AuthRepository`), we seamlessly supported `InMemory`, `Firebase`, `Serverpod`, and `Appwrite` implementations without changing a single line of presentation UI code.
+By defining clean abstract interfaces (`FeatureVotingRepository`, `PostRepository`, `AuthRepository`), the UI can sit on `InMemory`, Firebase, or Serverpod adapters. Appwrite is not an implementation on `main`. The opt-in client seam is open [PR #412](https://github.com/neiljaywarner/refuge/pull/412) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set.
 
 ### Lesson 4: Strict Zero-PII Discipline Must Be Automated
 Real member data must never touch Git repositories. We enforced this structurally:

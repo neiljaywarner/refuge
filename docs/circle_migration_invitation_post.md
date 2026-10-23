@@ -13,8 +13,6 @@ Dear Belong on the Spectrum Community,
 
 We are thrilled to welcome you to our new digital home — **Belong on the Spectrum** (also known as *Refuge*). 
 
-Over the past months, we have built a calm, distraction-free platform designed by and for autistic and neurodivergent disciples, friends, and families. 
-
 To make this transition as peaceful and gentle as possible, we are hosting a **7-day calm exploration and overlap week from October 24 to October 31, 2026**. 
 
 During this week:

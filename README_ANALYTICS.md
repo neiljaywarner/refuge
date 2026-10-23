@@ -44,11 +44,13 @@ Open the **Run & Debug** pane in VS Code / Antigravity IDE and pick:
 
 ### Option 2: Flutter CLI
 ```bash
-flutter run -d 56091JEBF14039 \
+flutter run \
   --dart-define=APTABASE_KEY=$APTABASE_BELONG_KEY \
   --dart-define=POSTHOG_KEY=$POSTHOG_BELONG_PROJECT_TOKEN \
   --dart-define=POSTHOG_HOST=https://us.i.posthog.com
 ```
+
+Product events stay off when those defines are omitted ([#410](https://github.com/neiljaywarner/refuge/issues/410)).
 
 ---
 
@@ -72,10 +74,8 @@ adb logcat -v time -s FA FA-SVC flutter
 2. Select your Belong project (`A-US-1296849393`).
 3. Events appear in Real-time under **Events** within 5–10 seconds.
 
-### 3. PostHog Live Events
-1. Open [PostHog US Cloud](https://us.i.posthog.com).
-2. Navigate to **Activity** -> **Live Events**.
-3. Real-time events (`space_viewed`, `sensory_theme_changed`, `vote_cast`, `bottom_tab_selected`) stream immediately.
+### 3. PostHog
+A smoke event was ingested. The app does not send product events (`space_viewed`, `sensory_theme_changed`, `vote_cast`, `bottom_tab_selected`, or anything else) unless `POSTHOG_KEY` or `POSTHOG_BELONG_PROJECT_TOKEN` is passed at build time. [Issue #410](https://github.com/neiljaywarner/refuge/issues/410) tracks that. Product conversion analytics are not live.
 
 ---
 
@@ -88,7 +88,7 @@ To query analytics and Firebase resources directly via AI agents:
   "mcpServers": {
     "firebase": {
       "command": "/opt/homebrew/bin/firebase",
-      "args": ["mcp", "--dir", "/Users/neil/belongonthespectrum/refuge"]
+      "args": ["mcp", "--dir", "."]
     },
     "posthog": {
       "command": "/opt/homebrew/bin/npx",

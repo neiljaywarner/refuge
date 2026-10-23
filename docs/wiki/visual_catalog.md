@@ -77,7 +77,7 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
   - **Literal Status Badges**: `WIP · Shipping Before Oct 31`, `Planned · Community Prioritized`, `Community Idea · Vote to Prioritize`.
   - **Reactive Live Stream Sync**: Multi-user concurrency updates vote counters across clients in real-time.
   - **Sensory Soundscapes Item**: Upcoming ambient sound generator with nature noise loops.
-  - **Private Feedback Seam**: Decoupled bug report routing directly into private GitHub issues.
+  - **Private Feedback Seam**: The note is written to Firestore. The drawing is a placeholder storage URL, not a GitHub issue attachment ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 - **Associated GitHub Issues**: [#302: Epic: Community Feature Roadmap & Real-Time Voting](https://github.com/neiljaywarner/refuge/issues/302), [#303: Multi-User Concurrency E2E Test & Reactive Broadcast Sync](https://github.com/neiljaywarner/refuge/issues/303), [#304: Reset Feature Vote Counts to Zero](https://github.com/neiljaywarner/refuge/issues/304)
 - **Associated Wiki Page**: [Questions for Product Users and Alpha Testers](https://github.com/neiljaywarner/refuge/wiki/Questions-for-Product-Users-and-Alpha-Testers)
 
@@ -132,7 +132,7 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
 
 ![Dual Pixel Hardware Sync](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/dual_pixel_sync.png)
 
-- **Purpose**: Physical proof of cross-client WebSocket and edge synchronization across physical Android smartphones (`Pixel 9a` devices `56091JEBF14039` and `58221JEBF20835`).
+- **Purpose**: Physical proof of cross-client sync across two phones (Pixel Left and Pixel Right). Device serials are not recorded here.
 - **What to Look For**:
   - **Instant Reaction Propagation**: Affirmation reaction tapped on Device 1 increments the counter on Device 2 within sub-100ms latency.
   - **Multi-Device Stream Integrity**: Real-time broadcasts without full screen refreshes, flickering, or dropped WebSocket frames.

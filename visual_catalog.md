@@ -131,7 +131,7 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
 
 ![Dual Pixel Hardware Sync](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/dual_pixel_sync.png)
 
-- **Purpose**: Physical proof of cross-client WebSocket and edge synchronization across physical Android smartphones (`Pixel 9a` devices `56091JEBF14039` and `58221JEBF20835`).
+- **Purpose**: Physical proof of cross-client sync across two phones (Pixel Left and Pixel Right). Device serials are not recorded here.
 - **What to Look For**:
   - **Instant Reaction Propagation**: Affirmation reaction tapped on Device 1 increments the counter on Device 2 within sub-100ms latency.
   - **Multi-Device Stream Integrity**: Real-time broadcasts without full screen refreshes, flickering, or dropped WebSocket frames.

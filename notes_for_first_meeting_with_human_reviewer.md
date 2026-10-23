@@ -5,7 +5,7 @@
 > **Community**: [Belong on the Spectrum](https://belongonthespectrum.com) (Christian & Neurodivergent-Affirming digital fellowship)  
 > **Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
 > **Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (also custom domain `belongonthespectrum.com`)  
-> **Private Triage Repository**: [`neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)
+> **Private Triage Repository**: not wired. Notes go to Firestore. Drawings are a placeholder URL ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
@@ -22,12 +22,12 @@ Tonight's review focuses on operational readiness: verifying that authentication
 ## 2. TL;DR (Too Long; Didn't Read)
 
 - **The Software Works Now**: 226+ automated unit, widget, and device BDD tests pass green on every commit. Zero static analysis errors.
-- **Hardware Verified Live**: Driven across 2 physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and 2 Android emulators (`emulator-5554`, `emulator-5556`) using Maestro MCP and the Marionette live demo showcase runner (`devices.md`).
+- **Hardware notes**: Earlier sessions used physical Pixels and Android emulators. This note does not record a new device pass, and it does not name device serials. Launcher badges and calm FCM are not fully verified ([#411](https://github.com/neiljaywarner/refuge/issues/411)).
 - **Save \$1,000+/year**: By hosting on Firebase Edge (Google Cloud free tier), hosting costs are \$0/month for our community scale.
-- **Serverpod Teardown & Cost Optimization**: Clean 20-day turn-off roadmap in place to eliminate the \$5/mo Serverpod Cloud cluster before trial renewal (`--dart-define=ENABLE_SERVERPOD=false` enabled, boilerplate endpoints cleanly removed).
+- **Serverpod**: Still the default post backend. Cloud Firestore is still the second copy. The teardown guide is not started. Appwrite has not replaced either backend ([PR #412](https://github.com/neiljaywarner/refuge/pull/412) is open and off unless both endpoint and project id are set). The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 - **No App Store Friction**: Belong runs instantly in any mobile or desktop web browser, and prompts users with 1-tap "Add to Home Screen" (Progressive Web App / WebAPK), bypassing App Store / Play Store gatekeeping.
 - **Neurodivergent-First**: Replaces high-anxiety social media patterns (like 1–5 star ratings, endless unread notification counts, and algorithmic outrage feeds) with literal 3-intent feedback, chronological unhurried feeds, and quiet sensory themes (Sage, Clean, Charcoal, High Contrast).
-- **Private Feedback**: Private bug reports and ideas automatically route to a confidential private repository (`neiljaywarner/belong_feedback`), ensuring zero member PII is leaked in public trackers. Members can draw, circle, and annotate directly on screenshots before sending.
+- **Private Feedback**: Members can draw on a note in the app. The note is written to Firestore. The drawing is a placeholder storage URL, not a GitHub issue attachment ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
@@ -49,10 +49,10 @@ Tonight's review focuses on operational readiness: verifying that authentication
 ### Q4: How does private feedback protect user privacy?
 **A**: Many open-source platforms accidentally publish bug reports with user email addresses, IP addresses, or device IDs on public GitHub issues. Belong solves this with **Split Routing**:
 - **💚 Public Praise** ("Works Great") routes to the public encouragement counter.
-- **🛠️ Bug Reports & 💡 Ideas** automatically route to our confidential private repository (`neiljaywarner/belong_feedback`). Only authorized community organizers have access.
+- **🛠️ Bug Reports & 💡 Ideas** are written to Firestore. They do not open a GitHub issue. The drawing is a placeholder storage URL ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ### Q5: Can users draw on screenshots when submitting feedback?
-**A**: Yes! Members can tap **"Draw / Annotate on Screenshot"** to open an interactive drawing canvas with pen colors (Red, Amber, Teal, Blue, White, Black), stroke widths, and undo. They can circle a button, point an arrow, or sketch what happened, and attach it directly to their feedback note.
+**A**: Members can open a drawing canvas, sketch, and attach that sketch to the in-app note. The stored drawing is a placeholder URL, not a file on GitHub ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 ---
 
@@ -91,12 +91,12 @@ Phase:       Soft Launch         Circle Cutover     Initial Feedback     Analyti
 - [x] Multi-criteria feed sorting (Latest, For You, New Activity, Oldest, Popular, Likes, Alphabetical) (#325).
 - [x] Bookmarking / Save for Later space (#155).
 - [x] In-app Avatar photo capture, gallery upload, square cropping, and polite permission handling (#333).
-- [x] Draw-on feedback canvas with scribble screenshot attachment and private repository dispatch (`neiljaywarner/belong_feedback`) (#335).
+- [ ] Draw-on feedback canvas. The note reaches Firestore. The drawing is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 - [x] Firebase In-App Messaging (FIAM) with Web stubbing, Installation ID (FID) troubleshooting inspection, and Cloud Storage Diagnostic Session Replay (#360 / PR #378).
 - [x] Remote Config Admin Mode with user soft-deletion / banning (#356).
 - [x] Belong & Circle review sentiment benchmark auditor with automated reporting (#357).
 - [x] Non-destructive testing hygiene: Removed asset-mutating `render_icons_test` from automated suites and relocated to standalone tool script (#364 / PR #388).
-- [x] StateNotifier notifications controller restoration and launcher app badge synchronization (#368 / PR #390).
+- [ ] Launcher app badge. The in-app bell exists. The launcher-dot MethodChannel has no native handler. FCM requests set `badge: false`. Device matrix [#411](https://github.com/neiljaywarner/refuge/issues/411) is open. (#368 / PR #390 added the Dart service only.)
 - [x] Interactive Marionette Live Demo Showcase CLI driver, bash launcher, and AI skill (`tool/marionette_demo.dart`, `.agents/skills/marionette-live-showcase/SKILL.md`) (#380 / PR #391).
 - [x] Serverpod Cloud Deprecation Roadmap, turn-off checklist, `$0.00/mo` cost savings guide, and `greeting_endpoint.dart` removal (#383 / PR #397).
 - [x] Appwrite Backend Migration architectural foundation and Riverpod repository provider adapters (#384).
@@ -124,7 +124,7 @@ Phase:       Soft Launch         Circle Cutover     Initial Feedback     Analyti
 - [ ] Cancel Circle.so recurring billing cleanly on Oct 31, completing migration.
 
 ### E. First Week Post-Launch
-- [ ] Triage first batch of feedback notes from `neiljaywarner/belong_feedback`.
+- [ ] Triage feedback notes from Firestore. Drawings are not on GitHub yet ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 - [ ] Address any UI font size or contrast feedback from older community members.
 - [ ] Review daily active reflection counts and comment engagement in Firebase Analytics.
 
@@ -181,8 +181,7 @@ Use this checklist during tonight's walkthrough on real devices:
        - Scribble an arrow or circle with the pen, tap "Attach Scribble".
        - Type "hi, feedback from 20-octoberpm".
        - Tap "Send Private Feedback".
-       - Confirm success banner: "Thank you! Your note was securely routed to our private triage queue..."
-       - Confirm issue #1 exists in neiljaywarner/belong_feedback.
+       - Confirm the note is stored in Firestore. Do not expect a new GitHub issue. The drawing URL is a placeholder ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
 
 [ ] 6. PROGRESSIVE WEB APP (PWA) EXPERIENCE
        - Open https://belongonthespectrum.web.app on your phone browser.
@@ -195,9 +194,8 @@ Use this checklist during tonight's walkthrough on real devices:
 ## 7. Appendix: Technical Reference & Architecture
 
 - **Frontend Architecture**: Flutter 3.47 / Dart 3.13, Riverpod 2.6 (`HookConsumerWidget`), feature-first package structure (`lib/src/features/*`).
-- **Backend & Cloud**: Google Cloud Firebase Edge (Firestore, Firebase Authentication, Firebase Storage, Cloud Functions, Remote Config).
-- **Test Automation Suite**: 226+ tests (BDD feature specs via `patrol_finders`, unit tests via `package:test`, real hardware device driving via Maestro MCP & Patrol MCP).
-- **Privacy Architecture**: Zero-PII policy in public repositories. Confidential feedback isolation via `neiljaywarner/belong_feedback`.
+- **Backend & Cloud**: Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite is not on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412)).
+- **Privacy Architecture**: Feedback notes go to Firestore. Drawings are a placeholder URL, not a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)). The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 - **Architectural Decision Records**:
   - `docs/adr/0001-sensory-modes.md`: High contrast and sensory calm mode specifications.
   - `docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`: 3-intent feedback vs. 5-star ratings.

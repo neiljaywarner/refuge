@@ -84,7 +84,7 @@ All logs pass through client-side regex sanitization before transmission:
 2. **Adopt PostHog for Product Analytics & Sensory Funnels**:
    - **Product Insight**: PostHog is purpose-built for user session paths, conversion funnels (e.g. `reflection_published`, `sensory_theme_changed`, `vote_cast`), and cohort analysis.
    - **Privacy & Autonomy**: PostHog provides generous cloud tiers (1M events/month free) with one-click export or self-hosted deployment on Docker/Kubernetes.
-   - **Action**: Keep Google Analytics as a baseline, but use PostHog (`POSTHOG_KEY`) as our primary deep product analytics collector.
+   - **Action**: PostHog is a candidate collector when `POSTHOG_KEY` is passed at build time. As of 22 October 2026 the app does not send product events unless `POSTHOG_KEY` or `POSTHOG_BELONG_PROJECT_TOKEN` is set. A smoke event was ingested. Product conversion analytics are not live ([#410](https://github.com/neiljaywarner/refuge/issues/410)).
 3. **Appwrite Functions Role Assessment**:
    - **What are Appwrite Functions?** Appwrite Functions are containerized serverless runtimes (similar to AWS Lambda or Google Cloud Functions) executing code snippets (Node, Dart, Python, PHP, Ruby) triggered by HTTP requests, cron schedules, or database events.
    - **Why Serverpod Already Fulfills This Role**: Belong on the Spectrum is built natively with **Serverpod** as its backend architecture. Serverpod endpoints, database models, and streaming sockets are written in 100% typed Dart. Deploying Appwrite Functions strictly as a secondary log ingestion webhook would introduce operational fragmentation, double maintenance, and redundant container overhead.

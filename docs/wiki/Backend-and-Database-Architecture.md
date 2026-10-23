@@ -3,15 +3,17 @@
 > **Engineering Architecture & Under-the-Hood Data Dictionary for Organizers, Mentors & Apprentices**  
 > *Tracked in Issue #93 · Living Architecture Reference*
 
+> **Live on `main` (22 October 2026).** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. The opt-in client seam is [PR #412](https://github.com/neiljaywarner/refuge/pull/412) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. That pull request is not merged. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+
 ---
 
 ## 1. Under-the-Hood Architecture Overview
 
 **Belong on the Spectrum** is powered by an accessible, calm-tech frontend with a **pluggable multi-backend architecture** (ADR-0009). The client consumes abstractions through Riverpod providers, allowing the application to connect to:
 
-1. **Cloud Firestore / Firebase** (Flagship production cloud data store).
-2. **Serverpod RPC & PostgreSQL** (`refuge4serverpod_server/` for high-throughput typed Dart backend services).
-3. **Appwrite Cloud** (Stage 2 OAuth2 migration target vetted in ADR-0009).
+1. **Serverpod RPC & PostgreSQL** (default post backend on `main`).
+2. **Cloud Firestore / Firebase** (second copy of posts, plus profiles, votes, and feedback notes).
+3. **Appwrite** (not on `main`; opt-in only in open [PR #412](https://github.com/neiljaywarner/refuge/pull/412)).
 4. **Deterministic In-Memory Repositories** (Local offline development, BDD widget tests, and CI/CD with zero cloud dependencies).
 
 ```
@@ -28,8 +30,8 @@
             │                       │                         │
             ▼                       ▼                         ▼
 ┌──────────────────────┐  ┌───────────────────┐  ┌───────────────────────┐
-│   Cloud Firestore    │  │ Serverpod RPC     │  │ Appwrite / In-Memory  │
-│   (Production Cloud) │  │ (Dart + Postgres) │  │ (Local Dev & Tests)   │
+│   Serverpod RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
+│   (Default posts)    │  │ (Second copy)     │  │ Appwrite not on main  │
 └──────────────────────┘  └───────────────────┘  └───────────────────────┘
 ```
 

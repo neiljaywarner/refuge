@@ -28,7 +28,7 @@
 
 ## 🌟 About Belong on the Spectrum & Refuge
 
-**Refuge** is an open, white-labelable, calm-technology community platform built with **Flutter**, **Riverpod (`hooks_riverpod`)**, **Serverpod / Appwrite**, and **Firebase** as a sensory-friendly, cost-effective replacement for Circle.so.
+**Refuge** is an open, white-labelable, calm-technology community platform built with **Flutter**, **Riverpod (`hooks_riverpod`)**, **Serverpod** (default post backend), **Cloud Firestore** (second copy), and **Firebase** edge services. Appwrite is not on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412)). The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 
 Its flagship community is **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** — a welcoming Christian & neurodivergent/autistic fellowship community.
 

@@ -4,6 +4,8 @@
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 > **Deployment Runbook**: [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md)
 
+> **Proposal only (22 October 2026).** The grades below are a future migration sketch. They are not the live stack. Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. The opt-in client seam is [PR #412](https://github.com/neiljaywarner/refuge/pull/412) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. That pull request is not merged.
+
 ---
 
 ## 1. Executive Summary: Why "Appwrite Core + Firebase Edge" (`Grade: A+ / 9.7/10`) Wins for `v1.0`, `v1.1` & `v2.0`
@@ -37,6 +39,6 @@ Because all data access in `lib/src/features/` sits behind **Riverpod Repository
 
 Every feature module exposes 4 pluggable adapters verified by the exact same Unit, Widget BDD (`patrolWidgetTest`), Integration, and Maestro E2E tests:
 1. **`InMemory*Repository`**: Deterministic offline/test adapter.
-2. **`Serverpod*Repository`**: Active in `v0.6.0`–`v0.8.0-alpha`.
-3. **`Appwrite*Repository`**: Ready for 1-line activation in `v0.9.0-beta`.
-4. **`Firebase*Repository`**: Optional Firestore/Analytics adapter.
+2. **`Serverpod*Repository`**: Still the default post backend on `main` (22 October 2026).
+3. **`Appwrite*Repository`**: Not on `main`. Opt-in only in open [PR #412](https://github.com/neiljaywarner/refuge/pull/412), and off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set.
+4. **`Firebase*Repository`**: Cloud Firestore remains the second copy of posts, plus Analytics where a build is configured.

@@ -5,6 +5,8 @@
 > **Technical Companion**: [[Notifications-Technical-Architecture]]  
 > **Architectural Decisions**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]
 
+> **Status (22 October 2026).** The in-app bell is the surface described below. Phone launcher dots are not updated: the badge MethodChannel has no native handler, and FCM permission requests set `badge: false`. Device checks are open in [Issue #411](https://github.com/neiljaywarner/refuge/issues/411).
+
 ---
 
 ## 1. What Are Calm Notifications?
