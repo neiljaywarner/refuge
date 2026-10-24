@@ -1,81 +1,79 @@
-# 🧩 Belong Community Guide — Sanctuary (Refuge)
+# Our community spaces
 
 > *"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."*  
 > — **Psalm 139:14**
 
----
+**Belong on the Spectrum** is a calm online home for autistic and neurodivergent adults, friends, families, and the people who care with them. We partner with [DFW Church](https://dfwchurch.org).
 
-## 🕊️ Our Heart & Anchor: Belong on the Spectrum
+Open Belong at [belongonthespectrum.web.app](https://belongonthespectrum.web.app). Ways to help this week are on **[How you can help](How-You-Can-Help-Volunteer-Guide)**.
 
-**Sanctuary** was created specifically for **[Belong on the Spectrum](https://www.belongonthespectrum.com/)**, an initiative founded by and for **Autistic Disciples of Jesus** and their allies. 
-
-For many autistic believers, attending a traditional church service or participating in standard church chat groups can be an overwhelming sensory and social experience:
-* Harsh fluorescent sanctuary lighting and booming audio systems induce sensory fatigue.
-* Unwritten social expectations make small talk exhausting.
-* Mainstream church apps (or Facebook groups, WhatsApp, and Discord) inundate members with unread counters, notification badges, and dopamine gamification that trigger nervous system anxiety.
-
-Sanctuary provides an **intentional, unhurried digital home** where autistic Christians can fellowship, pray, explore scripture, share their God-given special interests, and laugh at relatable neurodivergent faith memes in a safe, tranquil environment.
+An earlier sketch of this page used the name Sanctuary and five `#hashtag` rooms. Those rooms are not what you will see. The list below matches Belong today.
 
 ---
 
-## 🏛️ The 5 Fellowship Spaces
+## Rooms you will see
 
-Sanctuary divides community life into five distinct spaces, each designed with its own emotional rhythm:
+| Room | What it is for |
+| --- | --- |
+| **Start Here & Introduce Yourself** | Say hello when you are ready, including a special interest if you want |
+| **Announcements** | Important updates from organizers |
+| **General Chat** | Everyday conversation |
+| **Memes** | Gentle humor |
+| **Online Resources / Videos** | Helpful links and videos that do not play by themselves |
+| **Actually Autistic Chat** | Conversation by and for autistic members |
+| **Friends Chat** | Friends and allies |
+| **Family Chat** | Parents, spouses, and family |
+| **Members** | Profiles and how we are connected |
+| **Saved for Later** | Private bookmarks for quiet reading |
+| **DFW Church** | Opens [dfwchurch.org](https://dfwchurch.org) |
 
-| Space | Focus & Purpose | Example Sharing |
-| :--- | :--- | :--- |
-| **🙏 #prayer-sanctuary** | Vulnerable prayer requests, intercession, and quiet presence. | *"Please pray for peace of mind this week. Transitioning to a new workplace routine has been disorienting."* |
-| **📖 #weekly-study** | Deep-dive biblical exegesis, scripture reflections, and theological cross-references. | *"Studying Elijah under the broom tree (1 Kings 19). Notice how God gave him sleep and food before speaking in a gentle whisper."* |
-| **🚂 #special-interests** | Passionate "infodumps" on God-given special interests (trains, astronomy, mechanical keyboards, biology, history). | *"Diagramming the signaling systems of the 19th-century railway network as an analogy for divine order."* |
-| **☕ #fellowship-hall** | Casual community updates, gratitude, and relatable autism & faith humor. | *"When you mask for two hours at church and need three days of quiet dark room to recover."* |
-| **🤫 #quiet-reflections** | Announcements, pastoral words of peace, and contemplative scripture verses. | *"Be still, and know that I am God." (Psalm 46:10)* |
-
----
-
-## 🏷️ Mindful Intent Tags: Establishing Context Before Words
-
-Autistic individuals often experience anxiety trying to decipher the unwritten emotional context of text messages. In Sanctuary, every post includes an **Intent Tag** selected by the author:
-
-* **`[Prayer Request]`**: Inviting the community to intercede and pray.
-* **`[Comfort Only]`**: Sharing a vulnerable burden where **no advice is wanted**, only love and listening.
-* **`[Bible Deep-Dive]`**: Long-form theological or linguistic analysis of Scripture.
-* **`[Special Interest Infodump]`**: Joyful, unhurried sharing of deep knowledge on a specialized topic.
-* **`[Autism & Faith Meme]`**: Wholesome, relatable humor celebrating neurodivergent life and Christian faith.
-* **`[Giving Thanks]`**: Celebrating God's goodness and personal victories.
-* **`[Question]`**: Seeking gentle, constructive perspectives.
-* **`[Resource]`**: Sharing soothing music, sensory tools, or devotional reading.
+You may also see **Actually Autistic Events**, **Community Guidelines**, and phone-store download links marked as not ready yet. Putting Belong on your phone works today. The steps are on **[How you can help](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)**.
 
 ---
 
-## ❤️ Qualitative Care Affirmations (No Vanity Likes!)
+## When you write
 
-Mainstream social platforms use public "Likes", upvotes, and view counters to gamify human interaction, triggering dopamine dependency and social comparison. 
+Before the words, you can say what kind of post it is:
 
-Sanctuary completely banishes the "Like" button in favor of **five qualitative care affirmations**:
+- **Prayer Request**
+- **Comfort Only** — company, not advice
+- **Bible Deep Dive**
+- **Special Interest**
+- **Autism & Faith Meme**
+- **Praise Report**
 
-| Reaction | Meaning in Sanctuary |
-| :--- | :--- |
-| **🙏 Praying** | *"I have stopped what I am doing to lift you up to Jesus."* |
-| **🤍 Standing With** | *"You are not alone in this heavy moment; I am present with you."* |
-| **🕊️ Peace** | *"May Christ's peace, which surpasses understanding, guard your heart."* |
-| **🌱 Encouraged** | *"Your reflection has nurtured my faith and renewed my hope."* |
-| **🧩 Relatable** | *"My neurodivergent brain experiences this too; thank you for normalizing it."* |
-
----
-
-## 🎨 4 WCAG AAA Sensory Modes
-
-Sanctuary allows each member to customize their sensory comfort with one tap in the top navigation bar:
-
-1. **🌿 Sage Botanical (Default)**: Calming organic greens and earth tones scientifically shown to lower cortisol and sensory excitation.
-2. **📄 Clean Slate**: Crisp, minimalist grayscale theme with zero visual distractions.
-3. **🌙 Monastic Dark**: Warm dark gray and amber accents with minimal blue-light emission for evening fellowship.
-4. **⚡ High Contrast**: Ultra-high visual contrast (WCAG AAA compliant) optimized for low vision or heightened focus.
+**Comfort Only** means people can sit with you. It is all right to want no suggestions.
 
 ---
 
-## 🛡️ The Zero-Badge Promise
+## Care, not a score
 
-* **No Red Badges**: Sanctuary will never display red badge dots or unread count numbers.
-* **No Urgency Manipulation**: Posts wait patiently for you. You never "miss out" by resting.
-* **Rest is Spiritual**: As God rested on the seventh day (Genesis 2:2), taking breaks from technology is welcomed and encouraged.
+On a post you can respond with **Praying** or **Support**. Some posts also offer **Encouraged** or **Relatable**.
+
+These are not likes, and they are not a contest. A quiet visit counts too.
+
+---
+
+## A calmer look
+
+From the brightness icon at the top, or from **About**:
+
+| What the menu says | Full name |
+| --- | --- |
+| **Clean** | Clean Slate |
+| **Sage** | Sage Botanical |
+| **Dark** | Monastic Dark |
+| **Contrast** | High Contrast |
+
+There is also a one-tap jump between **Sage** and **High Contrast**.
+
+---
+
+## How we treat one another
+
+- Rest is welcome. You do not have to keep up.
+- Say what you need, especially when you do not want advice.
+- Special interests are welcome. So is silence.
+- Church friends, family, and guests can be here without pretending.
+
+Questions? Tap **Share Feedback** in Belong, or message an organizer in Circle.

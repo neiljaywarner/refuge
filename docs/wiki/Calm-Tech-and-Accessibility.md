@@ -1,5 +1,7 @@
 # 🛡️ Calm-Tech & Accessibility (WCAG AAA) — Sanctuary (Refuge)
 
+> **Start here if you are a member:** **[Welcome](Home)** and **[How you can help](How-You-Can-Help-Volunteer-Guide)**. This page is an earlier design note. The app is **Belong**. The looks you can choose are **Clean**, **Sage**, **Dark**, and **Contrast**. Notifications can show a count. If this page disagrees with what you see, trust the app.
+
 > Technology should require the smallest possible amount of attention and inform without intruding.
 
 ---

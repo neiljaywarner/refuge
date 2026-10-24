@@ -62,8 +62,9 @@ privacy-scan
   / token patterns. Exits 5 if anything is found. Run before every PR.''',
   'sync-wiki': '''
 sync-wiki
-  Copies docs/wiki/*.md into the GitHub wiki repo (refuge.wiki.git) and
-  pushes. Uses a temp directory; never touches your working tree.''',
+  Copies docs/wiki markdown and images (png, jpg, gif, webp) into the
+  GitHub wiki repo (refuge.wiki.git) and pushes. Uses a temp directory;
+  never touches your working tree.''',
   'configure-mcp': '''
 configure-mcp
   Writes \$HOME/.gemini/config/mcp_config.json registering the dart,
@@ -152,7 +153,7 @@ Everyday commands:
   merge-pr       Merge an already-triaged PR
   review-status  Show CodeRabbit state for a PR
   privacy-scan   Fail on emails / home paths / tokens in tracked files
-  sync-wiki      Publish docs/wiki/*.md to the GitHub wiki
+  sync-wiki      Publish docs/wiki markdown and images to the GitHub wiki
   configure-mcp  Register dart/firebase/patrol/marionette MCP servers
   list-open      List open issues
 
@@ -437,11 +438,7 @@ Future<void> _syncWiki() async {
     stderr.writeln('Wiki clone failed: ${clone.stderr}');
     exit(clone.exitCode);
   }
-  for (final entity in Directory('docs/wiki').listSync()) {
-    if (entity is File && entity.path.endsWith('.md')) {
-      entity.copySync('${wikiDir.path}/${entity.uri.pathSegments.last}');
-    }
-  }
+  _copyWikiFiles(Directory('docs/wiki'), wikiDir);
   await Process.run('git', ['-C', wikiDir.path, 'add', '-A']);
   final commit = await Process.run('git', [
     '-C', wikiDir.path, 'commit', '-m', 'docs(wiki): sync from docs/wiki',
@@ -454,6 +451,26 @@ Future<void> _syncWiki() async {
     exit(push.exitCode);
   }
   _log('Wiki synced.');
+}
+
+const _wikiExtensions = {'.md', '.png', '.jpg', '.jpeg', '.gif', '.webp'};
+
+/// Copies markdown and images from [source] into the wiki clone [dest].
+void _copyWikiFiles(Directory source, Directory dest) {
+  for (final entity in source.listSync(followLinks: false)) {
+    final name = entity.uri.pathSegments.where((part) => part.isNotEmpty).last;
+    if (name.startsWith('.')) continue;
+    if (entity is Directory) {
+      final child = Directory('${dest.path}/$name')..createSync(recursive: true);
+      _copyWikiFiles(entity, child);
+    } else if (entity is File) {
+      final dot = name.lastIndexOf('.');
+      if (dot < 0) continue;
+      final ext = name.substring(dot).toLowerCase();
+      if (!_wikiExtensions.contains(ext)) continue;
+      entity.copySync('${dest.path}/$name');
+    }
+  }
 }
 
 Future<void> _configureMcpAndTestMarionette() async {

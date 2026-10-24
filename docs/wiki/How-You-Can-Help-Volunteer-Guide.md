@@ -1,49 +1,165 @@
-# 🤝 How You Can Help (No Coding Required!)
+# How you can help
 
-Welcome! Whether you are a member of **Belong on the Spectrum**, a friend from **DFW Church**, a parent, an advocate, or a student developer, **you do not need to know anything about software engineering to make a huge difference** as we move from Circle.so to our new home before **October 31, 2026**.
+You do not need special skills. If you can open a link, look around, and say how it felt, you can help.
+
+This week, **October 24–31**, Circle and Belong both stay open. Go at your own pace.
+
+**Open Belong:** [belongonthespectrum.web.app](https://belongonthespectrum.web.app)
+
+A longer schedule for leaders is on **[Plan through October 31](Non-Technical-Roadmap-to-Oct-31)**. The rooms are described on **[Our community spaces](Belong-Community-Guide)**.
 
 ---
 
-## 📋 Ready-to-Copy-Paste Message for Our Current Circle.so App
+## Start here (about 10 minutes, or just one part)
 
-> [!IMPORTANT]
-> **Tracked on High-Priority Issue**: [Issue #249](https://github.com/neiljaywarner/refuge/issues/249) (`*** 🚨 HIGH PRIORITY: Copy Circle.so Welcome Post into Circle to begin Oct 24–31 Overlap Week 🚨 ***`).  
-> **Source Document**: [`docs/circle_migration_invitation_post.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/circle_migration_invitation_post.md)  
-> **For Neil / Organizers:** Copy and paste the message below directly into **Announcements** or **Say Hello** in the existing Circle.so Belong app to kick off our 7-day calm exploration week!
+1. Open [belongonthespectrum.web.app](https://belongonthespectrum.web.app) on your phone or computer.
+2. Look around. Tap **Spaces** and open a room you already know, such as **General Chat** or **Start Here**.
+3. Tap **Vote & Feedback** (it sits near **Feed** and **Spaces**).
+4. If you want, say hello in **Start Here & Introduce Yourself**.
+
+Then use **[What to look for](#what-to-look-for)** below. You can do one section and stop. That is enough.
+
+---
+
+## A message you can paste into Circle
+
+Copy everything in the box. It already includes the Belong link.
 
 ```markdown
 👋 Hey Belong family!
 
-Exciting news: before October 31st, we are moving from Circle.so into our very own custom-built, calm, sensory-friendly Belong on the Spectrum community app! 🌱
+Before October 31, we are gently moving from Circle into Belong on the Spectrum. Both places stay open through October 31. There is no rush.
 
-Why are we making the move?
-1. It is designed specifically for autistic and neurodivergent brains — calm colors, predictable navigation, zero noisy pop-ups, and all our favorite spaces (Say Hello, Geek Out!, Prayer & Encouragement, Sensory-Friendly Living, Faith & Spectrum, and Advocacy).
-2. It saves our ministry ~$1,000+/year in software subscription fees while giving us 100% control over our privacy and safety.
+Open Belong here:
+https://belongonthespectrum.web.app
 
-🙌 How You Can Help Tonight (Takes 2 Minutes — No Tech Skills Needed!):
-1. **Try the Preview Link & Vote on Features**: Open our preview app and tap **"Vote on Features"** at the top to upvote what matters most to you (like Direct Messages, our Actually Autistic Events Calendar, or 1-Tap Google/Apple Sign-In).
-2. **Tell Us What Feels Calm (or Confusing)**: Tap **"Share Feedback"** in the app!
-   - Tap 💚 **Works Great** to tell us which spaces or design choices feel welcoming.
-   - Tap 💡 **Idea / Tweak** or 🛠️ **Bug / Confusing** to send a private note straight to Neil if anything feels overwhelming or hard to read.
-3. **Post a "Hello" or a Favorite Special Interest**: Help us warm up the new spaces during our October 24–31 overlap week so nobody arrives to an empty room!
+Our website:
+https://www.belongonthespectrum.com/
 
-Reply below or message Neil if you'd like to be part of our Early Welcomers team this week! 💙♾️
+Why this feels like home:
+- It is calm on purpose: quiet colors, clear labels, and videos that do not start by themselves.
+- The rooms you know are here: Start Here, Announcements, General Chat, Memes, Online Resources / Videos, Actually Autistic Chat, Friends Chat, and Family Chat.
+
+Three easy ways to help (about 2 minutes):
+1. Open the link above. Tap Vote & Feedback, then Vote on Features, and tap the thumb next to what matters to you.
+2. In that same place, tap Share Feedback. Choose Works Great, Idea / Tweak, or Bug / Confusing, and tell us how it felt.
+3. Say hello in Start Here so the rooms feel warm.
+
+You can also put Belong on your iPhone or Android home screen. Steps for both are in the "How you can help" guide.
+
+Reply here if you would like to welcome people this week.
 ```
 
 ---
 
-## 🌟 5 Ways Anyone Can Help This Week (Oct 18 – Oct 31)
+## What to look for
 
-| Way to Help | Who It's Great For | Time Needed | What You Do |
-| :--- | :--- | :--- | :--- |
-| **1. Vote on Features in the App** | Every Belong member | **1 minute** | Open the app, tap **Vote on Features**, and tap the upvote button on the features you care about most. Zero typing required! |
-| **2. Be a "Warm Space" Welcomer** | Friendly community members | **5 minutes** | Post a short introduction in **Say Hello**, share a hobby in **Geek Out!**, or post an encouraging word in **Prayer & Encouragement** during our Oct 24–31 overlap week. |
-| **3. Sensory & Clarity Check** | Autistic & neurodivergent members | **3 minutes** | Tell us privately (via the 🛠️ **Bug / Confusing** or 💡 **Idea / Tweak** button) if any text, color contrast, or button label feels ambiguous or overwhelming. |
-| **4. Test "Add to Home Screen" on Your Phone** | iPhone & Android users | **3 minutes** | Follow our [PWA Guide for Members and Organizers](PWA-Guide-for-Members-and-Organizers) to add Belong to your phone's Home Screen and let us know how smooth it felt. |
-| **5. Code, Tests, or CSV Migration** | Developers & student mentees | **30–60 mins** | Pick any open issue labeled `good first issue` or `mentoring` on [GitHub Issues](https://github.com/neiljaywarner/refuge/issues) and follow our [Apprentice & Token Optimization Guide](Apprentice-and-Token-Optimization-Guide). |
+Tell us what you noticed with **Share Feedback**. **Works Great** is for what already feels kind. **Idea / Tweak** is for a calmer or clearer change. **Bug / Confusing** is for anything that felt broken, unclear, or like too much.
+
+You do not have to finish the list.
+
+### A calm feel
+
+- Do the colors feel easy to sit with?
+- Does anything flash, pop up, or start playing sound or video on its own?
+- Can you leave and come back without feeling behind?
+
+### Words you can read
+
+Tap the brightness icon at the top and try each look:
+
+- **Clean** (Clean Slate)
+- **Sage** (Sage Botanical)
+- **Dark** (Monastic Dark)
+- **Contrast** (High Contrast)
+
+Look for words that disappear into the background, buttons that do not say what they do, and any look that feels harsh. There is also a one-tap jump between **Sage** and **High Contrast**.
+
+### Voting and feedback
+
+1. Tap **Vote & Feedback**.
+2. The page that opens is titled **Belong Roadmap & Feedback**.
+3. Tap **Vote on Features**. Tap the thumb next to an idea you care about. The number is how many people have chosen it. Tap again if you want to take the vote back.
+4. Tap **Share Feedback**. Read the three choices before you pick one. Send a short note only if you want to.
+
+Look for: Can you tell what each choice means before you tap it? Is the thumb easy to find? Did anything ask you to guess?
+
+### Spaces that feel warm
+
+Open **Spaces** and see whether you can find:
+
+- **Start Here & Introduce Yourself**
+- **Announcements**
+- **General Chat**
+- **Memes**
+- **Online Resources / Videos**
+- **Actually Autistic Chat**
+- **Friends Chat**
+- **Family Chat**
+
+If a room you used on Circle is missing, or a name is confusing, that is useful to say. A short hello in **Start Here** helps the room feel lived in. You do not owe anyone a long introduction.
+
+**Saved for Later** is for private bookmarks. **Members** is the directory. **DFW Church** opens the church website. **Actually Autistic Events** is not ready yet. If you see "coming soon," that is expected.
+
+The bar at the bottom says **Home**, **Notifications**, **Messages**, and **Search**. Tap each one and make sure you can get back. If a number on **Notifications** feels stressful, please say so.
 
 ---
 
-## 💬 Questions or Want to Volunteer?
-- Use the in-app **Roadmap & Feedback** button anytime.
-- Or reach out directly to **Neil Warner** in our current Circle group or at `neil@belongonthespectrum.com`.
+## Put Belong on your phone
+
+Belong is not in the app stores yet. You can still keep it on your home screen, next to your other apps. It opens without the browser address bar. More of the "why" is on **[Why we are not in the app stores yet](Why-No-App-Store-App)**.
+
+Use the phone's own browser for these steps. On iPhone, that is **Safari**. On Android, that is **Chrome**.
+
+### iPhone and iPad (Safari)
+
+iPhone pictures are not in this guide yet. These are the steps Safari shows. Pictures that would help, if someone can take them on an iPhone:
+
+1. Safari open to Belong, with the Share button visible
+2. The share list, with **Add to Home Screen** visible
+3. The Add screen, with the name **Belong on the Spectrum**
+4. The Belong icon on the Home Screen
+
+Do this:
+
+1. Open **Safari** (the compass). On iPhone, Chrome cannot add Belong to the Home Screen in the same way.
+2. Go to [belongonthespectrum.web.app](https://belongonthespectrum.web.app).
+3. Tap **Share**. It is a square with an arrow pointing up. On iPhone it is usually at the bottom. On iPad it may be at the top.
+4. Scroll the list and tap **Add to Home Screen**.
+5. The name should say **Belong on the Spectrum**. Tap **Add**.
+6. Find the Belong icon on your Home Screen and tap it.
+
+Look for: the icon is there, Belong opens without Safari's address bar, and you can still reach **Spaces**.
+
+### Android (Chrome)
+
+1. Open **Chrome**.
+2. Go to [belongonthespectrum.web.app](https://belongonthespectrum.web.app).
+3. Tap the **three dots** at the top.
+4. Tap **Install and create shortcut**. If your phone says **Add to Home screen** or **Install app** instead, tap that. They do the same job.
+5. You will see one of the two prompts below. Either one is right.
+   - If it says **Add to home screen**, check that the name is **Belong on the Spectrum**, then tap **Add**.
+   - If it says **Install app**, tap **Install**.
+6. Open Belong from your home screen or app list.
+
+Look for: the icon is on your home screen, Belong opens without Chrome's address bar, and you can still reach **Spaces**.
+
+One prompt you may see. Tap **Add**.
+
+![Add to home screen, with the name Belong on the Spectrum](images/android-add-to-home-screen.png)
+
+Another prompt you may see. Tap **Install**.
+
+![Install app, named Belong on the Spectrum](images/android-install-confirm.png)
+
+On a computer, open Belong in Chrome, Edge, or Safari. Look for an install icon in the address bar, or on a Mac choose **File**, then **Add to Dock**.
+
+---
+
+## If something feels off
+
+Use **Bug / Confusing** or **Idea / Tweak** inside **Vote & Feedback**. Or message an organizer in Circle.
+
+You can stop after one try. Thank you for helping the rooms feel like a place to land.
+
+[Back to the welcome page](Home)
