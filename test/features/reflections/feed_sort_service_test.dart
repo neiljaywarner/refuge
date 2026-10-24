@@ -349,5 +349,49 @@ void main() {
       expect(interests, contains('waters'));
       expect(interests, contains('Literal communication appreciated'));
     });
+
+    test('filters out test junk posts like "blah your face", "test 1", and grokbot (#501)', () {
+      final postsWithJunk = [
+        ...posts,
+        Post(
+          id: 'junk-1',
+          authorName: 'Random Tester',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: 'blah your face this is a test',
+          timestamp: DateTime.now(),
+          reactions: const {},
+        ),
+        Post(
+          id: 'junk-2',
+          authorName: 'grokbot1',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: 'Quiet hello grokbot-mention-token @grokbot2',
+          timestamp: DateTime.now(),
+          reactions: const {},
+        ),
+        Post(
+          id: 'junk-3',
+          authorName: 'Tester',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: 'test 1 check microphone',
+          timestamp: DateTime.now(),
+          reactions: const {},
+        ),
+      ];
+
+      final visible = FeedQuery.apply(
+        posts: postsWithJunk,
+        toneFilter: 'All',
+        sort: FeedSortOption.latest,
+        signedIn: false,
+      );
+      expect(visible.any((p) => p.id == 'junk-1'), isFalse);
+      expect(visible.any((p) => p.id == 'junk-2'), isFalse);
+      expect(visible.any((p) => p.id == 'junk-3'), isFalse);
+      expect(visible.length, 3);
+    });
   });
 }
