@@ -69,7 +69,7 @@ void main() {
         await $(const Key('subnav_spaces_tab')).tap();
         await $.pumpAndSettle();
 
-        // 2. Tap Coming Soon item (e.g., Community Guidelines or Actually Autistic Events)
+        // 2. Tap Coming Soon item
         final itemFinder = $('Actually Autistic Events');
         if (itemFinder.evaluate().isNotEmpty) {
           await itemFinder.tap();
