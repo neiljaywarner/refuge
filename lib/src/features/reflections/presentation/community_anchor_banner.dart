@@ -2,35 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../../core/firebase/organizer_remote_config_service.dart';
 import '../../about/presentation/about_refuge_dialog.dart';
 
-/// Live **"Message from the Organizer"** & Community Header Banner powered by
-/// [organizerRemoteConfigProvider] (`Firebase Remote Config`, Issue #18 & #20).
+/// Gentle top announcement banner configured dynamically by community
+/// organizers via Firebase Remote Config (#20).
 ///
-/// Allows non-technical organizers at **Belong on the Spectrum** to update the
-/// headline and message anytime from the Firebase Console without code changes.
+/// Autistic design principles:
+/// - Muted, low-stimulation background color
+/// - Clear scripture anchor
+/// - One-tap access to About Belong and community guidelines
 class CommunityAnchorBanner extends HookConsumerWidget {
-  final Color primaryColor;
-  final bool isContrast;
-
   const CommunityAnchorBanner({
     super.key,
     required this.primaryColor,
     required this.isContrast,
   });
 
+  final Color primaryColor;
+  final bool isContrast;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
+    final flavor = ref.watch(appFlavorProvider);
     if (!remoteConfig.bannerEnabled) {
       return const SizedBox.shrink();
     }
 
     return Container(
       key: const Key('organizer_message_banner'),
-      margin: const .fromLTRB(12, 8, 12, 4),
-      padding: const .symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
@@ -43,7 +47,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
       child: Row(
         children: [
           Container(
-            padding: const .all(5),
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isContrast
@@ -63,6 +67,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                     Flexible(
                       child: Text(
                         remoteConfig.welcomeTitle,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
@@ -73,12 +78,18 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                     ),
                     const Gap(4),
                     Text(
-                      '• belongonthespectrum.com',
+                      '• ${flavor.shortDomainLabel}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                        color: isContrast
+                            ? Colors.white70
+                            : Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -89,28 +100,38 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 10.5,
+                    fontSize: 11.5,
+                    height: 1.25,
                     color: isContrast
-                        ? Colors.white70
+                        ? Colors.white
                         : Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
               ],
             ),
           ),
-          InkWell(
-            onTap: () => showAboutRefugeDialog(
-              context,
-              primaryColor: primaryColor,
-              isContrast: isContrast,
-            ),
-            borderRadius: BorderRadius.circular(6),
-            child: Padding(
-              padding: const .all(4.0),
-              child: Icon(
-                Icons.info_outline_rounded,
-                size: 16,
-                color: isContrast ? Colors.yellow : primaryColor,
+          const Gap(6),
+          Semantics(
+            identifier: 'banner_learn_more_button',
+            label: 'Learn more about Belong community principles',
+            button: true,
+            child: TextButton(
+              onPressed: () => showAboutRefugeDialog(
+                context,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+              ),
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              ),
+              child: Text(
+                'About',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                  color: isContrast ? Colors.yellow : primaryColor,
+                ),
               ),
             ),
           ),

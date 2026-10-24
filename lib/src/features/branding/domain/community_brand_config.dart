@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/config/app_flavor.dart';
+
 /// Immutable multi-tenant branding configuration allowing Refuge to power
 /// **Belong on the Spectrum** (`belongonthespectrum.com`) as its flagship
 /// community while remaining 100% white-labelable for partner churches and
-/// neurodivergent-affirming organizations.
-@immutable
+/// fellowship organizations (ADR-0003, #430, #433).
 class CommunityBrandConfig {
   const CommunityBrandConfig({
     required this.tenantId,
@@ -18,35 +19,35 @@ class CommunityBrandConfig {
     required this.logoAssetPath,
     required this.creamBackgroundColor,
     required this.deepNavyPrimaryColor,
-    required this.warmGoldAccentColor,
-    required this.defaultOrganizerWelcomeTitle,
-    required this.defaultOrganizerWelcomeMessage,
-    this.enableFellowshipAffiliationField = false,
-    this.fellowshipAffiliationPrompt = 'Which church or fellowship do you attend?',
-    this.fellowshipAffiliationOptions = const [],
-    this.fellowshipNonMemberOption = 'I am not a member of this fellowship',
+    required this.sageAccentColor,
+    required this.warmAmberAccentColor,
+    required this.defaultSubredditOrSpaceTag,
+    required this.defaultCategoryLabel,
+    required this.sensoryDisclaimerMarkdown,
+    required this.fellowshipAffiliationPrompt,
+    required this.fellowshipAffiliationOptions,
+    required this.fellowshipNonMemberOption,
   });
 
-  /// Default flagship configuration for **Belong on the Spectrum**
-  /// (`https://www.belongonthespectrum.com/`).
+  /// Default flagship configuration for **Belong on the Spectrum**.
   const CommunityBrandConfig.belong()
     : tenantId = 'belong',
       shortName = 'Belong',
       fullName = 'Belong on the Spectrum',
-      tagline =
-          'You belong here — a calm, neurodivergent-affirming Christian & autistic fellowship community.',
-      scriptureAnchor = 'Fearfully & Wonderfully Made (Psalm 139:14)',
+      tagline = 'A peaceful autistic Christian fellowship community',
+      scriptureAnchor = '1 Corinthians 12:22 · Romans 15:7',
       websiteUrl = 'https://www.belongonthespectrum.com/',
-      partnerOrgName = 'DFW Church',
-      partnerOrgUrl = 'https://dfwchurch.org',
+      partnerOrgName = 'International Churches of Christ (ICOC)',
+      partnerOrgUrl = 'https://disciplestoday.org',
       logoAssetPath = 'assets/images/belong_logo.png',
-      creamBackgroundColor = const Color(0xFFF3EFE6),
-      deepNavyPrimaryColor = const Color(0xFF112334),
-      warmGoldAccentColor = const Color(0xFFC99F49),
-      defaultOrganizerWelcomeTitle = 'Welcome to Belong on the Spectrum',
-      defaultOrganizerWelcomeMessage =
-          'You belong here. Take your time, choose a sensory theme that feels comfortable, and introduce yourself in Start Here when you are ready.',
-      enableFellowshipAffiliationField = true,
+      creamBackgroundColor = const Color(0xFFF7F5F0),
+      deepNavyPrimaryColor = const Color(0xFF1B2A4A),
+      sageAccentColor = const Color(0xFF68A67D),
+      warmAmberAccentColor = const Color(0xFFD49137),
+      defaultSubredditOrSpaceTag = 'autistic_fellowship',
+      defaultCategoryLabel = 'Spaces',
+      sensoryDisclaimerMarkdown =
+          'Belong is intentionally designed with subdued sensory stimulation, low-glare palettes, and zero unrequested autoplay audio or video.',
       fellowshipAffiliationPrompt = 'Which ICOC church do you attend?',
       fellowshipAffiliationOptions = const [
         'DFW Church (Partner)',
@@ -56,6 +57,25 @@ class CommunityBrandConfig {
         'Other ICOC Congregation',
       ],
       fellowshipNonMemberOption = 'I am not a member of an ICOC church';
+
+  /// Flavor-aware flagship configuration for **Belong on the Spectrum**
+  /// (`https://dev.belongonthespectrum.com/` in `dev`, `https://www.belongonthespectrum.com/` in `prod`).
+  factory CommunityBrandConfig.forFlavor(AppFlavor flavor) {
+    return const CommunityBrandConfig.belong().copyWith(
+      websiteUrl: flavor.websiteUrl,
+    );
+  }
+
+  /// Resolves the canonical website URL for the given [flavor], preserving custom
+  /// white-label tenant URLs while applying flavor prefixes (`dev.`, `stg.`, `qa.`)
+  /// for the flagship Belong tenant.
+  String websiteUrlForFlavor(AppFlavor flavor) {
+    if (tenantId == 'belong' &&
+        websiteUrl == 'https://www.belongonthespectrum.com/') {
+      return flavor.websiteUrl;
+    }
+    return websiteUrl;
+  }
 
   final String tenantId;
   final String shortName;
@@ -68,10 +88,11 @@ class CommunityBrandConfig {
   final String logoAssetPath;
   final Color creamBackgroundColor;
   final Color deepNavyPrimaryColor;
-  final Color warmGoldAccentColor;
-  final String defaultOrganizerWelcomeTitle;
-  final String defaultOrganizerWelcomeMessage;
-  final bool enableFellowshipAffiliationField;
+  final Color sageAccentColor;
+  final Color warmAmberAccentColor;
+  final String defaultSubredditOrSpaceTag;
+  final String defaultCategoryLabel;
+  final String sensoryDisclaimerMarkdown;
   final String fellowshipAffiliationPrompt;
   final List<String> fellowshipAffiliationOptions;
   final String fellowshipNonMemberOption;
@@ -88,10 +109,11 @@ class CommunityBrandConfig {
     String? logoAssetPath,
     Color? creamBackgroundColor,
     Color? deepNavyPrimaryColor,
-    Color? warmGoldAccentColor,
-    String? defaultOrganizerWelcomeTitle,
-    String? defaultOrganizerWelcomeMessage,
-    bool? enableFellowshipAffiliationField,
+    Color? sageAccentColor,
+    Color? warmAmberAccentColor,
+    String? defaultSubredditOrSpaceTag,
+    String? defaultCategoryLabel,
+    String? sensoryDisclaimerMarkdown,
     String? fellowshipAffiliationPrompt,
     List<String>? fellowshipAffiliationOptions,
     String? fellowshipNonMemberOption,
@@ -108,13 +130,13 @@ class CommunityBrandConfig {
       logoAssetPath: logoAssetPath ?? this.logoAssetPath,
       creamBackgroundColor: creamBackgroundColor ?? this.creamBackgroundColor,
       deepNavyPrimaryColor: deepNavyPrimaryColor ?? this.deepNavyPrimaryColor,
-      warmGoldAccentColor: warmGoldAccentColor ?? this.warmGoldAccentColor,
-      defaultOrganizerWelcomeTitle:
-          defaultOrganizerWelcomeTitle ?? this.defaultOrganizerWelcomeTitle,
-      defaultOrganizerWelcomeMessage:
-          defaultOrganizerWelcomeMessage ?? this.defaultOrganizerWelcomeMessage,
-      enableFellowshipAffiliationField:
-          enableFellowshipAffiliationField ?? this.enableFellowshipAffiliationField,
+      sageAccentColor: sageAccentColor ?? this.sageAccentColor,
+      warmAmberAccentColor: warmAmberAccentColor ?? this.warmAmberAccentColor,
+      defaultSubredditOrSpaceTag:
+          defaultSubredditOrSpaceTag ?? this.defaultSubredditOrSpaceTag,
+      defaultCategoryLabel: defaultCategoryLabel ?? this.defaultCategoryLabel,
+      sensoryDisclaimerMarkdown:
+          sensoryDisclaimerMarkdown ?? this.sensoryDisclaimerMarkdown,
       fellowshipAffiliationPrompt:
           fellowshipAffiliationPrompt ?? this.fellowshipAffiliationPrompt,
       fellowshipAffiliationOptions:
