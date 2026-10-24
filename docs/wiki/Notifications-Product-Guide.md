@@ -1,5 +1,7 @@
 # 🌸 Notifications Product & Member Guide
 
+> Members can start at **[Welcome](Home)**. The short testing notes, including whether a number on Notifications feels stressful, are on **[How you can help](How-You-Can-Help-Volunteer-Guide#what-to-look-for)**. The rest of this page is more detailed.
+
 > **Belong on the Spectrum** (powered by Refuge)  
 > **Audience**: Community Members, Group Facilitators, Pastoral Care Leaders  
 > **Technical Companion**: [[Notifications-Technical-Architecture]]  

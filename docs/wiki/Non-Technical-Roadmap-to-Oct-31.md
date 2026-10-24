@@ -1,5 +1,7 @@
 # 📅 Non-Technical Roadmap & Schedule to October 31st (Circle.so Cutover)
 
+> Members can start at **[Welcome](Home)** and **[How you can help](How-You-Can-Help-Volunteer-Guide)**. This page is the schedule for leaders. Some lines below still use internal names. The looks in the app are **Clean Slate**, **Sage Botanical**, **Monastic Dark**, and **High Contrast** (the menu says **Clean**, **Sage**, **Dark**, and **Contrast**).
+
 > **Audience**: Community Organizers, Pastors, Moderators, and Non-Technical Leaders at **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** & **[DFW Church](https://dfwchurch.org)**  
 > **Key Date**: **Saturday, October 31, 2026** — *Final day of the current Circle.so subscription (\$130/month)*  
 > **Current Status**: 🟢 **Ahead of Schedule** (Core features & migration tools already completed on Monday, Oct 19!)
@@ -12,7 +14,7 @@ We are moving **Belong on the Spectrum** from Circle.so to our own calm, neurodi
 
 Why this move helps the community:
 - **Saves ~\$1,000+/year**: Replaces a recurring SaaS bill (see [Circle.so Pricing](https://circle.so/pricing), typically ~\$89–\$99+/month) with an ultra-reliable cloud setup costing under \$5/month.
-- **Built Specifically for Neurodivergent & Autistic Comfort**: Features 4 one-tap sensory themes (*High Clarity*, *Warm Calm*, *Low Stimulus Dark*, and *Low Motion*) with zero surprise pop-ups or auto-playing videos.
+- **Built Specifically for Neurodivergent & Autistic Comfort**: Features 4 one-tap sensory themes (*Clean Slate*, *Sage Botanical*, *Monastic Dark*, and *High Contrast* — the menu shortens these to *Clean*, *Sage*, *Dark*, and *Contrast*) with zero surprise pop-ups or auto-playing videos.
 - **Familiar Layout**: Keeps the exact same rooms (`Start Here & Introduce Yourself`, `Announcements`, `General Chat`, `Memes`, `Online Resources / Videos`, `Actually Autistic Chat`, `Friends Chat`, `Family Chat`, and `Links`) that members already know from Circle.so.
 - **Organizer Control Without Coding**: Any authorized community leader can update the **"Message from the Organizer"** welcome banner anytime from a simple web form using [Firebase Remote Config](https://firebase.google.com/products/remote-config) (watch the [2-minute YouTube overview for product & community managers](https://www.youtube.com/watch?v=_CXXVFPO6f0)) without needing a programmer.
 - **Preserves Community History**: Our pure-Dart spreadsheet migration tool ([`Circle-CSV-Migration-Guide.md`](Circle-CSV-Migration-Guide)) safely brings over past introductions and discussions so no memories are lost.

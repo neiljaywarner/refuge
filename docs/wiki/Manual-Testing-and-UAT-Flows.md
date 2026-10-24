@@ -1,5 +1,7 @@
 # 🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")
 
+> **Easier start:** **[How you can help — what to look for](How-You-Can-Help-Volunteer-Guide#what-to-look-for)** is the short list, including iPhone and Android home-screen steps. Use this longer page only if you want more. A few names below are older than the app. The title at the top says **Belong**. The looks you can choose are **Clean**, **Sage**, **Dark**, and **Contrast** (also called Clean Slate, Sage Botanical, Monastic Dark, and High Contrast). If this page disagrees with what you see, trust the app.
+
 *Last Updated: October 19, 2026 (`2026-10-19T20:25:00-05:00`)*  
 *Target Audience: Community Testers, Welcomers, Organizers & Volunteers (Zero Technical Background Required)*  
 *Public Web PWA: [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app)*

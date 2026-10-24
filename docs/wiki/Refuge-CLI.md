@@ -22,7 +22,7 @@ Requirements: `git`, and the GitHub CLI `gh` authenticated via `gh auth login`. 
 | `merge-pr <number> [--force]` | Merges a PR after you've triaged CodeRabbit comments. `--force` skips the inline-comment gate but still refuses `CHANGES_REQUESTED`. |
 | `review-status <number>` | Prints CodeRabbit's verdict + every inline comment (`file:line  first line`). |
 | `privacy-scan` | Fails (exit 5) if tracked files contain personal emails, `/Users/<name>/` paths, Google API keys, GitHub tokens, or private keys. **Run before every PR**, because this repo is public. |
-| `sync-wiki` | Publishes `docs/wiki/*.md` to the GitHub wiki using a temp clone. |
+| `sync-wiki` | Publishes `docs/wiki` markdown and images (`png`, `jpg`, `gif`, `webp`) to the GitHub wiki using a temp clone. |
 | `configure-mcp` | Writes `$HOME/.gemini/config/mcp_config.json` for the dart, firebase, patrol, and marionette MCP servers. |
 | `list-open` | Lists open issues. |
 
