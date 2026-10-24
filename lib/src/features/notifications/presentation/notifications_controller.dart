@@ -29,7 +29,7 @@ final List<BelongNotification> kInitialNotifications = [
   BelongNotification(
     id: 'notif-mention-1',
     type: BelongNotificationType.mention,
-    authorName: 'John Doe',
+    authorName: 'Sarah L.',
     postTitle: 'Markan Chiasms',
     timestamp: DateTime(2026, 10, 22, 11, 55),
     isRead: false,
