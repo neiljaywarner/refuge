@@ -6,6 +6,40 @@
 
 ---
 
+## 🕊️ Opening Scripture & Gentle Prayer (Intro Time)
+
+> *"Two are better than one, because they have a good return for their labor: If either of them falls down, one can help the other up."*  
+> — **Ecclesiastes 4:9–10**
+
+> *"Do nothing out of selfish ambition or vain conceit. Rather, in humility value others above yourselves, not looking to your own interests but each of you to the interests of the others."*  
+> — **Philippians 2:3–4**
+
+### Gentle Opening Prayer (2–3 minutes):
+*Start the call unhurriedly with a brief prayer:*
+> *"Lord, thank you for bringing us together today and for our friendship. Thank you for [Partner's Name]'s experience, wisdom, and heart. We pray for clarity, peace, and discernment over this conversation. Whether this becomes a formal partnership, advisory role, or simply an encouraging time of counsel between brothers in tech, we give it to You. Guide our thoughts, grant us mutual grace, and may whatever we build bring blessing and refuge to those who need it most. Amen."*
+
+---
+
+## 🧭 Personal Reminders for Neil (Meeting Mindset & Posture)
+
+1. **Listen First, Listen Most**:
+   - He has built and run a successful dev consultancy for years. He understands agency sales, client acquisition, retainer models, and realistic software costs far better than typical dev advocates.
+   - Ask open questions: *"What would you do differently if you were in my shoes?"* and *"Where do you see the biggest landmines or biggest opportunities?"*
+   - Let him speak 60–70% of the time. Resist the urge to over-explain every feature.
+2. **Grace for Being Under the Weather**:
+   - Acknowledge upfront: *"I'm feeling a little under the weather today, so please forgive me if my voice is a bit raspy or if I need a moment to collect my thoughts—I'm just really glad we get to talk."*
+3. **Zero Pressure & Total Freedom**:
+   - Remind him clearly: **"You can help however you want, in whatever capacity feels life-giving, or not at all. Zero pressure, zero guilt, 100% friendship first."**
+4. **My Core Desires & Healthy Boundaries**:
+   - **It Should Stay Flutter**: The codebase is cleanly architected in Flutter 3 / Dart 3. I love Flutter, and it gives us single-codebase parity across Web, Android, iOS, and macOS. That is our shared foundation.
+   - **He Could Take It Over / Run With It**: If he sees a clear commercial SaaS play and wants to take the reins or drive the business/agency side, I am wide open to that!
+   - **All I Want**:
+     1. **Credit / Recognition**: Acknowledgment as the originator/founder and ministry catalyst.
+     2. **A Little Financial Participation**: A modest share of revenue/equity so my family benefits as it grows.
+     3. **High Trust & Appreciation**: I deeply trust him, respect his craft, and just want to see this community and platform flourish.
+
+---
+
 ## 1. Executive Summary: The Mission & The Opportunity
 
 ### The Origin (Ministry Need)
@@ -102,17 +136,54 @@ We can structure collaboration to fit your availability, consulting bandwidth, a
 
 ## 5. Agenda for Our 1:00 PM Call
 
-1. **Welcome & The Story (10 mins)**:
+1. **Welcome, Prayer & Fellowship (10 mins)**:
+   - Check-in, brief prayer, personal connection.
+   - Setting a relaxed, zero-pressure atmosphere.
+2. **The Story & Live Demo (15 mins)**:
    - Why Belong was born: Personal story, autistic fellowship need, Circle.so pain points.
    - Live demo on mobile/web: Walk through sensory themes, high contrast, drawing canvas, and unhurried feeds.
-2. **Codebase & Architecture Tour (15 mins)**:
+3. **Codebase & Architecture Tour (15 mins)**:
    - Walk through the repo: Flutter/Dart structure, Riverpod providers, BDD test suites (226+ tests), Maestro automation.
    - How we maintain zero-prompt unattended dev sessions and clean worktree isolation.
-3. **The Business & Scale Potential (15 mins)**:
+4. **The Business & Scale Potential (10 mins)**:
    - Why church tech is ripe for disruption: Subsplash / Pushpay / Circle fatigue.
    - Unit economics: Near-zero hosting costs vs \$49–\$99/mo per community.
    - Non-profit grants and philanthropic backing.
-4. **Discussion & Alignment (20 mins)**:
+5. **Listening, Q&A & Alignment (10 mins)**:
    - What resonated? What potential red flags or technical hurdles do you see?
    - What level of involvement (if any) excites you?
    - Agree on next steps (e.g. sandbox repo access, follow-up coffee next week).
+
+---
+
+## ❓ Frequently Asked Questions (Anticipating His Thoughts)
+
+### Q1: Why Flutter instead of Next.js / React Native?
+**A**: Flutter enables 100% pixel-perfect design across Web PWA, Android, and iOS from a single Dart codebase. It gives us instant 60fps canvas drawing (for our screenshot scribble tool), rich theme transitions (WCAG AAA High Contrast, Charcoal, Sage), and offline-first reactive state management via Riverpod. Building this in React Native or Next.js would have required duplicate UI implementations or third-party canvas bridges.
+
+### Q2: What is the current backend architecture?
+**A**: Belong uses a pragmatic hybrid model:
+- **Firebase Edge**: Global CDN hosting, Firebase Authentication, and Firestore synchronization.
+- **Serverpod 4**: Originally evaluated for WebSockets; currently in a clean 20-day teardown roadmap to eliminate its \$5/mo cluster.
+- **Appwrite Seams**: Pluggable Riverpod repository interfaces (`PostRepository`, `CommentRepository`, `FeatureVotingRepository`) ready to connect to Appwrite or any self-hosted BaaS.
+
+### Q3: How much time is expected from a partner or advisor?
+**A**: Exactly whatever fits your life and current consultancy client workload. If you want a light advisory role (1–2 calls a month), fantastic. If you want to take over commercialization as a co-founder and drive client contracts, you have my blessing. Zero guilt, zero expectation.
+
+### Q4: How is intellectual property (IP) and brand ownership structured?
+**A**: The underlying community engine (Refuge) is open-source (MIT/Apache), ensuring transparency and community trust. The Belong on the Spectrum brand, domains, and custom ministry assets are owned privately. In any partnership or co-founding agreement, we will establish clear, equitable operating agreements, cap tables, and revenue-sharing terms.
+
+### Q5: What if you just want to build white-label solutions for your own agency clients?
+**A**: That is a phenomenal win-win. Your agency can offer "Calm Community & Member Portals" to your church, education, and non-profit clients as a turnkey service. You charge the client setup, custom theming, and retainer fees, and Belong provides the battle-tested, maintained software engine.
+
+---
+
+## 📚 Appendix: Key Technical Links & Documentation
+
+- **Live Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (`v0.9.1+2`)
+- **Main Codebase**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)
+- **Private Feedback Triage Queue**: [`https://github.com/neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)
+- **Human Reviewer Briefing**: [`notes_for_first_meeting_with_human_reviewer.md`](file:///Users/neil/belongonthespectrum/refuge/notes_for_first_meeting_with_human_reviewer.md)
+- **Serverpod Teardown & $0/Mo Cost Savings Guide**: [`docs/wiki/Serverpod-Deprecation-and-Teardown-Guide.md`](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Serverpod-Deprecation-and-Teardown-Guide.md)
+- **Review Sentiment Benchmark Report**: [`docs/benchmarks/circle_apple_google_reviews_sentiment_report.md`](file:///Users/neil/belongonthespectrum/refuge/docs/benchmarks/circle_apple_google_reviews_sentiment_report.md)
+- **Hardware & Device Allocation Registry**: [`devices.md`](file:///Users/neil/belongonthespectrum/devices.md)
