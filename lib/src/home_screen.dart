@@ -158,38 +158,36 @@ class RefugeHomeScreen extends HookConsumerWidget {
       final targetSpace = selectedSpace.value;
       await activeRepository.createPost(
         Post(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: 'post-${DateTime.now().millisecondsSinceEpoch}',
           authorName: profile.displayName,
+          authorInitials: profile.initials,
+          authorAvatarUrl: profile.avatarUrl,
+          content: content,
+          timestamp: DateTime.now(),
           spaceKey: targetSpace,
+          reactions: {},
           toneTag: toneTag,
           specialInterestTag: specialInterestTag,
           imageUrl: imageUrl,
-          content: content,
-          timestamp: DateTime.now(),
-          reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
         ),
       );
+      analytics.logPostCreated(targetSpace, toneTag);
     }
 
     Widget buildHomeBody() {
       if (homeSubView.value == BelongHomeSubView.membersDirectory) {
         return BelongMembersDirectoryView(
-          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+          onBack: () => homeSubView.value = BelongHomeSubView.feed,
         );
       }
 
       if (homeSubView.value == BelongHomeSubView.spaces) {
         return BelongSpacesDirectoryView(
-          selectedSpaceSlug: selectedSpace.value,
-          onSelectSpaceItem: (item) {
-            if (item.slug == 'members_directory') {
-              homeSubView.value = BelongHomeSubView.membersDirectory;
-            } else if (item.isComingSoon) {
-              activeComingSoonItem.value = item;
-              homeSubView.value = BelongHomeSubView.comingSoonItem;
-            } else {
-              selectSpace(item.slug);
-            }
+          selectedSpaceKey: selectedSpace.value,
+          onSelectSpace: selectSpace,
+          onSelectComingSoon: (item) {
+            activeComingSoonItem.value = item;
+            homeSubView.value = BelongHomeSubView.comingSoonItem;
           },
         );
       }
@@ -197,161 +195,169 @@ class RefugeHomeScreen extends HookConsumerWidget {
       if (homeSubView.value == BelongHomeSubView.comingSoonItem &&
           activeComingSoonItem.value != null) {
         final item = activeComingSoonItem.value!;
-        if (item.slug == 'actually_autistic_events') {
-          return ActuallyAutisticEventsView(
-            onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-          );
-        }
-        final isMobileAppLink =
-            item.slug == 'link_android_app' || item.slug == 'link_ios_app';
-        final extraNote = item.slug == 'link_community_guidelines'
-            ? remoteConfig.communityGuidelinesMarkdown
-            : isMobileAppLink
-            ? 'Tip: You can add Belong directly to your phone Home Screen right now via Safari ("Add to Home Screen") or Chrome ("Install App") with zero App Store wait!'
-            : null;
         return ComingSoonView(
           title: item.title,
-          emoji: item.emoji,
-          description: item.subtitle,
-          trackedIssueNumber: item.trackedIssueNumber,
-          extraMarkdownOrNote: extraNote,
-          showPwaInstallGuide: isMobileAppLink,
-          onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
+          description: item.description,
+          icon: item.icon,
+          badge: item.badge,
+          onBack: () => homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
+      // Default: Feed View
       return LayoutBuilder(
         builder: (context, constraints) {
-          final isCompactHeight = constraints.maxHeight < 520;
+          final isDesktop = constraints.maxWidth >= 768;
+
           return Column(
             children: [
-              if (!isCompactHeight)
-                CommunityAnchorBanner(
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                ),
-              if (!profile.isSignedIn)
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
+                isContrast: isContrast,
+              ),
+              ToneFilterRow(
+                activeFilter: activeFilter.value,
+                onSelectFilter: (tone) {
+                  activeFilter.value = tone;
+                  analytics.logToneFilterChanged(tone);
+                },
+                isContrast: isContrast,
+              ),
+              FeedSortRow(
+                currentSort: activeSort.value,
+                onSortChanged: (sort) {
+                  activeSort.value = sort;
+                  analytics.logFeedSortChanged(sort.label);
+                },
+                isContrast: isContrast,
+              ),
+              if (selectedSpace.value == 'saved_for_later')
                 Container(
-                  key: const Key('demo_mode_banner'),
                   margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
+                    horizontal: 14.0,
+                    vertical: 4.0,
                   ),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 12.0,
+                    vertical: 8.0,
                   ),
                   decoration: BoxDecoration(
                     color: isContrast
                         ? Colors.black
                         : primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                       color: isContrast
-                          ? Colors.white
-                          : primaryColor.withValues(alpha: 0.25),
+                          ? Colors.yellow
+                          : primaryColor.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Text('🎭', style: TextStyle(fontSize: 14)),
-                      SizedBox(width: 8),
+                      Icon(
+                        Icons.bookmark_added_rounded,
+                        size: 16,
+                        color: isContrast ? Colors.yellow : primaryColor,
+                      ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Demo Mode · Sample reflections shown. Sign in to view and share live community reflections.',
+                          'Your private bookmarks sanctuary. Only you can see reflections saved here.',
                           style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                            color: isContrast
+                                ? Colors.white
+                                : theme.textTheme.bodySmall?.color,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              SpaceNavigationBar(
-                selectedSpace: selectedSpace.value,
-                onSelectSpace: selectSpace,
-              ),
-              if (!isCompactHeight)
-                QuietDigestBanner(
-                  primaryColor: primaryColor,
+              if (remoteConfig.communityAnchorBannerText.isNotEmpty)
+                CommunityAnchorBanner(
+                  bannerText: remoteConfig.communityAnchorBannerText,
                   isContrast: isContrast,
-                  legacyMessage: quietDigestSnapshot.data,
                 ),
-              if (selectedSpace.value != 'saved_for_later')
+              if (quietDigestSnapshot.hasData &&
+                  quietDigestSnapshot.data != null &&
+                  quietDigestSnapshot.data!.isNotEmpty)
+                QuietDigestBanner(
+                  summaryText: quietDigestSnapshot.data!,
+                  isContrast: isContrast,
+                ),
+              if (!isDesktop && selectedSpace.value != 'saved_for_later')
                 ReflectionComposer(
                   selectedSpace: selectedSpace.value,
                   primaryColor: primaryColor,
                   isContrast: isContrast,
-                  onSubmit: submitPost,
+                  onSubmit:
+                      ({
+                        required String content,
+                        required String toneTag,
+                        String? specialInterestTag,
+                        String? imageUrl,
+                      }) => submitPost(
+                        content: content,
+                        toneTag: toneTag,
+                        specialInterestTag: specialInterestTag,
+                        imageUrl: imageUrl,
+                      ),
                 ),
-              ToneFilterRow(
-                activeFilter: activeFilter.value,
-                onSelectFilter: (f) => activeFilter.value = f,
-              ),
-              FeedSortRow(
-                activeSort: activeSort.value,
-                isContrast: isContrast,
-                onSelectSort: (s) {
-                  activeSort.value = s;
-                  ref.read(feedSortOptionProvider.notifier).state = s;
-                  analytics.logEvent(
-                    'feed_sort_changed',
-                    parameters: {'sort': s.name},
-                  );
-                },
-              ),
               Expanded(
                 child: Builder(
                   builder: (context) {
-                    final snapshot = postsSnapshot;
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator.adaptive(),
+                    if (postsSnapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error loading reflections: ${postsSnapshot.error}',
+                        ),
                       );
                     }
+                    if (!postsSnapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                    final allPosts = snapshot.data!;
-                    // valueOrNull: AsyncError.value throws in release and
-                    // red-screens the feed on the sort/filter rebuild (#485).
-                    final posts = FeedQuery.apply(
-                      posts: allPosts,
-                      toneFilter: activeFilter.value,
-                      sort: activeSort.value,
-                      signedIn: profile.isSignedIn,
-                      latestActivityByPost: activityTimestampsAsync.valueOrNull,
-                      commentCounts: commentCountsAsync.valueOrNull,
-                      userInterests: FeedQuery.interestsFrom(
-                        comfortBadges: profile.comfortBadges,
-                        bio: profile.bio,
-                        tagline: profile.tagline,
-                      ),
+                    var posts = postsSnapshot.data!;
+
+                    // Apply Tone Filter
+                    if (activeFilter.value != 'All') {
+                      posts = posts
+                          .where((p) => p.toneTag == activeFilter.value)
+                          .toList();
+                    }
+
+                    // Apply Feed Sort
+                    final activityTimestamps =
+                        activityTimestampsAsync.value ?? {};
+                    final commentCounts = commentCountsAsync.value ?? {};
+                    posts = FeedSortService.sortPosts(
+                      posts: posts,
+                      sortOption: activeSort.value,
+                      activityTimestamps: activityTimestamps,
+                      commentCounts: commentCounts,
                     );
 
                     if (posts.isEmpty) {
                       if (selectedSpace.value == 'saved_for_later') {
                         return Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24.0,
-                            ),
+                            padding: const EdgeInsets.all(24.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.bookmark_border_rounded,
                                   size: 40,
-                                  color: Colors.grey,
+                                  color: Theme.of(context).disabledColor,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 12),
                                 Text(
-                                  'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
-                                  key: const Key(
-                                    'empty_saved_reflections_placeholder',
-                                  ),
+                                  'No saved reflections yet.\nTap the bookmark icon on any reflection to save it for quiet contemplation.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.5,
                                     color: Theme.of(context)
                                         .textTheme
                                         .bodySmall
@@ -951,9 +957,8 @@ class _BelongSubHeaderBar extends StatelessWidget {
             label: 'Vote & Feedback',
             identifier: 'vote_feedback_button',
             onTap: () async {
-              final bytes = await captureRepaintBoundary(
-                rootFeedbackRepaintBoundaryKey,
-              );
+              final bytes =
+                  await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
               if (context.mounted) {
                 BelongFeedbackAndVotingSheet.show(
                   context,
@@ -966,9 +971,8 @@ class _BelongSubHeaderBar extends StatelessWidget {
               avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
               label: const Text('Vote & Feedback'),
               onPressed: () async {
-                final bytes = await captureRepaintBoundary(
-                  rootFeedbackRepaintBoundaryKey,
-                );
+                final bytes =
+                    await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
                 if (context.mounted) {
                   BelongFeedbackAndVotingSheet.show(
                     context,

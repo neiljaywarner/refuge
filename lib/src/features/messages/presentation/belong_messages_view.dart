@@ -183,14 +183,14 @@ class BelongMessagesView extends HookWidget {
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 suffixIcon: searchQuery.value.isNotEmpty
                     ? IconButton(
-                      key: const Key('clear_search_messages_button'),
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: () {
-                        searchController.clear();
-                        searchQuery.value = '';
-                      },
-                    )
-                  : null,
+                        key: const Key('clear_search_messages_button'),
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () {
+                          searchController.clear();
+                          searchQuery.value = '';
+                        },
+                      )
+                    : null,
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
