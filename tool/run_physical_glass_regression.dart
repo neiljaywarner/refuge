@@ -255,6 +255,8 @@ class PhysicalGlassRegressionRunner {
       final testResult = await processManager.run([
         'dart',
         'test',
+        '-D',
+        'AUTOMATION_TOOL=patrol',
         'test/features/concurrency/multi_user_concurrency_bdd_test.dart',
         'test/features/circle_home_navigation_test.dart',
         '--reporter=compact',
@@ -274,12 +276,12 @@ class PhysicalGlassRegressionRunner {
         final journeyFile = File('.maestro/belong_full_journey.yaml');
         if (await journeyFile.exists()) {
           outSink.writeln('   ▶️ Running .maestro/belong_full_journey.yaml...');
-          await processManager.run(['maestro', '--device', targetDevice, 'test', '.maestro/belong_full_journey.yaml']);
+          await processManager.run(['maestro', '--device', targetDevice, 'test', '--env', 'AUTOMATION_TOOL=maestro', '.maestro/belong_full_journey.yaml']);
         }
         final calmFile = File('.maestro/calm_tech_walkthrough.yaml');
         if (await calmFile.exists()) {
           outSink.writeln('   ▶️ Running .maestro/calm_tech_walkthrough.yaml...');
-          await processManager.run(['maestro', '--device', targetDevice, 'test', '.maestro/calm_tech_walkthrough.yaml']);
+          await processManager.run(['maestro', '--device', targetDevice, 'test', '--env', 'AUTOMATION_TOOL=maestro', '.maestro/calm_tech_walkthrough.yaml']);
         }
       } else {
         outSink.writeln('ℹ️ Maestro CLI not found in PATH. Skipping Maestro flows.');
