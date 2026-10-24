@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_session.dart';
+import '../data/profile_storage_service.dart';
 
 /// Represents the signed-in community member's profile and Stage 1 ("Any Auth")
 /// session state (#23, #26), backed by the pluggable [AuthRepository] (#52, ADR-0009).
@@ -111,36 +112,79 @@ class MemberProfile {
 
 class MemberProfileNotifier extends Notifier<MemberProfile> {
   StreamSubscription<AuthSession>? _sub;
+  static MemberProfile? _persistedProfile;
 
   @override
   MemberProfile build() {
+    if (_persistedProfile == null) {
+      final local = ProfileStorageService.instance.load();
+      if (local != null && local['displayName'] != null) {
+        _persistedProfile = MemberProfile(
+          displayName: local['displayName'] as String? ?? 'Fellowship Member',
+          email: local['email'] as String? ?? '',
+          bio: local['bio'] as String? ?? '',
+          comfortBadges: (local['comfortBadges'] as List<dynamic>?)?.cast<String>() ??
+              const ['Literal communication appreciated'],
+          isSignedIn: true,
+          authMethod: 'persisted_storage',
+          icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
+        );
+      }
+    }
+
     final repo = ref.watch(authRepositoryProvider);
     _sub?.cancel();
     _sub = repo.authStateChanges().listen((session) {
-      state = MemberProfile(
-        displayName: session.displayName,
-        email: session.email,
-        bio: session.bio,
-        comfortBadges: session.comfortBadges,
-        isSignedIn: session.isSignedIn,
-        authMethod: session.authMethod,
-        icocChurchAffiliation: session.icocChurchAffiliation,
-      );
+      if (session.isSignedIn) {
+        state = MemberProfile(
+          displayName: session.displayName.isNotEmpty && session.displayName != 'Fellowship Member'
+              ? session.displayName
+              : (_persistedProfile?.displayName ?? session.displayName),
+          email: session.email.isNotEmpty ? session.email : (_persistedProfile?.email ?? session.email),
+          bio: session.bio.isNotEmpty ? session.bio : (_persistedProfile?.bio ?? session.bio),
+          comfortBadges: session.comfortBadges.isNotEmpty
+              ? session.comfortBadges
+              : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
+          isSignedIn: session.isSignedIn,
+          authMethod: session.authMethod,
+          icocChurchAffiliation: session.icocChurchAffiliation ?? _persistedProfile?.icocChurchAffiliation,
+          avatarUrl: session.photoUrl ?? _persistedProfile?.avatarUrl,
+        );
+        _persistedProfile = state;
+      } else if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
+        state = _persistedProfile!;
+      } else {
+        state = const MemberProfile.guest();
+      }
     });
     ref.onDispose(() {
       _sub?.cancel();
     });
 
     final session = repo.currentSession();
-    return MemberProfile(
-      displayName: session.displayName,
-      email: session.email,
-      bio: session.bio,
-      comfortBadges: session.comfortBadges,
-      isSignedIn: session.isSignedIn,
-      authMethod: session.authMethod,
-      icocChurchAffiliation: session.icocChurchAffiliation,
-    );
+    if (session.isSignedIn) {
+      final effective = MemberProfile(
+        displayName: session.displayName.isNotEmpty && session.displayName != 'Fellowship Member'
+            ? session.displayName
+            : (_persistedProfile?.displayName ?? session.displayName),
+        email: session.email.isNotEmpty ? session.email : (_persistedProfile?.email ?? session.email),
+        bio: session.bio.isNotEmpty ? session.bio : (_persistedProfile?.bio ?? session.bio),
+        comfortBadges: session.comfortBadges.isNotEmpty
+            ? session.comfortBadges
+            : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
+        isSignedIn: session.isSignedIn,
+        authMethod: session.authMethod,
+        icocChurchAffiliation: session.icocChurchAffiliation ?? _persistedProfile?.icocChurchAffiliation,
+        avatarUrl: session.photoUrl ?? _persistedProfile?.avatarUrl,
+      );
+      _persistedProfile = effective;
+      return effective;
+    }
+
+    if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
+      return _persistedProfile!;
+    }
+    return const MemberProfile.guest();
   }
 
   void signIn({
@@ -231,14 +275,31 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
       icocChurchAffiliation: session.icocChurchAffiliation,
+      avatarUrl: session.photoUrl,
     );
+    if (session.isSignedIn) {
+      _persistedProfile = state;
+      ProfileStorageService.instance.save(
+        displayName: state.displayName,
+        email: state.email,
+        bio: state.bio,
+        icocChurchAffiliation: state.icocChurchAffiliation,
+        comfortBadges: state.comfortBadges,
+      );
+    } else {
+      _persistedProfile = null;
+      ProfileStorageService.instance.clear();
+    }
   }
 
   void setAvatarUrl(String? url) {
     state = state.copyWith(avatarUrl: url);
+    _persistedProfile = state;
   }
 
   void signOut() {
+    _persistedProfile = null;
+    ProfileStorageService.instance.clear();
     final repo = ref.read(authRepositoryProvider);
     repo.signOut();
     state = const MemberProfile.guest();
