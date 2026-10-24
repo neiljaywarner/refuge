@@ -35,6 +35,7 @@ dependencies:
     sdk: flutter
   salomon_bottom_bar: ^3.3.2
   url_launcher: ^6.3.3
+  package_info_plus: ^10.2.2
   equatable: ^2.1.0
   marionette_flutter: ^0.7.0
   cloud_firestore: ^7.0.0
