@@ -259,6 +259,11 @@ class _BelongNotificationCard extends StatelessWidget {
           const Color(0xFF4CAF50),
           Colors.white,
         ),
+      BelongNotificationType.directMessage => (
+          Icons.chat_bubble_outline_rounded,
+          const Color(0xFF009688),
+          Colors.white,
+        ),
       BelongNotificationType.following => (
           Icons.person_add_rounded,
           const Color(0xFF9C27B0),
