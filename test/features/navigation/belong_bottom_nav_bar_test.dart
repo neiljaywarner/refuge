@@ -4,6 +4,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/navigation/presentation/belong_bottom_nav_bar.dart';
 import 'package:refuge4serverpod/src/features/notifications/presentation/notifications_controller.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
+
+class _SignedInProfileNotifier extends MemberProfileNotifier {
+  @override
+  MemberProfile build() {
+    return const MemberProfile(
+      displayName: 'Signed In Tester',
+      email: 'test@example.com',
+      bio: 'Bio',
+      comfortBadges: [],
+      isSignedIn: true,
+    );
+  }
+}
 
 void main() {
   group('BelongBottomNavBar - Persistent Legible Labels (Issue #362)', () {
@@ -86,12 +100,13 @@ void main() {
     );
 
     patrolWidgetTest(
-      'renders unread count badge on Notifications tab when count > 0',
+      'renders unread count badge on Notifications tab for signed-in member when count > 0',
       ($) async {
         await $.pumpWidgetAndSettle(
           ProviderScope(
             overrides: [
               unreadNotificationsCountProvider.overrideWith((ref) => 5),
+              memberProfileProvider.overrideWith(_SignedInProfileNotifier.new),
             ],
             child: MaterialApp(
               home: Scaffold(
@@ -112,6 +127,32 @@ void main() {
     );
 
     patrolWidgetTest(
+      'calm-tech: hides unread count badge on Notifications tab for guest mode even if unread > 0 (#501)',
+      ($) async {
+        await $.pumpWidgetAndSettle(
+          ProviderScope(
+            overrides: [
+              unreadNotificationsCountProvider.overrideWith((ref) => 5),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                bottomNavigationBar: BelongBottomNavBar(
+                  currentTab: BelongBottomTab.home,
+                  isContrast: false,
+                  onSelectTab: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // Verify unread badge is hidden for guests
+        expect($(const Key('bottom_nav_notifications_badge')), findsNothing);
+        expect($('5'), findsNothing);
+      },
+    );
+
+    patrolWidgetTest(
       'does not overflow on narrow compact mobile screens (320px width)',
       ($) async {
         await $.tester.binding.setSurfaceSize(const Size(320, 568));
@@ -121,6 +162,7 @@ void main() {
           ProviderScope(
             overrides: [
               unreadNotificationsCountProvider.overrideWith((ref) => 12),
+              memberProfileProvider.overrideWith(_SignedInProfileNotifier.new),
             ],
             child: MaterialApp(
               home: Scaffold(

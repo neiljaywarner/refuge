@@ -125,7 +125,7 @@ void showAboutRefugeDialog(
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                   title: const Text(
-                    'High Contrast Mode (WCAG AAA)',
+                    'High Contrast Mode',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                   subtitle: const Text(
@@ -220,7 +220,7 @@ void showAboutRefugeDialog(
                 const Text(
                   '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
                   '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
-                  '• Organizers can update community announcements live via Firebase Remote Config.',
+                  '• Community announcements and guidance are updated unhurriedly by organizers.',
                   style: TextStyle(fontSize: 11.5, height: 1.4),
                 ),
               ],

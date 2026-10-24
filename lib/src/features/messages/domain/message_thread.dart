@@ -100,7 +100,7 @@ class MessageThread {
         recipientNames: const ['Marty (Organizer)'],
         previewSnippet: 'Welcome to Belong on the Spectrum! Glad you are here with us.',
         lastActivity: now.subtract(const Duration(minutes: 15)),
-        unreadCount: 1,
+        unreadCount: 0,
         isBatchedDigest: true,
         messages: [
           DirectMessage(

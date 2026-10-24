@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../notifications/domain/belong_notification.dart';
 import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
 import '../../notifications/presentation/notifications_controller.dart';
+import '../../profile/domain/member_profile.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 
@@ -30,6 +31,7 @@ class CalmNotificationsView extends HookConsumerWidget {
     final activeFilter = ref.watch(notificationActiveFilterProvider);
     final notifications = ref.watch(filteredNotificationsProvider);
     final unreadCount = ref.watch(unreadNotificationsCountProvider);
+    final profile = ref.watch(currentUserProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -130,7 +132,9 @@ class CalmNotificationsView extends HookConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'All notifications are delivered gently without intrusive sound alerts.',
+                      profile.isSignedIn
+                          ? 'All notifications are delivered gently without intrusive sound alerts.'
+                          : 'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isContrast
                             ? Colors.white

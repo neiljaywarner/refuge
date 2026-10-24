@@ -19,19 +19,28 @@ class CommunityBrandConfig {
     required this.logoAssetPath,
     required this.creamBackgroundColor,
     required this.deepNavyPrimaryColor,
-    required this.sageAccentColor,
-    required this.warmAmberAccentColor,
-    required this.defaultSubredditOrSpaceTag,
-    required this.defaultCategoryLabel,
-    required this.sensoryDisclaimerMarkdown,
-    required this.fellowshipAffiliationPrompt,
-    required this.fellowshipAffiliationOptions,
-    required this.fellowshipNonMemberOption,
+    Color? sageAccentColor,
+    Color? warmAmberAccentColor,
+    Color? warmGoldAccentColor,
+    this.defaultSubredditOrSpaceTag = 'autistic_fellowship',
+    this.defaultCategoryLabel = 'Spaces',
+    this.sensoryDisclaimerMarkdown =
+        'Belong is intentionally designed with subdued sensory stimulation, low-glare palettes, and zero unrequested autoplay audio or video.',
+    this.fellowshipAffiliationPrompt = 'Which ICOC church do you attend?',
+    this.fellowshipAffiliationOptions = const [
+      'DFW Church (Partner)',
+      'Austin Christian Church',
+      'Boston Church of Christ',
+      'Greater Long Beach Church',
+      'Other ICOC Congregation',
+    ],
+    this.fellowshipNonMemberOption = 'I am not a member of an ICOC church',
     this.defaultOrganizerWelcomeTitle = 'Welcome to Belong on the Spectrum',
     this.defaultOrganizerWelcomeMessage =
         'A peaceful sanctuary for autistic Christians, families, and friends to connect at their own pace.',
     this.enableFellowshipAffiliationField = true,
-  });
+  }) : sageAccentColor = sageAccentColor ?? const Color(0xFF68A67D),
+       warmAmberAccentColor = warmGoldAccentColor ?? warmAmberAccentColor ?? const Color(0xFFD49137);
 
   /// Default flagship configuration for **Belong on the Spectrum**.
   const CommunityBrandConfig.belong()
@@ -98,6 +107,9 @@ class CommunityBrandConfig {
   final Color deepNavyPrimaryColor;
   final Color sageAccentColor;
   final Color warmAmberAccentColor;
+
+  /// Backwards-compatibility alias for [warmAmberAccentColor].
+  Color get warmGoldAccentColor => warmAmberAccentColor;
   final String defaultSubredditOrSpaceTag;
   final String defaultCategoryLabel;
   final String sensoryDisclaimerMarkdown;
@@ -122,6 +134,7 @@ class CommunityBrandConfig {
     Color? deepNavyPrimaryColor,
     Color? sageAccentColor,
     Color? warmAmberAccentColor,
+    Color? warmGoldAccentColor,
     String? defaultSubredditOrSpaceTag,
     String? defaultCategoryLabel,
     String? sensoryDisclaimerMarkdown,
@@ -145,7 +158,8 @@ class CommunityBrandConfig {
       creamBackgroundColor: creamBackgroundColor ?? this.creamBackgroundColor,
       deepNavyPrimaryColor: deepNavyPrimaryColor ?? this.deepNavyPrimaryColor,
       sageAccentColor: sageAccentColor ?? this.sageAccentColor,
-      warmAmberAccentColor: warmAmberAccentColor ?? this.warmAmberAccentColor,
+      warmAmberAccentColor:
+          warmGoldAccentColor ?? warmAmberAccentColor ?? this.warmAmberAccentColor,
       defaultSubredditOrSpaceTag:
           defaultSubredditOrSpaceTag ?? this.defaultSubredditOrSpaceTag,
       defaultCategoryLabel: defaultCategoryLabel ?? this.defaultCategoryLabel,

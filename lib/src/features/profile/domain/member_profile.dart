@@ -170,8 +170,8 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         email: session.email.isNotEmpty ? session.email : (_persistedProfile?.email ?? session.email),
         bio: session.bio.isNotEmpty ? session.bio : (_persistedProfile?.bio ?? session.bio),
         comfortBadges: session.comfortBadges.isNotEmpty
-            ? session.comfortBadges
-            : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
+              ? session.comfortBadges
+              : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
         isSignedIn: session.isSignedIn,
         authMethod: session.authMethod,
         icocChurchAffiliation: session.icocChurchAffiliation ?? _persistedProfile?.icocChurchAffiliation,
@@ -310,3 +310,6 @@ final memberProfileProvider =
     NotifierProvider<MemberProfileNotifier, MemberProfile>(
       MemberProfileNotifier.new,
     );
+
+/// Alias provider for backwards compatibility and clean semantic naming.
+final currentUserProfileProvider = memberProfileProvider;
