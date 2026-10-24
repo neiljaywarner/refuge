@@ -202,76 +202,52 @@ class ServerpodPostRepository implements PostRepository {
   }
 
   @override
-  Stream<List<Post>> watchPosts({required String spaceKey}) {
-    return Stream<List<Post>>.multi((controller) async {
-      // 1. Instantly emit local fallback posts so every listener never spins
-      final cached = await _fallback.getPosts(spaceKey: spaceKey);
-      if (!controller.hasListener) return;
-      controller.add(cached);
+  Stream<List<Post>> watchPosts({required String spaceKey}) async* {
+    // 1. Instantly yield local fallback so user never sees a blank screen or loading spinner
+    yield await _fallback.getPosts(spaceKey: spaceKey);
 
-      // 2. Open live streaming subscription to Serverpod endpoint
-      StreamSubscription? liveSub;
-      StreamSubscription? fallbackSub;
+    // 2. Open live streaming subscription to Serverpod endpoint
+    try {
+      final mappedSpace = _mapSpaceKey(spaceKey);
+      final stream = _client.reflection.watchSpace(mappedSpace);
+      final List<Post> livePosts = List.from(await _fallback.getPosts(spaceKey: spaceKey));
 
-      void routeFallback() {
-        fallbackSub?.cancel();
-        fallbackSub = _fallback.watchPosts(spaceKey: spaceKey).listen((posts) {
-          if (controller.hasListener) controller.add(posts);
-        });
-      }
-
-      try {
-        final mappedSpace = _mapSpaceKey(spaceKey);
-        final stream = _client.reflection.watchSpace(mappedSpace);
-        final List<Post> livePosts = List.from(cached);
-
-        liveSub = stream.listen(
-          (spPost) {
-            _isLiveConnected = true;
-            talker.info('⚡ [Serverpod WebSocket] Real-time reflection received: "${spPost.content}" by ${spPost.authorName}');
-            final post = Post(
-              id: spPost.id?.toString() ?? UniqueKey().toString(),
-              authorName: spPost.authorName,
-              spaceKey: spaceKey,
-              toneTag: spPost.intentTag,
-              specialInterestTag: spPost.specialInterestTag,
-              content: spPost.content,
-              timestamp: spPost.createdAt,
-              reactions: {
-                'pray': spPost.prayingCount,
-                'peace': spPost.peaceCount,
-                'encouraged': spPost.encouragedCount,
-                'standing': spPost.standingWithCount,
-                'relatable': spPost.encouragedCount,
-              },
-            );
-
-            final existingIdx = livePosts.indexWhere((p) => p.id == post.id);
-            if (existingIdx >= 0) {
-              livePosts[existingIdx] = post;
-            } else {
-              livePosts.insert(0, post);
-            }
-            livePosts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-            if (controller.hasListener) controller.add(List<Post>.from(livePosts));
-          },
-          onError: (e, st) {
-            talker.handle(e, st, '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected');
-            _isLiveConnected = false;
-            routeFallback();
+      await for (final spPost in stream) {
+        _isLiveConnected = true;
+        talker.info('⚡ [Serverpod WebSocket] Real-time reflection received: "${spPost.content}" by ${spPost.authorName}');
+        final post = Post(
+          id: spPost.id?.toString() ?? UniqueKey().toString(),
+          authorName: spPost.authorName,
+          spaceKey: spaceKey,
+          toneTag: spPost.intentTag,
+          specialInterestTag: spPost.specialInterestTag,
+          content: spPost.content,
+          timestamp: spPost.createdAt,
+          reactions: {
+            'pray': spPost.prayingCount,
+            'peace': spPost.peaceCount,
+            'encouraged': spPost.encouragedCount,
+            'standing': spPost.standingWithCount,
+            'relatable': spPost.encouragedCount,
           },
         );
-      } catch (e, st) {
-        talker.handle(e, st, '🚨 [Serverpod Stream CATCH] watchPosts error');
-        _isLiveConnected = false;
-        routeFallback();
-      }
 
-      controller.onCancel = () {
-        liveSub?.cancel();
-        fallbackSub?.cancel();
-      };
-    }, isBroadcast: true);
+        final existingIdx = livePosts.indexWhere((p) => p.id == post.id);
+        if (existingIdx >= 0) {
+          livePosts[existingIdx] = post;
+        } else {
+          livePosts.insert(0, post);
+        }
+        livePosts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        yield List<Post>.from(livePosts);
+      }
+    } catch (e, st) {
+      talker.handle(e, st, '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected');
+      debugPrint('🚨 [Serverpod Stream CATCH] watchPosts error: $e\n$st');
+      // 3. Fallback gracefully to local stream if network disconnects
+      _isLiveConnected = false;
+      yield* _fallback.watchPosts(spaceKey: spaceKey);
+    }
   }
 
   @override
@@ -309,15 +285,8 @@ class ServerpodPostRepository implements PostRepository {
   Stream<List<Post>> watchSavedPosts() => _fallback.watchSavedPosts();
 
   String _mapSpaceKey(String key) {
-    switch (key) {
-      case 'prayer':
-        return 'prayer';
-      case 'study':
-        return 'study';
-      case 'special_interests':
-        return 'special_interests';
-      default:
-        return 'prayer';
-    }
+    final clean = key.trim().toLowerCase();
+    if (clean.isEmpty) return 'general_chat';
+    return clean;
   }
 }

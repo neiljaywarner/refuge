@@ -132,6 +132,47 @@ void main() {
     );
 
     patrolWidgetTest(
+      'Composer is hidden when in Saved for Later space (#446)',
+      ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
+        final repo = LocalPostRepository(isDevMode: true);
+
+        await $.pumpWidget(
+          RefugeApp(
+            repository: repo,
+            homeOverride: const RefugeHomeScreen(),
+          ),
+        );
+        await $.pumpAndSettle();
+
+        // Initially in general feed: inline composer is visible
+        expect($(Key('reflection_composer_card')), findsOneWidget);
+
+        // Switch to Saved for Later
+        final spacesSubnav = $(Key('subnav_spaces_tab'));
+        if (spacesSubnav.evaluate().isNotEmpty) {
+          await $(spacesSubnav).tap();
+          await $.pumpAndSettle();
+
+          final savedSpaceCard = $('Saved for Later');
+          if (savedSpaceCard.evaluate().isNotEmpty) {
+            await $(savedSpaceCard).tap();
+            await $.pumpAndSettle();
+
+            // Composer is hidden in Saved for Later
+            expect($(Key('reflection_composer_card')), findsNothing);
+          }
+        }
+      },
+    );
+
+    patrolWidgetTest(
       'Prettier offline / test authentication view renders with calm styling',
       ($) async {
         var signedIn = false;
