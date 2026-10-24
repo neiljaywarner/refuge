@@ -9,10 +9,10 @@ Feature: Neurodivergent-First 1-Tap Feature Voting & Literal 3-Intent Feedback (
     When I tap the "Vote & Feedback" action chip (#open_feedback_and_voting_button)
     Then I see the "Belong Roadmap & Feedback" modal sheet
     And I see the "Vote on Features (WIP)" tab (#tab_feature_voting) active by default
-    And I see "Direct Messages (Msgs Tab)" with badge "WIP · Shipping Before Oct 31" and "0" votes
-    And I see "Calm Notification Bell" with badge "WIP · Shipping Before Oct 31"
-    And I see "Actually Autistic Events Calendar" with badge "WIP · Shipping Before Oct 31"
-    And I see "1-Tap Google & Apple Sign-In" with badge "WIP · Shipping Before Oct 31"
+    And I see "Direct Messages (Msgs Tab)" with badge "In Progress" and "0" votes
+    And I see "Calm Notification Bell" with badge "In Progress"
+    And I see "Actually Autistic Events Calendar" with badge "In Progress"
+    And I see "1-Tap Google & Apple Sign-In" with badge "In Progress"
     When I tap the upvote button (#vote_button_wip-direct-messages)
     Then the vote count for "Direct Messages (Msgs Tab)" increments to "1"
 
