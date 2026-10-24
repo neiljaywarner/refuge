@@ -18,6 +18,8 @@ import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dar
 import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
+import 'features/notifications/domain/notification_navigation_target.dart';
+import 'features/notifications/presentation/notifications_controller.dart';
 import 'features/observability/presentation/observability_easter_egg_dialog.dart';
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/belong_members_directory_view.dart';
@@ -34,6 +36,7 @@ import 'features/reflections/presentation/reflection_card.dart';
 import 'features/reflections/presentation/reflection_composer.dart';
 import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
+import 'features/reflections/presentation/threaded_discussion_sheet.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
@@ -69,8 +72,31 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
     final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
     final activeComingSoonItem = useState<BelongSpaceItem?>(null);
+    final activeDirectMessageThreadId = useState<String?>(null);
+    final highlightedPostId = useState<String?>(null);
     final easterEggTapCount = useState<int>(0);
     final easterEggLastTap = useState<DateTime?>(null);
+
+    // Deep-link navigation handler for in-app or push notifications (#330)
+    ref.listen<NotificationNavigationTarget?>(
+      notificationNavigationTargetProvider,
+      (_, target) {
+        if (target != null) {
+          activeBottomTab.value = target.tab;
+          if (target.spaceKey != null) {
+            selectedSpace.value = target.spaceKey!;
+            homeSubView.value = BelongHomeSubView.feed;
+          }
+          if (target.conversationId != null) {
+            activeDirectMessageThreadId.value = target.conversationId;
+          }
+          if (target.postId != null) {
+            highlightedPostId.value = target.postId;
+          }
+          ref.read(notificationNavigationTargetProvider.notifier).state = null;
+        }
+      },
+    );
 
     final PostRepository activeRepository =
         repository ?? ref.watch(postRepositoryProvider);
@@ -376,6 +402,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         return ReflectionCard(
                           post: p,
                           isContrast: isContrast,
+                          isHighlighted: highlightedPostId.value == p.id,
                           onAddReaction: (reactionType) =>
                               activeRepository.addReaction(
                                 postId: p.id,
@@ -412,9 +439,35 @@ class RefugeHomeScreen extends HookConsumerWidget {
         case BelongBottomTab.notifications:
           return CalmNotificationsView(
             onBackToHome: () => activeBottomTab.value = BelongBottomTab.home,
+            onNavigate: (target) async {
+              activeBottomTab.value = target.tab;
+              if (target.spaceKey != null) {
+                selectSpace(target.spaceKey!);
+              }
+              if (target.postId != null && target.openDiscussion) {
+                final posts = await activeRepository
+                    .watchPosts(
+                      spaceKey: target.spaceKey ?? selectedSpace.value,
+                    )
+                    .first
+                    .timeout(
+                      const Duration(milliseconds: 600),
+                      onTimeout: () => [],
+                    );
+                final post = posts.cast<Post?>().firstWhere(
+                  (p) => p?.id == target.postId,
+                  orElse: () => null,
+                );
+                if (context.mounted && post != null) {
+                  ThreadedDiscussionSheet.show(context, post: post);
+                }
+              }
+            },
           );
         case BelongBottomTab.msgs:
-          return const BelongMessagesView();
+          return BelongMessagesView(
+            initialActiveThreadId: activeDirectMessageThreadId.value,
+          );
         case BelongBottomTab.search:
           return CommunitySearchView(
             repository: activeRepository,

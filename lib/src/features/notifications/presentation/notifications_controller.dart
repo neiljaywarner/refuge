@@ -3,6 +3,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../data/app_launcher_badge_service.dart';
 import '../domain/belong_notification.dart';
+import '../domain/notification_navigation_target.dart';
+
+export '../domain/notification_navigation_target.dart';
 
 /// Active filter chip for Calm Notifications
 enum BelongNotificationFilter {
@@ -265,3 +268,7 @@ final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
         .toList(),
   };
 });
+
+/// Active navigation target requested by tapping a notification or deep link (#330).
+final notificationNavigationTargetProvider =
+    StateProvider<NotificationNavigationTarget?>((ref) => null);
