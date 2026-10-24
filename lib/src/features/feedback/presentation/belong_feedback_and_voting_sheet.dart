@@ -11,6 +11,7 @@ import '../../storage/data/storage_repository.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
 import '../domain/feedback_and_voting_models.dart';
+import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
 
 /// State notifier managing community feature votes via the pluggable
@@ -127,6 +128,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final selectedStarRating = useState<int>(5);
     final feedbackController = useTextEditingController();
     final contactController = useTextEditingController();
+    final contactError = useState<String?>(null);
     final drawingAttachment = useState<Uint8List?>(null);
     final isSubmitting = useState<bool>(false);
     final submittedMessage = useState<String?>(null);
@@ -570,9 +572,15 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           TextField(
                             key: const Key('feedback_contact_input'),
                             controller: contactController,
-                            decoration: const InputDecoration(
+                            onChanged: (value) {
+                              contactError.value =
+                                  OptionalFeedbackContact.errorText(value);
+                            },
+                            decoration: InputDecoration(
                               labelText: 'Optional name or email (if you would like a reply)',
-                              border: OutlineInputBorder(),
+                              errorText: contactError.value,
+                              errorMaxLines: 3,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -698,16 +706,25 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     : () async {
                                         final text = feedbackController.text
                                             .trim();
+                                        final contact = contactController.text
+                                            .trim();
+                                        final contactProblem =
+                                            OptionalFeedbackContact.errorText(
+                                              contact,
+                                            );
+                                        contactError.value = contactProblem;
                                         if (text.isEmpty) {
                                           submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
+                                          return;
+                                        }
+                                        if (contactProblem != null) {
+                                          submittedMessage.value = null;
                                           return;
                                         }
                                         isSubmitting.value = true;
                                         try {
                                           final sentiment =
                                               selectedSentiment.value;
-                                          final contact = contactController.text
-                                              .trim();
                                           String? attachmentUrl;
                                           final attachmentBytes =
                                               drawingAttachment.value;
