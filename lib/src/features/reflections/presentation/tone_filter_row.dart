@@ -16,12 +16,26 @@ const List<String> kToneFilters = [
   '[Resource]',
 ];
 
+/// Stable semantics id / widget key for a tone filter pill.
+String toneFilterSemanticsId(String filter) {
+  if (filter == 'All') return 'tone_filter_chip_all';
+  final slug = filter
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'^_+|_+$'), '');
+  return 'tone_filter_chip_$slug';
+}
+
 /// Horizontal filter row allowing members to filter by intent tag.
 class ToneFilterRow extends ConsumerWidget {
   final String activeFilter;
   final ValueChanged<String> onSelectFilter;
 
-  const ToneFilterRow({super.key, required this.activeFilter, required this.onSelectFilter});
+  const ToneFilterRow({
+    super.key,
+    required this.activeFilter,
+    required this.onSelectFilter,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +43,10 @@ class ToneFilterRow extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 2.0),
       child: Row(
         children: [
-          const Text('Filter: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+          const Text(
+            'Filter: ',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          ),
           const Gap(6),
           Expanded(
             child: SingleChildScrollView(
@@ -37,16 +54,29 @@ class ToneFilterRow extends ConsumerWidget {
               child: Row(
                 children: kToneFilters.map((f) {
                   final isSelected = activeFilter == f;
+                  final semanticsId = toneFilterSemanticsId(f);
                   return Padding(
                     padding: const EdgeInsets.only(right: 6.0),
-                    child: ChoiceChip(
-                      visualDensity: VisualDensity.compact,
-                      label: Text(f, style: const TextStyle(fontSize: 10)),
+                    child: Semantics(
+                      identifier: semanticsId,
+                      button: true,
                       selected: isSelected,
-                      onSelected: (_) {
-                        ref.read(activeFilterProvider.notifier).state = f;
-                        onSelectFilter(f);
-                      },
+                      label: f,
+                      child: ChoiceChip(
+                        key: Key(semanticsId),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        showCheckmark: false,
+                        label: Text(f, style: const TextStyle(fontSize: 10)),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!context.mounted) return;
+                            ref.read(activeFilterProvider.notifier).state = f;
+                            onSelectFilter(f);
+                          });
+                        },
+                      ),
                     ),
                   );
                 }).toList(),

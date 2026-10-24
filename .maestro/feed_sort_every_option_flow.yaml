@@ -1,0 +1,61 @@
+appId: com.belongonthespectrum.refuge.dev
+---
+# Every feed sort option on a debug dev build (#485).
+# Release/prod applicationId is com.belongonthespectrum.refuge (no .dev suffix).
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 45000
+
+- tapOn:
+    id: "feed_sort_chip_latest"
+- tapOn:
+    id: "feed_sort_chip_forYou"
+- tapOn:
+    id: "feed_sort_chip_newActivity"
+- tapOn:
+    id: "feed_sort_chip_oldest"
+
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_alphabetical"
+    direction: LEFT
+    timeout: 15000
+    visibilityPercentage: 50
+    centerElement: true
+
+- tapOn:
+    id: "feed_sort_chip_popular"
+- tapOn:
+    id: "feed_sort_chip_likes"
+- tapOn:
+    id: "feed_sort_chip_alphabetical"
+- tapOn:
+    id: "feed_sort_chip_latest"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_forYou"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_forYou"
+- assertVisible:
+    id: "feed_sort_chip_forYou"
+
+- scrollUntilVisible:
+    element:
+      id: "tone_filter_chip_comfort_only"
+    direction: LEFT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "tone_filter_chip_comfort_only"
+- extendedWaitUntil:
+    visible: ".*sensory fatigue.*"
+    timeout: 10000
+- tapOn:
+    id: "tone_filter_chip_all"
+- assertVisible: ".*peace of mind.*"
