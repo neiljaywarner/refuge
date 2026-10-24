@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
+import 'package:refuge4serverpod/src/features/feedback/domain/optional_feedback_contact.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 class MockFeatureVotingRepository extends Mock
@@ -144,6 +145,119 @@ void main() {
         ).called(1);
       },
     );
+
+    const note = 'The prayer space feels calm and unhurried.';
+
+    patrolWidgetTest(
+      'Scenario: a full email contact is accepted with no inline error',
+      ($) async {
+        await pumpSheet($, initialTabIndex: 1);
+        await $(const Key('feedback_message_input')).enterText(note);
+        await $(const Key('feedback_contact_input'))
+            .enterText('member@belongonthespectrum.com');
+        await $.pumpAndSettle();
+
+        expect($(OptionalFeedbackContact.emailError), findsNothing);
+
+        await $(const Key('submit_feedback_button')).tap();
+        await $.pumpAndSettle();
+
+        verify(
+          () => repo.submitFeedback(
+            sentiment: FeedbackSentiment.happy,
+            message: note,
+            rating: 5,
+            contactEmail: 'member@belongonthespectrum.com',
+            attachmentUrl: any(named: 'attachmentUrl'),
+            screenshotAttachment: any(named: 'screenshotAttachment'),
+          ),
+        ).called(1);
+      },
+    );
+
+    patrolWidgetTest(
+      'Scenario: a contact with @ that is not an email is blocked',
+      ($) async {
+        await pumpSheet($, initialTabIndex: 1);
+        await $(const Key('feedback_message_input')).enterText(note);
+        await $(const Key('feedback_contact_input')).enterText('not@email');
+        await $.pumpAndSettle();
+
+        expect($(OptionalFeedbackContact.emailError), findsOneWidget);
+
+        await $(const Key('submit_feedback_button')).tap();
+        await $.pumpAndSettle();
+
+        expect($(OptionalFeedbackContact.emailError), findsOneWidget);
+        expect(
+          $(
+            'Thank you for your encouragement! Your praise was recorded and shared with our organizers.',
+          ),
+          findsNothing,
+        );
+        verifyNever(
+          () => repo.submitFeedback(
+            sentiment: any(named: 'sentiment'),
+            message: any(named: 'message'),
+            rating: any(named: 'rating'),
+            contactEmail: any(named: 'contactEmail'),
+            attachmentUrl: any(named: 'attachmentUrl'),
+            screenshotAttachment: any(named: 'screenshotAttachment'),
+          ),
+        );
+      },
+    );
+
+    patrolWidgetTest(
+      'Scenario: a plain name with no @ is sent as the contact',
+      ($) async {
+        await pumpSheet($, initialTabIndex: 1);
+        await $(const Key('feedback_message_input')).enterText(note);
+        await $(const Key('feedback_contact_input')).enterText('not-an-email');
+        await $.pumpAndSettle();
+
+        expect($(OptionalFeedbackContact.emailError), findsNothing);
+
+        await $(const Key('submit_feedback_button')).tap();
+        await $.pumpAndSettle();
+
+        verify(
+          () => repo.submitFeedback(
+            sentiment: FeedbackSentiment.happy,
+            message: note,
+            rating: 5,
+            contactEmail: 'not-an-email',
+            attachmentUrl: any(named: 'attachmentUrl'),
+            screenshotAttachment: any(named: 'screenshotAttachment'),
+          ),
+        ).called(1);
+      },
+    );
+
+    patrolWidgetTest('Scenario: an empty contact is sent as no contact', (
+      $,
+    ) async {
+      await pumpSheet($, initialTabIndex: 1);
+      await $(const Key('feedback_message_input')).enterText(note);
+      await $.pumpAndSettle();
+
+      expect($(OptionalFeedbackContact.emailError), findsNothing);
+
+      await $(const Key('submit_feedback_button')).tap();
+      await $.pumpAndSettle();
+
+      final captured = verify(
+        () => repo.submitFeedback(
+          sentiment: FeedbackSentiment.happy,
+          message: note,
+          rating: 5,
+          contactEmail: captureAny(named: 'contactEmail'),
+          attachmentUrl: any(named: 'attachmentUrl'),
+          screenshotAttachment: any(named: 'screenshotAttachment'),
+        ),
+      ).captured;
+      expect(captured.single, isNull);
+    });
 
     patrolWidgetTest(
       'Scenario: a mocked backend failure stays on the sheet with a gentle error',
