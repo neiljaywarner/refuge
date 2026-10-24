@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../feedback/data/feature_voting_repository.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
@@ -337,11 +338,13 @@ class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? firebaseAuth,
     InMemoryAuthRepository? fallback,
+    this.flavor = AppFlavor.prod,
   })  : _auth = firebaseAuth,
         _fallback = fallback ?? InMemoryAuthRepository();
 
   final fb_auth.FirebaseAuth? _auth;
   final InMemoryAuthRepository _fallback;
+  final AppFlavor flavor;
 
   fb_auth.FirebaseAuth? get auth {
     if (_auth != null) return _auth;
@@ -512,12 +515,12 @@ class FirebaseAuthRepository implements AuthRepository {
     if (liveAuth != null && _hasRealCredentials) {
       try {
         final actionCodeSettings = fb_auth.ActionCodeSettings(
-          url: redirectUrl ?? 'https://belongonthespectrum.web.app/auth',
+          url: redirectUrl ?? flavor.magicLinkRedirectUrl,
           handleCodeInApp: true,
-          androidPackageName: 'com.belongonthespectrum.refuge',
+          androidPackageName: flavor.applicationId,
           androidInstallApp: true,
           androidMinimumVersion: '12',
-          iOSBundleId: 'com.belongonthespectrum.refuge',
+          iOSBundleId: flavor.applicationId,
         );
         await liveAuth.sendSignInLinkToEmail(
           email: email.trim(),
@@ -637,10 +640,11 @@ final authBackendTargetProvider = Provider<BackendTarget>(
 /// Active [AuthRepository] adapter.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final target = ref.watch(authBackendTargetProvider);
+  final flavor = ref.watch(appFlavorProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryAuthRepository(),
     BackendTarget.serverpod => ServerpodAuthRepository(),
     BackendTarget.appwrite => AppwriteAuthRepository(),
-    BackendTarget.firebase => FirebaseAuthRepository(),
+    BackendTarget.firebase => FirebaseAuthRepository(flavor: flavor),
   };
 });
