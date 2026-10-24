@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 
 import 'package:equatable/equatable.dart';
 
-/// Interaction category for Belong calm notifications (#327).
+/// Interaction category for Belong calm notifications (#327, #442).
 enum BelongNotificationType {
   mention,
+  directMessage,
   reply,
   like,
   following;
 
   String get label => switch (this) {
         BelongNotificationType.mention => 'Mention',
+        BelongNotificationType.directMessage => 'Direct Message',
         BelongNotificationType.reply => 'Reply',
         BelongNotificationType.like => 'Like',
         BelongNotificationType.following => 'Following',
       };
 }
 
-/// Domain model for a calm notification item in **Belong on the Spectrum** (#327, #329).
+/// Domain model for a calm notification item in **Belong on the Spectrum** (#327, #329, #442).
 class BelongNotification extends Equatable {
   const BelongNotification({
     required this.id,
@@ -30,6 +32,7 @@ class BelongNotification extends Equatable {
     this.spaceKey,
     this.postId,
     this.commentSnippet,
+    this.conversationId,
   });
 
   final String id;
@@ -42,6 +45,7 @@ class BelongNotification extends Equatable {
   final String? spaceKey;
   final String? postId;
   final String? commentSnippet;
+  final String? conversationId;
 
   @override
   List<Object?> get props => [
@@ -55,6 +59,7 @@ class BelongNotification extends Equatable {
         spaceKey,
         postId,
         commentSnippet,
+        conversationId,
       ];
 
   /// Author initials for the Avatar widget fallback, stripping parentheses,
@@ -91,6 +96,8 @@ class BelongNotification extends Equatable {
   String get displayMessage => switch (type) {
         BelongNotificationType.mention =>
           '$authorName mentioned you in a comment on "$postTitle"',
+        BelongNotificationType.directMessage =>
+          '$authorName sent you a direct message: "${commentSnippet ?? postTitle}"',
         BelongNotificationType.reply =>
           '$authorName replied to your comment on "$postTitle"',
         BelongNotificationType.like =>
@@ -172,6 +179,7 @@ class BelongNotification extends Equatable {
     String? spaceKey,
     String? postId,
     String? commentSnippet,
+    String? conversationId,
   }) {
     return BelongNotification(
       id: id ?? this.id,
@@ -184,6 +192,7 @@ class BelongNotification extends Equatable {
       spaceKey: spaceKey ?? this.spaceKey,
       postId: postId ?? this.postId,
       commentSnippet: commentSnippet ?? this.commentSnippet,
+      conversationId: conversationId ?? this.conversationId,
     );
   }
 }

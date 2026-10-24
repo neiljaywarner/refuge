@@ -1,0 +1,88 @@
+appId: com.belongonthespectrum.sanctuary
+name: "Full Calm Notifications Journey & OS Shade Test"
+tags:
+  - notifications
+  - bell
+  - mentions
+  - dms
+  - regression
+---
+# 1. Launch & grant notifications peacefully
+- setPermissions:
+    permissions:
+      notifications: allow
+
+- launchApp:
+    clearState: false
+
+# 2. Verify Bell badge on Bottom Navigation Bar
+- assertVisible:
+    id: "belong_bottom_nav_bar"
+- assertVisible:
+    id: "bottom_nav_notifications_badge"
+
+# 3. Tap Notifications Tab
+- tapOn:
+    id: "bottom_nav_icon_notifications"
+- assertVisible: "Notifications"
+- assertVisible: "All notifications are delivered gently without intrusive sound alerts."
+
+# 4. Verify Filter Chips
+- assertVisible:
+    id: "filter_chip_inbox"
+- assertVisible:
+    id: "filter_chip_mentions"
+- assertVisible:
+    id: "filter_chip_directMessages"
+- assertVisible:
+    id: "filter_chip_threads"
+- assertVisible:
+    id: "filter_chip_following"
+
+# 5. Filter by Mentions
+- tapOn:
+    id: "filter_chip_mentions"
+- assertVisible: ".*mentioned you.*"
+
+# 6. Filter by Direct Messages
+- tapOn:
+    id: "filter_chip_directMessages"
+- assertVisible: ".*sent you a direct message.*"
+
+# 7. Return to Inbox and Mark All as Read
+- tapOn:
+    id: "filter_chip_inbox"
+- tapOn:
+    id: "mark_all_notifications_as_read_button"
+
+# 8. Verify Bottom Nav Badge is cleared
+- assertNotVisible:
+    id: "bottom_nav_notifications_badge"
+
+# 9. Test OS Notification Shade Integration
+- tapOn:
+    id: "notification-preferences-button"
+- assertVisible: "Calm Notification Ethics"
+
+- tapOn:
+    id: "preview-calm-shade-notification-button"
+
+# 10. Swipe down notification shade from top of screen
+- pressKey: Home
+- swipe:
+    start: "50%, 2%"
+    end: "50%, 55%"
+    duration: 400
+
+# 11. Verify Calm Notification is in the shade
+- assertVisible:
+    text: ".*Belong.*"
+    optional: true
+
+# 12. Tap notification to return to app
+- tapOn:
+    text: ".*Belong.*"
+    optional: true
+
+- assertVisible:
+    id: "belong_bottom_nav_bar"
