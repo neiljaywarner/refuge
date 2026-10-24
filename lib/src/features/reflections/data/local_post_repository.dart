@@ -129,6 +129,18 @@ class LocalPostRepository implements PostRepository {
         reactions: {'pray': 4, 'peace': 9, 'encouraged': 11},
         isDemo: true,
       ),
+      Post(
+        id: '10',
+        authorName: 'Belong Leadership',
+        spaceKey: 'announcements',
+        toneTag: '[Announcement]',
+        specialInterestTag: 'Community Update',
+        content:
+            'Welcome to the soft launch of Belong on the Spectrum! Our transition from Circle.so is underway. Feel free to explore spaces at your own pace.',
+        timestamp: now.subtract(const Duration(hours: 1)),
+        reactions: {'peace': 15, 'encouraged': 18},
+        isDemo: true,
+      ),
     ]);
     _notify();
   }
@@ -164,13 +176,14 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPosts({required String spaceKey}) {
-    return Stream<List<Post>>.multi((controller) {
-      controller.add(_store.where((p) => p.spaceKey == spaceKey).toList());
-      final sub = _controller.stream.listen((posts) {
-        controller.add(posts.where((p) => p.spaceKey == spaceKey).toList());
-      });
-      controller.onCancel = () => sub.cancel();
-    }, isBroadcast: true);
+    Stream<List<Post>> generator() async* {
+      yield _store.where((p) => p.spaceKey == spaceKey).toList();
+      yield* _controller.stream.map(
+        (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
   }
 
   @override
@@ -180,13 +193,14 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPostsByAuthor({required String authorName}) {
-    return Stream<List<Post>>.multi((controller) {
-      controller.add(_store.where((p) => _matchesAuthor(p.authorName, authorName)).toList());
-      final sub = _controller.stream.listen((posts) {
-        controller.add(posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList());
-      });
-      controller.onCancel = () => sub.cancel();
-    }, isBroadcast: true);
+    Stream<List<Post>> generator() async* {
+      yield _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
+      yield* _controller.stream.map(
+        (posts) => posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
   }
 
   @override
@@ -212,13 +226,14 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchSavedPosts() {
-    return Stream<List<Post>>.multi((controller) {
-      controller.add(_store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList());
-      final sub = _controller.stream.listen((posts) {
-        controller.add(posts.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList());
-      });
-      controller.onCancel = () => sub.cancel();
-    }, isBroadcast: true);
+    Stream<List<Post>> generator() async* {
+      yield _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
+      yield* _controller.stream.map(
+        (posts) => posts.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList(),
+      );
+    }
+
+    return generator().asBroadcastStream();
   }
 
   static bool _matchesAuthor(String postAuthor, String targetAuthor) {
