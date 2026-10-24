@@ -1,3 +1,37 @@
+/// GlobalKey attached to the root Scaffold or screen RepaintBoundary
+/// so feedback capture can snapshot the screen state before opening the modal sheet.
+final GlobalKey rootFeedbackRepaintBoundaryKey =
+    GlobalKey(debugLabel: 'rootFeedbackRepaintBoundary');
+
+/// Captures a [GlobalKey]'s repaint boundary as PNG bytes.
+Future<Uint8List?> captureRepaintBoundary(GlobalKey key) async {
+  try {
+    final boundary =
+        key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    if (boundary == null || !boundary.hasSize) {
+      return null;
+    }
+    final binding = WidgetsBinding.instance;
+    if (binding.runtimeType.toString().contains('Test')) {
+      return null;
+    }
+    binding.scheduleFrame();
+    await binding.endOfFrame.timeout(
+      const Duration(milliseconds: 500),
+      onTimeout: () {},
+    );
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data?.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
+  } catch (_) {
+    return null;
+  }
+}
+
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -87,7 +121,7 @@ class FeedbackDrawingPainter extends CustomPainter {
         fit: BoxFit.cover,
       );
     } else if (backgroundColor != Colors.transparent) {
-      final bgPaint = Paint()..color = backgroundColor;
+      final bgPaint = Paint()...color = backgroundColor;
       canvas.drawRect(Offset.zero & size, bgPaint);
     }
 

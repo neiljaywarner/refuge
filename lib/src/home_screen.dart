@@ -8,11 +8,11 @@ import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
-import 'features/auth/presentation/belong_auth_sheet.dart';
 import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
+import 'features/feedback/presentation/feedback_drawing_canvas.dart';
 import 'features/fellowship_spaces/domain/fellowship_space.dart';
 import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
 import 'features/messages/presentation/belong_messages_view.dart';
@@ -36,115 +36,126 @@ import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
-import 'features/sensory_themes/domain/sensory_font_scale.dart';
-import 'features/sensory_themes/domain/sensory_mode.dart';
+import 'features/sensory_themes/domain/sensory_theme_model.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
+import 'features/settings/presentation/simple_auth_screen.dart';
 
-/// Sub-navigation mode below the Belong logo inside the `Home` bottom tab.
-enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory }
+enum BelongBottomTab { home, notifications, msgs, search }
 
-/// Main screen of **Belong on the Spectrum** (powered by Refuge),
-/// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
-/// architecture (#18, #22, #23, #26, #35).
+enum BelongHomeSubView { feed, spaces, membersDirectory, comingSoonItem }
+
 class RefugeHomeScreen extends HookConsumerWidget {
-  final PostRepository? repository;
-  final ThemeNotifier? themeNotifier;
+  const RefugeHomeScreen({super.key});
 
-  const RefugeHomeScreen({super.key, this.repository, this.themeNotifier});
+  static String _sensoryThemeLabel(SensoryMode mode) => switch (mode) {
+    SensoryMode.clean => 'Clean',
+    SensoryMode.sage => 'Sage',
+    SensoryMode.charcoal => 'Dark',
+    SensoryMode.contrast => 'Contrast',
+  };
+
+  PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
+    required SensoryMode mode,
+    required String emoji,
+    required String label,
+  }) {
+    return PopupMenuItem<SensoryMode>(
+      value: mode,
+      child: Semantics(
+        identifier: 'sensory_theme_option_${mode.name}',
+        label: '$label theme',
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Text(label),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (themeNotifier != null) {
-      useListenable(themeNotifier!);
-    }
-    final brand = ref.watch(communityBrandConfigProvider);
-    final profile = ref.watch(memberProfileProvider);
-    final remoteConfig = ref.watch(organizerRemoteConfigProvider);
+    final currentMode = ref.watch(sensoryThemeModeProvider);
+    final themeNotifier = ref.read(sensoryThemeProvider.notifier);
+    final brand = ref.watch(brandConfigProvider);
+    final remoteConfig = ref.watch(organizerRemoteConfigServiceProvider);
     final analytics = ref.watch(communityAnalyticsServiceProvider);
 
-    final selectedSpace = useState<String>('prayer');
-    final activeFilter = useState<String>('All');
-    final activeSort = useState<FeedSortOption>(FeedSortOption.latest);
-    final activityTimestampsAsync = ref.watch(postActivityTimestampsProvider);
-    final commentCountsAsync = ref.watch(allCommentCountsProvider);
+    final isContrast = currentMode == SensoryMode.contrast;
+    final primaryColor = isContrast
+        ? Colors.white
+        : Theme.of(context).colorScheme.primary;
+
     final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
     final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
-    final activeComingSoonItem = useState<BelongSpaceItem?>(null);
+    final activeComingSoonItem = useState<FellowshipSpaceItem?>(null);
+    final activeFilter = useState<String>('All');
+    final activeSort = useState<FeedSortOption>(FeedSortOption.recent);
+
+    final selectedSpace = useState<String>('general');
+    final profile = ref.watch(memberProfileProvider);
+
     final easterEggTapCount = useState<int>(0);
     final easterEggLastTap = useState<DateTime?>(null);
 
-    final PostRepository activeRepository =
-        repository ?? ref.watch(postRepositoryProvider);
+    final serverpodRepo = ref.watch(serverpodPostRepositoryProvider);
+    final activeRepository = ref.watch(postRepositoryProvider);
 
-    final postStream = useMemoized(
-      () => selectedSpace.value == 'saved_for_later'
-          ? activeRepository.watchSavedPosts()
-          : activeRepository.watchPosts(spaceKey: selectedSpace.value),
-      [activeRepository, selectedSpace.value],
+    final isLiveServerpod = activeRepository.runtimeType.toString().contains(
+      'ServerpodPostRepository',
     );
-    // Subscribe at the screen level (not inside the feed sub-view) so the
-    // subscription and its latest snapshot survive switching to Spaces /
-    // other bottom tabs and back (#402, #470).
-    final postsSnapshot = useStream(postStream, preserveState: true);
-    final quietDigestFuture = useMemoized(
-      () => activeRepository.getQuietDigest(spaceKey: selectedSpace.value),
-      [activeRepository, selectedSpace.value],
-    );
-    final quietDigestSnapshot = useFuture(quietDigestFuture);
 
-    final SensoryMode currentMode =
-        themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
-    final SensoryFontScale currentFontScale =
-        themeNotifier?.fontScale ?? ref.watch(sensoryFontScaleProvider);
-    final isContrast = currentMode == SensoryMode.contrast;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final isLiveServerpod =
-        activeRepository is ServerpodPostRepository &&
-        activeRepository.isLiveConnected;
+    final postsSnapshot = useStream(
+      useMemoized(
+        () => activeRepository.watchPosts(
+          spaceSlug: selectedSpace.value,
+          sortOption: activeSort.value,
+        ),
+        [activeRepository, selectedSpace.value, activeSort.value],
+      ),
+    );
+
+    final quietDigestSnapshot = useStream(
+      useMemoized(
+        () => activeRepository.watchQuietDigest(spaceSlug: selectedSpace.value),
+        [activeRepository, selectedSpace.value],
+      ),
+    );
 
     void setSensoryMode(SensoryMode mode) {
       if (themeNotifier != null) {
         themeNotifier!.setMode(mode);
       } else {
-        ref.read(sensoryThemeModeProvider.notifier).setMode(mode);
+        ref.read(sensoryThemeModeProvider.notifier).state = mode;
       }
-      analytics.logSensoryModeChanged(mode.name);
     }
 
-    void setSensoryFontScale(SensoryFontScale scale) {
-      if (themeNotifier != null) {
-        themeNotifier!.setFontScale(scale);
-      }
-      ref.read(sensoryFontScaleProvider.notifier).setScale(scale);
-    }
-
-    void selectSpace(String spaceKey) {
-      selectedSpace.value = spaceKey;
+    void selectSpace(String slug) {
+      selectedSpace.value = slug;
       homeSubView.value = BelongHomeSubView.feed;
-      activeComingSoonItem.value = null;
-      analytics.logSpaceViewed(spaceKey);
+      analytics.logSpaceViewed(slug);
     }
 
     Future<void> submitPost({
       required String content,
-      required String toneTag,
-      String? specialInterestTag,
+      String? toneTag,
       String? imageUrl,
     }) async {
-      if (selectedSpace.value == 'saved_for_later') {
-        // Saved for later is a private bookmarks sanctuary; public reflections cannot be posted here.
-        return;
-      }
-      final targetSpace = selectedSpace.value;
-      await activeRepository.createPost(
+      await activeRepository.addPost(
         Post(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          authorName: profile.displayName,
-          spaceKey: targetSpace,
-          toneTag: toneTag,
-          specialInterestTag: specialInterestTag,
-          imageUrl: imageUrl,
+          spaceSlug: selectedSpace.value,
+          authorName: profile.isSignedIn ? profile.displayName : 'Anonymous',
+          authorAvatarUrl: profile.avatarUrl,
+          authorMonogram: profile.initials,
+          authorRole: profile.isSignedIn
+              ? (profile.role.isNotEmpty ? profile.role : 'Member')
+              : null,
           content: content,
+          toneTag: toneTag,
+          imageUrl: imageUrl,
           timestamp: DateTime.now(),
           reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
         ),
@@ -258,13 +269,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   isContrast: isContrast,
                   legacyMessage: quietDigestSnapshot.data,
                 ),
-              if (selectedSpace.value != 'saved_for_later')
-                ReflectionComposer(
-                  selectedSpace: selectedSpace.value,
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  onSubmit: submitPost,
-                ),
+              ReflectionComposer(
+                selectedSpace: selectedSpace.value,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                onSubmit: submitPost,
+              ),
               ToneFilterRow(
                 activeFilter: activeFilter.value,
                 onSelectFilter: (f) => activeFilter.value = f,
@@ -309,61 +319,20 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         ...profile.tagline!.split(RegExp(r'[\s,.]+')),
                     };
 
-                    final posts = FeedSortService.sortPosts(
+                    final sortedPosts = FeedSortService.sortPosts(
                       filteredPosts,
-                      sortOption: activeSort.value,
-                      latestActivityByPost: activityTimestampsAsync.value,
-                      commentCounts: commentCountsAsync.value,
+                      activeSort.value,
                       userInterests: userInterests,
                     );
 
+                    final posts = sortedPosts;
+
                     if (posts.isEmpty) {
-                      if (selectedSpace.value == 'saved_for_later') {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24.0,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.bookmark_border_rounded,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
-                                  key: const Key(
-                                    'empty_saved_reflections_placeholder',
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
-                                        ?.withValues(alpha: 0.7),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
                       return Center(
                         child: Text(
-                          profile.isSignedIn
-                              ? 'No community reflections yet in this space.'
-                              : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                          key: const Key('empty_reflections_placeholder'),
-                          textAlign: TextAlign.center,
+                          'No reflections found in ${selectedSpace.value}.',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.6),
+                            color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
                       );
@@ -474,28 +443,23 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Semantics(
-                        container: true,
-                        explicitChildNodes: true,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      RichText(
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                           children: [
-                            Flexible(
-                              child: Text(
-                                brand.shortName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            TextSpan(
+                              text: brand.appName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.2,
                               ),
                             ),
-                            const SizedBox(width: 5),
-                            const Text(
-                              'Refuge',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            const TextSpan(
+                              text: ' preview',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -629,47 +593,22 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       : Theme.of(context).dividerColor,
                 ),
               ),
-              onSelected: (action) {
-                if (action == 'create_post') {
-                  _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value == 'saved_for_later'
-                        ? 'general_chat'
-                        : selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: false,
-                    onSubmit: submitPost,
-                  );
-                } else if (action == 'create_image_post') {
-                  _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value == 'saved_for_later'
-                        ? 'general_chat'
-                        : selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: true,
-                    onSubmit: submitPost,
-                  );
-                }
-              },
               itemBuilder: (context) => [
                 PopupMenuItem<String>(
-                  key: const Key('menu_item_create_post'),
-                  value: 'create_post',
+                  key: const Key('menu_item_create_text_post'),
+                  value: 'create_text_post',
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.15),
+                          color: Theme.of(context).colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           Icons.edit_note_rounded,
-                          color: primaryColor,
                           size: 18,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -712,13 +651,15 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.2),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondaryContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          color: Colors.amber,
+                        child: Icon(
+                          Icons.add_photo_alternate_rounded,
                           size: 18,
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -735,7 +676,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               ),
                             ),
                             Text(
-                              'Share a meme, photo, or scripture art',
+                              'Share a calming visual, photo, or art',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -753,6 +694,27 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   ),
                 ),
               ],
+              onSelected: (action) {
+                if (action == 'create_image_post') {
+                  _showCreatePostModal(
+                    context: context,
+                    selectedSpace: selectedSpace.value,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                    isImagePost: true,
+                    onSubmit: submitPost,
+                  );
+                } else if (action == 'create_text_post') {
+                  _showCreatePostModal(
+                    context: context,
+                    selectedSpace: selectedSpace.value,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                    isImagePost: false,
+                    onSubmit: submitPost,
+                  );
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
@@ -809,7 +771,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     onBackgroundImageError:
                         (profile.avatarUrl != null &&
                             profile.avatarUrl!.isNotEmpty)
-                        ? (_, __) {}
+                        ? (_, _) {}
                         : null,
                     child:
                         (profile.avatarUrl == null ||
@@ -829,15 +791,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
             ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        bottom: true,
-        left: true,
-        right: true,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: buildActiveBottomTabBody(),
+      body: RepaintBoundary(
+        key: rootFeedbackRepaintBoundaryKey,
+        child: SafeArea(
+          top: false,
+          bottom: true,
+          left: true,
+          right: true,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: buildActiveBottomTabBody(),
+            ),
           ),
         ),
       ),
@@ -909,12 +874,30 @@ class _BelongSubHeaderBar extends StatelessWidget {
           _webSemanticsTarget(
             label: 'Vote & Feedback',
             identifier: 'vote_feedback_button',
-            onTap: () => BelongFeedbackAndVotingSheet.show(context),
+            onTap: () async {
+              final bytes =
+                  await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+              if (context.mounted) {
+                BelongFeedbackAndVotingSheet.show(
+                  context,
+                  screenshotBytes: bytes,
+                );
+              }
+            },
             child: ActionChip(
               key: const Key('open_feedback_and_voting_button'),
               avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
               label: const Text('Vote & Feedback'),
-              onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+              onPressed: () async {
+                final bytes =
+                    await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+                if (context.mounted) {
+                  BelongFeedbackAndVotingSheet.show(
+                    context,
+                    screenshotBytes: bytes,
+                  );
+                }
+              },
             ),
           ),
         ],
@@ -931,8 +914,7 @@ void _showCreatePostModal({
   bool isImagePost = false,
   required Future<void> Function({
     required String content,
-    required String toneTag,
-    String? specialInterestTag,
+    String? toneTag,
     String? imageUrl,
   })
   onSubmit,
@@ -941,143 +923,37 @@ void _showCreatePostModal({
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (ctx) {
-      return SystemBottomInset(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            isImagePost
-                                ? Icons.image_outlined
-                                : Icons.post_add_rounded,
-                            size: 20,
-                            color: primaryColor,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            isImagePost
-                                ? 'Create Image Post'
-                                : 'Create Reflection Post',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.close_rounded, size: 20),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
-                ),
-                ReflectionComposer(
-                  selectedSpace: selectedSpace,
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  isImagePost: isImagePost,
-                  onSubmit:
-                      ({
-                        required String content,
-                        required String toneTag,
-                        String? specialInterestTag,
-                        String? imageUrl,
-                      }) async {
-                        await onSubmit(
-                          content: content,
-                          toneTag: toneTag,
-                          specialInterestTag: specialInterestTag,
-                          imageUrl: imageUrl,
-                        );
-                        if (ctx.mounted) {
-                          Navigator.of(ctx).pop();
-                        }
-                      },
-                ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
+    builder: (context) => SystemBottomInset(
+      child: FractionallySizedBox(
+        heightFactor: 0.85,
+        child: ReflectionComposerModal(
+          selectedSpace: selectedSpace,
+          primaryColor: primaryColor,
+          isContrast: isContrast,
+          isImagePost: isImagePost,
+          onSubmit: onSubmit,
         ),
-      );
-    },
+      ),
+    ),
   );
 }
 
-/// Web Maestro reads semantics identifiers even when a chip's label text is
-/// dropped from the accessibility tree. Mobile keeps the chip unchanged.
 Widget _webSemanticsTarget({
   required String label,
   required String identifier,
+  required bool selected,
   required VoidCallback onTap,
-  bool selected = false,
   required Widget child,
 }) {
   if (!kIsWeb) return child;
   return Semantics(
     label: label,
     identifier: identifier,
-    button: true,
     selected: selected,
+    button: true,
     container: true,
     excludeSemantics: true,
     onTap: onTap,
     child: child,
-  );
-}
-
-/// Short accessible name for [mode]. Menu items and the calm-tech status
-/// use the same words so Maestro can assert the theme that was just chosen.
-String _sensoryThemeLabel(SensoryMode mode) => switch (mode) {
-  SensoryMode.clean => 'Clean',
-  SensoryMode.sage => 'Sage',
-  SensoryMode.charcoal => 'Dark',
-  SensoryMode.contrast => 'Contrast',
-};
-
-/// Popup rows whose accessible name is exactly [label].
-///
-/// The emoji is decorative. Leaving it in the semantics tree makes the
-/// menuitem's name "🌙 Dark", which Maestro's full-string match will not
-/// hit with `tapOn: "Dark"`. [PopupMenuItem] already exposes a tappable
-/// menuitem; a tooltip on the row would only prepend another copy of the
-/// same word.
-PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
-  required SensoryMode mode,
-  required String emoji,
-  required String label,
-}) {
-  return PopupMenuItem<SensoryMode>(
-    value: mode,
-    child: Semantics(
-      identifier: 'sensory_theme_${mode.name}',
-      label: label,
-      button: true,
-      child: Row(
-        children: [
-          ExcludeSemantics(
-            child: Text(emoji, style: const TextStyle(fontSize: 14)),
-          ),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
-    ),
   );
 }

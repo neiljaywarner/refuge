@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
+import 'github_feedback_client.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
 ///
@@ -48,7 +50,7 @@ abstract interface class FeatureVotingRepository {
 
   /// Records a literal 3-intent feedback submission (`happy`, `neutral`, `sad`)
   /// alongside an optional 1–5 star rating (`rating`) for unified Web/PWA/Mobile auditing.
-  Future<void> submitFeedback({
+  Future<FeedbackSubmissionResult> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
     int? rating,
@@ -63,6 +65,8 @@ abstract interface class FeatureVotingRepository {
 mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   final List<Map<String, String>> submittedFeedbackLog = [];
   StreamController<List<VotableFeatureItem>>? _streamController;
+
+  GitHubFeedbackClient? get gitHubClient => null;
 
   /// Resolves an explicit 1–5 star rating or falls back to the default rating for [sentiment].
   static int resolveStarRating(FeedbackSentiment sentiment, int? rating) {
@@ -156,7 +160,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   }
 
   @override
-  Future<void> submitFeedback({
+  Future<FeedbackSubmissionResult> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
     int? rating,
@@ -165,9 +169,40 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     Uint8List? screenshotAttachment,
   }) async {
     final trimmed = message.trim();
-    if (trimmed.isEmpty) return;
+    if (trimmed.isEmpty) {
+      return FeedbackSubmissionResult(
+        isPrivateTriage: sentiment.isPrivateTriage,
+        savedLocally: false,
+      );
+    }
     final resolvedRating = resolveStarRating(sentiment, rating);
     final destination = privateRouter.resolveDestination(sentiment);
+
+    int? githubIssueNumber;
+    String? githubIssueUrl;
+
+    if (sentiment.isPrivateTriage &&
+        gitHubClient != null &&
+        gitHubClient!.isConfigured) {
+      final payload = privateRouter.formatPrivateIssue(
+        sentiment: sentiment,
+        message: trimmed,
+        contactEmail: contactEmail,
+        attachmentUrl: attachmentUrl,
+        attachmentBytes: screenshotAttachment,
+      );
+      final issueResult = await gitHubClient!.createIssue(
+        repository: payload.repository,
+        title: payload.title,
+        body: payload.body,
+        labels: payload.labels,
+      );
+      if (issueResult != null) {
+        githubIssueNumber = issueResult.number;
+        githubIssueUrl = issueResult.htmlUrl;
+      }
+    }
+
     submittedFeedbackLog.add({
       'backend': target.name,
       'sentiment': sentiment.name,
@@ -186,9 +221,18 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
         attachmentUrl,
         screenshotAttachment,
       ),
-      'githubIssueCreated': 'false',
+      'githubIssueCreated': '${githubIssueNumber != null}',
+      if (githubIssueNumber != null) 'githubIssueNumber': '$githubIssueNumber',
+      'githubIssueUrl': ?githubIssueUrl,
       'storedIn': 'member_feedback',
     });
+
+    return FeedbackSubmissionResult(
+      isPrivateTriage: sentiment.isPrivateTriage,
+      githubIssueNumber: githubIssueNumber,
+      githubIssueUrl: githubIssueUrl,
+      savedLocally: true,
+    );
   }
 }
 
@@ -198,11 +242,15 @@ class InMemoryFeatureVotingRepository
     implements FeatureVotingRepository {
   InMemoryFeatureVotingRepository({
     StreamController<List<VotableFeatureItem>>? customStreamController,
+    this.gitHubClient,
   }) {
     if (customStreamController != null) {
       _streamController = customStreamController;
     }
   }
+
+  @override
+  final GitHubFeedbackClient? gitHubClient;
 
   @override
   BackendTarget get target => BackendTarget.inMemory;
@@ -212,6 +260,11 @@ class InMemoryFeatureVotingRepository
 class ServerpodFeatureVotingRepository
     with FeatureVotingStateTransformMixin
     implements FeatureVotingRepository {
+  ServerpodFeatureVotingRepository({this.gitHubClient});
+
+  @override
+  final GitHubFeedbackClient? gitHubClient;
+
   @override
   BackendTarget get target => BackendTarget.serverpod;
 }
@@ -224,11 +277,15 @@ class AppwriteFeatureVotingRepository
     this.databaseId = 'belong_community_db',
     this.featuresCollectionId = 'feature_votes',
     this.feedbackCollectionId = 'member_feedback',
+    this.gitHubClient,
   });
 
   final String databaseId;
   final String featuresCollectionId;
   final String feedbackCollectionId;
+
+  @override
+  final GitHubFeedbackClient? gitHubClient;
 
   @override
   BackendTarget get target => BackendTarget.appwrite;
@@ -242,11 +299,15 @@ class FirebaseFeatureVotingRepository
     this.featuresCollectionPath = 'feature_votes',
     this.feedbackCollectionPath = 'member_feedback',
     this.customFirestore,
+    this.gitHubClient,
   });
 
   final String featuresCollectionPath;
   final String feedbackCollectionPath;
   final FirebaseFirestore? customFirestore;
+
+  @override
+  final GitHubFeedbackClient? gitHubClient;
 
   FirebaseFirestore? get firestore {
     if (customFirestore != null) return customFirestore;
@@ -318,7 +379,7 @@ class FirebaseFeatureVotingRepository
   }
 
   @override
-  Future<void> submitFeedback({
+  Future<FeedbackSubmissionResult> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
     int? rating,
@@ -326,14 +387,10 @@ class FirebaseFeatureVotingRepository
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
   }) async {
-    final resolvedRating = FeatureVotingStateTransformMixin.resolveStarRating(
-      sentiment,
-      rating,
-    );
-    await super.submitFeedback(
+    final result = await super.submitFeedback(
       sentiment: sentiment,
       message: message,
-      rating: resolvedRating,
+      rating: rating,
       contactEmail: contactEmail,
       attachmentUrl: attachmentUrl,
       screenshotAttachment: screenshotAttachment,
@@ -342,6 +399,11 @@ class FirebaseFeatureVotingRepository
     final fs = firestore;
     if (fs != null) {
       try {
+        final resolvedRating =
+            FeatureVotingStateTransformMixin.resolveStarRating(
+          sentiment,
+          rating,
+        );
         final destination = privateRouter.resolveDestination(sentiment);
         await fs.collection(feedbackCollectionPath).add({
           'sentiment': sentiment.name,
@@ -356,11 +418,17 @@ class FirebaseFeatureVotingRepository
           if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl))
             'attachmentUrl': attachmentUrl!.trim(),
           if (screenshotAttachment != null) 'hasScreenshotAttachment': true,
+          if (screenshotAttachment != null)
+            'attachmentBytesBase64': base64Encode(screenshotAttachment),
           'attachmentDelivery': _attachmentDelivery(
             attachmentUrl,
             screenshotAttachment,
           ),
-          'githubIssueCreated': false,
+          'githubIssueCreated': result.githubIssueNumber != null,
+          if (result.githubIssueNumber != null)
+            'githubIssueNumber': result.githubIssueNumber,
+          if (result.githubIssueUrl != null)
+            'githubIssueUrl': result.githubIssueUrl,
           'storedIn': feedbackCollectionPath,
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -368,6 +436,7 @@ class FirebaseFeatureVotingRepository
         // Resilient offline fallback
       }
     }
+    return result;
   }
 }
 
@@ -382,10 +451,19 @@ final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((
   ref,
 ) {
   final target = ref.watch(featureVotingBackendTargetProvider);
+  final gitHubClient = ref.watch(gitHubFeedbackClientProvider);
   return switch (target) {
-    BackendTarget.inMemory => InMemoryFeatureVotingRepository(),
-    BackendTarget.serverpod => ServerpodFeatureVotingRepository(),
-    BackendTarget.appwrite => AppwriteFeatureVotingRepository(),
-    BackendTarget.firebase => FirebaseFeatureVotingRepository(),
+    BackendTarget.inMemory => InMemoryFeatureVotingRepository(
+        gitHubClient: gitHubClient,
+      ),
+    BackendTarget.serverpod => ServerpodFeatureVotingRepository(
+        gitHubClient: gitHubClient,
+      ),
+    BackendTarget.appwrite => AppwriteFeatureVotingRepository(
+        gitHubClient: gitHubClient,
+      ),
+    BackendTarget.firebase => FirebaseFeatureVotingRepository(
+        gitHubClient: gitHubClient,
+      ),
   };
 });

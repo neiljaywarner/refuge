@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -122,7 +122,22 @@ class PrivateFeedbackRouter {
       buffer.writeln('- **Contact Info**: `${contactEmail.trim()}`');
     }
 
-    if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty) {
+    if (attachmentBytes != null && attachmentBytes.isNotEmpty) {
+      final base64Image = base64Encode(attachmentBytes);
+      buffer
+        ..writeln()
+        ..writeln('### Annotated Screenshot / Scribble Attachment')
+        ..writeln(
+          '<img src="data:image/png;base64,$base64Image" alt="Annotated Screenshot" width="400" />',
+        )
+        ..writeln()
+        ..writeln('<details><summary>Raw Base64 PNG</summary>')
+        ..writeln()
+        ..writeln('```')
+        ..writeln(base64Image)
+        ..writeln('```')
+        ..writeln('</details>');
+    } else if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty) {
       buffer
         ..writeln()
         ..writeln('### Annotated Screenshot / Scribble Attachment');
