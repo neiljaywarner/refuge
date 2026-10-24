@@ -27,6 +27,10 @@ class CommunityBrandConfig {
     required this.fellowshipAffiliationPrompt,
     required this.fellowshipAffiliationOptions,
     required this.fellowshipNonMemberOption,
+    this.defaultOrganizerWelcomeTitle = 'Welcome to Belong on the Spectrum',
+    this.defaultOrganizerWelcomeMessage =
+        'A peaceful sanctuary for autistic Christians, families, and friends to connect at their own pace.',
+    this.enableFellowshipAffiliationField = true,
   });
 
   /// Default flagship configuration for **Belong on the Spectrum**.
@@ -56,7 +60,11 @@ class CommunityBrandConfig {
         'Greater Long Beach Church',
         'Other ICOC Congregation',
       ],
-      fellowshipNonMemberOption = 'I am not a member of an ICOC church';
+      fellowshipNonMemberOption = 'I am not a member of an ICOC church',
+      defaultOrganizerWelcomeTitle = 'Welcome to Belong on the Spectrum',
+      defaultOrganizerWelcomeMessage =
+          'A peaceful sanctuary for autistic Christians, families, and friends to connect at their own pace.',
+      enableFellowshipAffiliationField = true;
 
   /// Flavor-aware flagship configuration for **Belong on the Spectrum**
   /// (`https://dev.belongonthespectrum.com/` in `dev`, `https://www.belongonthespectrum.com/` in `prod`).
@@ -96,6 +104,9 @@ class CommunityBrandConfig {
   final String fellowshipAffiliationPrompt;
   final List<String> fellowshipAffiliationOptions;
   final String fellowshipNonMemberOption;
+  final String defaultOrganizerWelcomeTitle;
+  final String defaultOrganizerWelcomeMessage;
+  final bool enableFellowshipAffiliationField;
 
   CommunityBrandConfig copyWith({
     String? tenantId,
@@ -117,6 +128,9 @@ class CommunityBrandConfig {
     String? fellowshipAffiliationPrompt,
     List<String>? fellowshipAffiliationOptions,
     String? fellowshipNonMemberOption,
+    String? defaultOrganizerWelcomeTitle,
+    String? defaultOrganizerWelcomeMessage,
+    bool? enableFellowshipAffiliationField,
   }) {
     return CommunityBrandConfig(
       tenantId: tenantId ?? this.tenantId,
@@ -143,6 +157,12 @@ class CommunityBrandConfig {
           fellowshipAffiliationOptions ?? this.fellowshipAffiliationOptions,
       fellowshipNonMemberOption:
           fellowshipNonMemberOption ?? this.fellowshipNonMemberOption,
+      defaultOrganizerWelcomeTitle:
+          defaultOrganizerWelcomeTitle ?? this.defaultOrganizerWelcomeTitle,
+      defaultOrganizerWelcomeMessage:
+          defaultOrganizerWelcomeMessage ?? this.defaultOrganizerWelcomeMessage,
+      enableFellowshipAffiliationField:
+          enableFellowshipAffiliationField ?? this.enableFellowshipAffiliationField,
     );
   }
 }
