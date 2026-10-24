@@ -41,11 +41,21 @@ class SensoryThemeData {
       scaffoldBackgroundColor: Colors.black,
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFFFFEB3B),
+        onPrimary: Colors.black,
+        secondary: Color(0xFFFFEB3B),
+        onSecondary: Colors.black,
+        secondaryContainer: Color(0xFF2B2600),
+        onSecondaryContainer: Color(0xFFFFEB3B),
         surface: Color(0xFF0F0F0F),
         onSurface: Colors.white,
       ),
       cardColor: Colors.black,
       dividerColor: Colors.white,
+      chipTheme: const ChipThemeData(
+        selectedColor: Color(0xFFFFEB3B),
+        labelStyle: TextStyle(color: Colors.white),
+        secondaryLabelStyle: TextStyle(color: Colors.black),
+      ),
     ),
   };
 }
