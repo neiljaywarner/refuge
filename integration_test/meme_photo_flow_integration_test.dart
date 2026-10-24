@@ -44,6 +44,7 @@ void main() {
                   selectedSpace: 'memes',
                   primaryColor: Colors.teal,
                   isContrast: false,
+                  isModal: true,
                   onSubmit: ({
                     required content,
                     required toneTag,
