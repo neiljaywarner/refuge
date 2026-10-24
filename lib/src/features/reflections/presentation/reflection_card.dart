@@ -58,7 +58,10 @@ class ReflectionCard extends ConsumerWidget {
                           authorName: post.authorName,
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 2,
+                            horizontal: 2,
+                          ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -66,7 +69,8 @@ class ReflectionCard extends ConsumerWidget {
                                 radius: 10,
                                 backgroundColor: isContrast
                                     ? Colors.yellow
-                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                                    : Theme.of(context).colorScheme.primary
+                                          .withValues(alpha: 0.15),
                                 child: Text(
                                   getInitials(post.authorName),
                                   style: TextStyle(
@@ -84,7 +88,10 @@ class ReflectionCard extends ConsumerWidget {
                                   post.authorName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
@@ -110,11 +117,15 @@ class ReflectionCard extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 3.0,
+                    ),
                     decoration: BoxDecoration(
                       color: isMeme
                           ? Colors.amber.withValues(alpha: 0.2)
-                          : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                          : Theme.of(context).colorScheme.primary
+                                .withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Text(
@@ -122,7 +133,9 @@ class ReflectionCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: isMeme ? Colors.amber.shade800 : Theme.of(context).colorScheme.primary,
+                        color: isMeme
+                            ? Colors.amber.shade800
+                            : Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
@@ -131,7 +144,10 @@ class ReflectionCard extends ConsumerWidget {
                     key: Key('save_post_button_${post.id}'),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                    ),
                     tooltip: post.isSaved
                         ? 'Remove from Saved'
                         : 'Save for Later (Private)',
@@ -144,18 +160,26 @@ class ReflectionCard extends ConsumerWidget {
                           : Icons.bookmark_border_rounded,
                       size: 18,
                       color: post.isSaved
-                          ? (isContrast ? Colors.yellow : Theme.of(context).colorScheme.primary)
-                          : (isContrast ? Colors.white70 : Colors.grey.shade600),
+                          ? (isContrast
+                                ? Colors.yellow
+                                : Theme.of(context).colorScheme.primary)
+                          : (isContrast
+                                ? Colors.white70
+                                : Colors.grey.shade600),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty) ...[
+          if (post.specialInterestTag != null &&
+              post.specialInterestTag!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 3.0,
+              ),
               decoration: BoxDecoration(
                 color: Colors.blueGrey.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6.0),
@@ -171,7 +195,10 @@ class ReflectionCard extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 8),
-          Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
+          Text(
+            post.content,
+            style: const TextStyle(fontSize: 13, height: 1.45),
+          ),
           if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 10),
             ClipRRect(
@@ -192,7 +219,8 @@ class ReflectionCard extends ConsumerWidget {
                 child: Image.network(
                   post.imageUrl!,
                   fit: BoxFit.cover,
-                  semanticLabel: post.specialInterestTag ?? 'Community reflection image',
+                  semanticLabel:
+                      post.specialInterestTag ?? 'Community reflection image',
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
@@ -202,7 +230,7 @@ class ReflectionCard extends ConsumerWidget {
                         strokeWidth: 2.0,
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                                  loadingProgress.expectedTotalBytes!
                             : null,
                       ),
                     );
@@ -221,7 +249,10 @@ class ReflectionCard extends ConsumerWidget {
                         const SizedBox(width: 8),
                         const Text(
                           'Wholesome Meme / GIF Attached',
-                          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ],
                     ),
@@ -265,63 +296,63 @@ class ReflectionCard extends ConsumerWidget {
                   const SizedBox(width: 8),
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                    onPressed: () => onAddReaction('encouraged'),
+                    icon: const Text('🌱', style: TextStyle(fontSize: 12)),
+                    label: Text(
+                      '${post.reactions['encouraged'] ?? 0} Encouraged',
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
-                  onPressed: () => onAddReaction('encouraged'),
-                  icon: const Text('🌱', style: TextStyle(fontSize: 12)),
-                  label: Text(
-                    '${post.reactions['encouraged'] ?? 0} Encouraged',
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                  onPressed: () => onAddReaction('relatable'),
-                  icon: const Text('😄', style: TextStyle(fontSize: 12)),
-                  label: Text(
-                    '${post.reactions['relatable'] ?? 0} Relatable',
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ),
-              ],
-              const SizedBox(width: 8),
-              Builder(
-                builder: (ctx) {
-                  final countAsync =
-                      ref.watch(postCommentCountStreamProvider(post.id));
-                  final count = countAsync.value ?? 0;
-                  return OutlinedButton.icon(
-                    key: Key('discussion_button_${post.id}'),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       visualDensity: VisualDensity.compact,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
-                    onPressed: onOpenDiscussion ??
-                        () => ThreadedDiscussionSheet.show(
-                              context,
-                              post: post,
-                            ),
-                    icon: const Text('💬', style: TextStyle(fontSize: 12)),
+                    onPressed: () => onAddReaction('relatable'),
+                    icon: const Text('😄', style: TextStyle(fontSize: 12)),
                     label: Text(
-                      count == 1
-                          ? '1 Reply'
-                          : (count > 1 ? '$count Replies' : 'Reply'),
+                      '${post.reactions['relatable'] ?? 0} Relatable',
                       style: const TextStyle(fontSize: 11),
                     ),
-                  );
-                },
-              ),
-            ],
+                  ),
+                ],
+                const SizedBox(width: 8),
+                Builder(
+                  builder: (ctx) {
+                    final countAsync = ref.watch(
+                       postCommentCountStreamProvider(post.id),
+                    );
+                    final count = countAsync.valueOrNull ?? 0;
+                    return OutlinedButton.icon(
+                      key: Key('discussion_button_${post.id}'),
+                      style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      onPressed:
+                          onOpenDiscussion ??
+                          () =>
+                              ThreadedDiscussionSheet.show(context, post: post),
+                      icon: const Text('💬', style: TextStyle(fontSize: 12)),
+                      label: Text(
+                        count == 1
+                            ? '1 Reply'
+                            : (count > 1 ? '$count Replies' : 'Reply'),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
   }
 
   /// Extracts clean monogram initials for cards, stripping parenthetical roles or locations.
