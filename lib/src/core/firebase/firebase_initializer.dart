@@ -100,7 +100,7 @@ class FirebaseInitializer {
       const automationTool = String.fromEnvironment('AUTOMATION_TOOL', defaultValue: '');
       final resolvedAutomationTool = automationTool.isNotEmpty
           ? automationTool
-          : (kDebugMode ? 'debug_mode' : 'none');
+          : 'none';
       await FirebaseAnalytics.instance.setUserProperty(name: 'automation_tool', value: resolvedAutomationTool);
       await FirebaseAnalytics.instance.setUserProperty(name: 'client_flavor', value: flavor.slug);
 
