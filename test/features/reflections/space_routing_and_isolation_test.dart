@@ -41,6 +41,7 @@ void main() {
         toneTag: '[Welcome]',
         content: 'Hello everyone!',
         timestamp: DateTime.now(),
+        reactions: const {},
       );
 
       await repo.createPost(newPost);
