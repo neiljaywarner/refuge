@@ -3,9 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 void main() {
+  setUp(() {
+    VoteStorageService.instance.clear();
+  });
+
+  tearDown(() {
+    VoteStorageService.instance.clear();
+  });
+
   group('BelongFeedbackAndVotingSheet Widget & Patrol BDD Tests', () {
     patrolWidgetTest(
       'renders WIP roadmap items, increments vote count on 1-tap, and switches to 3-intent feedback tab',

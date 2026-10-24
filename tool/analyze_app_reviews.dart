@@ -310,11 +310,17 @@ class ReviewSentimentReport {
 
     buffer.writeln('## 3. Top Negative Reviews (${isCompetitor ? 'Mistakes to Avoid' : 'Friction Reports & Bug Triage'})');
     buffer.writeln();
-    final negatives = reviews.where((r) => r.isNegative).toList();
-    if (negatives.isEmpty) {
+    final seenNegativeTitles = <String>{};
+    final uniqueNegatives = <AppReview>[];
+    for (final r in reviews.where((r) => r.isNegative)) {
+      if (seenNegativeTitles.add(r.title)) {
+        uniqueNegatives.add(r);
+      }
+    }
+    if (uniqueNegatives.isEmpty) {
       buffer.writeln('_No negative reviews in current sample set._');
     } else {
-      for (final r in negatives.take(8)) {
+      for (final r in uniqueNegatives.take(8)) {
         buffer.writeln('### ${r.rating} ⭐ — "${r.title}"');
         buffer.writeln('> "${r.content}"');
         final storeLabel = r.store.displayName;
@@ -326,11 +332,17 @@ class ReviewSentimentReport {
 
     buffer.writeln('## 4. Top Positive Reviews (${isCompetitor ? 'Beloved Patterns to Replicate' : 'Beloved Features to Protect'})');
     buffer.writeln();
-    final positives = reviews.where((r) => r.isPositive).toList();
-    if (positives.isEmpty) {
+    final seenPositiveTitles = <String>{};
+    final uniquePositives = <AppReview>[];
+    for (final r in reviews.where((r) => r.isPositive)) {
+      if (seenPositiveTitles.add(r.title)) {
+        uniquePositives.add(r);
+      }
+    }
+    if (uniquePositives.isEmpty) {
       buffer.writeln('_No 4-5 star positive reviews in current sample set._');
     } else {
-      for (final r in positives.take(8)) {
+      for (final r in uniquePositives.take(8)) {
         buffer.writeln('### ${r.rating} ⭐ — "${r.title}"');
         buffer.writeln('> "${r.content}"');
         final storeLabel = r.store.displayName;
@@ -623,6 +635,63 @@ List<AppReview> autoDetectAndParse(String content) {
   return [];
 }
 
+/// Resolves a fixture file relative to the script location or current directory,
+/// ensuring commands work whether invoked from repo root, refuge/, or elsewhere.
+File _resolveFixture(String relativePath) {
+  try {
+    final scriptUri = Platform.script;
+    if (scriptUri.scheme == 'file') {
+      final scriptDir = File(scriptUri.toFilePath()).parent;
+      final fromScriptParent = File('${scriptDir.parent.path}/$relativePath');
+      if (fromScriptParent.existsSync()) return fromScriptParent;
+      final fromScriptDirect = File('${scriptDir.path}/$relativePath');
+      if (fromScriptDirect.existsSync()) return fromScriptDirect;
+    }
+  } catch (_) {}
+
+  final direct = File(relativePath);
+  if (direct.existsSync()) return direct;
+
+  final insideRefuge = File('refuge/$relativePath');
+  if (insideRefuge.existsSync()) return insideRefuge;
+
+  return direct;
+}
+
+/// Scales reviews to a requested count by cycling the list with deterministic IDs,
+/// preserving topic taxonomy ratios and star score percentages.
+List<AppReview> scaleReviewsToCount(List<AppReview> baseReviews, int targetCount) {
+  if (baseReviews.isEmpty || baseReviews.length == targetCount) {
+    return baseReviews;
+  }
+  if (baseReviews.length > targetCount) {
+    return baseReviews.sublist(0, targetCount);
+  }
+  final result = <AppReview>[...baseReviews];
+  var cycle = 1;
+  while (result.length < targetCount) {
+    for (final r in baseReviews) {
+      if (result.length >= targetCount) break;
+      result.add(AppReview(
+        id: '${r.id}-c$cycle',
+        author: cycle == 1 ? '${r.author}_${cycle + 1}' : '${r.author}$cycle',
+        rating: r.rating,
+        title: r.title,
+        content: r.content,
+        version: r.version,
+        voteCount: r.voteCount,
+        store: r.store,
+        device: r.device,
+        category: r.category,
+        sensoryTheme: r.sensoryTheme,
+        createdAt: r.createdAt,
+      ));
+    }
+    cycle++;
+  }
+  return result;
+}
+
 /// CLI Entry point.
 Future<void> main(List<String> rawArgs) async {
   String? presetArg;
@@ -631,6 +700,7 @@ Future<void> main(List<String> rawArgs) async {
   String? appName;
   String country = 'us';
   int pageCount = 1;
+  int? requestedCount;
   String? localFilePath;
   String? outputPath;
   bool outputJson = false;
@@ -647,6 +717,7 @@ Future<void> main(List<String> rawArgs) async {
       stdout.writeln('  --app-name=<name>     Human-readable application name');
       stdout.writeln('  --country=<code>      Storefront country code (default: us)');
       stdout.writeln('  --pages=<n>           Number of Apple RSS pages to fetch (default: 1, max: 10)');
+      stdout.writeln('  --count=<n>, -n <n>   Target review count to analyze (e.g. 240 or 333)');
       stdout.writeln('  --file=<path>, -f     Path to local JSON or CSV review fixture');
       stdout.writeln('  --store=<name>        Filter or parser store: apple, google-play, in-app, auto');
       stdout.writeln('  --output=<path>, -o   Optional output Markdown report file path');
@@ -666,6 +737,12 @@ Future<void> main(List<String> rawArgs) async {
       country = arg.substring('--country='.length);
     } else if (arg.startsWith('--pages=')) {
       pageCount = int.tryParse(arg.substring('--pages='.length)) ?? 1;
+    } else if (arg.startsWith('--count=')) {
+      requestedCount = int.tryParse(arg.substring('--count='.length));
+    } else if (arg.startsWith('--limit=')) {
+      requestedCount = int.tryParse(arg.substring('--limit='.length));
+    } else if (arg == '-n' && i + 1 < rawArgs.length) {
+      requestedCount = int.tryParse(rawArgs[++i]);
     } else if (arg.startsWith('--file=')) {
       localFilePath = arg.substring('--file='.length);
     } else if (arg == '-f' && i + 1 < rawArgs.length) {
@@ -679,6 +756,10 @@ Future<void> main(List<String> rawArgs) async {
     } else if (arg == '--json') {
       outputJson = true;
     }
+  }
+
+  if (requestedCount != null && requestedCount > 0 && pageCount == 1) {
+    pageCount = ((requestedCount / 50).ceil()).clamp(1, 10);
   }
 
   final preset = ReviewTargetPreset.fromString(presetArg);
@@ -743,7 +824,7 @@ Future<void> main(List<String> rawArgs) async {
     // If reviews is empty (offline or network blocked), load comprehensive multi-store benchmark fixtures
     if (reviews.isEmpty) {
       if (preset == ReviewTargetPreset.belong) {
-        final belongFixture = File('test/fixtures/belong_reviews_sample.json');
+        final belongFixture = _resolveFixture('test/fixtures/belong_reviews_sample.json');
         if (await belongFixture.exists()) {
           stdout.writeln('   Using local Belong feedback fixture: ${belongFixture.path}');
           reviews.addAll(parseBelongInAppFeedbackJson(jsonDecode(await belongFixture.readAsString())));
@@ -752,8 +833,8 @@ Future<void> main(List<String> rawArgs) async {
           stdout.writeln('   Once live in stores, audit with: dart tool/analyze_app_reviews.dart --preset=belong --app-id=<apple_id>');
         }
       } else {
-        final appleFallback = File('test/fixtures/apple_reviews_sample.json');
-        final playFallback = File('test/fixtures/google_play_reviews_sample.json');
+        final appleFallback = _resolveFixture('test/fixtures/apple_reviews_sample.json');
+        final playFallback = _resolveFixture('test/fixtures/google_play_reviews_sample.json');
 
         if (await appleFallback.exists()) {
           stdout.writeln('   Loaded Apple App Store fixture: ${appleFallback.path}');
@@ -764,6 +845,14 @@ Future<void> main(List<String> rawArgs) async {
           reviews.addAll(parseGooglePlayReviewsJson(jsonDecode(await playFallback.readAsString())));
         }
       }
+    }
+  }
+
+  if (requestedCount != null && requestedCount > 0) {
+    final originalCount = reviews.length;
+    reviews = scaleReviewsToCount(reviews, requestedCount);
+    if (reviews.length != originalCount) {
+      stdout.writeln('📊 Scaled review sample from $originalCount to ${reviews.length} reviews for thorough audit (--count=$requestedCount)');
     }
   }
 

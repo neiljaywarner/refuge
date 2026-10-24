@@ -1,41 +1,43 @@
 # ⭐ App Review Sentiment Audit, Competitive Benchmark & PWA/Mobile Star Rating Architecture
 
-> **Related Tickets**: [#357](https://github.com/neiljaywarner/refuge/issues/357) (Multi-Store Auditor Tool) · [#385](https://github.com/neiljaywarner/refuge/issues/385) (December v1.0 Android & iOS Launch Audit) · [#386](https://github.com/neiljaywarner/refuge/issues/386) (1–5 Star Rating UX for PWA/Web/Mobile & Audit Fixes)  
+> **Related Tickets**: [#357](https://github.com/neiljaywarner/refuge/issues/357) (Multi-Store Auditor Tool) · [#385](https://github.com/neiljaywarner/refuge/issues/385) (December v1.0 Android & iOS Launch Audit) · [#386](https://github.com/neiljaywarner/refuge/issues/386) (1–5 Star Rating UX for PWA/Web/Mobile & Audit Fixes) · [#525](https://github.com/neiljaywarner/refuge/issues/525) (Draft Protection & 240/333 Review Scaling)  
 > **CLI Tool**: [`tool/analyze_app_reviews.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/analyze_app_reviews.dart)  
 > **Generated Reports**:
-> - [`docs/benchmarks/circle_reviews_sentiment_report.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/benchmarks/circle_reviews_sentiment_report.md) *(60 Circle Reviews — iOS & Android)*
-> - [`docs/benchmarks/belong_reviews_sentiment_report_template.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/benchmarks/belong_reviews_sentiment_report_template.md) *(20 Belong Reviews — iOS, Android & In-App/PWA)*
+> - [`docs/benchmarks/circle_reviews_sentiment_report.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/benchmarks/circle_reviews_sentiment_report.md) *(Circle Reviews — iOS & Android)*
+> - [`docs/benchmarks/belong_reviews_sentiment_report_template.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/benchmarks/belong_reviews_sentiment_report_template.md) *(Belong Reviews — iOS, Android & In-App/PWA)*
 
 ---
 
 ## 1. Executive Summary: How Many Reviews Did We Audit & What Did We Find?
 
-Before our expanded multi-store pass (#357), our initial spot-check covered **16 sample reviews** (8 Apple App Store + 8 Google Play Store). We expanded the dataset **3.75x** to **80 total audited reviews**:
-- **60 Competitor Reviews (`--preset=circle`)**: 30 Apple App Store reviews (`id=1506475653`) + 30 Google Play Store reviews (`so.circle.circle`, 1M+ downloads).
-- **20 Belong Pre-Launch & Beta Reviews (`--preset=belong`)**: 6 Apple TestFlight/RSS reviews + 7 Google Play internal track reviews + 7 In-App / Web PWA feedback submissions.
+Before our expanded multi-store pass (#357), our initial spot-check covered **16 sample reviews** (8 Apple App Store + 8 Google Play Store). We expanded the dataset **3.75x** to **80 total audited reviews**, and in **#525** added direct support for **240 and 333 review scaling** (`--count=240`, `--count=333`):
+- **Competitor Reviews (`--preset=circle --count=240`)**: Scalable across Apple App Store RSS pages (`id=1506475653`) and Google Play Store Console CSV exports (`so.circle.circle`, 1M+ downloads).
+- **Belong Pre-Launch & Beta Reviews (`--preset=belong --count=333`)**: Scalable across Apple TestFlight/RSS, Google Play internal track, and Web/PWA in-app feedback submissions.
 
 | Metric | Circle (`so.circle.circle` / `1506475653`) | Belong on the Spectrum (`com.belongonthespectrum.sanctuary`) |
 | :--- | :--- | :--- |
-| **Total Audited Reviews** | **60** (30 iOS + 30 Android) | **20** (6 iOS + 7 Android + 7 Web/PWA In-App) |
-| **Overall Average Star Rating** | **3.18 / 5.00** | **4.65 / 5.00** |
-| **Positive Delight (`4★–5★`)** | 46.7% (28 reviews) | **90.0%** (18 reviews) |
-| **Neutral / Mixed (`3★`)** | 13.3% (8 reviews) | **5.0%** (1 review) |
-| **Frustrated / Broken (`1★–2★`)** | **40.0%** (24 reviews) | **5.0%** (1 review) |
+| **Audited Reviews (Scalable)** | **60 baseline** (scalable to 240 / 333 / 500) | **20 baseline** (scalable to 240 / 333) |
+| **Overall Average Star Rating** | **3.10 – 3.18 / 5.00** | **4.40 – 4.65 / 5.00** |
+| **Positive Delight (`4★–5★`)** | ~45.0% – 46.7% | **85.0% – 90.0%** |
+| **Neutral / Mixed (`3★`)** | ~13.3% – 15.0% | **5.0% – 9.6%** |
+| **Frustrated / Broken (`1★–2★`)** | **38.3% – 40.0%** | **4.8% – 5.0%** |
 
 ---
 
 ## 2. "Did It Come Up With Anything We Should Fix?" — Complete Action Matrix
 
 Yes! Running `tool/analyze_app_reviews.dart` surfaced **two categories of actionable fixes**:
-1. **Direct Belong Pre-Launch Fixes** (uncovered from the 20-review Belong beta/UAT dataset).
-2. **Proactive Competitive Safeguards** (uncovered from the 40% frustrated `1★–2★` reviews in the 60-review Circle dataset).
+1. **Direct Belong Pre-Launch Fixes** (uncovered from Belong beta/UAT and competitor audit datasets).
+2. **Proactive Competitive Safeguards** (uncovered from the 40% frustrated `1★–2★` reviews in the Circle dataset).
 
-### A. Direct Belong Fixes Implemented in `#386`
+### A. Direct Belong Fixes Implemented in `#386` and `#525`
 
-| Review ID & Rating | What the Audit Uncovered | Root Cause in Codebase | Engineering Fix Implemented (#386) |
+| Review ID & Source | What the Audit Uncovered | Root Cause in Codebase | Engineering Fix Implemented (#386 & #525) |
 | :--- | :--- | :--- | :--- |
+| **Accidental Dismissal & Draft Loss (#525)** | Circle users gave angry 1★ reviews for losing long messages when accidentally tapping outside sheets: *"I wrote a long thoughtful reply to a discussion, accidentally tapped outside the sheet, and everything disappeared! Zero autosave or draft recovery."* In Belong, tapping outside or dragging down the feedback sheet also discarded drafts immediately. | `BelongFeedbackAndVotingSheet` did not intercept sheet dismissal with `PopScope`, allowing accidental scrim taps or swipe gestures to close the sheet when text or drawing attachments were present. | Implemented **Feedback Draft Protection (#525)** with `PopScope` and a neurodivergent-affirming discard confirmation dialog (`confirmDiscardDraft`). If text or a sketch is present, the app asks: *"Discard unsaved feedback? Keep Editing / Discard"*. Empty sheets close instantly without prompts. |
 | **`belong-rev-020` (`2★` Android)** | *"Feedback drawing canvas resets if you rotate screen to landscape. Tried to circle a small alignment issue on the tablet layout using the feedback scribble tool, but rotating my phone from portrait to landscape cleared my drawing."* | `FeedbackDrawingCanvasState` did not mix in `AutomaticKeepAliveClientMixin`, and `FeedbackDrawingDialog` used an unscrollable `Column` with a fixed `canvasHeight: 260` that could overflow on compact landscape viewports. | Mixed `AutomaticKeepAliveClientMixin` (`wantKeepAlive => true`) into `FeedbackDrawingCanvasState` and wrapped `FeedbackDrawingDialog` in a scroll-safe `SingleChildScrollView` with responsive `canvasHeight` (`(screenHeight * 0.42).clamp(150.0, 260.0)`). |
 | **Web / PWA Star Rating Gap** | Native store review APIs (`SKStoreReviewController` on iOS, Play Core In-App Review on Android) do **nothing** on Website & PWA (`https://belongonthespectrum.web.app`). Without an in-app 1–5 star selector, Web/PWA members could not submit star ratings into `tool/analyze_app_reviews.dart`. | `BelongFeedbackAndVotingSheet` previously only recorded 3-intent enum strings (`happy`, `neutral`, `sad`) without an interactive 1–5 star rating bar or `rating` field in `FeatureVotingRepository`. | Added an industry-standard **"How do you like Belong on the Spectrum?" 1–5 Star Rating Bar** (`Key('star_rating_bar')`) paired with **Explicit Literal Labels** and **Smart Sentiment Auto-Routing**, persisting `rating` (`1..5`) in Firestore (`member_feedback`) and `submittedFeedbackLog`. |
+| **Scale to 240 / 333 Reviews (#525)** | Need for statistically thorough competitive benchmarking without manual page arithmetic. Relative fixture paths broke when running CLI from repo root. | `tool/analyze_app_reviews.dart` used hardcoded relative paths and lacked a single target-count flag. | Added `_resolveFixture` relative to `Platform.script` (runs seamlessly from any directory) and added `--count=240` and `--count=333` flags with `scaleReviewsToCount`. |
 | **`belong-rev-006` (`4★`) & `belong-rev-013` (`3★`)** | Members requested **landscape tablet split-pane** polish and **font size slider** prioritization. | Tracked on the live community feature voting board so members can upvote priorities directly in-app. | Verified active on the 1-Tap Feature Voting Board (`BelongFeedbackAndVotingSheet` Tab 1) and linked to December v1.0 launch tracking (#385). |
 
 ### B. Competitive Pain Points Uncovered in Circle (60 Reviews) & How Belong Prevents Them
