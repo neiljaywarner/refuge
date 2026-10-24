@@ -14,18 +14,18 @@ Instead of forcing you to download a heavy 150 MB app from the App Store or reme
 - Or, with **two taps**, you can **Add It to Your Home Screen** so it sits right alongside your other apps with the official **Belong** cross & gold infinity (`∞`) icon and opens in a clean, full-screen window without browser address bars!
 
 ### 🍎 How to Add Belong to Your iPhone or iPad Home Screen (Safari)
-1. Open **Safari** on your iPhone or iPad and go to the Belong community link.
-2. Tap the **Share** button at the bottom of Safari (the square icon with an arrow pointing up `⬆️`).
-3. Scroll down slightly and tap **"Add to Home Screen"** (`➕`).
-4. Tap **"Add"** in the top-right corner.
-5. **Done!** The **Belong** icon (`∞`) is now on your Home Screen and opens like a full-screen native app.
+0. Open **[belongonthespectrum.web.app](https://belongonthespectrum.web.app)** in the **Safari** browser on your iPhone or iPad.
+1. Tap the **Share** button at the bottom of Safari (the square icon with an arrow pointing up `⬆️`).
+2. Scroll down slightly and tap **"Add to Home Screen"** (`➕`).
+3. Tap **"Add"** in the top-right corner.
+4. **Done!** The **Belong** icon (`∞`) is now on your Home Screen and opens like a full-screen native app.
 
 ### 🤖 How to Add Belong to Your Android Phone Home Screen (Chrome)
-1. Open **Google Chrome** on your Android phone and go to the Belong community link.
-2. Tap the **Three Dots Menu (`⋮`)** in the upper-right corner (or tap the **"Install App"** banner if Chrome shows it automatically).
-3. Tap **"Add to Home screen"** or **"Install app"**.
-4. Tap **"Install"**.
-5. **Done!** Belong now appears on your Home Screen and in your Android App Drawer.
+0. Open **[belongonthespectrum.web.app](https://belongonthespectrum.web.app)** in the **Google Chrome** browser on your Android phone.
+1. Tap the **Three Dots Menu (`⋮`)** in the upper-right corner (or tap the **"Install App"** banner if Chrome shows it automatically).
+2. Tap **"Add to Home screen"** or **"Install app"**.
+3. Tap **"Install"**.
+4. **Done!** Belong now appears on your Home Screen and in your Android App Drawer.
 
 ### 💻 How to Install Belong on Your Mac or Windows Computer
 1. Open **Chrome**, **Edge**, or **Safari (macOS Sonoma+)**.
