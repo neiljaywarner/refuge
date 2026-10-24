@@ -1,0 +1,37 @@
+appId: com.belongonthespectrum.sanctuary
+name: "Notification Deep Link Flow (Issue #330)"
+tags:
+  - notifications
+  - deep-link
+  - dms
+  - navigation
+  - regression
+---
+# 1. Launch app
+- launchApp:
+    clearState: false
+
+# 2. Switch to Notifications tab
+- tapOn:
+    id: "bottom_nav_icon_notifications"
+- assertVisible: "Notifications"
+
+# 3. Tap on the DM notification tile
+- tapOn:
+    id: "notification_list_tile_notif-dm-1"
+
+# 4. Assert direct message conversation view opens
+- assertVisible: "Marty & Community Team"
+- assertVisible: "Welcome to Belong!"
+
+# 5. Return to Notifications and tap a Mention
+- tapOn:
+    id: "bottom_nav_icon_notifications"
+- assertVisible: "Notifications"
+
+- tapOn:
+    id: "notification_list_tile_notif-mention-1"
+
+# 6. Assert feed view is visible with reflection
+- assertVisible:
+    id: "belong_bottom_nav_bar"
