@@ -42,6 +42,51 @@ void main() {
       );
     });
 
+    test('PlatformAvatarUploadService crops valid square images and handles invalid bytes safely', () async {
+      final service = PlatformAvatarUploadService();
+      final validPng = Uint8List.fromList([
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+        0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+        0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+        0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+        0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+        0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+      ]);
+
+      // Valid PNG bytes crop into square target size
+      final cropped = await service.cropSquare(validPng, targetSize: 64);
+      expect(cropped, isNotNull);
+      expect(cropped.length, greaterThan(0));
+
+      // Invalid bytes gracefully return raw bytes without throwing
+      final invalid = Uint8List.fromList([0x00, 0xFF, 0xAA]);
+      final fallback = await service.cropSquare(invalid);
+      expect(fallback, equals(invalid));
+    });
+
+    test('PlatformAvatarUploadService requestPermission and pickImage fallback behavior', () async {
+      final service = PlatformAvatarUploadService(
+        initialCameraPermission: AvatarPermissionStatus.permanentlyDenied,
+      );
+
+      final permStatus = await service.requestPermission(AvatarImageSource.camera);
+      expect(permStatus.isPermanentlyDenied, isTrue);
+
+      // When permanently denied, pickImage returns null
+      final picked = await service.pickImage(AvatarImageSource.camera);
+      expect(picked, isNull);
+
+      // When granted, pickImage in test environment falls back to sample avatar on missing plugin
+      service.setMockPermission(AvatarImageSource.gallery, AvatarPermissionStatus.granted);
+      final sampleBytes = await service.pickImage(AvatarImageSource.gallery);
+      expect(sampleBytes, isNotNull);
+      expect(sampleBytes!.length, greaterThan(0));
+
+      // openAppSettings completes without uncaught exceptions
+      final opened = await service.openAppSettings();
+      expect(opened, isA<bool>());
+    });
+
     test('FakeAvatarUploadService handles pickImage and permissions properly', () async {
       final fake = FakeAvatarUploadService(
         cameraPermission: AvatarPermissionStatus.denied,
@@ -63,11 +108,12 @@ void main() {
     Widget buildHarness({
       required FakeAvatarUploadService avatarService,
       MemberProfile? initialProfile,
+      StorageRepository? storageRepo,
     }) {
       return ProviderScope(
         overrides: [
           avatarUploadServiceProvider.overrideWithValue(avatarService),
-          storageRepositoryProvider.overrideWithValue(InMemoryStorageRepository()),
+          storageRepositoryProvider.overrideWithValue(storageRepo ?? InMemoryStorageRepository()),
           if (initialProfile != null)
             memberProfileProvider.overrideWith(() => _CustomProfileNotifier(initialProfile)),
         ],
@@ -166,6 +212,71 @@ void main() {
     );
 
     patrolWidgetTest(
+      'User cancels photo selection gracefully without error',
+      ($) async {
+        final fakeService = FakeAvatarUploadService(returnNullOnPick: true);
+        await $.pumpWidget(buildHarness(avatarService: fakeService));
+        await $.pumpAndSettle();
+
+        await $(const Key('edit_avatar_button')).tap();
+        await $.pumpAndSettle();
+
+        await $(const Key('avatar_source_camera')).tap();
+        await $.pumpAndSettle();
+
+        // Sheet is still open and no snackbar is shown
+        expect($(const Key('avatar_source_camera')), findsOneWidget);
+        expect($('Avatar updated peacefully.'), findsNothing);
+      },
+    );
+
+    patrolWidgetTest(
+      'Permanent denial dialog Cancel button closes dialog without opening settings',
+      ($) async {
+        final fakeService = FakeAvatarUploadService(
+          cameraPermission: AvatarPermissionStatus.permanentlyDenied,
+        );
+        await $.pumpWidget(buildHarness(avatarService: fakeService));
+        await $.pumpAndSettle();
+
+        await $(const Key('edit_avatar_button')).tap();
+        await $.pumpAndSettle();
+
+        await $(const Key('avatar_source_camera')).tap();
+        await $.pumpAndSettle();
+
+        expect($(const Key('avatar_denial_cancel_button')), findsOneWidget);
+        await $(const Key('avatar_denial_cancel_button')).tap();
+        await $.pumpAndSettle();
+
+        expect($(const Key('avatar_denial_cancel_button')), findsNothing);
+        expect(fakeService.appSettingsOpened, isFalse);
+      },
+    );
+
+    patrolWidgetTest(
+      'Storage upload failure displays calm error message in sheet',
+      ($) async {
+        final fakeService = FakeAvatarUploadService();
+        final failingRepo = _FailingStorageRepository();
+
+        await $.pumpWidget(
+          buildHarness(avatarService: fakeService, storageRepo: failingRepo),
+        );
+        await $.pumpAndSettle();
+
+        await $(const Key('edit_avatar_button')).tap();
+        await $.pumpAndSettle();
+
+        await $(const Key('avatar_source_camera')).tap();
+        await $.pumpAndSettle();
+
+        expect($(const Key('avatar_permission_denied_banner')), findsOneWidget);
+        expect($('Could not update avatar: Exception: Simulated storage upload network failure'), findsOneWidget);
+      },
+    );
+
+    patrolWidgetTest(
       'Removing existing avatar clears avatarUrl and closes sheet',
       ($) async {
         final fakeService = FakeAvatarUploadService();
@@ -203,4 +314,15 @@ class _CustomProfileNotifier extends MemberProfileNotifier {
 
   @override
   MemberProfile build() => _initial;
+}
+
+class _FailingStorageRepository extends InMemoryStorageRepository {
+  @override
+  Future<String> uploadAvatar({
+    required String userId,
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    throw Exception('Simulated storage upload network failure');
+  }
 }

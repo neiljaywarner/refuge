@@ -37,6 +37,34 @@ class CalmMediaImage extends StatelessWidget {
     );
   }
 
+  @visibleForTesting
+  static Widget buildLoadingProgress({
+    required BuildContext context,
+    required Widget child,
+    ImageChunkEvent? loadingProgress,
+    double? width,
+    double? height,
+  }) {
+    if (loadingProgress == null) return child;
+    return Container(
+      width: width,
+      height: height,
+      alignment: Alignment.center,
+      color: Colors.amber.withValues(alpha: 0.05),
+      child: SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.0,
+          value: loadingProgress.expectedTotalBytes != null
+              ? loadingProgress.cumulativeBytesLoaded /
+                  loadingProgress.expectedTotalBytes!
+              : null,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final trimmed = imageUrl.trim();
@@ -68,26 +96,13 @@ class CalmMediaImage extends StatelessWidget {
         height: height,
         fit: fit,
         semanticLabel: semanticLabel,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: width,
-            height: height,
-            alignment: Alignment.center,
-            color: Colors.amber.withValues(alpha: 0.05),
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.0,
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
+        loadingBuilder: (context, child, loadingProgress) => buildLoadingProgress(
+          context: context,
+          child: child,
+          loadingProgress: loadingProgress,
+          width: width,
+          height: height,
+        ),
         errorBuilder: (_, __, ___) => _buildFallback(context),
       );
     }
