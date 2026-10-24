@@ -69,6 +69,7 @@ class ReflectionComposer extends HookWidget {
     }, [imageUrlController]);
 
     void handleSelectMeme(CalmMeme meme) {
+      isExpanded.value = true;
       attachedMeme.value = meme;
       if (meme.imageUrl != null) {
         imageUrlController.text = meme.imageUrl!;
