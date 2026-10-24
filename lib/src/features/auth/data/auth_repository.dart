@@ -335,6 +335,8 @@ class InMemoryAuthRepository implements AuthRepository {
 
 /// Production Firebase Authentication repository with graceful offline/test fallback.
 class FirebaseAuthRepository implements AuthRepository {
+  static AuthSession? _savedSession;
+
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? firebaseAuth,
     InMemoryAuthRepository? fallback,
@@ -377,19 +379,25 @@ class FirebaseAuthRepository implements AuthRepository {
       if (fbUser != null) {
         return AuthSession(
           userId: fbUser.uid,
-          displayName: fbUser.displayName ?? 'Fellowship Member',
-          email: fbUser.email ?? '',
-          bio: 'Verified Member of Belong on the Spectrum',
-          comfortBadges: const [
+          displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
+              ? fbUser.displayName!
+              : (_savedSession?.displayName ?? 'Fellowship Member'),
+          email: fbUser.email ?? (_savedSession?.email ?? ''),
+          bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
+          comfortBadges: _savedSession?.comfortBadges ?? const [
             'Literal communication appreciated',
             'Firebase Cloud Verified',
           ],
           isSignedIn: true,
           authMethod: 'firebase_auth',
+          icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
           emailVerified: fbUser.emailVerified,
-          photoUrl: fbUser.photoURL,
+          photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
         );
       }
+    }
+    if (_savedSession != null && _savedSession!.isSignedIn) {
+      return _savedSession!;
     }
     return _fallback.currentSession();
   }
@@ -400,20 +408,28 @@ class FirebaseAuthRepository implements AuthRepository {
     if (liveAuth != null && _hasRealCredentials) {
       return liveAuth.authStateChanges().map((fbUser) {
         if (fbUser != null) {
-          return AuthSession(
+          final s = AuthSession(
             userId: fbUser.uid,
-            displayName: fbUser.displayName ?? 'Fellowship Member',
-            email: fbUser.email ?? '',
-            bio: 'Verified Member of Belong on the Spectrum',
-            comfortBadges: const [
+            displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
+                ? fbUser.displayName!
+                : (_savedSession?.displayName ?? 'Fellowship Member'),
+            email: fbUser.email ?? (_savedSession?.email ?? ''),
+            bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
+            comfortBadges: _savedSession?.comfortBadges ?? const [
               'Literal communication appreciated',
               'Firebase Cloud Verified',
             ],
             isSignedIn: true,
             authMethod: 'firebase_auth',
+            icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
             emailVerified: fbUser.emailVerified,
-            photoUrl: fbUser.photoURL,
+            photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
           );
+          _savedSession = s;
+          return s;
+        }
+        if (_savedSession != null && _savedSession!.isSignedIn) {
+          return _savedSession!;
         }
         return const AuthSession.guest();
       });
@@ -596,6 +612,14 @@ class FirebaseAuthRepository implements AuthRepository {
     List<String>? comfortBadges,
     String? icocChurchAffiliation,
   }) {
+    final liveAuth = auth;
+    final currentUser = liveAuth?.currentUser;
+    if (currentUser != null) {
+      try {
+        currentUser.updateDisplayName(displayName);
+      } catch (_) {}
+    }
+
     final session = _fallback.signInWithEmailAndName(
       displayName: displayName,
       email: email,
@@ -603,7 +627,12 @@ class FirebaseAuthRepository implements AuthRepository {
       comfortBadges: comfortBadges,
       icocChurchAffiliation: icocChurchAffiliation,
     );
-    return session.copyWith(authMethod: 'firebase_email');
+    final effective = session.copyWith(
+      authMethod: 'firebase_email',
+      icocChurchAffiliation: icocChurchAffiliation,
+    );
+    _savedSession = effective;
+    return effective;
   }
 
   @override
@@ -614,6 +643,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<AuthSession> signOut() async {
+    _savedSession = null;
     try {
       await auth?.signOut();
     } catch (_) {}
