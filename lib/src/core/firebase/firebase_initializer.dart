@@ -95,6 +95,14 @@ class FirebaseInitializer {
       await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
       await FirebaseAnalytics.instance.setUserProperty(name: 'flavor', value: flavor.slug);
       await FirebaseAnalytics.instance.setUserProperty(name: 'app_variant', value: 'belong_refuge');
+      await FirebaseAnalytics.instance.setUserProperty(name: 'is_debug_mode', value: kDebugMode ? 'true' : 'false');
+
+      const automationTool = String.fromEnvironment('AUTOMATION_TOOL', defaultValue: '');
+      final resolvedAutomationTool = automationTool.isNotEmpty
+          ? automationTool
+          : (kDebugMode ? 'debug_mode' : 'none');
+      await FirebaseAnalytics.instance.setUserProperty(name: 'automation_tool', value: resolvedAutomationTool);
+      await FirebaseAnalytics.instance.setUserProperty(name: 'client_flavor', value: flavor.slug);
 
       // 3. Configure Firebase UI Auth providers (Email / Password / Reset)
       FirebaseUIAuth.configureProviders([
