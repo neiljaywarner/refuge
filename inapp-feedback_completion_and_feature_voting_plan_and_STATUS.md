@@ -73,74 +73,42 @@
 
 ---
 
-## Target Production Architecture: 3 Options
+## Confirmed Production Architecture: Direct GitHub Dispatch (`feedback_github` / GitHub REST API)
 
-### 🏛️ Option A: Firebase Cloud Functions Trigger (Recommended)
+> [!IMPORTANT]
+> **Owner Decision (`2026-10-24T12:51:20-05:00`)**:
+> *"how about pub.dev better_feedback and its dependency to publish to github issues for now or similar, ie do it simple, the client can send both to github repo directly, firebase cloud storage is optional, let's keep it simple please. Mainly github issue, other place is optional... as if they made a private github issue directly."*
+
 ```mermaid
 sequenceDiagram
     autonumber
     actor Member as Autistic / Christian Member
-    participant App as Belong Web / PWA / WebAPK
-    participant FStore as Firestore (member_feedback)
-    participant FStorage as Firebase Cloud Storage
-    participant FCF as Firebase Cloud Function
-    participant GH as GitHub API (belong_feedback)
+    participant App as Belong Web / PWA / WebAPK (Client)
+    participant GH as GitHub API (neiljaywarner/belong_feedback)
+    participant FStore as Firestore (member_feedback - Redundancy Backup)
 
-    Member->>App: Draws scribble on screenshot & taps Send
-    App->>FStorage: Upload PNG to feedback_drop_box/ (write-only)
-    FStorage-->>App: Return secure object path
-    App->>FStore: Write document (sentiment, note, rating, storagePath)
-    App-->>Member: Instant Calm Confirmation ("Received safely")
-    FStore->>FCF: onCreate trigger (member_feedback/{id})
-    FCF->>FCF: Read GITHUB_TRIAGE_TOKEN from Secret Manager
-    FCF->>FStorage: Generate signed download URL (or embed Base64)
-    FCF->>GH: POST /repos/neiljaywarner/belong_feedback/issues
-    GH-->>FCF: 201 Created (Issue #NUM)
-    FCF->>FStore: Update document with githubIssueUrl
-```
-
-- **Pros**:
-  - **Zero client secrets**: The GitHub token NEVER touches the browser, PWA, or mobile app.
-  - **Works everywhere**: Web, PWA, WebAPK, iOS, Android, macOS with identical behavior.
-  - **Resilient**: Even if GitHub is down or rate-limited, Firestore stores the submission, and Cloud Functions retries automatically.
-- **Requirements**:
-  - Node.js / TypeScript Firebase Cloud Function in `functions/` (or Python).
-  - GitHub Fine-Grained Personal Access Token with `Issues: Read & Write` on `neiljaywarner/belong_feedback`.
-  - Secret stored in Google Cloud Secret Manager / Firebase Functions environment.
-
----
-
-### ⚡ Option B: Firestore Document Base64 + Scheduled GitHub Action Triage Sync
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Member as Autistic Member
-    participant App as Belong App (Web / PWA)
-    participant FStore as Firestore (member_feedback)
-    participant GHA as GitHub Action (cron every 5m / workflow_dispatch)
-    participant GH as neiljaywarner/belong_feedback
-
-    Member->>App: Submits feedback with drawing (<50 KB PNG)
-    App->>App: Convert drawing PNG to Base64 data string
-    App->>FStore: Write document with base64Attachment & synced: false
-    App-->>Member: Instant Confirmation
-    GHA->>FStore: Query where('synced', '==', false) using Service Account
-    loop Each Unsynced Item
-        GHA->>GH: Create Issue with embedded image data
-        GHA->>FStore: Update synced: true, issueNumber: #NUM
+    Member->>App: Scribbles on screen & taps 'Send Private Feedback'
+    App->>App: Prepare Markdown + attach drawing (inline comment / base64)
+    App->>GH: POST /repos/neiljaywarner/belong_feedback/issues (Bearer FEEDBACK_GITHUB_PAT)
+    alt GitHub API Success
+        GH-->>App: 201 Created (Issue #NUM URL)
+        App->>FStore: Backup record (issueUrl, sentiment, rating, note)
+        App-->>Member: 'Thank you! Issue #NUM opened in private triage queue'
+    else GitHub API Offline / Rate Limited / No Token
+        App->>FStore: Fallback write to member_feedback
+        App-->>Member: 'Thank you! Your feedback was saved for organizers'
     end
 ```
 
-- **Pros**:
-  - **Zero new cloud infrastructure**: No Cloud Functions deploy needed; runs in GitHub Actions using repository secrets (`FEEDBACK_GITHUB_PAT` and `FIREBASE_SERVICE_ACCOUNT`).
-  - **Zero storage bucket costs**: Small PNG drawings (<50KB) store directly inside the 1MB Firestore document limit.
-- **Cons**:
-  - Up to 5-minute latency before issue appears in `belong_feedback`.
-
----
-
-### 🛡️ Option C: Serverless Webhook / Cloudflare Worker Relay
-- A lightweight HTTPS endpoint (`https://feedback.belongonthespectrum.com/submit` or Cloudflare Worker) receives the payload with Firebase App Check token validation and forwards directly to GitHub API.
+### Why This Is the Optimal Approach
+1. **Zero Cloud Infrastructure**: No Cloud Functions to deploy, no billing setup, no storage bucket permissions to maintain.
+2. **Instant Delivery**: When an issue is filed, organizers immediately receive GitHub notifications, webhooks, and triage tickets in `neiljaywarner/belong_feedback`.
+3. **Resilient Dual-Path**:
+   - Primary: Direct GitHub REST API dispatch (`POST /repos/neiljaywarner/belong_feedback/issues`).
+   - Redundancy / Offline Backup: Firestore `member_feedback` collection so no member feedback is ever lost if network is flaky.
+4. **Drawing Attachment**: Small PNG drawing (<50 KB) attached directly via GitHub issue body or comment markdown asset, or inline data URI.
+5. **Configurable via `--dart-define`**:
+   `--dart-define=FEEDBACK_GITHUB_PAT=github_pat_...` (fine-grained PAT with write-only issue permission on `neiljaywarner/belong_feedback`).
 
 ---
 
@@ -269,42 +237,53 @@ This section provides exact instructions for models like **Gemini 3.8 Flash** or
 
 ---
 
-### Phase 3: GitHub Issue Dispatch Engine (`belong_feedback`)
-Choose either Cloud Function (Option A) or GitHub Actions Sync (Option B):
+### Phase 3: Direct Client GitHub Issue Dispatch (`belong_feedback`)
+Implement direct REST API dispatch via `PrivateFeedbackRouter`:
+```dart
+class GitHubFeedbackDispatcher {
+  const GitHubFeedbackDispatcher({
+    this.targetRepo = 'neiljaywarner/belong_feedback',
+  });
 
-#### If Implementing GitHub Action Sync (`.github/workflows/sync_feedback_to_github.yml`):
-```yaml
-name: Sync Feedback to Private GitHub Repo
-on:
-  schedule:
-    - cron: '*/5 * * * *'  # Every 5 minutes
-  workflow_dispatch:
+  final String targetRepo;
 
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-      - name: Run Feedback Sync Script
-        env:
-          FEEDBACK_GH_TOKEN: ${{ secrets.BELONG_FEEDBACK_REPO_TOKEN }}
-          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          dart run tool/sync_feedback_to_github.dart
+  Future<String?> dispatchIssue({
+    required String title,
+    required String body,
+    required List<String> labels,
+    Uint8List? attachmentBytes,
+    String? token,
+  }) async {
+    final activeToken = token ?? const String.fromEnvironment('FEEDBACK_GITHUB_PAT');
+    if (activeToken.isEmpty) return null;
+
+    final client = http.Client();
+    try {
+      final response = await client.post(
+        Uri.parse('https://api.github.com/repos/$targetRepo/issues'),
+        headers: {
+          'Authorization': 'Bearer $activeToken',
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'title': title,
+          'body': body,
+          'labels': labels,
+        }),
+      );
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body) as Map;
+        return data['html_url'] as String?;
+      }
+    } finally {
+      client.close();
+    }
+    return null;
+  }
+}
 ```
-
-#### The Sync Script (`tool/sync_feedback_to_github.dart`):
-1. Connects to Firestore via service account REST API or googleapis.
-2. Queries `member_feedback` where `syncedToGitHub == false`.
-3. For each document:
-   - Formats markdown using `PrivateFeedbackRouter.formatPrivateIssue(...)`.
-   - If `attachmentBytesBase64` exists:
-     - Uploads image asset or creates markdown data URI.
-   - Calls `POST https://api.github.com/repos/neiljaywarner/belong_feedback/issues`.
-   - Updates Firestore document: `syncedToGitHub = true`, `githubIssueNumber = response.number`, `githubIssueUrl = response.html_url`.
 
 ---
 
@@ -335,5 +314,5 @@ jobs:
 - [x] **Compile & Build Verified**: Dart analyzer reports 0 errors in `lib/` and all 32 feedback unit/widget tests pass green.
 - [x] **Cross-Platform Status Audited**: Documented current behavioral realities across Desktop Chrome, PWA, and Android WebAPK.
 - [x] **Production Blueprint Created**: Complete step-by-step instructions with code, architecture diagrams, and test commands ready for execution.
-- [ ] **Architecture Decision Confirmed**: Owner confirms preference between Option A (Cloud Function), Option B (GitHub Action Sync), or Option C (API Proxy).
+- [x] **Architecture Decision Confirmed**: Direct client-side GitHub REST dispatch (`feedback_github` style) selected by owner with Firestore backup and inline attachment.
 - [ ] **Phase 1-5 Implemented & Merged**: Automated issue creation in `neiljaywarner/belong_feedback` with live screenshot attachment verified.
