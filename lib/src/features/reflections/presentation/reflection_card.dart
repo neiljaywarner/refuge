@@ -333,7 +333,7 @@ class ReflectionCard extends ConsumerWidget {
                 Builder(
                   builder: (ctx) {
                     final countAsync = ref.watch(
-                       postCommentCountStreamProvider(post.id),
+                      postCommentCountStreamProvider(post.id),
                     );
                     final count = countAsync.valueOrNull ?? 0;
                     return OutlinedButton.icon(
