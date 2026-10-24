@@ -164,14 +164,13 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPosts({required String spaceKey}) {
-    Stream<List<Post>> generator() async* {
-      yield _store.where((p) => p.spaceKey == spaceKey).toList();
-      yield* _controller.stream.map(
-        (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
-      );
-    }
-
-    return generator().asBroadcastStream();
+    return Stream<List<Post>>.multi((controller) {
+      controller.add(_store.where((p) => p.spaceKey == spaceKey).toList());
+      final sub = _controller.stream.listen((posts) {
+        controller.add(posts.where((p) => p.spaceKey == spaceKey).toList());
+      });
+      controller.onCancel = () => sub.cancel();
+    }, isBroadcast: true);
   }
 
   @override
@@ -181,14 +180,13 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPostsByAuthor({required String authorName}) {
-    Stream<List<Post>> generator() async* {
-      yield _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
-      yield* _controller.stream.map(
-        (posts) => posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList(),
-      );
-    }
-
-    return generator().asBroadcastStream();
+    return Stream<List<Post>>.multi((controller) {
+      controller.add(_store.where((p) => _matchesAuthor(p.authorName, authorName)).toList());
+      final sub = _controller.stream.listen((posts) {
+        controller.add(posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList());
+      });
+      controller.onCancel = () => sub.cancel();
+    }, isBroadcast: true);
   }
 
   @override
@@ -214,14 +212,13 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchSavedPosts() {
-    Stream<List<Post>> generator() async* {
-      yield _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
-      yield* _controller.stream.map(
-        (posts) => posts.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList(),
-      );
-    }
-
-    return generator().asBroadcastStream();
+    return Stream<List<Post>>.multi((controller) {
+      controller.add(_store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList());
+      final sub = _controller.stream.listen((posts) {
+        controller.add(posts.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList());
+      });
+      controller.onCancel = () => sub.cancel();
+    }, isBroadcast: true);
   }
 
   static bool _matchesAuthor(String postAuthor, String targetAuthor) {
