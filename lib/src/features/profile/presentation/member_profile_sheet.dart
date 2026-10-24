@@ -254,7 +254,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   ),
                   onTap: () async {
                     final RenderBox? box = context.findRenderObject() as RenderBox?;
-                    final offset = box != null ? box.localToToGlobal(Offset.zero) : Offset.zero;
+                    final offset = box != null ? box.localToGlobal(Offset.zero) : Offset.zero;
                     final size = box?.size ?? Size.zero;
                     final selected = await showMenu<String>(
                       context: context,
