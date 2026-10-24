@@ -8,11 +8,11 @@ import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
-import 'features/auth/presentation/belong_auth_sheet.dart';
 import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
+import 'features/feedback/presentation/feedback_drawing_canvas.dart';
 import 'features/fellowship_spaces/domain/fellowship_space.dart';
 import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
 import 'features/messages/presentation/belong_messages_view.dart';
@@ -36,7 +36,6 @@ import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
-import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
@@ -98,8 +97,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
     final SensoryMode currentMode =
         themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
-    final SensoryFontScale currentFontScale =
-        themeNotifier?.fontScale ?? ref.watch(sensoryFontScaleProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isLiveServerpod =
@@ -113,13 +110,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
         ref.read(sensoryThemeModeProvider.notifier).setMode(mode);
       }
       analytics.logSensoryModeChanged(mode.name);
-    }
-
-    void setSensoryFontScale(SensoryFontScale scale) {
-      if (themeNotifier != null) {
-        themeNotifier!.setFontScale(scale);
-      }
-      ref.read(sensoryFontScaleProvider.notifier).setScale(scale);
     }
 
     void selectSpace(String spaceKey) {
@@ -335,7 +325,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
-                                 strictMode: false,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -834,15 +823,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
             ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        bottom: true,
-        left: true,
-        right: true,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: buildActiveBottomTabBody(),
+      body: RepaintBoundary(
+        key: rootFeedbackRepaintBoundaryKey,
+        child: SafeArea(
+          top: false,
+          bottom: true,
+          left: true,
+          right: true,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: buildActiveBottomTabBody(),
+            ),
           ),
         ),
       ),
@@ -914,12 +906,30 @@ class _BelongSubHeaderBar extends StatelessWidget {
           _webSemanticsTarget(
             label: 'Vote & Feedback',
             identifier: 'vote_feedback_button',
-            onTap: () => BelongFeedbackAndVotingSheet.show(context),
+            onTap: () async {
+              final bytes =
+                  await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+              if (context.mounted) {
+                BelongFeedbackAndVotingSheet.show(
+                  context,
+                  screenshotBytes: bytes,
+                );
+              }
+            },
             child: ActionChip(
               key: const Key('open_feedback_and_voting_button'),
               avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
               label: const Text('Vote & Feedback'),
-              onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+              onPressed: () async {
+                final bytes =
+                    await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+                if (context.mounted) {
+                  BelongFeedbackAndVotingSheet.show(
+                    context,
+                    screenshotBytes: bytes,
+                  );
+                }
+              },
             ),
           ),
         ],

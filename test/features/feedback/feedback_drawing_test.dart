@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/feedback/application/private_feedback_router.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/github_feedback_client.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/feedback_drawing_canvas.dart';
@@ -342,6 +346,71 @@ void main() {
           inMemoryStorage.retainedPaths.join(' '),
           isNot(contains('storage.belongonthespectrum.com')),
         );
+      },
+    );
+
+    patrolWidgetTest(
+      'Submits feedback with configured GitHub client and displays issue number confirmation',
+      ($) async {
+        $.tester.view.physicalSize = const Size(1000, 1600);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown($.tester.view.resetPhysicalSize);
+
+        final mockHttp = MockClient((request) async {
+          return http.Response(
+            jsonEncode({
+              'number': 42,
+              'html_url':
+                  'https://github.com/neiljaywarner/belong_feedback/issues/42',
+            }),
+            201,
+          );
+        });
+
+        final client = GitHubFeedbackClient(
+          httpClient: mockHttp,
+          token: 'ghp_sample_token',
+        );
+        final inMemoryRepo = InMemoryFeatureVotingRepository(
+          gitHubClient: client,
+        );
+
+        await $.pumpWidgetAndSettle(
+          ProviderScope(
+            overrides: [
+              featureVotingRepositoryProvider.overrideWithValue(inMemoryRepo),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(
+                body: BelongFeedbackAndVotingSheet(initialTabIndex: 1),
+              ),
+            ),
+          ),
+        );
+
+        // Switch to sad / bug sentiment
+        await $(const Key('sentiment_sad')).tap();
+        await $.pumpAndSettle();
+
+        // Enter note
+        await $(const Key('feedback_message_input'))
+            .enterText('A bug occurred while testing feedback dispatch.');
+        await $.pumpAndSettle();
+
+        // Submit
+        await $(const Key('submit_feedback_button')).tap();
+        await $.pumpAndSettle();
+
+        expect(
+          $(
+            'Thank you! Your feedback was routed to our private triage queue (belong_feedback#42).',
+          ),
+          findsOneWidget,
+        );
+        expect(inMemoryRepo.submittedFeedbackLog.length, 1);
+        final log = inMemoryRepo.submittedFeedbackLog.first;
+        expect(log['githubIssueCreated'], 'true');
+        expect(log['githubIssueNumber'], '42');
       },
     );
   });
