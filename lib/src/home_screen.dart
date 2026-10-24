@@ -78,14 +78,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
     final postStream = useMemoized(
       () => selectedSpace.value == 'saved_for_later'
-          ? activeRepository.watchSavedPosts()
-          : activeRepository.watchPosts(spaceKey: selectedSpace.value),
+          ? activeRepository.watchSavedPosts().asBroadcastStream()
+          : activeRepository
+                .watchPosts(spaceKey: selectedSpace.value)
+                .asBroadcastStream(),
       [activeRepository, selectedSpace.value],
     );
     // Subscribe at the screen level (not inside the feed sub-view) so the
     // subscription and its latest snapshot survive switching to Spaces /
-    // other bottom tabs and back (#402, #470).
-    final postsSnapshot = useStream(postStream, preserveState: true);
+    // other bottom tabs and back. A broadcast stream does not replay its last
+    // event to a fresh listener, so re-subscribing via a StreamBuilder that
+    // was unmounted left the feed stuck on a spinner / grey screen (#402).
+    final postsSnapshot = useStream(postStream, preserveState: false);
     final quietDigestFuture = useMemoized(
       () => activeRepository.getQuietDigest(spaceKey: selectedSpace.value),
       [activeRepository, selectedSpace.value],
@@ -331,6 +335,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                   Icons.bookmark_border_rounded,
                                   size: 40,
                                   color: Colors.grey,
+                                 strictMode: false,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -992,6 +997,7 @@ void _showCreatePostModal({
                   primaryColor: primaryColor,
                   isContrast: isContrast,
                   isImagePost: isImagePost,
+                  isModal: true,
                   onSubmit:
                       ({
                         required String content,
