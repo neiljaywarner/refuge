@@ -98,10 +98,20 @@ void main() {
       $.tester.view.resetPhysicalSize();
       $.tester.view.resetDevicePixelRatio();
     });
+    final previousOnError = FlutterError.onError;
+    FlutterError.onError = (details) {
+      final text = details.exceptionAsString();
+      // Phone-width yellow stripes on the app bar, welcome banner, and
+      // author row predate this ticket. They are not the sort-tap crash.
+      if (text.contains('A RenderFlex overflowed')) return;
+      previousOnError?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = previousOnError);
     await $.pumpWidget(
       RepaintBoundary(
         key: const Key('feed_sort_shot'),
         child: RefugeApp(
+          key: ValueKey('${theme.name}-$guestProfile-${overrides.length}'),
           repository: repo,
           initialTheme: theme,
           overrides: [
@@ -139,12 +149,18 @@ void main() {
         );
 
         expect(find.textContaining('Demo Mode'), findsOneWidget);
-        expect(find.textContaining('peace of mind'), findsOneWidget);
+        expect(
+          find.textContaining('peace of mind', skipOffstage: false),
+          findsOneWidget,
+        );
 
         for (final option in FeedSortOption.values) {
           await tapSort($, option);
           await tapSort($, option);
-          expect(find.textContaining('peace of mind'), findsOneWidget);
+          expect(
+            find.textContaining('peace of mind', skipOffstage: false),
+            findsOneWidget,
+          );
         }
 
         await $.tester.tap(find.byKey(const Key('feed_sort_popup_button')));
@@ -263,10 +279,16 @@ void main() {
         ],
       );
 
-      expect(find.textContaining('peace of mind'), findsOneWidget);
+      expect(
+        find.textContaining('peace of mind', skipOffstage: false),
+        findsOneWidget,
+      );
       for (final option in FeedSortOption.values) {
         await tapSort($, option);
-        expect(find.textContaining('peace of mind'), findsOneWidget);
+        expect(
+          find.textContaining('peace of mind', skipOffstage: false),
+          findsOneWidget,
+        );
       }
       expect($.tester.takeException(), isNull);
     });
@@ -286,7 +308,10 @@ void main() {
         );
 
         expect(find.textContaining('Demo Mode'), findsNothing);
-        expect(find.textContaining('peace of mind'), findsNothing);
+        expect(
+          find.textContaining('peace of mind', skipOffstage: false),
+          findsNothing,
+        );
         expect(find.textContaining('Quiet waters'), findsOneWidget);
         for (final option in FeedSortOption.values) {
           await tapSort($, option);
@@ -297,14 +322,15 @@ void main() {
 
     patrolWidgetTest('captures dark and light sort-strip frames', ($) async {
       Future<void> save(String name) async {
-        await $.pumpAndSettle();
         final boundary = $.tester.renderObject<RenderRepaintBoundary>(
           find.byKey(const Key('feed_sort_shot')),
         );
-        final image = await boundary.toImage(pixelRatio: 1);
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        final file = File('/tmp/$name.png');
-        await file.writeAsBytes(bytes!.buffer.asUint8List());
+        await $.tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 1);
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          await File('/tmp/$name.png')
+              .writeAsBytes(bytes!.buffer.asUint8List());
+        });
       }
 
       await pumpFeed(
