@@ -10,6 +10,7 @@ import '../../../core/presentation/system_insets.dart';
 import '../../storage/data/storage_repository.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
+import '../data/vote_storage_service.dart';
 import '../domain/feedback_and_voting_models.dart';
 import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
@@ -24,13 +25,14 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     final repo = ref.watch(featureVotingRepositoryProvider);
     _subscription?.cancel();
     _subscription = repo.watchFeatures().listen((updatedList) {
+      final votedIds = VoteStorageService.instance.getVotedFeatureIds();
       final currentMap = {for (final item in state) item.id: item};
       state = [
         for (final remote in updatedList)
-          if (currentMap.containsKey(remote.id))
-            remote.copyWith(userVoted: currentMap[remote.id]!.userVoted)
-          else
-            remote,
+          remote.copyWith(
+            userVoted: votedIds.contains(remote.id) ||
+                (currentMap[remote.id]?.userVoted ?? false),
+          ),
       ];
     });
     ref.onDispose(() {
@@ -352,7 +354,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                                item.title,
+                              item.title,
                               style: textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
