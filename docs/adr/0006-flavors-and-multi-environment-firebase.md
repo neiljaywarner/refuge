@@ -27,9 +27,14 @@ As **Refuge** transitions into the production platform for **[Belong on the Spec
 
 We adopt the **Hybrid CodeWithAndrea + VGV Flavor Pattern**:
 - Define `enum AppFlavor { dev, stg, qa, prod }` in `lib/src/core/config/app_flavor.dart` exposed via `appFlavorProvider` (`hooks_riverpod`).
+- **Active today**: `dev` and `prod` only. `stg` / `qa` stay as enum hooks until [#40](https://github.com/neiljaywarner/refuge/issues/40).
+- Web app URLs use **Firebase Hosting** (not custom `*.belongonthespectrum.com` subdomains), parallel to Android `applicationId` suffixes:
+  - `prod` → `https://belongonthespectrum.web.app/` (no prefix)
+  - `dev` → `https://dev-belongonthespectrum.web.app/`
+  - Marketing / Circle site remains `https://www.belongonthespectrum.com/` (brand home, separate from the Flutter web app).
 - Provide explicit entrypoints:
   - `lib/main_dev.dart` (`AppFlavor.dev` — default for local development, BDD tests, and dev preview channels)
-  - `lib/main_prod.dart` (`AppFlavor.prod` — used for `belongonthespectrum.com` production builds)
+  - `lib/main_prod.dart` (`AppFlavor.prod` — used for `belongonthespectrum.web.app` production builds)
   - `lib/main.dart` (reads `FLAVOR` from `String.fromEnvironment('FLAVOR', defaultValue: 'dev')` so standard `flutter run` and `flutter build web` work seamlessly).
 - Wrap **Firebase Remote Config**, **Firebase Analytics**, and **Firebase In-App Messaging** behind clean, Riverpod-injected interfaces (`OrganizerRemoteConfigService` and `CommunityAnalyticsService`):
   - When Firebase is initialized for the active flavor, values are fetched from live Firebase Remote Config and events are logged to Firebase Analytics (prefixed/isolated by flavor when needed).

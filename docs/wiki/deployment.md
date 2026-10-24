@@ -49,11 +49,12 @@ flowchart TD
 
 To ensure development, automated test suites, and CI/CD runs **never pollute production community reflections or notification streams**, the codebase strictly enforces flavor separation via `--dart-define=FLAVOR=...`:
 
-| Flavor | Environment | Database Collection | Serverpod URL | Target Audience |
-| :--- | :--- | :--- | :--- | :--- |
-| **`dev`** | Development & CI | `reflections_dev` | `https://refuge4serverpod.api.serverpod.space/` (or local `http://10.0.2.2:8080/`) | Automated BDD tests, local emulators, continuous integration |
-| **`stg`** | Staging | `reflections_stg` | Staging cluster | Pre-release rehearsal |
-| **`prod`** | Production | `reflections` | `https://refuge4serverpod.api.serverpod.space/` | Real community members & churches |
+| Flavor | Environment | Web app (Firebase Hosting) | Database Collection | Serverpod URL | Target Audience |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`dev`** | Development & CI | `https://dev-belongonthespectrum.web.app/` | `reflections_dev` | `https://refuge4serverpod.api.serverpod.space/` (or local `http://10.0.2.2:8080/`) | Automated BDD tests, local emulators, continuous integration |
+| **`prod`** | Production | `https://belongonthespectrum.web.app/` | `reflections` | `https://refuge4serverpod.api.serverpod.space/` | Real community members & churches |
+
+`stg` / `qa` remain enum hooks only ([#40](https://github.com/neiljaywarner/refuge/issues/40)); they are not deployed yet. The marketing site `https://www.belongonthespectrum.com/` is separate from the Flutter web app origin.
 
 ### Running with Explicit Flavors
 ```bash
