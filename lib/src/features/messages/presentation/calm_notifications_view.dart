@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../navigation/presentation/belong_bottom_nav_bar.dart';
 import '../../notifications/domain/belong_notification.dart';
 import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
 import '../../notifications/presentation/notifications_controller.dart';
@@ -70,7 +69,7 @@ class CalmNotificationsView extends HookConsumerWidget {
                           .markAllAsRead(),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 4.0,
+                       horizontal: 4.0,
                       vertical: 6.0,
                     ),
                     child: Text(
@@ -394,9 +393,9 @@ class _BelongNotificationCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   color: isContrast
-                    ? Colors.white70
-                    : theme.textTheme.bodySmall?.color
-                        ?.withValues(alpha: 0.7),
+                      ? Colors.white70
+                      : theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.7),
                 ),
               ),
               if (item.commentSnippet != null) ...[

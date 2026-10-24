@@ -31,7 +31,7 @@ void main() {
         ProviderScope(
           overrides: [
             belongNotificationsProvider.overrideWith(
-              (ref) => BelongNotificationsNotifier([testNotification]),
+              () => BelongNotificationsNotifier(initialList: [testNotification]),
             ),
           ],
           child: MaterialApp(
@@ -77,7 +77,7 @@ void main() {
         ProviderScope(
           overrides: [
             belongNotificationsProvider.overrideWith(
-              (ref) => BelongNotificationsNotifier([dmNotification]),
+              () => BelongNotificationsNotifier(initialList: [dmNotification]),
             ),
           ],
           child: MaterialApp(
@@ -117,7 +117,7 @@ void main() {
         ProviderScope(
           overrides: [
             belongNotificationsProvider.overrideWith(
-              (ref) => BelongNotificationsNotifier([archivedNotification]),
+              () => BelongNotificationsNotifier(initialList: [archivedNotification]),
             ),
           ],
           child: const MaterialApp(
