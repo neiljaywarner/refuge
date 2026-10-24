@@ -180,6 +180,15 @@ class FeedQuery {
     };
   }
 
+  static bool _isTestJunk(Post post) {
+    final content = post.content.toLowerCase();
+    final author = post.authorName.toLowerCase();
+    return content.contains('blah your face') ||
+        content.contains('test 1') ||
+        content.contains('grokbot') ||
+        author.contains('grokbot');
+  }
+
   static List<Post> apply({
     required List<Post> posts,
     required String toneFilter,
@@ -189,9 +198,10 @@ class FeedQuery {
     Map<String, int>? commentCounts,
     Set<String>? userInterests,
   }) {
+    final nonJunk = posts.where((p) => !_isTestJunk(p)).toList();
     final available = signedIn
-        ? posts.where((p) => !p.isDemo).toList()
-        : List<Post>.from(posts);
+        ? nonJunk.where((p) => !p.isDemo).toList()
+        : nonJunk;
     final filtered = toneFilter == 'All'
         ? available
         : available.where((p) => p.toneTag == toneFilter).toList();
