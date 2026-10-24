@@ -14,6 +14,7 @@ class ReflectionCard extends ConsumerWidget {
   final bool isContrast;
   final ValueChanged<String> onAddReaction;
   final VoidCallback? onOpenDiscussion;
+  final bool isHighlighted;
 
   const ReflectionCard({
     super.key,
@@ -21,6 +22,7 @@ class ReflectionCard extends ConsumerWidget {
     required this.isContrast,
     required this.onAddReaction,
     this.onOpenDiscussion,
+    this.isHighlighted = false,
   });
 
   @override
@@ -28,16 +30,23 @@ class ReflectionCard extends ConsumerWidget {
     final isMeme = post.toneTag.contains('Meme');
 
     return Container(
+      key: Key('reflection_card_${post.id}'),
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       padding: const EdgeInsets.all(14.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isHighlighted
+            ? (isContrast
+                ? const Color(0xFF1A1A00)
+                : Theme.of(context).primaryColor.withValues(alpha: 0.08))
+            : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
-          color: isMeme
-              ? Colors.amber.withValues(alpha: 0.8)
-              : (isContrast ? Colors.white : Theme.of(context).dividerColor),
-          width: isMeme ? 2.0 : (isContrast ? 2.0 : 1.0),
+          color: isHighlighted
+              ? (isContrast ? Colors.yellow : const Color(0xFF2E6B56))
+              : (isMeme
+                  ? Colors.amber.withValues(alpha: 0.8)
+                  : (isContrast ? Colors.white : Theme.of(context).dividerColor)),
+          width: (isHighlighted || isMeme || isContrast) ? 2.0 : 1.0,
         ),
       ),
       child: Column(

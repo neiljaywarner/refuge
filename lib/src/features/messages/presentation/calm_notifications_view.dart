@@ -7,16 +7,18 @@ import '../../notifications/presentation/notifications_controller.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 
-/// Calm Notification Bell view (Issue #286).
+/// Calm Notification Bell view (Issue #286, #330).
 /// Presents unhurried, digestible notifications with filter chips (Inbox, Mentions, Threads, Following),
 /// author avatars with lower-right action badges, relative timestamps, and a 'Mark all as read' action.
 class CalmNotificationsView extends HookConsumerWidget {
   const CalmNotificationsView({
     super.key,
     this.onBackToHome,
+    this.onNavigate,
   });
 
   final VoidCallback? onBackToHome;
+  final ValueChanged<NotificationNavigationTarget>? onNavigate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -213,6 +215,41 @@ class CalmNotificationsView extends HookConsumerWidget {
                                 .read(belongNotificationsProvider.notifier)
                                 .markAsRead(item.id);
                           }
+
+                          NotificationNavigationTarget? target;
+                          if (item.type == BelongNotificationType.directMessage) {
+                            target = NotificationNavigationTarget(
+                              tab: BelongBottomTab.msgs,
+                              conversationId: item.conversationId,
+                            );
+                          } else if (item.spaceKey != null || item.postId != null) {
+                            target = NotificationNavigationTarget(
+                              tab: BelongBottomTab.home,
+                              spaceKey: item.spaceKey ?? 'general_chat',
+                              postId: item.postId,
+                              openDiscussion: item.type == BelongNotificationType.reply ||
+                                  item.type == BelongNotificationType.mention,
+                            );
+                          } else {
+                            // Polite fallback when referenced item was archived/deleted
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                key: Key('notification_archived_snackbar'),
+                                content: Text(
+                                  'This reflection was unhurriedly archived or moved',
+                                ),
+                                duration: Duration(seconds: 3),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+
+                          if (target != null) {
+                            ref
+                                .read(notificationNavigationTargetProvider.notifier)
+                                .state = target;
+                            onNavigate?.call(target);
+                          }
                         },
                       );
                     },
@@ -356,9 +393,9 @@ class _BelongNotificationCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   color: isContrast
-                      ? Colors.white70
-                      : theme.textTheme.bodySmall?.color
-                          ?.withValues(alpha: 0.7),
+                    ? Colors.white70
+                    : theme.textTheme.bodySmall?.color
+                        ?.withValues(alpha: 0.7),
                 ),
               ),
               if (item.commentSnippet != null) ...[
