@@ -9,6 +9,7 @@ import '../application/feedback_attachment_ref.dart';
 import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
 import 'github_feedback_client.dart';
+import 'vote_storage_service.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
 ///
@@ -86,23 +87,39 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
           StreamController<List<VotableFeatureItem>>.broadcast();
 
   @override
-  Stream<List<VotableFeatureItem>> watchFeatures() => streamController.stream;
+  Stream<List<VotableFeatureItem>> watchFeatures() {
+    return streamController.stream.map((list) {
+      final votedIds = VoteStorageService.instance.getVotedFeatureIds();
+      return [
+        for (final item in list)
+          item.copyWith(userVoted: votedIds.contains(item.id)),
+      ];
+    });
+  }
 
   @override
-  List<VotableFeatureItem> loadInitialFeatures() =>
-      List<VotableFeatureItem>.unmodifiable(kDefaultBelongVotableFeatures);
+  List<VotableFeatureItem> loadInitialFeatures() {
+    final votedIds = VoteStorageService.instance.getVotedFeatureIds();
+    return [
+      for (final item in kDefaultBelongVotableFeatures)
+        item.copyWith(userVoted: votedIds.contains(item.id)),
+    ];
+  }
 
   @override
   List<VotableFeatureItem> toggleVote(
     List<VotableFeatureItem> current,
     String featureId,
   ) {
+    final voted = VoteStorageService.instance.toggleFeatureVoted(featureId);
     final next = [
       for (final item in current)
         if (item.id == featureId)
           item.copyWith(
-            userVoted: !item.userVoted,
-            votes: item.userVoted ? item.votes - 1 : item.votes + 1,
+            userVoted: voted,
+            votes: voted
+                ? item.votes + 1
+                : (item.votes > 0 ? item.votes - 1 : 0),
           )
         else
           item,
@@ -135,6 +152,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       votes: 1,
       userVoted: true,
     );
+    VoteStorageService.instance.setFeatureVoted(newItem.id, true);
     if (_streamController != null && !_streamController!.isClosed) {
       final remotePayload = [
         for (final item in current) item.copyWith(userVoted: false),
@@ -337,12 +355,18 @@ class FirebaseFeatureVotingRepository
           }
         }
         final base = loadInitialFeatures();
+        final votedIds = VoteStorageService.instance.getVotedFeatureIds();
         return [
           for (final item in base)
             if (remoteVotes.containsKey(item.id))
-              item.copyWith(votes: remoteVotes[item.id]!)
+              item.copyWith(
+                votes: remoteVotes[item.id]!,
+                userVoted: votedIds.contains(item.id),
+              )
             else
-              item,
+              item.copyWith(
+                userVoted: votedIds.contains(item.id),
+              ),
         ];
       });
     } catch (_) {
