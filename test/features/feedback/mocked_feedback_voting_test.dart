@@ -61,7 +61,9 @@ void main() {
           attachmentUrl: any(named: 'attachmentUrl'),
           screenshotAttachment: any(named: 'screenshotAttachment'),
         ),
-      ).thenAnswer((_) async {});
+      ).thenAnswer(
+        (_) async => const FeedbackSubmissionResult(isPrivateTriage: false),
+      );
     });
 
     tearDown(() async {
