@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 
+import 'profile_storage_stub.dart' show BaseProfileStorage;
 import 'profile_storage_stub.dart'
     if (dart.library.io) 'profile_storage_io.dart'
     if (dart.library.html) 'profile_storage_web.dart';
