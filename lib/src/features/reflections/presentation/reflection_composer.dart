@@ -526,7 +526,7 @@ class ReflectionComposer extends HookWidget {
                   ),
                   if (!isModal)
                     TextButton.icon(
-                      key: const Key('composer_collapse_button'),
+                      key: const Key('composer_collapse_bottom_button'),
                       style: TextButton.styleFrom(
                         visualDensity: VisualDensity.compact,
                         padding: const EdgeInsets.symmetric(horizontal: 6),
