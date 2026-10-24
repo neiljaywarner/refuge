@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/belong_members_directory_view.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/belong_notification.dart';
+import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
 
 MemberProfile _createProfile(String name) => MemberProfile(
       displayName: name,
@@ -51,6 +52,25 @@ void main() {
     test('handles multiple consecutive whitespace characters cleanly', () {
       final profile = _createProfile('  Marty     Organizer  ');
       expect(profile.initials, 'MO');
+    });
+  });
+
+  group('ReflectionCard.getInitials monogram parsing', () {
+    test('extracts clean initials from author with country/region parenthetical', () {
+      expect(ReflectionCard.getInitials('David M. (UK)'), 'DM');
+    });
+
+    test('extracts clean initials from author with role parenthetical', () {
+      expect(ReflectionCard.getInitials('Marty (Organizer)'), 'MO');
+    });
+
+    test('extracts single initial for single name', () {
+      expect(ReflectionCard.getInitials('Grace'), 'G');
+    });
+
+    test('falls back to "B" for empty or whitespace author name', () {
+      expect(ReflectionCard.getInitials(''), 'B');
+      expect(ReflectionCard.getInitials('   '), 'B');
     });
   });
 
