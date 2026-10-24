@@ -92,7 +92,7 @@ class BelongNotification extends Equatable {
   }
 
   /// Human-readable title message following the user's specification:
-  /// e.g. "John Doe mentioned you in a comment on 'Markan Chiasms'"
+  /// e.g. "Sarah L. mentioned you in a comment on 'Markan Chiasms'"
   String get displayMessage => switch (type) {
         BelongNotificationType.mention =>
           '$authorName mentioned you in a comment on "$postTitle"',
