@@ -21,8 +21,8 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "setBadgeCount" -> {
                     val count = call.argument<Int>("count") ?: 0
-                    setLauncherBadgeCount(count.coerceAtLeast(0))
-                    result.success(true)
+                    val success = setLauncherBadgeCount(count.coerceAtLeast(0))
+                    result.success(success)
                 }
                 else -> result.notImplemented()
             }
@@ -49,18 +49,35 @@ class MainActivity : FlutterActivity() {
         notificationManager().createNotificationChannel(channel)
     }
 
+    private fun canPostBadgeNotification(): Boolean {
+        val manager = notificationManager()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !manager.areNotificationsEnabled()) {
+            return false
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = manager.getNotificationChannel(QUIET_BADGE_CHANNEL_ID)
+            if (channel != null && channel.importance == NotificationManager.IMPORTANCE_NONE) {
+                return false
+            }
+        }
+        return true
+    }
+
     /**
      * Pixel launcher dots derive from active notifications. We post a minimal,
      * silent notification with [NotificationCompat.Builder.setNumber] and cancel
      * it when the unread count returns to zero.
      */
-    private fun setLauncherBadgeCount(count: Int) {
+    private fun setLauncherBadgeCount(count: Int): Boolean {
         val manager = notificationManager()
         if (count == 0) {
             manager.cancel(BADGE_NOTIFICATION_ID)
-            return
+            return true
         }
         ensureQuietBadgeChannel()
+        if (!canPostBadgeNotification()) {
+            return false
+        }
         val notification = NotificationCompat.Builder(this, QUIET_BADGE_CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(getString(R.string.app_name))
@@ -75,6 +92,7 @@ class MainActivity : FlutterActivity() {
             .setAutoCancel(false)
             .build()
         manager.notify(BADGE_NOTIFICATION_ID, notification)
+        return true
     }
 
     companion object {
