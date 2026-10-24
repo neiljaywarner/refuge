@@ -7,6 +7,7 @@ import 'constants/app_theme.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
+import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 import 'home_screen.dart';
 
@@ -15,12 +16,14 @@ class RefugeApp extends StatefulWidget {
   final PostRepository repository;
   final List<Override>? overrides;
   final Widget? homeOverride;
+  final SensoryMode initialTheme;
 
   const RefugeApp({
     super.key,
     required this.repository,
     this.overrides,
     this.homeOverride,
+    this.initialTheme = SensoryMode.sage,
   });
 
   @override
@@ -31,12 +34,17 @@ class RefugeApp extends StatefulWidget {
 typedef SanctuaryApp = RefugeApp;
 
 class _RefugeAppState extends State<RefugeApp> {
-  final ThemeNotifier _themeNotifier = ThemeNotifier();
+  late final ThemeNotifier _themeNotifier = ThemeNotifier()
+    ..setMode(widget.initialTheme);
 
   @override
   Widget build(BuildContext context) => ProviderScope(
     overrides: [
       postRepositoryProvider.overrideWithValue(widget.repository),
+      if (widget.initialTheme != SensoryMode.sage)
+        sensoryThemeModeProvider.overrideWith(
+          (ref) => SensoryThemeNotifier(widget.initialTheme),
+        ),
       ...?widget.overrides,
     ],
     child: ListenableBuilder(

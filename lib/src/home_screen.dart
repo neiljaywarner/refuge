@@ -312,29 +312,20 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     }
 
                     final allPosts = snapshot.data!;
-                    final availablePosts = profile.isSignedIn
-                        ? allPosts.where((p) => !p.isDemo).toList()
-                        : allPosts;
-                    final filteredPosts = activeFilter.value == 'All'
-                        ? availablePosts
-                        : availablePosts
-                              .where((p) => p.toneTag == activeFilter.value)
-                              .toList();
-
-                    final userInterests = {
-                      ...profile.comfortBadges,
-                      if (profile.bio.isNotEmpty)
-                        ...profile.bio.split(RegExp(r'[\s,.]+')),
-                      if (profile.tagline != null)
-                        ...profile.tagline!.split(RegExp(r'[\s,.]+')),
-                    };
-
-                    final posts = FeedSortService.sortPosts(
-                      filteredPosts,
-                      sortOption: activeSort.value,
-                      latestActivityByPost: activityTimestampsAsync.value,
-                      commentCounts: commentCountsAsync.value,
-                      userInterests: userInterests,
+                    // valueOrNull: AsyncError.value throws in release and
+                    // red-screens the feed on the sort/filter rebuild (#485).
+                    final posts = FeedQuery.apply(
+                      posts: allPosts,
+                      toneFilter: activeFilter.value,
+                      sort: activeSort.value,
+                      signedIn: profile.isSignedIn,
+                      latestActivityByPost: activityTimestampsAsync.valueOrNull,
+                      commentCounts: commentCountsAsync.valueOrNull,
+                      userInterests: FeedQuery.interestsFrom(
+                        comfortBadges: profile.comfortBadges,
+                        bio: profile.bio,
+                        tagline: profile.tagline,
+                      ),
                     );
 
                     if (posts.isEmpty) {
@@ -960,8 +951,9 @@ class _BelongSubHeaderBar extends StatelessWidget {
             label: 'Vote & Feedback',
             identifier: 'vote_feedback_button',
             onTap: () async {
-              final bytes =
-                  await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+              final bytes = await captureRepaintBoundary(
+                rootFeedbackRepaintBoundaryKey,
+              );
               if (context.mounted) {
                 BelongFeedbackAndVotingSheet.show(
                   context,
@@ -974,8 +966,9 @@ class _BelongSubHeaderBar extends StatelessWidget {
               avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
               label: const Text('Vote & Feedback'),
               onPressed: () async {
-                final bytes =
-                    await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+                final bytes = await captureRepaintBoundary(
+                  rootFeedbackRepaintBoundaryKey,
+                );
                 if (context.mounted) {
                   BelongFeedbackAndVotingSheet.show(
                     context,

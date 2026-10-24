@@ -1,0 +1,52 @@
+url: http://127.0.0.1:8095
+name: Belong web every feed sort option
+---
+# Covers each sort chip, the sort menu, and a tone filter (#485).
+- launchApp
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 45000
+
+- tapOn:
+    id: "feed_sort_chip_latest"
+- tapOn:
+    id: "feed_sort_chip_forYou"
+- tapOn:
+    id: "feed_sort_chip_newActivity"
+- tapOn:
+    id: "feed_sort_chip_oldest"
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_alphabetical"
+    direction: LEFT
+    timeout: 15000
+    visibilityPercentage: 50
+    centerElement: true
+- tapOn:
+    id: "feed_sort_chip_popular"
+- tapOn:
+    id: "feed_sort_chip_likes"
+- tapOn:
+    id: "feed_sort_chip_alphabetical"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_newActivity"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_newActivity"
+
+- scrollUntilVisible:
+    element:
+      id: "tone_filter_chip_comfort_only"
+    direction: LEFT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "tone_filter_chip_comfort_only"
+- assertVisible: ".*sensory fatigue.*"
+- tapOn:
+    id: "tone_filter_chip_all"
+- assertVisible: ".*peace of mind.*"
