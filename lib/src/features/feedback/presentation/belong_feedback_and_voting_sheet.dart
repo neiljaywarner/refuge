@@ -49,7 +49,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     state = repo.proposeFeature(state, title: title, description: description);
   }
 
-  Future<void> submitFeedback({
+  Future<FeedbackSubmissionResult> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
     int? rating,
@@ -81,11 +81,20 @@ final featureVotingProvider =
 /// 2. **Literal 3-Intent Feedback Funnel ("Private Feedback, Public Praise")**
 ///    evaluated in ADR-0007 (`docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`).
 class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
-  const BelongFeedbackAndVotingSheet({super.key, this.initialTabIndex = 0});
+  const BelongFeedbackAndVotingSheet({
+    super.key,
+    this.initialTabIndex = 0,
+    this.screenshotBytes,
+  });
 
   final int initialTabIndex;
+  final Uint8List? screenshotBytes;
 
-  static Future<void> show(BuildContext context, {int initialTabIndex = 0}) {
+  static Future<void> show(
+    BuildContext context, {
+    int initialTabIndex = 0,
+    Uint8List? screenshotBytes,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -94,7 +103,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       builder: (_) => SystemBottomInset(
         child: FractionallySizedBox(
           heightFactor: 0.88,
-          child: BelongFeedbackAndVotingSheet(initialTabIndex: initialTabIndex),
+          child: BelongFeedbackAndVotingSheet(
+            initialTabIndex: initialTabIndex,
+            screenshotBytes: screenshotBytes,
+          ),
         ),
       ),
     );
@@ -340,7 +352,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              item.title,
+                                item.title,
                               style: textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -654,7 +666,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             OutlinedButton.icon(
                               key: const Key('open_feedback_drawing_button'),
                               onPressed: () async {
-                                final screenshot =
+                                final screenshot = screenshotBytes ??
                                     await captureEnclosingScreenshot(context);
                                 if (!context.mounted) return;
                                 final result = await FeedbackDrawingDialog.show(
@@ -741,7 +753,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                                 );
                                           }
 
-                                          await ref
+                                          final result = await ref
                                               .read(
                                                 featureVotingProvider.notifier,
                                               )
@@ -769,9 +781,15 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                           if (contact.isNotEmpty) {
                                             summary.writeln('From: $contact');
                                           }
-                                          summary.writeln(
-                                            'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
-                                          );
+                                          if (result.githubIssueNumber != null) {
+                                            summary.writeln(
+                                              'GitHub triage issue created: belong_feedback#${result.githubIssueNumber}',
+                                            );
+                                          } else {
+                                            summary.writeln(
+                                              'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
+                                            );
+                                          }
                                           if (attachmentBytes != null &&
                                               !hostedUpload) {
                                             summary.writeln(
@@ -792,15 +810,20 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             );
                                           } catch (_) {}
 
-                                          final saved =
-                                              sentiment.isPrivateTriage
-                                              ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
-                                              : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
-                                          submittedMessage.value =
-                                              attachmentBytes != null &&
-                                                  !hostedUpload
-                                              ? '$saved The drawing stayed with the note and was not uploaded.'
-                                              : saved;
+                                          if (result.githubIssueNumber != null) {
+                                            submittedMessage.value =
+                                                'Thank you! Your feedback was routed to our private triage queue (belong_feedback#${result.githubIssueNumber}).';
+                                          } else {
+                                            final saved =
+                                                sentiment.isPrivateTriage
+                                                ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
+                                                : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                            submittedMessage.value =
+                                                attachmentBytes != null &&
+                                                    !hostedUpload
+                                                ? '$saved The drawing stayed with the note and was not uploaded.'
+                                                : saved;
+                                          }
                                           feedbackController.clear();
                                           drawingAttachment.value = null;
                                         } catch (e) {
