@@ -4,4 +4,4 @@
 const kCalmFcmPreviewTopic = 'belong_calm_digest_preview';
 
 /// Android notification channel for silent calm digests (ADR-0010).
-const kCalmDigestNotificationChannelId = 'calm_digest_channel';
+const kCalmDigestNotificationChannelId = 'calm_digest_channel_v2';

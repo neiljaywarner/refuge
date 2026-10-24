@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Belong</string>
+    <string name="badge_sync_notification_body">Unread calm notifications</string>
+</resources>
