@@ -178,14 +178,16 @@ class RefugeHomeScreen extends HookConsumerWidget {
           : content.length <= 280
           ? 2
           : 3;
-      analytics.logReflectionPublished(tag: toneTag, lengthBucket: lengthBucket);
+      analytics.logReflectionPublished(
+        tag: toneTag,
+        lengthBucket: lengthBucket,
+      );
     }
 
     Widget buildHomeBody() {
       if (homeSubView.value == BelongHomeSubView.membersDirectory) {
         return BelongMembersDirectoryView(
-          onBackToSpaces: () =>
-              homeSubView.value = BelongHomeSubView.spaces,
+          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
@@ -884,17 +886,42 @@ class RefugeHomeScreen extends HookConsumerWidget {
             ),
         ],
       ),
-      body: RepaintBoundary(
-        key: rootFeedbackRepaintBoundaryKey,
-        child: SafeArea(
-          top: false,
-          bottom: true,
-          left: true,
-          right: true,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 820),
-              child: buildActiveBottomTabBody(),
+      body: PopScope(
+        canPop:
+            activeBottomTab.value == BelongBottomTab.home &&
+            homeSubView.value == BelongHomeSubView.feed &&
+            selectedSpace.value == 'prayer',
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          if (homeSubView.value == BelongHomeSubView.comingSoonItem ||
+              homeSubView.value == BelongHomeSubView.membersDirectory) {
+            homeSubView.value = BelongHomeSubView.spaces;
+            return;
+          }
+          if (homeSubView.value == BelongHomeSubView.spaces) {
+            homeSubView.value = BelongHomeSubView.feed;
+            return;
+          }
+          if (activeBottomTab.value != BelongBottomTab.home) {
+            activeBottomTab.value = BelongBottomTab.home;
+            return;
+          }
+          if (selectedSpace.value != 'prayer') {
+            selectedSpace.value = 'prayer';
+          }
+        },
+        child: RepaintBoundary(
+          key: rootFeedbackRepaintBoundaryKey,
+          child: SafeArea(
+            top: false,
+            bottom: true,
+            left: true,
+            right: true,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 820),
+                child: buildActiveBottomTabBody(),
+              ),
             ),
           ),
         ),
