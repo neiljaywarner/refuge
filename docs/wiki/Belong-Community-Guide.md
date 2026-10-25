@@ -23,7 +23,7 @@ An earlier sketch of this page used the name Sanctuary and five `#hashtag` rooms
 | **Actually Autistic Chat** | Conversation by and for autistic members |
 | **Friends Chat** | Friends and allies |
 | **Family Chat** | Parents, spouses, and family |
-| **Members** | Profiles and how we are connected |
+| **Members Section & Directory** | Profiles and how we are connected |
 | **Saved for Later** | Private bookmarks for quiet reading |
 | **DFW Church** | Opens [dfwchurch.org](https://dfwchurch.org) |
 
@@ -76,4 +76,4 @@ There is also a one-tap jump between **Sage** and **High Contrast**.
 - Special interests are welcome. So is silence.
 - Church friends, family, and guests can be here without pretending.
 
-Questions? Tap **Share Feedback** in Belong, or message an organizer in Circle.
+Questions? Tap **Vote & Feedback**. Inside that sheet, the **Share Feedback** tab is where you can write a note. Or message an organizer in Circle.
