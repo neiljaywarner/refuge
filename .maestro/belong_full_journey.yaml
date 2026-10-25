@@ -14,30 +14,26 @@ appId: com.belongonthespectrum.refuge.dev
     timeout: 45000
 - assertVisible: ".*Welcome to Belong on the Spectrum.*"
 - assertVisible: ".*Belong.*"
-- takeScreenshot: screenshots/01_home_anchor_welcome
 
 - tapOn: ".*Sensory Themes.*"
 - tapOn: "Dark.*"
 - assertVisible: ".*Welcome to Belong on the Spectrum.*"
-- takeScreenshot: screenshots/02_monastic_dark_applied
 
 - tapOn: ".*Sensory Themes.*"
 - tapOn: "Sage.*"
-- takeScreenshot: screenshots/03_sage_botanical_restored
+- assertVisible: ".*Welcome to Belong on the Spectrum.*"
 
 - tapOn: ".*Spaces.*"
 - extendedWaitUntil:
     visible: ".*General Chat.*"
     timeout: 15000
 - assertVisible: ".*General Chat.*"
-- takeScreenshot: screenshots/04_spaces_directory
 
 - tapOn: ".*About Belong.*"
 - extendedWaitUntil:
     visible: ".*Psalm 139:14.*"
     timeout: 10000
 - assertVisible: ".*Psalm 139:14.*"
-- takeScreenshot: screenshots/05_about_belong_scripture_dialog
 - tapOn: "Close.*"
 
 - tapOn: ".*Sign In.*"
@@ -45,4 +41,4 @@ appId: com.belongonthespectrum.refuge.dev
     visible: ".*Sign [Ii]n.*"
     timeout: 15000
 - assertVisible: ".*Sign [Ii]n.*"
-- takeScreenshot: screenshots/06_auth_modal_sheet
+- back
