@@ -43,7 +43,11 @@ class BelongBottomNavBar extends HookConsumerWidget {
         : 0;
 
     final backgroundColor = isContrast ? Colors.black : theme.scaffoldBackgroundColor;
-    final topBorderColor = isContrast ? Colors.yellow : primary.withValues(alpha: 0.18);
+    final topBorderColor = isContrast
+        ? Colors.yellow
+        : (theme.brightness == Brightness.dark
+              ? const Color(0xFF3E4752)
+              : primary.withValues(alpha: 0.18));
     final bottomInset = SystemInsets.navigationBar(MediaQuery.of(context));
 
     return DecoratedBox(
@@ -55,11 +59,11 @@ class BelongBottomNavBar extends HookConsumerWidget {
         ),
       ),
       child: Padding(
-        padding: .only(bottom: bottomInset),
+        padding: EdgeInsets.only(bottom: bottomInset),
         child: SizedBox(
           height: 64,
           child: Row(
-            crossAxisAlignment: .stretch,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final tab in BelongBottomTab.values)
                 Expanded(
@@ -111,15 +115,26 @@ class _BottomNavItem extends StatelessWidget {
     final Color activeColor = isContrast ? Colors.yellow : primaryColor;
     final Color inactiveColor = isContrast
         ? Colors.white
-        : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ?? Colors.grey.shade600);
+        : (theme.brightness == Brightness.dark
+              ? const Color(0xFFB0BEC5)
+              : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ??
+                    Colors.grey.shade600));
 
     final Color currentColor = isSelected ? activeColor : inactiveColor;
 
     final BoxDecoration pillDecoration = isSelected
         ? BoxDecoration(
-            color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.14),
-            border: isContrast ? Border.all(color: Colors.yellow, width: 2) : null,
-            borderRadius: .circular(16),
+            color: isContrast
+                ? Colors.black
+                : (theme.brightness == Brightness.dark
+                      ? const Color(0xFF27382E)
+                      : primaryColor.withValues(alpha: 0.14)),
+            border: isContrast
+                ? Border.all(color: Colors.yellow, width: 2)
+                : (theme.brightness == Brightness.dark
+                      ? Border.all(color: const Color(0xFF4E7A5A), width: 1)
+                      : null),
+            borderRadius: BorderRadius.circular(16),
           )
         : const BoxDecoration(color: Colors.transparent);
 
@@ -149,17 +164,17 @@ class _BottomNavItem extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             key: Key('bottom_nav_tab_${tab.name}'),
-            borderRadius: .circular(12),
+            borderRadius: BorderRadius.circular(12),
             onTap: onTap,
             child: Padding(
-              padding: const .symmetric(vertical: 4, horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
               child: Column(
-                mainAxisAlignment: .center,
-                mainAxisSize: .min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   AnimatedContainer(
                     duration: animationDuration,
-                    padding: const .symmetric(horizontal: 14, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
                     decoration: pillDecoration,
                     child: iconWidget,
                   ),
