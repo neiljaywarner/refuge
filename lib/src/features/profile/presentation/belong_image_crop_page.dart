@@ -63,7 +63,7 @@ class _BelongImageCropPageState extends State<BelongImageCropPage> {
       body: Column(
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: .fromLTRB(16, 8, 16, 8),
             child: Text('Pinch or drag to frame the photo', key: Key('crop_zoom_hint')),
           ),
           Expanded(
@@ -93,7 +93,7 @@ class _BelongImageCropPageState extends State<BelongImageCropPage> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              padding: const .fromLTRB(16, 8, 16, 12),
               child: FilledButton(
                 key: const Key('use_cropped_photo_button'),
                 onPressed: _ready ? _confirm : null,

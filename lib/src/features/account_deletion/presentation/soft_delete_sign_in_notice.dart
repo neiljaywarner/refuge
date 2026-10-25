@@ -11,7 +11,7 @@ class SoftDeleteSignInNotice extends StatelessWidget {
     final text = message;
     if (text == null || text.isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const .only(bottom: 12),
       child: Text(
         text,
         key: const Key('soft_delete_sign_in_blocked'),

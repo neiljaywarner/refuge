@@ -18,9 +18,7 @@ void showMemeGalleryModal(BuildContext context, {required ValueChanged<CalmMeme>
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: .vertical(top: .circular(20.0))),
     builder: (ctx) =>
         SystemBottomInset(child: _MemeGalleryModalContent(onSelectedMeme: onSelectedMeme)),
   );
@@ -195,18 +193,18 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(
+    padding: .only(
       left: 16.0,
       right: 16.0,
       top: 16.0,
       bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
     ),
     child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: .min,
+      crossAxisAlignment: .start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: .spaceBetween,
           children: [
             const Text(
               '🖼️ Autism & Faith Meme Gallery',
@@ -278,20 +276,20 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
           widget.onSelectedMeme(m);
           Navigator.pop(context);
         },
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: .circular(12.0),
         child: Container(
-          padding: const EdgeInsets.all(12.0),
+          padding: const .all(12.0),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.amber.shade700.withValues(alpha: 0.4)),
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: .circular(12.0),
             color: Colors.amber.withValues(alpha: 0.08),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               if (m.imageUrl != null)
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: .circular(8.0),
                   child: SizedBox(
                     width: 48,
                     height: 48,
@@ -309,7 +307,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     Text(
                       m.title,
@@ -336,19 +334,19 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
   );
 
   Widget _buildCustomMemeForm() => Column(
-    mainAxisSize: MainAxisSize.min,
+    mainAxisSize: .min,
     children: [
       Flexible(
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               // Sensory Safety Notice
               Container(
-                padding: const EdgeInsets.all(10.0),
+                padding: const .all(10.0),
                 decoration: BoxDecoration(
                   color: Colors.teal.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: .circular(8.0),
                   border: Border.all(color: Colors.teal.shade300),
                 ),
                 child: Row(
@@ -375,7 +373,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                   hintStyle: const TextStyle(fontSize: 11),
                   isDense: true,
                   prefixIcon: const Icon(Icons.link, size: 16),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                  border: OutlineInputBorder(borderRadius: .circular(10.0)),
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -390,7 +388,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                   hintStyle: const TextStyle(fontSize: 11),
                   isDense: true,
                   prefixIcon: const Icon(Icons.title, size: 16),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                  border: OutlineInputBorder(borderRadius: .circular(10.0)),
                 ),
               ),
               const SizedBox(height: 10),
@@ -446,14 +444,14 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                 const SizedBox(height: 12),
                 Container(
                   key: const Key('custom_meme_preview'),
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const .all(8.0),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.amber.shade700),
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: .circular(10.0),
                     color: Colors.amber.withValues(alpha: 0.05),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       const Text(
                         'Preview Attached Meme / GIF:',
@@ -461,7 +459,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                       ),
                       const SizedBox(height: 6),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: .circular(8.0),
                         child: SizedBox(
                           height: 120,
                           width: double.infinity,
@@ -472,7 +470,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                               color: Colors.grey.shade200,
                               child: const Center(
                                 child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisSize: .min,
                                   children: [
                                     Icon(Icons.broken_image_outlined, size: 16),
                                     SizedBox(width: 6),
@@ -503,7 +501,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+            shape: RoundedRectangleBorder(borderRadius: .circular(10.0)),
           ),
           onPressed: _submitCustomMeme,
           icon: const Icon(Icons.check_circle_outline, size: 16),
@@ -517,19 +515,19 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
   );
 
   Widget _buildUploadPhotoForm() => Column(
-    mainAxisSize: MainAxisSize.min,
+    mainAxisSize: .min,
     children: [
       Flexible(
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               // Sensory & Privacy Safety Notice
               Container(
-                padding: const EdgeInsets.all(10.0),
+                padding: const .all(10.0),
                 decoration: BoxDecoration(
                   color: Colors.blue.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: .circular(8.0),
                   border: Border.all(color: Colors.blue.shade300),
                 ),
                 child: Row(
@@ -551,14 +549,14 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
               if (_permissionDeniedMessage != null) ...[
                 Container(
                   key: const Key('meme_permission_denied_banner'),
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const .all(10.0),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: .circular(8.0),
                     border: Border.all(color: Colors.orange.shade400),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Row(
                         children: [
@@ -603,8 +601,8 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                     child: OutlinedButton.icon(
                       key: const Key('meme_upload_camera_button'),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                        padding: const .symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: .circular(10.0)),
                       ),
                       onPressed: _isUploading ? null : () => _pickImage(AvatarImageSource.camera),
                       icon: const Icon(Icons.camera_alt_outlined, size: 18),
@@ -619,8 +617,8 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                     child: OutlinedButton.icon(
                       key: const Key('meme_upload_gallery_button'),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                        padding: const .symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: .circular(10.0)),
                       ),
                       onPressed: _isUploading ? null : () => _pickImage(AvatarImageSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined, size: 18),
@@ -649,17 +647,17 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                 const SizedBox(height: 14),
                 Container(
                   key: const Key('uploaded_photo_preview'),
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const .all(8.0),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.amber.shade700),
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: .circular(10.0),
                     color: Colors.amber.withValues(alpha: 0.05),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: .spaceBetween,
                         children: [
                           const Text(
                             'Selected Photo Preview:',
@@ -685,7 +683,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                       ),
                       const SizedBox(height: 8),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: .circular(8.0),
                         child: SizedBox(
                           height: 140,
                           width: double.infinity,
@@ -706,7 +704,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                     hintStyle: const TextStyle(fontSize: 11),
                     isDense: true,
                     prefixIcon: const Icon(Icons.title, size: 16),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                    border: OutlineInputBorder(borderRadius: .circular(10.0)),
                   ),
                 ),
               ],
@@ -722,7 +720,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+            shape: RoundedRectangleBorder(borderRadius: .circular(10.0)),
           ),
           onPressed: _uploadedDataUri != null ? _submitUploadedPhoto : null,
           icon: const Icon(Icons.check_circle_outline, size: 16),

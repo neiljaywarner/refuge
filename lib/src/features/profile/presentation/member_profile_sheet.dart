@@ -38,9 +38,9 @@ class MemberProfileDialog extends HookConsumerWidget {
     ];
 
     return AlertDialog(
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      titlePadding: const .fromLTRB(20, 20, 20, 8),
+      contentPadding: const .fromLTRB(20, 0, 20, 10),
+      actionsPadding: const .fromLTRB(16, 0, 16, 12),
       title: Row(
         children: [
           Tooltip(
@@ -51,7 +51,7 @@ class MemberProfileDialog extends HookConsumerWidget {
               label: 'Change profile avatar',
               child: InkWell(
                 key: const Key('edit_avatar_button'),
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: .circular(999),
                 onTap: () => AvatarPickerSheet.show(context),
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -81,7 +81,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                       bottom: -2,
                       right: -2,
                       child: Container(
-                        padding: const EdgeInsets.all(3),
+                        padding: const .all(3),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primary,
                           shape: BoxShape.circle,
@@ -98,8 +98,8 @@ class MemberProfileDialog extends HookConsumerWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
               children: [
                 Text(
                   profile.isSignedIn ? profile.displayName : 'Member Profile & Sign-In',
@@ -129,17 +129,17 @@ class MemberProfileDialog extends HookConsumerWidget {
         width: 380,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
               if (validationError.value != null) ...[
                 Container(
                   key: const Key('profile_validation_error_banner'),
-                  padding: const EdgeInsets.all(8),
-                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const .all(8),
+                  margin: const .only(bottom: 10),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: .circular(8),
                     border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
                   ),
                   child: Row(
@@ -212,7 +212,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   controller: churchAffiliationController,
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    contentPadding: const .symmetric(horizontal: 10, vertical: 10),
                     border: const OutlineInputBorder(),
                     hintText: 'Select or enter your church affiliation...',
                     hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
@@ -352,7 +352,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   final isPreview = ref.watch(previewFeaturesEnabledProvider);
                   return SwitchListTile.adaptive(
                     key: const Key('preview_mode_switch'),
-                    contentPadding: EdgeInsets.zero,
+                    contentPadding: .zero,
                     dense: true,
                     title: const Text(
                       '🧪 Experimental Preview Features',

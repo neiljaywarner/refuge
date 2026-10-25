@@ -45,7 +45,7 @@ class ComingSoonView extends StatelessWidget {
             child: Padding(
               padding: const .all(24),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: .min,
                 children: [
                   Text(emoji, style: const TextStyle(fontSize: 40)),
                   const SizedBox(height: 12),
@@ -133,7 +133,7 @@ class ComingSoonView extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(borderRadius: .vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(borderRadius: .vertical(top: .circular(24))),
       builder: (modalContext) {
         final theme = Theme.of(modalContext);
         final primary = theme.colorScheme.primary;
@@ -143,7 +143,7 @@ class ComingSoonView extends StatelessWidget {
               padding: const .fromLTRB(24, 20, 24, 24),
               child: SingleChildScrollView(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   crossAxisAlignment: .start,
                   children: [
                     Center(

@@ -217,8 +217,8 @@ class BelongAuthSheet extends HookConsumerWidget {
         builder: (ctx) => AlertDialog(
           title: const Text('Reset Password'),
           content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
               const Text(
                 'Enter your account email to receive a password reset link.',
@@ -275,11 +275,11 @@ class BelongAuthSheet extends HookConsumerWidget {
     }
 
     return AlertDialog(
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      titlePadding: const .fromLTRB(20, 20, 20, 10),
+      contentPadding: const .fromLTRB(20, 0, 20, 16),
       title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: .start,
+        mainAxisSize: .min,
         children: [
           Row(
             children: [
@@ -317,8 +317,8 @@ class BelongAuthSheet extends HookConsumerWidget {
         width: 440,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
               if (previewFeaturesEnabled) ...[
                 const SizedBox(height: 8),
@@ -327,9 +327,9 @@ class BelongAuthSheet extends HookConsumerWidget {
                   child: OutlinedButton.icon(
                     key: const Key('auth_google_sign_in_button'),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      padding: const .symmetric(vertical: 11),
                       side: BorderSide(color: Colors.grey.shade300),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(borderRadius: .circular(8)),
                     ),
                     onPressed: () {
                       ref.read(memberProfileProvider.notifier).signInWithOAuth('google');
@@ -361,15 +361,15 @@ class BelongAuthSheet extends HookConsumerWidget {
               if (errorMessage.value != null) ...[
                 Container(
                   key: const Key('auth_error_banner'),
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const .all(10),
+                  margin: const .only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: .circular(8),
                     border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       const Icon(Icons.info_outline_rounded, size: 18, color: Colors.red),
                       const SizedBox(width: 8),
@@ -387,15 +387,15 @@ class BelongAuthSheet extends HookConsumerWidget {
               if (successMessage.value != null) ...[
                 Container(
                   key: const Key('auth_success_banner'),
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const .all(10),
+                  margin: const .only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.teal.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: .circular(8),
                     border: Border.all(color: Colors.teal.withValues(alpha: 0.35)),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       const Icon(Icons.check_circle_outline_rounded, size: 18, color: Colors.teal),
                       const SizedBox(width: 8),
@@ -495,7 +495,7 @@ class BelongAuthSheet extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: .spaceBetween,
                   children: [
                     TextButton(
                       key: const Key('auth_forgot_password_button'),
@@ -586,7 +586,7 @@ class BelongAuthSheet extends HookConsumerWidget {
                     controller: churchAffiliationController,
                     decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      contentPadding: const .symmetric(horizontal: 10, vertical: 10),
                       border: const OutlineInputBorder(),
                       hintText: 'Select or enter your church affiliation...',
                       hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),

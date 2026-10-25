@@ -178,7 +178,7 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
           onPressed: widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
         ),
         title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             Text('Member Directory', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Text(
@@ -193,7 +193,7 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
           children: [
             // Search field
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const .fromLTRB(16, 12, 16, 8),
               child: TextField(
                 controller: _searchController,
                 key: const Key('members_directory_search_field'),
@@ -210,9 +210,9 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
                         )
                       : null,
                   filled: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  contentPadding: const .symmetric(horizontal: 16, vertical: 10),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: .circular(12),
                     borderSide: BorderSide.none,
                   ),
                 ),
@@ -223,7 +223,7 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
             // Filter chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const .symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
                   for (final f in ['All', 'ICOC Affiliated', 'Organizers']) ...[
@@ -243,12 +243,12 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
             // Directory list
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                padding: const .fromLTRB(16, 4, 16, 24),
                 children: [
                   // Current user's card (if signed in)
                   if (currentProfile.isSignedIn) ...[
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: const .only(bottom: 8),
                       child: Text(
                         'Your Community Card',
                         style: theme.textTheme.labelMedium?.copyWith(
@@ -260,7 +260,7 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
                     _SelfMemberCard(profile: currentProfile),
                     const SizedBox(height: 16),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: const .only(bottom: 8),
                       child: Text(
                         'Fellowship Disciples (${filteredMembers.length})',
                         style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -270,7 +270,7 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
 
                   if (filteredMembers.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      padding: const .symmetric(vertical: 40),
                       child: Center(
                         child: Column(
                           children: [
@@ -318,14 +318,14 @@ class _SelfMemberCard extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: .circular(14),
         side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
       ),
       color: theme.colorScheme.primary.withValues(alpha: 0.04),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const .all(14),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             Row(
               children: [
@@ -349,7 +349,7 @@ class _SelfMemberCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Row(
                         children: [
@@ -362,10 +362,10 @@ class _SelfMemberCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const .symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: .circular(6),
                             ),
                             child: Text(
                               'You',
@@ -407,10 +407,10 @@ class _SelfMemberCard extends StatelessWidget {
                 children: [
                   for (final badge in profile.comfortBadges)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const .symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: .circular(6),
                       ),
                       child: Text(badge, style: const TextStyle(fontSize: 10)),
                     ),
@@ -439,20 +439,20 @@ class _FellowshipMemberCard extends StatelessWidget {
         'dev_member_card_${member.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}',
       ),
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: .circular(14),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: .circular(14),
           side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const .all(14),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: .start,
                 children: [
                   CircleAvatar(
                     radius: 20,
@@ -469,7 +469,7 @@ class _FellowshipMemberCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: .start,
                       children: [
                         Row(
                           children: [
@@ -483,10 +483,10 @@ class _FellowshipMemberCard extends StatelessWidget {
                             if (member.isIcocMember) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const .symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: .circular(6),
                                 ),
                                 child: const Text(
                                   'ICOC',
@@ -537,10 +537,10 @@ class _FellowshipMemberCard extends StatelessWidget {
                   children: [
                     for (final badge in member.comfortBadges)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        padding: const .symmetric(horizontal: 7, vertical: 2.5),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: .circular(6),
                         ),
                         child: Text(badge, style: const TextStyle(fontSize: 10)),
                       ),

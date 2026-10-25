@@ -57,7 +57,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.90),
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const .vertical(top: .circular(20)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -71,21 +71,21 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
           // Drag handle
           Center(
             child: Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 6),
+              margin: const .only(top: 10, bottom: 6),
               width: 40,
               height: 4,
               decoration: BoxDecoration(
                 color: theme.dividerColor.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: .circular(2),
               ),
             ),
           ),
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const .symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: .spaceBetween,
               children: [
                 Expanded(
                   child: Row(
@@ -115,15 +115,15 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
 
           // Original Post Context Banner
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            padding: const EdgeInsets.all(12),
+            margin: const .symmetric(horizontal: 16, vertical: 4),
+            padding: const .all(12),
             decoration: BoxDecoration(
               color: theme.cardColor.withValues(alpha: isDark ? 0.7 : 0.9),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: .circular(10),
               border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 CircleAvatar(
                   radius: 14,
@@ -140,7 +140,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Row(
                         children: [
@@ -153,10 +153,10 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const .symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: .circular(4),
                             ),
                             child: Text(
                               post.toneTag,
@@ -198,9 +198,9 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                 if (comments.isEmpty) {
                   return Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: const .all(24.0),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisSize: .min,
                         children: [
                           Icon(Icons.forum_outlined, size: 44, color: theme.disabledColor),
                           const SizedBox(height: 12),
@@ -224,7 +224,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const .symmetric(horizontal: 16, vertical: 8),
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
                     final comment = comments[index];
@@ -246,20 +246,20 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
           SafeArea(
             top: false,
             child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.cardColor,
                   border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5))),
                 ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: .min,
+                  crossAxisAlignment: .stretch,
                   children: [
                     // Replying to banner
                     if (replyingTo.value != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const .symmetric(horizontal: 16, vertical: 6),
                         color: theme.colorScheme.primary.withValues(alpha: 0.08),
                         child: Row(
                           children: [
@@ -274,7 +274,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             IconButton(
                               key: const Key('cancel_reply_target_button'),
                               icon: const Icon(Icons.close, size: 14),
-                              padding: EdgeInsets.zero,
+                              padding: .zero,
                               constraints: const BoxConstraints(),
                               tooltip: 'Cancel reply',
                               onPressed: () => replyingTo.value = null,
@@ -286,12 +286,12 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                     // Tone Tag Picker Row
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const .symmetric(horizontal: 12, vertical: 6),
                       child: Row(
                         children: availableToneTags.map((tag) {
                           final isSelected = selectedTone.value == tag;
                           return Padding(
-                            padding: const EdgeInsets.only(right: 6),
+                            padding: const .only(right: 6),
                             child: ChoiceChip(
                               label: Text(tag, style: const TextStyle(fontSize: 10)),
                               selected: isSelected,
@@ -308,9 +308,9 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
 
                     // Input Field and Submit Button
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                      padding: const .fromLTRB(12, 0, 12, 8),
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: .end,
                         children: [
                           Expanded(
                             child: TextField(
@@ -324,16 +324,13 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                     ? 'Write a gentle reply to @${replyingTo.value!.authorName}...'
                                     : 'Share an unhurried, gentle thought...',
                                 hintStyle: TextStyle(fontSize: 12, color: theme.hintColor),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
+                                contentPadding: const .symmetric(horizontal: 12, vertical: 10),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: .circular(12),
                                   borderSide: BorderSide(color: theme.dividerColor),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: .circular(12),
                                   borderSide: BorderSide(
                                     color: theme.dividerColor.withValues(alpha: 0.6),
                                   ),
@@ -414,19 +411,19 @@ class _CommentTile extends StatelessWidget {
     final isNested = comment.isNested;
 
     Widget content = Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(12),
+      margin: const .symmetric(vertical: 4),
+      padding: const .all(12),
       decoration: BoxDecoration(
         color: isNested ? theme.cardColor.withValues(alpha: 0.6) : theme.cardColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: .circular(10),
         border: Border.all(color: theme.dividerColor.withValues(alpha: isNested ? 0.3 : 0.6)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           // Author & Tone Tag Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: .spaceBetween,
             children: [
               Expanded(
                 child: Row(
@@ -454,10 +451,10 @@ class _CommentTile extends StatelessWidget {
                     if (comment.toneTag != null) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const .symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: .circular(4),
                         ),
                         child: Text(
                           comment.toneTag!,
@@ -531,7 +528,7 @@ class _CommentTile extends StatelessWidget {
                   key: Key('reply_button_${comment.id}'),
                   style: TextButton.styleFrom(
                     visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    padding: const .symmetric(horizontal: 6),
                   ),
                   icon: const Icon(Icons.reply, size: 13),
                   label: const Text('Reply', style: TextStyle(fontSize: 10.5)),
@@ -546,12 +543,12 @@ class _CommentTile extends StatelessWidget {
 
     if (isNested) {
       return Padding(
-        padding: const EdgeInsets.only(left: 20),
+        padding: const .only(left: 20),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             Container(
-              margin: const EdgeInsets.only(top: 14, right: 8),
+              margin: const .only(top: 14, right: 8),
               width: 14,
               height: 14,
               alignment: Alignment.center,
@@ -574,16 +571,16 @@ class _CommentTile extends StatelessWidget {
     required VoidCallback onTap,
   }) => InkWell(
     key: key,
-    borderRadius: BorderRadius.circular(6),
+    borderRadius: .circular(6),
     onTap: onTap,
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: const .symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: .circular(6),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Text(emoji, style: const TextStyle(fontSize: 11)),
           if (count > 0) ...[

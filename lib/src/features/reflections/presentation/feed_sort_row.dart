@@ -31,7 +31,7 @@ class FeedSortRow extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 2.0),
+      padding: const .symmetric(horizontal: 14.0, vertical: 2.0),
       child: Row(
         children: [
           Semantics(
@@ -43,7 +43,7 @@ class FeedSortRow extends StatelessWidget {
               tooltip: 'Sort feed by...',
               offset: const Offset(0, 32),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: .circular(12),
                 side: BorderSide(color: isContrast ? Colors.white : theme.dividerColor),
               ),
               initialValue: activeSort,
@@ -66,8 +66,8 @@ class FeedSortRow extends StatelessWidget {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: .start,
+                              mainAxisSize: .min,
                               children: [
                                 Text(
                                   opt.label,
@@ -100,12 +100,12 @@ class FeedSortRow extends StatelessWidget {
                 );
               }).toList(),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                padding: const .symmetric(horizontal: 6, vertical: 4),
                 decoration: BoxDecoration(
                   color: isContrast
                       ? Colors.black
                       : theme.colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: .circular(6),
                   border: Border.all(
                     color: isContrast
                         ? Colors.white
@@ -113,7 +113,7 @@ class FeedSortRow extends StatelessWidget {
                   ),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
                     Icon(Icons.sort_rounded, size: 14, color: isContrast ? Colors.yellow : primary),
                     const Gap(4),
@@ -138,7 +138,7 @@ class FeedSortRow extends StatelessWidget {
                 children: FeedSortOption.values.map((opt) {
                   final isSelected = activeSort == opt;
                   return Padding(
-                    padding: const EdgeInsets.only(right: 6.0),
+                    padding: const .only(right: 6.0),
                     child: Semantics(
                       identifier: 'feed_sort_chip_${opt.name}',
                       button: true,

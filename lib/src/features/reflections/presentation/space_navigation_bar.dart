@@ -18,7 +18,7 @@ class SpaceNavigationBar extends ConsumerWidget {
         theme.colorScheme.primary == const Color(0xFFFFEB3B);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+      padding: const .symmetric(vertical: 8.0, horizontal: 12.0),
       decoration: BoxDecoration(
         color: theme.cardColor,
         border: Border(bottom: BorderSide(color: theme.dividerColor)),
@@ -29,7 +29,7 @@ class SpaceNavigationBar extends ConsumerWidget {
           children: kFellowshipSpaces.entries.map((entry) {
             final isSelected = selectedSpace == entry.key;
             return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
+              padding: const .only(right: 8.0),
               child: FilterChip(
                 selected: isSelected,
                 label: Text(

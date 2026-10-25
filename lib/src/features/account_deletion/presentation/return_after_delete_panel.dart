@@ -38,10 +38,10 @@ class ReturnAfterDeletePanel extends HookWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const .all(24),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: .min,
+        crossAxisAlignment: .stretch,
         children: [
           Text(
             AccountDeletionMessages.returnExplanation,

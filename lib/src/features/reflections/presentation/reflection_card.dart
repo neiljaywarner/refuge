@@ -34,15 +34,15 @@ class ReflectionCard extends ConsumerWidget {
 
     return Container(
       key: Key('reflection_card_${post.id}'),
-      margin: const EdgeInsets.symmetric(vertical: 6.0),
-      padding: const EdgeInsets.all(14.0),
+      margin: const .symmetric(vertical: 6.0),
+      padding: const .all(14.0),
       decoration: BoxDecoration(
         color: isHighlighted
             ? (isContrast
                   ? const Color(0xFF1A1A00)
                   : Theme.of(context).primaryColor.withValues(alpha: 0.08))
             : Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14.0),
+        borderRadius: .circular(14.0),
         border: Border.all(
           color: isHighlighted
               ? (isContrast ? Colors.yellow : const Color(0xFF2E6B56))
@@ -53,10 +53,10 @@ class ReflectionCard extends ConsumerWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: .spaceBetween,
             children: [
               Flexible(
                 child: Row(
@@ -64,13 +64,13 @@ class ReflectionCard extends ConsumerWidget {
                     Flexible(
                       child: InkWell(
                         key: Key('author_tap_target_${post.id}'),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: .circular(4),
                         onTap: () =>
                             OtherMemberProfileDialog.show(context, authorName: post.authorName),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                          padding: const .symmetric(vertical: 2, horizontal: 2),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                            mainAxisSize: .min,
                             children: [
                               CircleAvatar(
                                 radius: 10,
@@ -112,15 +112,15 @@ class ReflectionCard extends ConsumerWidget {
                 ),
               ),
               Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: .min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                    padding: const .symmetric(horizontal: 8.0, vertical: 3.0),
                     decoration: BoxDecoration(
                       color: isMeme
                           ? Colors.amber.withValues(alpha: 0.2)
                           : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6.0),
+                      borderRadius: .circular(6.0),
                     ),
                     child: Text(
                       post.toneTag,
@@ -137,7 +137,7 @@ class ReflectionCard extends ConsumerWidget {
                   IconButton(
                     key: Key('save_post_button_${post.id}'),
                     visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
+                    padding: .zero,
                     constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                     tooltip: post.isSaved ? 'Remove from Saved' : 'Save for Later (Private)',
                     onPressed: () =>
@@ -157,10 +157,10 @@ class ReflectionCard extends ConsumerWidget {
           if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+              padding: const .symmetric(horizontal: 8.0, vertical: 3.0),
               decoration: BoxDecoration(
                 color: Colors.blueGrey.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6.0),
+                borderRadius: .circular(6.0),
               ),
               child: Text(
                 '🧩 Special Interest: ${post.specialInterestTag}',
@@ -181,14 +181,14 @@ class ReflectionCard extends ConsumerWidget {
           if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 10),
             ClipRRect(
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: .circular(12.0),
               child: Container(
                 key: Key('post_meme_image_${post.id}'),
                 constraints: const BoxConstraints(maxHeight: 280),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.amber.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: .circular(12.0),
                   border: Border.all(
                     color: isMeme
                         ? Colors.amber.shade300
@@ -214,10 +214,10 @@ class ReflectionCard extends ConsumerWidget {
                     );
                   },
                   errorBuilder: (context, error, stackTrace) => Container(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const .all(12.0),
                     alignment: Alignment.center,
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize: .min,
                       children: [
                         Icon(Icons.broken_image_outlined, size: 18, color: Colors.amber.shade800),
                         const SizedBox(width: 8),
@@ -240,7 +240,7 @@ class ReflectionCard extends ConsumerWidget {
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const .symmetric(horizontal: 8),
                   ),
                   onPressed: () => onAddReaction('pray'),
                   icon: const Text('🙏', style: TextStyle(fontSize: 12)),
@@ -253,7 +253,7 @@ class ReflectionCard extends ConsumerWidget {
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const .symmetric(horizontal: 8),
                   ),
                   onPressed: () => onAddReaction('peace'),
                   icon: const Text('🤍', style: TextStyle(fontSize: 12)),
@@ -268,7 +268,7 @@ class ReflectionCard extends ConsumerWidget {
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const .symmetric(horizontal: 8),
                     ),
                     onPressed: () => onAddReaction('encouraged'),
                     icon: const Text('🌱', style: TextStyle(fontSize: 12)),
@@ -281,7 +281,7 @@ class ReflectionCard extends ConsumerWidget {
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const .symmetric(horizontal: 8),
                     ),
                     onPressed: () => onAddReaction('relatable'),
                     icon: const Text('😄', style: TextStyle(fontSize: 12)),
@@ -300,7 +300,7 @@ class ReflectionCard extends ConsumerWidget {
                       key: Key('discussion_button_${post.id}'),
                       style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const .symmetric(horizontal: 8),
                       ),
                       onPressed:
                           onOpenDiscussion ??

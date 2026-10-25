@@ -139,11 +139,11 @@ class ReflectionComposer extends HookWidget {
     if (!isExpanded.value) {
       return Container(
         key: const Key('reflection_composer_card'),
-        margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        margin: const .symmetric(horizontal: 12.0, vertical: 3.0),
+        padding: const .symmetric(horizontal: 12.0, vertical: 6.0),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(14.0),
+          borderRadius: .circular(14.0),
           border: Border.all(
             color: isContrast ? Colors.white : Theme.of(context).dividerColor,
             width: isContrast ? 2.0 : 1.0,
@@ -176,7 +176,7 @@ class ReflectionComposer extends HookWidget {
                       color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                    contentPadding: const .symmetric(vertical: 6),
                   ),
                   style: const TextStyle(fontSize: 13),
                 ),
@@ -208,18 +208,18 @@ class ReflectionComposer extends HookWidget {
 
     return Container(
       key: const Key('reflection_composer_card'),
-      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
-      padding: const EdgeInsets.all(10.0),
+      margin: const .symmetric(horizontal: 12.0, vertical: 3.0),
+      padding: const .all(10.0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14.0),
+        borderRadius: .circular(14.0),
         border: Border.all(
           color: isContrast ? Colors.white : Theme.of(context).dividerColor,
           width: isContrast ? 2.0 : 1.0,
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Row(
             children: [
@@ -270,10 +270,10 @@ class ReflectionComposer extends HookWidget {
                 hintStyle: const TextStyle(fontSize: 11),
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: .circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const .symmetric(horizontal: 10, vertical: 8),
               ),
             ),
           ],
@@ -288,10 +288,10 @@ class ReflectionComposer extends HookWidget {
                 hintStyle: const TextStyle(fontSize: 11),
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: .circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const .symmetric(horizontal: 10, vertical: 8),
               ),
             ),
             const SizedBox(height: 6),
@@ -304,10 +304,10 @@ class ReflectionComposer extends HookWidget {
                 hintStyle: const TextStyle(fontSize: 11),
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: .circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const .symmetric(horizontal: 10, vertical: 8),
               ),
             ),
           ],
@@ -317,13 +317,13 @@ class ReflectionComposer extends HookWidget {
               key: const Key('image_post_preview_container'),
               constraints: BoxConstraints(maxHeight: isModal ? 140 : 100),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: .circular(8.0),
                 border: Border.all(color: Colors.amber.shade300),
               ),
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: .circular(8.0),
                     child: Image.network(
                       customImageUrl.value.isNotEmpty
                           ? customImageUrl.value
@@ -347,7 +347,7 @@ class ReflectionComposer extends HookWidget {
                         attachedMeme.value = null;
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const .all(4),
                         decoration: const BoxDecoration(
                           color: Colors.black54,
                           shape: BoxShape.circle,
@@ -377,10 +377,10 @@ class ReflectionComposer extends HookWidget {
                       : 'Share an unhurried thought, Scripture insight, or relatable reflection...',
                   hintStyle: const TextStyle(fontSize: 12),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: .circular(12.0),
                     borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
-                  contentPadding: const EdgeInsets.all(12.0),
+                  contentPadding: const .all(12.0),
                 ),
               ),
             ),
@@ -388,18 +388,18 @@ class ReflectionComposer extends HookWidget {
           if (attachedMeme.value != null && !isImagePost) ...[
             Container(
               key: const Key('attached_meme_banner'),
-              margin: const EdgeInsets.only(top: 8.0),
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+              margin: const .only(top: 8.0),
+              padding: const .symmetric(horizontal: 10.0, vertical: 6.0),
               decoration: BoxDecoration(
                 color: Colors.amber.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: .circular(8.0),
                 border: Border.all(color: Colors.amber.shade700),
               ),
               child: Row(
                 children: [
                   if (attachedMeme.value!.imageUrl != null)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(4.0),
+                      borderRadius: .circular(4.0),
                       child: Container(
                         width: 24,
                         height: 24,
@@ -448,7 +448,7 @@ class ReflectionComposer extends HookWidget {
               OutlinedButton.icon(
                 key: const Key('add_meme_gif_button'),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding: const .symmetric(horizontal: 10, vertical: 8),
                   side: BorderSide(
                     color: isContrast ? Colors.white : Theme.of(context).dividerColor,
                   ),
@@ -465,7 +465,7 @@ class ReflectionComposer extends HookWidget {
                   key: const Key('composer_collapse_bottom_button'),
                   style: TextButton.styleFrom(
                     visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    padding: const .symmetric(horizontal: 6),
                   ),
                   onPressed: () => isExpanded.value = false,
                   icon: const Icon(Icons.unfold_less_rounded, size: 14),
@@ -476,8 +476,8 @@ class ReflectionComposer extends HookWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: isContrast ? Colors.black : Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: .circular(10.0)),
+                  padding: const .symmetric(horizontal: 10, vertical: 8),
                 ),
                 onPressed: handlePublish,
                 icon: Icon(

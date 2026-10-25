@@ -28,9 +28,9 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
 
     return Material(
       color: theme.colorScheme.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: const .vertical(top: .circular(24)),
       child: Padding(
-        padding: EdgeInsets.only(
+        padding: .only(
           top: 16,
           left: 20,
           right: 20,
@@ -38,8 +38,8 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
         ),
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
               Center(
                 child: Container(
@@ -47,7 +47,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: theme.dividerColor.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: .circular(2),
                   ),
                 ),
               ),
@@ -77,7 +77,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               // Notification Master Toggle
               SwitchListTile.adaptive(
                 key: const ValueKey('toggle-notifications-switch'),
-                contentPadding: EdgeInsets.zero,
+                contentPadding: .zero,
                 title: const Text(
                   'Message alerts',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -113,14 +113,14 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               if (prefs.isIosWebWithoutPwa) ...[
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const .all(12),
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: .circular(10),
                     border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       const Text('📱', style: TextStyle(fontSize: 18)),
                       const SizedBox(width: 8),
@@ -145,7 +145,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               for (final schedule in CalmDigestSchedule.values)
                 RadioListTile<CalmDigestSchedule>(
                   key: ValueKey('schedule-radio-${schedule.name}'),
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: .zero,
                   dense: true,
                   title: Text(
                     '${schedule.emoji} ${schedule.title}',

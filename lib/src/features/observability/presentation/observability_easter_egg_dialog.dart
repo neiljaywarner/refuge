@@ -59,8 +59,8 @@ class _ObservabilityEasterEggDialogState extends ConsumerState<ObservabilityEast
       ),
       content: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: .min,
+          crossAxisAlignment: .stretch,
           children: [
             const Text(
               'Tap below to verify Firebase services, copy device Installation ID, trigger In-App Messaging, or export session diagnostic logs.',
@@ -77,10 +77,10 @@ class _ObservabilityEasterEggDialogState extends ConsumerState<ObservabilityEast
             ),
             const SizedBox(height: 4),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const .symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: .circular(6),
                 border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
               ),
               child: installationsAsync.when(
@@ -225,10 +225,10 @@ class _ObservabilityEasterEggDialogState extends ConsumerState<ObservabilityEast
             if (_uploadedLogUrl != null) ...[
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const .symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: .circular(6),
                 ),
                 child: Row(
                   children: [
@@ -358,10 +358,10 @@ class _ObservabilityEasterEggDialogState extends ConsumerState<ObservabilityEast
             ),
             const SizedBox(height: 4),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const .symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: .circular(6),
               ),
               child: Row(
                 children: [
@@ -433,9 +433,9 @@ class _ObservabilityEasterEggDialogState extends ConsumerState<ObservabilityEast
           minChildSize: 0.4,
           expand: false,
           builder: (_, scrollController) => Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const .all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: .stretch,
               children: [
                 Row(
                   children: [

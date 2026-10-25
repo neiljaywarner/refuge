@@ -199,11 +199,11 @@ class BelongMessagesView extends HookConsumerWidget {
         ],
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: .stretch,
         children: [
           // Search Messages Bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+            padding: const .fromLTRB(14, 8, 14, 4),
             child: TextField(
               key: const Key('search_messages_input'),
               controller: searchController,
@@ -224,13 +224,13 @@ class BelongMessagesView extends HookConsumerWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding: const .symmetric(horizontal: 12, vertical: 8),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: .circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: .circular(12),
                   borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                 ),
               ),
@@ -240,13 +240,13 @@ class BelongMessagesView extends HookConsumerWidget {
 
           // Calm Digest Banner
           Container(
-            margin: const EdgeInsets.fromLTRB(14, 6, 14, 6),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const .fromLTRB(14, 6, 14, 6),
+            padding: const .symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: theme.brightness == Brightness.dark
                   ? theme.colorScheme.surfaceContainerHighest
                   : const Color(0xFFF3F7F5),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: .circular(10),
               border: Border.all(
                 color: theme.brightness == Brightness.dark
                     ? theme.dividerColor
@@ -278,9 +278,9 @@ class BelongMessagesView extends HookConsumerWidget {
 
           // Conversation List Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 2),
+            padding: const .fromLTRB(16, 4, 16, 2),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: .spaceBetween,
               children: [
                 Text(
                   'Conversations',
@@ -305,7 +305,7 @@ class BelongMessagesView extends HookConsumerWidget {
             child: filteredThreads.isEmpty
                 ? Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(32.0),
+                      padding: const .all(32.0),
                       child: Text(
                         searchQuery.value.isNotEmpty
                             ? 'No messages matching "${searchQuery.value}".'
@@ -317,15 +317,15 @@ class BelongMessagesView extends HookConsumerWidget {
                     ),
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const .symmetric(horizontal: 12, vertical: 4),
                     itemCount: filteredThreads.length,
                     separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
                     itemBuilder: (context, index) {
                       final thread = filteredThreads[index];
                       return ListTile(
                         key: Key('thread-${thread.id}'),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const .symmetric(horizontal: 8, vertical: 4),
+                        shape: RoundedRectangleBorder(borderRadius: .circular(8)),
                         leading: CircleAvatar(
                           backgroundColor: primary.withValues(alpha: 0.12),
                           foregroundColor: primary,
@@ -345,11 +345,11 @@ class BelongMessagesView extends HookConsumerWidget {
                             ),
                             if (thread.messageType != null) ...[
                               Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                margin: const .symmetric(horizontal: 4),
+                                padding: const .symmetric(horizontal: 6, vertical: 1.5),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: .circular(6),
                                 ),
                                 child: Text(
                                   thread.messageType!,
@@ -369,10 +369,10 @@ class BelongMessagesView extends HookConsumerWidget {
                             if (thread.unreadCount > 0) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const .symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: primary,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: .circular(10),
                                 ),
                                 child: Text(
                                   '${thread.unreadCount}',
@@ -387,7 +387,7 @@ class BelongMessagesView extends HookConsumerWidget {
                           ],
                         ),
                         subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 2),
+                          padding: const .only(top: 2),
                           child: Text(
                             thread.subject != null
                                 ? '${thread.subject}: ${thread.previewSnippet}'
@@ -452,8 +452,8 @@ class BelongMessagesView extends HookConsumerWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
               children: [
                 Text(
                   thread.participantName,
@@ -477,25 +477,25 @@ class BelongMessagesView extends HookConsumerWidget {
         // Message History
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const .all(16),
             itemCount: thread.messages.length,
             itemBuilder: (context, index) {
               final msg = thread.messages[index];
               return Align(
                 alignment: msg.isFromMe ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  margin: const .only(bottom: 10),
+                  padding: const .symmetric(horizontal: 14, vertical: 10),
                   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
                   decoration: BoxDecoration(
                     color: msg.isFromMe
                         ? theme.colorScheme.primary
                         : theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: .circular(14),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: .start,
+                    mainAxisSize: .min,
                     children: [
                       Text(
                         msg.content,
@@ -527,7 +527,7 @@ class BelongMessagesView extends HookConsumerWidget {
 
         // Reply Input Bar
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const .all(10),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             border: Border(top: BorderSide(color: Colors.grey.shade200)),
@@ -545,13 +545,13 @@ class BelongMessagesView extends HookConsumerWidget {
                       hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                       filled: true,
                       fillColor: const Color(0xFFF7F9FA),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      contentPadding: const .symmetric(horizontal: 14, vertical: 10),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: .circular(20),
                         borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: .circular(20),
                         borderSide: BorderSide(color: Colors.grey.shade200),
                       ),
                     ),
@@ -611,9 +611,9 @@ class _NewMessageModalSheet extends HookConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const .vertical(top: .circular(20)),
       ),
-      padding: EdgeInsets.only(
+      padding: .only(
         top: 16,
         left: 16,
         right: 16,
@@ -621,12 +621,12 @@ class _NewMessageModalSheet extends HookConsumerWidget {
       ),
       child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: .min,
+          crossAxisAlignment: .stretch,
           children: [
             // Modal Header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: .spaceBetween,
               children: [
                 Row(
                   children: [
@@ -649,7 +649,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
 
             if (showingSamplesOnly)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const .only(bottom: 8),
                 child: Text(
                   'Sample members shown while the directory is offline.',
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
@@ -694,9 +694,9 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const .symmetric(horizontal: 10, vertical: 8),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: .circular(10),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
@@ -708,11 +708,11 @@ class _NewMessageModalSheet extends HookConsumerWidget {
             if (availableMembers.isNotEmpty)
               Material(
                 color: theme.cardColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: .circular(10),
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 140),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: .circular(10),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: ListView.separated(
@@ -772,9 +772,9 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const .symmetric(horizontal: 10, vertical: 8),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: .circular(10),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
@@ -794,9 +794,9 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                   hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   filled: true,
                   fillColor: theme.cardColor,
-                  contentPadding: const EdgeInsets.all(12),
+                  contentPadding: const .all(12),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: .circular(12),
                     borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
@@ -819,8 +819,8 @@ class _NewMessageModalSheet extends HookConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const .symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: .circular(10)),
               ),
               icon: sending.value
                   ? const SizedBox(

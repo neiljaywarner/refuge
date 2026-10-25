@@ -59,16 +59,16 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
 
     return ListView(
       key: const Key('belong_spaces_directory_list'),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const .symmetric(horizontal: 12, vertical: 8),
       children: [
         for (final section in kBelongSpaceSections)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const .only(bottom: 12),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const .symmetric(horizontal: 8, vertical: 4),
                   child: Text(
                     section.heading,
                     style: TextStyle(
@@ -81,9 +81,9 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
                 ),
                 Card(
                   elevation: 0,
-                  margin: EdgeInsets.zero,
+                  margin: .zero,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: .circular(12),
                     side: BorderSide(color: primary.withValues(alpha: 0.18)),
                   ),
                   child: Column(
@@ -106,13 +106,13 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
           ),
         if (isMutedInSettings)
           Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 24),
+            padding: const .only(top: 4, bottom: 24),
             child: Card(
               key: const Key('notifications_muted_spaces_tile'),
               elevation: 0,
               color: primary.withValues(alpha: 0.05),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: .circular(12),
                 side: BorderSide(color: primary.withValues(alpha: 0.2)),
               ),
               child: ListTile(
@@ -162,10 +162,10 @@ class _SpaceRowTile extends StatelessWidget {
           ? Icon(Icons.open_in_new_rounded, size: 16, color: primary)
           : item.isComingSoon
           ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const .symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: .circular(999),
               ),
               child: Text(
                 item.slug.startsWith('link_') ? 'Pending' : 'Coming Soon',

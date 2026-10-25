@@ -191,14 +191,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+            padding: const .fromLTRB(20, 4, 20, 8),
             child: Row(
               children: [
                 Icon(Icons.how_to_vote_outlined, color: colorScheme.primary),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Text(
                         'Belong Roadmap & Feedback',
@@ -262,10 +262,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   padding: listPadding,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const .all(12),
                       decoration: BoxDecoration(
                         color: colorScheme.primaryContainer.withValues(alpha: 0.45),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: .circular(12),
                       ),
                       child: Row(
                         children: [
@@ -293,27 +293,24 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 : colorScheme.outlineVariant,
                             width: item.userVoted ? 2.0 : 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: .circular(12),
                         ),
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: const .only(bottom: 12),
                         child: Padding(
-                          padding: const EdgeInsets.all(14),
+                          padding: const .all(14),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: .start,
                             children: [
                               Row(
                                 children: [
                                   Flexible(
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3,
-                                      ),
+                                      padding: const .symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
                                         color: item.stage == FeatureStage.workInProgress
                                             ? colorScheme.primary.withValues(alpha: 0.15)
                                             : colorScheme.surfaceContainerHighest,
-                                        borderRadius: BorderRadius.circular(6),
+                                        borderRadius: .circular(6),
                                       ),
                                       child: Text(
                                         item.stage.badgeLabel,
@@ -403,14 +400,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         side: BorderSide(color: colorScheme.outlineVariant),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: .circular(12),
                       ),
                       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const .only(bottom: 12),
                       child: Padding(
-                        padding: const EdgeInsets.all(14),
+                        padding: const .all(14),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: .start,
                           children: [
                             Row(
                               children: [
@@ -435,7 +432,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             ),
                             const SizedBox(height: 10),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: .spaceEvenly,
                               children: [
                                 for (int star = 1; star <= 5; star++)
                                   IconButton(
@@ -463,10 +460,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             Center(
                               child: Container(
                                 key: const Key('star_rating_literal_label'),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const .symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: colorScheme.primaryContainer.withValues(alpha: 0.6),
-                                  borderRadius: BorderRadius.circular(999),
+                                  borderRadius: .circular(999),
                                 ),
                                 child: Text(
                                   starLiteralDescription(selectedStarRating.value),
@@ -493,14 +490,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 : colorScheme.outlineVariant,
                             width: selectedSentiment.value == sentiment ? 2.0 : 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: .circular(12),
                         ),
-                        margin: const EdgeInsets.only(bottom: 10),
+                        margin: const .only(bottom: 10),
                         color: selectedSentiment.value == sentiment
                             ? colorScheme.primaryContainer.withValues(alpha: 0.3)
                             : null,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: .circular(12),
                           onTap: () {
                             selectedSentiment.value = sentiment;
                             selectedStarRating.value = switch (sentiment) {
@@ -514,14 +511,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             submittedMessage.value = null;
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const .all(12),
                             child: Row(
                               children: [
                                 Text(sentiment.emoji, style: const TextStyle(fontSize: 24)),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment: .start,
                                     children: [
                                       Text(
                                         sentiment.label,
@@ -552,12 +549,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         side: BorderSide(color: colorScheme.outlineVariant),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: .circular(12),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(14),
+                        padding: const .all(14),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: .start,
                           children: [
                             Text(
                               selectedSentiment.value.promptTitle,
@@ -592,16 +589,16 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             if (drawingAttachment.value != null) ...[
                               Container(
                                 key: const Key('attached_scribble_preview_container'),
-                                padding: const EdgeInsets.all(8),
+                                padding: const .all(8),
                                 decoration: BoxDecoration(
                                   color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: .circular(10),
                                   border: Border.all(color: colorScheme.outlineVariant),
                                 ),
                                 child: Row(
                                   children: [
                                     ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
+                                      borderRadius: .circular(6),
                                       child: Image.memory(
                                         drawingAttachment.value!,
                                         key: const Key('attached_scribble_thumbnail'),
@@ -613,8 +610,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: .start,
+                                        mainAxisSize: .min,
                                         children: [
                                           const Text(
                                             'Scribble Annotated Screenshot',
@@ -668,10 +665,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             ],
                             if (submittedMessage.value != null) ...[
                               Container(
-                                padding: const EdgeInsets.all(10),
+                                padding: const .all(10),
                                 decoration: BoxDecoration(
                                   color: colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: .circular(8),
                                 ),
                                 child: Semantics(
                                   identifier: 'feedback_submit_result',
