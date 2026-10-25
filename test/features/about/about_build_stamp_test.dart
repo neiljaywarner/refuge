@@ -13,6 +13,7 @@ void main() {
     WidgetTester tester, {
     BuildIdentity? identity,
     Future<AppVersionLabel> Function()? loadVersion,
+    VoidCallback? onOpenFeedback,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -25,6 +26,7 @@ void main() {
                 isContrast: false,
                 buildIdentity: identity,
                 loadVersion: loadVersion,
+                onOpenFeedback: onOpenFeedback,
               ),
               child: const Text('Open About'),
             ),
@@ -88,4 +90,43 @@ void main() {
     expect(find.text('Source: dev'), findsNothing);
     expect(find.byKey(const Key('about_build_commit_url')), findsNothing);
   });
+
+  testWidgets(
+    'About dialog presents interim open-alpha support pointing to Vote & Feedback (#623)',
+    (tester) async {
+      var feedbackOpened = false;
+
+      await openAbout(
+        tester,
+        identity: const BuildIdentity(),
+        loadVersion: () async => AppVersionLabel.unknown,
+        onOpenFeedback: () => feedbackOpened = true,
+      );
+
+      // Header & plain language support copy
+      expect(find.text('Community Support & Feedback:'), findsOneWidget);
+      expect(
+        find.textContaining('Primary support during open alpha is through in-app Vote & Feedback'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Need help, want to suggest an improvement, or report a quirk?'),
+        findsOneWidget,
+      );
+
+      // Strictly zero Grok Bot support emails or internal WCAG/Firebase jargon in public text
+      expect(find.textContaining('grokbot'), findsNothing);
+      expect(find.textContaining('@mail.grokbot.com'), findsNothing);
+      expect(find.textContaining('WCAG'), findsNothing);
+      expect(find.textContaining('Firebase'), findsNothing);
+
+      // Action button opens feedback
+      final feedbackButton = find.byKey(const Key('about_dialog_open_feedback_button'));
+      expect(feedbackButton, findsOneWidget);
+      await tester.tap(feedbackButton);
+      await tester.pumpAndSettle();
+
+      expect(feedbackOpened, isTrue);
+    },
+  );
 }
