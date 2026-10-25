@@ -40,9 +40,9 @@ This document provides a comprehensive technical evaluation of session replay an
 
 ### Why PostHog is Recommended
 1. **Extremely Generous Free Tier**: 1,000,000 events/month and 5,000 session recordings/month free forever.
-2. **Existing Credentials**: A project token is already provisioned in the user environment:
+2. **Existing Credentials**: A project token is already provisioned in the user environment. Keep it out of git:
    ```bash
-   export POSTHOG_BELONG_PROJECT_TOKEN="phc_o3EbCUmwutDFNEbnHe8LFUwVTjooVAK2DuZRNM6gUgVU"
+   export POSTHOG_BELONG_PROJECT_TOKEN="$POSTHOG_BELONG_PROJECT_TOKEN"
    export POSTHOG_BELONG_PROJECT_ID="677583"
    ```
 3. **Session Replay Capability**:
