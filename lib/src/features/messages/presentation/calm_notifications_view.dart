@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../navigation/presentation/belong_bottom_nav_bar.dart';
+import '../../notifications/data/notification_sync_service.dart';
 import '../../notifications/domain/belong_notification.dart';
 import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
 import '../../notifications/presentation/notifications_controller.dart';
@@ -58,8 +60,8 @@ class CalmNotificationsView extends HookConsumerWidget {
                   onChanged: unreadCount == 0
                       ? null
                       : (_) => ref
-                          .read(belongNotificationsProvider.notifier)
-                          .markAllAsRead(),
+                          .read(notificationSyncServiceProvider)
+                          .syncMarkAllAsRead(),
                 ),
                 InkWell(
                   key: const Key('mark_all_notifications_as_read_button'),
@@ -67,8 +69,8 @@ class CalmNotificationsView extends HookConsumerWidget {
                   onTap: unreadCount == 0
                       ? null
                       : () => ref
-                          .read(belongNotificationsProvider.notifier)
-                          .markAllAsRead(),
+                          .read(notificationSyncServiceProvider)
+                          .syncMarkAllAsRead(),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                        horizontal: 4.0,

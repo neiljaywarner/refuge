@@ -11,6 +11,7 @@ class FcmMessagingService {
     FirebaseMessaging? messaging,
     CalmLocalNotificationService? localNotifications,
     CommunityAnalyticsService? analytics,
+    this.onPayloadReceived,
   })  : _messaging = messaging ?? FirebaseMessaging.instance,
         _localNotifications = localNotifications ?? createCalmLocalNotificationService(),
         _analytics = analytics;
@@ -18,6 +19,11 @@ class FcmMessagingService {
   final FirebaseMessaging _messaging;
   final CalmLocalNotificationService _localNotifications;
   final CommunityAnalyticsService? _analytics;
+  final Future<void> Function(Map<String, dynamic> data)? onPayloadReceived;
+
+  /// Registered after startup so the Riverpod [NotificationSyncService] can
+  /// receive foreground payloads from the process-wide FCM listener (#530).
+  static Future<void> Function(Map<String, dynamic> data)? cloudPayloadHandler;
 
   static bool _handlersRegistered = false;
 
@@ -54,6 +60,11 @@ class FcmMessagingService {
       body: display.body,
       payload: display.category,
     );
+
+    final handler = onPayloadReceived ?? cloudPayloadHandler;
+    if (handler != null) {
+      await handler(message.data);
+    }
 
     await _analytics?.logEvent(
       'fcm_message_received',
