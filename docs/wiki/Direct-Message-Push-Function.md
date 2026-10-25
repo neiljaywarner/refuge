@@ -28,8 +28,31 @@ The function id is `dm-push`. The runtime is Node 22. The entrypoint is `src/mai
 
 ## Secret
 
-`FCM_SERVICE_ACCOUNT_JSON` is a secret variable on the function. It is the Firebase Admin SDK JSON for project `belongonthespectrum`. Do not commit it. Do not paste it into an issue, a pull request, or this wiki.
+`FCM_SERVICE_ACCOUNT_JSON` is a secret variable on the function. It is the Firebase Admin SDK JSON for project `belongonthespectrum`. Do not commit it. Do not paste it into an issue, a pull request, or this wiki. Do not create a second key.
 
-## Still open
+The row write uses `APPWRITE_FUNCTION_API_KEY`, which Appwrite creates for each run from the function scopes `rows.read` and `rows.write`. If that value is empty, the code falls back to an optional secret named `APPWRITE_API_KEY`. That name is not injected. If you create the fallback, its scopes are only `rows.read` and `rows.write`. Never write the value down.
 
-Two signed-in test members, on two phones, with Message alerts on, have not yet exchanged a message. Until that happens, a live notification is not confirmed. Do not use a real community member for that check.
+## If register returns 401
+
+The phone log is `dm-push register 500 {"error":"push failed"}`. The execution error is `could not store push device (401)`. The header `X-Appwrite-Key` was empty, so `push_devices` stayed empty and a later send skipped the recipient.
+
+Check, in this order:
+
+1. Function `dm-push` scopes include `rows.read` and `rows.write`.
+2. `src/main.js` sends `APPWRITE_FUNCTION_API_KEY` as `X-Appwrite-Key`.
+3. Redeploy this directory with entrypoint `src/main.js` and activate that deployment. Pack it without `node_modules`. On macOS set `COPYFILE_DISABLE=1` so the archive does not include AppleDouble files.
+4. Run `register` again for a signed-in member. Success is HTTP 200 and `{"ok":true}`.
+
+Report only `enabled`, `schedule`, and the token length. The token must be non-empty and must not start with `fcm_token_calm`. Do not copy the token, a Firebase uid, an address, a password, or either API key into the issue.
+
+## What a member should see
+
+1. Notifications, then Calm Notification Preferences, then **Message alerts** on.
+2. Sign in on that phone. A practice name never gets a push.
+3. The sender taps the person until a chip appears, then Send. The button shows a spinner, then **OK, it worked**.
+4. If the recipient's app is open, a Material banner. Belong does not also post a system notification for that same moment.
+5. If the app is closed or on the home screen, the system notification, with sound, on the Direct messages channel. Completely Muted sends nothing. Immediate Gentle Cards is the same notification without sound.
+
+## Checked
+
+On October 25, 2026 two synthetic signed-in members were used on the dev app. Message alerts was on. The recipient app was on the home screen. The shade showed a Belong notification with the sender name and the message snippet. No message was sent to a real community member. Email for the same moment is still [#570](https://github.com/neiljaywarner/refuge/issues/570).

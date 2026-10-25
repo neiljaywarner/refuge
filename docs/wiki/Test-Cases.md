@@ -9,7 +9,7 @@ This document outlines the multi-tiered testing strategy, hardware verification 
 Traditional QA prioritizes rapid clicks, stressful alert popups, and aggressive re-engagement loops. Refuge enforces a **neurodivergent-first test policy**:
 1. **Zero Red-Dot Urgency & Zero Startup Prompts**: Push notifications must never prompt on initial app launch. Users must be presented with an explicit, calming ethical rationale before opting in.
 2. **High-Contrast & Sensory Comfort**: Every UI screen must be verified under multiple sensory themes (Sage, Clay, Ocean, High Contrast).
-3. **Triplicate Coverage (TDD + BDD + Maestro Hardware Driving)**: Every feature flow is verified across unit tests, fast `<2s` BDD widget tests (`patrol_finders`), and declarative hardware flows (`.maestro/*.yaml`) on physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and emulators (`emulator-5554`).
+3. **Triplicate Coverage (TDD + BDD + Maestro Hardware Driving)**: Every feature flow is verified across unit tests, fast `<2s` BDD widget tests (`patrol_finders`), and declarative hardware flows (`.maestro/*.yaml`) on Pixel Left, Pixel Right, and an Android emulator.
 
 ---
 
@@ -17,8 +17,8 @@ Traditional QA prioritizes rapid clicks, stressful alert popups, and aggressive 
 
 | Target Name | Type | Identifier | Primary Driver | Verification Scope |
 | :--- | :--- | :--- | :--- | :--- |
-| **Pixel Hardware 1** | Physical Device | `56091JEBF14039` | Maestro MCP / Patrol | User A Flows: Feed, Reflections, DMs |
-| **Pixel Hardware 2** | Physical Device | `58221JEBF20835` | Maestro MCP / Patrol | User B Flows: Push notifications, Multi-user sync |
+| **Pixel Left** | Physical Device | Pixel Left | Maestro MCP / Patrol | User A Flows: Feed, Reflections, DMs |
+| **Pixel Right** | Physical Device | Pixel Right | Maestro MCP / Patrol | User B Flows: Push notifications, Multi-user sync |
 | **Medium Phone** | Android Emulator | `emulator-5554` | Patrol / Maestro | Nightly regression matrix & release flows |
 | **Pixel 9a Emulator** | Android Emulator | `emulator-5556` | Patrol / Maestro | Layout & sensory mode verification |
 | **Web Browser** | Chromium / Chrome | `chromium` | Patrol / Web Driver | PWA responsive layout & web push |
@@ -98,7 +98,7 @@ flowchart TD
 | `TC-NOT-03` | Delivery Schedules | BDD Widget | `test/features/notifications/notification_preferences_test.dart` | Supports `Twice Daily Digest` (10am & 6pm), `Morning Digest Only` (9am), `Immediate Gentle Cards`, and `Completely Muted`. |
 | `TC-NOT-04` | Filter Chips (Inbox, Mentions, Threads, Following) | BDD Widget | `test/features/notifications/belong_notifications_test.dart` | Tapping filter chips filters notification list cleanly without page reloads. |
 | `TC-NOT-05` | Direct message alerts stay off until asked | Unit | `direct_message_push_policy_test.dart`<br>`appwrite/functions/dm-push/test/decide.test.js` | Off, muted, and a `fcm_token_calm` placeholder do not send. A real token with alerts on does. |
-| `TC-NOT-06` | Message alerts switch on a phone | Maestro | `.maestro/dm_alerts_toggle_once.yaml`<br>`.maestro/dm_alerts_on_check.yaml`<br>`.maestro/dm_alerts_opt_in.yaml` | The switch turns on, a relaunch keeps it on, and New Message still opens. Checked on Pixel Left and Pixel Right, October 24, 2026. The send function is deployed. A live two-member notification is still open. |
+| `TC-NOT-06` | Message alerts switch on a phone | Maestro | `.maestro/dm_alerts_toggle_once.yaml`<br>`.maestro/dm_alerts_on_check.yaml`<br>`.maestro/dm_alerts_opt_in.yaml` | The switch turns on, a relaunch keeps it on, and New Message still opens. Checked on Pixel Left and Pixel Right, October 24, 2026. On October 25, 2026 a home-screen phone showed the system notification for a message between two synthetic members. |
 
 ### 7. Roadmap & 1-Tap Feature Voting (`TC-ROADMAP`) — Linked to Epic #302
 *Circle Parity Area: Public Product Roadmap, Upvoting, Member Feedback Loops*

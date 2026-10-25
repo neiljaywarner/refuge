@@ -62,7 +62,7 @@ The sheet also says where the system controls live. On Android that is Settings,
 
 Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the notification to reach. Practice names in the New Message list never receive a push.
 
-The phone half of the switch was checked on Pixel Left and Pixel Right on October 24, 2026. The send function is deployed. How it is built and tested is on [Direct message push](Direct-Message-Push-Function). A real notification still needs two different signed-in members, both with Message alerts on. Details are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+The phone half of the switch was checked on Pixel Left and Pixel Right on October 24, 2026. On October 25, 2026 a closed app on the dev build showed the system notification after Message alerts was turned on. How it is built and tested is on [Direct message push](Direct-Message-Push-Function). Details of the decision are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
 
 ## 5. If a message does not show up
 
@@ -84,4 +84,4 @@ Check these before assuming the send failed:
 3. On Android, sound and banners are under Settings, then Apps, then Belong, then Notifications, then Direct messages. On iPhone they are under Settings, then Notifications, then Belong.
 4. The three practice conversations (Marty & Community Team, Sensory Game Night Group, Silent Co-Presence Fellowship) stay listed until a real conversation exists. They are not a delivery.
 
-A signed-in send on October 24, 2026 did not store a message, and the other phone still showed those practice conversations. That pass is not a successful delivery.
+A first signed-in send on October 24, 2026 did not store a message, because the person chip was not selected, and the other phone still showed those practice conversations. A later send stored the message, the open app showed the banner, and on October 25 the home-screen phone showed the system notification.
