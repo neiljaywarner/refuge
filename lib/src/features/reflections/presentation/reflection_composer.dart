@@ -244,23 +244,25 @@ class ReflectionComposer extends HookWidget {
                 'Intent Tag: ',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              DropdownButton<String>(
-                value: selectedTone.value,
-                isDense: true,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
+              Expanded(
+                child: DropdownButton<String>(
+                  value: selectedTone.value,
+                  isDense: true,
+                  isExpanded: true,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
+                  underline: const SizedBox(),
+                  items: kToneOptions.map((tone) {
+                    return DropdownMenuItem(value: tone, child: Text(tone));
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) selectedTone.value = val;
+                  },
                 ),
-                underline: const SizedBox(),
-                items: kToneOptions.map((tone) {
-                  return DropdownMenuItem(value: tone, child: Text(tone));
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) selectedTone.value = val;
-                },
               ),
-              const Spacer(),
               if (!isModal)
                 IconButton(
                   key: const Key('composer_collapse_button'),
@@ -487,60 +489,56 @@ class ReflectionComposer extends HookWidget {
             ),
           ],
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Wrap(
-                spacing: 6,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  OutlinedButton.icon(
-                    key: const Key('add_meme_gif_button'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      side: BorderSide(
-                        color: isContrast
-                            ? Colors.white
-                            : Theme.of(context).dividerColor,
-                      ),
-                    ),
-                    onPressed: () => showMemeGalleryModal(
-                      context,
-                      onSelectedMeme: handleSelectMeme,
-                    ),
-                    icon: const Icon(
-                      Icons.sentiment_very_satisfied_outlined,
-                      size: 14,
-                    ),
-                    label: Text(
-                      attachedMeme.value != null
-                          ? 'Change Meme'
-                          : 'Add Meme / GIF',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              OutlinedButton.icon(
+                key: const Key('add_meme_gif_button'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
                   ),
-                  if (!isModal)
-                    TextButton.icon(
-                      key: const Key('composer_collapse_bottom_button'),
-                      style: TextButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                      ),
-                      onPressed: () => isExpanded.value = false,
-                      icon: const Icon(Icons.unfold_less_rounded, size: 14),
-                      label: const Text(
-                        'Collapse',
-                        style: TextStyle(fontSize: 11),
-                      ),
-                    ),
-                ],
+                  side: BorderSide(
+                    color: isContrast
+                        ? Colors.white
+                        : Theme.of(context).dividerColor,
+                  ),
+                ),
+                onPressed: () => showMemeGalleryModal(
+                  context,
+                  onSelectedMeme: handleSelectMeme,
+                ),
+                icon: const Icon(
+                  Icons.sentiment_very_satisfied_outlined,
+                  size: 14,
+                ),
+                label: Text(
+                  attachedMeme.value != null
+                      ? 'Change Meme'
+                      : 'Add Meme / GIF',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
+              if (!isModal)
+                TextButton.icon(
+                  key: const Key('composer_collapse_bottom_button'),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                  ),
+                  onPressed: () => isExpanded.value = false,
+                  icon: const Icon(Icons.unfold_less_rounded, size: 14),
+                  label: const Text(
+                    'Collapse',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                ),
               ElevatedButton.icon(
                 key: const Key('publish_reflection_button'),
                 style: ElevatedButton.styleFrom(
@@ -548,6 +546,10 @@ class ReflectionComposer extends HookWidget {
                   foregroundColor: isContrast ? Colors.black : Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
                   ),
                 ),
                 onPressed: handlePublish,
