@@ -18,9 +18,7 @@ enum BelongBottomTab {
   final IconData icon;
 }
 
-final activeBottomTabProvider = StateProvider<BelongBottomTab>(
-  (ref) => BelongBottomTab.home,
-);
+final activeBottomTabProvider = StateProvider<BelongBottomTab>((ref) => BelongBottomTab.home);
 
 class BelongBottomNavBar extends HookConsumerWidget {
   const BelongBottomNavBar({
@@ -38,19 +36,18 @@ class BelongBottomNavBar extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final disableAnimations =
-        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final profile = ref.watch(currentUserProfileProvider);
     final unreadNotificationsCount = profile.isSignedIn
         ? ref.watch(unreadNotificationsCountProvider)
         : 0;
 
-    final backgroundColor = isContrast
-        ? Colors.black
-        : theme.scaffoldBackgroundColor;
+    final backgroundColor = isContrast ? Colors.black : theme.scaffoldBackgroundColor;
     final topBorderColor = isContrast
         ? Colors.yellow
-        : primary.withValues(alpha: 0.18);
+        : (theme.brightness == Brightness.dark
+              ? const Color(0xFF3E4752)
+              : primary.withValues(alpha: 0.18));
     final bottomInset = SystemInsets.navigationBar(MediaQuery.of(context));
 
     return DecoratedBox(
@@ -112,16 +109,16 @@ class _BottomNavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final animationDuration = disableAnimations
-        ? Duration.zero
-        : const Duration(milliseconds: 180);
+    final animationDuration = disableAnimations ? Duration.zero : const Duration(milliseconds: 180);
 
     // Active & inactive color schemes adhering to WCAG AAA
     final Color activeColor = isContrast ? Colors.yellow : primaryColor;
     final Color inactiveColor = isContrast
         ? Colors.white
-        : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ??
-              Colors.grey.shade600);
+        : (theme.brightness == Brightness.dark
+              ? const Color(0xFFB0BEC5)
+              : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ??
+                    Colors.grey.shade600));
 
     final Color currentColor = isSelected ? activeColor : inactiveColor;
 
@@ -129,16 +126,19 @@ class _BottomNavItem extends StatelessWidget {
         ? BoxDecoration(
             color: isContrast
                 ? Colors.black
-                : primaryColor.withValues(alpha: 0.14),
+                : (theme.brightness == Brightness.dark
+                      ? const Color(0xFF27382E)
+                      : primaryColor.withValues(alpha: 0.14)),
             border: isContrast
                 ? Border.all(color: Colors.yellow, width: 2)
-                : null,
+                : (theme.brightness == Brightness.dark
+                      ? Border.all(color: const Color(0xFF4E7A5A), width: 1)
+                      : null),
             borderRadius: BorderRadius.circular(16),
           )
         : const BoxDecoration(color: Colors.transparent);
 
-    final Widget iconWidget =
-        (tab == BelongBottomTab.notifications && unreadCount > 0)
+    final Widget iconWidget = (tab == BelongBottomTab.notifications && unreadCount > 0)
         ? Badge.count(
             key: const Key('bottom_nav_notifications_badge'),
             count: unreadCount,
@@ -151,12 +151,7 @@ class _BottomNavItem extends StatelessWidget {
               size: 22,
             ),
           )
-        : Icon(
-            tab.icon,
-            key: Key('bottom_nav_icon_${tab.name}'),
-            color: currentColor,
-            size: 22,
-          );
+        : Icon(tab.icon, key: Key('bottom_nav_icon_${tab.name}'), color: currentColor, size: 22);
 
     return Semantics(
       button: true,
@@ -179,10 +174,7 @@ class _BottomNavItem extends StatelessWidget {
                 children: [
                   AnimatedContainer(
                     duration: animationDuration,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 3,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
                     decoration: pillDecoration,
                     child: iconWidget,
                   ),
@@ -195,9 +187,7 @@ class _BottomNavItem extends StatelessWidget {
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.w500,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                         color: currentColor,
                         letterSpacing: 0.1,
                       ),

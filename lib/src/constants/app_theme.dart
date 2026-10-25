@@ -34,11 +34,41 @@ class SensoryThemeData {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF1A1D20),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF68A67D),
+          primary: Color(0xFF8CD4A2),
+          onPrimary: Color(0xFF0F1A12),
+          primaryContainer: Color(0xFF233829),
+          onPrimaryContainer: Color(0xFFC7EBCF),
+          secondary: Color(0xFF8CD4A2),
+          onSecondary: Color(0xFF0F1A12),
+          secondaryContainer: Color(0xFF27382E),
+          onSecondaryContainer: Color(0xFFE2E8F0),
           surface: Color(0xFF24282D),
+          onSurface: Color(0xFFF1F5F9),
+          surfaceContainer: Color(0xFF2A2F35),
+          surfaceContainerHigh: Color(0xFF333A42),
+          outline: Color(0xFF6B7885),
+          outlineVariant: Color(0xFF4A5560),
         ),
         cardColor: const Color(0xFF24282D),
-        dividerColor: const Color(0xFF333A42),
+        dividerColor: const Color(0xFF3E4752),
+        chipTheme: const ChipThemeData(
+          backgroundColor: Color(0xFF252A2F),
+          selectedColor: Color(0xFF27382E),
+          side: BorderSide(color: Color(0xFF4A5560), width: 1.0),
+          labelStyle: TextStyle(
+            color: Color(0xFFE2E8F0),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+          secondaryLabelStyle: TextStyle(
+            color: Color(0xFF8CD4A2),
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+          checkmarkColor: Color(0xFF8CD4A2),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+        ),
       ),
       SensoryMode.contrast => ThemeData(
         useMaterial3: true,
@@ -64,12 +94,7 @@ class SensoryThemeData {
       ),
     };
     return theme.copyWith(
-      extensions: [
-        BelongTextStyles.forTheme(
-          theme,
-          contrast: mode == SensoryMode.contrast,
-        ),
-      ],
+      extensions: [BelongTextStyles.forTheme(theme, contrast: mode == SensoryMode.contrast)],
     );
   }
 }
