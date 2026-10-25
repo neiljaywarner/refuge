@@ -97,6 +97,8 @@ flowchart TD
 | `TC-NOT-02` | Calm Notification Ethics Primer | BDD / Hardware | `.maestro/circle_parity_release_flow.yaml`<br>`circle_parity_release_readiness_bdd_test.dart` | Opening Preferences displays explicit ethics explanation ("Belong respects your attention and sensory peace...") before requesting permissions. |
 | `TC-NOT-03` | Delivery Schedules | BDD Widget | `test/features/notifications/notification_preferences_test.dart` | Supports `Twice Daily Digest` (10am & 6pm), `Morning Digest Only` (9am), `Immediate Gentle Cards`, and `Completely Muted`. |
 | `TC-NOT-04` | Filter Chips (Inbox, Mentions, Threads, Following) | BDD Widget | `test/features/notifications/belong_notifications_test.dart` | Tapping filter chips filters notification list cleanly without page reloads. |
+| `TC-NOT-05` | Direct message alerts stay off until asked | Unit | `direct_message_push_policy_test.dart`<br>`functions/decide.test.js` | Off, muted, and a `fcm_token_calm` placeholder do not send. A real token with alerts on does. |
+| `TC-NOT-06` | Message alerts switch on a phone | Maestro | `.maestro/dm_alerts_toggle_once.yaml`<br>`.maestro/dm_alerts_on_check.yaml`<br>`.maestro/dm_alerts_opt_in.yaml` | The switch turns on, a relaunch keeps it on, and New Message still opens. Checked on Pixel Left and Pixel Right, October 24, 2026. The cloud send is not deployed. |
 
 ### 7. Roadmap & 1-Tap Feature Voting (`TC-ROADMAP`) — Linked to Epic #302
 *Circle Parity Area: Public Product Roadmap, Upvoting, Member Feedback Loops*

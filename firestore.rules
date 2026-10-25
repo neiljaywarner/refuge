@@ -27,6 +27,11 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
+
+      // Push token stays private. The message function reads it with the admin SDK.
+      match /notification_settings/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // 5. Discussion Comments & Nested Replies

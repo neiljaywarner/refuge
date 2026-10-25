@@ -17,6 +17,16 @@ abstract class CalmLocalNotificationService {
     required String body,
     String? payload,
   });
+
+  /// Creates the Android 8+ channels before the first push arrives.
+  Future<void> ensureChannels();
+
+  /// An ordinary direct-message notification: sound, shade, and a named channel.
+  Future<void> showMessageNotification({
+    required String title,
+    required String body,
+    String? payload,
+  });
 }
 
 /// Debug / QA preview without sending FCM (#382).

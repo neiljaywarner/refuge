@@ -1,0 +1,11 @@
+{
+  "name": "refuge-dm-push",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node --test decide.test.js handle.test.js"
+  }
+}
