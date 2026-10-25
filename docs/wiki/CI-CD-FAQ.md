@@ -68,6 +68,18 @@ A `ChangeNotifier` controller (`TextEditingController`, `ScrollController`, `Ani
 
 `prefer_expression_function_bodies` and `prefer_single_quotes` are enabled in `analysis_options.yaml` after the [#519](https://github.com/neiljaywarner/refuge/issues/519) sweep. CI still fails only on the three Belong plugin rules above; run `dart fix --apply` locally when analyze reports these style hints. Switch expressions are preferred in review when they stay readable.
 
+### Primary constructors (#609)
+
+On Dart 3.13+ (our SDK pin), use **primary constructors** for small immutable value types: declare `final` fields in the class header instead of repeating them in a constructor body.
+
+Example (synthetic test type only):
+
+```dart
+class const Point(final int x, final int y);
+```
+
+Production pilots include `CalmPushDisplay`, `AvatarCropResult`, and `lib/src/core/geometry/point.dart`. Do not use primary constructors on widgets, repositories, or types with heavy `factory` / side-effect logic. A custom `belong_lints` rule is optional later ([#609](https://github.com/neiljaywarner/refuge/issues/609)).
+
 ### Why did the deploy workflow fail before the Flutter build?
 
 The job needs one of these repository secrets, and neither is committed:

@@ -30,16 +30,9 @@ enum AvatarPermissionStatus {
 
 /// Result of an avatar crop operation.
 @immutable
-class AvatarCropResult {
-  const AvatarCropResult({
-    required this.bytes,
-    required this.width,
-    required this.height,
-    this.cropRect,
-  });
-
-  final Uint8List bytes;
-  final int width;
-  final int height;
-  final Rect? cropRect;
-}
+class const AvatarCropResult(
+  final Uint8List bytes,
+  final int width,
+  final int height,
+  final Rect? cropRect,
+);
