@@ -1,25 +1,39 @@
-/// Opt-in Appwrite project settings.
+/// Public Appwrite client settings for the belongonthespectrum project.
 ///
-/// Empty values keep the app on the current live path: Serverpod for posts
-/// and reactions, with Firebase Cloud Firestore as the second copy. Appwrite
-/// is not contacted unless both an endpoint and a project id are supplied at
-/// build time.
+/// These values identify the project. They are not secrets. Firebase Auth
+/// remains the session, so the tables allow guest creates during this
+/// overlap. Cloud Firestore still receives a second copy of each reflection.
+///
+/// Pass an empty `--dart-define=APPWRITE_ENDPOINT=` to skip Appwrite. Serverpod
+/// Cloud is not used unless the build also sets `BACKEND=serverpod` and
+/// `ENABLE_SERVERPOD=true`.
 class AppwriteConfig {
   const AppwriteConfig({
     required this.endpoint,
     required this.projectId,
-    this.databaseId = 'belong_community_db',
+    this.databaseId = belongDatabaseId,
   });
 
+  static const belongEndpoint = 'https://nyc.cloud.appwrite.io/v1';
+  static const belongProjectId = '6adae5c40013c409e109';
+  static const belongDatabaseId = 'belong_community_db';
+  static const reflectionTableId = 'reflection_posts';
+  static const quietDigestTableId = 'quiet_digests';
+
   /// Reads `--dart-define=APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, and
-  /// `APPWRITE_DATABASE_ID`. Defaults are empty, so a normal `flutter run`
-  /// does not switch backends.
+  /// `APPWRITE_DATABASE_ID`. Defaults point at the live belong project.
   static const fromEnvironment = AppwriteConfig(
-    endpoint: String.fromEnvironment('APPWRITE_ENDPOINT'),
-    projectId: String.fromEnvironment('APPWRITE_PROJECT_ID'),
+    endpoint: String.fromEnvironment(
+      'APPWRITE_ENDPOINT',
+      defaultValue: belongEndpoint,
+    ),
+    projectId: String.fromEnvironment(
+      'APPWRITE_PROJECT_ID',
+      defaultValue: belongProjectId,
+    ),
     databaseId: String.fromEnvironment(
       'APPWRITE_DATABASE_ID',
-      defaultValue: 'belong_community_db',
+      defaultValue: belongDatabaseId,
     ),
   );
 

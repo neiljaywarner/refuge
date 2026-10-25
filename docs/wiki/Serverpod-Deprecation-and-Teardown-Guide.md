@@ -4,7 +4,7 @@
 > **Related Issue**: [#384: feat(backend): Appwrite migration architecture, client provider and MCP tooling integration](https://github.com/neiljaywarner/refuge/issues/384)  
 > **Target Cost**: **\$0.00/month** (Eliminate \$5.00/mo Serverpod Cloud billing before the 20-day renewal)
 
-> **Not started (22 October 2026).** Do not run this teardown for the overlap week. Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Client cutover (24 October 2026, [#212](https://github.com/neiljaywarner/refuge/issues/212)).** A normal build no longer opens a Serverpod Cloud connection. Reflections go to Appwrite (`belong_community_db` / `reflection_posts` and `quiet_digests`) and a second copy still goes to Cloud Firestore (`reflections` or `reflections_dev`). Firebase Auth, Hosting, FCM, Analytics, and Remote Config stay on Firebase. Serverpod Cloud can be cancelled. The generated client remains in the repo and is used only when a build sets both `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`.
 
 ---
 

@@ -24,6 +24,7 @@ import 'features/observability/presentation/observability_easter_egg_dialog.dart
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
+import 'features/reflections/data/appwrite_post_repository.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/reflections/data/serverpod_post_repository.dart';
 import 'features/reflections/domain/feed_sort_option.dart';
@@ -125,9 +126,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
         themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final isLiveServerpod =
-        activeRepository is ServerpodPostRepository &&
-        activeRepository.isLiveConnected;
+    final isLiveFeed = switch (activeRepository) {
+      ServerpodPostRepository(:final isLiveConnected) => isLiveConnected,
+      AppwritePostRepository(:final isLiveConnected) => isLiveConnected,
+      _ => false,
+    };
 
     void setSensoryMode(SensoryMode mode) {
       if (themeNotifier != null) {
@@ -160,8 +163,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
         Post(
           id: 'post-${DateTime.now().millisecondsSinceEpoch}',
           authorName: profile.displayName,
-          authorInitials: profile.initials,
-          authorAvatarUrl: profile.avatarUrl,
           content: content,
           timestamp: DateTime.now(),
           spaceKey: targetSpace,
@@ -556,7 +557,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isLiveServerpod
+                              color: isLiveFeed
                                   ? const Color(0xFF4CAF50)
                                   : const Color(0xFF68A67D),
                             ),
@@ -571,7 +572,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               container: true,
                               explicitChildNodes: true,
                               child: Text(
-                                'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                                'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 11,
@@ -957,8 +958,9 @@ class _BelongSubHeaderBar extends StatelessWidget {
             label: 'Vote & Feedback',
             identifier: 'vote_feedback_button',
             onTap: () async {
-              final bytes =
-                  await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+              final bytes = await captureRepaintBoundary(
+                rootFeedbackRepaintBoundaryKey,
+              );
               if (context.mounted) {
                 BelongFeedbackAndVotingSheet.show(
                   context,
@@ -971,8 +973,9 @@ class _BelongSubHeaderBar extends StatelessWidget {
               avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
               label: const Text('Vote & Feedback'),
               onPressed: () async {
-                final bytes =
-                    await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+                final bytes = await captureRepaintBoundary(
+                  rootFeedbackRepaintBoundaryKey,
+                );
                 if (context.mounted) {
                   BelongFeedbackAndVotingSheet.show(
                     context,
