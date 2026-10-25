@@ -42,8 +42,9 @@ appId: com.belongonthespectrum.refuge.dev
 - assertVisible: ".*Use Camera.*"
 - assertVisible: ".*Choose Photo.*"
 
-# Do not open the system camera. Asserting Use Camera is the live stand-in
-# for the old meme_upload_camera_button id. Back closes the unlabeled sheet.
+# Read-only smoke: does not pick a photo. For real gallery pick + attach, run
+# meme_gallery_photo_upload_e2e.yaml (and avatar_gallery_change_e2e.yaml).
+# Do not open the system camera here. Back closes the unlabeled sheet.
 - pressKey: back
 - assertNotVisible: ".*Meme Gallery.*"
 - assertVisible: ".*Add Meme / GIF.*"

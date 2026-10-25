@@ -1,0 +1,17 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Meme + avatar upload demo (recorded walkthrough)"
+tags:
+  - belong
+  - upload-e2e
+  - issue-559
+  - demo
+---
+# Runs gallery-pick meme attach, then profile avatar gallery change.
+# Use with Maestro startRecording or adb screenrecord for evidence.
+
+- startRecording: meme_and_avatar_upload_demo.mp4
+- runFlow:
+    file: meme_gallery_photo_upload_e2e.yaml
+- runFlow:
+    file: avatar_gallery_change_e2e.yaml
+- stopRecording
