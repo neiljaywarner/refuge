@@ -53,6 +53,20 @@ Report only `enabled`, `schedule`, and the token length. The token must be non-e
 4. If the recipient's app is open, a Material banner. Belong does not also post a system notification for that same moment.
 5. If the app is closed or on the home screen, the system notification, with sound, on the Direct messages channel. Completely Muted sends nothing. Immediate Gentle Cards is the same notification without sound.
 
-## Checked
+## Checked on two phones
 
-On October 25, 2026 two synthetic signed-in members were used on the dev app. Message alerts was on. The recipient app was on the home screen. The shade showed a Belong notification with the sender name and the message snippet. No message was sent to a real community member. Email for the same moment is still [#570](https://github.com/neiljaywarner/refuge/issues/570).
+October 25, 2026, dev app, two synthetic signed-in members. Message alerts was on. Each send was done in the app: New Message, the person selected, Send. The button read **OK, it worked** every time. No message was sent to a real community member. The pictures below are the app only. The status bar and the gesture pill are cropped off. A shade picture is not included, because that screen also shows other apps.
+
+| Recipient | What the sender did | What the recipient showed |
+| --- | --- | --- |
+| App in front | Sent "The blue cup is on the table." | A Material banner with that sentence. The system shade did not gain that sentence. |
+| App in the background, still running | Sent "The green cup is on the table." | The system shade text was: Fellow Member sent you a direct message: "The green cup is on the table." |
+| App swiped away and not running | Sent "The yellow cup is on the table." | The same shade sentence for the yellow cup. Opening Belong then showed the banner and the conversation. |
+
+![Sender thread after the closed-app send](images/dm-sender-thread.png)
+
+![Recipient banner and conversation list](images/dm-receiver-banner.png)
+
+[Short clip of that recipient screen](images/dm-receiver-banner.mp4)
+
+Email for the same moment is still [#570](https://github.com/neiljaywarner/refuge/issues/570).

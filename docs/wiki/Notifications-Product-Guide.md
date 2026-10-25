@@ -62,7 +62,9 @@ The sheet also says where the system controls live. On Android that is Settings,
 
 Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the notification to reach. Practice names in the New Message list never receive a push.
 
-The phone half of the switch was checked on Pixel Left and Pixel Right on October 24, 2026. On October 25, 2026 a closed app on the dev build showed the system notification after Message alerts was turned on. How it is built and tested is on [Direct message push](Direct-Message-Push-Function). Details of the decision are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+On October 25, 2026 two synthetic members used the dev app with Message alerts on. The sender's button read **OK, it worked** for three sends. With the other app in front, the banner showed the sentence and the system shade did not. With the app on the home screen, and again after the app was swiped away, the system shade showed the sentence. Opening the app afterward showed the banner and the conversation. Pictures and the exact sentences are on [Direct message push](Direct-Message-Push-Function). The decision is on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+
+![Banner and the new conversation](images/dm-receiver-banner.png)
 
 ## 5. If a message does not show up
 

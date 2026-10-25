@@ -34,7 +34,7 @@ Sample members are practice names. A message to them stays on your phone. It doe
 
 The send function is `appwrite/functions/dm-push` in this repository. It is deployed. The phone calls it after a message is stored. The FCM credential is a secret on that function and is not in git.
 
-The October 24 check covered the switch with the phones signed out, so no notification was sent that day. On October 25, 2026 two synthetic signed-in members were used. The recipient app was on the home screen and the system notification appeared. No message was sent to a real community member.
+The October 24 check covered the switch with the phones signed out, so no notification was sent that day. On October 25, 2026 two synthetic signed-in members used the dev app. The sender saw **OK, it worked** three times. The recipient app in front showed a banner and no new shade entry. The same phone on the home screen, and again after the app was swiped away, showed the system notification. No message was sent to a real community member. The pictures are on [Direct message push](Direct-Message-Push-Function).
 
 Email when a message arrives is a later item, [#570](https://github.com/neiljaywarner/refuge/issues/570). That mail will say a message is waiting. It will not include the whole message.
 

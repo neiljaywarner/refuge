@@ -53,6 +53,7 @@ app.*.map.json
 *.apk
 *.mp4
 !docs/maestro/web/*.mp4
+!docs/wiki/images/dm-receiver-banner.mp4
 *.m4a
 scratch/
 
