@@ -1,9 +1,20 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/config/app_flavor.dart';
+import 'auth_session.dart';
 
 /// Production builds require a verified email before the main app is shown.
 bool mustVerifyEmail(AppFlavor flavor) => flavor.isProduction;
+
+/// Circle-style members-only gate. Guests and Firebase anonymous sessions
+/// stay on the sign-in wall in every flavor.
+bool sessionMayEnterCommunity(AuthSession session) {
+  if (!session.isSignedIn) return false;
+  if (session.userId.isEmpty || session.userId == 'guest') return false;
+  const blocked = {'guest', 'anonymous', 'firebase_anonymous'};
+  if (blocked.contains(session.authMethod)) return false;
+  return true;
+}
 
 /// Dev-family example accounts on the sign-in wall (Android and web only).
 bool showDevExampleAccounts({
@@ -16,7 +27,9 @@ bool showDevExampleAccounts({
 }
 
 /// Password for dev example accounts. Set at build time only; never commit.
-const String devExamplePassword = String.fromEnvironment('DEV_EXAMPLE_PASSWORD');
+const String devExamplePassword = String.fromEnvironment(
+  'DEV_EXAMPLE_PASSWORD',
+);
 
 class DevExampleAccount {
   const DevExampleAccount({

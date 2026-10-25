@@ -103,6 +103,11 @@ Future<void> main(List<String> args) async {
 
   final analyticsDefines = analyticsDartDefines(Platform.environment);
   stdout.writeln(analyticsDartDefinesLogLine(Platform.environment));
+  stdout.writeln(devExamplePasswordDartDefinesLogLine(Platform.environment));
+  final extraDefines = [
+    ...analyticsDefines,
+    ...devExamplePasswordDartDefines(Platform.environment),
+  ];
 
   if (skipBuild) {
     final cached = File('build/web/version.json');
@@ -123,7 +128,7 @@ Future<void> main(List<String> args) async {
         'web',
         targetFile: 'lib/main_dev.dart',
         flavor: 'dev',
-        extraDefines: analyticsDefines,
+        extraDefines: extraDefines,
       ),
       '--dart-define=ENABLE_SERVERPOD=false',
     ], dryRun: dryRun);
@@ -136,14 +141,14 @@ Future<void> main(List<String> args) async {
     stdout.writeln('Building release dev APK...');
     await _run(
       _bin('flutter'),
-      devReleaseFlutterApkBuildArgs(
-        stamp: stamp,
-        extraDefines: analyticsDefines,
-      ),
+      devReleaseFlutterApkBuildArgs(stamp: stamp, extraDefines: extraDefines),
       dryRun: dryRun,
     );
     if (!dryRun) {
-      final apk = resolveExistingApk(Directory.current.path, devReleaseApkRelativePaths());
+      final apk = resolveExistingApk(
+        Directory.current.path,
+        devReleaseApkRelativePaths(),
+      );
       if (apk == null) {
         stderr.writeln('Dev APK build finished but no release APK was found.');
         exit(66);
@@ -188,7 +193,10 @@ Future<void> main(List<String> args) async {
       );
       exit(65);
     }
-    final apk = resolveExistingApk(Directory.current.path, devReleaseApkRelativePaths());
+    final apk = resolveExistingApk(
+      Directory.current.path,
+      devReleaseApkRelativePaths(),
+    );
     if (apk == null && !dryRun) {
       stderr.writeln('No dev release APK to upload.');
       exit(66);
@@ -202,7 +210,9 @@ Future<void> main(List<String> args) async {
         'Git: ${stamp.gitSha}\n',
       );
     }
-    stdout.writeln('Uploading dev APK to App Distribution (groups: $groups)...');
+    stdout.writeln(
+      'Uploading dev APK to App Distribution (groups: $groups)...',
+    );
     await _run(_bin('firebase'), [
       'appdistribution:distribute',
       apk?.path ?? devReleaseApkRelativePaths().first,

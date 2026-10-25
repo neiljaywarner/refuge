@@ -79,7 +79,25 @@ const _analyticsDartDefineNames = [
   'APTABASE_BELONG_KEY',
   'POSTHOG_KEY',
   'POSTHOG_BELONG_PROJECT_TOKEN',
+  'DEV_EXAMPLE_PASSWORD',
 ];
+
+/// Compile-time password for the two dev example accounts. Call only from
+/// non-production builds (`deploy_dev_web`, local launch). Never pass this
+/// into a production flutter build — the value would ship in the bundle.
+List<String> devExamplePasswordDartDefines(Map<String, String> environment) {
+  final password = environment['DEV_EXAMPLE_PASSWORD']?.trim();
+  if (password == null || password.isEmpty) return const [];
+  return ['--dart-define=DEV_EXAMPLE_PASSWORD=$password'];
+}
+
+/// Presence-only log line. Does not include the password.
+String devExamplePasswordDartDefinesLogLine(Map<String, String> environment) {
+  final set = devExamplePasswordDartDefines(environment).isNotEmpty;
+  return 'Dev example dart-define: DEV_EXAMPLE_PASSWORD='
+      '${set ? 'set' : 'missing'} '
+      '(production builds must omit this; empty keeps example buttons disabled)';
+}
 
 String? _firstNonEmptyEnv(Map<String, String> environment, List<String> names) {
   for (final name in names) {

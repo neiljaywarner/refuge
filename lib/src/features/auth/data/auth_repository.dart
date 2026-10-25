@@ -438,6 +438,9 @@ class FirebaseAuthRepository implements AuthRepository {
   BackendTarget get target => BackendTarget.firebase;
 
   AuthSession _sessionFromFirebaseUser(fb_auth.User fbUser) {
+    if (fbUser.isAnonymous) {
+      return const AuthSession.guest();
+    }
     return AuthSession(
       userId: fbUser.uid,
       displayName:

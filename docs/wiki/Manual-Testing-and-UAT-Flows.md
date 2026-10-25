@@ -187,17 +187,17 @@ On **dev** Android or [dev web](https://dev-belongonthespectrum.web.app/), you c
 
 ---
 
-### Flow 8: Clean Top Bar Auth State 👤
-*Goal: Ensure the top app bar displays a clean, unambiguous state for both guests and authenticated members.*
+### Flow 8: Sign-in wall, then signed-in top bar 👤
+*Goal: A signed-out person never sees the feed. After sign-in, the top bar shows only the member avatar.*
 
-1. **Guest / Signed-Out State**:
-   - Sign out of your account.
-   - Look at the top-right corner of the app bar.
-   - **Expected**: A single **Sign In** button appears with an icon. No initials avatar is shown.
+1. **Signed-out / members-only wall**:
+   - Sign out of your account, or launch with a cleared session.
+   - **Expected**: Only the **Sign In to Belong** wall. No feed, no Demo Mode banner, no Vote & Feedback, no top-bar **Sign In** on a populated home screen.
+   - On **dev** Android or [dev web](https://dev-belongonthespectrum.web.app/), the two example-user buttons may appear under the form (see **[Dev example accounts](Dev-Example-Accounts)**).
 2. **Authenticated / Signed-In State**:
-   - Sign in to your account.
+   - Sign in with a real account, or tap an example-user button on a dev build.
    - Look at the top-right corner of the app bar.
-   - **Expected**: A circular initials avatar (e.g., `NF`) is shown. The redundant **Sign In** button is completely hidden.
+   - **Expected**: A circular initials avatar is shown. The feed is visible. There is no guest/demo browse.
 
 ---
 

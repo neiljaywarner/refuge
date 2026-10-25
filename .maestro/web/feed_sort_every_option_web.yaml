@@ -1,7 +1,12 @@
 url: http://127.0.0.1:8095
 name: Belong web every feed sort option
+tags:
+  - known-gap
+  - needs-signed-in-session
+  - issue-601
 ---
 # Covers each on-screen sort chip, then every sort from the menu (#485).
+# known-gap: unsigned launches now stop at the sign-in wall (#574, #601).
 # Off-screen chips are not in the semantics tree, so Popular, Likes, and
 # Alphabetical are selected from the sort menu (same callback as the chips).
 - launchApp

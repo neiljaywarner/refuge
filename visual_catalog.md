@@ -16,7 +16,7 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
 6. [Calm Notification Ethics & Filterable Inbox](#6-calm-notification-ethics--filterable-inbox)
 7. [Save for Later (Private Bookmarking) & Quick (+) Post Composer](#7-save-for-later-private-bookmarking--quick--post-composer)
 8. [Cross-Device Real-Time Synchronization (Dual Google Pixels)](#8-cross-device-real-time-synchronization-dual-google-pixels)
-9. [Prettier Sensory Authentication & Guest State](#9-prettier-sensory-authentication--guest-state)
+9. [Prettier Sensory Authentication & Sign-in Wall](#9-prettier-sensory-authentication--sign-in-wall)
 
 ---
 
@@ -140,14 +140,14 @@ This catalog provides an exhaustive visual audit of every screen, sensory mode, 
 
 ---
 
-### 9. Prettier Sensory Authentication & Guest State
+### 9. Prettier Sensory Authentication & Sign-in Wall
 
 ![Sensory Authentication Screen](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/sensory_auth_screen.png)
 
-- **Purpose**: A reassuring, beautifully themed authentication experience with gentle rounded inputs, pastel branding icons, and reliable offline test fallback.
+- **Purpose**: A reassuring, beautifully themed sign-in wall. Circle-style: members see the community only after they log in.
 - **What to Look For**:
   - **Calm Typography**: Clear, legible headings with subtitle: *"Unhurried Christian fellowship • Safe, sensory-friendly & private"*.
-  - **Clean State Switching**: Smooth transition between signed-out guest mode (demo sample reflections) and authenticated membership (live database feed).
-  - **Offline Resilience**: Clean card presentation with one-tap entry button during offline testing or local development.
-- **Associated GitHub Issue**: [#155 & #284: Prettier Authentication & Home Callback](https://github.com/neiljaywarner/refuge/issues/155)
+  - **Members-only wall**: A signed-out person sees only **Sign In to Belong**. The feed, tabs, and composer stay behind the gate in production and in dev (#574, #601).
+  - **Dev example users**: On dev Android and dev web, two one-tap buttons sign in as Example User 1 and Example User 2 when `DEV_EXAMPLE_PASSWORD` is set at build time.
+- **Associated GitHub Issues**: [#574](https://github.com/neiljaywarner/refuge/issues/574) sign-in wall, [#601](https://github.com/neiljaywarner/refuge/issues/601) members-only data
 - **Associated Wiki Page**: [PWA Guide for Members and Organizers](https://github.com/neiljaywarner/refuge/wiki/PWA-Guide-for-Members-and-Organizers)

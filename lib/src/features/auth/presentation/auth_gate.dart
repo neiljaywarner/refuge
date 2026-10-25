@@ -54,7 +54,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     final session = _effectiveSession(streamSession);
 
-    if (!session.isSignedIn) {
+    if (!sessionMayEnterCommunity(session)) {
       return KeyedSubtree(
         key: const Key('auth_gate_sign_in_wall'),
         child: _SignInWall(

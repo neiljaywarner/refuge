@@ -15,7 +15,7 @@ On the sign-in wall, below the email form, you may see:
 - **Tap here to use Example User 1**
 - **Tap here to use Example User 2**
 
-They work only when the app was built with a **`DEV_EXAMPLE_PASSWORD`** dart-define. That value is **not** stored in this wiki or in git. Ask a maintainer for the current team dev password, or use the same define your local `flutter run` / CI dev job already uses. Never post that password in issues, PRs, or chat screenshots.
+They work only when the app was built with a **`DEV_EXAMPLE_PASSWORD`** dart-define. That value is **not** stored in this wiki or in git. Local VS Code launch configs read it from the same-named environment variable. Dev-web deploy (`tool/deploy_dev_web.dart`) forwards it from the environment when present. **Production builds must omit it** so the password never ships in a prod bundle. Never post that password in issues, PRs, or chat screenshots.
 
 If the buttons are grayed out, the build is missing that define. You will see: *Dev example sign-in needs DEV_EXAMPLE_PASSWORD*.
 
@@ -61,3 +61,4 @@ Do not use these emails for real member data or PII.
 - [Manual testing & UAT flows](Manual-Testing-and-UAT-Flows) — broader volunteer checklist
 - [QA, device driving & beta testing](QA-and-Beta-Testing-Guide)
 - GitHub: [Require sign-in, and verify email only in production](https://github.com/neiljaywarner/refuge/issues/574) / [PR #575](https://github.com/neiljaywarner/refuge/pull/575)
+- GitHub: [Members-only data access](https://github.com/neiljaywarner/refuge/issues/601) — no guest browse, no anonymous Firebase
