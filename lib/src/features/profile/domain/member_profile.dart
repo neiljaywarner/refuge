@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../account_deletion/data/account_deletion_provider.dart';
+import '../../account_deletion/domain/account_deletion_exception.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_session.dart';
 import '../data/profile_storage_service.dart';
@@ -45,10 +47,9 @@ class MemberProfile {
   final String? avatarUrl;
 
   /// Effective tagline for community display.
-  String get effectiveTagline =>
-      (tagline != null && tagline!.trim().isNotEmpty)
-          ? tagline!
-          : (bio.isNotEmpty ? bio : 'Fellowship member');
+  String get effectiveTagline => (tagline != null && tagline!.trim().isNotEmpty)
+      ? tagline!
+      : (bio.isNotEmpty ? bio : 'Fellowship member');
 
   /// Returns true if the member has confirmed affiliation with an ICOC church congregation.
   bool get isIcocMember =>
@@ -80,9 +81,10 @@ class MemberProfile {
   }
 
   /// Skips title tokens like `Dr.` when forming fellowship monograms.
-  static bool isHonorificToken(String token) =>
-      RegExp(r'^(dr|mr|mrs|ms|miss|prof)\.?$', caseSensitive: false)
-          .hasMatch(token);
+  static bool isHonorificToken(String token) => RegExp(
+    r'^(dr|mr|mrs|ms|miss|prof)\.?$',
+    caseSensitive: false,
+  ).hasMatch(token);
 
   MemberProfile copyWith({
     String? displayName,
@@ -114,16 +116,22 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   StreamSubscription<AuthSession>? _sub;
   static MemberProfile? _persistedProfile;
 
+  /// Stops a disposing auth provider from restoring the session after sign-out.
+  static bool _signedOut = false;
+
   @override
   MemberProfile build() {
-    if (_persistedProfile == null) {
+    if (_signedOut) {
+      _persistedProfile = null;
+    } else if (_persistedProfile == null) {
       final local = ProfileStorageService.instance.load();
       if (local != null && local['displayName'] != null) {
         _persistedProfile = MemberProfile(
           displayName: local['displayName'] as String? ?? 'Fellowship Member',
           email: local['email'] as String? ?? '',
           bio: local['bio'] as String? ?? '',
-          comfortBadges: (local['comfortBadges'] as List<dynamic>?)?.cast<String>() ??
+          comfortBadges:
+              (local['comfortBadges'] as List<dynamic>?)?.cast<String>() ??
               const ['Literal communication appreciated'],
           isSignedIn: true,
           authMethod: 'persisted_storage',
@@ -135,19 +143,32 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     final repo = ref.watch(authRepositoryProvider);
     _sub?.cancel();
     _sub = repo.authStateChanges().listen((session) {
+      if (_signedOut) {
+        _persistedProfile = null;
+        state = const MemberProfile.guest();
+        return;
+      }
       if (session.isSignedIn) {
         state = MemberProfile(
-          displayName: session.displayName.isNotEmpty && session.displayName != 'Fellowship Member'
+          displayName:
+              session.displayName.isNotEmpty &&
+                  session.displayName != 'Fellowship Member'
               ? session.displayName
               : (_persistedProfile?.displayName ?? session.displayName),
-          email: session.email.isNotEmpty ? session.email : (_persistedProfile?.email ?? session.email),
-          bio: session.bio.isNotEmpty ? session.bio : (_persistedProfile?.bio ?? session.bio),
+          email: session.email.isNotEmpty
+              ? session.email
+              : (_persistedProfile?.email ?? session.email),
+          bio: session.bio.isNotEmpty
+              ? session.bio
+              : (_persistedProfile?.bio ?? session.bio),
           comfortBadges: session.comfortBadges.isNotEmpty
               ? session.comfortBadges
               : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
           isSignedIn: session.isSignedIn,
           authMethod: session.authMethod,
-          icocChurchAffiliation: session.icocChurchAffiliation ?? _persistedProfile?.icocChurchAffiliation,
+          icocChurchAffiliation:
+              session.icocChurchAffiliation ??
+              _persistedProfile?.icocChurchAffiliation,
           avatarUrl: session.photoUrl ?? _persistedProfile?.avatarUrl,
         );
         _persistedProfile = state;
@@ -162,26 +183,36 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     });
 
     final session = repo.currentSession();
-    if (session.isSignedIn) {
+    if (!_signedOut && session.isSignedIn) {
       final effective = MemberProfile(
-        displayName: session.displayName.isNotEmpty && session.displayName != 'Fellowship Member'
+        displayName:
+            session.displayName.isNotEmpty &&
+                session.displayName != 'Fellowship Member'
             ? session.displayName
             : (_persistedProfile?.displayName ?? session.displayName),
-        email: session.email.isNotEmpty ? session.email : (_persistedProfile?.email ?? session.email),
-        bio: session.bio.isNotEmpty ? session.bio : (_persistedProfile?.bio ?? session.bio),
+        email: session.email.isNotEmpty
+            ? session.email
+            : (_persistedProfile?.email ?? session.email),
+        bio: session.bio.isNotEmpty
+            ? session.bio
+            : (_persistedProfile?.bio ?? session.bio),
         comfortBadges: session.comfortBadges.isNotEmpty
-              ? session.comfortBadges
-              : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
+            ? session.comfortBadges
+            : (_persistedProfile?.comfortBadges ?? session.comfortBadges),
         isSignedIn: session.isSignedIn,
         authMethod: session.authMethod,
-        icocChurchAffiliation: session.icocChurchAffiliation ?? _persistedProfile?.icocChurchAffiliation,
+        icocChurchAffiliation:
+            session.icocChurchAffiliation ??
+            _persistedProfile?.icocChurchAffiliation,
         avatarUrl: session.photoUrl ?? _persistedProfile?.avatarUrl,
       );
       _persistedProfile = effective;
       return effective;
     }
 
-    if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
+    if (!_signedOut &&
+        _persistedProfile != null &&
+        _persistedProfile!.isSignedIn) {
       return _persistedProfile!;
     }
     return const MemberProfile.guest();
@@ -238,7 +269,10 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     _applySession(session);
   }
 
-  Future<void> sendMagicLink({required String email, String? redirectUrl}) async {
+  Future<void> sendMagicLink({
+    required String email,
+    String? redirectUrl,
+  }) async {
     final repo = ref.read(authRepositoryProvider);
     await repo.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
@@ -267,6 +301,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   }
 
   void _applySession(AuthSession session) {
+    if (session.isSignedIn) {
+      _signedOut = false;
+    }
     state = MemberProfile(
       displayName: session.displayName,
       email: session.email,
@@ -298,11 +335,29 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   }
 
   void signOut() {
+    _signedOut = true;
     _persistedProfile = null;
     ProfileStorageService.instance.clear();
     final repo = ref.read(authRepositoryProvider);
     repo.signOut();
     state = const MemberProfile.guest();
+  }
+
+  /// Soft-deletes the signed-in account, then signs out on this device.
+  ///
+  /// Throws [AccountDeletionException] when confirmation, auth, or a backend
+  /// write fails. The caller should stay on the confirm dialog in that case.
+  Future<void> deleteMyAccount() async {
+    final session = ref.read(authRepositoryProvider).currentSession();
+    await ref
+        .read(accountDeletionRepositoryProvider)
+        .softDeleteSelf(
+          userId: session.isSignedIn ? session.userId : '',
+          displayName: state.displayName,
+          email: session.email.isNotEmpty ? session.email : state.email,
+          confirmed: true,
+        );
+    signOut();
   }
 }
 
