@@ -1,9 +1,11 @@
-import 'dart:typed_data';
+import 'dart:io' show Platform;
 import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/avatar_models.dart';
@@ -27,39 +29,108 @@ abstract class AvatarUploadService {
   Future<bool> openAppSettings();
 }
 
+bool _queryOsPermissions() =>
+    !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+ph.Permission? _osPermissionFor(AvatarImageSource source) {
+  if (source == AvatarImageSource.camera) {
+    return ph.Permission.camera;
+  }
+  if (Platform.isIOS) {
+    return ph.Permission.photos;
+  }
+  // Android 13+ system photo picker does not require gallery runtime permission.
+  return null;
+}
+
+AvatarPermissionStatus _mapPermissionStatus(ph.PermissionStatus status) {
+  switch (status) {
+    case ph.PermissionStatus.granted:
+    case ph.PermissionStatus.limited:
+    case ph.PermissionStatus.provisional:
+      return AvatarPermissionStatus.granted;
+    case ph.PermissionStatus.denied:
+      return AvatarPermissionStatus.denied;
+    case ph.PermissionStatus.permanentlyDenied:
+    case ph.PermissionStatus.restricted:
+      return AvatarPermissionStatus.permanentlyDenied;
+  }
+}
+
 /// Production implementation of [AvatarUploadService].
 class PlatformAvatarUploadService implements AvatarUploadService {
   PlatformAvatarUploadService({
     ImagePicker? picker,
     AvatarPermissionStatus? initialCameraPermission,
     AvatarPermissionStatus? initialGalleryPermission,
-  })  : _picker = picker ?? ImagePicker(),
-        _cameraPermission = initialCameraPermission ?? AvatarPermissionStatus.granted,
-        _galleryPermission = initialGalleryPermission ?? AvatarPermissionStatus.granted;
+  }) : _picker = picker ?? ImagePicker() {
+    if (initialCameraPermission != null) {
+      _cameraOverride = initialCameraPermission;
+    }
+    if (initialGalleryPermission != null) {
+      _galleryOverride = initialGalleryPermission;
+    }
+  }
 
   final ImagePicker _picker;
-  AvatarPermissionStatus _cameraPermission;
-  AvatarPermissionStatus _galleryPermission;
+  AvatarPermissionStatus? _cameraOverride;
+  AvatarPermissionStatus? _galleryOverride;
+
+  AvatarPermissionStatus? _overrideFor(AvatarImageSource source) {
+    return source == AvatarImageSource.camera ? _cameraOverride : _galleryOverride;
+  }
 
   @visibleForTesting
   void setMockPermission(AvatarImageSource source, AvatarPermissionStatus status) {
     if (source == AvatarImageSource.camera) {
-      _cameraPermission = status;
+      _cameraOverride = status;
     } else {
-      _galleryPermission = status;
+      _galleryOverride = status;
     }
+  }
+
+  Future<AvatarPermissionStatus> _statusFromOs(AvatarImageSource source) async {
+    if (!_queryOsPermissions()) {
+      return AvatarPermissionStatus.granted;
+    }
+    final permission = _osPermissionFor(source);
+    if (permission == null) {
+      return AvatarPermissionStatus.granted;
+    }
+    return _mapPermissionStatus(await permission.status);
   }
 
   @override
   Future<AvatarPermissionStatus> checkPermission(AvatarImageSource source) async {
-    return source == AvatarImageSource.camera ? _cameraPermission : _galleryPermission;
+    final override = _overrideFor(source);
+    if (override != null) return override;
+    return _statusFromOs(source);
   }
 
   @override
   Future<AvatarPermissionStatus> requestPermission(AvatarImageSource source) async {
-    final current = await checkPermission(source);
-    if (current.isPermanentlyDenied) return current;
-    return current;
+    final override = _overrideFor(source);
+    if (override != null) {
+      if (override.isPermanentlyDenied) return override;
+      if (override.isGranted) return override;
+      return override;
+    }
+
+    final current = await _statusFromOs(source);
+    if (current.isPermanentlyDenied || current.isGranted) {
+      return current;
+    }
+
+    if (!_queryOsPermissions()) {
+      return AvatarPermissionStatus.granted;
+    }
+
+    final permission = _osPermissionFor(source);
+    if (permission == null) {
+      return AvatarPermissionStatus.granted;
+    }
+
+    return _mapPermissionStatus(await permission.request());
   }
 
   @override
@@ -123,12 +194,15 @@ class PlatformAvatarUploadService implements AvatarUploadService {
 
   @override
   Future<bool> openAppSettings() async {
+    if (_queryOsPermissions()) {
+      return ph.openAppSettings();
+    }
     try {
       final uri = Uri.parse('app-settings:');
       if (await canLaunchUrl(uri)) {
         return await launchUrl(uri);
       }
-      return true;
+      return false;
     } catch (_) {
       return false;
     }

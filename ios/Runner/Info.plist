@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Belong uses the camera so you can take a profile photo or attach a calm photo reflection.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Belong lets you choose a photo from your library for your avatar or community reflections.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
