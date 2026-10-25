@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../messages/data/direct_message_mailbox.dart';
 import '../data/app_launcher_badge_service.dart';
 import '../domain/belong_notification.dart';
 import '../domain/notification_navigation_target.dart';
@@ -198,6 +199,19 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
         timestamp: DateTime.now(),
         isRead: false,
       ),
+    );
+  }
+
+  Future<void> syncDirectMessageNotifications(
+    DirectMessageMailbox mailbox,
+    String currentUserId,
+  ) async {
+    if (mailbox is FirestoreDirectMessageMailbox) {
+      await mailbox.hydrateFromFirestore(currentUserId);
+    }
+    state = mailbox.notificationsForUser(
+      currentUserId: currentUserId,
+      existing: state,
     );
   }
 
