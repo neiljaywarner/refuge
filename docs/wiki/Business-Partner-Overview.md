@@ -1,7 +1,6 @@
 # 🤝 Business & Partnership Overview
 
 > **A first-look executive summary and FAQ for prospective business partners, advisors, and collaborators approaching Belong on the Spectrum.**  
-> **Live Community**: [belongonthespectrum.web.app](https://belongonthespectrum.web.app) · **Public Website**: [belongonthespectrum.com](https://www.belongonthespectrum.com/)  
 > **Product & Business Philosophy (37signals)**: [Pick a Fight](https://37signals.com/podcast/pick-a-fight/) · [Build Half a Product, Not a Half-Assed Product](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/) · [Embrace Constraints](https://37signals.com/podcast/embrace-constraints/)
 
 ![Belong on the Spectrum — Business & Partnership Infographic](images/business-partner-infographic.svg)
@@ -15,10 +14,6 @@ If you have advised organizations, churches, or business owners for years, you h
 1. A community, church ministry, or support network wants a warm, private online home where members can connect during the week.
 2. They turn to mainstream social media (**Facebook Groups**, **Discord**) or sign up for creator-focused community platforms (**Circle.so**, **Mighty Networks**) or expensive church app suites (**Subsplash**, **Pushpay**).
 3. Within months, friction sets in: mainstream social platforms overwhelm members with ads, noise, and privacy worries, while Circle and legacy church suites charge **\$1,000 to \$10,000+ per year** for cluttered menus, course-selling upsells, and anxious notification badges that push sensitive people away.
-
-**Belong on the Spectrum** was born to solve that exact problem—first for our own home community:
-- Our neurodivergent Christian community (partnered with [DFW Church](https://dfwchurch.org)) was paying **~\$130/month (\$1,500+/year)** for Circle.so, whose subscription ends on **Saturday, October 31, 2026**.
-- Instead of renewing an expensive, noisy tool that wasn't built for autistic and sensory-sensitive adults or their families, we built a **calm, quiet, distraction-free community home** where real members are moving in right now during our October 24–31 overlap week.
 
 **Why this matters as a business**:  
 What begins as an authentic ministry solving a real \$1,500/year pain for Community #1 solves the exact same problem for thousands of churches, disability ministries, recovery groups, and non-profits. Because our baseline monthly operating cost is near **\$0/month**, we can offer other organizations their own calm, branded community space at a fraction of legacy prices—with healthy margins, zero outside investors, and genuine human impact.
@@ -35,7 +30,7 @@ Great small products stand clearly *against* what is broken in their industry so
 * **Against the \$1,000+/Year Community Tax**: Small churches, ministries, and support groups shouldn't pay internet-marketer prices for course funnels and paywalls just to host warm weekday fellowship.
 * **Against App Store Gatekeeping**: Members open a link on any phone or computer and can save Belong straight to their iPhone or Android home screen in seconds—no 30% store toll, no forgotten Apple IDs, and no waiting weeks for store reviewers.
 
-### 2. [Build Half a Product, Not a Half-Assed Product](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/)
+### 2. [Build Half a Product, Not a Half-Baked Product](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/)
 Most community platforms cram in fifty half-baked features that confuse organizers and tire out members. We cut everything non-essential and focused on making the weekly essentials warm, clear, and dependable:
 * **Familiar, Focused Rooms**: Dedicated spaces (*Start Here & Introduce Yourself*, *Announcements*, *General Chat*, *Memes*, *Online Resources*, *Actually Autistic Chat*, *Friends Chat*, *Family Chat*) plus a **Members Directory** and private **Saved for Later** bookmarks.
 * **Gentle Conversations & Care Responses**: When someone shares, they can mark a post **Comfort Only** (company, not advice), and members respond with supportive words like **Praying** and **Support** rather than popularity contests.
@@ -59,7 +54,7 @@ Just as Basecamp began inside a small consulting shop solving its own project-co
 | :--- | :--- | :--- | :--- |
 | **Churches & Faith Networks** *(care ministries, small groups, disability ministries, regional fellowships)* | Giving and bulletin apps handle Sunday announcements well, but feel cold or clunky for weekday fellowship and prayer. | \$2,400 – \$12,000 / year | A warm, church-branded weekday community at **\$49–\$99/month**—simple for pastors and lay leaders to run. |
 | **Autism, Neurodiversity & Disability Non-Profits** | Facebook Groups and Discord trigger sensory fatigue, privacy fears, and heavy moderator burnout. | High volunteer burnout + noisy ad-driven tools | A quiet, respectful home designed from the ground up around sensory comfort and clear boundaries. |
-| **Recovery, Grief & Caregiver Communities** *(Celebrate Recovery, GriefShare, parent & family circles)* | People hesitate to share vulnerable life updates on ad-tracked social media, while Circle/Mighty charge \$1,200–\$3,000/year. | \$1,200 – \$3,000 / year | Private, members-only rooms with gentle pacing, zero ads, and dignified privacy. |
+| **Recovery, Grief & Caregiver Communities, Running clubs, whatever** *(Celebrate Recovery, GriefShare, parent & family circles)* | People hesitate to share vulnerable life updates on ad-tracked social media, while Circle/Mighty charge \$1,200–\$3,000/year. | \$1,200 – \$3,000 / year | Private, members-only rooms with gentle pacing, zero ads, and dignified privacy. |
 
 ### Four Straightforward Revenue Paths
 1. **Hosted Community Plans (\$49–\$99/month per organization)**: Simple, predictable monthly pricing for churches, ministries, and non-profits wanting their own private, branded Belong community—roughly half the cost of Circle with very high margins.
@@ -88,7 +83,8 @@ Friendship and mutual trust come first. There is no pitch deck pressure and no r
 **A**: Both—and each makes the other stronger. Serving our own neurodivergent church community first keeps the product grounded in real human needs rather than guesswork. Our home community remains a free ministry gift, while other churches, non-profits, and support organizations pay a fair, sustainable price for their own hosted spaces and onboarding.
 
 ### Q2: Why wouldn't an organization just use Facebook Groups, Discord, or Circle?
-**A**: Most try one of those first—just like we did!
+**A**: Most try one of those first.
+(manual note from neil, they don't "Feel" like their own thing and also it gers people "arguing" about which to use :) 
 - **Facebook Groups** surround vulnerable personal sharing with ads, outrage feeds, and privacy distrust—many younger adults and privacy-conscious families refuse to use Facebook at all.
 - **Discord** races like a noisy gamer chatroom with dozens of blinking channels that quickly overwhelm parents, older members, and sensory-sensitive adults.
 - **Circle and Mighty Networks** are built for online influencers selling courses and coaching cohorts, charging **\$1,000 to \$2,500+ per year** for complexity most caring communities never want.
