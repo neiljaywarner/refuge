@@ -24,7 +24,7 @@ The Firebase project `belongonthespectrum` is on the Spark plan. Cloud Functions
 
 1. **Off until the member asks.** `CalmNotificationPreferences.enabled` stays false until they open Notifications, open Calm Notification Preferences, and turn **Message alerts** on.
 2. **A direct message is the exception to the digest wait.** Other updates still follow the delivery schedule. A new direct message is sent as soon as alerts are on and the schedule is not Completely Muted. Muted still means nothing is sent.
-3. **The card is silent.** The Android channel is `calm_digest_channel_v2`. The payload sets no default sound and no default vibration. The permission request sets `badge: false`.
+3. **On means a normal notification.** The Android 8+ channel is `direct_messages`, named Direct messages, with high importance and sound. Off, or Completely Muted, sends nothing. Immediate Gentle Cards is the quiet extra and still uses `calm_digest_channel_v2` with no sound. The permission request allows sound.
 4. **The token is not on the public profile.** `users/{uid}` is world-readable and must not hold an email or a push token. The token lives at `users/{uid}/notification_settings/push`. Only that member can read or write it. The function uses the Admin SDK, which bypasses those rules.
 5. **The phone remembers the switch.** Shared preferences keep the choice across a relaunch. When the member is signed in, the same save writes the private document. Signing in later retries that write. A signed-out phone can turn the switch on, but there is no account for the function to address.
 6. **Some tokens are never used.** An empty token, or any token that starts with `fcm_token_calm`, is not sent. Widget tests use that prefix when Firebase is absent.

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:refuge4serverpod/src/features/notifications/data/direct_message_push_caller.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/direct_message_push_policy.dart';
 
 void main() {
@@ -32,7 +33,7 @@ void main() {
     );
   });
 
-  test('an opted-in member with a real token gets a silent card', () {
+  test('an opted-in member with a real token gets a notification', () {
     expect(
       shouldSendDirectMessagePush(
         enabled: true,
@@ -41,6 +42,17 @@ void main() {
       ),
       isTrue,
     );
+  });
+
+  test('a normal schedule makes a sound and Gentle Cards stays quiet', () {
+    expect(directMessageIsQuiet('twiceDaily'), isFalse);
+    expect(directMessageIsQuiet('immediateGentle'), isTrue);
+  });
+
+  test('only a message Firestore accepted asks for a notification', () {
+    expect(shouldRequestDirectMessagePush('delivered'), isTrue);
+    expect(shouldRequestDirectMessagePush('localOnly'), isFalse);
+    expect(shouldRequestDirectMessagePush('deviceOnly'), isFalse);
   });
 
   test('the shade names the sender and the snippet', () {

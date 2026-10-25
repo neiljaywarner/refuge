@@ -90,15 +90,15 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 ),
                 subtitle: Text(
                   prefs.enabled
-                      ? 'On. A new direct message arrives as a silent card, even when Belong is closed.'
-                      : 'Off. Turn this on to get a silent card when someone messages you.',
+                      ? 'On. A new direct message shows as a notification, with sound, even when Belong is closed.'
+                      : 'Off. You will not be notified when someone messages you.',
                   style: const TextStyle(fontSize: 12),
                 ),
                 value: prefs.enabled,
                 onChanged: (val) => notifier.setEnabled(val),
               ),
               Text(
-                'Sign in on this phone so the card can find you. A sample member never gets one.',
+                'Sign in on this phone so the notification can find you. A sample member never gets one. Immediate Gentle Cards stays quiet.',
                 style: theme.textTheme.bodySmall?.copyWith(fontSize: 12, height: 1.4),
               ),
 

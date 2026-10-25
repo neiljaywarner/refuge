@@ -13,5 +13,5 @@ name: "Confirm message alerts stayed on"
     timeout: 15000
 - tapOn: ".*Calm Notification Preferences.*"
 - extendedWaitUntil:
-    visible: ".*On. A new direct message arrives as a silent card.*"
+    visible: ".*On. A new direct message shows as a notification.*"
     timeout: 10000

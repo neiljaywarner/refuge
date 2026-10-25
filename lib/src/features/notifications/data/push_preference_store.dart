@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/calm_notification_preferences.dart';
 import '../domain/direct_message_push_policy.dart';
+import 'direct_message_push_caller.dart';
 
 const calmPushEnabledKey = 'calm_push_enabled';
 const calmPushScheduleKey = 'calm_push_schedule';
@@ -42,6 +43,7 @@ Future<void> savePushPreference(CalmNotificationPreferences prefs) async {
     'fcmToken': token,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
   }, SetOptions(merge: true));
+  await registerDirectMessagePush(prefs);
 }
 
 /// Reads the last switch position. Returns null when this phone has no

@@ -5,7 +5,7 @@
 > **Product page**: [Gentle notifications](Notifications-Product-Guide)
 > **Checked**: October 24, 2026, on Pixel Left and Pixel Right
 
-A direct message can arrive as a silent card. Nothing is sent until you turn **Message alerts** on.
+A direct message can arrive as a normal notification, with sound. Nothing is sent until you turn **Message alerts** on. Immediate Gentle Cards is the quiet choice.
 
 ## What you do
 

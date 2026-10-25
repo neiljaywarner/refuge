@@ -1,4 +1,4 @@
-/// Whether an opted-in device should get a silent card for a new direct message.
+/// Whether an opted-in device should get an OS notification for a new direct message.
 ///
 /// Push is off until the member turns it on in Settings. A muted schedule
 /// also sends nothing. Placeholder tokens from tests are never delivered.
@@ -12,6 +12,10 @@ bool shouldSendDirectMessagePush({
   if (token.isEmpty || token.startsWith('fcm_token_calm')) return false;
   return true;
 }
+
+/// Immediate Gentle Cards is the quiet extra. Every other on schedule uses
+/// the normal Direct messages channel, with sound.
+bool directMessageIsQuiet(String schedule) => schedule == 'immediateGentle';
 
 /// Shade text. The snippet is short and never includes an email address.
 String directMessagePushBody({

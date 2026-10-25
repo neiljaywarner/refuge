@@ -56,7 +56,7 @@ Tap the tune icon (🎛️) in the upper right of the Notifications screen to op
 
 **Message alerts** is the switch at the top of Calm Notification Preferences. It starts off.
 
-When it is on, a new direct message is meant to arrive as a silent card, including while Belong is closed. There is no chime and no red badge. Other community updates still wait for the schedule you picked. Completely Muted sends nothing, including direct messages.
+When it is on, a new direct message shows as a normal notification, with sound, including while Belong is closed. It uses the Android channel named Direct messages. Completely Muted sends nothing. Immediate Gentle Cards is the quiet extra: the notification still appears, without sound. Other community updates can still wait for the schedule you picked.
 
 Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the card to reach. Practice names in the New Message list never receive a push.
 

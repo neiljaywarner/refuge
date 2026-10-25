@@ -17,4 +17,32 @@ function directMessagePushBody(senderName, content) {
   return `${name} sent you a direct message: "${short}"`;
 }
 
-module.exports = { shouldSendDirectMessagePush, directMessagePushBody };
+const directMessageChannelId = 'direct_messages';
+const quietDigestChannelId = 'calm_digest_channel_v2';
+
+/// Standard Android notification unless the member picked the quiet schedule.
+function directMessageAndroidConfig(schedule) {
+  if (schedule === 'immediateGentle') {
+    return {
+      priority: 'NORMAL',
+      notification: {
+        channel_id: quietDigestChannelId,
+        default_sound: false,
+        default_vibrate_timings: false,
+      },
+    };
+  }
+  return {
+    priority: 'HIGH',
+    notification: {
+      channel_id: directMessageChannelId,
+    },
+  };
+}
+
+module.exports = {
+  shouldSendDirectMessagePush,
+  directMessagePushBody,
+  directMessageAndroidConfig,
+  directMessageChannelId,
+};

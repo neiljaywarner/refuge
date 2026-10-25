@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/config/app_flavor.dart';
+import '../../notifications/data/direct_message_push_caller.dart';
 import '../../notifications/domain/belong_notification.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
 import '../domain/message_recipient.dart';
@@ -307,6 +308,9 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
       // Keep the row on this device too. The recipient's bell can show it
       // in the same session when the Firestore read is not deployed yet.
       _offline.cacheMessage(message);
+      if (shouldRequestDirectMessagePush(DirectMessageSendOutcome.delivered.name)) {
+        unawaited(requestDirectMessagePush(id));
+      }
       return DirectMessageSendResult(
         outcome: DirectMessageSendOutcome.delivered,
         message: message,

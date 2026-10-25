@@ -124,11 +124,11 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       final settings = await messaging.requestPermission(
         alert: true,
         announcement: false,
-        badge: false, // Calm-tech: no anxiety red dots
+        badge: false,
         carPlay: false,
         criticalAlert: false,
         provisional: false,
-        sound: false, // Calm-tech: silent by default
+        sound: true,
       );
 
       final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||

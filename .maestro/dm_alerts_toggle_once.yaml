@@ -22,5 +22,5 @@ name: "Turn message alerts on in one visit"
     text: "Allow"
     optional: true
 - extendedWaitUntil:
-    visible: ".*On. A new direct message arrives as a silent card.*"
+    visible: ".*On. A new direct message shows as a notification.*"
     timeout: 15000
