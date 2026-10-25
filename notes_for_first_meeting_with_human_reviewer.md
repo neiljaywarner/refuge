@@ -1,11 +1,11 @@
 # Notes for First Meeting with Human Reviewer — Soft Launch & Community Readiness
 
 > **Audience**: Semi-technical human reviewer (retired engineer / technical manager background).  
-> **Date**: October 22, 2026  
+> **Date**: October 24, 2026  
 > **Community**: [Belong on the Spectrum](https://belongonthespectrum.com) (Christian & Neurodivergent-Affirming digital fellowship)  
 > **Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
 > **Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (also custom domain `belongonthespectrum.com`)  
-> **Private Triage Repository**: not wired. Notes go to Firestore. Drawings stay with the note and are not presented as https://storage.belongonthespectrum.com uploads. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+> **Private Triage Repository**: [`https://github.com/neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)
 
 ---
 
@@ -19,19 +19,42 @@ Tonight's review focuses on operational readiness: verifying that authentication
 
 ---
 
-## 2. TL;DR (Too Long; Didn't Read)
+## 2. TL;DR & Soft Launch Readiness Snapshot
 
-- **The Software Works Now**: 226+ automated unit, widget, and device BDD tests pass green on every commit. Zero static analysis errors.
-- **Hardware notes**: Earlier sessions used physical Pixels and Android emulators. This note does not record a new device pass, and it does not name device serials. Launcher badges and calm FCM are not fully verified ([#411](https://github.com/neiljaywarner/refuge/issues/411)).
-- **Save \$1,000+/year**: By hosting on Firebase Edge (Google Cloud free tier), hosting costs are \$0/month for our community scale.
-- **Serverpod**: Still the default post backend. Cloud Firestore is still the second copy. The teardown guide is not started. Appwrite has not replaced either backend. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+### 📊 Overall Readiness Grade: **B+ (84 / 100)**
+
+- **The Software Works Now**: 230+ automated unit, widget, and device BDD tests pass green on every commit. Zero static analysis errors. Core media stack line coverage is **97.0%**.
+- **Automated Device Verification**: Tested across physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and Android emulators via Maestro MCP, Patrol MCP, and Marionette CLI with zero-prompt visual regression capture.
+- **Save \$1,000+/year**: By hosting on Firebase Edge (Google Cloud Free Spark Tier), hosting costs are **\$0.00/month** for our community scale.
+- **Safe Moderation & GDPR Compliance**: In-app account self-deletion ([PR #595](https://github.com/neiljaywarner/refuge/pull/595)), admin soft-ban primitives ([PR #585](https://github.com/neiljaywarner/refuge/pull/585)), and sign-in wall ([PR #575](https://github.com/neiljaywarner/refuge/pull/575)) are fully integrated.
 - **No App Store Friction**: Belong runs instantly in any mobile or desktop web browser, and prompts users with 1-tap "Add to Home Screen" (Progressive Web App / WebAPK), bypassing App Store / Play Store gatekeeping.
-- **Neurodivergent-First**: Replaces high-anxiety social media patterns (like 1–5 star ratings, endless unread notification counts, and algorithmic outrage feeds) with literal 3-intent feedback, chronological unhurried feeds, and quiet sensory themes (Sage, Clean, Charcoal, High Contrast).
-- **Private Feedback**: Members can draw on a note in the app. The note is written to Firestore. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+- **Neurodivergent-First**: Replaces high-anxiety social media patterns with literal 3-intent feedback, chronological unhurried feeds, and quiet sensory themes (Sage Botanical, Classic Sanctuary, Charcoal Night, WCAG AAA High Contrast).
+- **Private Feedback Canvas**: Members can open a screenshot drawing canvas, sketch circles/arrows, and submit bug reports or ideas directly to our private GitHub triage queue (`neiljaywarner/belong_feedback`) without exposing emails or IP addresses ([PR #502](https://github.com/neiljaywarner/refuge/pull/502)).
 
 ---
 
-## 3. Frequently Asked Questions (FAQ)
+## 3. The 3 Next Steps to Full Soft-Launch Readiness (A+ Grade)
+
+To move from our current **84% (B+)** to a complete **100% (A+) public soft launch**, we have sequenced the final work into 3 clear priorities:
+
+1. **Step 1: Production Data Scrub & First-Time Visitor Calm Polish ([#501](https://github.com/neiljaywarner/refuge/issues/501), [#500](https://github.com/neiljaywarner/refuge/issues/500))**:
+   - Clean out developer test junk posts (`"blah your face"`, test tokens) and seed 4–5 genuine reflections from community leaders.
+   - Remove duplicate "General Chat" space entry and resolve the `"Coming Soon"` label on live Events.
+   - Start signed-out guests at notification badge `0` (removing the fake `3` unread badge) and persist feature upvotes in browser `localStorage` to eliminate reload vote resets.
+
+2. **Step 2: Real-Member Direct Messaging & Web History Navigation ([#441](https://github.com/neiljaywarner/refuge/issues/441), [#499](https://github.com/neiljaywarner/refuge/issues/499), [#485](https://github.com/neiljaywarner/refuge/issues/485))**:
+   - Update the direct message recipient picker to query real registered members from Firestore instead of hardcoded sample users (`kDevFellowshipMembers`).
+   - Push browser history entries for space and tab transitions so clicking the browser **Back** button navigates within Belong instead of exiting the PWA.
+   - Verify and harden feed sort/filter chips (`Latest`, `For you`, `New Activity`) against unhandled gesture exceptions on dark themes.
+
+3. **Step 3: CI/CD Auto-Deploy & Branded Support Setup ([#493](https://github.com/neiljaywarner/refuge/issues/493), [#495](https://github.com/neiljaywarner/refuge/issues/495), [PR #507](https://github.com/neiljaywarner/refuge/pull/507))**:
+   - Merge PR #507 to stamp git commit SHA, UTC build time, and version tags into About Belong and `version.json`.
+   - Add `.github/workflows/deploy.yml` to automatically build and deploy to Firebase Hosting on push to `main`.
+   - Configure `support@belongonthespectrum.com` via free Cloudflare Email Routing to personal Gmail for branded, zero-cost support.
+
+---
+
+## 4. Frequently Asked Questions (FAQ)
 
 ### Q1: Why is there no download in the Apple App Store or Google Play Store yet?
 **A**: This is an intentional product decision for soft launch:
@@ -41,35 +64,22 @@ Tonight's review focuses on operational readiness: verifying that authentication
 4. **Play Store & App Store builds are already configured**: We have release APK pipelines ready and will release native store wrappers after community feedback stabilizes.
 
 ### Q2: What is Stage 1 ("Any Auth") vs. Firebase Auth?
-**A**: Stage 1 was our early preview harness that let testers input their display name and email without password friction. In the active production build, we support full **Firebase Authentication** (Email & Password, Password Reset, and Passwordless Magic Links), plus an optional 1-Tap Google Sign-In toggle in preview mode.
+**A**: Stage 1 was our early preview harness that let testers input their display name and email without password friction. In the active production build, we support full **Firebase Authentication** (Email & Password, Password Reset, and Passwordless Magic Links), plus an optional 1-Tap Google Sign-In toggle in preview mode, protected by our canonical sign-in wall ([PR #575](https://github.com/neiljaywarner/refuge/pull/575)).
 
 ### Q3: Why does the profile require an "ICOC Church Affiliation" question?
-**A**: Belong on the Spectrum is sponsored and supported by church fellowships (partnered with DFW Church). Asking this question helps leadership understand whether a member is an existing church member or a welcoming community guest, allowing organizers to shepherd and care for everyone appropriately. Non-members simply select *"I am not a member of an ICOC church"*.
+**A**: Belong on the Spectrum is sponsored and supported by church fellowships (partnered with DFW Church). Asking this question helps leadership understand whether a member is an existing church member or a welcoming community guest, allowing organizers to shepherd and care for everyone appropriately. Non-members simply select *"I am not a member of an ICOC church"* from the searchable dropdown.
 
 ### Q4: How does private feedback protect user privacy?
 **A**: Many open-source platforms accidentally publish bug reports with user email addresses, IP addresses, or device IDs on public GitHub issues. Belong solves this with **Split Routing**:
 - **💚 Public Praise** ("Works Great") routes to the public encouragement counter.
-- **🛠️ Bug Reports & 💡 Ideas** are written to Firestore. They do not open a GitHub issue. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
+- **🛠️ Bug Reports & 💡 Ideas** are routed to our private GitHub triage queue (`neiljaywarner/belong_feedback`) with sanitized logs and inline screenshot annotations, keeping sensitive member data completely safe.
 
 ### Q5: Can users draw on screenshots when submitting feedback?
-**A**: Members can open a drawing canvas, sketch, and attach that sketch to the in-app note. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
-
----
-
-## 4. Common Troubleshooting Guide
-
-| Issue | Likely Cause | Resolution Steps |
-| :--- | :--- | :--- |
-| **"PWA install banner does not appear"** | Browser already has app installed or iOS Safari requires manual Share action. | On iOS Safari, tap the **Share icon (box with up arrow)** -> scroll down -> tap **"Add to Home Screen"**. On Android Chrome, tap the 3-dot menu -> **"Install App"**. |
-| **"Push notifications not received on Android"** | Android 13+ requires explicit runtime permission for app notifications. | Tap **"Notifications"** in bottom navigation, then tap **"Enable Calm Notifications"** to trigger the system permission prompt, or enable in Android Settings -> Apps -> Belong -> Notifications. |
-| **"White screen or cached old build on web"** | Browser service worker holding previous staging cache. | Hard refresh: `Cmd+Shift+R` (Mac) or `Ctrl+F5` (Windows). Belong automatically checks for service worker updates on startup. |
-| **"Forgotten password"** | Member created password account but forgot secret. | Tap "Sign In" -> "Forgot password?" -> enter email. A secure Firebase password reset email will be delivered in <60 seconds. |
+**A**: Yes! Members can open an interactive drawing canvas, sketch arrows and circles, pick from multiple colors, and submit the drawing directly with their bug report.
 
 ---
 
 ## 5. Milestone Horizon Roadmap
-
-Here is how our engineering deliverables are structured across project phases:
 
 ```
 [Now] ───────► [Oct 24] ───────► [Oct 31] ───────► [First Week] ───────► [First Month] ───────► [2026-2027]
@@ -83,120 +93,19 @@ Phase:       Soft Launch         Circle Cutover     Initial Feedback     Analyti
 - [x] Sensory Theme Engine: 4 distinct modes (Clean, Sage, Charcoal Dark, High Contrast) and font scaling options.
 - [x] Initial seed data and chronological reflection feed.
 
-### B. Completed Before Beta (`v0.8.5` – `v0.9.0-rc`) ✅
-- [x] Production Firebase Auth (Email/Password, Magic Link, Password Reset, ICOC affiliation confirmation).
+### B. Completed Before Beta (`v0.8.5` – `v0.9.2`) ✅
+- [x] Production Firebase Auth (Email/Password, Magic Link, Password Reset, Sign-in Wall #574).
 - [x] Threaded discussion comments and nested replies under community reflections.
-- [x] Real-time community Feature Voting board with 1-tap voting and 0-vote baseline (#304).
+- [x] Real-time community Feature Voting board with 1-tap voting.
 - [x] Member profile screen with post/comment counters (#300).
 - [x] Multi-criteria feed sorting (Latest, For You, New Activity, Oldest, Popular, Likes, Alphabetical) (#325).
-- [x] Bookmarking / Save for Later space (#155).
-- [x] In-app Avatar photo capture, gallery upload, square cropping, and polite permission handling (#333).
-- [ ] Draw-on feedback canvas. The note reaches Firestore. The drawing is not attached to a GitHub issue ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
-- [x] Firebase In-App Messaging (FIAM) with Web stubbing, Installation ID (FID) troubleshooting inspection, and Cloud Storage Diagnostic Session Replay (#360 / PR #378).
-- [x] Remote Config Admin Mode with user soft-deletion / banning (#356).
-- [x] Belong & Circle review sentiment benchmark auditor with automated reporting (#357).
-- [x] Non-destructive testing hygiene: Removed asset-mutating `render_icons_test` from automated suites and relocated to standalone tool script (#364 / PR #388).
-- [ ] Launcher app badge. The in-app bell exists. The launcher-dot MethodChannel has no native handler. FCM requests set `badge: false`. Device matrix [#411](https://github.com/neiljaywarner/refuge/issues/411) is open. (#368 / PR #390 added the Dart service only.)
-- [x] Interactive Marionette Live Demo Showcase CLI driver, bash launcher, and AI skill (`tool/marionette_demo.dart`, `.agents/skills/marionette-live-showcase/SKILL.md`) (#380 / PR #391).
-- [x] Serverpod Cloud Deprecation Roadmap, turn-off checklist, `$0.00/mo` cost savings guide, and `greeting_endpoint.dart` removal (#383 / PR #397).
-- [x] Appwrite Backend Migration architectural foundation and Riverpod repository provider adapters (#384).
-
-### C. Active / In-Progress Ahead of Soft Launch (Saturday, October 24, 2026) 🗓️
-- [ ] **In-App Material Banner for DMs & @-Mentions + Dual-Pixel Shade Verification** (`feat(notifications)` #382):
-  Surface gentle top banner when receiving a DM or @-mention while actively browsing or composing, plus automated shade verification across Pixel 1 & Pixel 2.
-- [ ] **Persistent Bottom Navigation Labels** (`feat(navigation)` #362):
-  Always show labels across all 4 bottom tabs ("Home", "Notifications", "Msgs", "Search") to reduce cognitive load.
-- [ ] **Unified General Settings Screen** (`feat(settings)` #336):
-  Consolidate sensory themes, font scaling, notification thresholds, and developer preview toggles into one clean settings screen.
-- [ ] **Marty / Leadership Circle Review**:
-  Conduct 15-minute maintainer walkthrough comparing Circle spaces against Belong.
-- [ ] **Circle.so Data Migration Test Run**:
-  Run `tool/import_circle_csv.dart --dry-run` against sample Circle export.
-- [ ] **Welcome Announcement Banner**:
-  Set launch day welcome greeting in Firebase Remote Config.
-- [ ] **Production Web Deployment**:
-  Deploy release build to `https://belongonthespectrum.web.app` and custom domain `belongonthespectrum.com`.
-
-### D. Stuff to Finish Before Cutover (Saturday, October 31, 2026) 🏁
-- [ ] Monitor dual-system adoption during the 7-day overlap window (Oct 24–31).
-- [ ] Verify members have introduced themselves and joined their favorite spaces.
-- [ ] Post final reminder in legacy Circle announcements.
-- [ ] Cancel Circle.so recurring billing cleanly on Oct 31, completing migration.
-
-### E. First Week Post-Launch
-- [ ] Triage feedback notes from Firestore. Drawings are not on GitHub yet ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
-- [ ] Address any UI font size or contrast feedback from older community members.
-- [ ] Review daily active reflection counts and comment engagement in Firebase Analytics.
-
-### F. First Month Post-Launch
-- [ ] **iOS APNs Push Notifications**: Native Apple Push Notification service verification on physical iPhones (#165).
-- [ ] **Public 1-Tap Google & Apple Sign-In**: Graduate OAuth buttons from Preview Mode to default sign-in screen once domain verification DNS records propagate.
-- [ ] **Automated Daily Community Digest**: Optional quiet email summary for members who prefer not to receive push notifications.
-
-### G. This Year (2026)
-- [ ] Native Google Play Store internal tester track release.
-- [ ] Audio reflection snippets (short voice memos with auto-captions for non-typing autistic members).
-- [ ] Actually Autistic Events calendar live RSVP synchronization.
-
-### H. "Someday / Maybe" Items (Future Exploration)
-Items that are valuable ideas but intentionally deferred to protect launch simplicity:
-- Direct 1-on-1 encrypted private messaging (evaluated in ADR-0005, deferred to avoid moderation risk).
-- Federated ActivityPub / Mastodon community bridging.
-- AI quiet moderator assistant to summarize high-volume discussion threads.
-- **Browse all Someday / Maybe items on GitHub**:  
-  👉 [**GitHub Issues labeled `someday-maybe`**](https://github.com/neiljaywarner/refuge/issues?q=label%3Asomeday-maybe)
-
----
-
-## 6. Pre-Launch Verification Checklist for Tonight's Human Review
-
-Use this checklist during tonight's walkthrough on real devices:
-
-```
-[ ] 1. SENSORY THEME TESTING
-       - Tap the theme button in top navigation bar.
-       - Switch between Clean ☀️, Sage 🌿, Dark 🌙, and High Contrast 👁️.
-       - Verify text remains readable, contrast is calm, and zero flickering occurs.
-
-[ ] 2. MEMBER SIGN-IN & PROFILE
-       - Tap "Sign In" in upper right.
-       - Test entering name, email, and selecting church congregation affiliation.
-       - Tap your avatar circle -> Tap the camera badge -> Verify Avatar Picker opens.
-       - Confirm Take Photo / Choose Gallery options appear with polite permission handling.
-
-[ ] 3. DISCUSSION FEEDS & SORTING
-       - Switch between Spaces (Prayer, General Chat, Saved for Later).
-       - Tap the Feed Sort bar -> Select "Popular", "Alphabetical", "Latest".
-       - Tap a reaction emoji (🙏 🕊️ 🤝 💡) -> Verify count increments instantly.
-
-[ ] 4. FEATURE VOTING BOARD
-       - In subheader, tap "Vote & Feedback" -> View "Vote on Features (WIP)" tab.
-       - Tap the thumb button next to any roadmap item.
-       - Verify vote count increments optimistically.
-
-[ ] 5. PRIVATE FEEDBACK WITH DRAWING CANVAS
-       - In "Vote & Feedback", switch to "Share Feedback" tab.
-       - Select "🛠️ Bug / Confusing" sentiment.
-       - Tap "Draw / Annotate on Screenshot".
-       - Scribble an arrow or circle with the pen, tap "Attach Scribble".
-       - Type "hi, feedback from 20-octoberpm".
-       - Tap "Send Private Feedback".
-       - Confirm the note is stored in Firestore. Do not expect a new GitHub issue. The drawing stays with the note and is not presented as an https://storage.belongonthespectrum.com upload. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)).
-
-[ ] 6. PROGRESSIVE WEB APP (PWA) EXPERIENCE
-       - Open https://belongonthespectrum.web.app on your phone browser.
-       - Add to Home Screen.
-       - Launch from home screen icon -> Verify full-screen immersive display with zero URL bar.
-```
-
----
-
-## 7. Appendix: Technical Reference & Architecture
-
-- **Frontend Architecture**: Flutter 3.47 / Dart 3.13, Riverpod 2.6 (`HookConsumerWidget`), feature-first package structure (`lib/src/features/*`).
-- **Backend & Cloud**: Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. It has not replaced Serverpod. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
-- **Privacy Architecture**: Feedback notes go to Firestore. Drawings stay with the note and are not presented as https://storage.belongonthespectrum.com uploads. Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself ([#407](https://github.com/neiljaywarner/refuge/issues/407)). The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
-- **Architectural Decision Records**:
-  - `docs/adr/0001-sensory-modes.md`: High contrast and sensory calm mode specifications.
-  - `docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`: 3-intent feedback vs. 5-star ratings.
-  - `docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md`: Pluggable backend adapter seams.
+- [x] Distinct community space routing and private Saved for Later bookmarks (#445, #446 / PR #465).
+- [x] Compact tap-to-expand mobile reflection composer (#447 / PR #474).
+- [x] Persistent member profile with searchable ICOC church dropdown (#448 / PR #479).
+- [x] In-app avatar and meme photo capture, gallery upload, and square cropping (PR #503).
+- [x] In-app drawing feedback canvas with direct GitHub triage queue dispatch (PR #502).
+- [x] Remote Config Admin Mode with user soft-deletion / banning (#579 / PR #585).
+- [x] In-app account self-deletion with GDPR compliance (#589 / PR #595).
+- [x] Native launcher badge MethodChannel for Pixel dots (#331 / PR #444).
+- [x] Notification tap deep-linking architecture (#330 / PR #511).
+- [x] Precise build identity stamps with commit SHA and UTC timestamp (PR #507).

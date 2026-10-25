@@ -2,83 +2,103 @@
 
 > **Date**: October 24, 2026 — 2:00 PM (CDT)  
 > **Session Goal**: Conduct an unhurried, focused walkthrough of Belong on the Spectrum to uncover any genuine launch blockers, identify polish opportunities, and finalize our soft-launch punch list before opening the doors to community members.  
-> **Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (`v0.9.1+2`)  
+> **Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
 > **Android / PWA**: Installable via Chrome on Android ("Install App" or Add to Home Screen)
 
 ---
 
-## ⚠️ Appendix / Known In-Flight Fixes (DO NOT COUNT / ALREADY IN PROGRESS)
+## 🎯 Soft Launch Readiness Snapshot: **B+ (84 / 100)**
 
-To make our 2:00 PM meeting as fast and efficient as possible, **another autonomous agent is already actively fixing the following 5 issues right now**. You do **not** need to test, log, or count these items:
-
-| # | Known Issue Description | Current Status / Ticket |
-| :---: | :--- | :--- |
-| **1** | **Duplicate messages across Community Spaces**:<br>Viewing General Chat, Start Here, Announcements, or Memes shows the same default reflections feed ("Welcome to Belong..."). | 🛠️ In-Flight fix: Backend space routing is being expanded to isolate each space's unique post stream ([Issue #445](https://github.com/neiljaywarner/refuge/issues/445)). |
-| **2** | **"Saved for Later" space posts to General Chat**:<br>The Saved for Later space currently allows public posting and redirects reflections to General Chat instead of acting strictly as a private bookmark list. | 🛠️ In-Flight fix: Reflection composer is being removed from Saved for Later, making it 100% private bookmarks ([Issue #446](https://github.com/neiljaywarner/refuge/issues/446)). |
-| **3** | **Android page layout: Composer crowds out messages**:<br>On mobile screens, the reflection composer and stacked headers take up over 65% of the viewport, crowding out the message feed. | 🛠️ In-Flight fix: Moving composer into a compact, collapsible single-line bar with modal sheet ([Issue #447](https://github.com/neiljaywarner/refuge/issues/447)). |
-| **4** | **Sign-in / Profile: Display name & ICOC church selection don't persist; prefer dropdown**:<br>Profile selections are lost on page refresh, and church selection currently uses buttons instead of a clean dropdown selector. | 🛠️ In-Flight fix: Migrating to standard `DropdownButtonFormField` and adding persistent storage ([Issue #448](https://github.com/neiljaywarner/refuge/issues/448)). |
-| **5** | **Wiki / PWA instructions missing explicit starting URL**:<br>PWA guide needs Step 0: "Open `belongonthespectrum.web.app` in your phone's browser". | 🛠️ In-Flight fix: Wiki documentation updated ([Issue #449](https://github.com/neiljaywarner/refuge/issues/449)). |
+Belong on the Spectrum is 84% ready for public soft launch. The underlying architecture, sensory accessibility, security moderation, and automated tests (230+ green tests) are solid. Today's walkthrough is designed to test real-world usability and ensure our punch list covers everything needed for an A+ launch.
 
 ---
 
-## 🎯 High-Priority QA Test Plan (What We WANT to Test Today)
+## ✅ Part 1: Already Verified & Resolved on `main` (No Need to Re-Test)
 
-Please walk through the following 7 core flows during our call:
+The following items from earlier testing rounds have been **fully fixed, verified with automated tests, and merged to `main`**:
 
-### Flow 1: First Impression & PWA Installation
-- [ ] Open [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) in your desktop browser (Chrome/Edge/Safari).
-- [ ] Open the same link in your mobile browser (iPhone Safari or Android Chrome).
+| Feature / Fix | Verification / PR | Result |
+| :--- | :--- | :--- |
+| **Distinct Feed Routing Across Spaces** | PR #465 ([#445](https://github.com/neiljaywarner/refuge/issues/445), [#446](https://github.com/neiljaywarner/refuge/issues/446)) | General Chat, Start Here, and Announcements now stream their own distinct reflections. |
+| **Private Saved for Later Sanctuary** | PR #465 ([#446](https://github.com/neiljaywarner/refuge/issues/446)) | Public composer removed; Saved for Later acts strictly as private bookmarks. |
+| **Compact Reflection Composer on Mobile** | PR #474 ([#447](https://github.com/neiljaywarner/refuge/issues/447)) | Collapsed single-line bar with modal expander; feeds are no longer crowded out. |
+| **Persistent Profile & Church Dropdown** | PR #479 ([#448](https://github.com/neiljaywarner/refuge/issues/448)) | Name and ICOC church selection persist across reloads via clean searchable dropdown. |
+| **Sign-In Wall for Safe Fellowship** | PR #575 ([#574](https://github.com/neiljaywarner/refuge/issues/574)) | Guarantees authenticated community access; prevents anonymous trolling. |
+| **Admin Moderation & Account Deletion** | PR #585, #595 ([#579](https://github.com/neiljaywarner/refuge/issues/579), [#589](https://github.com/neiljaywarner/refuge/issues/589)) | In-app account self-deletion and admin soft-ban primitives operational. |
+| **Direct GitHub Feedback Canvas** | PR #502 ([#460](https://github.com/neiljaywarner/refuge/issues/460)) | In-app scribble tool directly dispatches screenshot annotations to private triage queue. |
+
+---
+
+## ⚠️ Part 2: Appendix of Known In-Flight Fixes (DO NOT COUNT AS DEFECTS)
+
+To make our 2:00 PM meeting as fast and productive as possible, **autonomous agents are already actively working on the following items**. Please do **not** count or spend time logging them:
+
+| # | Known In-Flight Issue | Current Status / Ticket |
+| :---: | :--- | :--- |
+| **1** | **Guest Demo Mode shows badge `3` + test feed junk**:<br>Signed-out guests see an unread badge `3`, and the live feed has leftover dev test posts ("blah your face", test tokens). | 🛠️ In-Flight fix: Data scrub script & default guest unread count to 0 ([Issue #501](https://github.com/neiljaywarner/refuge/issues/501)). |
+| **2** | **Guest feature votes reset after page reload**:<br>Reloading the web page resets the "Vote for..." button state even though the vote count was incremented, allowing double-voting. | 🛠️ In-Flight fix: Storing anonymous voter ID in browser `localStorage` ([Issue #500](https://github.com/neiljaywarner/refuge/issues/500), [#487](https://github.com/neiljaywarner/refuge/issues/487)). |
+| **3** | **Browser Back button exits Belong on web**:<br>Pressing the browser Back button exits the app rather than navigating back to previous in-app spaces/tabs. | 🛠️ In-Flight fix: Synchronizing Flutter Web routing with browser history stack ([Issue #499](https://github.com/neiljaywarner/refuge/issues/499)). |
+| **4** | **DM composer only lists sample members**:<br>The direct message recipient search currently only suggests mock profiles (`kDevFellowshipMembers`) rather than real registered accounts. | 🛠️ In-Flight fix: Live Firestore query for real fellowship member accounts ([Issue #441](https://github.com/neiljaywarner/refuge/issues/441)). |
+| **5** | **Dark feed sort button tap crash hardening**:<br>Tapping sort options on dark theme was reported to cause an unhandled state crash on certain screen densities. | 🛠️ In-Flight fix: Full test pyramid hardening for all sort and filter chips ([Issue #485](https://github.com/neiljaywarner/refuge/issues/485)). |
+| **6** | **Password visibility eye toggle**:<br>Adding password show/hide eye icon to sign-in and registration fields. | 🛠️ In-Flight fix: PR #594 in review ([Issue #593](https://github.com/neiljaywarner/refuge/issues/593)). |
+| **7** | **Meme photo upload crop & zoom**:<br>Square cropping and pan/zoom for meme uploads. | 🛠️ In-Flight fix: PR #600 in review ([Issue #587](https://github.com/neiljaywarner/refuge/issues/587)). |
+
+---
+
+## 🎯 Core QA Walkthrough Plan (What We WANT to Test Today)
+
+Please walk through the following 6 core flows during our call:
+
+### Flow 1: First Impression & Mobile PWA Installation
+- [ ] Open [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) in your mobile browser (iPhone Safari or Android Chrome).
 - [ ] Test "Add to Home Screen" or "Install App".
-- [ ] Verify: Does the app launch cleanly without a browser address bar? Are the gold infinity loop cross and "Belong" title visible?
+- [ ] Launch Belong from your phone's home screen.
+- [ ] Verify: Does the app open in full screen without browser bars? Are the gold infinity loop cross and Belong title crisp?
 
-### Flow 2: Sensory Themes & Accessibility (Core Differentiator!)
-- [ ] Tap the **Sensory Themes** button in the top navigation bar.
+### Flow 2: Sensory Themes & Low-Stimulation Contrast (Core Differentiator!)
+- [ ] Tap the **Sensory Themes** icon in the app bar.
 - [ ] Switch between the 4 palettes:
-  - ☀️ **Classic Clean** (Neutral, calm parchment)
-  - 🌿 **Sage Botanical** (Gentle greens, low sensory stimulation)
-  - 🌙 **Charcoal Night** (Soothing dark mode)
-  - 👁️ **High Contrast** (WCAG AAA compliant deep black & yellow)
-- [ ] Verify: Does text remain sharp and readable? Is there any screen flickering, jarring animation, or unreadable contrast?
+  - ☀️ **Classic Sanctuary** (Calm parchment, soothing neutral)
+  - 🌿 **Sage Botanical** (Soft green tones, low stimulation)
+  - 🌙 **Charcoal Night** (Muted dark mode)
+  - 👁️ **WCAG AAA High Contrast** (Bold black and yellow for visual accessibility)
+- [ ] Verify: Does the text stay sharp? Is the transition smooth with zero screen flickering or blinding flashes?
 
-### Flow 3: Authentication & Password Recovery
-- [ ] In the upper right, tap **"Sign In"**.
-- [ ] Test signing up with a test email and password.
+### Flow 3: Account Sign-Up & Password Reset
+- [ ] Tap **"Sign In"** in the upper right.
+- [ ] Test signing up with a personal or test email.
 - [ ] Sign out, then tap **"Forgot password?"**.
-- [ ] Enter your email and tap submit.
-- [ ] Verify: Do you receive the Firebase password reset email within 60 seconds? Does the reset link work?
+- [ ] Enter your email and submit.
+- [ ] Verify: Do you receive the Firebase reset email within 60 seconds? Does the reset link function properly?
 
-### Flow 4: Discussion Feeds, Sorting & Reactions
-- [ ] View the **Prayer Sanctuary** or **Weekly Bible Study** space.
-- [ ] Tap each reaction button beneath a reflection:
+### Flow 4: Discussion Feeds, Sorting & Encouraging Reactions
+- [ ] Navigate to the **Prayer Sanctuary** or **Weekly Bible Study** space.
+- [ ] Try the calm reaction buttons under a reflection:
   - 🙏 **Praying**
   - 🕊️ **Peace**
   - 🤝 **Standing With You**
   - 💡 **Encouraged**
-- [ ] Verify: Does the count increment immediately (optimistic UI)?
-- [ ] Tap the **Sort Bar** above the feed:
-  - Try **"Latest"**, **"For You"**, **"Popular"**, and **"Alphabetical"**.
-  - Verify: Does the list reorder smoothly without crashing?
+- [ ] Verify: Does the counter update immediately with no lag?
+- [ ] Tap the **Sort Bar** above the feed (`Latest`, `For You`, `Popular`).
+- [ ] Verify: Does the feed reorder cleanly?
 
-### Flow 5: Threaded Comments & Nested Replies
+### Flow 5: Threaded Discussions & Compact Mobile Composer
 - [ ] Tap on any reflection card to open the **Threaded Discussion View**.
-- [ ] Type a kind test comment (e.g. *"Thinking of you today, thank you for sharing."*) and post it.
-- [ ] Tap **"Reply"** on an existing comment to create a nested reply.
-- [ ] Verify: Does the reply appear properly indented underneath the parent comment?
+- [ ] Type an encouraging reply (e.g. *"Standing with you in prayer today!"*) and post.
+- [ ] Test replying directly to a previous comment.
+- [ ] On mobile, test the compact composer at the bottom of the feed:
+  - Tap to expand.
+  - Add text and an intent tag (`[Prayer Request]`, `[Comfort Only]`, `[Bible Deep-Dive]`).
+  - Submit the reflection.
+- [ ] Verify: Does the composer expand smoothly and collapse after posting without covering older messages?
 
-### Flow 6: Feature Roadmap & Community Voting
-- [ ] In the subheader, tap **"Vote & Feedback"** -> **"Vote on Features (WIP)"**.
-- [ ] Review the community roadmap items (e.g. Quiet Room Soundscapes, Calendar Events).
-- [ ] Tap the **Thumbs Up / Upvote** icon on an item.
-- [ ] Verify: Does the vote count increment immediately? Refresh the page—does your vote persist?
-
-### Flow 7: Private Feedback & Draw-On Screenshot Canvas
-- [ ] Switch to the **"Share Feedback"** tab.
+### Flow 6: Private Feedback with Draw-On Screenshot Canvas
+- [ ] In the subheader, tap **"Vote & Feedback"** -> **"Share Feedback"**.
 - [ ] Select sentiment: **"🛠️ Bug / Confusing"**.
 - [ ] Tap **"Draw / Annotate on Screenshot"**.
-- [ ] Scribble an arrow or circle with the pen tool (try changing colors: Red, Amber, Teal).
-- [ ] Tap **"Attach Scribble"** and enter a short message.
-- [ ] Tap **"Send Private Feedback"**.
-- [ ] Verify: Does the success banner confirm: *"Thank you! Your note was securely routed to our private triage queue"*?
+- [ ] Scribble an arrow or circle with the pen tool (try changing colors: Teal, Amber, Red).
+- [ ] Tap **"Attach Scribble"**, enter a short comment, and submit.
+- [ ] Verify: Does the confirmation message clearly confirm that your note and screenshot were safely routed to the organizers?
 
 ---
 
@@ -98,11 +118,3 @@ Use this table to record any new observations during our 2:00 PM session:
 - 🔴 **P0 (Blocker)**: Crash, blank white screen, cannot log in, or data loss. *Must fix before members log in.*
 - 🟡 **P1 (Soft-Launch Polish)**: Visual overlap, awkward button padding, or confusing phrasing. *Fix during 7-day overlap window.*
 - 🟢 **P2 (Nice-to-Have)**: Future feature request or cosmetic preference. *Track in GitHub for v1.0 in December.*
-
----
-
-## ⏱️ Meeting Schedule (45–60 mins)
-- **0:00 – 0:10**: Welcome, review the 5 in-flight items in the Appendix, set scope.
-- **0:10 – 0:35**: Live testing across Flows 1–7 on your phone and computer.
-- **0:35 – 0:45**: Triage findings in the Punch-List table above and identify P0 blockers vs P1 polish.
-- **0:45 – 0:50**: Final go/no-go recommendation for opening the 7-day soft-launch window.

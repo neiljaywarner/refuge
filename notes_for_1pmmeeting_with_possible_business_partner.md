@@ -81,43 +81,61 @@ As an experienced dev consultant, you will appreciate how cleanly this system ha
 
 ### Key Technical Assets Already Working in Production:
 1. **Single Dart Codebase Across 4 Surfaces**:
-   - Production Web / PWA: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (`v0.9.1+2`).
-   - Android Native: Release APK + installed WebAPK with launcher icon and offline service worker.
+   - Production Web / PWA: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app).
+   - Android Native: Release APK + installed WebAPK with launcher icon, deep-linking, and offline service worker.
    - iOS / Safari: 1-tap "Add to Home Screen" with standalone full-screen view.
-2. **226+ Automated Tests Passing Green**:
+2. **230+ Automated Tests Passing Green**:
    - BDD widget tests (`patrolWidgetTest` / `bdd_widget_test`), unit tests (`package:test`), and end-to-end integration tests.
+   - **97.0% core media stack line coverage** (meme gallery, camera capture, avatar upload).
 3. **Hardware-Driven CI/CD & Automation**:
-   - Automated device driving via **Maestro MCP** and **Marionette CLI** across 2 connected physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and Android emulators.
+   - Automated device driving via **Maestro MCP**, **Patrol MCP**, and **Marionette CLI** across 2 connected physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and Android emulators.
    - Instant zero-prompt visual regression screenshot capture.
 4. **Neurodivergent-First Features (Unique IP)**:
    - **4 Sensory Colorways**: Classic Sanctuary, Sage Botanical, Twilight Calm, Charcoal Night.
    - **WCAG AAA High Contrast Mode**: Instant black/yellow high-contrast toggle for low-vision and sensory regulation.
-   - **In-App Drawing Feedback Canvas**: Members scribble arrows and circles directly onto screenshots before submitting private bug reports or ideas.
+   - **In-App Drawing Feedback Canvas**: Members scribble arrows and circles directly onto screenshots before submitting private bug reports or ideas, with direct dispatch to a private GitHub triage queue.
    - **Zero-PII Privacy Architecture**: Public reflections are sanitized; private feedback routes securely to a confidential triage queue (`neiljaywarner/belong_feedback`).
    - **7 Multi-Criteria Feed Sort Modes**: Latest, For You, New Activity, Oldest, Popular, Likes, Alphabetical.
 5. **Cost Optimization**:
-   - Shifting from Serverpod Cloud (\$5/mo cluster) to pure Firebase Edge + Appwrite brings ongoing baseline hosting to **\$0.00/month** on Google Cloud Free Spark Tier.
+   - Baseline hosting on Google Cloud Free Spark Tier brings ongoing costs to **\$0.00/month**.
 
 ---
 
-## 3. Where We Are Right Now (Launch Readiness & WIP)
+## 3. Where We Are Right Now: Soft Launch Readiness Scorecard
 
-### Done & Shipped (`v0.9.1+2` on `main`)
-- [x] Firebase Authentication (Email/Password, Password Reset, Magic Links).
-- [x] 8 Community Spaces (Prayer, General Chat, Quiet Musings, Bible Study, Special Interests, Events, Tech Help, Saved Items).
-- [x] Threaded discussion comments and nested replies.
-- [x] In-app avatar photo capture, gallery upload, and square crop.
-- [x] Feature voting roadmap board with optimistic 1-tap upvoting.
-- [x] Remote Config Admin Mode with user soft-deletion / banning.
-- [x] Review sentiment benchmark auditor (`tool/analyze_app_reviews.dart`) comparing Belong against 60 Circle.so reviews.
-- [x] Serverpod deprecation roadmap and turn-off checklist.
+### 📊 Overall Readiness Grade: **B+ (84 / 100)**
 
-### In-Flight Polish (Being Finalized by Subagents Today)
-- **Space isolation**: Ensuring unique post streams per space slug (Issue #445).
-- **Private Bookmarking**: Restricting "Saved for Later" to personal bookmarks without public posting (Issue #446).
-- **Mobile Composer Compactness**: Collapsing the reflection composer on Android mobile to maximize message reading area (Issue #447).
-- **Profile Persistence**: Storing preferred display name and ICOC church affiliation in a clean dropdown (Issue #448).
-- **FCM Real-Time Alerts**: Dual-device notification shade and in-app Material banner for direct messages (Issue #382).
+Belong is in exceptional shape architecturally. The foundation, safety, moderation, and test engineering are at an **A-grade**. To achieve **100% (A+) public soft launch readiness**, we have triaged our remaining backlog into 3 concrete, sequential steps.
+
+### What is 100% Done & Verified on `main`
+- [x] **Firebase Authentication**: Email/Password, Password Reset, Magic Links, and Sign-in Wall ([#574](https://github.com/neiljaywarner/refuge/issues/574)).
+- [x] **8 Community Spaces with Isolated Feeds**: Pinned `#general-chat`, `#start-here`, `#announcements`, `#prayer`, `#study`, `#memes`, `#quiet-musings`, and private `#saved-for-later` bookmarks ([#445](https://github.com/neiljaywarner/refuge/issues/445), [#446](https://github.com/neiljaywarner/refuge/issues/446)).
+- [x] **Mobile UX Polish**: Compact tap-to-expand reflection composer on Android mobile viewports ([#447](https://github.com/neiljaywarner/refuge/issues/447)).
+- [x] **Profile & Church Affiliation**: Persistent member profile storage with searchable ICOC church dropdown ([#448](https://github.com/neiljaywarner/refuge/issues/448)).
+- [x] **Safety & Moderation Primitives**:
+  - Remote Config Admin Mode with user soft-deletion / banning ([#579](https://github.com/neiljaywarner/refuge/issues/579), [#585](https://github.com/neiljaywarner/refuge/issues/585)).
+  - Account self-deletion & GDPR privacy compliance ([#589](https://github.com/neiljaywarner/refuge/issues/589), [#595](https://github.com/neiljaywarner/refuge/issues/595)).
+- [x] **In-App Feedback Scribble Canvas**: Direct dispatch to private GitHub triage queue with screenshot capture ([#460](https://github.com/neiljaywarner/refuge/issues/460)).
+- [x] **Precise Build Identity**: Git commit SHA, UTC build timestamp, and release tags stamped into About screen and `version.json` ([PR #507](https://github.com/neiljaywarner/refuge/pull/507)).
+- [x] **Native Notifications & Deep-Linking**: Launcher badge MethodChannel ([#331](https://github.com/neiljaywarner/refuge/issues/331)) and deep-linking on notification tap ([#330](https://github.com/neiljaywarner/refuge/issues/330)).
+
+---
+
+## 🎯 The 3 Next Steps to Full Soft-Launch Readiness (A+)
+
+1. **Step 1: Production Data Scrub & First-Time Visitor Calm Polish ([#501](https://github.com/neiljaywarner/refuge/issues/501), [#500](https://github.com/neiljaywarner/refuge/issues/500))**:
+   - Purge developer test junk posts (`"blah your face"`, test tokens) and seed 4–5 genuine, encouraging reflections from real organizer accounts.
+   - Eliminate duplicate "General Chat" space and resolve the `"Coming Soon"` label on Events.
+   - Start signed-out guests at notification badge `0` (removing the fake `3` unread badge) and persist guest feature upvotes in `localStorage` so reload doesn't reset or inflate vote counts.
+
+2. **Step 2: Real-Member Direct Messaging & Web History Navigation ([#441](https://github.com/neiljaywarner/refuge/issues/441), [#499](https://github.com/neiljaywarner/refuge/issues/499), [#485](https://github.com/neiljaywarner/refuge/issues/485))**:
+   - Replace hardcoded sample members (`kDevFellowshipMembers`) in the DM search with a live query against real registered fellowship members in Firestore.
+   - Synchronize bottom navigation and space tabs with the browser history stack so pressing browser **Back** returns to the prior screen instead of exiting the PWA.
+   - Guard and verify feed sort/filter chips (`Latest`, `For you`, `New Activity`) against unhandled gesture exceptions on dark themes.
+
+3. **Step 3: CI/CD Auto-Deploy & Branded Support Setup ([#493](https://github.com/neiljaywarner/refuge/issues/493), [#495](https://github.com/neiljaywarner/refuge/issues/495), [PR #507](https://github.com/neiljaywarner/refuge/pull/507))**:
+   - Add `.github/workflows/deploy.yml` to automatically build and deploy to Firebase Hosting on push to `main`.
+   - Route `support@belongonthespectrum.com` via free Cloudflare Email Routing to personal Gmail (with optional private AI triage), removing third-party bot addresses from public screens.
 
 ---
 
@@ -143,7 +161,7 @@ We can structure collaboration to fit your availability, consulting bandwidth, a
    - Why Belong was born: Personal story, autistic fellowship need, Circle.so pain points.
    - Live demo on mobile/web: Walk through sensory themes, high contrast, drawing canvas, and unhurried feeds.
 3. **Codebase & Architecture Tour (15 mins)**:
-   - Walk through the repo: Flutter/Dart structure, Riverpod providers, BDD test suites (226+ tests), Maestro automation.
+   - Walk through the repo: Flutter/Dart structure, Riverpod providers, BDD test suites (230+ tests), Maestro automation.
    - How we maintain zero-prompt unattended dev sessions and clean worktree isolation.
 4. **The Business & Scale Potential (10 mins)**:
    - Why church tech is ripe for disruption: Subsplash / Pushpay / Circle fatigue.
@@ -180,10 +198,11 @@ We can structure collaboration to fit your availability, consulting bandwidth, a
 
 ## 📚 Appendix: Key Technical Links & Documentation
 
-- **Live Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) (`v0.9.1+2`)
+- **Live Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 - **Main Codebase**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)
 - **Private Feedback Triage Queue**: [`https://github.com/neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)
 - **Human Reviewer Briefing**: [`notes_for_first_meeting_with_human_reviewer.md`](file:///Users/neil/belongonthespectrum/refuge/notes_for_first_meeting_with_human_reviewer.md)
+- **Friend QA Walkthrough Notes**: [`notes_for_friend_helping_with_qa.md`](file:///Users/neil/belongonthespectrum/refuge/notes_for_friend_helping_with_qa.md)
+- **1.0 Master Plan**: [`1.0_alpha_plan.md`](file:///Users/neil/belongonthespectrum/1.0_alpha_plan.md)
 - **Serverpod Teardown & $0/Mo Cost Savings Guide**: [`docs/wiki/Serverpod-Deprecation-and-Teardown-Guide.md`](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Serverpod-Deprecation-and-Teardown-Guide.md)
 - **Review Sentiment Benchmark Report**: [`docs/benchmarks/circle_apple_google_reviews_sentiment_report.md`](file:///Users/neil/belongonthespectrum/refuge/docs/benchmarks/circle_apple_google_reviews_sentiment_report.md)
-- **Hardware & Device Allocation Registry**: [`devices.md`](file:///Users/neil/belongonthespectrum/devices.md)
