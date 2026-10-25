@@ -11,10 +11,10 @@ class FlavorEnvironmentChip extends StatelessWidget {
     label: '$tag environment',
     child: Container(
       key: Key('flavor_environment_chip_$tag'),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const .symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: Colors.amber.shade100,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: .circular(4),
         border: Border.all(color: Colors.amber.shade800, width: 0.75),
       ),
       child: Text(

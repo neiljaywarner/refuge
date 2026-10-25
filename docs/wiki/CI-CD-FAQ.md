@@ -80,6 +80,10 @@ class const Point(final int x, final int y);
 
 Production pilots include `CalmPushDisplay`, `AvatarCropResult`, and `lib/src/core/geometry/point.dart`. Do not use primary constructors on widgets, repositories, or types with heavy `factory` / side-effect logic. A custom `belong_lints` rule is optional later ([#609](https://github.com/neiljaywarner/refuge/issues/609)).
 
+### Dot shorthands (#610)
+
+When the context type is known (for example `padding:` expects `EdgeInsets`), prefer constructor dot-shorthands: `const .symmetric(...)`, `const .all(...)`, `.circular(...)`, and enum-style `.start` on `CrossAxisAlignment`. Pilot directory: `lib/src/core/presentation/`. Skip shorthands when the analyzer reports `dot_shorthand_missing_context`. A custom `belong_lints` rule is deferred ([#610](https://github.com/neiljaywarner/refuge/issues/610)).
+
 ### Why did the deploy workflow fail before the Flutter build?
 
 The job needs one of these repository secrets, and neither is committed:

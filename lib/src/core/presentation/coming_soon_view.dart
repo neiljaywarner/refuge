@@ -33,27 +33,27 @@ class ComingSoonView extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const .all(24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
           child: Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: .circular(16),
               side: BorderSide(color: primary.withValues(alpha: 0.25)),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const .all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(emoji, style: const TextStyle(fontSize: 40)),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const .symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
+                      borderRadius: .circular(999),
                     ),
                     child: Text(
                       'Coming Soon',
@@ -80,10 +80,10 @@ class ComingSoonView extends StatelessWidget {
                     const SizedBox(height: 14),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const .all(12),
                       decoration: BoxDecoration(
                         color: primary.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: .circular(10),
                       ),
                       child: Text(
                         extraMarkdownOrNote!,
@@ -133,20 +133,18 @@ class ComingSoonView extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: .vertical(top: Radius.circular(24))),
       builder: (modalContext) {
         final theme = Theme.of(modalContext);
         final primary = theme.colorScheme.primary;
         return SystemBottomInset(
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              padding: const .fromLTRB(24, 20, 24, 24),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     Center(
                       child: Container(
@@ -154,7 +152,7 @@ class ComingSoonView extends StatelessWidget {
                         height: 4,
                         decoration: BoxDecoration(
                           color: theme.dividerColor.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(2),
+                          borderRadius: .circular(2),
                         ),
                       ),
                     ),
@@ -207,14 +205,14 @@ class ComingSoonView extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const .all(12),
                       decoration: BoxDecoration(
                         color: primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: .circular(12),
                         border: Border.all(color: primary.withValues(alpha: 0.2)),
                       ),
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: .start,
                         children: [
                           const Text('💡', style: TextStyle(fontSize: 18)),
                           const SizedBox(width: 8),
@@ -254,14 +252,14 @@ class ComingSoonView extends StatelessWidget {
     required List<String> steps,
   }) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(14),
+    padding: const .all(14),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: .circular(12),
       border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         Row(
           children: [
@@ -273,7 +271,7 @@ class ComingSoonView extends StatelessWidget {
         const SizedBox(height: 8),
         for (final step in steps)
           Padding(
-            padding: const EdgeInsets.only(bottom: 4),
+            padding: const .only(bottom: 4),
             child: Text(
               step,
               style: TextStyle(
