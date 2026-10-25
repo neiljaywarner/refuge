@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../core/build/build_identity.dart';
+import '../../../core/theme/belong_text_styles.dart';
 
 /// Version and build number from the running package (pubspec via the platform).
 class AppVersionLabel {
@@ -67,14 +68,13 @@ class AboutDialogTitle extends StatelessWidget {
         final title = suffix == null
             ? 'Belong on the Spectrum'
             : 'Belong on the Spectrum ($suffix)';
+        final titleStyle = BelongTextStyles.of(context).title.copyWith(
+          color: isContrast ? const Color(0xFFFFEB3B) : primaryColor,
+        );
         return Text(
           title,
           key: const Key('about_dialog_title'),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: isContrast ? Colors.yellow : primaryColor,
-          ),
+          style: titleStyle,
         );
       },
     );
@@ -98,12 +98,12 @@ class AboutBuildStamp extends StatelessWidget {
       future: version,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const SizedBox(
-            key: Key('about_build_stamp'),
+          return SizedBox(
+            key: const Key('about_build_stamp'),
             width: double.infinity,
             child: Text(
               'This build',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: BelongTextStyles.of(context).emphasis,
             ),
           );
         }
@@ -120,10 +120,9 @@ class _BuildStampBody extends StatelessWidget {
   final BuildIdentity identity;
   final AppVersionLabel version;
 
-  static const _lineStyle = TextStyle(fontSize: 11.5, height: 1.4);
-
   @override
   Widget build(BuildContext context) {
+    final styles = BelongTextStyles.of(context);
     final release = identity.releaseTagOrNull;
     final commitUrl = identity.commitUrl;
     final source = identity.sourceLabel;
@@ -131,43 +130,40 @@ class _BuildStampBody extends StatelessWidget {
       key: const Key('about_build_stamp'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'This build',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        ),
+        Text('This build', style: styles.emphasis),
         const Gap(4),
         Text(
           'Version: ${version.versionLine}',
           key: const Key('about_build_version'),
-          style: _lineStyle,
+          style: styles.caption,
         ),
         SelectableText(
           'Git commit: ${identity.commitLabel}',
           key: const Key('about_build_commit'),
-          style: _lineStyle,
+          style: styles.caption,
         ),
         Text(
           'Build time: ${identity.buildTimeLine}',
           key: const Key('about_build_time'),
-          style: _lineStyle,
+          style: styles.caption,
         ),
         if (release != null)
           Text(
             'Release: $release',
             key: const Key('about_build_release'),
-            style: _lineStyle,
+            style: styles.caption,
           ),
         if (commitUrl != null)
           SelectableText(
             commitUrl,
             key: const Key('about_build_commit_url'),
-            style: _lineStyle,
+            style: styles.caption,
           ),
         if (source != null)
           Text(
             'Source: $source',
             key: const Key('about_build_source'),
-            style: _lineStyle,
+            style: styles.caption,
           ),
       ],
     );

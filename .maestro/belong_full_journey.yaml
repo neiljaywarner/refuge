@@ -1,47 +1,48 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
-# 📱 Belong on the Spectrum — Comprehensive Maestro End-to-End User Journey
-# Verified across connected physical Google Pixel 9a hardware & Android emulators.
+# Belong on the Spectrum — end-to-end journey against the live accessibility tree.
+# Header nodes may be separate ("Belong", "Refuge", "Calm Tech • Live|Resilient")
+# or one combined label. Welcome copy is "Welcome to Belong on the Spectrum".
+# Sensory menu labels are Clean, Sage, Dark, and Contrast.
 
-# 1. Launch Belong Refuge
 - launchApp:
     clearState: false
 
-- assertVisible: "Belong on the Spectrum"
+- extendedWaitUntil:
+    visible: ".*Welcome to Belong on the Spectrum.*"
+    timeout: 45000
+- assertVisible: ".*Welcome to Belong on the Spectrum.*"
+- assertVisible: ".*Belong.*"
 - takeScreenshot: screenshots/01_home_anchor_welcome
 
-# 2. Test Sensory Theme Switcher
-- tapOn:
-    id: "sensory_theme_toggle_button"
-    optional: true
-- tapOn: "Monastic Dark"
-- assertVisible: "Belong on the Spectrum"
+- tapOn: ".*Sensory Themes.*"
+- tapOn: "Dark.*"
+- assertVisible: ".*Welcome to Belong on the Spectrum.*"
 - takeScreenshot: screenshots/02_monastic_dark_applied
 
-- tapOn:
-    id: "sensory_theme_toggle_button"
-    optional: true
-- tapOn: "Sage Botanical"
+- tapOn: ".*Sensory Themes.*"
+- tapOn: "Sage.*"
 - takeScreenshot: screenshots/03_sage_botanical_restored
 
-# 3. Explore Spaces Directory
-- tapOn:
-    text: "Spaces"
-    optional: true
-- assertVisible: "General Fellowship"
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*General Chat.*"
+    timeout: 15000
+- assertVisible: ".*General Chat.*"
 - takeScreenshot: screenshots/04_spaces_directory
 
-# 4. Open About Belong Dialog & Verify Psalm 139:14 Scripture Anchor
-- tapOn:
-    id: "about_belong_info_button"
-    optional: true
-- assertVisible: "Psalm 139:14"
+- tapOn: ".*About Belong.*"
+- extendedWaitUntil:
+    visible: ".*Psalm 139:14.*"
+    timeout: 10000
+- assertVisible: ".*Psalm 139:14.*"
 - takeScreenshot: screenshots/05_about_belong_scripture_dialog
-- tapOn: "Close"
+- tapOn: "Close.*"
 
-# 5. Open Auth Sheet & Verify Neurodivergent Reassurance
-- tapOn:
-    text: "Sign In"
-    optional: true
-- assertVisible: "Sign In"
+- tapOn: ".*Sign In.*"
+- extendedWaitUntil:
+    visible: ".*Sign [Ii]n.*"
+    timeout: 15000
+- assertVisible: ".*Sign [Ii]n.*"
 - takeScreenshot: screenshots/06_auth_modal_sheet

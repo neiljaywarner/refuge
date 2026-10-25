@@ -1,4 +1,5 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Belong on the Spectrum — FirebaseUI Auth E2E Flow"
 tags:
   - belong
@@ -6,30 +7,38 @@ tags:
   - firebase_ui_auth
   - e2e
 ---
-# 1. Launch App & Wait for Feed
+# Read-only navigation. Does not create an account or send a password reset.
+# Live sign-in route title is "Sign In to Belong". FirebaseUI shows
+# "Don't have an account?", "Register", and "Forgotten password?".
+
 - launchApp
-- assertVisible: "Belong"
-- assertVisible: "Sign In"
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
+- assertVisible: ".*Sign In.*"
 
-# 2. Navigate to Sign In Screen
-- tapOn: "Sign In"
-- assertVisible: "Sign in"
-- assertVisible: "Don't have an account? "
-- assertVisible: "Register"
-- assertVisible: "Forgotten password?"
+- tapOn: ".*Sign In.*"
+- extendedWaitUntil:
+    visible: ".*Forgotten password\\?.*"
+    timeout: 20000
+- assertVisible: ".*Sign in.*"
+- assertVisible: ".*Don't have an account\\?.*"
+- assertVisible: ".*Register.*"
 
-# 3. Test Forgot Password Screen Navigation
-- tapOn: "Forgotten password?"
-- assertVisible: "Reset your password"
-- assertVisible: "Reset password"
+- tapOn: ".*Forgotten password\\?.*"
+- extendedWaitUntil:
+    visible: ".*Reset your password.*"
+    timeout: 15000
+- assertVisible: ".*Reset password.*"
 - back
-- assertVisible: "Sign in"
+- assertVisible: ".*Sign in.*"
 
-# 4. Navigate to Register Screen
-- tapOn: "Register"
-- assertVisible: "Register"
-- assertVisible: "Already have an account? "
+- tapOn: ".*Register.*"
+- extendedWaitUntil:
+    visible: ".*Register.*"
+    timeout: 15000
+- assertVisible: ".*Already have an account\\?.*"
 
-# 5. Dismiss back to home screen
 - back
-- assertVisible: "Belong"
+- assertVisible: ".*Belong.*"

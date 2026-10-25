@@ -1,7 +1,9 @@
 url: http://127.0.0.1:8095
 name: Belong web every feed sort option
 ---
-# Covers each sort chip, the sort menu, and a tone filter (#485).
+# Covers each on-screen sort chip, then every sort from the menu (#485).
+# Off-screen chips are not in the semantics tree, so Popular, Likes, and
+# Alphabetical are selected from the sort menu (same callback as the chips).
 - launchApp
 - extendedWaitUntil:
     visible: "Demo Mode.*"
@@ -15,19 +17,33 @@ name: Belong web every feed sort option
     id: "feed_sort_chip_newActivity"
 - tapOn:
     id: "feed_sort_chip_oldest"
-- scrollUntilVisible:
-    element:
-      id: "feed_sort_chip_alphabetical"
-    direction: LEFT
-    timeout: 15000
-    visibilityPercentage: 50
-    centerElement: true
+
 - tapOn:
-    id: "feed_sort_chip_popular"
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_popular"
+    timeout: 10000
 - tapOn:
-    id: "feed_sort_chip_likes"
+    id: "feed_sort_menu_item_popular"
+
 - tapOn:
-    id: "feed_sort_chip_alphabetical"
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_likes"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_likes"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_alphabetical"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_alphabetical"
 
 - tapOn:
     id: "feed_sort_popup_button"
@@ -38,15 +54,10 @@ name: Belong web every feed sort option
 - tapOn:
     id: "feed_sort_menu_item_newActivity"
 
-- scrollUntilVisible:
-    element:
-      id: "tone_filter_chip_comfort_only"
-    direction: LEFT
-    timeout: 15000
-    visibilityPercentage: 50
 - tapOn:
     id: "tone_filter_chip_comfort_only"
 - assertVisible: ".*sensory fatigue.*"
 - tapOn:
     id: "tone_filter_chip_all"
-- assertVisible: ".*peace of mind.*"
+- assertVisible: "Demo Mode.*"
+- assertVisible: ".*quiet space exists.*"

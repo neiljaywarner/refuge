@@ -1,24 +1,48 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
-# Feed Bookmark Ribbon & Multi-Criteria Sort Flow
+# Intent filters on the live home feed: All, [Prayer Request], [Comfort Only],
+# [Bible Deep-Dive]. Sort chips (Latest, For you, New Activity) are on the
+# same screen and may sit beside those filters. Saved for Later is a Spaces row.
+
 - launchApp:
     clearState: false
 
-# 1. Verify Feed is active
-- assertVisible: "Feed"
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Feed.*"
+- assertVisible: ".*\\[Prayer Request\\].*"
+- assertVisible: ".*\\[Comfort Only\\].*"
+- assertVisible: ".*\\[Bible Deep-Dive\\].*"
 
-# 2. Tap on Sort: For you
-- tapOn: ".*For you.*"
+- scrollUntilVisible:
+    element: ".*For you.*"
+    direction: LEFT
+    timeout: 15000
+- tapOn:
+    text: ".*For you.*"
+    index: 0
+- scrollUntilVisible:
+    element: ".*New Activity.*"
+    direction: LEFT
+    timeout: 15000
+- tapOn:
+    text: ".*New Activity.*"
+    index: 0
+- scrollUntilVisible:
+    element: ".*Latest.*"
+    direction: RIGHT
+    timeout: 15000
+- tapOn:
+    text: ".*Latest.*"
+    index: 0
 
-# 3. Tap on Sort: New Activity
-- tapOn: ".*New Activity.*"
-
-# 4. Tap on Sort: Latest
-- tapOn: ".*Latest.*"
-
-# 5. Tap on Spaces
-- tapOn: "Spaces"
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Saved for Later.*"
+    timeout: 15000
 - assertVisible: ".*Saved for Later.*"
 
-# 6. Return to Feed
-- tapOn: "Feed"
+- tapOn: ".*Feed.*"
+- assertVisible: ".*Feed.*"

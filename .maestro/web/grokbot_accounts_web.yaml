@@ -7,7 +7,7 @@ name: grokbot signup sign-in direct message and mention
 
 - launchApp
 - extendedWaitUntil:
-    visible: "Belong"
+    visible: ".*Belong.*"
     timeout: 120000
 - runFlow:
     when:

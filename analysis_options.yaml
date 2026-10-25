@@ -20,6 +20,14 @@ analyzer:
     - linux/**
     - sanctuary_server/**
 
+plugins:
+  belong_lints:
+    path: packages/belong_lints
+  pyramid_lint:
+    version: ^3.0.0
+    diagnostics:
+      dispose_controllers: true
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
@@ -32,8 +40,13 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # avoid_print is already on via flutter_lints. lib/ also uses the
+    # belong_lints no_print_use_app_logger plugin rule.
+    # prefer_single_quotes and prefer_expression_function_bodies wait for the
+    # format sweep in issue #519. Enabling them now fails the existing tree.
+    # Formatter page width stays at the SDK default for the same reason.
+    # prefer_single_quotes: true
+    # prefer_expression_function_bodies: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

@@ -48,11 +48,28 @@ flowchart TD
 
 To ensure development, automated test suites, and CI/CD runs **never pollute production community reflections or notification streams**, the codebase strictly enforces flavor separation via `--dart-define=FLAVOR=...`:
 
-| Flavor | Environment | Database Collection | Serverpod URL | Target Audience |
-| :--- | :--- | :--- | :--- | :--- |
-| **`dev`** | Development & CI | `reflections_dev` | `https://refuge4serverpod.api.serverpod.space/` (or local `http://10.0.2.2:8080/`) | Automated BDD tests, local emulators, continuous integration |
-| **`stg`** | Staging | `reflections_stg` | Staging cluster | Pre-release rehearsal |
-| **`prod`** | Production | `reflections` | `https://refuge4serverpod.api.serverpod.space/` | Real community members & churches |
+| Flavor | Environment | Web app (Firebase Hosting) | Database Collection | Serverpod URL | Target Audience |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`dev`** | Development & CI | `https://dev-belongonthespectrum.web.app/` | `reflections_dev` | `https://refuge4serverpod.api.serverpod.space/` (or local `http://10.0.2.2:8080/`) | Automated BDD tests, local emulators, continuous integration |
+| **`prod`** | Production | `https://belongonthespectrum.web.app/` | `reflections` | `https://refuge4serverpod.api.serverpod.space/` | Real community members & churches |
+
+`stg` / `qa` remain enum hooks only ([#40](https://github.com/neiljaywarner/refuge/issues/40)); they are not deployed yet. The marketing site `https://www.belongonthespectrum.com/` is separate from the Flutter web app origin.
+
+### Where `dev` fits (and where it does not)
+
+One Firebase project (`belongonthespectrum`) hosts two sites. Auth and Firestore are shared. The app sends dev posts to `reflections_dev` and prod posts to `reflections`. A second Firebase project is the later step if dev must not share Auth users with prod.
+
+| Destination | Command | Build | URL |
+| :--- | :--- | :--- | :--- |
+| Stable **dev** site | `dart run tool/deploy_dev_web.dart` | `lib/main_dev.dart`, `FLAVOR=dev` | `https://dev-belongonthespectrum.web.app/` |
+| Release **preview channel** | `dart run tool/deploy_release.dart --version vX.Y.Z` | `lib/main_prod.dart`, `FLAVOR=prod` | `https://belongonthespectrum--<channel>.web.app` (expires) |
+| **Production** | same command with `--prod` | same prod build | `https://belongonthespectrum.web.app/` |
+
+Preview channels are short-lived release candidates on the prod site. They are not the dev site. `--prod` deploys `firebase.json` only, so a release cannot overwrite the dev site. `tool/deploy_dev_web.dart` deploys `firebase.dev.json` and refuses `--prod`. The configs stay split so a missing dev site cannot break `firebase deploy --only hosting`.
+
+The dev site id does not exist until someone who is logged into Firebase runs `dart run tool/deploy_dev_web.dart --create-site` once. Until then the URL is Firebase's "Site Not Found" page.
+
+A plain `flutter build web` uses `lib/main.dart`, which stays on `dev` unless `FLAVOR` is set. Release builds pass `-t lib/main_prod.dart` so they do not publish the dev flavor to production.
 
 ### Running with Explicit Flavors
 ```bash
@@ -108,10 +125,12 @@ Every web and APK build this script compiles is stamped with three compile-time 
 
 A local `flutter run` that does not pass the defines shows Git commit `unknown`, build time `unknown`, and source `dev`. The app does not invent a SHA.
 
-CI can pass the same three defines. This repository does not add a GitHub Actions deploy workflow here.
+CI can pass the same three defines. On every push to `main`, [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs this script with `--prod`. Pull requests do not deploy. See [docs/wiki/CI-CD-FAQ.md](docs/wiki/CI-CD-FAQ.md).
 
 ```bash
 flutter build web --release \
+  -t lib/main_prod.dart \
+  --dart-define=FLAVOR=prod \
   --dart-define=GIT_COMMIT_SHA="$GIT_COMMIT_SHA" \
   --dart-define=BUILD_TIME_MS="$BUILD_TIME_MS" \
   --dart-define=RELEASE_TAG="$RELEASE_TAG"
@@ -125,7 +144,7 @@ flutter build web --release \
 | :--- | :--- | :--- |
 | `--version` | **Required** | Release tag / version string (e.g. `v0.8.0-alpha`) |
 | `--channel` | `version` (dots→dashes) | Firebase Hosting preview channel name (e.g. `v0-8-0-alpha`) |
-| `--prod` | `false` | Deploys directly to live production (`https://belongonthespectrum.web.app`) |
+| `--prod` | `false` | Deploys `firebase.json` to live production (`https://belongonthespectrum.web.app`). Does not read `firebase.dev.json`. |
 | `--github-release` | `false` | Automatically creates/updates the official GitHub Release with changelog |
 | `--distribute-android` | `false` | Builds release APK and uploads to Firebase App Distribution |
 | `--android-app-id` | Auto-detected | Firebase Android App ID (`$FIREBASE_ANDROID_APP_ID`) |
@@ -173,3 +192,51 @@ firebase hosting:clone belongonthespectrum:<PREVIOUS_VERSION_CHANNEL> belongonth
 
 ### Serverpod Reconnect Fallback
 The client code is built with resilient dual-cloud fallback: if Serverpod is unreachable, the app automatically fails over to Cloud Firestore (`reflections` collection) and local in-memory storage, ensuring zero blackouts for active community members.
+
+---
+
+## 7. GitHub Actions
+
+Two workflows live in `.github/workflows/`.
+
+### Pull request CI (`.github/workflows/ci.yml`)
+
+On every pull request and `workflow_dispatch`:
+
+1. `dart format --output=none --set-exit-if-changed` on the files this pipeline owns. The rest of the tree is not format-clean yet ([#519](https://github.com/neiljaywarner/refuge/issues/519)). Page width stays at the SDK default until that sweep.
+2. `dart analyze packages/belong_lints`, then `dart analyze` for the whole package. The job fails if `no_print_use_app_logger`, `prefer_use_text_editing_controller`, or pyramid_lint `dispose_controllers` appears. Older analyzer errors already on `main` do not fail this step. `dart analyze` is the command that loads these plugins.
+3. `flutter test --coverage` on the compiling slice: build identity, text tokens, About, and the coverage tool. The whole `flutter test` tree does not compile until `home_screen.dart` matches the widgets it calls.
+4. Line coverage floor of 40% on the lines that slice loads, via `dart run tool/check_line_coverage.dart --min 40`.
+
+Flutter is pinned to 3.47.7. There is no spell check and no 100% coverage gate.
+
+Local hooks match the fast part of that list. Install them with `dart run tool/install_git_hooks.dart`.
+
+### Production deploy (`.github/workflows/deploy.yml`)
+
+On every push to `main`, and on `workflow_dispatch`:
+
+1. Checkout the full history so release notes can see tags.
+2. Run `dart run tool/deploy_release.dart --version ci-<short-sha> --prod`.
+3. The script builds web with `GIT_COMMIT_SHA`, `BUILD_TIME_MS`, and `RELEASE_TAG`, writes `build/web/version.json`, deploys a 14-day Hosting preview channel, then deploys production Hosting.
+
+A manual run can choose a dry run (no Firebase), skip production, or also upload an APK to App Distribution. Automatic pushes do not create a GitHub Release and do not upload an APK.
+
+### Secrets
+
+Store these in GitHub repository secrets. Do not commit them.
+
+| Secret | Required | Purpose |
+| :--- | :--- | :--- |
+| `FIREBASE_SERVICE_ACCOUNT` | One of this or `FIREBASE_TOKEN` | Service account JSON with Firebase Hosting admin on project `belongonthespectrum` |
+| `FIREBASE_TOKEN` | One of this or `FIREBASE_SERVICE_ACCOUNT` | Firebase CI token, used when the service account secret is empty |
+| `FIREBASE_ANDROID_APP_ID` | Only for App Distribution | Android app id. The script can try to detect one when this is unset |
+
+Dry run from the Actions tab does not need the secrets.
+
+### Dependabot
+
+[`.github/dependabot.yml`](.github/dependabot.yml) opens weekly pull requests for the root pub package, `packages/belong_lints`, the Serverpod client and server packages, and GitHub Actions. Minor and patch updates are grouped. Nothing auto-merges. CI on the dependency PR must pass.
+
+Troubleshooting: [docs/wiki/CI-CD-FAQ.md](docs/wiki/CI-CD-FAQ.md).
+
