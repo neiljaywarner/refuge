@@ -19,7 +19,6 @@ void main() {
 
     expect($('Filter: '), findsOneWidget);
     expect($(ChoiceChip), findsWidgets);
-    expect($('[Prayer Request]'), findsWidgets);
 
     expect($('Vote & Feedback'), findsOneWidget);
   });

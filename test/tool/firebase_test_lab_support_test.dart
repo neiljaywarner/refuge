@@ -1,8 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/firebase_test_lab_support.dart';
 
 void main() {
+  group('patrolBuildAndroidArgs', () {
+    test('pins dev defines and target file', () {
+      expect(patrolBuildAndroidArgs(target: 'integration_test/patrol_ftl_home_shell_test.dart'), [
+        'build',
+        'android',
+        '-t',
+        'integration_test/patrol_ftl_home_shell_test.dart',
+        '--dart-define=FLAVOR=dev',
+        '--dart-define=ENABLE_SERVERPOD=false',
+        '--no-uninstall',
+      ]);
+    });
+  });
+
   group('devFlutterApkBuildArgs', () {
     test('pins dev entrypoint, flavor, and Serverpod off', () {
       expect(devFlutterApkBuildArgs(), [
@@ -47,6 +63,23 @@ application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic
           ),
         ),
         isNull,
+      );
+    });
+  });
+
+  group('resolveGcloudExecutable', () {
+    test('finds Homebrew gcloud when present', () {
+      const homebrew = '/opt/homebrew/bin/gcloud';
+      if (!File(homebrew).existsSync()) {
+        return;
+      }
+      expect(resolveGcloudExecutable(), homebrew);
+    });
+
+    test('gcloudCandidatePaths includes Homebrew locations', () {
+      expect(
+        gcloudCandidatePaths(pathEnv: '/bin', home: '/tmp'),
+        contains('/opt/homebrew/bin/gcloud'),
       );
     });
   });
