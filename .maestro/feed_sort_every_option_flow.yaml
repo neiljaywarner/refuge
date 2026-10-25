@@ -1,6 +1,12 @@
 appId: com.belongonthespectrum.refuge.dev
+tags:
+  - known-gap
+  - needs-signed-in-session
+  - issue-601
 ---
 # Every feed sort option on a debug dev build (#485).
+# known-gap: unsigned launches now stop at the sign-in wall (#574, #601).
+# Re-enable after signing in as Example User 1. Widget tests still cover sort.
 # Release/prod applicationId is com.belongonthespectrum.refuge (no .dev suffix).
 #
 # A 1080-wide phone only puts Latest, For you, New Activity, and a clipped

@@ -41,7 +41,7 @@ Circle also locks every IP address that member used in the prior 30 days. An adm
 
 Circle deletes the account, so the same email can register again as a new member from an IP that was not blocked. Belong does not delete the Firebase Auth user. The app refuses a matching session, and that email stays reserved in Firebase until the Auth user is deleted. There is no Cloud Function for that in this change.
 
-A guest who is not signed in can still open the public feed. The ban stops that member's session and removes their writing. It does not hide other members' posts from a signed-out device.
+A signed-out person sees only the sign-in wall. They cannot browse the feed, directory, or other members' posts. The ban stops that member's session and removes their writing. Firestore rules also refuse unauthenticated reads (#601).
 
 ---
 

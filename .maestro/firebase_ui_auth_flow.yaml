@@ -7,24 +7,19 @@ tags:
   - firebase_ui_auth
   - e2e
 ---
-# Read-only navigation. Does not create an account or send a password reset.
-# Live sign-in route title is "Sign In to Belong". FirebaseUI shows
+# Read-only navigation on the members-only sign-in wall (#574, #601).
+# Does not create an account or send a password reset.
+# Live title is "Sign In to Belong". FirebaseUI shows
 # "Don't have an account?", "Register", and "Forgotten password?".
 
-- launchApp
+- launchApp:
+    clearState: true
 - extendedWaitUntil:
-    visible: ".*Vote & Feedback.*"
+    visible: "Sign In to Belong"
     timeout: 45000
-- assertVisible: ".*Belong.*"
-- assertVisible: ".*Sign In.*"
-
-- tapOn: ".*Sign In.*"
-- extendedWaitUntil:
-    visible: ".*Forgotten password\\?.*"
-    timeout: 20000
-- assertVisible: ".*Sign in.*"
 - assertVisible: ".*Don't have an account\\?.*"
 - assertVisible: ".*Register.*"
+- assertVisible: ".*Forgotten password\\?.*"
 
 - tapOn: ".*Forgotten password\\?.*"
 - extendedWaitUntil:
@@ -32,7 +27,7 @@ tags:
     timeout: 15000
 - assertVisible: ".*Reset password.*"
 - back
-- assertVisible: ".*Sign in.*"
+- assertVisible: "Sign In to Belong"
 
 - tapOn: ".*Register.*"
 - extendedWaitUntil:
@@ -41,4 +36,4 @@ tags:
 - assertVisible: ".*Already have an account\\?.*"
 
 - back
-- assertVisible: ".*Belong.*"
+- assertVisible: "Sign In to Belong"

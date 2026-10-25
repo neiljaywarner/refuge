@@ -86,6 +86,8 @@ jobs:
           APTABASE_KEY: ${{ secrets.APTABASE_KEY }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           POSTHOG_HOST: https://us.i.posthog.com
+          # Dev web only. tool/deploy_release.dart must not pass this define.
+          DEV_EXAMPLE_PASSWORD: ${{ secrets.DEV_EXAMPLE_PASSWORD }}
         run: |
           set -eu
           short="${GITHUB_SHA::7}"
