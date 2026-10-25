@@ -163,15 +163,20 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         profile.userId == 'guest') {
       return;
     }
-    final flight = ref
-        .read(memberDirectoryStoreProvider)
-        .publishSignedInMember(
-          uid: profile.userId,
-          displayName: profile.displayName,
-          email: profile.email,
-          tagline: profile.effectiveTagline,
-        )
-        .timeout(const Duration(seconds: 8));
+    final flight = () async {
+      final blocked = await ref
+          .read(accountDeletionRepositoryProvider)
+          .isSignInBlocked(profile.userId);
+      if (blocked) return;
+      await ref
+          .read(memberDirectoryStoreProvider)
+          .publishSignedInMember(
+            uid: profile.userId,
+            displayName: profile.displayName,
+            email: profile.email,
+            tagline: profile.effectiveTagline,
+          );
+    }().timeout(const Duration(seconds: 8));
     _publishFlight = flight;
     unawaited(
       flight.then(
