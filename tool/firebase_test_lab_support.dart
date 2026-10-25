@@ -5,7 +5,7 @@ library;
 import 'dart:io';
 
 import 'package:refuge4serverpod/src/core/build/release_build_stamp.dart';
-import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
+import 'package:refuge4serverpod/src/core/config/native_launcher_labels.dart';
 
 /// Production Android application id — uploads with this package are refused.
 const prodAndroidPackageId = 'com.belongonthespectrum.refuge';
@@ -14,7 +14,7 @@ const prodAndroidPackageId = 'com.belongonthespectrum.refuge';
 const devAndroidPackageId = 'com.belongonthespectrum.refuge.dev';
 
 /// Required launcher label for dev builds (VGV-style `[DEV]` prefix).
-String get devAndroidApplicationLabel => AppFlavor.dev.launcherTitle;
+const devAndroidApplicationLabel = devLauncherTitle;
 
 const devMainEntrypoint = 'lib/main_dev.dart';
 

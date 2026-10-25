@@ -91,21 +91,21 @@ jobs:
           short="${GITHUB_SHA::7}"
           # Push to main deploys the dev site only. Production is a v* tag or an explicit release run.
           if [ "${{ steps.firebase_auth.outputs.mode }}" = "dry" ]; then
-            dart run tool/deploy_release.dart --version "ci-$short" --dry-run
+            flutter pub run tool/deploy_release.dart --version "ci-$short" --dry-run
           elif [ "${{ github.ref_type }}" = "tag" ]; then
-            dart run tool/deploy_release.dart --version "${GITHUB_REF_NAME}" --prod
+            flutter pub run tool/deploy_release.dart --version "${GITHUB_REF_NAME}" --prod
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.production }}" = "true" ]; then
             args=(--version "release-$short" --prod)
             if [ "${{ inputs.distribute_android }}" = "true" ]; then
               args+=(--distribute-android)
             fi
-            dart run tool/deploy_release.dart "${args[@]}"
+            flutter pub run tool/deploy_release.dart "${args[@]}"
           else
             dev_args=(--version "ci-$short" --build-android)
             if [ -n "${FIREBASE_ANDROID_DEV_APP_ID:-}" ]; then
               dev_args+=(--distribute-android)
             fi
-            dart run tool/deploy_dev_web.dart "${dev_args[@]}"
+            flutter pub run tool/deploy_dev_web.dart "${dev_args[@]}"
           fi
 
       - name: Upload dev APK artifact

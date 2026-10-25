@@ -1,5 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'native_launcher_labels.dart';
+
 /// Multi-environment flavors following ADR 0006 (CodeWithAndrea + VGV hybrid)
 /// so `dev` testing and preview channels never clash with `prod` community
 /// data, Firebase Analytics, or Firebase Remote Config.
@@ -24,7 +26,7 @@ enum AppFlavor {
   const AppFlavor(this.slug, {required this.isProduction});
 
   /// Canonical production marketing name (launcher title when [isProduction]).
-  static const String productionMarketingName = 'Belong on the Spectrum';
+  static const String productionMarketingName = productionLauncherTitle;
 
   /// Canonical base application / bundle identifier across Android, iOS, and macOS.
   static const String baseApplicationId = 'com.belongonthespectrum.refuge';
@@ -44,9 +46,8 @@ enum AppFlavor {
 
   /// Home-screen / launcher title. Non-production flavors use a VGV-style
   /// `[ENV]` prefix so dev and prod installs are easy to tell apart.
-  String get launcherTitle => isProduction
-      ? productionMarketingName
-      : '[${slug.toUpperCase()}] $productionMarketingName';
+  String get launcherTitle =>
+      launcherTitleForFlavorSlug(slug, isProduction: isProduction);
 
   /// Human-readable name (same as [launcherTitle]).
   String get displayName => launcherTitle;
