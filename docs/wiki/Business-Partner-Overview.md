@@ -1,7 +1,7 @@
 # 🤝 Business & Partnership Overview
 
 > **A first-look executive summary and FAQ for prospective business partners, advisors, and collaborators approaching Belong on the Spectrum.**  
-> **Product & Business Philosophy (37signals)**: [Pick a Fight](https://37signals.com/podcast/pick-a-fight/) · [Build Half a Product, Not a Half-Assed Product](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/) · [Embrace Constraints](https://37signals.com/podcast/embrace-constraints/)
+> **Product & Business Philosophy (37signals)**: [Pick a Fight](https://37signals.com/podcast/pick-a-fight/) · [Build Half a Product, Not a Half-Baked Product](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/) · [Embrace Constraints](https://37signals.com/podcast/embrace-constraints/)
 
 ![Belong on the Spectrum — Business & Partnership Infographic](images/business-partner-infographic.svg)
 
