@@ -89,12 +89,12 @@ class CommunityBrandConfig {
   /// white-label tenant URLs while mapping the flagship Belong marketing or
   /// hosting origins onto the active flavor's Firebase Hosting URL.
   String websiteUrlForFlavor(AppFlavor flavor) {
-    if (tenantId == 'belong' &&
-        (websiteUrl == AppFlavor.marketingWebsiteUrl ||
-            websiteUrl == AppFlavor.prod.websiteUrl ||
-            websiteUrl == 'https://www.belongonthespectrum.com/')) {
-      return flavor.websiteUrl;
-    }
+    if (tenantId != 'belong') return websiteUrl;
+    final recognized = <String>{
+      AppFlavor.marketingWebsiteUrl,
+      for (final known in AppFlavor.values) known.websiteUrl,
+    };
+    if (recognized.contains(websiteUrl)) return flavor.websiteUrl;
     return websiteUrl;
   }
 

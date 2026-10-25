@@ -28,4 +28,29 @@ void main() {
       'https://www.belongonthespectrum.com/',
     );
   });
+
+  test('recognized hosting URLs map to the requested flavor', () {
+    final dev = CommunityBrandConfig.forFlavor(AppFlavor.dev);
+    expect(
+      dev.websiteUrlForFlavor(AppFlavor.prod),
+      AppFlavor.prod.websiteUrl,
+    );
+
+    final prod = CommunityBrandConfig.forFlavor(AppFlavor.prod);
+    expect(
+      prod.websiteUrlForFlavor(AppFlavor.dev),
+      AppFlavor.dev.websiteUrl,
+    );
+
+    expect(
+      const CommunityBrandConfig.belong().websiteUrlForFlavor(AppFlavor.dev),
+      AppFlavor.dev.websiteUrl,
+    );
+
+    final partner = const CommunityBrandConfig.belong().copyWith(
+      tenantId: 'partner',
+      websiteUrl: 'https://example.com/',
+    );
+    expect(partner.websiteUrlForFlavor(AppFlavor.prod), 'https://example.com/');
+  });
 }
