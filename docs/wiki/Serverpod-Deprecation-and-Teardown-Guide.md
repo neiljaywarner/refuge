@@ -4,7 +4,7 @@
 > **Related Issue**: [#384: feat(backend): Appwrite migration architecture, client provider and MCP tooling integration](https://github.com/neiljaywarner/refuge/issues/384)  
 > **Target Cost**: **\$0.00/month** (Eliminate \$5.00/mo Serverpod Cloud billing before the 20-day renewal)
 
-> **Client cutover (24 October 2026, [#212](https://github.com/neiljaywarner/refuge/issues/212)).** A normal build no longer opens a Serverpod Cloud connection. Reflections go to Appwrite (`belong_community_db` / `reflection_posts` and `quiet_digests`) and a second copy still goes to Cloud Firestore (`reflections` or `reflections_dev`). Firebase Auth, Hosting, FCM, Analytics, and Remote Config stay on Firebase. Serverpod Cloud can be cancelled. The generated client remains in the repo and is used only when a build sets both `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`.
+> **Reviewed 24 October 2026 ([#212](https://github.com/neiljaywarner/refuge/issues/212), [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md)).** A normal build no longer opens Serverpod Cloud. The accepted steady state is one live store, Cloud Firestore, plus Firestore point-in-time recovery and scheduled backups. The Appwrite tables from the first cutover are disabled until writes are tied to a real session. See [Reflection redundancy and backup](Reflection-Redundancy-and-Backup).
 
 ---
 

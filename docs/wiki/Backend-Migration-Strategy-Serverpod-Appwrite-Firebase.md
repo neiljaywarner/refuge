@@ -4,7 +4,7 @@
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 > **Deployment Runbook**: [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md)
 
-> **Posts cut over (24 October 2026, [#212](https://github.com/neiljaywarner/refuge/issues/212)).** The default feed writes to Appwrite and still writes a second copy to Cloud Firestore. Firebase Auth is still the session. Serverpod Cloud is not called unless a build sets both `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`. The grades below remain the longer-term sketch, including a later Appwrite Auth step that this cutover does not take.
+> **Reviewed 24 October 2026.** [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md) and the [redundancy wiki](Reflection-Redundancy-and-Backup) supersede the dual-write as the steady state. Serverpod can still go. The live notes stay on Cloud Firestore, with Firestore point-in-time recovery and scheduled backups as the restore path. [PR #546](https://github.com/neiljaywarner/refuge/pull/546) is the seam under review, not the accepted design.
 
 ---
 

@@ -1,8 +1,9 @@
 /// Public Appwrite client settings for the belongonthespectrum project.
 ///
 /// These values identify the project. They are not secrets. Firebase Auth
-/// remains the session, so the tables allow guest creates during this
-/// overlap. Cloud Firestore still receives a second copy of each reflection.
+/// remains the session. ADR-0011 disables client writes to these tables until
+/// a signed-in Appwrite session, or a server holding an API key, exists.
+/// Cloud Firestore is the live reflection store.
 ///
 /// Pass an empty `--dart-define=APPWRITE_ENDPOINT=` to skip Appwrite. Serverpod
 /// Cloud is not used unless the build also sets `BACKEND=serverpod` and
