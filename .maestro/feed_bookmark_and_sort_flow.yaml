@@ -2,8 +2,9 @@ appId: com.belongonthespectrum.refuge.dev
 # Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
 # Intent filters on the live home feed: All, [Prayer Request], [Comfort Only],
-# [Bible Deep-Dive]. Sort chips (Latest, For you, New Activity) are on the
-# same screen and may sit beside those filters. Saved for Later is a Spaces row.
+# [Bible Deep-Dive]. Sort chips use Semantics ids. The runner fails the
+# command if logcat shows a Flutter exception after the New Activity tap.
+# Saved for Later is a Spaces row.
 
 - launchApp:
     clearState: false
@@ -16,27 +17,38 @@ appId: com.belongonthespectrum.refuge.dev
 - assertVisible: ".*\\[Comfort Only\\].*"
 - assertVisible: ".*\\[Bible Deep-Dive\\].*"
 
+# Chip ids are feed_sort_chip_${opt.name}. Scroll the horizontal row
+# until the id is on screen, then tap it. A screen swipe scrolls the feed.
 - scrollUntilVisible:
-    element: ".*For you.*"
-    direction: LEFT
-    timeout: 15000
-- tapOn:
-    text: ".*For you.*"
-    index: 0
-- scrollUntilVisible:
-    element: ".*New Activity.*"
-    direction: LEFT
-    timeout: 15000
-- tapOn:
-    text: ".*New Activity.*"
-    index: 0
-- scrollUntilVisible:
-    element: ".*Latest.*"
+    element:
+      id: "feed_sort_chip_forYou"
     direction: RIGHT
     timeout: 15000
+    visibilityPercentage: 50
 - tapOn:
-    text: ".*Latest.*"
-    index: 0
+    id: "feed_sort_chip_forYou"
+- assertVisible:
+    id: "feed_sort_chip_forYou"
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_newActivity"
+    direction: RIGHT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "feed_sort_chip_newActivity"
+- assertVisible:
+    id: "feed_sort_chip_newActivity"
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_latest"
+    direction: LEFT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "feed_sort_chip_latest"
+- assertVisible:
+    id: "feed_sort_chip_latest"
 
 - tapOn: ".*Spaces.*"
 - extendedWaitUntil:

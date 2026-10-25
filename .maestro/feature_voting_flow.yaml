@@ -17,11 +17,8 @@ tags:
     visible: ".*Belong Roadmap & Feedback.*"
     timeout: 15000
 - assertVisible: ".*Direct Messages \\(Msgs Tab\\).*"
-# Vote count changes. Tap the numeric control under that row, not a stale "24".
-- tapOn:
-    text: "[0-9]+"
-    below: ".*Direct Messages \\(Msgs Tab\\).*"
-- assertVisible: ".*Direct Messages \\(Msgs Tab\\).*"
+# Read-only. Do not tap a vote count. Guest votes are stored for this
+# install and must not be cast from the default suite.
 - tapOn: ".*Share Feedback.*"
 - assertVisible: ".*Works Great.*"
 - assertVisible: ".*Idea / Tweak.*"

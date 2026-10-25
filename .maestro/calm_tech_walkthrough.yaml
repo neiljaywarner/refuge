@@ -48,28 +48,7 @@ appId: com.belongonthespectrum.refuge.dev
 - tapOn: "Sage.*"
 - assertVisible: ".*Refuge.*"
 
-- tapOn:
-    id: "reflection_composer"
-    optional: true
-- runFlow:
-    when:
-      visible: ".*Expand.*"
-    commands:
-      - tapOn: ".*Expand.*"
-- tapOn: ".*Share an unhurried thought.*"
-- inputText: "Peace be with this fellowship in quiet waters."
-- hideKeyboard
-# The emulator sometimes covers the composer with a stylus handwriting sheet.
-- runFlow:
-    when:
-      visible: ".*Try out your stylus.*"
-    commands:
-      - tapOn: "Cancel"
-      - hideKeyboard
-- extendedWaitUntil:
-    visible: ".*Publish Reflection.*"
-    timeout: 15000
-- tapOn: ".*Publish Reflection.*"
-# A guest demo session keeps the quiet-space placeholder. A signed-in
-# session lists the sentence. Either label means the composer action landed.
-- assertVisible: ".*(Peace be with this fellowship in quiet waters|quiet, unhurried space).*"
+# Read-only. Do not type a reflection or tap Publish Reflection.
+- tapOn: ".*Feed.*"
+- assertVisible: ".*Share an unhurried thought.*"
+- assertVisible: ".*Add Meme / GIF.*"
