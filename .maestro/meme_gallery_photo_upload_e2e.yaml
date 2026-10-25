@@ -79,6 +79,13 @@ tags:
           timeout: 8000
 
 - extendedWaitUntil:
+    visible: ".*Crop photo.*"
+    timeout: 20000
+- tapOn: ".*Use this crop.*"
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- extendedWaitUntil:
     visible: ".*Selected Photo Preview.*"
     timeout: 20000
 - assertVisible: ".*Attach Photo to Reflection.*"

@@ -28,10 +28,18 @@ tags:
     visible: ".*Belong.*"
     timeout: 45000
 
+# The home avatar is initials while no photo is set, and the profile tooltip
+# after a photo is set. Flutter keys are not resource ids, so match the text.
 - tapOn:
-    id: "belong_profile_avatar_button"
+    text: "FM"
+    optional: true
+- runFlow:
+    when:
+      notVisible: "Preferred Display Name"
+    commands:
+      - tapOn: ".*Member Profile.*"
 - extendedWaitUntil:
-    visible: ".*Member Profile.*"
+    visible: "Preferred Display Name"
     timeout: 15000
 
 - tapOn:
@@ -68,5 +76,13 @@ tags:
           timeout: 8000
 
 - extendedWaitUntil:
-    visible: ".*Avatar updated peacefully.*"
-    timeout: 25000
+    visible: ".*Crop photo.*"
+    timeout: 20000
+- tapOn: ".*Use this crop.*"
+- extendedWaitUntil:
+    notVisible: ".*Crop photo.*"
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "Preferred Display Name"
+    timeout: 15000
+- assertNotVisible: ".*Could not update avatar.*"

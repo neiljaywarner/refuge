@@ -6,6 +6,7 @@ import '../../storage/data/storage_repository.dart';
 import '../data/avatar_upload_service.dart';
 import '../domain/avatar_models.dart';
 import '../domain/member_profile.dart';
+import 'belong_image_crop_page.dart';
 
 /// Modal bottom sheet allowing members to capture, pick, crop, and update their profile avatar,
 /// or handle camera/photo library permission denials gracefully.
@@ -82,7 +83,19 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
         return;
       }
 
-      final croppedBytes = await avatarService.cropSquare(rawBytes);
+      if (!mounted) return;
+      final framed = await BelongImageCropPage.show(
+        context,
+        bytes: rawBytes,
+        circular: true,
+      );
+      if (framed == null) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final croppedBytes = await avatarService.cropSquare(framed);
       final userId = profile.email.isNotEmpty ? profile.email : 'member_guest';
       final downloadUrl = await storageRepo.uploadAvatar(
         userId: userId,
