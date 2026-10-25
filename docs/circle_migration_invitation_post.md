@@ -1,6 +1,7 @@
 # 🎉 Welcome to Belong on the Spectrum — Our Calm-Tech Digital Home!
 
 > **Community Overlap Window:** October 24 – October 31, 2026  
+> **Short 3-Day Playtest Post (Oct 25–27):** [`docs/circle_open_alpha_3day_playtest_post.md`](circle_open_alpha_3day_playtest_post.md)  
 > **Production Sanctuary Web App:** [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app)  
 > **Maintainer Tracking Issue:** [GitHub Issue #249](https://github.com/neiljaywarner/refuge/issues/249)  
 > **Alpha Self-Testing Brief:** [`docs/ascii_email_for_self_testing_alpha_verification.txt`](https://github.com/neiljaywarner/refuge/blob/main/docs/ascii_email_for_self_testing_alpha_verification.txt)
