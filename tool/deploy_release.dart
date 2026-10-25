@@ -24,6 +24,10 @@
 ///    into `flutter build web` and `flutter build apk`, and writes the same
 ///    values into `build/web/version.json` (`git_sha`, `build_time_ms`,
 ///    `build_time_utc`). `--skip-build` does not re-stamp an existing binary.
+/// 8. Forwards `APTABASE_KEY` / `POSTHOG_KEY` from the process environment
+///    (GitHub Actions secrets or a local shell) as `--dart-define`s. Empty
+///    keys keep `CommunityAnalyticsService` in mock mode. Values are never
+///    printed.
 ///
 /// ## Usage
 ///
@@ -143,6 +147,8 @@ Future<void> main(List<String> args) async {
   }
 
   if (!skipBuild) {
+    final analyticsDefines = analyticsDartDefines(Platform.environment);
+    _log(analyticsDartDefinesLogLine(Platform.environment));
     _log('Building Flutter Web (prod flavor)...');
     await _run(
       _bin('flutter'),
@@ -150,6 +156,7 @@ Future<void> main(List<String> args) async {
         'web',
         targetFile: 'lib/main_prod.dart',
         flavor: 'prod',
+        extraDefines: analyticsDefines,
       ),
     );
     await _writeWebVersionJson(version, stamp);
@@ -161,6 +168,7 @@ Future<void> main(List<String> args) async {
           'apk',
           targetFile: 'lib/main_prod.dart',
           flavor: 'prod',
+          extraDefines: analyticsDefines,
         ),
       );
     }
@@ -449,7 +457,10 @@ Future<String> _run(String exe, List<String> args) async {
   if (out.isNotEmpty) stdout.writeln(out);
   if (err.isNotEmpty) stderr.writeln(err);
   if (r.exitCode != 0) {
-    stderr.writeln('FAILED (${r.exitCode}): $exe ${args.join(' ')}');
+    stderr.writeln(
+      'FAILED (${r.exitCode}): $exe '
+      '${joinArgsRedactingAnalyticsDefines(args)}',
+    );
     exit(r.exitCode);
   }
   return out;

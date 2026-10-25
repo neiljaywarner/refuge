@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../messages/data/direct_message_providers.dart';
 import '../../navigation/presentation/belong_bottom_nav_bar.dart';
 import '../../notifications/data/notification_sync_service.dart';
 import '../../notifications/domain/belong_notification.dart';
@@ -30,6 +32,24 @@ class CalmNotificationsView extends HookConsumerWidget {
     final notifications = ref.watch(filteredNotificationsProvider);
     final unreadCount = ref.watch(unreadNotificationsCountProvider);
     final profile = ref.watch(currentUserProfileProvider);
+    final mailbox = ref.watch(directMessageMailboxProvider);
+
+    // The message list syncs when Messages is open. The bell has to do the
+    // same, or a direct message sent in this session never appears there.
+    useEffect(() {
+      final uid = profile.userId;
+      if (!profile.isSignedIn || uid.isEmpty || uid == 'guest') return null;
+      var cancelled = false;
+      Future.microtask(() async {
+        if (cancelled) return;
+        await ref
+            .read(belongNotificationsProvider.notifier)
+            .syncDirectMessageNotifications(mailbox, uid);
+      });
+      return () {
+        cancelled = true;
+      };
+    }, [profile.userId, mailbox]);
 
     return Scaffold(
       appBar: AppBar(

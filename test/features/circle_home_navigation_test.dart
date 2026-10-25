@@ -3,17 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service.dart';
 
 void main() {
+  setUp(() {
+    VoteStorageService.instance.clear();
+  });
+
   group('Pragmatic TDD: FeatureVotingNotifier & Literal Feedback Intents', () {
     test('toggles vote count and userVoted state cleanly', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final initial = container.read(featureVotingProvider);
-      final dmItem = initial.firstWhere(
-        (e) => e.id == 'wip-direct-messages',
-      );
+      final dmItem = initial.firstWhere((e) => e.id == 'wip-direct-messages');
       expect(dmItem.votes, 0);
       expect(dmItem.userVoted, isFalse);
 
@@ -37,9 +40,7 @@ void main() {
   patrolWidgetTest(
     'BDD (patrol_finders): Member navigates Circle Spaces, opens Roadmap & Feedback, and upvotes WIP feature',
     ($) async {
-      await $.pumpWidgetAndSettle(
-        RefugeApp(repository: LocalPostRepository()),
-      );
+      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
       // 1. Verify Belong header and sub-navigation chips
       expect($('Belong'), findsWidgets);
@@ -85,9 +86,7 @@ void main() {
   patrolWidgetTest(
     'BDD: Member opens Directory from Spaces and browses fellowship members',
     ($) async {
-      await $.pumpWidgetAndSettle(
-        RefugeApp(repository: LocalPostRepository()),
-      );
+      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
       await $(const Key('subnav_spaces_tab')).tap();
       await $.pumpAndSettle();
@@ -96,10 +95,7 @@ void main() {
       await $('Members Section & Directory').tap();
       await $.pumpAndSettle();
 
-      expect(
-        $('Fellowship disciples & leaders'),
-        findsOneWidget,
-      );
+      expect($('Fellowship disciples & leaders'), findsOneWidget);
       expect($('Marty (Organizer)'), findsOneWidget);
     },
   );
@@ -108,9 +104,7 @@ void main() {
     'BDD: AppBar shows Sign In when signed out, and Avatar when signed in (#238)',
     ($) async {
       // 1. Signed-out state: verify Sign In button is present, avatar is absent
-      await $.pumpWidgetAndSettle(
-        RefugeApp(repository: LocalPostRepository()),
-      );
+      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
       expect($(const Key('home_top_bar_sign_in_button')), findsOneWidget);
       expect($(const Key('belong_profile_avatar_button')), findsNothing);

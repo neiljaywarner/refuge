@@ -140,7 +140,7 @@ void main() {
       expect(await prod.isSignInBlocked('member-1'), isFalse);
     });
 
-    test('sign out leaves the following container signed out', () {
+    test('sign out leaves the following container signed out', () async {
       ProfileStorageService.instance.clear();
       final container = ProviderContainer(
         overrides: [
@@ -158,7 +158,7 @@ void main() {
           .read(memberProfileProvider.notifier)
           .signIn(displayName: 'Fellow Member', email: 'tester@example.com');
       container.read(memberProfileProvider.notifier).signInWithOAuth('google');
-      container.read(memberProfileProvider.notifier).signOut();
+      await container.read(memberProfileProvider.notifier).signOut();
       expect(container.read(memberProfileProvider).isSignedIn, isFalse);
     });
 

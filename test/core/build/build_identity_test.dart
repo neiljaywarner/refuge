@@ -117,6 +117,75 @@ void main() {
             ...stamp.dartDefines,
           ],
         );
+        expect(
+          stamp.flutterArgs(
+            'web',
+            extraDefines: const [
+              '--dart-define=POSTHOG_HOST=https://example.test',
+            ],
+          ),
+          [
+            'build',
+            'web',
+            '--release',
+            ...stamp.dartDefines,
+            '--dart-define=POSTHOG_HOST=https://example.test',
+          ],
+        );
+      },
+    );
+
+    test(
+      'analyticsDartDefines prefers Belong env names and omits empty keys',
+      () {
+        expect(analyticsDartDefines(const {}), [
+          '--dart-define=POSTHOG_HOST=https://us.i.posthog.com',
+        ]);
+        expect(
+          analyticsDartDefines(const {
+            'APTABASE_KEY': 'generic-aptabase',
+            'APTABASE_BELONG_KEY': 'belong-aptabase',
+            'POSTHOG_KEY': 'generic-posthog',
+            'POSTHOG_BELONG_PROJECT_TOKEN': 'belong-posthog',
+            'POSTHOG_HOST': 'https://eu.i.posthog.com',
+          }),
+          [
+            '--dart-define=APTABASE_KEY=belong-aptabase',
+            '--dart-define=POSTHOG_KEY=belong-posthog',
+            '--dart-define=POSTHOG_HOST=https://eu.i.posthog.com',
+          ],
+        );
+        expect(
+          analyticsDartDefines(const {
+            'APTABASE_KEY': '   ',
+            'POSTHOG_KEY': 'unit-test-capture-key',
+          }),
+          [
+            '--dart-define=POSTHOG_KEY=unit-test-capture-key',
+            '--dart-define=POSTHOG_HOST=https://us.i.posthog.com',
+          ],
+        );
+        expect(
+          analyticsDartDefinesLogLine(const {
+            'POSTHOG_KEY': 'unit-test-capture-key',
+          }),
+          contains('POSTHOG_KEY=set'),
+        );
+        expect(
+          analyticsDartDefinesLogLine(const {
+            'POSTHOG_KEY': 'unit-test-capture-key',
+          }),
+          isNot(contains('unit-test-capture-key')),
+        );
+        expect(
+          joinArgsRedactingAnalyticsDefines(const [
+            'build',
+            'web',
+            '--dart-define=POSTHOG_KEY=unit-test-capture-key',
+            '--dart-define=FLAVOR=prod',
+          ]),
+          'build web --dart-define=POSTHOG_KEY=<redacted> --dart-define=FLAVOR=prod',
+        );
       },
     );
 
@@ -187,10 +256,7 @@ void main() {
         expect(encoded, contains('"build_time_ms":$builtAtMs'));
         expect(encoded, isNot(contains('"build_time_ms":"')));
         expect(
-          cachedWebFlavorMismatch(
-            versionJson: encoded,
-            expectedFlavor: 'prod',
-          ),
+          cachedWebFlavorMismatch(versionJson: encoded, expectedFlavor: 'prod'),
           contains('missing'),
         );
         final stampedFlavor = webVersionPayload(
@@ -246,6 +312,8 @@ void main() {
       () {
         final source = File('tool/deploy_release.dart').readAsStringSync();
         expect(source, contains("stamp.flutterArgs("));
+        expect(source, contains('analyticsDartDefines(Platform.environment)'));
+        expect(source, contains('joinArgsRedactingAnalyticsDefines'));
         expect(source, contains("targetFile: 'lib/main_prod.dart'"));
         expect(source, contains("flavor: 'prod'"));
         expect(source, isNot(contains("'--config'")));
@@ -254,6 +322,11 @@ void main() {
         expect(devDeploy, contains("targetFile: 'lib/main_dev.dart'"));
         expect(devDeploy, contains("flavor: 'dev'"));
         expect(devDeploy, contains('--dart-define=ENABLE_SERVERPOD=false'));
+        expect(
+          devDeploy,
+          contains('analyticsDartDefines(Platform.environment)'),
+        );
+        expect(devDeploy, contains('joinArgsRedactingAnalyticsDefines'));
         expect(devDeploy, contains('firebase.dev.json'));
         expect(
           File('firebase.dev.json').readAsStringSync(),
@@ -266,6 +339,10 @@ void main() {
         expect(source, contains('webVersionPayload'));
         expect(source, contains('buildIdentityNotes'));
         expect(source, contains('tryFromGitHead'));
+        final deployWorkflow = File('.github/workflows/deploy.yml')
+            .readAsStringSync();
+        expect(deployWorkflow, contains('secrets.APTABASE_KEY'));
+        expect(deployWorkflow, contains('secrets.POSTHOG_KEY'));
       },
       skip: kIsWeb,
     );

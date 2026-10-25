@@ -421,7 +421,7 @@ void main() {
         final updates = StreamController<sp.ReflectionPost>(sync: true);
         when(() => endpoint.watchSpace('study'))
             .thenAnswer((_) => updates.stream);
-        when(() => endpoint.getQuietDigest('prayer')).thenAnswer(
+        when(() => endpoint.getQuietDigest('memes')).thenAnswer(
           (_) async => sp.QuietDigest(
             spaceKey: 'prayer',
             totalReflections: 3,
@@ -473,7 +473,7 @@ void main() {
 
         final digest = await repo.getQuietDigest(spaceKey: 'memes');
         expect(digest, 'Three reflections gathered in peace.');
-        verify(() => endpoint.getQuietDigest('prayer')).called(1);
+        verify(() => endpoint.getQuietDigest('memes')).called(1);
         subscription.cancel();
       },
     );

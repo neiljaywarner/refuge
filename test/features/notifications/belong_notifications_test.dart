@@ -21,13 +21,15 @@ class FakeLauncherBadgeService extends AppLauncherBadgeService {
 }
 
 class FakeMemberProfileNotifier extends MemberProfileNotifier {
-  FakeMemberProfileNotifier([this._profile = const MemberProfile(
-    displayName: 'Tester',
-    email: 'tester@example.com',
-    bio: 'Bio',
-    comfortBadges: [],
-    isSignedIn: true,
-  )]);
+  FakeMemberProfileNotifier([
+    this._profile = const MemberProfile(
+      displayName: 'Tester',
+      email: 'tester@example.com',
+      bio: 'Bio',
+      comfortBadges: [],
+      isSignedIn: true,
+    ),
+  ]);
 
   final MemberProfile _profile;
 
@@ -116,6 +118,15 @@ void main() {
         following.displayMessage,
         'John Doe posted a new reflection in "Quiet Waters"',
       );
+
+      final directMessage = mention.copyWith(
+        type: BelongNotificationType.directMessage,
+        postTitle: 'Quiet hello',
+      );
+      expect(
+        directMessage.displayMessage,
+        'John Doe sent you a direct message: "Quiet hello"',
+      );
     });
 
     test('formattedTimeAgo produces friendly relative strings', () {
@@ -155,9 +166,7 @@ void main() {
       expect(nDays.formattedTimeAgo(base), '2 days ago');
 
       // Older date
-      final nDate = nJustNow.copyWith(
-        timestamp: DateTime(2026, 9, 7, 10, 0),
-      );
+      final nDate = nJustNow.copyWith(timestamp: DateTime(2026, 9, 7, 10, 0));
       expect(nDate.formattedTimeAgo(base), 'Sep 7th');
     });
   });
@@ -177,20 +186,23 @@ void main() {
       expect(badgeService.recordedBadge, 4);
     });
 
-    test('addMentionNotification dynamically inserts item and increments badge', () {
-      notifier.addMentionNotification(
-        authorName: 'Sarah Chen',
-        postTitle: 'Neurodivergent Study',
-        postId: 'post-study-1',
-        spaceKey: 'study',
-        commentSnippet: 'Check this out!',
-      );
-      final unread = notifier.state.where((n) => !n.isRead).length;
-      expect(unread, 5);
-      expect(badgeService.recordedBadge, 5);
-      expect(notifier.state.first.type, BelongNotificationType.mention);
-      expect(notifier.state.first.authorName, 'Sarah Chen');
-    });
+    test(
+      'addMentionNotification dynamically inserts item and increments badge',
+      () {
+        notifier.addMentionNotification(
+          authorName: 'Sarah Chen',
+          postTitle: 'Neurodivergent Study',
+          postId: 'post-study-1',
+          spaceKey: 'study',
+          commentSnippet: 'Check this out!',
+        );
+        final unread = notifier.state.where((n) => !n.isRead).length;
+        expect(unread, 5);
+        expect(badgeService.recordedBadge, 5);
+        expect(notifier.state.first.type, BelongNotificationType.mention);
+        expect(notifier.state.first.authorName, 'Sarah Chen');
+      },
+    );
 
     test('addDirectMessageNotification dynamically inserts DM and increments badge', () {
       notifier.addDirectMessageNotification(
@@ -253,30 +265,27 @@ void main() {
               ),
             ),
         ],
-        child: MaterialApp(
-          home: home ?? const RefugeHomeScreen(),
-        ),
+        child: MaterialApp(home: home ?? const RefugeHomeScreen()),
       );
     }
 
-    patrolWidgetTest(
-      'Bottom nav bar shows bell with unread badge counter',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1200, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Bottom nav bar shows bell with unread badge counter', (
+      $,
+    ) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        await $.pumpWidget(buildTestHarness());
-        await $.pumpAndSettle();
+      await $.pumpWidget(buildTestHarness());
+      await $.pumpAndSettle();
 
-        // Check badge on Notifications tab
-        expect($(const Key('bottom_nav_notifications_badge')), findsOneWidget);
-        expect($('4'), findsWidgets);
-      },
-    );
+      // Check badge on Notifications tab
+      expect($(const Key('bottom_nav_notifications_badge')), findsOneWidget);
+      expect($('4'), findsWidgets);
+    });
 
     patrolWidgetTest(
       'Tapping notification bell navigates to Calm Notifications view with filter chips and avatar badges',
@@ -298,7 +307,9 @@ void main() {
         // 1. Verify screen title and banner
         expect($('Notifications'), findsWidgets);
         expect(
-          $('All notifications are delivered gently without intrusive sound alerts.'),
+          $(
+            'All notifications are delivered gently without intrusive sound alerts.',
+          ),
           findsOneWidget,
         );
 
@@ -315,7 +326,9 @@ void main() {
           findsOneWidget,
         );
         expect(
-          $('Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."'),
+          $(
+            'Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."',
+          ),
           findsOneWidget,
         );
         expect(
@@ -347,7 +360,9 @@ void main() {
         await $(const Key('filter_chip_directMessages')).tap();
         await $.pumpAndSettle();
         expect(
-          $('Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."'),
+          $(
+            'Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."',
+          ),
           findsOneWidget,
         );
         expect(

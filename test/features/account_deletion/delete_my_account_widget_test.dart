@@ -50,8 +50,8 @@ void main() {
           accountDeletionRepositoryProvider.overrideWithValue(repository),
       ],
     );
-    addTearDown(() {
-      container.read(memberProfileProvider.notifier).signOut();
+    addTearDown(() async {
+      await container.read(memberProfileProvider.notifier).signOut();
       container.dispose();
     });
 

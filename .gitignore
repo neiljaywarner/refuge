@@ -51,6 +51,7 @@ app.*.map.json
 # Local binaries and scratch
 *.apk
 *.mp4
+!docs/maestro/web/*.mp4
 *.m4a
 scratch/
 

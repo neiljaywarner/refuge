@@ -75,7 +75,7 @@ adb logcat -v time -s FA FA-SVC flutter
 3. Events appear in Real-time under **Events** within 5–10 seconds.
 
 ### 3. PostHog
-A smoke event was ingested. The app does not send product events (`space_viewed`, `sensory_theme_changed`, `vote_cast`, `bottom_tab_selected`, or anything else) unless `POSTHOG_KEY` or `POSTHOG_BELONG_PROJECT_TOKEN` is passed at build time. [Issue #410](https://github.com/neiljaywarner/refuge/issues/410) tracks that. Product conversion analytics are not live.
+Debug launch profiles already pass `POSTHOG_KEY` and `APTABASE_KEY` from the shell. Release and web builds now forward the same names from the process environment (`tool/deploy_release.dart`, `tool/deploy_dev_web.dart`, and `.github/workflows/deploy.yml`). Empty secrets stay in mock mode. Calm view events also send an anonymous `$pageview` companion so PostHog web analytics can see traffic. Distinct ids stay `belong-anon-<flavor>`. Session replay stays off until [#367](https://github.com/neiljaywarner/refuge/issues/367). [Issue #410](https://github.com/neiljaywarner/refuge/issues/410) tracks the remaining ingest check after the next keyed deploy.
 
 ---
 

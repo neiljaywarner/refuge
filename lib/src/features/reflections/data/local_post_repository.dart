@@ -176,14 +176,7 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPosts({required String spaceKey}) {
-    Stream<List<Post>> generator() async* {
-      yield _store.where((p) => p.spaceKey == spaceKey).toList();
-      yield* _controller.stream.map(
-        (posts) => posts.where((p) => p.spaceKey == spaceKey).toList(),
-      );
-    }
-
-    return generator().asBroadcastStream();
+    return _watchWhere((post) => post.spaceKey == spaceKey);
   }
 
   @override
@@ -193,14 +186,7 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPostsByAuthor({required String authorName}) {
-    Stream<List<Post>> generator() async* {
-      yield _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
-      yield* _controller.stream.map(
-        (posts) => posts.where((p) => _matchesAuthor(p.authorName, authorName)).toList(),
-      );
-    }
-
-    return generator().asBroadcastStream();
+    return _watchWhere((post) => _matchesAuthor(post.authorName, authorName));
   }
 
   @override
@@ -226,14 +212,23 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchSavedPosts() {
-    Stream<List<Post>> generator() async* {
-      yield _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
-      yield* _controller.stream.map(
-        (posts) => posts.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList(),
-      );
-    }
+    return _watchWhere((post) => _savedPostIds.contains(post.id) || post.isSaved);
+  }
 
-    return generator().asBroadcastStream();
+  /// Each listener gets the current rows immediately, then later edits.
+  ///
+  /// A single-subscription generator wrapped in [Stream.asBroadcastStream]
+  /// drops that first snapshot for anyone who subscribes after the first
+  /// listener has already canceled.
+  Stream<List<Post>> _watchWhere(bool Function(Post post) include) {
+    return Stream<List<Post>>.multi((controller) {
+      controller.add(_store.where(include).toList());
+      final subscription = _controller.stream.listen((posts) {
+        if (!controller.hasListener) return;
+        controller.add(posts.where(include).toList());
+      });
+      controller.onCancel = subscription.cancel;
+    });
   }
 
   static bool _matchesAuthor(String postAuthor, String targetAuthor) {

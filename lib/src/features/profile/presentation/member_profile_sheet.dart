@@ -214,18 +214,6 @@ class MemberProfileDialog extends HookConsumerWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('profile_bio_field'),
-                controller: bioController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Bio / Note to Fellowship',
-                  helperText: 'A quiet sentence about yourself',
-                  isDense: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
               if (brand.enableFellowshipAffiliationField) ...[
                 const SizedBox(height: 12),
                 Row(
@@ -345,6 +333,18 @@ class MemberProfileDialog extends HookConsumerWidget {
                   },
                 ),
               ],
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('profile_bio_field'),
+                controller: bioController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Bio / Note to Fellowship',
+                  helperText: 'A quiet sentence about yourself',
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
               const SizedBox(height: 14),
               const Text(
                 'Official Firebase Auth UI (Google / Firebase Team)',
@@ -461,9 +461,9 @@ class MemberProfileDialog extends HookConsumerWidget {
         if (profile.isSignedIn)
           TextButton(
             key: const Key('profile_sign_out_button'),
-            onPressed: () {
-              ref.read(memberProfileProvider.notifier).signOut();
-              Navigator.of(context).pop();
+            onPressed: () async {
+              await ref.read(memberProfileProvider.notifier).signOut();
+              if (context.mounted) Navigator.of(context).pop();
             },
             child: const Text('Sign Out'),
           ),

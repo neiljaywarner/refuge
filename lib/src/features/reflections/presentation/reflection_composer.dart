@@ -407,6 +407,7 @@ class ReflectionComposer extends HookWidget {
               child: TextField(
                 key: const Key('reflection_composer_input'),
                 controller: contentController,
+                autofocus: true,
                 maxLines: isImagePost ? 2 : 3,
                 decoration: InputDecoration(
                   hintText: isImagePost

@@ -1,6 +1,7 @@
 # `maestro test .maestro/web` skips flows tagged known-gap or live-dev.
-# Those flows stay in this directory. Passing a flow file path still runs it.
+# The grokbot direct-message and mention flows are included.
 # live-dev hits https://dev-belongonthespectrum.web.app and is not a localhost flow.
+# Passing a flow file path still runs that file.
 excludeTags:
   - known-gap
   - live-dev
