@@ -1,0 +1,48 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Message alerts opt-in and a new direct message"
+tags:
+  - messages
+  - notifications
+---
+# Turns Message alerts on, then opens New Message.
+# clearState stays false so a signed-in session is kept.
+
+- setPermissions:
+    permissions:
+      notifications: allow
+
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
+
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Preferences.*"
+    timeout: 15000
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Ethics.*"
+    timeout: 10000
+- assertVisible: ".*Message alerts.*"
+- runFlow:
+    when:
+      visible: ".*Off. Turn this on.*"
+    commands:
+      - tapOn: ".*Message alerts.*"
+- extendedWaitUntil:
+    visible: ".*On. A new direct message shows as a notification.*"
+    timeout: 15000
+
+- pressKey: Back
+
+- tapOn: ".*Messages tab.*"
+- extendedWaitUntil:
+    visible: ".*New Message.*"
+    timeout: 15000
+- tapOn: ".*New Message.*"
+- extendedWaitUntil:
+    visible: ".*New Message.*"
+    timeout: 10000

@@ -1,0 +1,26 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Turn message alerts on in one visit"
+---
+- setPermissions:
+    permissions:
+      notifications: allow
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Preferences.*"
+    timeout: 15000
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*Message alerts.*"
+    timeout: 10000
+- tapOn: ".*Message alerts.*"
+- tapOn:
+    text: "Allow"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*On. A new direct message shows as a notification.*"
+    timeout: 15000

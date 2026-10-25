@@ -1,12 +1,18 @@
 import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
+import '../../account_deletion/data/account_deletion_provider.dart';
+import '../../account_deletion/domain/account_deletion_exception.dart';
 import '../../feedback/data/feature_voting_repository.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
 import '../../../core/logging/app_logger.dart';
+import 'auth_backend_target.dart';
+
+export 'auth_backend_target.dart';
 
 /// Pluggable authentication repository interface supporting:
 /// - Firebase Authentication (Production Email/Password & Passwordless Magic Link)
@@ -38,10 +44,7 @@ abstract interface class AuthRepository {
   });
 
   /// Dispatch a passwordless "Magic Link" email for 1-tap sign-in.
-  Future<void> sendMagicLink({
-    required String email,
-    String? redirectUrl,
-  });
+  Future<void> sendMagicLink({required String email, String? redirectUrl});
 
   /// Complete sign-in using an incoming magic email link.
   Future<AuthSession> signInWithMagicLink({
@@ -75,10 +78,7 @@ abstract interface class AuthRepository {
 }
 
 class _InMemoryUserRecord {
-  _InMemoryUserRecord({
-    required this.password,
-    required this.session,
-  });
+  _InMemoryUserRecord({required this.password, required this.session});
 
   final String password;
   AuthSession session;
@@ -88,9 +88,13 @@ class _InMemoryUserRecord {
 class InMemoryAuthRepository implements AuthRepository {
   InMemoryAuthRepository({
     AuthSession initialSession = const AuthSession.guest(),
+    this.isAccountSoftDeleted,
   }) : _session = initialSession {
     _controller.add(_session);
   }
+
+  /// When this returns true, password and magic-link sign-in are refused.
+  final Future<bool> Function(String userId)? isAccountSoftDeleted;
 
   final StreamController<AuthSession> _controller =
       StreamController<AuthSession>.broadcast();
@@ -114,6 +118,15 @@ class InMemoryAuthRepository implements AuthRepository {
     _controller.add(_session);
   }
 
+  Future<void> _rejectIfSoftDeleted(String userId) async {
+    final blocked = await isAccountSoftDeleted?.call(userId) ?? false;
+    if (!blocked) return;
+    throw const AuthException(
+      code: 'account-soft-deleted',
+      message: AccountDeletionMessages.signInBlocked,
+    );
+  }
+
   /// Seeds an in-memory user account (useful for offline testing and deterministic harnesses).
   void seedUser({
     required String email,
@@ -134,7 +147,8 @@ class InMemoryAuthRepository implements AuthRepository {
     if (clean.isEmpty || !clean.contains('@') || !clean.contains('.')) {
       throw const AuthException(
         code: 'invalid-email',
-        message: 'Please enter a valid email address (e.g. member@example.com).',
+        message:
+            'Please enter a valid email address (e.g. member@example.com).',
       );
     }
   }
@@ -168,13 +182,16 @@ class InMemoryAuthRepository implements AuthRepository {
       );
     }
 
-    final cleanName = displayName.trim().isEmpty ? 'Fellowship Member' : displayName.trim();
+    final cleanName = displayName.trim().isEmpty
+        ? 'Fellowship Member'
+        : displayName.trim();
     final newSession = AuthSession(
       userId: 'user-${cleanEmail.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '-')}',
       displayName: cleanName,
       email: cleanEmail,
       bio: bio ?? 'Exploring Belong on the Spectrum',
-      comfortBadges: comfortBadges ?? const ['Literal communication appreciated'],
+      comfortBadges:
+          comfortBadges ?? const ['Literal communication appreciated'],
       isSignedIn: true,
       authMethod: 'in_memory_password',
       icocChurchAffiliation: icocChurchAffiliation,
@@ -214,6 +231,7 @@ class InMemoryAuthRepository implements AuthRepository {
       );
     }
 
+    await _rejectIfSoftDeleted(record.session.userId);
     _updateSession(record.session);
     return record.session;
   }
@@ -244,7 +262,7 @@ class InMemoryAuthRepository implements AuthRepository {
         message: 'This magic link is invalid or has already been used. Please request a new one.',
       );
     }
-    
+
     // Auto-create or resume member via magic link
     final existing = _users[cleanEmail]?.session;
     final session = existing != null
@@ -254,7 +272,8 @@ class InMemoryAuthRepository implements AuthRepository {
             emailVerified: true,
           )
         : AuthSession(
-            userId: 'user-magic-${cleanEmail.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '-')}',
+            userId:
+                'user-magic-${cleanEmail.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '-')}',
             displayName: cleanEmail.split('@').first,
             email: cleanEmail,
             bio: 'Belong Member (Signed in via Magic Link)',
@@ -273,6 +292,7 @@ class InMemoryAuthRepository implements AuthRepository {
     );
 
     _pendingMagicLinks.remove(cleanEmail);
+    await _rejectIfSoftDeleted(session.userId);
     _updateSession(session);
     return session;
   }
@@ -290,14 +310,20 @@ class InMemoryAuthRepository implements AuthRepository {
     List<String>? comfortBadges,
     String? icocChurchAffiliation,
   }) {
-    final cleanName = displayName.trim().isEmpty ? 'Fellowship Member' : displayName.trim();
+    final cleanName = displayName.trim().isEmpty
+        ? 'Fellowship Member'
+        : displayName.trim();
     final cleanEmail = email.trim();
     final session = AuthSession(
-      userId: 'member-${cleanEmail.isEmpty ? cleanName.toLowerCase().replaceAll(' ', '-') : cleanEmail}',
+      userId:
+          'member-${cleanEmail.isEmpty ? cleanName.toLowerCase().replaceAll(' ', '-') : cleanEmail}',
       displayName: cleanName,
       email: cleanEmail,
-      bio: (bio == null || bio.trim().isEmpty) ? 'Exploring Belong on the Spectrum' : bio.trim(),
-      comfortBadges: comfortBadges ?? const ['Literal communication appreciated'],
+      bio: (bio == null || bio.trim().isEmpty)
+          ? 'Exploring Belong on the Spectrum'
+          : bio.trim(),
+      comfortBadges:
+          comfortBadges ?? const ['Literal communication appreciated'],
       isSignedIn: true,
       authMethod: '${target.name}_email',
       icocChurchAffiliation: icocChurchAffiliation,
@@ -357,12 +383,33 @@ class FirebaseAuthRepository implements AuthRepository {
     fb_auth.FirebaseAuth? firebaseAuth,
     InMemoryAuthRepository? fallback,
     this.flavor = AppFlavor.prod,
-  })  : _auth = firebaseAuth,
-        _fallback = fallback ?? InMemoryAuthRepository();
+    this.isAccountSoftDeleted,
+  }) : _auth = firebaseAuth,
+       _fallback =
+           fallback ??
+           InMemoryAuthRepository(isAccountSoftDeleted: isAccountSoftDeleted);
 
   final fb_auth.FirebaseAuth? _auth;
   final InMemoryAuthRepository _fallback;
   final AppFlavor flavor;
+
+  /// When this returns true, a successful Firebase credential is signed out.
+  final Future<bool> Function(String userId)? isAccountSoftDeleted;
+
+  Future<void> _rejectIfSoftDeleted(
+    fb_auth.FirebaseAuth liveAuth,
+    String userId,
+  ) async {
+    final blocked = await isAccountSoftDeleted?.call(userId) ?? false;
+    if (!blocked) return;
+    try {
+      await liveAuth.signOut();
+    } catch (_) {}
+    throw const AuthException(
+      code: 'account-soft-deleted',
+      message: AccountDeletionMessages.signInBlocked,
+    );
+  }
 
   fb_auth.FirebaseAuth? get auth {
     if (_auth != null) return _auth;
@@ -474,22 +521,31 @@ class FirebaseAuthRepository implements AuthRepository {
             displayName: displayName.trim(),
             email: user.email ?? email.trim(),
             bio: bio ?? 'Verified Member of Belong on the Spectrum',
-            comfortBadges: comfortBadges ?? const ['Literal communication appreciated'],
+            comfortBadges:
+                comfortBadges ?? const ['Literal communication appreciated'],
             isSignedIn: true,
             authMethod: 'firebase_password',
             icocChurchAffiliation: icocChurchAffiliation,
             emailVerified: user.emailVerified,
             photoUrl: user.photoURL,
           );
-          _fallback.seedUser(email: email, password: password, session: session);
+          _fallback.seedUser(
+            email: email,
+            password: password,
+            session: session,
+          );
           return session;
         }
       } catch (e) {
-        talker.warning('⚠️ [FirebaseAuthRepository] Firebase registration failed: $e');
+        talker.warning(
+          '⚠️ [FirebaseAuthRepository] Firebase registration failed: $e',
+        );
         throw AuthException.fromFirebase(e);
       }
     }
-    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory session (offline/test credentials)');
+    talker.info(
+      '🔐 [FirebaseAuthRepository] Using resilient in-memory session (offline/test credentials)',
+    );
     return _fallback.registerWithPassword(
       email: email,
       password: password,
@@ -514,6 +570,7 @@ class FirebaseAuthRepository implements AuthRepository {
         );
         final user = credential.user;
         if (user != null) {
+          await _rejectIfSoftDeleted(liveAuth, user.uid);
           return AuthSession(
             userId: user.uid,
             displayName: user.displayName ?? 'Fellowship Member',
@@ -527,11 +584,15 @@ class FirebaseAuthRepository implements AuthRepository {
           );
         }
       } catch (e) {
-        talker.warning('⚠️ [FirebaseAuthRepository] Firebase sign-in failed: $e');
+        talker.warning(
+          '⚠️ [FirebaseAuthRepository] Firebase sign-in failed: $e',
+        );
         throw AuthException.fromFirebase(e);
       }
     }
-    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory sign-in (offline/test credentials)');
+    talker.info(
+      '🔐 [FirebaseAuthRepository] Using resilient in-memory sign-in (offline/test credentials)',
+    );
     return _fallback.signInWithPassword(email: email, password: password);
   }
 
@@ -557,11 +618,15 @@ class FirebaseAuthRepository implements AuthRepository {
         );
         return;
       } catch (e) {
-        talker.warning('⚠️ [FirebaseAuthRepository] Firebase magic link failed: $e');
+        talker.warning(
+          '⚠️ [FirebaseAuthRepository] Firebase magic link failed: $e',
+        );
         throw AuthException.fromFirebase(e);
       }
     }
-    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory magic link');
+    talker.info(
+      '🔐 [FirebaseAuthRepository] Using resilient in-memory magic link',
+    );
     return _fallback.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
 
@@ -579,6 +644,7 @@ class FirebaseAuthRepository implements AuthRepository {
         );
         final user = credential.user;
         if (user != null) {
+          await _rejectIfSoftDeleted(liveAuth, user.uid);
           return AuthSession(
             userId: user.uid,
             displayName: user.displayName ?? 'Fellowship Member',
@@ -595,11 +661,15 @@ class FirebaseAuthRepository implements AuthRepository {
           );
         }
       } catch (e) {
-        talker.warning('⚠️ [FirebaseAuthRepository] Firebase magic link consumption failed: $e');
+        talker.warning(
+          '⚠️ [FirebaseAuthRepository] Firebase magic link consumption failed: $e',
+        );
         throw AuthException.fromFirebase(e);
       }
     }
-    talker.info('🔐 [FirebaseAuthRepository] Using resilient in-memory magic link consumption');
+    talker.info(
+      '🔐 [FirebaseAuthRepository] Using resilient in-memory magic link consumption',
+    );
     return _fallback.signInWithMagicLink(email: email, emailLink: emailLink);
   }
 
@@ -697,30 +767,40 @@ class FirebaseAuthRepository implements AuthRepository {
 }
 
 class ServerpodAuthRepository extends InMemoryAuthRepository {
+  ServerpodAuthRepository({super.isAccountSoftDeleted});
+
   @override
   BackendTarget get target => BackendTarget.serverpod;
 }
 
 class AppwriteAuthRepository extends InMemoryAuthRepository {
+  AppwriteAuthRepository({super.isAccountSoftDeleted});
+
   @override
   BackendTarget get target => BackendTarget.appwrite;
 }
-
-/// 1-line switchable provider controlling which backend powers Authentication.
-/// Defaults to [BackendTarget.firebase] for solid cloud auth.
-final authBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.firebase,
-);
 
 /// Active [AuthRepository] adapter.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final target = ref.watch(authBackendTargetProvider);
   final flavor = ref.watch(appFlavorProvider);
+  final blockSignIn = ref
+      .watch(accountDeletionRepositoryProvider)
+      .isSignInBlocked;
   return switch (target) {
-    BackendTarget.inMemory => InMemoryAuthRepository(),
-    BackendTarget.serverpod => ServerpodAuthRepository(),
-    BackendTarget.appwrite => AppwriteAuthRepository(),
-    BackendTarget.firebase => FirebaseAuthRepository(flavor: flavor),
+    BackendTarget.inMemory => InMemoryAuthRepository(
+      isAccountSoftDeleted: blockSignIn,
+    ),
+    BackendTarget.serverpod => ServerpodAuthRepository(
+      isAccountSoftDeleted: blockSignIn,
+    ),
+    BackendTarget.appwrite => AppwriteAuthRepository(
+      isAccountSoftDeleted: blockSignIn,
+    ),
+    BackendTarget.firebase => FirebaseAuthRepository(
+      flavor: flavor,
+      isAccountSoftDeleted: blockSignIn,
+    ),
   };
 });
 
