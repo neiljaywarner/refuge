@@ -11,7 +11,7 @@
   <rect width="900" height="1160" fill="#FAF7F2"/>
 
   <!-- Header -->
-  <text x="450" y="86" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" letter-spacing="0.5" fill="#1E293B">BELONG ON THE SPECTRUM</text>
+  <text x="450" y="86" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" letter-spacing="0.5" fill="#1E293B">REFUGE APP</text>
   <text x="450" y="128" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#334155">Starts as Ministry. Grows into a Calm Community Business.</text>
 
   <!-- Card 1: The Problem -->
