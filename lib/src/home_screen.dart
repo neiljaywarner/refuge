@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'core/firebase/community_analytics_service.dart';
+import 'core/theme/belong_text_styles.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
@@ -529,21 +530,20 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 brand.shortName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: BelongTextStyles.of(context).emphasis
+                                    .copyWith(fontSize: 15),
                               ),
                             ),
                             const SizedBox(width: 5),
-                            const Text(
+                            Text(
                               'Refuge',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: BelongTextStyles.of(context).emphasis
+                                  .copyWith(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                             ),
                           ],
                         ),
@@ -957,8 +957,9 @@ class _BelongSubHeaderBar extends StatelessWidget {
             label: 'Vote & Feedback',
             identifier: 'vote_feedback_button',
             onTap: () async {
-              final bytes =
-                  await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+              final bytes = await captureRepaintBoundary(
+                rootFeedbackRepaintBoundaryKey,
+              );
               if (context.mounted) {
                 BelongFeedbackAndVotingSheet.show(
                   context,
@@ -971,8 +972,9 @@ class _BelongSubHeaderBar extends StatelessWidget {
               avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
               label: const Text('Vote & Feedback'),
               onPressed: () async {
-                final bytes =
-                    await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+                final bytes = await captureRepaintBoundary(
+                  rootFeedbackRepaintBoundaryKey,
+                );
                 if (context.mounted) {
                   BelongFeedbackAndVotingSheet.show(
                     context,

@@ -1,0 +1,100 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the release plan and skip Firebase
+        type: boolean
+        default: false
+      production:
+        description: Deploy Firebase Hosting production after the preview channel
+        type: boolean
+        default: true
+      distribute_android:
+        description: Build a release APK and upload it to App Distribution
+        type: boolean
+        default: false
+
+concurrency:
+  group: firebase-hosting-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Resolve packages
+        run: flutter pub get
+
+      - name: Check Firebase credentials
+        id: firebase_auth
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          set -eu
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "mode=dry" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "mode=service_account" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            echo "mode=token" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Missing Firebase credentials."
+          echo "Add repository secret FIREBASE_SERVICE_ACCOUNT (service account JSON) or FIREBASE_TOKEN."
+          echo "See DEPLOYMENT.md."
+          exit 1
+
+      - uses: google-github-actions/auth@v2
+        if: steps.firebase_auth.outputs.mode == 'service_account'
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Install Firebase CLI
+        if: steps.firebase_auth.outputs.mode != 'dry'
+        run: npm install -g firebase-tools
+
+      - name: Deploy with tool/deploy_release.dart
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+        run: |
+          set -eu
+          version="ci-${GITHUB_SHA::7}"
+          args=(--version "$version")
+          if [ "${{ steps.firebase_auth.outputs.mode }}" = "dry" ]; then
+            args+=(--dry-run)
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.production }}" = "true" ]; then
+              args+=(--prod)
+            fi
+            if [ "${{ inputs.distribute_android }}" = "true" ]; then
+              args+=(--distribute-android)
+            fi
+          else
+            args+=(--prod)
+          fi
+          dart run tool/deploy_release.dart "${args[@]}"

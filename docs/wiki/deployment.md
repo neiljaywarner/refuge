@@ -16,7 +16,7 @@ Checked against `origin/main` for the overlap week. This section does not record
 - **Notifications.** The in-app bell exists. The launcher-dot MethodChannel (`com.belongonthespectrum.sanctuary/badge`) has no native handler. FCM permission requests set `badge: false`. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) is the test matrix and is not closed. Launcher badges and calm FCM are not fully verified on device.
 - **Package name.** The Flutter package is still `refuge4serverpod`. Rename [Issue #233](https://github.com/neiljaywarner/refuge/issues/233) is not done.
 
-See also [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md).
+See also [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md) and the [CI/CD FAQ](CI-CD-FAQ).
 
 ---
 
