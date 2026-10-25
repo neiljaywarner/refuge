@@ -6,11 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'constants/app_theme.dart';
 import 'core/config/app_flavor.dart';
 import 'core/presentation/system_insets.dart';
+import 'features/auth/presentation/auth_gate.dart';
+import 'features/messages/presentation/direct_message_arrival_banner.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
-import 'features/auth/presentation/auth_gate.dart';
 import 'home_screen.dart';
 
 /// Root application widget wrapping Refuge in a Riverpod ProviderScope.
@@ -86,6 +87,7 @@ class _RefugeAppContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final flavor = ref.watch(appFlavorProvider);
     return MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       title: flavor.launcherTitle,
       theme: SensoryThemeData.getTheme(themeNotifier.mode),
@@ -105,7 +107,7 @@ class _RefugeAppContent extends ConsumerWidget {
                 insetPadding: SystemInsets.dialogInsetPadding(repaired),
               ),
             ),
-            child: child!,
+            child: DirectMessageArrivalHost(child: child!),
           ),
         );
       },

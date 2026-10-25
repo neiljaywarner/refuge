@@ -21,13 +21,15 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       overrideIsIosWebWithoutPwa: overrideIsIosWebWithoutPwa,
     );
     if (overrideIsWebPwaInstalled == null && overrideIsIosWebWithoutPwa == null) {
-      unawaited(_restore());
+      _restoreTask = _restore();
       _watchSignIn();
     }
   }
 
   int _edits = 0;
   StreamSubscription<User?>? _authSub;
+  Future<void>? _restoreTask;
+  var _restoreFinished = false;
 
   @override
   void dispose() {
@@ -38,23 +40,88 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
   Future<void> _restore() async {
     final seen = _edits;
     final stored = await readStoredPushPreference();
-    if (stored == null || seen != _edits) return;
-    state = state.copyWith(
-      enabled: stored.enabled,
-      schedule: stored.schedule,
-      fcmToken: stored.fcmToken,
-    );
+    if (stored != null && seen == _edits) {
+      state = state.copyWith(
+        enabled: stored.enabled,
+        schedule: stored.schedule,
+        fcmToken: stored.fcmToken,
+      );
+    }
+    _restoreFinished = true;
+    await _syncCloudPushRegistration();
   }
 
   void _watchSignIn() {
     try {
       if (Firebase.apps.isEmpty) return;
       _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
-        if (user != null) unawaited(_persist());
+        if (user == null) return;
+        unawaited(() async {
+          final pending = _restoreTask;
+          if (pending != null) await pending;
+          if (!_restoreFinished) return;
+          await _syncCloudPushRegistration();
+        }());
       });
     } catch (_) {
       // Tests and a cold start before Firebase initializes skip the listener.
     }
+  }
+
+  /// Refreshes the FCM token when alerts are on, then registers with the sender.
+  Future<void> syncCloudPushRegistration() => _syncCloudPushRegistration();
+
+  Future<void> _syncCloudPushRegistration() async {
+    if (Firebase.apps.isEmpty) return;
+    try {
+      if (FirebaseAuth.instance.currentUser == null) return;
+    } catch (_) {
+      return;
+    }
+
+    if (!state.enabled || state.schedule == CalmDigestSchedule.muted) {
+      await _persist();
+      return;
+    }
+
+    if (state.isIosWebWithoutPwa) {
+      await _persist();
+      return;
+    }
+
+    try {
+      final messaging = FirebaseMessaging.instance;
+      final settings = await messaging.getNotificationSettings();
+      final granted =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+      if (!granted) {
+        state = state.copyWith(isSystemPermissionDenied: true);
+        await _persist();
+        return;
+      }
+      String? token;
+      try {
+        token = await messaging.getToken(
+          vapidKey: kIsWeb
+              ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum'
+              : null,
+        );
+      } catch (_) {
+        token = state.fcmToken;
+      }
+      if (token != null &&
+          token.isNotEmpty &&
+          !token.startsWith('fcm_token_calm')) {
+        state = state.copyWith(
+          fcmToken: token,
+          isSystemPermissionDenied: false,
+        );
+      }
+    } catch (_) {
+      // Offline or a test harness: keep the saved switch and try register.
+    }
+    await _persist();
   }
 
   void _initPlatformState({
@@ -164,13 +231,17 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
         return false;
       }
     } catch (_) {
-      // Graceful fallback for mock/test environments or uninitialized Firebase
-      state = state.copyWith(
-        enabled: true,
-        isSystemPermissionDenied: false,
-        fcmToken: 'fcm_token_calm_digest_alpha_preview',
-      );
-      return true;
+      final firebaseReady = Firebase.apps.isNotEmpty;
+      if (kIsWeb || !firebaseReady) {
+        state = state.copyWith(
+          enabled: true,
+          isSystemPermissionDenied: false,
+          fcmToken: 'fcm_token_calm_digest_alpha_preview',
+        );
+        return true;
+      }
+      state = state.copyWith(enabled: false, isSystemPermissionDenied: true);
+      return false;
     }
   }
 

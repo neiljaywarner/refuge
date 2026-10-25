@@ -17,6 +17,9 @@ name: "Turn message alerts on in one visit"
 - extendedWaitUntil:
     visible: ".*Message alerts.*"
     timeout: 10000
+- extendedWaitUntil:
+    visible: ".*Direct messages channel.*"
+    timeout: 10000
 - tapOn: ".*Message alerts.*"
 - tapOn:
     text: "Allow"

@@ -5,6 +5,7 @@ import 'package:refuge4serverpod/src/core/presentation/system_insets.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/calm_local_notification_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/notification_permissions_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
+import 'package:refuge4serverpod/src/features/notifications/domain/notification_settings_help.dart';
 
 /// Modal bottom sheet allowing members to configure unhurried digest schedules.
 class CalmNotificationPreferencesSheet extends ConsumerWidget {
@@ -99,6 +100,12 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               ),
               Text(
                 'Sign in on this phone so the notification can find you. A sample member never gets one. Immediate Gentle Cards stays quiet.',
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12, height: 1.4),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                notificationSettingsHelp(defaultTargetPlatform),
+                key: const ValueKey('notification-settings-help'),
                 style: theme.textTheme.bodySmall?.copyWith(fontSize: 12, height: 1.4),
               ),
 

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../domain/calm_push_payload.dart';
 import 'calm_local_notification_service.dart';
+import 'present_incoming_push.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -22,19 +23,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     data: message.data,
   );
 
-  final service = createCalmLocalNotificationService();
-  final isDirectMessage = message.data['type'] == 'direct_message' ||
-      message.data['category'] == 'direct_message';
-  final quiet = message.data['quiet'] == 'true';
-  if (isDirectMessage && !quiet) {
-    await service.showMessageNotification(
-      title: display.title,
-      body: display.body,
-      payload: display.category,
-    );
-    return;
-  }
-  await service.showCalmDigest(
+  await presentIncomingPush(
+    notifications: createCalmLocalNotificationService(),
+    data: message.data,
     title: display.title,
     body: display.body,
     payload: display.category,

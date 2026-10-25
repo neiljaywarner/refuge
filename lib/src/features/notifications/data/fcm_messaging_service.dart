@@ -2,8 +2,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/firebase/community_analytics_service.dart';
+import '../../messages/presentation/direct_message_arrival_banner.dart';
 import '../domain/calm_push_payload.dart';
 import 'calm_local_notification_service.dart';
+import 'present_incoming_push.dart';
 
 /// Wires FCM foreground/background handlers to calm local shade notifications (#382).
 class FcmMessagingService {
@@ -12,9 +14,10 @@ class FcmMessagingService {
     CalmLocalNotificationService? localNotifications,
     CommunityAnalyticsService? analytics,
     this.onPayloadReceived,
-  })  : _messaging = messaging ?? FirebaseMessaging.instance,
-        _localNotifications = localNotifications ?? createCalmLocalNotificationService(),
-        _analytics = analytics;
+  }) : _messaging = messaging ?? FirebaseMessaging.instance,
+       _localNotifications =
+           localNotifications ?? createCalmLocalNotificationService(),
+       _analytics = analytics;
 
   final FirebaseMessaging _messaging;
   final CalmLocalNotificationService _localNotifications;
@@ -56,17 +59,17 @@ class FcmMessagingService {
       data: message.data,
     );
 
-    final isDirectMessage = message.data['type'] == 'direct_message' ||
+    // The app is open, so a direct message is a banner. A closed app gets
+    // the system notification from the background handler instead.
+    final isDirectMessage =
+        message.data['type'] == 'direct_message' ||
         message.data['category'] == 'direct_message';
-    final quiet = message.data['quiet'] == 'true';
-    if (isDirectMessage && !quiet) {
-      await _localNotifications.showMessageNotification(
-        title: display.title,
-        body: display.body,
-        payload: display.category,
-      );
+    if (isDirectMessage) {
+      showDirectMessageBanner(display.body);
     } else {
-      await _localNotifications.showCalmDigest(
+      await presentIncomingPush(
+        notifications: _localNotifications,
+        data: message.data,
         title: display.title,
         body: display.body,
         payload: display.category,
@@ -91,9 +94,7 @@ class FcmMessagingService {
     final category = message.data['category']?.toString() ?? 'unknown';
     _analytics?.logEvent(
       'fcm_message_opened',
-      parameters: {
-        'category': category,
-      },
+      parameters: {'category': category},
     );
   }
 }

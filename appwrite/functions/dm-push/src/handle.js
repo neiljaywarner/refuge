@@ -1,5 +1,17 @@
 'use strict';
 
+/**
+ * Decide a register or send request without talking to the network.
+ *
+ * `main.js` supplies `deps`. Tests supply fakes. The body from the phone is
+ * not trusted for message text: `send` reads the stored Firestore document.
+ *
+ * Actions:
+ * - `register` stores `{ enabled, schedule, fcmToken }` for the signed-in member.
+ * - `send` notifies each other participant who opted in.
+ * Anything else returns 400.
+ */
+
 const {
   shouldSendDirectMessagePush,
   directMessagePushBody,
