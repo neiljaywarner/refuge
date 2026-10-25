@@ -45,7 +45,7 @@ These match the rooms from Circle:
 
 **Start Here & Introduce Yourself**, **Announcements**, **General Chat**, **Memes**, **Online Resources / Videos**, **Actually Autistic Chat**, **Friends Chat**, and **Family Chat**.
 
-You will also find **Members**, **Saved for Later** (private bookmarks), and a link to **DFW Church**. A few items, including **Actually Autistic Events**, still say they are coming later. The tour is on **[Our community spaces](Belong-Community-Guide)**.
+You will also find **Members Section & Directory**, **Saved for Later** (private bookmarks), and a link to **DFW Church**. A few items, including **Actually Autistic Events**, still say they are coming later. The tour is on **[Our community spaces](Belong-Community-Guide)**.
 
 ---
 
@@ -59,4 +59,4 @@ You will also find **Members**, **Saved for Later** (private bookmarks), and a l
 
 ## Need a person?
 
-Tap **Share Feedback** inside Belong, or message an organizer in Circle.
+Tap **Vote & Feedback** (near Feed and Spaces). Inside that sheet, the **Share Feedback** tab is where you can write a note. Or message an organizer in Circle.

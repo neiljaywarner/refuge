@@ -1,88 +1,103 @@
 appId: com.belongonthespectrum.refuge.dev
-# Debug/dev package. Production release applicationId is
-# com.belongonthespectrum.refuge (no .dev suffix). See .maestro/config.yaml.
 ---
 # Every feed sort option on a debug dev build (#485).
-# Clickable chip text is emoji plus the name ("✨ For you", "💬 New Activity").
-# A semantics id such as feed_sort_chip_forYou is not always exposed.
-# Intent filters ([Comfort Only], All) stay on the same row.
-
+# Release/prod applicationId is com.belongonthespectrum.refuge (no .dev suffix).
+#
+# A 1080-wide phone only puts Latest, For you, New Activity, and a clipped
+# Oldest chip in the semantics tree. Popular, Likes, and Alphabetical sit in
+# the nested horizontal scroller and are not exposed until that scroller
+# moves. scrollUntilVisible cannot target them, and a screen-level swipe at
+# the chip row scrolls the feed instead. Those three options (and a second
+# pass over the rest) go through the sort menu, which calls the same
+# selection callback as the chips.
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: ".*Vote & Feedback.*"
+    visible: "Demo Mode.*"
     timeout: 45000
 
-- scrollUntilVisible:
-    element: ".*Latest.*"
-    direction: RIGHT
-    timeout: 15000
 - tapOn:
-    text: ".*Latest.*"
-    index: 0
+    id: "feed_sort_chip_latest"
 - tapOn:
-    text: ".*For you.*"
-    index: 0
-- scrollUntilVisible:
-    element: ".*New Activity.*"
-    direction: LEFT
-    timeout: 15000
+    id: "feed_sort_chip_forYou"
 - tapOn:
-    text: ".*New Activity.*"
-    index: 0
+    id: "feed_sort_chip_newActivity"
 - tapOn:
-    text: ".*Oldest.*"
-    index: 0
+    id: "feed_sort_chip_oldest"
+- tapOn:
+    id: "feed_sort_chip_oldest"
 
-# Popular, Likes, and Alphabetical sit on the horizontal sort row, to the
-# right of Oldest. Screen-level scrollUntilVisible does not move that row.
-# Chip row is about 55% down the 1080x2400 emulator frame.
-- swipe:
-    start: "90%, 55%"
-    end: "15%, 55%"
-    duration: 400
+- tapOn:
+    id: "feed_sort_popup_button"
 - extendedWaitUntil:
-    visible: ".*Popular.*"
-    timeout: 8000
-- tapOn:
-    text: ".*Popular.*"
-    index: 0
-- tapOn:
-    text: ".*Likes.*"
-    index: 0
-- tapOn:
-    text: ".*Alphabetical.*"
-    index: 0
-
-# Latest may be scrolled off the chip row. The sort menu still lists it.
-- tapOn: ".*Sort feed.*"
-- extendedWaitUntil:
-    visible: ".*Latest.*"
+    visible:
+      id: "feed_sort_menu_item_popular"
     timeout: 10000
 - tapOn:
-    text: ".*Latest.*"
-    index: 0
-
-- tapOn: ".*Sort feed.*"
+    id: "feed_sort_menu_item_popular"
 - extendedWaitUntil:
-    visible: ".*For you.*"
+    visible: "Demo Mode.*"
+    timeout: 10000
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_likes"
     timeout: 10000
 - tapOn:
-    text: ".*For you.*"
-    index: 0
+    id: "feed_sort_menu_item_likes"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
 
 - tapOn:
-    text: ".*\\[Comfort Only\\].*"
-    index: 0
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_alphabetical"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_alphabetical"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_latest"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_latest"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_forYou"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_forYou"
+- assertVisible:
+    id: "feed_sort_chip_forYou"
+
+- tapOn:
+    id: "tone_filter_chip_comfort_only"
 - extendedWaitUntil:
     visible: ".*sensory fatigue.*"
     timeout: 10000
 - tapOn:
-    text: "^All$"
-    index: 0
-- scrollUntilVisible:
-    element: ".*peace of mind.*"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 20
-- assertVisible: ".*peace of mind.*"
+    id: "tone_filter_chip_all"
+# For you ranks the comfort reflection above the prayer seed, and a phone
+# only keeps the first cards in the semantics tree. The comfort post staying
+# visible after All proves the filter cleared without dropping the feed.
+- assertVisible: "Demo Mode.*"
+- assertVisible: ".*quiet space exists.*"
+- assertVisible:
+    id: "feed_sort_chip_forYou"
+- takeScreenshot: maestro_feed_sort_every_option
