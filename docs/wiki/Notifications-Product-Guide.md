@@ -7,7 +7,7 @@
 > **Technical Companion**: [[Notifications-Technical-Architecture]]  
 > **Architectural Decisions**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]
 
-> **Status (22 October 2026).** The in-app bell is the surface described below. Phone launcher dots are not updated: the badge MethodChannel has no native handler, and FCM permission requests set `badge: false`. Device checks are open in [Issue #411](https://github.com/neiljaywarner/refuge/issues/411).
+> **Status (24 October 2026).** Message alerts are opt-in. See [Direct message alerts](ADR-0012-Direct-Message-Alerts) and [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md). The cloud send is written and tested, and it is not deployed: the Firebase project is still on Spark. Phone launcher dots are still not updated. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) remains open for that badge.
 
 ---
 
@@ -51,3 +51,13 @@ Tap the tune icon (🎛️) in the upper right of the Notifications screen to op
 * **Daily Evening Digest**: A peaceful summary delivered at 7:00 PM.
 * **Weekly Quiet Summary**: Delivered once a week on Sunday mornings.
 * **Muted (Zen Mode)**: Completely quiet; check notifications only when you open the app.
+
+## 4. A card when someone messages you
+
+**Message alerts** is the switch at the top of Calm Notification Preferences. It starts off.
+
+When it is on, a new direct message is meant to arrive as a silent card, including while Belong is closed. There is no chime and no red badge. Other community updates still wait for the schedule you picked. Completely Muted sends nothing, including direct messages.
+
+Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the card to reach. Practice names in the New Message list never receive a push.
+
+The phone half of this was checked on Pixel Left and Pixel Right on October 24, 2026. The cloud function that would send the card is in the repository and is not deployed yet. Details are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.

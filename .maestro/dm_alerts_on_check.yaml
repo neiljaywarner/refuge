@@ -1,0 +1,17 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Confirm message alerts stayed on"
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Preferences.*"
+    timeout: 15000
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*On. A new direct message arrives as a silent card.*"
+    timeout: 10000

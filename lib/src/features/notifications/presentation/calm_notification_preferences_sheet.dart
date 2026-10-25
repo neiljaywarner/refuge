@@ -85,18 +85,34 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 key: const ValueKey('toggle-notifications-switch'),
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
-                  'Receive Push Digests',
+                  'Message alerts',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 subtitle: Text(
                   prefs.enabled
-                      ? 'Active · Delivered silently per your schedule'
-                      : 'Off · Browse strictly on your own schedule',
+                      ? 'On. A new direct message arrives as a silent card, even when Belong is closed.'
+                      : 'Off. Turn this on to get a silent card when someone messages you.',
                   style: const TextStyle(fontSize: 12),
                 ),
                 value: prefs.enabled,
                 onChanged: (val) => notifier.setEnabled(val),
               ),
+              Text(
+                'Sign in on this phone so the card can find you. A sample member never gets one.',
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12, height: 1.4),
+              ),
+
+              if (prefs.isSystemPermissionDenied) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Android blocked alerts. Allow notifications for Belong in system settings, then turn Message alerts on again.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
 
               if (prefs.isIosWebWithoutPwa) ...[
                 const SizedBox(height: 8),

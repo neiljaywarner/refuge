@@ -5,7 +5,7 @@
 > **Related Architecture ADR**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]  
 > **Product Companion Guide**: [[Notifications-Product-Guide]]
 
-> **Status (22 October 2026).** The in-app bell exists. `AppLauncherBadgeService` calls MethodChannel `com.belongonthespectrum.sanctuary/badge`, and that channel has no native handler, so the phone launcher dot does not update. FCM permission requests set `badge: false`. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) is open. Launcher badges and calm FCM are not fully verified on device.
+> **Status (24 October 2026).** [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md) adds an opt-in direct-message push. The client saves the switch locally and, when a member is signed in, writes `users/{uid}/notification_settings/push`. `functions/index.js` would send a silent card on `direct_messages/{messageId}` create. That function is not deployed: Spark cannot enable Cloud Build. The launcher-dot MethodChannel still has no native handler. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) stays open for the badge. FCM permission requests still set `badge: false`.
 
 ---
 
