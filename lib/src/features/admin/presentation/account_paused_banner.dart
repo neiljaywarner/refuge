@@ -17,11 +17,7 @@ class AccountPausedLockout extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.pause_circle_outline_rounded,
-            size: 40,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(Icons.pause_circle_outline_rounded, size: 40, color: theme.colorScheme.primary),
           const SizedBox(height: 16),
           Text(
             circleBanSignInMessage,

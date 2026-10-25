@@ -54,19 +54,14 @@ class MessageRecipient {
     return false;
   }
 
-  factory MessageRecipient.fromDevMember(DevFellowshipMember member) {
-    return MessageRecipient(
-      id: 'sample-${member.name}',
-      name: member.name,
-      tagline: member.effectiveTagline,
-      isSample: true,
-    );
-  }
+  factory MessageRecipient.fromDevMember(DevFellowshipMember member) => MessageRecipient(
+    id: 'sample-${member.name}',
+    name: member.name,
+    tagline: member.effectiveTagline,
+    isSample: true,
+  );
 
-  factory MessageRecipient.fromFirestoreUser(
-    String uid,
-    Map<String, dynamic> data,
-  ) {
+  factory MessageRecipient.fromFirestoreUser(String uid, Map<String, dynamic> data) {
     final email = data['email'] as String? ?? '';
     final handle = email.contains('@') ? email.split('@').first : null;
     final bio = data['bio'] as String?;

@@ -30,11 +30,7 @@ enum CalmDigestSchedule {
     emoji: '🔕',
   );
 
-  const CalmDigestSchedule({
-    required this.title,
-    required this.description,
-    required this.emoji,
-  });
+  const CalmDigestSchedule({required this.title, required this.description, required this.emoji});
 
   final String title;
   final String description;
@@ -79,25 +75,22 @@ class CalmNotificationPreferences extends Equatable {
     bool? isWebPwaInstalled,
     bool? isIosWebWithoutPwa,
     bool? isSystemPermissionDenied,
-  }) {
-    return CalmNotificationPreferences(
-      enabled: enabled ?? this.enabled,
-      schedule: schedule ?? this.schedule,
-      fcmToken: fcmToken ?? this.fcmToken,
-      isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
-      isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
-      isSystemPermissionDenied:
-          isSystemPermissionDenied ?? this.isSystemPermissionDenied,
-    );
-  }
+  }) => CalmNotificationPreferences(
+    enabled: enabled ?? this.enabled,
+    schedule: schedule ?? this.schedule,
+    fcmToken: fcmToken ?? this.fcmToken,
+    isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
+    isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
+    isSystemPermissionDenied: isSystemPermissionDenied ?? this.isSystemPermissionDenied,
+  );
 
   @override
   List<Object?> get props => [
-        enabled,
-        schedule,
-        fcmToken,
-        isWebPwaInstalled,
-        isIosWebWithoutPwa,
-        isSystemPermissionDenied,
-      ];
+    enabled,
+    schedule,
+    fcmToken,
+    isWebPwaInstalled,
+    isIosWebWithoutPwa,
+    isSystemPermissionDenied,
+  ];
 }

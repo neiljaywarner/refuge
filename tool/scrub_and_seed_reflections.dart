@@ -31,8 +31,7 @@ final List<Post> kCanonicalOrganizerReflections = [
     spaceKey: 'start_here',
     toneTag: '[Welcome]',
     specialInterestTag: 'Neurodivergent Fellowship',
-    content:
-        'Welcome to Belong on the Spectrum! Feel free to introduce yourself here at your own pace, share a favorite hobby or special interest, or simply read quietly.',
+    content: 'Welcome to Belong on the Spectrum! Feel free to introduce yourself here at your own pace, share a favorite hobby or special interest, or simply read quietly.',
     timestamp: DateTime.utc(2026, 10, 24, 12, 0),
     reactions: const {'pray': 9, 'peace': 14, 'encouraged': 18},
     isDemo: false,
@@ -42,8 +41,7 @@ final List<Post> kCanonicalOrganizerReflections = [
     authorName: 'Hannah W. (Dallas)',
     spaceKey: 'general_chat',
     toneTag: '[Fellowship]',
-    content:
-        'So grateful for a calm community space without flashing popups or algorithmic timelines. Wishing everyone a peaceful, restful week!',
+    content: 'So grateful for a calm community space without flashing popups or algorithmic timelines. Wishing everyone a peaceful, restful week!',
     timestamp: DateTime.utc(2026, 10, 24, 13, 30),
     reactions: const {'pray': 6, 'peace': 12, 'encouraged': 10},
     isDemo: false,
@@ -53,8 +51,7 @@ final List<Post> kCanonicalOrganizerReflections = [
     authorName: 'Pastor Thomas (Melbourne)',
     spaceKey: 'study',
     toneTag: '[Question]',
-    content:
-        'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
+    content: 'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
     timestamp: DateTime.utc(2026, 10, 24, 15, 0),
     reactions: const {'pray': 8, 'peace': 11, 'relatable': 7},
     isDemo: false,
@@ -64,8 +61,7 @@ final List<Post> kCanonicalOrganizerReflections = [
     authorName: 'Elena R. (Colorado)',
     spaceKey: 'prayer',
     toneTag: '[Comfort Only]',
-    content:
-        'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
+    content: 'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
     timestamp: DateTime.utc(2026, 10, 24, 16, 45),
     reactions: const {'pray': 15, 'peace': 19},
     isDemo: false,
@@ -76,8 +72,7 @@ final List<Post> kCanonicalOrganizerReflections = [
     spaceKey: 'memes',
     toneTag: '[Autism & Faith Meme]',
     specialInterestTag: 'Church Acoustics',
-    content:
-        'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
+    content: 'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
     timestamp: DateTime.utc(2026, 10, 24, 17, 15),
     reactions: const {'pray': 5, 'peace': 9, 'relatable': 24},
     isDemo: false,
@@ -101,12 +96,12 @@ class ScrubReport {
   });
 
   Map<String, dynamic> toJson() => {
-        'totalScanned': totalScanned,
-        'junkCount': junkCount,
-        'validCount': validCount,
-        'flaggedJunkSnippets': flaggedJunkSnippets,
-        'cleanPostsCount': cleanPosts.length,
-      };
+    'totalScanned': totalScanned,
+    'junkCount': junkCount,
+    'validCount': validCount,
+    'flaggedJunkSnippets': flaggedJunkSnippets,
+    'cleanPostsCount': cleanPosts.length,
+  };
 
   String toAsciiSummary() {
     final buf = StringBuffer();
@@ -162,20 +157,28 @@ class ReflectionScrubber {
     for (final raw in jsonList) {
       if (raw is Map<String, dynamic>) {
         try {
-          list.add(Post(
-            id: raw['id']?.toString() ?? 'unknown',
-            authorName: raw['authorName']?.toString() ?? 'Anonymous',
-            spaceKey: raw['spaceKey']?.toString() ?? 'general_chat',
-            toneTag: raw['toneTag']?.toString() ?? raw['intentTag']?.toString() ?? '[Support]',
-            specialInterestTag: raw['specialInterestTag']?.toString(),
-            imageUrl: raw['imageUrl']?.toString(),
-            content: raw['content']?.toString() ?? '',
-            timestamp: DateTime.tryParse(raw['timestamp']?.toString() ?? raw['createdAt']?.toString() ?? '') ?? DateTime.now(),
-            reactions: (raw['reactions'] is Map)
-                ? (raw['reactions'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
-                : const {},
-            isDemo: raw['isDemo'] == true,
-          ));
+          list.add(
+            Post(
+              id: raw['id']?.toString() ?? 'unknown',
+              authorName: raw['authorName']?.toString() ?? 'Anonymous',
+              spaceKey: raw['spaceKey']?.toString() ?? 'general_chat',
+              toneTag: raw['toneTag']?.toString() ?? raw['intentTag']?.toString() ?? '[Support]',
+              specialInterestTag: raw['specialInterestTag']?.toString(),
+              imageUrl: raw['imageUrl']?.toString(),
+              content: raw['content']?.toString() ?? '',
+              timestamp:
+                  DateTime.tryParse(
+                    raw['timestamp']?.toString() ?? raw['createdAt']?.toString() ?? '',
+                  ) ??
+                  DateTime.now(),
+              reactions: (raw['reactions'] is Map)
+                  ? (raw['reactions'] as Map).map(
+                      (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+                    )
+                  : const {},
+              isDemo: raw['isDemo'] == true,
+            ),
+          );
         } catch (_) {}
       }
     }

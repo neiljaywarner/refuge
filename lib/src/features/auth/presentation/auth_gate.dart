@@ -16,11 +16,7 @@ import 'simple_auth.dart';
 /// Blocks the main app until the auth session is signed in and, in production,
 /// email-verified. Reads [authRepositoryProvider], not [memberProfileProvider].
 class AuthGate extends ConsumerStatefulWidget {
-  const AuthGate({
-    super.key,
-    required this.repository,
-    required this.themeNotifier,
-  });
+  const AuthGate({super.key, required this.repository, required this.themeNotifier});
 
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
@@ -34,17 +30,14 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   String? _devExampleError;
   bool _devExampleLoading = false;
 
-  AuthSession _effectiveSession(AuthSession streamSession) {
-    return _reloadedSession ?? streamSession;
-  }
+  AuthSession _effectiveSession(AuthSession streamSession) => _reloadedSession ?? streamSession;
 
   @override
   Widget build(BuildContext context) {
     final flavor = ref.watch(appFlavorProvider);
     final streamValue = ref.watch(authSessionStreamProvider);
     final repo = ref.read(authRepositoryProvider);
-    final streamSession =
-        streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
+    final streamSession = streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
 
     ref.listen<AsyncValue<AuthSession>>(authSessionStreamProvider, (_, next) {
       if (next.hasValue) {
@@ -78,10 +71,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       );
     }
 
-    return RefugeHomeScreen(
-      repository: widget.repository,
-      themeNotifier: widget.themeNotifier,
-    );
+    return RefugeHomeScreen(repository: widget.repository, themeNotifier: widget.themeNotifier);
   }
 
   Future<void> _reloadVerified() async {
@@ -108,10 +98,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     try {
       final notifier = ref.read(memberProfileProvider.notifier);
       try {
-        await notifier.signInWithPassword(
-          email: account.email,
-          password: devExamplePassword,
-        );
+        await notifier.signInWithPassword(email: account.email, password: devExamplePassword);
       } on AuthException catch (e) {
         if (e.code == 'user-not-found') {
           await notifier.registerWithPassword(
@@ -171,12 +158,7 @@ class _SignInWall extends StatelessWidget {
 
     return Column(
       children: [
-        Expanded(
-          child: SimpleAuthScreen(
-            popOnSuccess: false,
-            allowOfflineTestSignIn: false,
-          ),
-        ),
+        Expanded(child: SimpleAuthScreen(popOnSuccess: false, allowOfflineTestSignIn: false)),
         if (showExamples) ...[
           const Divider(height: 1),
           Padding(
@@ -206,10 +188,7 @@ class _SignInWall extends StatelessWidget {
                     devExampleError!,
                     key: const Key('dev_example_sign_in_error'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
                   ),
                 ],
               ],
@@ -235,45 +214,43 @@ class _VerifyEmailWall extends StatelessWidget {
   final Future<void> Function() onSignOut;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Check your email'), centerTitle: true),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'We sent a verification link to $email. Open it, then come back.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  key: const Key('auth_gate_i_verified'),
-                  onPressed: onReload,
-                  child: const Text('I verified my email'),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  key: const Key('auth_gate_resend_verification'),
-                  onPressed: onResend,
-                  child: const Text('Resend email'),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  key: const Key('auth_gate_sign_out'),
-                  onPressed: onSignOut,
-                  child: const Text('Sign out'),
-                ),
-              ],
-            ),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Check your email'), centerTitle: true),
+    body: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'We sent a verification link to $email. Open it, then come back.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                key: const Key('auth_gate_i_verified'),
+                onPressed: onReload,
+                child: const Text('I verified my email'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                key: const Key('auth_gate_resend_verification'),
+                onPressed: onResend,
+                child: const Text('Resend email'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                key: const Key('auth_gate_sign_out'),
+                onPressed: onSignOut,
+                child: const Text('Sign out'),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

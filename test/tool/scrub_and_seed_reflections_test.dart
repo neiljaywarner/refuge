@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
+
 import '../../tool/scrub_and_seed_reflections.dart';
 
 void main() {
@@ -83,11 +84,7 @@ void main() {
           'reactions': {'pray': 5},
           'isDemo': false,
         },
-        {
-          'id': 'json-2',
-          'authorName': 'Tester',
-          'content': 'quick test',
-        },
+        {'id': 'json-2', 'authorName': 'Tester', 'content': 'quick test'},
         'invalid non-map entry',
       ];
 

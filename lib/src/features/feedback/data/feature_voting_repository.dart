@@ -37,10 +37,7 @@ abstract interface class FeatureVotingRepository {
   Stream<List<VotableFeatureItem>> watchFeatures();
 
   /// Applies an optimistic vote toggle and persists to the active backend adapter.
-  List<VotableFeatureItem> toggleVote(
-    List<VotableFeatureItem> current,
-    String featureId,
-  );
+  List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId);
 
   /// Appends a community-proposed feature and persists to the active backend adapter.
   List<VotableFeatureItem> proposeFeature(
@@ -83,19 +80,13 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
 
   /// Shared broadcast stream controller for cross-session real-time notifications.
   StreamController<List<VotableFeatureItem>> get streamController =>
-      _streamController ??=
-          StreamController<List<VotableFeatureItem>>.broadcast();
+      _streamController ??= StreamController<List<VotableFeatureItem>>.broadcast();
 
   @override
-  Stream<List<VotableFeatureItem>> watchFeatures() {
-    return streamController.stream.map((list) {
-      final votedIds = VoteStorageService.instance.getVotedFeatureIds();
-      return [
-        for (final item in list)
-          item.copyWith(userVoted: votedIds.contains(item.id)),
-      ];
-    });
-  }
+  Stream<List<VotableFeatureItem>> watchFeatures() => streamController.stream.map((list) {
+    final votedIds = VoteStorageService.instance.getVotedFeatureIds();
+    return [for (final item in list) item.copyWith(userVoted: votedIds.contains(item.id))];
+  });
 
   @override
   List<VotableFeatureItem> loadInitialFeatures() {
@@ -112,28 +103,21 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   }
 
   @override
-  List<VotableFeatureItem> toggleVote(
-    List<VotableFeatureItem> current,
-    String featureId,
-  ) {
+  List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId) {
     final voted = VoteStorageService.instance.toggleFeatureVoted(featureId);
     final next = [
       for (final item in current)
         if (item.id == featureId)
           item.copyWith(
             userVoted: voted,
-            votes: voted
-                ? item.votes + 1
-                : (item.votes > 0 ? item.votes - 1 : 0),
+            votes: voted ? item.votes + 1 : (item.votes > 0 ? item.votes - 1 : 0),
           )
         else
           item,
     ];
     if (_streamController != null && !_streamController!.isClosed) {
       // Remote broadcast reflects updated vote tallies without overriding remote users' local vote flags
-      final remotePayload = [
-        for (final item in next) item.copyWith(userVoted: false),
-      ];
+      final remotePayload = [for (final item in next) item.copyWith(userVoted: false)];
       _streamController!.add(remotePayload);
     }
     return next;
@@ -170,14 +154,10 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
 
   PrivateFeedbackRouter get privateRouter => const PrivateFeedbackRouter();
 
-  String _attachmentDelivery(
-    String? attachmentUrl,
-    Uint8List? screenshotAttachment,
-  ) {
+  String _attachmentDelivery(String? attachmentUrl, Uint8List? screenshotAttachment) {
     if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl)) return 'hosted';
     final hasDrawing =
-        screenshotAttachment != null ||
-        (attachmentUrl != null && attachmentUrl.trim().isNotEmpty);
+        screenshotAttachment != null || (attachmentUrl != null && attachmentUrl.trim().isNotEmpty);
     if (!hasDrawing) return 'none';
     return 'local_only';
   }
@@ -204,9 +184,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     int? githubIssueNumber;
     String? githubIssueUrl;
 
-    if (sentiment.isPrivateTriage &&
-        gitHubClient != null &&
-        gitHubClient!.isConfigured) {
+    if (sentiment.isPrivateTriage && gitHubClient != null && gitHubClient!.isConfigured) {
       final payload = privateRouter.formatPrivateIssue(
         sentiment: sentiment,
         message: trimmed,
@@ -240,10 +218,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       if (FeedbackAttachmentRef.isHostedUpload(attachmentUrl))
         'attachmentUrl': attachmentUrl!.trim(),
       if (screenshotAttachment != null) 'hasScreenshotAttachment': 'true',
-      'attachmentDelivery': _attachmentDelivery(
-        attachmentUrl,
-        screenshotAttachment,
-      ),
+      'attachmentDelivery': _attachmentDelivery(attachmentUrl, screenshotAttachment),
       'githubIssueCreated': '${githubIssueNumber != null}',
       if (githubIssueNumber != null) 'githubIssueNumber': '$githubIssueNumber',
       'githubIssueUrl': ?githubIssueUrl,
@@ -364,10 +339,7 @@ class FirebaseFeatureVotingRepository
         return [
           for (final item in base)
             if (remoteVotes.containsKey(item.id))
-              item.copyWith(
-                votes: remoteVotes[item.id]!,
-                userVoted: votedIds.contains(item.id),
-              )
+              item.copyWith(votes: remoteVotes[item.id]!, userVoted: votedIds.contains(item.id))
             else
               item.copyWith(userVoted: votedIds.contains(item.id)),
         ];
@@ -378,10 +350,7 @@ class FirebaseFeatureVotingRepository
   }
 
   @override
-  List<VotableFeatureItem> toggleVote(
-    List<VotableFeatureItem> current,
-    String featureId,
-  ) {
+  List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId) {
     final next = super.toggleVote(current, featureId);
     final targetItem = next.firstWhere(
       (e) => e.id == featureId,
@@ -426,19 +395,16 @@ class FirebaseFeatureVotingRepository
     final fs = firestore;
     if (fs != null) {
       try {
-        final resolvedRating =
-            FeatureVotingStateTransformMixin.resolveStarRating(
-              sentiment,
-              rating,
-            );
+        final resolvedRating = FeatureVotingStateTransformMixin.resolveStarRating(
+          sentiment,
+          rating,
+        );
         final destination = privateRouter.resolveDestination(sentiment);
         await fs.collection(feedbackCollectionPath).add({
           'sentiment': sentiment.name,
           'rating': resolvedRating,
           'isPrivateTriage': sentiment.isPrivateTriage,
-          'targetRepository': destination is PrivateRepoDestination
-              ? destination.repository
-              : null,
+          'targetRepository': destination is PrivateRepoDestination ? destination.repository : null,
           'message': message.trim(),
           if (contactEmail != null && contactEmail.trim().isNotEmpty)
             'contactEmail': contactEmail.trim(),
@@ -447,15 +413,10 @@ class FirebaseFeatureVotingRepository
           if (screenshotAttachment != null) 'hasScreenshotAttachment': true,
           if (screenshotAttachment != null)
             'attachmentBytesBase64': base64Encode(screenshotAttachment),
-          'attachmentDelivery': _attachmentDelivery(
-            attachmentUrl,
-            screenshotAttachment,
-          ),
+          'attachmentDelivery': _attachmentDelivery(attachmentUrl, screenshotAttachment),
           'githubIssueCreated': result.githubIssueNumber != null,
-          if (result.githubIssueNumber != null)
-            'githubIssueNumber': result.githubIssueNumber,
-          if (result.githubIssueUrl != null)
-            'githubIssueUrl': result.githubIssueUrl,
+          if (result.githubIssueNumber != null) 'githubIssueNumber': result.githubIssueNumber,
+          if (result.githubIssueUrl != null) 'githubIssueUrl': result.githubIssueUrl,
           'storedIn': feedbackCollectionPath,
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -469,28 +430,16 @@ class FirebaseFeatureVotingRepository
 
 /// 1-line switchable provider controlling which backend powers Feature Voting.
 /// Defaults to [BackendTarget.firebase] for v0.8.0-alpha shared cloud persistence.
-final featureVotingBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.firebase,
-);
+final featureVotingBackendTargetProvider = Provider<BackendTarget>((ref) => BackendTarget.firebase);
 
 /// Provides the active [FeatureVotingRepository] implementation.
-final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((
-  ref,
-) {
+final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) {
   final target = ref.watch(featureVotingBackendTargetProvider);
   final gitHubClient = ref.watch(gitHubFeedbackClientProvider);
   return switch (target) {
-    BackendTarget.inMemory => InMemoryFeatureVotingRepository(
-      gitHubClient: gitHubClient,
-    ),
-    BackendTarget.serverpod => ServerpodFeatureVotingRepository(
-      gitHubClient: gitHubClient,
-    ),
-    BackendTarget.appwrite => AppwriteFeatureVotingRepository(
-      gitHubClient: gitHubClient,
-    ),
-    BackendTarget.firebase => FirebaseFeatureVotingRepository(
-      gitHubClient: gitHubClient,
-    ),
+    BackendTarget.inMemory => InMemoryFeatureVotingRepository(gitHubClient: gitHubClient),
+    BackendTarget.serverpod => ServerpodFeatureVotingRepository(gitHubClient: gitHubClient),
+    BackendTarget.appwrite => AppwriteFeatureVotingRepository(gitHubClient: gitHubClient),
+    BackendTarget.firebase => FirebaseFeatureVotingRepository(gitHubClient: gitHubClient),
   };
 });

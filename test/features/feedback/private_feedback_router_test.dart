@@ -16,11 +16,7 @@ void main() {
       final destination = router.resolveDestination(FeedbackSentiment.neutral);
       expect(
         destination,
-        equals(
-          const PrivateRepoDestination(
-            repository: 'neiljaywarner/belong_feedback',
-          ),
-        ),
+        equals(const PrivateRepoDestination(repository: 'neiljaywarner/belong_feedback')),
       );
     });
 
@@ -28,11 +24,7 @@ void main() {
       final destination = router.resolveDestination(FeedbackSentiment.sad);
       expect(
         destination,
-        equals(
-          const PrivateRepoDestination(
-            repository: 'neiljaywarner/belong_feedback',
-          ),
-        ),
+        equals(const PrivateRepoDestination(repository: 'neiljaywarner/belong_feedback')),
       );
     });
 
@@ -45,7 +37,10 @@ void main() {
       );
 
       expect(payload.repository, 'neiljaywarner/belong_feedback');
-      expect(payload.title, startsWith('[Bug / Confusing] The font size in the quiet digest banner'));
+      expect(
+        payload.title,
+        startsWith('[Bug / Confusing] The font size in the quiet digest banner'),
+      );
       expect(payload.labels, containsAll(['user-feedback', 'bug-report']));
       expect(payload.body, contains('## Community Feedback Submission'));
       expect(payload.body, contains('alex@belong.org'));

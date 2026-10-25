@@ -65,8 +65,7 @@ void main() {
     });
 
     test('selectSoundscape switches active soundscape and plays', () async {
-      final rain = SensorySoundscape.curatedSoundscapes
-          .firstWhere((s) => s.id == 'gentle_rain');
+      final rain = SensorySoundscape.curatedSoundscapes.firstWhere((s) => s.id == 'gentle_rain');
       await notifier.selectSoundscape(rain);
 
       expect(notifier.state.activeSoundscape, equals(rain));

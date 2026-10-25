@@ -51,10 +51,7 @@ class CircleSpaceMapper {
 
   /// Resolves a Circle.so space name to a canonical Belong space slug.
   /// Returns `'unmapped_space'` if the space is unrecognized.
-  static String resolveSpaceSlug(
-    String circleSpaceName, {
-    Map<String, String>? customOverrides,
-  }) {
+  static String resolveSpaceSlug(String circleSpaceName, {Map<String, String>? customOverrides}) {
     final normalized = circleSpaceName.trim().toLowerCase();
     if (customOverrides != null && customOverrides.containsKey(normalized)) {
       return customOverrides[normalized]!;
@@ -89,20 +86,18 @@ class CircleRecord {
 
   /// Returns true if this record has minimum viable content to import.
   bool get isValid =>
-      body.trim().isNotEmpty &&
-      belongSpaceSlug != 'unmapped_space' &&
-      authorName.trim().isNotEmpty;
+      body.trim().isNotEmpty && belongSpaceSlug != 'unmapped_space' && authorName.trim().isNotEmpty;
 
   Map<String, dynamic> toJson() => {
-        'originalSpaceName': originalSpaceName,
-        'belongSpaceSlug': belongSpaceSlug,
-        'title': title,
-        'body': body,
-        'authorName': authorName,
-        'authorEmail': '[ANONYMIZED_PII]',
-        'createdAt': createdAt.toIso8601String(),
-        'commentsCount': commentsCount,
-      };
+    'originalSpaceName': originalSpaceName,
+    'belongSpaceSlug': belongSpaceSlug,
+    'title': title,
+    'body': body,
+    'authorName': authorName,
+    'authorEmail': '[ANONYMIZED_PII]',
+    'createdAt': createdAt.toIso8601String(),
+    'commentsCount': commentsCount,
+  };
 
   @override
   String toString() =>
@@ -147,7 +142,9 @@ class CircleImportReport {
     buffer.writeln('  Unmapped Spaces:    $unmappedSpaceCount');
     buffer.writeln('  Unique Authors:     $uniqueAuthorsCount');
     if (earliestDate != null && latestDate != null) {
-      buffer.writeln('  Date Range:         ${earliestDate!.toIso8601String().substring(0, 10)} -> ${latestDate!.toIso8601String().substring(0, 10)}');
+      buffer.writeln(
+        '  Date Range:         ${earliestDate!.toIso8601String().substring(0, 10)} -> ${latestDate!.toIso8601String().substring(0, 10)}',
+      );
     }
     buffer.writeln('---------------------------------------------------------------');
     buffer.writeln('  Space Slug               Section        Count');
@@ -170,17 +167,17 @@ class CircleImportReport {
   }
 
   Map<String, dynamic> toJson() => {
-        'filePath': filePath,
-        'totalRowsRead': totalRowsRead,
-        'validRecordsCount': validRecordsCount,
-        'unmappedSpaceCount': unmappedSpaceCount,
-        'uniqueAuthorsCount': uniqueAuthorsCount,
-        'earliestDate': earliestDate?.toIso8601String(),
-        'latestDate': latestDate?.toIso8601String(),
-        'isDryRun': isDryRun,
-        'recordsPerSpace': recordsPerSpace,
-        'errors': errors,
-      };
+    'filePath': filePath,
+    'totalRowsRead': totalRowsRead,
+    'validRecordsCount': validRecordsCount,
+    'unmappedSpaceCount': unmappedSpaceCount,
+    'uniqueAuthorsCount': uniqueAuthorsCount,
+    'earliestDate': earliestDate?.toIso8601String(),
+    'latestDate': latestDate?.toIso8601String(),
+    'isDryRun': isDryRun,
+    'recordsPerSpace': recordsPerSpace,
+    'errors': errors,
+  };
 }
 
 /// Pure Dart RFC 4180 CSV Parser with quote, comma, multiline, and escaped-quote support.
@@ -283,28 +280,28 @@ class CircleCsvParser {
 
       final createdAt = _parseDate(dateStr);
 
-      records.add(CircleRecord(
-        originalSpaceName: space,
-        belongSpaceSlug: belongSlug,
-        title: title,
-        body: body,
-        authorName: authorName.isNotEmpty ? authorName : 'Community Member',
-        authorEmail: authorEmail,
-        createdAt: createdAt,
-        rawFields: row,
-      ));
+      records.add(
+        CircleRecord(
+          originalSpaceName: space,
+          belongSpaceSlug: belongSlug,
+          title: title,
+          body: body,
+          authorName: authorName.isNotEmpty ? authorName : 'Community Member',
+          authorEmail: authorEmail,
+          createdAt: createdAt,
+          rawFields: row,
+        ),
+      );
     }
 
     return records;
   }
 
-  static String _normalizeColumnName(String col) {
-    return col
-        .replaceAll(RegExp(r'[\s_]+'), '_')
-        .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '')
-        .toLowerCase()
-        .trim();
-  }
+  static String _normalizeColumnName(String col) => col
+      .replaceAll(RegExp(r'[\s_]+'), '_')
+      .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '')
+      .toLowerCase()
+      .trim();
 
   static String _findField(Map<String, String> row, List<String> candidateKeys) {
     for (final key in candidateKeys) {

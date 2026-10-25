@@ -29,10 +29,7 @@ class NoPrintUseAppLogger extends AnalysisRule {
   LintCode get diagnosticCode => code;
 
   @override
-  void registerNodeProcessors(
-    RuleVisitorRegistry registry,
-    RuleContext context,
-  ) {
+  void registerNodeProcessors(RuleVisitorRegistry registry, RuleContext context) {
     registry.addMethodInvocation(this, _Visitor(this, context));
   }
 }
@@ -51,8 +48,7 @@ class _Visitor extends SimpleAstVisitor<void> {
     }
   }
 
-  bool _isPrint(MethodInvocation node) =>
-      node.target == null && node.methodName.name == 'print';
+  bool _isPrint(MethodInvocation node) => node.target == null && node.methodName.name == 'print';
 
   bool _isDeveloperLog(MethodInvocation node) {
     final target = node.target;

@@ -9,7 +9,9 @@ import 'package:refuge4serverpod/src/features/profile/presentation/member_profil
 
 void main() {
   group('MemberProfileDialog BDD Widget Tests (#93)', () {
-    patrolWidgetTest('displays validation error if saved without selecting church affiliation', ($) async {
+    patrolWidgetTest('displays validation error if saved without selecting church affiliation', (
+      $,
+    ) async {
       $.tester.view.physicalSize = const Size(1080, 2400);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -18,20 +20,14 @@ void main() {
       });
 
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: MemberProfileDialog(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
         ),
       );
 
@@ -50,7 +46,9 @@ void main() {
       // Verify validation error banner is displayed
       expect($(const Key('profile_affiliation_error_text')), findsOneWidget);
       expect(
-        $('Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".'),
+        $(
+          'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".',
+        ),
         findsOneWidget,
       );
 
@@ -67,20 +65,14 @@ void main() {
       });
 
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: MemberProfileDialog(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
         ),
       );
 
@@ -105,7 +97,9 @@ void main() {
       expect(profile.isIcocMember, isTrue);
     });
 
-    patrolWidgetTest('signs in successfully when selecting "I am not a member of an ICOC church"', ($) async {
+    patrolWidgetTest('signs in successfully when selecting "I am not a member of an ICOC church"', (
+      $,
+    ) async {
       $.tester.view.physicalSize = const Size(1080, 2400);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -114,20 +108,14 @@ void main() {
       });
 
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: MemberProfileDialog(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
         ),
       );
 
@@ -152,58 +140,52 @@ void main() {
       expect(profile.isIcocMember, isFalse);
     });
 
-    patrolWidgetTest('signs in successfully when typing a custom free-form church affiliation into the blank required field', ($) async {
-      $.tester.view.physicalSize = const Size(1080, 2400);
-      $.tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        $.tester.view.resetPhysicalSize();
-        $.tester.view.resetDevicePixelRatio();
-      });
+    patrolWidgetTest(
+      'signs in successfully when typing a custom free-form church affiliation into the blank required field',
+      ($) async {
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
 
-      final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
-      );
-      addTearDown(container.dispose);
+        final container = ProviderContainer(
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+        );
+        addTearDown(container.dispose);
 
-      await $.pumpWidgetAndSettle(
-        UncontrolledProviderScope(
-          container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: MemberProfileDialog(),
-            ),
+        await $.pumpWidgetAndSettle(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
           ),
-        ),
-      );
+        );
 
-      await $(const Key('profile_display_name_field')).enterText('London Disciple');
-      await $(const Key('profile_email_field')).enterText('london@belongonthespectrum.com');
+        await $(const Key('profile_display_name_field')).enterText('London Disciple');
+        await $(const Key('profile_email_field')).enterText('london@belongonthespectrum.com');
 
-      // Enter a free-form custom ICOC congregation
-      await $(const Key('profile_church_affiliation_dropdown')).enterText('London International Church of Christ');
-      await $.pumpAndSettle();
+        // Enter a free-form custom ICOC congregation
+        await $(const Key('profile_church_affiliation_dropdown'))
+            .enterText('London International Church of Christ');
+        await $.pumpAndSettle();
 
-      // Tap save
-      await $(const Key('profile_save_sign_in_button')).tap();
-      await $.pumpAndSettle();
+        // Tap save
+        await $(const Key('profile_save_sign_in_button')).tap();
+        await $.pumpAndSettle();
 
-      final profile = container.read(memberProfileProvider);
-      expect(profile.isSignedIn, isTrue);
-      expect(profile.displayName, 'London Disciple');
-      expect(profile.icocChurchAffiliation, 'London International Church of Christ');
-      expect(profile.isIcocMember, isTrue);
-    });
+        final profile = container.read(memberProfileProvider);
+        expect(profile.isSignedIn, isTrue);
+        expect(profile.displayName, 'London Disciple');
+        expect(profile.icocChurchAffiliation, 'London International Church of Christ');
+        expect(profile.isIcocMember, isTrue);
+      },
+    );
 
     patrolWidgetTest('renders accessible close button in header (#167)', ($) async {
       await $.pumpWidgetAndSettle(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: MemberProfileDialog(),
-            ),
-          ),
+          child: MaterialApp(home: Scaffold(body: MemberProfileDialog())),
         ),
       );
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 // Since tool/analyze_app_reviews.dart is a CLI script, we can test its models and parsing logic.
@@ -10,7 +11,10 @@ void main() {
   group('ReviewTargetPreset', () {
     test('correctly maps string flags to presets', () {
       expect(ReviewTargetPreset.fromString('circle'), equals(ReviewTargetPreset.circle));
-      expect(ReviewTargetPreset.fromString('circle-communities'), equals(ReviewTargetPreset.circle));
+      expect(
+        ReviewTargetPreset.fromString('circle-communities'),
+        equals(ReviewTargetPreset.circle),
+      );
       expect(ReviewTargetPreset.fromString('belong'), equals(ReviewTargetPreset.belong));
       expect(ReviewTargetPreset.fromString('sanctuary'), equals(ReviewTargetPreset.belong));
       expect(ReviewTargetPreset.fromString('refuge'), equals(ReviewTargetPreset.belong));
@@ -213,23 +217,30 @@ void main() {
   });
 
   group('Auto-Detect Ingestion Format', () {
-    test('auto-detects and parses Apple RSS, Google Play JSON, Play CSV and Belong feedback', () async {
-      final apple = await File('test/fixtures/apple_reviews_sample.json').readAsString();
-      final playJson = await File('test/fixtures/google_play_reviews_sample.json').readAsString();
-      final playCsv = await File('test/fixtures/google_play_reviews_sample.csv').readAsString();
-      final belong = await File('test/fixtures/belong_reviews_sample.json').readAsString();
+    test(
+      'auto-detects and parses Apple RSS, Google Play JSON, Play CSV and Belong feedback',
+      () async {
+        final apple = await File('test/fixtures/apple_reviews_sample.json').readAsString();
+        final playJson = await File('test/fixtures/google_play_reviews_sample.json').readAsString();
+        final playCsv = await File('test/fixtures/google_play_reviews_sample.csv').readAsString();
+        final belong = await File('test/fixtures/belong_reviews_sample.json').readAsString();
 
-      expect(autoDetectAndParse(apple).length, equals(30));
-      expect(autoDetectAndParse(playJson).length, equals(30));
-      expect(autoDetectAndParse(playCsv).length, equals(10));
-      expect(autoDetectAndParse(belong).length, equals(20));
-    });
+        expect(autoDetectAndParse(apple).length, equals(30));
+        expect(autoDetectAndParse(playJson).length, equals(30));
+        expect(autoDetectAndParse(playCsv).length, equals(10));
+        expect(autoDetectAndParse(belong).length, equals(20));
+      },
+    );
   });
 
   group('Multi-Store Competitive Sentiment Report (Circle 60 reviews)', () {
     test('generates comprehensive combined report across Apple & Google Play', () async {
-      final appleJson = jsonDecode(await File('test/fixtures/apple_reviews_sample.json').readAsString()) as Map<String, dynamic>;
-      final playJson = jsonDecode(await File('test/fixtures/google_play_reviews_sample.json').readAsString());
+      final appleJson = jsonDecode(
+        await File('test/fixtures/apple_reviews_sample.json').readAsString(),
+      ) as Map<String, dynamic>;
+      final playJson = jsonDecode(
+        await File('test/fixtures/google_play_reviews_sample.json').readAsString(),
+      );
 
       final allReviews = [
         ...parseAppleCustomerReviewsJson(appleJson),
@@ -271,7 +282,9 @@ void main() {
 
   group('First-Party Belong Sentiment Report (Belong 20 reviews)', () {
     test('generates Belong-tailored calm-tech taxonomy report', () async {
-      final belongJson = jsonDecode(await File('test/fixtures/belong_reviews_sample.json').readAsString());
+      final belongJson = jsonDecode(
+        await File('test/fixtures/belong_reviews_sample.json').readAsString(),
+      );
       final reviews = parseBelongInAppFeedbackJson(belongJson);
 
       final report = ReviewSentimentReport(
@@ -301,7 +314,9 @@ void main() {
 
   group('Scale to 240 and 333 Reviews (#525)', () {
     test('scales base review list to exact target counts (240 & 333)', () async {
-      final belongJson = jsonDecode(await File('test/fixtures/belong_reviews_sample.json').readAsString());
+      final belongJson = jsonDecode(
+        await File('test/fixtures/belong_reviews_sample.json').readAsString(),
+      );
       final baseReviews = parseBelongInAppFeedbackJson(belongJson);
       expect(baseReviews.length, equals(20));
 

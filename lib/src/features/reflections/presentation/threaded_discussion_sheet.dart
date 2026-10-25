@@ -18,15 +18,13 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
 
   const ThreadedDiscussionSheet({super.key, required this.post});
 
-  static Future<void> show(BuildContext context, {required Post post}) =>
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) =>
-            SystemBottomInset(child: ThreadedDiscussionSheet(post: post)),
-      );
+  static Future<void> show(BuildContext context, {required Post post}) => showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => SystemBottomInset(child: ThreadedDiscussionSheet(post: post)),
+  );
 
   static const List<String> availableToneTags = [
     'None',
@@ -56,9 +54,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     }
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.90,
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.90),
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -101,9 +97,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                           'Discussion & Replies',
                           key: const Key('threaded_discussion_sheet_title'),
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -126,18 +120,14 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
             decoration: BoxDecoration(
               color: theme.cardColor.withValues(alpha: isDark ? 0.7 : 0.9),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: theme.dividerColor.withValues(alpha: 0.5),
-              ),
+              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 14,
-                  backgroundColor: theme.colorScheme.primary.withValues(
-                    alpha: 0.15,
-                  ),
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
                   child: Text(
                     post.authorName.isNotEmpty ? post.authorName[0] : 'P',
                     style: TextStyle(
@@ -158,22 +148,14 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             child: Text(
                               post.authorName,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.1,
-                              ),
+                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -194,9 +176,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          color: theme.textTheme.bodyMedium?.color?.withValues(
-                            alpha: 0.85,
-                          ),
+                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
                           height: 1.3,
                         ),
                       ),
@@ -213,8 +193,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
           Expanded(
             child: commentsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) =>
-                  Center(child: Text('Error loading comments: $err')),
+              error: (err, stack) => Center(child: Text('Error loading comments: $err')),
               data: (comments) {
                 if (comments.isEmpty) {
                   return Center(
@@ -223,11 +202,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.forum_outlined,
-                            size: 44,
-                            color: theme.disabledColor,
-                          ),
+                          Icon(Icons.forum_outlined, size: 44, color: theme.disabledColor),
                           const SizedBox(height: 12),
                           Text(
                             'No replies yet',
@@ -240,10 +215,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             'Be the first to share an unhurried, gentle thought.',
                             key: const Key('empty_comments_placeholder'),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: theme.textTheme.bodySmall?.color,
-                            ),
+                            style: TextStyle(fontSize: 12, color: theme.textTheme.bodySmall?.color),
                           ),
                         ],
                       ),
@@ -252,10 +224,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
                     final comment = comments[index];
@@ -265,10 +234,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                       onReply: () => replyingTo.value = comment,
                       onReaction: (reaction) => ref
                           .read(commentRepositoryProvider)
-                          .addReaction(
-                            commentId: comment.id,
-                            reactionType: reaction,
-                          ),
+                          .addReaction(commentId: comment.id, reactionType: reaction),
                     );
                   },
                 );
@@ -280,17 +246,11 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
           SafeArea(
             top: false,
             child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.cardColor,
-                  border: Border(
-                    top: BorderSide(
-                      color: theme.dividerColor.withValues(alpha: 0.5),
-                    ),
-                  ),
+                  border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5))),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -299,13 +259,8 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                     // Replying to banner
                     if (replyingTo.value != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        color: theme.colorScheme.primary.withValues(
-                          alpha: 0.08,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
                         child: Row(
                           children: [
                             const Icon(Icons.reply, size: 14),
@@ -313,10 +268,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             Expanded(
                               child: Text(
                                 'Replying to @${replyingTo.value!.authorName}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                               ),
                             ),
                             IconButton(
@@ -334,24 +286,17 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                     // Tone Tag Picker Row
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       child: Row(
                         children: availableToneTags.map((tag) {
                           final isSelected = selectedTone.value == tag;
                           return Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: ChoiceChip(
-                              label: Text(
-                                tag,
-                                style: const TextStyle(fontSize: 10),
-                              ),
+                              label: Text(tag, style: const TextStyle(fontSize: 10)),
                               selected: isSelected,
                               visualDensity: VisualDensity.compact,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               onSelected: (val) {
                                 if (val) selectedTone.value = tag;
                               },
@@ -378,26 +323,19 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                 hintText: replyingTo.value != null
                                     ? 'Write a gentle reply to @${replyingTo.value!.authorName}...'
                                     : 'Share an unhurried, gentle thought...',
-                                hintStyle: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.hintColor,
-                                ),
+                                hintStyle: TextStyle(fontSize: 12, color: theme.hintColor),
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 10,
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: theme.dividerColor,
-                                  ),
+                                  borderSide: BorderSide(color: theme.dividerColor),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: theme.dividerColor.withValues(
-                                      alpha: 0.6,
-                                    ),
+                                    color: theme.dividerColor.withValues(alpha: 0.6),
                                   ),
                                 ),
                               ),
@@ -413,8 +351,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                     final text = textController.text.trim();
                                     if (text.isEmpty) return;
 
-                                    final author =
-                                        currentProfile.displayName.isNotEmpty
+                                    final author = currentProfile.displayName.isNotEmpty
                                         ? currentProfile.displayName
                                         : 'Fellowship Member';
 
@@ -430,17 +367,14 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                       timestamp: DateTime.now(),
                                     );
 
-                                    final created =
-                                        await createContributionUnlessBanned(
-                                          isBanned: ref.read(
-                                            isCurrentMemberBannedProvider,
-                                          ),
-                                          create: () async {
-                                            await ref
-                                                .read(commentRepositoryProvider)
-                                                .addComment(newComment);
-                                          },
-                                        );
+                                    final created = await createContributionUnlessBanned(
+                                      isBanned: ref.read(isCurrentMemberBannedProvider),
+                                      create: () async {
+                                        await ref
+                                            .read(commentRepositoryProvider)
+                                            .addComment(newComment);
+                                      },
+                                    );
                                     if (!created) return;
 
                                     textController.clear();
@@ -483,13 +417,9 @@ class _CommentTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isNested
-            ? theme.cardColor.withValues(alpha: 0.6)
-            : theme.cardColor,
+        color: isNested ? theme.cardColor.withValues(alpha: 0.6) : theme.cardColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: theme.dividerColor.withValues(alpha: isNested ? 0.3 : 0.6),
-        ),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: isNested ? 0.3 : 0.6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,13 +433,9 @@ class _CommentTile extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 11,
-                      backgroundColor: theme.colorScheme.primary.withValues(
-                        alpha: 0.12,
-                      ),
+                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
                       child: Text(
-                        comment.authorName.isNotEmpty
-                            ? comment.authorName[0]
-                            : 'M',
+                        comment.authorName.isNotEmpty ? comment.authorName[0] : 'M',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -522,23 +448,15 @@ class _CommentTile extends StatelessWidget {
                       child: Text(
                         comment.authorName,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                     if (comment.toneTag != null) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.1,
-                          ),
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -557,10 +475,7 @@ class _CommentTile extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 _formatTimeAgo(comment.timestamp),
-                style: TextStyle(
-                  fontSize: 10,
-                  color: theme.textTheme.bodySmall?.color,
-                ),
+                style: TextStyle(fontSize: 10, color: theme.textTheme.bodySmall?.color),
               ),
             ],
           ),
@@ -568,10 +483,7 @@ class _CommentTile extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Comment Content
-          Text(
-            comment.content,
-            style: const TextStyle(fontSize: 12.5, height: 1.4),
-          ),
+          Text(comment.content, style: const TextStyle(fontSize: 12.5, height: 1.4)),
 
           const SizedBox(height: 8),
 
@@ -643,10 +555,7 @@ class _CommentTile extends StatelessWidget {
               width: 14,
               height: 14,
               alignment: Alignment.center,
-              child: const Text(
-                '↳',
-                style: TextStyle(fontSize: 13, color: Colors.blueGrey),
-              ),
+              child: const Text('↳', style: TextStyle(fontSize: 13, color: Colors.blueGrey)),
             ),
             Expanded(child: content),
           ],
@@ -663,36 +572,28 @@ class _CommentTile extends StatelessWidget {
     required String emoji,
     required int count,
     required VoidCallback onTap,
-  }) {
-    return InkWell(
-      key: key,
-      borderRadius: BorderRadius.circular(6),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 11)),
-            if (count > 0) ...[
-              const SizedBox(width: 4),
-              Text(
-                '$count',
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ],
-        ),
+  }) => InkWell(
+    key: key,
+    borderRadius: BorderRadius.circular(6),
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
-    );
-  }
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 11)),
+          if (count > 0) ...[
+            const SizedBox(width: 4),
+            Text('$count', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ],
+        ],
+      ),
+    ),
+  );
 
   String _formatTimeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);

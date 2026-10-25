@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:args/args.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
@@ -11,8 +12,18 @@ import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_back
 void main(List<String> rawArgs) async {
   final parser = ArgParser()
     ..addOption('flavor', abbr: 'f', defaultsTo: 'dev', help: 'Target app flavor (dev or prod)')
-    ..addFlag('simulate-error', abbr: 'e', defaultsTo: false, help: 'Simulate a handled error & fatal crash')
-    ..addFlag('simulate-event', abbr: 's', defaultsTo: false, help: 'Simulate key community user journey analytics')
+    ..addFlag(
+      'simulate-error',
+      abbr: 'e',
+      defaultsTo: false,
+      help: 'Simulate a handled error & fatal crash',
+    )
+    ..addFlag(
+      'simulate-event',
+      abbr: 's',
+      defaultsTo: false,
+      help: 'Simulate key community user journey analytics',
+    )
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Display usage instructions');
 
   final results = parser.parse(rawArgs);
@@ -59,13 +70,17 @@ void main(List<String> rawArgs) async {
       reason: 'Crashlytics Fatal Test',
       fatal: true,
     );
-    stdout.writeln('   ✅ Successfully logged handled exception & fatal crash into Serverpod buffer.\n');
+    stdout.writeln(
+      '   ✅ Successfully logged handled exception & fatal crash into Serverpod buffer.\n',
+    );
   }
 
   stdout.writeln('3. Current Serverpod Backup Ring Buffer:');
   for (final record in backup.recentRecords) {
     final icon = record.kind == TelemetryKind.error ? (record.isFatal ? '🚨' : '⚠️') : '📊';
-    stdout.writeln('   $icon [${record.timestamp.toIso8601String()}] ${record.name} (${record.kind.name})');
+    stdout.writeln(
+      '   $icon [${record.timestamp.toIso8601String()}] ${record.name} (${record.kind.name})',
+    );
     stdout.writeln('      Parameters: ${record.parameters}');
     if (record.stackTraceSnippet != null) {
       stdout.writeln('      Stack: ${record.stackTraceSnippet}');
@@ -75,12 +90,18 @@ void main(List<String> rawArgs) async {
   stdout.writeln('\n================================================================');
   stdout.writeln('🔍 How to Review Production Telemetry Channels:');
   stdout.writeln('   • Firebase Analytics:');
-  stdout.writeln('     https://console.firebase.google.com/project/belongonthespectrum/analytics/app/events');
+  stdout.writeln(
+    '     https://console.firebase.google.com/project/belongonthespectrum/analytics/app/events',
+  );
   stdout.writeln('   • Firebase Crashlytics:');
-  stdout.writeln('     https://console.firebase.google.com/project/belongonthespectrum/crashlytics');
+  stdout.writeln(
+    '     https://console.firebase.google.com/project/belongonthespectrum/crashlytics',
+  );
   stdout.writeln('   • Serverpod Live Logs:');
   stdout.writeln('     Run: serverpod logs --project refuge4serverpod');
   stdout.writeln('   • On-Device 7-Tap Easter Egg:');
-  stdout.writeln('     Rapidly tap the Belong logo 7 times in the header to trigger test crashes & NFEs!');
+  stdout.writeln(
+    '     Rapidly tap the Belong logo 7 times in the header to trigger test crashes & NFEs!',
+  );
   stdout.writeln('================================================================');
 }

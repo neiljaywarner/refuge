@@ -44,13 +44,10 @@ class FeedSortRow extends StatelessWidget {
               offset: const Offset(0, 32),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: isContrast ? Colors.white : theme.dividerColor,
-                ),
+                side: BorderSide(color: isContrast ? Colors.white : theme.dividerColor),
               ),
               initialValue: activeSort,
-              onSelected: (opt) =>
-                  selectFeedSortAfterFrame(context, () => onSelectSort(opt)),
+              onSelected: (opt) => selectFeedSortAfterFrame(context, () => onSelectSort(opt)),
               itemBuilder: (context) => FeedSortOption.values.map((opt) {
                 final isSelected = opt == activeSort;
                 return PopupMenuItem<FeedSortOption>(
@@ -76,9 +73,7 @@ class FeedSortRow extends StatelessWidget {
                                   opt.label,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.w500,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                                     color: isSelected ? primary : null,
                                   ),
                                 ),
@@ -88,8 +83,7 @@ class FeedSortRow extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 9.5,
-                                    color: theme.textTheme.bodySmall?.color
-                                        ?.withValues(alpha: 0.7),
+                                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                                   ),
                                 ),
                               ],
@@ -121,11 +115,7 @@ class FeedSortRow extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.sort_rounded,
-                      size: 14,
-                      color: isContrast ? Colors.yellow : primary,
-                    ),
+                    Icon(Icons.sort_rounded, size: 14, color: isContrast ? Colors.yellow : primary),
                     const Gap(4),
                     Text(
                       'Sort: ',
@@ -165,16 +155,12 @@ class FeedSortRow extends StatelessWidget {
                           '${opt.emoji} ${opt.label}',
                           style: TextStyle(
                             fontSize: 10.5,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                         selected: isSelected,
-                        onSelected: (_) => selectFeedSortAfterFrame(
-                          context,
-                          () => onSelectSort(opt),
-                        ),
+                        onSelected: (_) =>
+                            selectFeedSortAfterFrame(context, () => onSelectSort(opt)),
                       ),
                     ),
                   );

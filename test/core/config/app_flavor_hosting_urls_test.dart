@@ -4,10 +4,7 @@ import 'package:refuge4serverpod/src/features/branding/domain/community_brand_co
 
 void main() {
   test('non-production flavors use VGV-style launcher titles', () {
-    expect(
-      AppFlavor.dev.launcherTitle,
-      '[DEV] ${AppFlavor.productionMarketingName}',
-    );
+    expect(AppFlavor.dev.launcherTitle, '[DEV] ${AppFlavor.productionMarketingName}');
     expect(AppFlavor.dev.environmentTag, 'DEV');
     expect(AppFlavor.prod.launcherTitle, AppFlavor.productionMarketingName);
     expect(AppFlavor.prod.environmentTag, isNull);
@@ -33,24 +30,15 @@ void main() {
       CommunityBrandConfig.forFlavor(AppFlavor.prod).websiteUrl,
       'https://belongonthespectrum.web.app/',
     );
-    expect(
-      const CommunityBrandConfig.belong().websiteUrl,
-      'https://www.belongonthespectrum.com/',
-    );
+    expect(const CommunityBrandConfig.belong().websiteUrl, 'https://www.belongonthespectrum.com/');
   });
 
   test('recognized hosting URLs map to the requested flavor', () {
     final dev = CommunityBrandConfig.forFlavor(AppFlavor.dev);
-    expect(
-      dev.websiteUrlForFlavor(AppFlavor.prod),
-      AppFlavor.prod.websiteUrl,
-    );
+    expect(dev.websiteUrlForFlavor(AppFlavor.prod), AppFlavor.prod.websiteUrl);
 
     final prod = CommunityBrandConfig.forFlavor(AppFlavor.prod);
-    expect(
-      prod.websiteUrlForFlavor(AppFlavor.dev),
-      AppFlavor.dev.websiteUrl,
-    );
+    expect(prod.websiteUrlForFlavor(AppFlavor.dev), AppFlavor.dev.websiteUrl);
 
     expect(
       const CommunityBrandConfig.belong().websiteUrlForFlavor(AppFlavor.dev),

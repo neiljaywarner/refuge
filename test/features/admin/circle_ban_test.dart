@@ -62,10 +62,7 @@ void main() {
     );
 
     expect(await posts.getPostsByAuthor(authorName: 'Caleb Stone'), isEmpty);
-    expect(
-      await comments.getCommentsByAuthor(authorName: 'Caleb Stone'),
-      isEmpty,
-    );
+    expect(await comments.getCommentsByAuthor(authorName: 'Caleb Stone'), isEmpty);
     expect(await mailbox.loadThreads('elena-1'), isEmpty);
     expect(await bans.isUserBanned('caleb-123'), isTrue);
     expect(await bans.isUserBanned('Caleb Stone'), isTrue);

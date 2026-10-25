@@ -14,11 +14,7 @@ import '../../about/presentation/about_refuge_dialog.dart';
 /// - Clear scripture anchor
 /// - One-tap access to About Belong and community guidelines
 class CommunityAnchorBanner extends HookConsumerWidget {
-  const CommunityAnchorBanner({
-    super.key,
-    required this.primaryColor,
-    required this.isContrast,
-  });
+  const CommunityAnchorBanner({super.key, required this.primaryColor, required this.isContrast});
 
   final Color primaryColor;
   final bool isContrast;
@@ -39,9 +35,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isContrast
-              ? Colors.yellow
-              : primaryColor.withValues(alpha: 0.25),
+          color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
         ),
       ),
       child: Row(
@@ -85,11 +79,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                         fontSize: 11,
                         color: isContrast
                             ? Colors.white70
-                            : Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.color
-                                ?.withValues(alpha: 0.7),
+                            : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -102,9 +92,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                   style: TextStyle(
                     fontSize: 11.5,
                     height: 1.25,
-                    color: isContrast
-                        ? Colors.white
-                        : Theme.of(context).textTheme.bodySmall?.color,
+                    color: isContrast ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
               ],

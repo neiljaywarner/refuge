@@ -9,8 +9,7 @@ class LocalPostRepository implements PostRepository {
   final bool isDevMode;
   final List<Post> _store = [];
   final Set<String> _savedPostIds = {};
-  final StreamController<List<Post>> _controller =
-      StreamController<List<Post>>.broadcast();
+  final StreamController<List<Post>> _controller = StreamController<List<Post>>.broadcast();
 
   LocalPostRepository({this.isDevMode = true, List<Post>? initialPosts}) {
     if (initialPosts != null) {
@@ -159,10 +158,7 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({
-    required String postId,
-    required String reactionType,
-  }) async {
+  Future<void> addReaction({required String postId, required String reactionType}) async {
     final index = _store.indexWhere((p) => p.id == postId);
     if (index != -1) {
       final post = _store[index];
@@ -175,21 +171,16 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Stream<List<Post>> watchPosts({required String spaceKey}) {
-    return _watchWhere((post) => post.spaceKey == spaceKey);
-  }
+  Stream<List<Post>> watchPosts({required String spaceKey}) =>
+      _watchWhere((post) => post.spaceKey == spaceKey);
 
   @override
-  Future<List<Post>> getPostsByAuthor({required String authorName}) async {
-    return _store
-        .where((p) => _matchesAuthor(p.authorName, authorName))
-        .toList();
-  }
+  Future<List<Post>> getPostsByAuthor({required String authorName}) async =>
+      _store.where((p) => _matchesAuthor(p.authorName, authorName)).toList();
 
   @override
-  Stream<List<Post>> watchPostsByAuthor({required String authorName}) {
-    return _watchWhere((post) => _matchesAuthor(post.authorName, authorName));
-  }
+  Stream<List<Post>> watchPostsByAuthor({required String authorName}) =>
+      _watchWhere((post) => _matchesAuthor(post.authorName, authorName));
 
   @override
   Future<void> toggleSavePost({required String postId}) async {
@@ -208,34 +199,27 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Future<List<Post>> getSavedPosts() async {
-    return _store
-        .where((p) => _savedPostIds.contains(p.id) || p.isSaved)
-        .toList();
-  }
+  Future<List<Post>> getSavedPosts() async =>
+      _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
 
   @override
-  Stream<List<Post>> watchSavedPosts() {
-    return _watchWhere(
-      (post) => _savedPostIds.contains(post.id) || post.isSaved,
-    );
-  }
+  Stream<List<Post>> watchSavedPosts() =>
+      _watchWhere((post) => _savedPostIds.contains(post.id) || post.isSaved);
 
   /// Each listener gets the current rows immediately, then later edits.
   ///
   /// A single-subscription generator wrapped in [Stream.asBroadcastStream]
   /// drops that first snapshot for anyone who subscribes after the first
   /// listener has already canceled.
-  Stream<List<Post>> _watchWhere(bool Function(Post post) include) {
-    return Stream<List<Post>>.multi((controller) {
-      controller.add(_store.where(include).toList());
-      final subscription = _controller.stream.listen((posts) {
-        if (!controller.hasListener) return;
-        controller.add(posts.where(include).toList());
+  Stream<List<Post>> _watchWhere(bool Function(Post post) include) =>
+      Stream<List<Post>>.multi((controller) {
+        controller.add(_store.where(include).toList());
+        final subscription = _controller.stream.listen((posts) {
+          if (!controller.hasListener) return;
+          controller.add(posts.where(include).toList());
+        });
+        controller.onCancel = subscription.cancel;
       });
-      controller.onCancel = subscription.cancel;
-    });
-  }
 
   static bool _matchesAuthor(String postAuthor, String targetAuthor) {
     final a = postAuthor.trim().toLowerCase();

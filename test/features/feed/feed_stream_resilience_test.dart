@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
@@ -19,21 +20,25 @@ void main() {
       expect(firstEmission.every((p) => p.spaceKey == 'prayer'), isTrue);
     });
 
-    test('watchPosts delivers cached reflections immediately to subsequent late listeners', () async {
-      final stream = repository.watchPosts(spaceKey: 'prayer');
+    test(
+      'watchPosts delivers cached reflections immediately to subsequent late listeners',
+      () async {
+        final stream = repository.watchPosts(spaceKey: 'prayer');
 
-      // First listener subscribes and completes
-      final list1 = await stream.first;
-      expect(list1, isNotEmpty);
+        // First listener subscribes and completes
+        final list1 = await stream.first;
+        expect(list1, isNotEmpty);
 
-      // Second listener subscribes later: must receive reflections immediately without hanging
-      final list2 = await stream.first.timeout(
-        const Duration(milliseconds: 500),
-        onTimeout: () => throw TimeoutException('Subsequent listener timed out waiting for initial yield'),
-      );
-      expect(list2, isNotEmpty);
-      expect(list2.length, equals(list1.length));
-    });
+        // Second listener subscribes later: must receive reflections immediately without hanging
+        final list2 = await stream.first.timeout(
+          const Duration(milliseconds: 500),
+          onTimeout: () =>
+              throw TimeoutException('Subsequent listener timed out waiting for initial yield'),
+        );
+        expect(list2, isNotEmpty);
+        expect(list2.length, equals(list1.length));
+      },
+    );
 
     test('watchSavedPosts delivers saved reflections to multiple late listeners', () async {
       // Toggle save on a post
@@ -81,9 +86,7 @@ void main() {
         ),
       );
 
-      final updatedPosts = await completer.future.timeout(
-        const Duration(seconds: 1),
-      );
+      final updatedPosts = await completer.future.timeout(const Duration(seconds: 1));
       expect(updatedPosts.any((p) => p.id == 'test-resilience-post'), isTrue);
       await sub.cancel();
     });

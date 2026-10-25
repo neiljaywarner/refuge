@@ -254,10 +254,10 @@ class _MarionetteDriver {
   }
 
   Duration get _stepDelay => switch (speed) {
-        'slow' => const Duration(seconds: 3),
-        'fast' => const Duration(milliseconds: 500),
-        _ => const Duration(milliseconds: 1500),
-      };
+    'slow' => const Duration(seconds: 3),
+    'fast' => const Duration(milliseconds: 500),
+    _ => const Duration(milliseconds: 1500),
+  };
 
   Future<Map<String, dynamic>> callRpc(String method, [Map<String, dynamic>? params]) {
     final id = _rpcId++;
@@ -276,7 +276,9 @@ class _MarionetteDriver {
 
   Future<void> pause(String stepDescription) async {
     if (isInteractive) {
-      stdout.write('\n\x1B[1;35m[Interactive Pause]\x1B[0m $stepDescription. Press [Enter] to continue: ');
+      stdout.write(
+        '\n\x1B[1;35m[Interactive Pause]\x1B[0m $stepDescription. Press [Enter] to continue: ',
+      );
       stdin.readLineSync();
     } else {
       await Future<void>.delayed(_stepDelay);
@@ -288,8 +290,13 @@ class _MarionetteDriver {
     final file = '/tmp/belong_showcase_${name}_$deviceId.png';
     try {
       if (deviceId.startsWith('5') || deviceId.startsWith('emulator')) {
-        await Process.run('adb', ['-s', deviceId, 'exec-out', 'screencap', '-p'], stdoutEncoding: null)
-            .then((res) => File(file).writeAsBytes(res.stdout as List<int>));
+        await Process.run('adb', [
+          '-s',
+          deviceId,
+          'exec-out',
+          'screencap',
+          '-p',
+        ], stdoutEncoding: null).then((res) => File(file).writeAsBytes(res.stdout as List<int>));
         stdout.writeln('   📸 Captured milestone: $file');
       }
     } catch (_) {}
@@ -307,12 +314,18 @@ class _MarionetteDriver {
     // Step 2: Sensory Themes Showcase
     stdout.writeln('\n2️⃣  \x1B[1mSensory Themes & Contrast Mode\x1B[0m');
     stdout.writeln('   Toggling High Contrast Mode for neurodivergent sensory comfort...');
-    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'home_high_contrast_toggle_button'});
+    await callRpc('ext.flutter.driver', {
+      'command': 'tap',
+      'key': 'home_high_contrast_toggle_button',
+    });
     await capture('02_high_contrast');
     await pause('Toggled High Contrast Mode');
 
     stdout.writeln('   Restoring Sage Calm Theme...');
-    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'home_high_contrast_toggle_button'});
+    await callRpc('ext.flutter.driver', {
+      'command': 'tap',
+      'key': 'home_high_contrast_toggle_button',
+    });
     await pause('Restored Sage Theme');
 
     // Step 3: Fellowship Spaces Navigation
@@ -337,7 +350,10 @@ class _MarionetteDriver {
     // Step 5: Feature Voting & Feedback
     stdout.writeln('\n5️⃣  \x1B[1mFeature Voting & Neurodivergent Feedback\x1B[0m');
     stdout.writeln('   Opening community voting sheet...');
-    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'open_feedback_and_voting_button'});
+    await callRpc('ext.flutter.driver', {
+      'command': 'tap',
+      'key': 'open_feedback_and_voting_button',
+    });
     await capture('05_feature_voting');
     await pause('Feature Voting & Upvoting');
 

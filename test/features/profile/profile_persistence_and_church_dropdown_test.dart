@@ -22,9 +22,7 @@ void main() {
       'Preferred display name and ICOC church selection persist across notifier reloads and app restarts',
       ($) async {
         final container1 = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
         addTearDown(container1.dispose);
 
@@ -32,7 +30,9 @@ void main() {
         expect(container1.read(memberProfileProvider).isSignedIn, isFalse);
 
         // 2. Sign in with custom display name and church affiliation
-        container1.read(memberProfileProvider.notifier).signIn(
+        container1
+            .read(memberProfileProvider.notifier)
+            .signIn(
               displayName: 'Caleb Pioneer',
               email: 'caleb@belongonthespectrum.com',
               bio: 'Walking in unhurried peace',
@@ -52,9 +52,7 @@ void main() {
 
         // 4. Simulate a fresh app cold-start / browser page refresh
         final container2 = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
         addTearDown(container2.dispose);
 
@@ -70,20 +68,14 @@ void main() {
       'MemberProfileDialog selects ICOC church via dropdown and saves persisted session',
       ($) async {
         final container = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
         addTearDown(container.dispose);
 
         await $.pumpWidgetAndSettle(
           UncontrolledProviderScope(
             container: container,
-            child: const MaterialApp(
-              home: Scaffold(
-                body: MemberProfileDialog(),
-              ),
-            ),
+            child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
           ),
         );
 
@@ -114,30 +106,27 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Signing out clears persisted profile storage cleanly',
-      ($) async {
-        final container = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
-        );
-        addTearDown(container.dispose);
+    patrolWidgetTest('Signing out clears persisted profile storage cleanly', ($) async {
+      final container = ProviderContainer(
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+      );
+      addTearDown(container.dispose);
 
-        container.read(memberProfileProvider.notifier).signIn(
-              displayName: 'Grace',
-              email: 'grace@belong.com',
-              icocChurchAffiliation: 'DFW Church (Partner)',
-            );
+      container
+          .read(memberProfileProvider.notifier)
+          .signIn(
+            displayName: 'Grace',
+            email: 'grace@belong.com',
+            icocChurchAffiliation: 'DFW Church (Partner)',
+          );
 
-        expect(ProfileStorageService.instance.load(), isNotNull);
+      expect(ProfileStorageService.instance.load(), isNotNull);
 
-        // Sign out
-        container.read(memberProfileProvider.notifier).signOut();
+      // Sign out
+      container.read(memberProfileProvider.notifier).signOut();
 
-        expect(container.read(memberProfileProvider).isSignedIn, isFalse);
-        expect(ProfileStorageService.instance.load(), isNull);
-      },
-    );
+      expect(container.read(memberProfileProvider).isSignedIn, isFalse);
+      expect(ProfileStorageService.instance.load(), isNull);
+    });
   });
 }

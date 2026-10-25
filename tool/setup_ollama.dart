@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:args/args.dart';
 
 class ExitCodes {
@@ -50,11 +51,11 @@ class OllamaSetupRunner {
     HttpClient Function()? clientFactory,
     IOSink? outSink,
     IOSink? errSink,
-  })  : inspector = inspector ?? const RealSystemInspector(),
-        clientFactory = clientFactory,
-        outSink = outSink ?? stdout,
-        errSink = errSink ?? stderr,
-        argParser = ArgParser() {
+  }) : inspector = inspector ?? const RealSystemInspector(),
+       clientFactory = clientFactory,
+       outSink = outSink ?? stdout,
+       errSink = errSink ?? stderr,
+       argParser = ArgParser() {
     argParser
       ..addFlag(
         'check-only',
@@ -75,11 +76,7 @@ class OllamaSetupRunner {
         abbr: 'm',
         help: 'Model to verify or pull (defaults to recommended based on unified RAM).',
       )
-      ..addOption(
-        'port',
-        defaultsTo: '11434',
-        help: 'Ollama service port.',
-      )
+      ..addOption('port', defaultsTo: '11434', help: 'Ollama service port.')
       ..addFlag(
         'help',
         abbr: 'h',
@@ -141,9 +138,13 @@ class OllamaSetupRunner {
     outSink.writeln('1. Inspecting Hardware & Memory...');
     final memoryInfo = await inspector.inspectMemory();
     if (!memoryInfo.isAppleSilicon) {
-      outSink.writeln('⚠️ Architecture is ${memoryInfo.architecture} (Expected arm64 Apple Silicon). Metal GPU shader acceleration may not be available.');
+      outSink.writeln(
+        '⚠️ Architecture is ${memoryInfo.architecture} (Expected arm64 Apple Silicon). Metal GPU shader acceleration may not be available.',
+      );
     } else {
-      outSink.writeln('✓ Apple Silicon (${memoryInfo.architecture}) detected. Metal GPU shader acceleration supported.');
+      outSink.writeln(
+        '✓ Apple Silicon (${memoryInfo.architecture}) detected. Metal GPU shader acceleration supported.',
+      );
     }
 
     outSink.writeln('✓ Unified RAM: ${memoryInfo.ramGb} GB detected.');
@@ -167,7 +168,9 @@ class OllamaSetupRunner {
           outSink.writeln('Installing Ollama via Homebrew (brew install ollama)...');
           await inspector.runCommand(['brew', 'install', 'ollama']);
         } else {
-          outSink.writeln('Homebrew not found. Please download Ollama directly from: https://ollama.com/download');
+          outSink.writeln(
+            'Homebrew not found. Please download Ollama directly from: https://ollama.com/download',
+          );
         }
       }
     }
@@ -187,7 +190,9 @@ class OllamaSetupRunner {
         if (isServiceUp) {
           outSink.writeln('✓ Ollama service successfully started.');
         } else {
-          outSink.writeln('⚠️ Service startup in progress. If needed, run "ollama serve" in a separate terminal.');
+          outSink.writeln(
+            '⚠️ Service startup in progress. If needed, run "ollama serve" in a separate terminal.',
+          );
         }
       }
     }
@@ -198,7 +203,9 @@ class OllamaSetupRunner {
       final listResult = await inspector.runCommand(['ollama', 'list']);
       final installedModels = parseModelsList(listResult);
 
-      final hasTarget = installedModels.any((m) => m.startsWith(targetModel) || m.contains(targetModel));
+      final hasTarget = installedModels.any(
+        (m) => m.startsWith(targetModel) || m.contains(targetModel),
+      );
       if (hasTarget) {
         outSink.writeln('✓ $targetModel is already downloaded.');
       } else {

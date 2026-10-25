@@ -15,9 +15,7 @@ class StubInAppMessagingService implements InAppMessagingService {
 
   @override
   Future<void> triggerEvent(String eventName) async {
-    talker.debug(
-      '🌐 [FIAM Stub] triggerEvent("$eventName") ignored on unsupported platform.',
-    );
+    talker.debug('🌐 [FIAM Stub] triggerEvent("$eventName") ignored on unsupported platform.');
   }
 
   @override
@@ -36,5 +34,4 @@ class StubInAppMessagingService implements InAppMessagingService {
 }
 
 /// Factory function called by `in_app_messaging_service.dart` on Web or non-io platforms.
-InAppMessagingService createPlatformInAppMessagingService() =>
-    StubInAppMessagingService();
+InAppMessagingService createPlatformInAppMessagingService() => StubInAppMessagingService();

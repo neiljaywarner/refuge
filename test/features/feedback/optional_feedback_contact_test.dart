@@ -15,14 +15,8 @@ void main() {
   });
 
   test('allows a full email address', () {
-    expect(
-      OptionalFeedbackContact.errorText('member@belongonthespectrum.com'),
-      isNull,
-    );
-    expect(
-      OptionalFeedbackContact.errorText('  member@belongonthespectrum.com  '),
-      isNull,
-    );
+    expect(OptionalFeedbackContact.errorText('member@belongonthespectrum.com'), isNull);
+    expect(OptionalFeedbackContact.errorText('  member@belongonthespectrum.com  '), isNull);
   });
 
   test('rejects a value that contains @ but is not an address', () {

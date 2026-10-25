@@ -49,5 +49,4 @@ class CalmLocalNotificationStub implements CalmLocalNotificationService {
   }
 }
 
-CalmLocalNotificationService createCalmLocalNotificationService() =>
-    CalmLocalNotificationStub();
+CalmLocalNotificationService createCalmLocalNotificationService() => CalmLocalNotificationStub();

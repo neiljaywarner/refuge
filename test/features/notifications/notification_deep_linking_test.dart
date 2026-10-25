@@ -58,9 +58,7 @@ void main() {
               ],
               child: MaterialApp(
                 home: Scaffold(
-                  body: CalmNotificationsView(
-                    onNavigate: (target) => capturedTarget = target,
-                  ),
+                  body: CalmNotificationsView(onNavigate: (target) => capturedTarget = target),
                 ),
               ),
             ),
@@ -107,9 +105,7 @@ void main() {
               ],
               child: MaterialApp(
                 home: Scaffold(
-                  body: CalmNotificationsView(
-                    onNavigate: (target) => capturedTarget = target,
-                  ),
+                  body: CalmNotificationsView(onNavigate: (target) => capturedTarget = target),
                 ),
               ),
             ),
@@ -155,9 +151,7 @@ void main() {
               ],
               child: MaterialApp(
                 home: Scaffold(
-                  body: CalmNotificationsView(
-                    onNavigate: (target) => capturedTarget = target,
-                  ),
+                  body: CalmNotificationsView(onNavigate: (target) => capturedTarget = target),
                 ),
               ),
             ),
@@ -170,10 +164,7 @@ void main() {
 
           expect(capturedTarget, isNull);
           expect(find.byKey(const Key('notification_archived_snackbar')), findsOneWidget);
-          expect(
-            find.text('This reflection was unhurriedly archived or moved'),
-            findsOneWidget,
-          );
+          expect(find.text('This reflection was unhurriedly archived or moved'), findsOneWidget);
         },
       );
     });

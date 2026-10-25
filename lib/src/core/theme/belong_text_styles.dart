@@ -40,30 +40,15 @@ class BelongTextStyles extends ThemeExtension<BelongTextStyles> {
         ? Colors.white70
         : (theme.textTheme.bodySmall?.color ?? scheme.onSurface);
     return BelongTextStyles(
-      title: TextStyle(
-        fontSize: 16,
-        height: 1.3,
-        fontWeight: FontWeight.bold,
-        color: titleColor,
-      ),
-      body: TextStyle(
-        fontSize: 14,
-        height: 1.4,
-        fontWeight: FontWeight.w400,
-        color: bodyColor,
-      ),
+      title: TextStyle(fontSize: 16, height: 1.3, fontWeight: FontWeight.bold, color: titleColor),
+      body: TextStyle(fontSize: 14, height: 1.4, fontWeight: FontWeight.w400, color: bodyColor),
       caption: TextStyle(
         fontSize: 11.5,
         height: 1.4,
         fontWeight: FontWeight.w400,
         color: captionColor,
       ),
-      emphasis: TextStyle(
-        fontSize: 13,
-        height: 1.3,
-        fontWeight: FontWeight.bold,
-        color: bodyColor,
-      ),
+      emphasis: TextStyle(fontSize: 13, height: 1.3, fontWeight: FontWeight.bold, color: bodyColor),
     );
   }
 
@@ -73,14 +58,12 @@ class BelongTextStyles extends ThemeExtension<BelongTextStyles> {
     TextStyle? body,
     TextStyle? caption,
     TextStyle? emphasis,
-  }) {
-    return BelongTextStyles(
-      title: title ?? this.title,
-      body: body ?? this.body,
-      caption: caption ?? this.caption,
-      emphasis: emphasis ?? this.emphasis,
-    );
-  }
+  }) => BelongTextStyles(
+    title: title ?? this.title,
+    body: body ?? this.body,
+    caption: caption ?? this.caption,
+    emphasis: emphasis ?? this.emphasis,
+  );
 
   @override
   BelongTextStyles lerp(ThemeExtension<BelongTextStyles>? other, double t) {

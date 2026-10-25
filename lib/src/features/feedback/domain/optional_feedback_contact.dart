@@ -9,9 +9,7 @@ abstract final class OptionalFeedbackContact {
 
   /// Anchored form of the address shape used when logs redact emails, so a
   /// fragment such as `not@email` does not pass.
-  static final _emailPattern = RegExp(
-    r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
-  );
+  static final _emailPattern = RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$');
 
   /// Inline error for [raw], or null when the contact may be submitted.
   static String? errorText(String raw) {

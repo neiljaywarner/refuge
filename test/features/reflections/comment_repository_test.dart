@@ -138,13 +138,7 @@ void main() {
       final repo = LocalCommentRepository();
       final stream = repo.watchComments(postId: 'stream_post');
 
-      final expectation = expectLater(
-        stream,
-        emitsInOrder([
-          isEmpty,
-          hasLength(1),
-        ]),
-      );
+      final expectation = expectLater(stream, emitsInOrder([isEmpty, hasLength(1)]));
 
       await Future<void>.delayed(Duration.zero);
 

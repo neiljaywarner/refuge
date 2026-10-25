@@ -58,14 +58,8 @@ class FeedSortService {
 
       case FeedSortOption.likes:
         list.sort((a, b) {
-          final aLikes = a.reactions.values.fold<int>(
-            0,
-            (sum, val) => sum + val,
-          );
-          final bLikes = b.reactions.values.fold<int>(
-            0,
-            (sum, val) => sum + val,
-          );
+          final aLikes = a.reactions.values.fold<int>(0, (sum, val) => sum + val);
+          final bLikes = b.reactions.values.fold<int>(0, (sum, val) => sum + val);
           final comp = bLikes.compareTo(aLikes);
           if (comp != 0) return comp;
           return b.timestamp.compareTo(a.timestamp);
@@ -74,14 +68,8 @@ class FeedSortService {
 
       case FeedSortOption.popular:
         list.sort((a, b) {
-          final aLikes = a.reactions.values.fold<int>(
-            0,
-            (sum, val) => sum + val,
-          );
-          final bLikes = b.reactions.values.fold<int>(
-            0,
-            (sum, val) => sum + val,
-          );
+          final aLikes = a.reactions.values.fold<int>(0, (sum, val) => sum + val);
+          final bLikes = b.reactions.values.fold<int>(0, (sum, val) => sum + val);
           final aComments = commentCounts?[a.id] ?? 0;
           final bComments = commentCounts?[b.id] ?? 0;
           final aScore = aLikes + (aComments * 2);
@@ -155,10 +143,7 @@ class FeedSortService {
     final peace = post.reactions['peace'] ?? 0;
     final encouraged = post.reactions['encouraged'] ?? 0;
     final relatable = post.reactions['relatable'] ?? 0;
-    return (pray * 1.5) +
-        (peace * 1.5) +
-        (encouraged * 1.2) +
-        (relatable * 1.0);
+    return (pray * 1.5) + (peace * 1.5) + (encouraged * 1.2) + (relatable * 1.0);
   }
 }
 
@@ -172,13 +157,11 @@ class FeedQuery {
     required Iterable<String> comfortBadges,
     required String bio,
     String? tagline,
-  }) {
-    return {
-      ...comfortBadges,
-      if (bio.isNotEmpty) ...bio.split(RegExp(r'[\s,.]+')),
-      if (tagline != null) ...tagline.split(RegExp(r'[\s,.]+')),
-    };
-  }
+  }) => {
+    ...comfortBadges,
+    if (bio.isNotEmpty) ...bio.split(RegExp(r'[\s,.]+')),
+    if (tagline != null) ...tagline.split(RegExp(r'[\s,.]+')),
+  };
 
   /// Returns true if [post] contains developer test junk, debugging tokens,
   /// numbered placeholder phrases, or bot artifacts that should not be visible
@@ -218,9 +201,7 @@ class FeedQuery {
     Set<String>? userInterests,
   }) {
     final nonJunk = posts.where((p) => !_isTestJunk(p)).toList();
-    final available = signedIn
-        ? nonJunk.where((p) => !p.isDemo).toList()
-        : nonJunk;
+    final available = signedIn ? nonJunk.where((p) => !p.isDemo).toList() : nonJunk;
     final filtered = toneFilter == 'All'
         ? available
         : available.where((p) => p.toneTag == toneFilter).toList();

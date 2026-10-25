@@ -24,18 +24,9 @@ class AppwriteConfig {
   /// Reads `--dart-define=APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, and
   /// `APPWRITE_DATABASE_ID`. Defaults point at the live belong project.
   static const fromEnvironment = AppwriteConfig(
-    endpoint: String.fromEnvironment(
-      'APPWRITE_ENDPOINT',
-      defaultValue: belongEndpoint,
-    ),
-    projectId: String.fromEnvironment(
-      'APPWRITE_PROJECT_ID',
-      defaultValue: belongProjectId,
-    ),
-    databaseId: String.fromEnvironment(
-      'APPWRITE_DATABASE_ID',
-      defaultValue: belongDatabaseId,
-    ),
+    endpoint: String.fromEnvironment('APPWRITE_ENDPOINT', defaultValue: belongEndpoint),
+    projectId: String.fromEnvironment('APPWRITE_PROJECT_ID', defaultValue: belongProjectId),
+    databaseId: String.fromEnvironment('APPWRITE_DATABASE_ID', defaultValue: belongDatabaseId),
   );
 
   final String endpoint;

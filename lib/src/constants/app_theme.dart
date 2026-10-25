@@ -33,10 +33,7 @@ class SensoryThemeData {
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF1A1D20),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF68A67D),
-          surface: Color(0xFF24282D),
-        ),
+        colorScheme: const ColorScheme.dark(primary: Color(0xFF68A67D), surface: Color(0xFF24282D)),
         cardColor: const Color(0xFF24282D),
         dividerColor: const Color(0xFF333A42),
       ),
@@ -64,12 +61,7 @@ class SensoryThemeData {
       ),
     };
     return theme.copyWith(
-      extensions: [
-        BelongTextStyles.forTheme(
-          theme,
-          contrast: mode == SensoryMode.contrast,
-        ),
-      ],
+      extensions: [BelongTextStyles.forTheme(theme, contrast: mode == SensoryMode.contrast)],
     );
   }
 }

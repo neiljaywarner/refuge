@@ -21,8 +21,7 @@ class DirectMessage {
 
   /// Same relative or calendar label as [MessageThread.formattedDate],
   /// using this message's [sentAt].
-  String formattedDate([DateTime? clockNow]) =>
-      formatRelativeDate(sentAt, clockNow);
+  String formattedDate([DateTime? clockNow]) => formatRelativeDate(sentAt, clockNow);
 }
 
 /// A conversation thread between members in the Belong community.
@@ -56,8 +55,7 @@ class MessageThread {
 
   /// Returns friendly relative date formatting:
   /// e.g. "Just now", "15m ago", "2 hrs ago", "3 days ago", "Sep 7".
-  String formattedDate([DateTime? clockNow]) =>
-      formatRelativeDate(lastActivity, clockNow);
+  String formattedDate([DateTime? clockNow]) => formatRelativeDate(lastActivity, clockNow);
 
   MessageThread copyWith({
     String? id,
@@ -71,21 +69,19 @@ class MessageThread {
     int? unreadCount,
     bool? isBatchedDigest,
     List<DirectMessage>? messages,
-  }) {
-    return MessageThread(
-      id: id ?? this.id,
-      participantName: participantName ?? this.participantName,
-      avatarInitials: avatarInitials ?? this.avatarInitials,
-      previewSnippet: previewSnippet ?? this.previewSnippet,
-      lastActivity: lastActivity ?? this.lastActivity,
-      subject: subject ?? this.subject,
-      messageType: messageType ?? this.messageType,
-      recipientNames: recipientNames ?? this.recipientNames,
-      unreadCount: unreadCount ?? this.unreadCount,
-      isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
-      messages: messages ?? this.messages,
-    );
-  }
+  }) => MessageThread(
+    id: id ?? this.id,
+    participantName: participantName ?? this.participantName,
+    avatarInitials: avatarInitials ?? this.avatarInitials,
+    previewSnippet: previewSnippet ?? this.previewSnippet,
+    lastActivity: lastActivity ?? this.lastActivity,
+    subject: subject ?? this.subject,
+    messageType: messageType ?? this.messageType,
+    recipientNames: recipientNames ?? this.recipientNames,
+    unreadCount: unreadCount ?? this.unreadCount,
+    isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
+    messages: messages ?? this.messages,
+  );
 
   /// Default welcoming seed threads for Belong on the Spectrum pre-alpha.
   static List<MessageThread> sampleThreads() {

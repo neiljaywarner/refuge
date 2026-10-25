@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:args/args.dart';
 
 class ExitCodes {
@@ -14,14 +15,11 @@ class DualPixelDemoRunner {
   final IOSink outSink;
   final IOSink errSink;
 
-  DualPixelDemoRunner({
-    DeviceCommandExecutor? executor,
-    IOSink? outSink,
-    IOSink? errSink,
-  })  : executor = executor ?? const RealDeviceCommandExecutor(),
-        outSink = outSink ?? stdout,
-        errSink = errSink ?? stderr,
-        argParser = ArgParser() {
+  DualPixelDemoRunner({DeviceCommandExecutor? executor, IOSink? outSink, IOSink? errSink})
+    : executor = executor ?? const RealDeviceCommandExecutor(),
+      outSink = outSink ?? stdout,
+      errSink = errSink ?? stderr,
+      argParser = ArgParser() {
     argParser
       ..addOption(
         'left',
@@ -45,11 +43,7 @@ class DualPixelDemoRunner {
         negatable: true,
         help: 'Records screen video on both devices and pulls MP4 files upon completion.',
       )
-      ..addOption(
-        'duration',
-        defaultsTo: '45',
-        help: 'Duration in seconds for screen recording.',
-      )
+      ..addOption('duration', defaultsTo: '45', help: 'Duration in seconds for screen recording.')
       ..addFlag(
         'screenshots',
         defaultsTo: true,
@@ -91,16 +85,14 @@ class DualPixelDemoRunner {
   }
 
   /// Escapes text for `adb shell input text`
-  static String formatInputText(String text) {
-    return text
-        .replaceAll(' ', '%s')
-        .replaceAll("'", r"\'")
-        .replaceAll('"', r'\"')
-        .replaceAll('(', r'\(')
-        .replaceAll(')', r'\)')
-        .replaceAll('[', r'\[')
-        .replaceAll(']', r'\]');
-  }
+  static String formatInputText(String text) => text
+      .replaceAll(' ', '%s')
+      .replaceAll("'", r"\'")
+      .replaceAll('"', r'\"')
+      .replaceAll('(', r'\(')
+      .replaceAll(')', r'\)')
+      .replaceAll('[', r'\[')
+      .replaceAll(']', r'\]');
 
   Future<int> run(List<String> args) async {
     ArgResults results;
@@ -158,7 +150,9 @@ class DualPixelDemoRunner {
     if (dryRun) {
       outSink.writeln('\n🔍 [DRY RUN] Execution Schedule:');
       outSink.writeln('   - Devices: Left ($leftDev), Right ($rightDev)');
-      outSink.writeln('   - Mode: ${staggered ? "Staggered interactive demonstration" : "Standard demo"}');
+      outSink.writeln(
+        '   - Mode: ${staggered ? "Staggered interactive demonstration" : "Standard demo"}',
+      );
       outSink.writeln('   - Screen recording: $recordVideo (${durationSeconds}s limit)');
       outSink.writeln('   - Step screenshots: $captureScreenshots');
       outSink.writeln('   - Step 1: Right device composes reflection via Serverpod Cloud');
@@ -175,7 +169,15 @@ class DualPixelDemoRunner {
     for (final dev in [leftDev, rightDev]) {
       await executor.run(['adb', '-s', dev, 'shell', 'pkill', '-f', 'screenrecord']);
       await executor.run(['adb', '-s', dev, 'shell', 'rm', '-f', '/sdcard/belong_demo.mp4']);
-      await executor.run(['adb', '-s', dev, 'shell', 'am', 'force-stop', 'com.belongonthespectrum.sanctuary']);
+      await executor.run([
+        'adb',
+        '-s',
+        dev,
+        'shell',
+        'am',
+        'force-stop',
+        'com.belongonthespectrum.sanctuary',
+      ]);
     }
 
     await Future<void>.delayed(const Duration(seconds: 1));
@@ -210,7 +212,9 @@ class DualPixelDemoRunner {
     ProcessHandle? leftRec;
     ProcessHandle? rightRec;
     if (recordVideo) {
-      outSink.writeln('📹 Starting video screenrecord on both devices ($durationSeconds seconds)...');
+      outSink.writeln(
+        '📹 Starting video screenrecord on both devices ($durationSeconds seconds)...',
+      );
       leftRec = await executor.startBackground([
         'adb',
         '-s',
@@ -242,10 +246,20 @@ class DualPixelDemoRunner {
     outSink.writeln('\n=== Step 1: Right device composes reflection ===');
     await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'tap', '524', '1266']);
     await Future<void>.delayed(const Duration(milliseconds: 1000));
-    final msg1 = formatInputText('From pixel on the right: Unhurried reflection via Serverpod Cloud!');
+    final msg1 = formatInputText(
+      'From pixel on the right: Unhurried reflection via Serverpod Cloud!',
+    );
     await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'text', msg1]);
     await Future<void>.delayed(const Duration(milliseconds: 1000));
-    await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'keyevent', '4']); // Close keyboard
+    await executor.run([
+      'adb',
+      '-s',
+      rightDev,
+      'shell',
+      'input',
+      'keyevent',
+      '4',
+    ]); // Close keyboard
     await Future<void>.delayed(const Duration(milliseconds: 1000));
     await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'tap', '778', '1470']); // Publish
     await Future<void>.delayed(const Duration(milliseconds: 3000));
@@ -268,7 +282,9 @@ class DualPixelDemoRunner {
     outSink.writeln('=== Step 3: Left device publishes reply reflection ===');
     await executor.run(['adb', '-s', leftDev, 'shell', 'input', 'tap', '524', '1266']);
     await Future<void>.delayed(const Duration(milliseconds: 1000));
-    final msg2 = formatInputText('From left pixel: Received your reflection! Fearfully and wonderfully made.');
+    final msg2 = formatInputText(
+      'From left pixel: Received your reflection! Fearfully and wonderfully made.',
+    );
     await executor.run(['adb', '-s', leftDev, 'shell', 'input', 'text', msg2]);
     await Future<void>.delayed(const Duration(milliseconds: 1000));
     await executor.run(['adb', '-s', leftDev, 'shell', 'input', 'keyevent', '4']);
@@ -283,9 +299,27 @@ class DualPixelDemoRunner {
 
     // 7. Step 4: Sensory theme switch on Right device
     outSink.writeln('=== Step 4: Sensory theme switch on Right device ===');
-    await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'tap', '584', '226']); // theme icon
+    await executor.run([
+      'adb',
+      '-s',
+      rightDev,
+      'shell',
+      'input',
+      'tap',
+      '584',
+      '226',
+    ]); // theme icon
     await Future<void>.delayed(const Duration(milliseconds: 1200));
-    await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'tap', '450', '530']); // dark theme
+    await executor.run([
+      'adb',
+      '-s',
+      rightDev,
+      'shell',
+      'input',
+      'tap',
+      '450',
+      '530',
+    ]); // dark theme
     await Future<void>.delayed(const Duration(milliseconds: 2000));
 
     if (captureScreenshots) {
@@ -294,12 +328,30 @@ class DualPixelDemoRunner {
 
     // 8. Step 5: About dialog on Left device
     outSink.writeln('=== Step 5: About Sanctuary dialog on Left device ===');
-    await executor.run(['adb', '-s', leftDev, 'shell', 'input', 'tap', '699', '225']); // About button
+    await executor.run([
+      'adb',
+      '-s',
+      leftDev,
+      'shell',
+      'input',
+      'tap',
+      '699',
+      '225',
+    ]); // About button
     await Future<void>.delayed(const Duration(milliseconds: 3000));
     if (captureScreenshots) {
       await executor.captureScreenshot(leftDev, 'scratch/step5_left_about_dialog.png');
     }
-    await executor.run(['adb', '-s', leftDev, 'shell', 'input', 'tap', '828', '1999']); // Close button
+    await executor.run([
+      'adb',
+      '-s',
+      leftDev,
+      'shell',
+      'input',
+      'tap',
+      '828',
+      '1999',
+    ]); // Close button
     await Future<void>.delayed(const Duration(milliseconds: 1500));
 
     // 9. Finalize Video Recordings
@@ -309,8 +361,22 @@ class DualPixelDemoRunner {
       if (rightRec != null) await rightRec.exitCode;
 
       outSink.writeln('Pulling MP4 recordings from devices...');
-      await executor.run(['adb', '-s', leftDev, 'pull', '/sdcard/belong_left_demo.mp4', './belong_left_demo.mp4']);
-      await executor.run(['adb', '-s', rightDev, 'pull', '/sdcard/belong_right_demo.mp4', './belong_right_demo.mp4']);
+      await executor.run([
+        'adb',
+        '-s',
+        leftDev,
+        'pull',
+        '/sdcard/belong_left_demo.mp4',
+        './belong_left_demo.mp4',
+      ]);
+      await executor.run([
+        'adb',
+        '-s',
+        rightDev,
+        'pull',
+        '/sdcard/belong_right_demo.mp4',
+        './belong_right_demo.mp4',
+      ]);
       outSink.writeln('✓ Videos pulled: ./belong_left_demo.mp4 and ./belong_right_demo.mp4');
     }
 
@@ -333,11 +399,7 @@ class DeviceExecutionResult {
   final String stdout;
   final String stderr;
 
-  const DeviceExecutionResult({
-    required this.exitCode,
-    required this.stdout,
-    required this.stderr,
-  });
+  const DeviceExecutionResult({required this.exitCode, required this.stdout, required this.stderr});
 }
 
 abstract class ProcessHandle {

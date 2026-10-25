@@ -8,17 +8,15 @@ import 'package:refuge4serverpod/src/features/branding/domain/community_brand_co
 void main() {
   group('OrganizerRemoteConfig Admin Mode (#356)', () {
     test('defaults to empty string so missing Remote Config fails closed', () {
-      final config =
-          OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong());
+      final config = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong());
       expect(config.adminEmailsCsv, '');
       expect(config.adminEmails, isEmpty);
       expect(config.isAdminEmail('organizer@belongonthespectrum.com'), isFalse);
     });
 
     test('case-insensitive and trimmed email matching for admin access', () {
-      final config = OrganizerRemoteConfig.defaults(
-        const CommunityBrandConfig.belong(),
-      ).copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com');
+      final config = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+          .copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com');
       expect(config.isAdminEmail('ORGANIZER@BELONGONTHESPECTRUM.COM'), isTrue);
       expect(config.isAdminEmail('  organizer@belongonthespectrum.com  '), isTrue);
       expect(config.isAdminEmail('Organizer@BelongOnTheSpectrum.com'), isTrue);
@@ -28,11 +26,8 @@ void main() {
     });
 
     test('supports custom CSV list of administrators', () {
-      final config = OrganizerRemoteConfig.defaults(
-        const CommunityBrandConfig.belong(),
-      ).copyWith(
-        adminEmailsCsv:
-            'organizer@belongonthespectrum.com, lead@belongonthespectrum.com , moderator@belongonthespectrum.com',
+      final config = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong()).copyWith(
+        adminEmailsCsv: 'organizer@belongonthespectrum.com, lead@belongonthespectrum.com , moderator@belongonthespectrum.com',
       );
 
       expect(config.adminEmails.length, 3);

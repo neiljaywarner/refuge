@@ -78,9 +78,7 @@ class BelongMessagesView extends HookConsumerWidget {
 
     useEffect(() {
       if (initialActiveThreadId != null) {
-        final matching = threads.value
-            .where((t) => t.id == initialActiveThreadId)
-            .firstOrNull;
+        final matching = threads.value.where((t) => t.id == initialActiveThreadId).firstOrNull;
         if (matching != null) {
           activeThread.value = matching;
         }
@@ -156,8 +154,7 @@ class BelongMessagesView extends HookConsumerWidget {
               ];
               threads.value = updated;
               activeThread.value = result.thread;
-              if (user != null &&
-                  result.outcome == DirectMessageSendOutcome.delivered) {
+              if (user != null && result.outcome == DirectMessageSendOutcome.delivered) {
                 await ref
                     .read(belongNotificationsProvider.notifier)
                     .syncDirectMessageNotifications(mailbox, user.uid);
@@ -212,10 +209,7 @@ class BelongMessagesView extends HookConsumerWidget {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Search messages, subjects, or members...',
-                hintStyle: TextStyle(
-                  fontSize: 12.5,
-                  color: Colors.grey.shade500,
-                ),
+                hintStyle: TextStyle(fontSize: 12.5, color: Colors.grey.shade500),
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 suffixIcon: searchQuery.value.isNotEmpty
                     ? IconButton(
@@ -230,19 +224,14 @@ class BelongMessagesView extends HookConsumerWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: theme.dividerColor.withValues(alpha: 0.15),
-                  ),
+                  borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                 ),
               ),
               onChanged: (val) => searchQuery.value = val,
@@ -266,11 +255,7 @@ class BelongMessagesView extends HookConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.spa_outlined,
-                  color: theme.colorScheme.primary,
-                  size: 18,
-                ),
+                Icon(Icons.spa_outlined, color: theme.colorScheme.primary, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -327,41 +312,26 @@ class BelongMessagesView extends HookConsumerWidget {
                             : 'No conversations yet.\nTap the message icon above to start one.',
                         key: const Key('empty_messages_placeholder'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                       ),
                     ),
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     itemCount: filteredThreads.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(height: 1, indent: 64),
+                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
                     itemBuilder: (context, index) {
                       final thread = filteredThreads[index];
                       return ListTile(
                         key: Key('thread-${thread.id}'),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         leading: CircleAvatar(
                           backgroundColor: primary.withValues(alpha: 0.12),
                           foregroundColor: primary,
                           child: Text(
                             thread.avatarInitials,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                         ),
                         title: Row(
@@ -369,22 +339,14 @@ class BelongMessagesView extends HookConsumerWidget {
                             Expanded(
                               child: Text(
                                 thread.participantName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13.5,
-                                ),
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (thread.messageType != null) ...[
                               Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1.5,
-                                ),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade200,
                                   borderRadius: BorderRadius.circular(6),
@@ -402,18 +364,12 @@ class BelongMessagesView extends HookConsumerWidget {
                             Text(
                               thread.formattedDate(),
                               key: Key('thread_date_${thread.id}'),
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                color: Colors.grey.shade500,
-                              ),
+                              style: TextStyle(fontSize: 10.5, color: Colors.grey.shade500),
                             ),
                             if (thread.unreadCount > 0) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: primary,
                                   borderRadius: BorderRadius.circular(10),
@@ -472,177 +428,149 @@ class BelongMessagesView extends HookConsumerWidget {
     TextEditingController replyController,
     VoidCallback onSendReply,
     VoidCallback onBack,
-  ) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          key: const Key('back-to-messages-list'),
-          icon: const Icon(Icons.arrow_back),
-          onPressed: onBack,
-        ),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: theme.colorScheme.primary.withValues(
-                alpha: 0.12,
-              ),
-              child: Text(
-                thread.avatarInitials,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    thread.participantName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (thread.subject != null)
-                    Text(
-                      thread.subject!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+  ) => Scaffold(
+    appBar: AppBar(
+      leading: IconButton(
+        key: const Key('back-to-messages-list'),
+        icon: const Icon(Icons.arrow_back),
+        onPressed: onBack,
       ),
-      body: Column(
+      title: Row(
         children: [
-          // Message History
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: thread.messages.length,
-              itemBuilder: (context, index) {
-                final msg = thread.messages[index];
-                return Align(
-                  alignment: msg.isFromMe
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    decoration: BoxDecoration(
-                      color: msg.isFromMe
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          msg.content,
-                          style: TextStyle(
-                            color: msg.isFromMe
-                                ? theme.colorScheme.onPrimary
-                                : theme.colorScheme.onSurface,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          msg.formattedDate(),
-                          key: Key('direct_message_timestamp_${msg.id}'),
-                          style: TextStyle(
-                            color: msg.isFromMe
-                                ? theme.colorScheme.onPrimary.withValues(
-                                    alpha: 0.7,
-                                  )
-                                : theme.colorScheme.onSurfaceVariant,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+            child: Text(
+              thread.avatarInitials,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
             ),
           ),
-
-          // Reply Input Bar
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      key: const Key('reply-message-field'),
-                      controller: replyController,
-                      decoration: InputDecoration(
-                        hintText: 'Type a calm reply...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF7F9FA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                      ),
-                      onSubmitted: (_) => onSendReply(),
-                    ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  thread.participantName,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (thread.subject != null)
+                  Text(
+                    thread.subject!,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    key: const Key('send-reply-button'),
-                    icon: Icon(
-                      Icons.send_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                    onPressed: onSendReply,
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         ],
       ),
-    );
-  }
+    ),
+    body: Column(
+      children: [
+        // Message History
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: thread.messages.length,
+            itemBuilder: (context, index) {
+              final msg = thread.messages[index];
+              return Align(
+                alignment: msg.isFromMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                  decoration: BoxDecoration(
+                    color: msg.isFromMe
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        msg.content,
+                        style: TextStyle(
+                          color: msg.isFromMe
+                              ? theme.colorScheme.onPrimary
+                              : theme.colorScheme.onSurface,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        msg.formattedDate(),
+                        key: Key('direct_message_timestamp_${msg.id}'),
+                        style: TextStyle(
+                          color: msg.isFromMe
+                              ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        // Reply Input Bar
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: Border(top: BorderSide(color: Colors.grey.shade200)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const Key('reply-message-field'),
+                    controller: replyController,
+                    decoration: InputDecoration(
+                      hintText: 'Type a calm reply...',
+                      hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFFF7F9FA),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                    onSubmitted: (_) => onSendReply(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  key: const Key('send-reply-button'),
+                  icon: Icon(Icons.send_rounded, color: theme.colorScheme.primary),
+                  onPressed: onSendReply,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Compose modal sheet supporting single or multi-recipient autocomplete selection
@@ -673,13 +601,10 @@ class _NewMessageModalSheet extends HookConsumerWidget {
     final directoryAsync = ref.watch(messageRecipientDirectoryProvider);
 
     final directory = directoryAsync.valueOrNull ?? [];
-    final showingSamplesOnly =
-        directory.isNotEmpty && directory.every((m) => m.isSample);
+    final showingSamplesOnly = directory.isNotEmpty && directory.every((m) => m.isSample);
 
     final availableMembers = directory.where((m) {
-      final notAlreadySelected = !selectedRecipients.value.any(
-        (s) => s.id == m.id,
-      );
+      final notAlreadySelected = !selectedRecipients.value.any((s) => s.id == m.id);
       return notAlreadySelected && m.matchesQuery(recipientQuery.value);
     }).toList();
 
@@ -709,9 +634,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                     const SizedBox(width: 8),
                     Text(
                       'New Message',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -738,23 +661,22 @@ class _NewMessageModalSheet extends HookConsumerWidget {
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
-                children: selectedRecipients.value.map((m) {
-                  return InputChip(
-                    key: Key('selected_recipient_chip_${m.name}'),
-                    avatar: CircleAvatar(
-                      child: Text(
-                        m.initials,
-                        style: const TextStyle(fontSize: 10),
+                children: selectedRecipients.value
+                    .map(
+                      (m) => InputChip(
+                        key: Key('selected_recipient_chip_${m.name}'),
+                        avatar: CircleAvatar(
+                          child: Text(m.initials, style: const TextStyle(fontSize: 10)),
+                        ),
+                        label: Text(m.name, style: const TextStyle(fontSize: 11.5)),
+                        onDeleted: () {
+                          selectedRecipients.value = selectedRecipients.value
+                              .where((s) => s.name != m.name)
+                              .toList();
+                        },
                       ),
-                    ),
-                    label: Text(m.name, style: const TextStyle(fontSize: 11.5)),
-                    onDeleted: () {
-                      selectedRecipients.value = selectedRecipients.value
-                          .where((s) => s.name != m.name)
-                          .toList();
-                    },
-                  );
-                }).toList(),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 8),
             ],
@@ -772,10 +694,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -803,45 +722,29 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                     itemBuilder: (context, idx) {
                       final member = availableMembers[idx];
                       final singleMatch =
-                          availableMembers.length == 1 &&
-                          recipientQuery.value.trim().isNotEmpty;
+                          availableMembers.length == 1 && recipientQuery.value.trim().isNotEmpty;
                       final tile = ListTile(
                         key: Key('member_picker_item_${member.name}'),
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: CircleAvatar(
                           radius: 14,
-                          child: Text(
-                            member.initials,
-                            style: const TextStyle(fontSize: 10),
-                          ),
+                          child: Text(member.initials, style: const TextStyle(fontSize: 10)),
                         ),
                         title: Text(
                           member.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
                         ),
                         subtitle: Text(
                           member.pickerSubtitle,
                           key: Key('member_tagline_${member.name}'),
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: Colors.grey.shade600,
-                          ),
+                          style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: const Icon(
-                          Icons.add_circle_outline_rounded,
-                          size: 16,
-                        ),
+                        trailing: const Icon(Icons.add_circle_outline_rounded, size: 16),
                         onTap: () {
-                          selectedRecipients.value = [
-                            ...selectedRecipients.value,
-                            member,
-                          ];
+                          selectedRecipients.value = [...selectedRecipients.value, member];
                           recipientSearchController.clear();
                           recipientQuery.value = '';
                         },
@@ -869,10 +772,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 isDense: true,
                 filled: true,
                 fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -891,10 +791,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 maxLines: 3,
                 decoration: InputDecoration(
                   hintText: 'Write your calm, unhurried message...',
-                  hintStyle: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
+                  hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   filled: true,
                   fillColor: theme.cardColor,
                   contentPadding: const EdgeInsets.all(12),
@@ -923,19 +820,14 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 backgroundColor: primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               icon: sending.value
                   ? const SizedBox(
                       key: Key('send_message_spinner'),
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : Icon(
                       sendResult.value == 'OK, it worked'
@@ -944,9 +836,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                       size: 16,
                     ),
               label: Text(
-                sending.value
-                    ? 'Sending'
-                    : (sendResult.value ?? 'Send Message'),
+                sending.value ? 'Sending' : (sendResult.value ?? 'Send Message'),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               onPressed: sending.value || sendResult.value != null
@@ -954,8 +844,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                   : () async {
                       sendError.value = null;
                       if (selectedRecipients.value.isEmpty) {
-                        sendError.value =
-                            'Please select at least one recipient.';
+                        sendError.value = 'Please select at least one recipient.';
                         return;
                       }
                       if (contentController.text.trim().isEmpty) {
@@ -974,18 +863,12 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                         if (!context.mounted) return;
                         if (outcome == DirectMessageSendOutcome.delivered) {
                           sendResult.value = 'OK, it worked';
-                          await Future<void>.delayed(
-                            const Duration(milliseconds: 1500),
-                          );
+                          await Future<void>.delayed(const Duration(milliseconds: 1500));
                           if (context.mounted) Navigator.of(context).pop();
-                        } else if (outcome ==
-                            DirectMessageSendOutcome.localOnly) {
+                        } else if (outcome == DirectMessageSendOutcome.localOnly) {
                           sendResult.value = 'Sent on this phone only.';
-                          sendError.value =
-                              'A sample member does not get this message.';
-                          await Future<void>.delayed(
-                            const Duration(milliseconds: 700),
-                          );
+                          sendError.value = 'A sample member does not get this message.';
+                          await Future<void>.delayed(const Duration(milliseconds: 700));
                           if (context.mounted) Navigator.of(context).pop();
                         } else {
                           sendResult.value = 'Not sent.';

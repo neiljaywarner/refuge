@@ -99,33 +99,28 @@ class MemberDirectoryStore {
     final fs = firestore;
     if (fs == null) return Stream.value(const []);
     try {
-      return fs
-          .collection(collectionPath)
-          .where(listedField, isEqualTo: true)
-          .snapshots()
-          .map((snapshot) {
-            final members = <DirectoryMember>[];
-            for (final doc in snapshot.docs) {
-              final data = doc.data();
-              final uid = (data['uid'] as String?) ?? doc.id;
-              if (uid.isEmpty) continue;
-              members.add(
-                DirectoryMember(
-                  uid: uid,
-                  displayName:
-                      (data['displayName'] as String?)?.trim().isNotEmpty ==
-                          true
-                      ? (data['displayName'] as String).trim()
-                      : 'Fellowship Member',
-                  handle:
-                      (data['handle'] as String?)?.trim().toLowerCase() ?? '',
-                  tagline: (data['tagline'] as String?)?.trim() ?? '',
-                ),
-              );
-            }
-            members.sort((a, b) => a.displayName.compareTo(b.displayName));
-            return members;
-          });
+      return fs.collection(collectionPath).where(listedField, isEqualTo: true).snapshots().map((
+        snapshot,
+      ) {
+        final members = <DirectoryMember>[];
+        for (final doc in snapshot.docs) {
+          final data = doc.data();
+          final uid = (data['uid'] as String?) ?? doc.id;
+          if (uid.isEmpty) continue;
+          members.add(
+            DirectoryMember(
+              uid: uid,
+              displayName: (data['displayName'] as String?)?.trim().isNotEmpty == true
+                  ? (data['displayName'] as String).trim()
+                  : 'Fellowship Member',
+              handle: (data['handle'] as String?)?.trim().toLowerCase() ?? '',
+              tagline: (data['tagline'] as String?)?.trim() ?? '',
+            ),
+          );
+        }
+        members.sort((a, b) => a.displayName.compareTo(b.displayName));
+        return members;
+      });
     } catch (_) {
       return Stream.value(const []);
     }
@@ -136,6 +131,6 @@ final memberDirectoryStoreProvider = Provider<MemberDirectoryStore>(
   (ref) => MemberDirectoryStore(),
 );
 
-final directoryMembersProvider = StreamProvider<List<DirectoryMember>>((ref) {
-  return ref.watch(memberDirectoryStoreProvider).watchDirectoryMembers();
-});
+final directoryMembersProvider = StreamProvider<List<DirectoryMember>>(
+  (ref) => ref.watch(memberDirectoryStoreProvider).watchDirectoryMembers(),
+);

@@ -132,5 +132,4 @@ class CalmLocalNotificationMobile implements CalmLocalNotificationService {
   }
 }
 
-CalmLocalNotificationService createCalmLocalNotificationService() =>
-    CalmLocalNotificationMobile();
+CalmLocalNotificationService createCalmLocalNotificationService() => CalmLocalNotificationMobile();

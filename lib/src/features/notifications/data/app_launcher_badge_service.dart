@@ -5,9 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// Service responsible for updating the native app launcher icon badge
 /// on iOS and Android devices, keeping unread notification count synchronized.
 class AppLauncherBadgeService {
-  static const MethodChannel _channel = MethodChannel(
-    'com.belongonthespectrum.refuge/badge',
-  );
+  static const MethodChannel _channel = MethodChannel('com.belongonthespectrum.refuge/badge');
 
   int _currentBadgeCount = 0;
   int get currentBadgeCount => _currentBadgeCount;
@@ -18,10 +16,9 @@ class AppLauncherBadgeService {
     _currentBadgeCount = count < 0 ? 0 : count;
     try {
       if (kIsWeb) return false;
-      final result = await _channel.invokeMethod<bool>(
-        'setBadgeCount',
-        {'count': _currentBadgeCount},
-      );
+      final result = await _channel.invokeMethod<bool>('setBadgeCount', {
+        'count': _currentBadgeCount,
+      });
       return result ?? true;
     } on PlatformException catch (e) {
       if (kDebugMode) {
@@ -38,6 +35,6 @@ class AppLauncherBadgeService {
 }
 
 /// Riverpod provider for [AppLauncherBadgeService].
-final appLauncherBadgeServiceProvider = Provider<AppLauncherBadgeService>((ref) {
-  return AppLauncherBadgeService();
-});
+final appLauncherBadgeServiceProvider = Provider<AppLauncherBadgeService>(
+  (ref) => AppLauncherBadgeService(),
+);

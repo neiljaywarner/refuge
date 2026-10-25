@@ -3,8 +3,7 @@ import 'package:refuge4serverpod/src/core/firebase/firebase_installations_servic
 
 void main() {
   group('FirebaseInstallationsService Unit Tests', () {
-    test('returns fallback installation ID when Firebase is uninitialized',
-        () async {
+    test('returns fallback installation ID when Firebase is uninitialized', () async {
       final service = FirebaseInstallationsService();
 
       final id1 = await service.getInstallationsId();

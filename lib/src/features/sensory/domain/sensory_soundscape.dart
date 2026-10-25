@@ -47,14 +47,14 @@ class SensorySoundscape extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        iconEmoji,
-        category,
-        defaultVolume,
-        audioAssetUri,
-      ];
+    id,
+    title,
+    description,
+    iconEmoji,
+    category,
+    defaultVolume,
+    audioAssetUri,
+  ];
 
   /// Default curated calm soundscapes for Belong on the Spectrum.
   static const List<SensorySoundscape> curatedSoundscapes = [

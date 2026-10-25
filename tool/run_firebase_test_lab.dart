@@ -32,16 +32,13 @@ Future<void> main(List<String> args) async {
   final dryRun = args.contains('--dry-run');
   final buildOnly = args.contains('--build-only');
   final target = _getArg(args, '--target') ?? _defaultTarget;
-  final project = _getArg(args, '--project') ??
-      Platform.environment['FIREBASE_PROJECT_ID'] ??
-      _defaultProject;
+  final project =
+      _getArg(args, '--project') ?? Platform.environment['FIREBASE_PROJECT_ID'] ?? _defaultProject;
   final device = _getArg(args, '--device') ?? _defaultDevice;
   final timeout = _getArg(args, '--timeout') ?? '10m';
 
   if (project != _defaultProject) {
-    stderr.writeln(
-      'Refusing run: --project must be $_defaultProject for Test Lab safety.',
-    );
+    stderr.writeln('Refusing run: --project must be $_defaultProject for Test Lab safety.');
     exit(64);
   }
 
@@ -102,18 +99,12 @@ Future<void> main(List<String> args) async {
 
     _log('Running Gradle assembleDebugAndroidTest...');
     final gradleCmd = Platform.isWindows ? 'gradlew.bat' : './gradlew';
-    final gradleProcess = await Process.run(
-      gradleCmd,
-      [
-        'app:assembleDebugAndroidTest',
-        '-Ptarget=${integrationTestGradleTarget(target)}',
-      ],
-      workingDirectory: androidDir.path,
-    );
+    final gradleProcess = await Process.run(gradleCmd, [
+      'app:assembleDebugAndroidTest',
+      '-Ptarget=${integrationTestGradleTarget(target)}',
+    ], workingDirectory: androidDir.path);
     if (gradleProcess.exitCode != 0) {
-      stderr.writeln(
-        'Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).',
-      );
+      stderr.writeln('Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).');
       stderr.write(gradleProcess.stderr);
       stdout.write(gradleProcess.stdout);
       exit(gradleProcess.exitCode);
@@ -123,8 +114,7 @@ Future<void> main(List<String> args) async {
     _log('[Dry Run] Skipped flutter and Gradle builds.');
   }
 
-  final resolvedAppApk =
-      resolveExistingApk(repoRoot, appApkRelativePaths()) ?? appApk;
+  final resolvedAppApk = resolveExistingApk(repoRoot, appApkRelativePaths()) ?? appApk;
   final resolvedTestApk = testApk.existsSync() ? testApk : null;
 
   if (resolvedAppApk == null) {
@@ -148,9 +138,7 @@ Future<void> main(List<String> args) async {
       stderr.writeln(refusal);
       exit(65);
     }
-    _log(
-      'Verified package $devAndroidPackageId and label $devAndroidApplicationLabel.',
-    );
+    _log('Verified package $devAndroidPackageId and label $devAndroidApplicationLabel.');
   }
 
   if (buildOnly) {
@@ -178,9 +166,7 @@ Future<void> main(List<String> args) async {
     _log('[Dry Run] Command verified.');
     stdout.writeln('\n  $gcloudInvocation\n');
     _log('Firebase Test Lab console:');
-    stdout.writeln(
-      '  https://console.firebase.google.com/project/$project/testlab\n',
-    );
+    stdout.writeln('  https://console.firebase.google.com/project/$project/testlab\n');
     return;
   }
 
@@ -202,9 +188,7 @@ Future<void> main(List<String> args) async {
   }
 
   _log('Test run completed.');
-  _log(
-    'Results: https://console.firebase.google.com/project/$project/testlab',
-  );
+  _log('Results: https://console.firebase.google.com/project/$project/testlab');
 }
 
 Future<String?> _devApkRefusalForFile(File apk) async {
@@ -245,11 +229,10 @@ Future<String?> _resolveFlutterExecutable() async {
       }
     }
   }
-  final which = await Process.run(
-    'bash',
-    ['-lc', 'command -v flutter'],
-    environment: Platform.environment,
-  );
+  final which = await Process.run('bash', [
+    '-lc',
+    'command -v flutter',
+  ], environment: Platform.environment);
   if (which.exitCode == 0) {
     final resolved = (which.stdout as String).trim();
     if (resolved.isNotEmpty) {

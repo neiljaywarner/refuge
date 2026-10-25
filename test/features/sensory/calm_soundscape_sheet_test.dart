@@ -6,19 +6,12 @@ import 'package:refuge4serverpod/src/features/sensory/application/sensory_sounds
 import 'package:refuge4serverpod/src/features/sensory/presentation/calm_soundscape_sheet.dart';
 
 void main() {
-  Widget buildTestWidget({SoundscapeAudioPlayer? audioPlayer}) {
-    return ProviderScope(
-      overrides: [
-        if (audioPlayer != null)
-          soundscapeAudioPlayerProvider.overrideWithValue(audioPlayer),
-      ],
-      child: const MaterialApp(
-        home: Scaffold(
-          body: CalmSoundscapeSheet(),
-        ),
-      ),
-    );
-  }
+  Widget buildTestWidget({SoundscapeAudioPlayer? audioPlayer}) => ProviderScope(
+    overrides: [
+      if (audioPlayer != null) soundscapeAudioPlayerProvider.overrideWithValue(audioPlayer),
+    ],
+    child: const MaterialApp(home: Scaffold(body: CalmSoundscapeSheet())),
+  );
 
   group('CalmSoundscapeSheet Widget Tests', () {
     patrolWidgetTest('Renders all curated soundscape cards and title', ($) async {

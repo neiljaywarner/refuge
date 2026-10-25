@@ -25,7 +25,10 @@ void main() {
 
       final map = meme.toMap();
       expect(map['title'], equals('Elijah Snack & Nap'));
-      expect(map['imageUrl'], equals('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600'));
+      expect(
+        map['imageUrl'],
+        equals('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600'),
+      );
 
       final restored = CalmMeme.fromMap(map);
       expect(restored.title, equals(meme.title));
@@ -47,9 +50,7 @@ void main() {
 
       expect(post1.imageUrl, isNull);
 
-      final postWithMeme = post1.copyWith(
-        imageUrl: 'https://example.com/calm_map.gif',
-      );
+      final postWithMeme = post1.copyWith(imageUrl: 'https://example.com/calm_map.gif');
 
       expect(postWithMeme.imageUrl, equals('https://example.com/calm_map.gif'));
       expect(postWithMeme.id, equals(post1.id));
@@ -74,18 +75,13 @@ void main() {
     }) {
       final fake = avatarService ?? FakeAvatarUploadService();
       return ProviderScope(
-        overrides: [
-          avatarUploadServiceProvider.overrideWithValue(fake),
-        ],
+        overrides: [avatarUploadServiceProvider.overrideWithValue(fake)],
         child: MaterialApp(
           home: Scaffold(
             body: Builder(
               builder: (ctx) => ElevatedButton(
                 key: const Key('open_gallery_button'),
-                onPressed: () => showMemeGalleryModal(
-                  ctx,
-                  onSelectedMeme: onSelectedMeme,
-                ),
+                onPressed: () => showMemeGalleryModal(ctx, onSelectedMeme: onSelectedMeme),
                 child: const Text('Open Gallery'),
               ),
             ),
@@ -217,16 +213,9 @@ void main() {
     });
 
     patrolWidgetTest('handles camera permission denial gracefully without crash', ($) async {
-      final fakeService = FakeAvatarUploadService(
-        cameraPermission: AvatarPermissionStatus.denied,
-      );
+      final fakeService = FakeAvatarUploadService(cameraPermission: AvatarPermissionStatus.denied);
 
-      await $.pumpWidget(
-        buildModalHarness(
-          onSelectedMeme: (_) {},
-          avatarService: fakeService,
-        ),
-      );
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
       await $(const Key('tab_upload_photo')).tap();
@@ -235,7 +224,10 @@ void main() {
 
       // Verify denial banner
       expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
-      expect($('Camera permission was denied. Please allow access if you wish to use a photo.'), findsOneWidget);
+      expect(
+        $('Camera permission was denied. Please allow access if you wish to use a photo.'),
+        findsOneWidget,
+      );
       expect($(const Key('uploaded_photo_preview')), findsNothing);
     });
 
@@ -244,12 +236,7 @@ void main() {
         cameraPermission: AvatarPermissionStatus.permanentlyDenied,
       );
 
-      await $.pumpWidget(
-        buildModalHarness(
-          onSelectedMeme: (_) {},
-          avatarService: fakeService,
-        ),
-      );
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
       await $(const Key('tab_upload_photo')).tap();
@@ -264,15 +251,12 @@ void main() {
       expect(fakeService.appSettingsOpened, isTrue);
     });
 
-    patrolWidgetTest('canceling photo picker without choosing leaves modal in clean state', ($) async {
+    patrolWidgetTest('canceling photo picker without choosing leaves modal in clean state', (
+      $,
+    ) async {
       final fakeService = FakeAvatarUploadService(returnNullOnPick: true);
 
-      await $.pumpWidget(
-        buildModalHarness(
-          onSelectedMeme: (_) {},
-          avatarService: fakeService,
-        ),
-      );
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
       await $(const Key('tab_upload_photo')).tap();
@@ -284,15 +268,12 @@ void main() {
       expect($(const Key('meme_upload_camera_button')), findsOneWidget);
     });
 
-    patrolWidgetTest('hardware exception during photo selection displays calm error banner', ($) async {
+    patrolWidgetTest('hardware exception during photo selection displays calm error banner', (
+      $,
+    ) async {
       final fakeService = FakeAvatarUploadService(throwOnPick: true);
 
-      await $.pumpWidget(
-        buildModalHarness(
-          onSelectedMeme: (_) {},
-          avatarService: fakeService,
-        ),
-      );
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
       await $(const Key('tab_upload_photo')).tap();
@@ -301,7 +282,10 @@ void main() {
 
       // Error banner is displayed
       expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
-      expect($('Could not select photo: Exception: Simulated camera hardware disconnect'), findsOneWidget);
+      expect(
+        $('Could not select photo: Exception: Simulated camera hardware disconnect'),
+        findsOneWidget,
+      );
     });
 
     patrolWidgetTest('meme gallery close button dismisses modal', ($) async {
@@ -357,11 +341,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: ReflectionCard(
-                post: postWithMeme,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              body: ReflectionCard(post: postWithMeme, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
@@ -392,11 +372,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: ReflectionCard(
-                post: postWithDataUri,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              body: ReflectionCard(post: postWithDataUri, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
@@ -420,11 +396,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: ReflectionCard(
-                post: postWithoutMeme,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              body: ReflectionCard(post: postWithoutMeme, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
@@ -456,16 +428,12 @@ void main() {
                 primaryColor: Colors.teal,
                 isContrast: false,
                 isModal: true,
-                onSubmit: ({
-                  required content,
-                  required toneTag,
-                  specialInterestTag,
-                  imageUrl,
-                }) async {
-                  submittedContent = content;
-                  submittedTone = toneTag;
-                  submittedImage = imageUrl;
-                },
+                onSubmit:
+                    ({required content, required toneTag, specialInterestTag, imageUrl}) async {
+                      submittedContent = content;
+                      submittedTone = toneTag;
+                      submittedImage = imageUrl;
+                    },
               ),
             ),
           ),
@@ -514,9 +482,7 @@ void main() {
 
       await $.pumpWidget(
         ProviderScope(
-          overrides: [
-            avatarUploadServiceProvider.overrideWithValue(fakeService),
-          ],
+          overrides: [avatarUploadServiceProvider.overrideWithValue(fakeService)],
           child: MaterialApp(
             home: Scaffold(
               body: ReflectionComposer(
@@ -524,16 +490,12 @@ void main() {
                 primaryColor: Colors.teal,
                 isContrast: false,
                 isModal: true,
-                onSubmit: ({
-                  required content,
-                  required toneTag,
-                  specialInterestTag,
-                  imageUrl,
-                }) async {
-                  submittedContent = content;
-                  submittedTone = toneTag;
-                  submittedImage = imageUrl;
-                },
+                onSubmit:
+                    ({required content, required toneTag, specialInterestTag, imageUrl}) async {
+                      submittedContent = content;
+                      submittedTone = toneTag;
+                      submittedImage = imageUrl;
+                    },
               ),
             ),
           ),
@@ -569,11 +531,7 @@ void main() {
     testWidgets('renders fallback widget on empty or broken image', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: 'broken_or_empty',
-            ),
-          ),
+          home: Scaffold(body: CalmMediaImage(imageUrl: 'broken_or_empty')),
         ),
       );
 
@@ -584,10 +542,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: '',
-              fallbackWidget: Text('Custom Fallback Calm'),
-            ),
+            body: CalmMediaImage(imageUrl: '', fallbackWidget: Text('Custom Fallback Calm')),
           ),
         ),
       );
@@ -599,9 +554,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: r'data:image/png;base64,invalid!@#$not_base64',
-            ),
+            body: CalmMediaImage(imageUrl: r'data:image/png;base64,invalid!@#$not_base64'),
           ),
         ),
       );
@@ -664,11 +617,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: 'assets/images/belong_logo.png',
-              width: 50,
-              height: 50,
-            ),
+            body: CalmMediaImage(imageUrl: 'assets/images/belong_logo.png', width: 50, height: 50),
           ),
         ),
       );
@@ -676,7 +625,9 @@ void main() {
       expect(find.byType(Image), findsOneWidget);
     });
 
-    testWidgets('CalmMediaImage.buildLoadingProgress displays progress indicator when loading', (tester) async {
+    testWidgets('CalmMediaImage.buildLoadingProgress displays progress indicator when loading', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -697,41 +648,44 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('CalmMediaImage.buildLoadingProgress handles indeterminate loading and null progress', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (ctx) => CalmMediaImage.buildLoadingProgress(
-                context: ctx,
-                child: const Text('Loaded Image Child'),
-                loadingProgress: const ImageChunkEvent(
-                  cumulativeBytesLoaded: 50,
-                  expectedTotalBytes: null,
+    testWidgets(
+      'CalmMediaImage.buildLoadingProgress handles indeterminate loading and null progress',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (ctx) => CalmMediaImage.buildLoadingProgress(
+                  context: ctx,
+                  child: const Text('Loaded Image Child'),
+                  loadingProgress: const ImageChunkEvent(
+                    cumulativeBytesLoaded: 50,
+                    expectedTotalBytes: null,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (ctx) => CalmMediaImage.buildLoadingProgress(
-                context: ctx,
-                child: const Text('Loaded Image Child'),
-                loadingProgress: null,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (ctx) => CalmMediaImage.buildLoadingProgress(
+                  context: ctx,
+                  child: const Text('Loaded Image Child'),
+                  loadingProgress: null,
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Loaded Image Child'), findsOneWidget);
-    });
+        expect(find.text('Loaded Image Child'), findsOneWidget);
+      },
+    );
   });
 }

@@ -30,8 +30,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
       state = [
         for (final remote in updatedList)
           remote.copyWith(
-            userVoted: votedIds.contains(remote.id) ||
-                (currentMap[remote.id]?.userVoted ?? false),
+            userVoted: votedIds.contains(remote.id) || (currentMap[remote.id]?.userVoted ?? false),
           ),
       ];
     });
@@ -72,10 +71,9 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
 }
 
 /// Provider for the Belong Feature Voting Board.
-final featureVotingProvider =
-    NotifierProvider<FeatureVotingNotifier, List<VotableFeatureItem>>(
-      FeatureVotingNotifier.new,
-    );
+final featureVotingProvider = NotifierProvider<FeatureVotingNotifier, List<VotableFeatureItem>>(
+  FeatureVotingNotifier.new,
+);
 
 /// Clean, neurodivergent-affirming modal sheet combining:
 /// 1. **Feature Voting & WIP Roadmap** (so members testing the preview tonight
@@ -83,11 +81,7 @@ final featureVotingProvider =
 /// 2. **Literal 3-Intent Feedback Funnel ("Private Feedback, Public Praise")**
 ///    evaluated in ADR-0007 (`docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`).
 class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
-  const BelongFeedbackAndVotingSheet({
-    super.key,
-    this.initialTabIndex = 0,
-    this.screenshotBytes,
-  });
+  const BelongFeedbackAndVotingSheet({super.key, this.initialTabIndex = 0, this.screenshotBytes});
 
   final int initialTabIndex;
   final Uint8List? screenshotBytes;
@@ -96,33 +90,29 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     BuildContext context, {
     int initialTabIndex = 0,
     Uint8List? screenshotBytes,
-  }) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (_) => SystemBottomInset(
-        child: FractionallySizedBox(
-          heightFactor: 0.88,
-          child: BelongFeedbackAndVotingSheet(
-            initialTabIndex: initialTabIndex,
-            screenshotBytes: screenshotBytes,
-          ),
+  }) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    showDragHandle: true,
+    builder: (_) => SystemBottomInset(
+      child: FractionallySizedBox(
+        heightFactor: 0.88,
+        child: BelongFeedbackAndVotingSheet(
+          initialTabIndex: initialTabIndex,
+          screenshotBytes: screenshotBytes,
         ),
       ),
-    );
-  }
+    ),
+  );
 
-  static String starLiteralDescription(int stars) {
-    return switch (stars) {
-      5 => '5 ★ · Love it! Works great',
-      4 => '4 ★ · Good experience',
-      3 => "3 ★ · It's okay, could be better",
-      2 => '2 ★ · Frustrating / Needs work',
-      _ => '1 ★ · Broken / Very confusing',
-    };
-  }
+  static String starLiteralDescription(int stars) => switch (stars) {
+    5 => '5 ★ · Love it! Works great',
+    4 => '4 ★ · Good experience',
+    3 => "3 ★ · It's okay, could be better",
+    2 => '2 ★ · Frustrating / Needs work',
+    _ => '1 ★ · Broken / Very confusing',
+  };
 
   static FeedbackSentiment sentimentForStars(int stars) {
     if (stars >= 4) return FeedbackSentiment.happy;
@@ -168,13 +158,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tabController = useTabController(
-      initialLength: 2,
-      initialIndex: initialTabIndex,
-    );
-    final selectedSentiment = useState<FeedbackSentiment>(
-      FeedbackSentiment.happy,
-    );
+    final tabController = useTabController(initialLength: 2, initialIndex: initialTabIndex);
+    final selectedSentiment = useState<FeedbackSentiment>(FeedbackSentiment.happy);
     final selectedStarRating = useState<int>(5);
     final feedbackController = useTextEditingController();
     useListenable(feedbackController);
@@ -191,8 +176,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final listPadding = EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset);
 
     final hasUnsavedDraft =
-        feedbackController.text.trim().isNotEmpty ||
-        drawingAttachment.value != null;
+        feedbackController.text.trim().isNotEmpty || drawingAttachment.value != null;
 
     return PopScope(
       canPop: !hasUnsavedDraft && !isSubmitting.value,
@@ -218,15 +202,11 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                     children: [
                       Text(
                         'Belong Roadmap & Feedback',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '1-tap feature voting + literal, low-pressure feedback',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -250,77 +230,182 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
               ],
             ),
           ),
-        TabBar(
-          controller: tabController,
-          tabs: [
-            Tab(
-              key: const Key('tab_feature_voting'),
-              child: _webLabeledButton(
-                label: 'Vote on Features (WIP)',
-                identifier: 'tab_vote_on_features',
-                onTap: () => tabController.animateTo(0),
-                child: const Text('Vote on Features (WIP)'),
-              ),
-            ),
-            Tab(
-              key: const Key('tab_private_feedback'),
-              child: _webLabeledButton(
-                label: 'Share Feedback',
-                identifier: 'tab_share_feedback',
-                onTap: () => tabController.animateTo(1),
-                child: const Text('Share Feedback'),
-              ),
-            ),
-          ],
-        ),
-        Expanded(
-          child: TabBarView(
+          TabBar(
             controller: tabController,
-            children: [
-              // TAB 1: Feature Voting & Active WIP Board
-              ListView(
-                padding: listPadding,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer.withValues(
-                        alpha: 0.45,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.touch_app_outlined,
-                          color: colorScheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Tap the thumb to upvote! Features with the most community support are built first.',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  for (final item in features)
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          color: item.userVoted
-                              ? colorScheme.primary
-                              : colorScheme.outlineVariant,
-                          width: item.userVoted ? 2.0 : 1.0,
-                        ),
+            tabs: [
+              Tab(
+                key: const Key('tab_feature_voting'),
+                child: _webLabeledButton(
+                  label: 'Vote on Features (WIP)',
+                  identifier: 'tab_vote_on_features',
+                  onTap: () => tabController.animateTo(0),
+                  child: const Text('Vote on Features (WIP)'),
+                ),
+              ),
+              Tab(
+                key: const Key('tab_private_feedback'),
+                child: _webLabeledButton(
+                  label: 'Share Feedback',
+                  identifier: 'tab_share_feedback',
+                  onTap: () => tabController.animateTo(1),
+                  child: const Text('Share Feedback'),
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: tabController,
+              children: [
+                // TAB 1: Feature Voting & Active WIP Board
+                ListView(
+                  padding: listPadding,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.touch_app_outlined, color: colorScheme.primary, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Tap the thumb to upvote! Features with the most community support are built first.',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onPrimaryContainer,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    for (final item in features)
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            color: item.userVoted
+                                ? colorScheme.primary
+                                : colorScheme.outlineVariant,
+                            width: item.userVoted ? 2.0 : 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: item.stage == FeatureStage.workInProgress
+                                            ? colorScheme.primary.withValues(alpha: 0.15)
+                                            : colorScheme.surfaceContainerHighest,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        item.stage.badgeLabel,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: textTheme.labelSmall?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: item.stage == FeatureStage.workInProgress
+                                              ? colorScheme.primary
+                                              : colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _webLabeledButton(
+                                    label: item.userVoted
+                                        ? 'Remove vote for ${item.title}'
+                                        : 'Vote for ${item.title}',
+                                    identifier: 'vote_${item.id}',
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      ref.read(featureVotingProvider.notifier).toggleVote(item.id);
+                                    },
+                                    child: Tooltip(
+                                      message: item.userVoted
+                                          ? 'Remove vote for ${item.title}'
+                                          : 'Vote for ${item.title}',
+                                      child: OutlinedButton.icon(
+                                        key: Key('vote_button_${item.id}'),
+                                        style: OutlinedButton.styleFrom(
+                                          backgroundColor: item.userVoted
+                                              ? colorScheme.primaryContainer
+                                              : null,
+                                        ),
+                                        onPressed: () {
+                                          HapticFeedback.selectionClick();
+                                          ref
+                                              .read(featureVotingProvider.notifier)
+                                              .toggleVote(item.id);
+                                        },
+                                        icon: Icon(
+                                          item.userVoted
+                                              ? Icons.thumb_up
+                                              : Icons.thumb_up_alt_outlined,
+                                          size: 16,
+                                          color: item.userVoted ? colorScheme.primary : null,
+                                        ),
+                                        label: Text(
+                                          '${item.votes}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: item.userVoted ? colorScheme.primary : null,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item.title,
+                                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.description,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                // TAB 2: Industry-Standard 1-5 Star Rating + Literal 3-Intent Feedback Funnel (PWA, Web & Mobile)
+                ListView(
+                  padding: listPadding,
+                  children: [
+                    // 1-5 Star Rating Card ("How do you like Belong on the Spectrum?")
+                    Card(
+                      key: const Key('star_rating_bar'),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: colorScheme.outlineVariant),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
                       margin: const EdgeInsets.only(bottom: 12),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
@@ -329,601 +414,408 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Flexible(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          item.stage ==
-                                              FeatureStage.workInProgress
-                                          ? colorScheme.primary.withValues(
-                                              alpha: 0.15,
-                                            )
-                                          : colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      item.stage.badgeLabel,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: textTheme.labelSmall?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            item.stage ==
-                                                FeatureStage.workInProgress
-                                            ? colorScheme.primary
-                                            : colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                Icon(Icons.stars_rounded, color: colorScheme.primary, size: 20),
                                 const SizedBox(width: 8),
-                                _webLabeledButton(
-                                  label: item.userVoted
-                                      ? 'Remove vote for ${item.title}'
-                                      : 'Vote for ${item.title}',
-                                  identifier: 'vote_${item.id}',
-                                  onTap: () {
-                                    HapticFeedback.selectionClick();
-                                    ref
-                                        .read(featureVotingProvider.notifier)
-                                        .toggleVote(item.id);
-                                  },
-                                  child: Tooltip(
-                                    message: item.userVoted
-                                        ? 'Remove vote for ${item.title}'
-                                        : 'Vote for ${item.title}',
-                                    child: OutlinedButton.icon(
-                                      key: Key('vote_button_${item.id}'),
-                                      style: OutlinedButton.styleFrom(
-                                        backgroundColor: item.userVoted
-                                            ? colorScheme.primaryContainer
-                                            : null,
-                                      ),
-                                      onPressed: () {
-                                        HapticFeedback.selectionClick();
-                                        ref
-                                            .read(
-                                              featureVotingProvider.notifier,
-                                            )
-                                            .toggleVote(item.id);
-                                      },
-                                      icon: Icon(
-                                        item.userVoted
-                                            ? Icons.thumb_up
-                                            : Icons.thumb_up_alt_outlined,
-                                        size: 16,
-                                        color: item.userVoted
-                                            ? colorScheme.primary
-                                            : null,
-                                      ),
-                                      label: Text(
-                                        '${item.votes}',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: item.userVoted
-                                              ? colorScheme.primary
-                                              : null,
-                                        ),
-                                      ),
+                                Expanded(
+                                  child: Text(
+                                    'How do you like Belong on the Spectrum?',
+                                    style: textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              item.title,
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                             const SizedBox(height: 4),
                             Text(
-                              item.description,
-                              style: textTheme.bodyMedium?.copyWith(
+                              'Tap a star (1–5) or pick a category below. Every star has a clear literal meaning — works on Web, PWA, Android & iOS:',
+                              style: textTheme.bodySmall?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                for (int star = 1; star <= 5; star++)
+                                  IconButton(
+                                    key: Key('star_rating_$star'),
+                                    tooltip: starLiteralDescription(star),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      selectedStarRating.value = star;
+                                      selectedSentiment.value = sentimentForStars(star);
+                                      submittedMessage.value = null;
+                                    },
+                                    iconSize: 32,
+                                    icon: Icon(
+                                      star <= selectedStarRating.value
+                                          ? Icons.star_rounded
+                                          : Icons.star_outline_rounded,
+                                      color: star <= selectedStarRating.value
+                                          ? Colors.amber.shade600
+                                          : colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Center(
+                              child: Container(
+                                key: const Key('star_rating_literal_label'),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primaryContainer.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  starLiteralDescription(selectedStarRating.value),
+                                  style: textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                ],
-              ),
-
-              // TAB 2: Industry-Standard 1-5 Star Rating + Literal 3-Intent Feedback Funnel (PWA, Web & Mobile)
-              ListView(
-                padding: listPadding,
-                children: [
-                  // 1-5 Star Rating Card ("How do you like Belong on the Spectrum?")
-                  Card(
-                    key: const Key('star_rating_bar'),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: colorScheme.outlineVariant),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    color: colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.45,
-                    ),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.stars_rounded,
-                                color: colorScheme.primary,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'How do you like Belong on the Spectrum?',
-                                  style: textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
+                    // Sentiment Cards (Works Great / Idea / Bug)
+                    for (final sentiment in FeedbackSentiment.values)
+                      Card(
+                        key: Key('sentiment_${sentiment.name}'),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            color: selectedSentiment.value == sentiment
+                                ? colorScheme.primary
+                                : colorScheme.outlineVariant,
+                            width: selectedSentiment.value == sentiment ? 2.0 : 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        color: selectedSentiment.value == sentiment
+                            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+                            : null,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            selectedSentiment.value = sentiment;
+                            selectedStarRating.value = switch (sentiment) {
+                              FeedbackSentiment.happy =>
+                                selectedStarRating.value >= 4 ? selectedStarRating.value : 5,
+                              FeedbackSentiment.neutral => 3,
+                              FeedbackSentiment.sad =>
+                                selectedStarRating.value <= 2 ? selectedStarRating.value : 1,
+                            };
+                            feedbackController.clear();
+                            submittedMessage.value = null;
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Text(sentiment.emoji, style: const TextStyle(fontSize: 24)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        sentiment.label,
+                                        style: textTheme.titleSmall?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        sentiment.subtitle,
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Tap a star (1–5) or pick a category below. Every star has a clear literal meaning — works on Web, PWA, Android & iOS:',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+                                if (selectedSentiment.value == sentiment)
+                                  Icon(Icons.check_circle, color: colorScheme.primary),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              for (int star = 1; star <= 5; star++)
-                                IconButton(
-                                  key: Key('star_rating_$star'),
-                                  tooltip: starLiteralDescription(star),
-                                  onPressed: () {
-                                    HapticFeedback.selectionClick();
-                                    selectedStarRating.value = star;
-                                    selectedSentiment.value = sentimentForStars(
-                                      star,
-                                    );
-                                    submittedMessage.value = null;
-                                  },
-                                  iconSize: 32,
-                                  icon: Icon(
-                                    star <= selectedStarRating.value
-                                        ? Icons.star_rounded
-                                        : Icons.star_outline_rounded,
-                                    color: star <= selectedStarRating.value
-                                        ? Colors.amber.shade600
-                                        : colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Center(
-                            child: Container(
-                              key: const Key('star_rating_literal_label'),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colorScheme.primaryContainer.withValues(
-                                  alpha: 0.6,
-                                ),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Text(
-                                starLiteralDescription(
-                                  selectedStarRating.value,
-                                ),
-                                style: textTheme.labelMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  // Sentiment Cards (Works Great / Idea / Bug)
-                  for (final sentiment in FeedbackSentiment.values)
+
+                    const SizedBox(height: 12),
+                    // Feedback Form
                     Card(
-                      key: Key('sentiment_${sentiment.name}'),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          color: selectedSentiment.value == sentiment
-                              ? colorScheme.primary
-                              : colorScheme.outlineVariant,
-                          width: selectedSentiment.value == sentiment
-                              ? 2.0
-                              : 1.0,
-                        ),
+                        side: BorderSide(color: colorScheme.outlineVariant),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      color: selectedSentiment.value == sentiment
-                          ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-                          : null,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          selectedSentiment.value = sentiment;
-                          selectedStarRating.value = switch (sentiment) {
-                            FeedbackSentiment.happy =>
-                              selectedStarRating.value >= 4
-                                  ? selectedStarRating.value
-                                  : 5,
-                            FeedbackSentiment.neutral => 3,
-                            FeedbackSentiment.sad =>
-                              selectedStarRating.value <= 2
-                                  ? selectedStarRating.value
-                                  : 1,
-                          };
-                          feedbackController.clear();
-                          submittedMessage.value = null;
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Text(
-                                sentiment.emoji,
-                                style: const TextStyle(fontSize: 24),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              selectedSentiment.value.promptTitle,
+                              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              key: const Key('feedback_message_input'),
+                              controller: feedbackController,
+                              maxLines: 4,
+                              decoration: InputDecoration(
+                                hintText: selectedSentiment.value.promptHint,
+                                border: const OutlineInputBorder(),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                            const SizedBox(height: 10),
+                            TextField(
+                              key: const Key('feedback_contact_input'),
+                              controller: contactController,
+                              onChanged: (value) {
+                                contactError.value = OptionalFeedbackContact.errorText(value);
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Optional name or email (if you would like a reply)',
+                                errorText: contactError.value,
+                                errorMaxLines: 3,
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Scribble / Drawing Attachment affordance
+                            if (drawingAttachment.value != null) ...[
+                              Container(
+                                key: const Key('attached_scribble_preview_container'),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: colorScheme.outlineVariant),
+                                ),
+                                child: Row(
                                   children: [
-                                    Text(
-                                      sentiment.label,
-                                      style: textTheme.titleSmall?.copyWith(
-                                        fontWeight: FontWeight.bold,
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.memory(
+                                        drawingAttachment.value!,
+                                        key: const Key('attached_scribble_thumbnail'),
+                                        width: 60,
+                                        height: 40,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
-                                    Text(
-                                      sentiment.subtitle,
-                                      style: textTheme.bodySmall?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            'Scribble Annotated Screenshot',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${drawingAttachment.value!.lengthInBytes ~/ 1024} KB kept with this note (not uploaded)',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                    ),
+                                    IconButton(
+                                      key: const Key('remove_scribble_attachment_button'),
+                                      tooltip: 'Remove scribble',
+                                      icon: const Icon(Icons.close, size: 18),
+                                      onPressed: () => drawingAttachment.value = null,
                                     ),
                                   ],
                                 ),
                               ),
-                              if (selectedSentiment.value == sentiment)
-                                Icon(
-                                  Icons.check_circle,
-                                  color: colorScheme.primary,
+                              const SizedBox(height: 10),
+                            ] else ...[
+                              OutlinedButton.icon(
+                                key: const Key('open_feedback_drawing_button'),
+                                onPressed: () async {
+                                  final screenshot =
+                                      screenshotBytes ?? await captureEnclosingScreenshot(context);
+                                  if (!context.mounted) return;
+                                  final result = await FeedbackDrawingDialog.show(
+                                    context,
+                                    screenshotBytes: screenshot,
+                                  );
+                                  if (result != null && result.isNotEmpty) {
+                                    drawingAttachment.value = result;
+                                  }
+                                },
+                                icon: const Icon(Icons.draw_outlined, size: 18),
+                                label: const Text(
+                                  'Draw / Annotate on Screenshot',
+                                  style: TextStyle(fontSize: 12),
                                 ),
+                              ),
+                              const SizedBox(height: 12),
                             ],
-                          ),
+                            if (submittedMessage.value != null) ...[
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Semantics(
+                                  identifier: 'feedback_submit_result',
+                                  label: submittedMessage.value,
+                                  container: true,
+                                  child: Text(
+                                    submittedMessage.value!,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 8,
+                              children: [
+                                FilledButton.icon(
+                                  key: const Key('submit_feedback_button'),
+                                  onPressed: isSubmitting.value
+                                      ? null
+                                      : () async {
+                                          final text = feedbackController.text.trim();
+                                          final contact = contactController.text.trim();
+                                          final contactProblem = OptionalFeedbackContact.errorText(
+                                            contact,
+                                          );
+                                          contactError.value = contactProblem;
+                                          if (text.isEmpty) {
+                                            submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
+                                            return;
+                                          }
+                                          if (contactProblem != null) {
+                                            submittedMessage.value = null;
+                                            return;
+                                          }
+                                          isSubmitting.value = true;
+                                          try {
+                                            final sentiment = selectedSentiment.value;
+                                            String? attachmentUrl;
+                                            final attachmentBytes = drawingAttachment.value;
+
+                                            if (attachmentBytes != null) {
+                                              final storageRepo = ref.read(
+                                                storageRepositoryProvider,
+                                              );
+                                              attachmentUrl = await storageRepo
+                                                  .uploadFeedbackAttachment(
+                                                    bytes: attachmentBytes,
+                                                    filename:
+                                                        'scribble_${DateTime.now().millisecondsSinceEpoch}.png',
+                                                  );
+                                            }
+
+                                            final result = await ref
+                                                .read(featureVotingProvider.notifier)
+                                                .submitFeedback(
+                                                  sentiment: sentiment,
+                                                  message: text,
+                                                  rating: selectedStarRating.value,
+                                                  contactEmail: contact.isNotEmpty ? contact : null,
+                                                  attachmentUrl: attachmentUrl,
+                                                  screenshotAttachment: attachmentBytes,
+                                                );
+
+                                            final hostedUpload =
+                                                FeedbackAttachmentRef.isHostedUpload(attachmentUrl);
+                                            final summary = StringBuffer()
+                                              ..writeln(
+                                                '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] $text',
+                                              );
+                                            if (contact.isNotEmpty) {
+                                              summary.writeln('From: $contact');
+                                            }
+                                            if (result.githubIssueNumber != null) {
+                                              summary.writeln(
+                                                'GitHub triage issue created: belong_feedback#${result.githubIssueNumber}',
+                                              );
+                                            } else {
+                                              summary.writeln(
+                                                'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
+                                              );
+                                            }
+                                            if (attachmentBytes != null && !hostedUpload) {
+                                              summary.writeln(
+                                                'Drawing: kept with this note, not uploaded.',
+                                              );
+                                            } else if (hostedUpload) {
+                                              summary.writeln('Attachment: $attachmentUrl');
+                                            }
+                                            try {
+                                              await Clipboard.setData(
+                                                ClipboardData(text: summary.toString()),
+                                              ).timeout(const Duration(milliseconds: 100));
+                                            } catch (_) {}
+
+                                            if (result.githubIssueNumber != null) {
+                                              submittedMessage.value =
+                                                  'Thank you! Your feedback was routed to our private triage queue (belong_feedback#${result.githubIssueNumber}).';
+                                            } else {
+                                              final saved = sentiment.isPrivateTriage
+                                                  ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
+                                                  : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                              submittedMessage.value =
+                                                  attachmentBytes != null && !hostedUpload
+                                                  ? '$saved The drawing stayed with the note and was not uploaded.'
+                                                  : saved;
+                                            }
+                                            feedbackController.clear();
+                                            drawingAttachment.value = null;
+                                          } catch (e) {
+                                            submittedMessage.value =
+                                                'Could not submit feedback: $e';
+                                          } finally {
+                                            isSubmitting.value = false;
+                                          }
+                                        },
+                                  icon: isSubmitting.value
+                                      ? const Icon(Icons.hourglass_empty_rounded, size: 18)
+                                      : const Icon(Icons.send_rounded, size: 18),
+                                  label: Text(
+                                    selectedSentiment.value.isPrivateTriage
+                                        ? 'Send Private Feedback'
+                                        : 'Share Praise & Encouragement',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
-
-                  const SizedBox(height: 12),
-                  // Feedback Form
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: colorScheme.outlineVariant),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            selectedSentiment.value.promptTitle,
-                            style: textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            key: const Key('feedback_message_input'),
-                            controller: feedbackController,
-                            maxLines: 4,
-                            decoration: InputDecoration(
-                              hintText: selectedSentiment.value.promptHint,
-                              border: const OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            key: const Key('feedback_contact_input'),
-                            controller: contactController,
-                            onChanged: (value) {
-                              contactError.value =
-                                  OptionalFeedbackContact.errorText(value);
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'Optional name or email (if you would like a reply)',
-                              errorText: contactError.value,
-                              errorMaxLines: 3,
-                              border: const OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Scribble / Drawing Attachment affordance
-                          if (drawingAttachment.value != null) ...[
-                            Container(
-                              key: const Key(
-                                'attached_scribble_preview_container',
-                              ),
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainerHighest
-                                    .withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: colorScheme.outlineVariant,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.memory(
-                                      drawingAttachment.value!,
-                                      key: const Key(
-                                        'attached_scribble_thumbnail',
-                                      ),
-                                      width: 60,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                          'Scribble Annotated Screenshot',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${drawingAttachment.value!.lengthInBytes ~/ 1024} KB kept with this note (not uploaded)',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  IconButton(
-                                    key: const Key(
-                                      'remove_scribble_attachment_button',
-                                    ),
-                                    tooltip: 'Remove scribble',
-                                    icon: const Icon(Icons.close, size: 18),
-                                    onPressed: () =>
-                                        drawingAttachment.value = null,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                          ] else ...[
-                            OutlinedButton.icon(
-                              key: const Key('open_feedback_drawing_button'),
-                              onPressed: () async {
-                                final screenshot = screenshotBytes ??
-                                    await captureEnclosingScreenshot(context);
-                                if (!context.mounted) return;
-                                final result = await FeedbackDrawingDialog.show(
-                                  context,
-                                  screenshotBytes: screenshot,
-                                );
-                                if (result != null && result.isNotEmpty) {
-                                  drawingAttachment.value = result;
-                                }
-                              },
-                              icon: const Icon(Icons.draw_outlined, size: 18),
-                              label: const Text(
-                                'Draw / Annotate on Screenshot',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-                          if (submittedMessage.value != null) ...[
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Semantics(
-                                identifier: 'feedback_submit_result',
-                                label: submittedMessage.value,
-                                container: true,
-                                child: Text(
-                                  submittedMessage.value!,
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 8,
-                            children: [
-                              FilledButton.icon(
-                                key: const Key('submit_feedback_button'),
-                                onPressed: isSubmitting.value
-                                    ? null
-                                    : () async {
-                                        final text = feedbackController.text
-                                            .trim();
-                                        final contact = contactController.text
-                                            .trim();
-                                        final contactProblem =
-                                            OptionalFeedbackContact.errorText(
-                                              contact,
-                                            );
-                                        contactError.value = contactProblem;
-                                        if (text.isEmpty) {
-                                          submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
-                                          return;
-                                        }
-                                        if (contactProblem != null) {
-                                          submittedMessage.value = null;
-                                          return;
-                                        }
-                                        isSubmitting.value = true;
-                                        try {
-                                          final sentiment =
-                                              selectedSentiment.value;
-                                          String? attachmentUrl;
-                                          final attachmentBytes =
-                                              drawingAttachment.value;
-
-                                          if (attachmentBytes != null) {
-                                            final storageRepo = ref.read(
-                                              storageRepositoryProvider,
-                                            );
-                                            attachmentUrl = await storageRepo
-                                                .uploadFeedbackAttachment(
-                                                  bytes: attachmentBytes,
-                                                  filename:
-                                                      'scribble_${DateTime.now().millisecondsSinceEpoch}.png',
-                                                );
-                                          }
-
-                                          final result = await ref
-                                              .read(
-                                                featureVotingProvider.notifier,
-                                              )
-                                              .submitFeedback(
-                                                sentiment: sentiment,
-                                                message: text,
-                                                rating:
-                                                    selectedStarRating.value,
-                                                contactEmail: contact.isNotEmpty
-                                                    ? contact
-                                                    : null,
-                                                attachmentUrl: attachmentUrl,
-                                                screenshotAttachment:
-                                                    attachmentBytes,
-                                              );
-
-                                          final hostedUpload =
-                                              FeedbackAttachmentRef.isHostedUpload(
-                                                attachmentUrl,
-                                              );
-                                          final summary = StringBuffer()
-                                            ..writeln(
-                                              '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] $text',
-                                            );
-                                          if (contact.isNotEmpty) {
-                                            summary.writeln('From: $contact');
-                                          }
-                                          if (result.githubIssueNumber != null) {
-                                            summary.writeln(
-                                              'GitHub triage issue created: belong_feedback#${result.githubIssueNumber}',
-                                            );
-                                          } else {
-                                            summary.writeln(
-                                              'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
-                                            );
-                                          }
-                                          if (attachmentBytes != null &&
-                                              !hostedUpload) {
-                                            summary.writeln(
-                                              'Drawing: kept with this note, not uploaded.',
-                                            );
-                                          } else if (hostedUpload) {
-                                            summary.writeln(
-                                              'Attachment: $attachmentUrl',
-                                            );
-                                          }
-                                          try {
-                                            await Clipboard.setData(
-                                              ClipboardData(
-                                                text: summary.toString(),
-                                              ),
-                                            ).timeout(
-                                              const Duration(milliseconds: 100),
-                                            );
-                                          } catch (_) {}
-
-                                          if (result.githubIssueNumber != null) {
-                                            submittedMessage.value =
-                                                'Thank you! Your feedback was routed to our private triage queue (belong_feedback#${result.githubIssueNumber}).';
-                                          } else {
-                                            final saved =
-                                                sentiment.isPrivateTriage
-                                                ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
-                                                : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
-                                            submittedMessage.value =
-                                                attachmentBytes != null &&
-                                                    !hostedUpload
-                                                ? '$saved The drawing stayed with the note and was not uploaded.'
-                                                : saved;
-                                          }
-                                          feedbackController.clear();
-                                          drawingAttachment.value = null;
-                                        } catch (e) {
-                                          submittedMessage.value =
-                                              'Could not submit feedback: $e';
-                                        } finally {
-                                          isSubmitting.value = false;
-                                        }
-                                      },
-                                icon: isSubmitting.value
-                                    ? const Icon(
-                                        Icons.hourglass_empty_rounded,
-                                        size: 18,
-                                      )
-                                    : const Icon(Icons.send_rounded, size: 18),
-                                label: Text(
-                                  selectedSentiment.value.isPrivateTriage
-                                      ? 'Send Private Feedback'
-                                      : 'Share Praise & Encouragement',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
 
 /// Web Maestro drops some button labels. This node keeps [label] as the

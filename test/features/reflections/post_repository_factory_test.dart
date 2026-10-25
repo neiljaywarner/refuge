@@ -9,8 +9,10 @@ import 'package:refuge4serverpod/src/features/reflections/data/serverpod_post_re
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathProvider = MethodChannel('plugins.flutter.io/path_provider');
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(pathProvider, (call) async => '.');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    pathProvider,
+    (call) async => '.',
+  );
 
   group('PostRepositoryFactory', () {
     test('creates repository instance matching configured backend mode', () {

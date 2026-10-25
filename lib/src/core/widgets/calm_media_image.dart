@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 /// Sensory-safe, resilient image widget supporting network URLs (HTTP/HTTPS),
@@ -29,11 +30,7 @@ class CalmMediaImage extends StatelessWidget {
       height: height,
       color: Colors.amber.withValues(alpha: 0.1),
       alignment: Alignment.center,
-      child: const Icon(
-        Icons.image_outlined,
-        size: 20,
-        color: Colors.grey,
-      ),
+      child: const Icon(Icons.image_outlined, size: 20, color: Colors.grey),
     );
   }
 
@@ -57,8 +54,7 @@ class CalmMediaImage extends StatelessWidget {
         child: CircularProgressIndicator(
           strokeWidth: 2.0,
           value: loadingProgress.expectedTotalBytes != null
-              ? loadingProgress.cumulativeBytesLoaded /
-                  loadingProgress.expectedTotalBytes!
+              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
               : null,
         ),
       ),

@@ -11,11 +11,7 @@ class TestUser {
   String idToken = '';
   String localId = '';
 
-  TestUser({
-    required this.email,
-    required this.password,
-    required this.displayName,
-  });
+  TestUser({required this.email, required this.password, required this.displayName});
 }
 
 Future<void> main() async {
@@ -72,14 +68,15 @@ Future<void> main() async {
 
   // 4. User 2 posts nested reply to User 1's comment
   final comment2Id = 'smoke_comment_2_reply_$timestamp';
-  stdout.writeln('\n4. User 2 (${user2.displayName}) posting nested reply to comment $comment1Id...');
+  stdout.writeln(
+    '\n4. User 2 (${user2.displayName}) posting nested reply to comment $comment1Id...',
+  );
   final comment2Data = {
     'postId': {'stringValue': '1'},
     'parentCommentId': {'stringValue': comment1Id},
     'authorName': {'stringValue': user2.displayName},
     'content': {
-      'stringValue':
-          'Amen Alice! That scripture is so grounding for autistic disciples. Holding space with you.',
+      'stringValue': 'Amen Alice! That scripture is so grounding for autistic disciples. Holding space with you.',
     },
     'toneTag': {'stringValue': '[Comfort Only]'},
     'timestamp': {'stringValue': DateTime.now().toUtc().toIso8601String()},
@@ -92,7 +89,9 @@ Future<void> main() async {
     },
   };
   await _writeFirestoreDoc(client, user2.idToken, 'comments', comment2Id, comment2Data);
-  stdout.writeln('   Nested reply created in Firestore with ID: $comment2Id (parentCommentId: $comment1Id)');
+  stdout.writeln(
+    '   Nested reply created in Firestore with ID: $comment2Id (parentCommentId: $comment1Id)',
+  );
 
   // 5. Query and verify both comments from Firestore
   stdout.writeln('\n5. Verifying nested comments from Firestore REST API...');
@@ -101,10 +100,14 @@ Future<void> main() async {
 
   stdout.writeln('   Parent comment content: ${retrieved1['fields']?['content']?['stringValue']}');
   stdout.writeln('   Reply comment content:  ${retrieved2['fields']?['content']?['stringValue']}');
-  stdout.writeln('   Reply parentCommentId:  ${retrieved2['fields']?['parentCommentId']?['stringValue']}');
+  stdout.writeln(
+    '   Reply parentCommentId:  ${retrieved2['fields']?['parentCommentId']?['stringValue']}',
+  );
 
   if (retrieved2['fields']?['parentCommentId']?['stringValue'] == comment1Id) {
-    stdout.writeln('\n SUCCESS: Verified two-device registration & live nested comments in Cloud Firestore!');
+    stdout.writeln(
+      '\n SUCCESS: Verified two-device registration & live nested comments in Cloud Firestore!',
+    );
     stdout.writeln('   Parent ID: $comment1Id');
     stdout.writeln('   Nested Child ID: $comment2Id');
     stdout.writeln('   Hierarchy: User 1 (${user1.displayName}) -> User 2 (${user2.displayName})');
@@ -117,16 +120,12 @@ Future<void> main() async {
 }
 
 Future<void> _signUpUser(HttpClient client, TestUser user) async {
-  final url = Uri.parse(
-    'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$_apiKey',
-  );
+  final url = Uri.parse('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$_apiKey');
   final request = await client.postUrl(url);
   request.headers.contentType = ContentType.json;
-  request.write(jsonEncode({
-    'email': user.email,
-    'password': user.password,
-    'returnSecureToken': true,
-  }));
+  request.write(
+    jsonEncode({'email': user.email, 'password': user.password, 'returnSecureToken': true}),
+  );
   final response = await request.close();
   final body = await response.transform(utf8.decoder).join();
   if (response.statusCode != 200) {
@@ -142,11 +141,13 @@ Future<void> _signUpUser(HttpClient client, TestUser user) async {
   );
   final updateReq = await client.postUrl(updateUrl);
   updateReq.headers.contentType = ContentType.json;
-  updateReq.write(jsonEncode({
-    'idToken': user.idToken,
-    'displayName': user.displayName,
-    'returnSecureToken': true,
-  }));
+  updateReq.write(
+    jsonEncode({
+      'idToken': user.idToken,
+      'displayName': user.displayName,
+      'returnSecureToken': true,
+    }),
+  );
   final updateResp = await updateReq.close();
   await updateResp.drain();
 }

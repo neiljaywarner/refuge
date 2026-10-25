@@ -36,38 +36,26 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('About shows version, full SHA, UTC build time, and release', (
-    tester,
-  ) async {
+  testWidgets('About shows version, full SHA, UTC build time, and release', (tester) async {
     final builtAt = DateTime.utc(2026, 10, 24, 22, 42, 2, 123);
     final builtAtMs = builtAt.millisecondsSinceEpoch;
 
     await openAbout(
       tester,
-      identity: BuildIdentity(
-        gitCommitSha: _sha,
-        buildTimeMs: '$builtAtMs',
-        releaseTag: 'v0.9.1',
-      ),
-      loadVersion: () async =>
-          const AppVersionLabel(version: '0.9.1', buildNumber: '2'),
+      identity: BuildIdentity(gitCommitSha: _sha, buildTimeMs: '$builtAtMs', releaseTag: 'v0.9.1'),
+      loadVersion: () async => const AppVersionLabel(version: '0.9.1', buildNumber: '2'),
     );
 
     expect(find.text('Belong on the Spectrum (v0.9.1+2)'), findsOneWidget);
     expect(find.text('Version: v0.9.1+2'), findsOneWidget);
     expect(find.text('Git commit: $_sha'), findsOneWidget);
-    expect(
-      find.text('Build time: 2026-10-24T22:42:02.123Z ($builtAtMs ms)'),
-      findsOneWidget,
-    );
+    expect(find.text('Build time: 2026-10-24T22:42:02.123Z ($builtAtMs ms)'), findsOneWidget);
     expect(find.text('Release: v0.9.1'), findsOneWidget);
     expect(find.text('$gitCommitUrlPrefix$_sha'), findsOneWidget);
     expect(find.text('Source: dev'), findsNothing);
   });
 
-  testWidgets('About shows dev/unknown when dart-defines are missing', (
-    tester,
-  ) async {
+  testWidgets('About shows dev/unknown when dart-defines are missing', (tester) async {
     await openAbout(
       tester,
       identity: const BuildIdentity(),
@@ -80,24 +68,15 @@ void main() {
     expect(find.text('Source: dev'), findsOneWidget);
     expect(find.text('Release: dev'), findsNothing);
     expect(find.byKey(const Key('about_build_commit_url')), findsNothing);
-    expect(
-      find.textContaining('github.com/neiljaywarner/refuge/commit/'),
-      findsNothing,
-    );
+    expect(find.textContaining('github.com/neiljaywarner/refuge/commit/'), findsNothing);
     expect(BuildIdentity.fromEnvironment.commitLabel, 'unknown');
     expect(BuildIdentity.fromEnvironment.sourceLabel, 'dev');
   });
 
-  testWidgets('invalid defines stay unknown and are not labeled as a SHA', (
-    tester,
-  ) async {
+  testWidgets('invalid defines stay unknown and are not labeled as a SHA', (tester) async {
     await openAbout(
       tester,
-      identity: const BuildIdentity(
-        gitCommitSha: 'dev',
-        buildTimeMs: 'soon',
-        releaseTag: 'v0.9.1',
-      ),
+      identity: const BuildIdentity(gitCommitSha: 'dev', buildTimeMs: 'soon', releaseTag: 'v0.9.1'),
       loadVersion: () async => AppVersionLabel.unknown,
     );
 

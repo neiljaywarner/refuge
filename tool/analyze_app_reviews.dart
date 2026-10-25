@@ -125,19 +125,19 @@ class AppReview {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'author': authorMasked,
-        'rating': rating,
-        'title': title,
-        'content': content,
-        'version': version,
-        'voteCount': voteCount,
-        'store': store.name,
-        if (device != null) 'device': device,
-        if (createdAt != null) 'createdAt': createdAt,
-        if (category != null) 'category': category,
-        if (sensoryTheme != null) 'sensoryTheme': sensoryTheme,
-      };
+    'id': id,
+    'author': authorMasked,
+    'rating': rating,
+    'title': title,
+    'content': content,
+    'version': version,
+    'voteCount': voteCount,
+    'store': store.name,
+    if (device != null) 'device': device,
+    if (createdAt != null) 'createdAt': createdAt,
+    if (category != null) 'category': category,
+    if (sensoryTheme != null) 'sensoryTheme': sensoryTheme,
+  };
 }
 
 /// Aggregated sentiment analysis across ingested reviews.
@@ -156,8 +156,7 @@ class ReviewSentimentReport {
 
   int get totalCount => reviews.length;
 
-  int countForRating(int star) =>
-      reviews.where((r) => r.rating == star).length;
+  int countForRating(int star) => reviews.where((r) => r.rating == star).length;
 
   double get averageRating {
     if (reviews.isEmpty) return 0.0;
@@ -195,19 +194,29 @@ class ReviewSentimentReport {
       if (review.matches(RegExp(r'notif|alert|badge|push|spam|email|ping|chime|buzz'))) {
         buckets['Notification Overload & Alerts']!.add(review);
       }
-      if (review.matches(RegExp(r'crash|freeze|slow|lag|battery|drain|stutter|memory|bug|webview'))) {
+      if (review.matches(
+        RegExp(r'crash|freeze|slow|lag|battery|drain|stutter|memory|bug|webview'),
+      )) {
         buckets['Performance, Crashes & Battery']!.add(review);
       }
-      if (review.matches(RegExp(r'video|audio|player|play|buffer|sound|stream|podcast|lockscreen|lock screen'))) {
+      if (review.matches(
+        RegExp(r'video|audio|player|play|buffer|sound|stream|podcast|lockscreen|lock screen'),
+      )) {
         buckets['Video & Media Playback']!.add(review);
       }
-      if (review.matches(RegExp(r'navigat|back|menu|confus|lost|stuck|ui|layout|tablet|gesture|exit'))) {
+      if (review.matches(
+        RegExp(r'navigat|back|menu|confus|lost|stuck|ui|layout|tablet|gesture|exit'),
+      )) {
         buckets['Navigation & Layout Confusion']!.add(review);
       }
-      if (review.matches(RegExp(r'paywall|subscri|renew|login|logout|sign in|auth|password|magic link'))) {
+      if (review.matches(
+        RegExp(r'paywall|subscri|renew|login|logout|sign in|auth|password|magic link'),
+      )) {
         buckets['Paywall, Subscription & Auth']!.add(review);
       }
-      if (review.matches(RegExp(r'space|communit|fellowship|cohort|discuss|chat|friend|member|church|study'))) {
+      if (review.matches(
+        RegExp(r'space|communit|fellowship|cohort|discuss|chat|friend|member|church|study'),
+      )) {
         buckets['Spaces, Community & Fellowship']!.add(review);
       }
     }
@@ -226,25 +235,41 @@ class ReviewSentimentReport {
     };
 
     for (final review in reviews) {
-      if (review.matches(RegExp(r'sensor|theme|sage|twilight|amber|classic|contrast|dark|light|strain|fatigue|visual'))) {
+      if (review.matches(
+        RegExp(
+          r'sensor|theme|sage|twilight|amber|classic|contrast|dark|light|strain|fatigue|visual',
+        ),
+      )) {
         buckets['Sensory Accommodations & Themes']!.add(review);
       }
       if (review.matches(RegExp(r'notif|calm|digest|quiet|hour|silent|bell|buzz|chime|ping'))) {
         buckets['Calm Notifications & Quiet Hours']!.add(review);
       }
-      if (review.matches(RegExp(r'navigat|tab|bottom|bar|space|breadcrumb|back|layout|tablet|screen'))) {
+      if (review.matches(
+        RegExp(r'navigat|tab|bottom|bar|space|breadcrumb|back|layout|tablet|screen'),
+      )) {
         buckets['Navigation, Hierarchy & Breadcrumbs']!.add(review);
       }
-      if (review.matches(RegExp(r'perform|speed|fast|120fps|60fps|smooth|scroll|offline|cache|battery|impeller'))) {
+      if (review.matches(
+        RegExp(r'perform|speed|fast|120fps|60fps|smooth|scroll|offline|cache|battery|impeller'),
+      )) {
         buckets['Performance, Offline & Battery']!.add(review);
       }
-      if (review.matches(RegExp(r'scripture|psalm|reflection|fellowship|prayer|covenant|masking|autistic|faith|christian'))) {
+      if (review.matches(
+        RegExp(
+          r'scripture|psalm|reflection|fellowship|prayer|covenant|masking|autistic|faith|christian',
+        ),
+      )) {
         buckets['Scripture, Reflections & Fellowship']!.add(review);
       }
-      if (review.matches(RegExp(r'audio|sound|quiet room|rainfall|stream|music|relax|decompress'))) {
+      if (review.matches(
+        RegExp(r'audio|sound|quiet room|rainfall|stream|music|relax|decompress'),
+      )) {
         buckets['Audio, Soundscapes & Quiet Room']!.add(review);
       }
-      if (review.matches(RegExp(r'profile|avatar|monogram|tagline|vote|voting|canvas|draw|feedback|safety|admin'))) {
+      if (review.matches(
+        RegExp(r'profile|avatar|monogram|tagline|vote|voting|canvas|draw|feedback|safety|admin'),
+      )) {
         buckets['Account, Profile & Safety']!.add(review);
       }
     }
@@ -259,7 +284,9 @@ class ReviewSentimentReport {
     buffer.writeln('# 📈 Mobile App Review Sentiment Report: $appName ($appId)');
     buffer.writeln();
     buffer.writeln('**Audit Date:** ${DateTime.now().toIso8601String().split('T').first}  ');
-    buffer.writeln('**Target Preset:** `${targetPreset.key}` (${isCompetitor ? 'Competitive Benchmark' : 'Belong First-Party Platform'})  ');
+    buffer.writeln(
+      '**Target Preset:** `${targetPreset.key}` (${isCompetitor ? 'Competitive Benchmark' : 'Belong First-Party Platform'})  ',
+    );
     buffer.writeln('**Total Reviews Analyzed:** $totalCount  ');
     buffer.writeln('**Calculated Average Rating:** ${averageRating.toStringAsFixed(2)} / 5.0 ⭐  ');
 
@@ -287,28 +314,58 @@ class ReviewSentimentReport {
     final categories = categorizeByTopic();
     buffer.writeln('## 2. Topic Taxonomy & Actionable Insights');
     buffer.writeln();
-    buffer.writeln('| Topic / Friction Area | Review Mentions | ${isCompetitor ? 'Key Architectural Lesson for Belong / Refuge' : 'Engineering & Product Action Item'} |');
+    buffer.writeln(
+      '| Topic / Friction Area | Review Mentions | ${isCompetitor ? 'Key Architectural Lesson for Belong / Refuge' : 'Engineering & Product Action Item'} |',
+    );
     buffer.writeln('| :--- | :---: | :--- |');
 
     if (isCompetitor) {
-      buffer.writeln('| **Notifications & Alerts** | ${categories['Notification Overload & Alerts']?.length ?? 0} | Enforce opt-in calm digests & zero default sound barrage. |');
-      buffer.writeln('| **Performance & Stability** | ${categories['Performance, Crashes & Battery']?.length ?? 0} | Pure Flutter AOT Impeller engine for 60/120fps with zero WebView latency. |');
-      buffer.writeln('| **Video & Media** | ${categories['Video & Media Playback']?.length ?? 0} | Resilient native video controllers with explicit pause states and background awareness. |');
-      buffer.writeln('| **Navigation & Hierarchy** | ${categories['Navigation & Layout Confusion']?.length ?? 0} | Persistent bottom navigation tabs, single-level space breadcrumbs & PopScope back handlers. |');
-      buffer.writeln('| **Paywalls & Auth** | ${categories['Paywall, Subscription & Auth']?.length ?? 0} | 100% free non-profit sanctuary; resilient offline tokens in secure storage. |');
-      buffer.writeln('| **Spaces & Fellowship** | ${categories['Spaces, Community & Fellowship']?.length ?? 0} | Emulate themed spaces with Psalm 139:14 grounding and sensory themes. |');
+      buffer.writeln(
+        '| **Notifications & Alerts** | ${categories['Notification Overload & Alerts']?.length ?? 0} | Enforce opt-in calm digests & zero default sound barrage. |',
+      );
+      buffer.writeln(
+        '| **Performance & Stability** | ${categories['Performance, Crashes & Battery']?.length ?? 0} | Pure Flutter AOT Impeller engine for 60/120fps with zero WebView latency. |',
+      );
+      buffer.writeln(
+        '| **Video & Media** | ${categories['Video & Media Playback']?.length ?? 0} | Resilient native video controllers with explicit pause states and background awareness. |',
+      );
+      buffer.writeln(
+        '| **Navigation & Hierarchy** | ${categories['Navigation & Layout Confusion']?.length ?? 0} | Persistent bottom navigation tabs, single-level space breadcrumbs & PopScope back handlers. |',
+      );
+      buffer.writeln(
+        '| **Paywalls & Auth** | ${categories['Paywall, Subscription & Auth']?.length ?? 0} | 100% free non-profit sanctuary; resilient offline tokens in secure storage. |',
+      );
+      buffer.writeln(
+        '| **Spaces & Fellowship** | ${categories['Spaces, Community & Fellowship']?.length ?? 0} | Emulate themed spaces with Psalm 139:14 grounding and sensory themes. |',
+      );
     } else {
-      buffer.writeln('| **Sensory Accommodations & Themes** | ${categories['Sensory Accommodations & Themes']?.length ?? 0} | Protect Sage, Twilight, Amber, and High-Contrast WCAG AAA palettes. |');
-      buffer.writeln('| **Calm Notifications & Quiet Hours** | ${categories['Calm Notifications & Quiet Hours']?.length ?? 0} | Maintain twice-daily calm batches with silent vibration defaults. |');
-      buffer.writeln('| **Navigation & Breadcrumbs** | ${categories['Navigation, Hierarchy & Breadcrumbs']?.length ?? 0} | Keep 1-tap escape hatch to bottom tabs and responsive tablet views. |');
-      buffer.writeln('| **Performance & Offline** | ${categories['Performance, Offline & Battery']?.length ?? 0} | Maintain 60/120fps Impeller rendering and offline SQLite/local reflection sync. |');
-      buffer.writeln('| **Scripture & Fellowship** | ${categories['Scripture, Reflections & Fellowship']?.length ?? 0} | Expand Psalm 139:14 prompts, unmasking safety, and care affirmations. |');
-      buffer.writeln('| **Quiet Room & Soundscapes** | ${categories['Audio, Soundscapes & Quiet Room']?.length ?? 0} | Add gentle mountain stream and forest wind ambient loops. |');
-      buffer.writeln('| **Account, Profile & Safety** | ${categories['Account, Profile & Safety']?.length ?? 0} | Expand monogram avatars, special interest taglines, and soft-delete admin controls. |');
+      buffer.writeln(
+        '| **Sensory Accommodations & Themes** | ${categories['Sensory Accommodations & Themes']?.length ?? 0} | Protect Sage, Twilight, Amber, and High-Contrast WCAG AAA palettes. |',
+      );
+      buffer.writeln(
+        '| **Calm Notifications & Quiet Hours** | ${categories['Calm Notifications & Quiet Hours']?.length ?? 0} | Maintain twice-daily calm batches with silent vibration defaults. |',
+      );
+      buffer.writeln(
+        '| **Navigation & Breadcrumbs** | ${categories['Navigation, Hierarchy & Breadcrumbs']?.length ?? 0} | Keep 1-tap escape hatch to bottom tabs and responsive tablet views. |',
+      );
+      buffer.writeln(
+        '| **Performance & Offline** | ${categories['Performance, Offline & Battery']?.length ?? 0} | Maintain 60/120fps Impeller rendering and offline SQLite/local reflection sync. |',
+      );
+      buffer.writeln(
+        '| **Scripture & Fellowship** | ${categories['Scripture, Reflections & Fellowship']?.length ?? 0} | Expand Psalm 139:14 prompts, unmasking safety, and care affirmations. |',
+      );
+      buffer.writeln(
+        '| **Quiet Room & Soundscapes** | ${categories['Audio, Soundscapes & Quiet Room']?.length ?? 0} | Add gentle mountain stream and forest wind ambient loops. |',
+      );
+      buffer.writeln(
+        '| **Account, Profile & Safety** | ${categories['Account, Profile & Safety']?.length ?? 0} | Expand monogram avatars, special interest taglines, and soft-delete admin controls. |',
+      );
     }
     buffer.writeln();
 
-    buffer.writeln('## 3. Top Negative Reviews (${isCompetitor ? 'Mistakes to Avoid' : 'Friction Reports & Bug Triage'})');
+    buffer.writeln(
+      '## 3. Top Negative Reviews (${isCompetitor ? 'Mistakes to Avoid' : 'Friction Reports & Bug Triage'})',
+    );
     buffer.writeln();
     final seenNegativeTitles = <String>{};
     final uniqueNegatives = <AppReview>[];
@@ -330,7 +387,9 @@ class ReviewSentimentReport {
       }
     }
 
-    buffer.writeln('## 4. Top Positive Reviews (${isCompetitor ? 'Beloved Patterns to Replicate' : 'Beloved Features to Protect'})');
+    buffer.writeln(
+      '## 4. Top Positive Reviews (${isCompetitor ? 'Beloved Patterns to Replicate' : 'Beloved Features to Protect'})',
+    );
     buffer.writeln();
     final seenPositiveTitles = <String>{};
     final uniquePositives = <AppReview>[];
@@ -378,21 +437,28 @@ List<AppReview> parseAppleCustomerReviewsJson(Map<String, dynamic> root) {
       final ratingStr = (raw['im:rating'] as Map<String, dynamic>?)?['label'] as String? ?? '0';
       final title = (raw['title'] as Map<String, dynamic>?)?['label'] as String? ?? '';
       final content = (raw['content'] as Map<String, dynamic>?)?['label'] as String? ?? '';
-      final author = ((raw['author'] as Map<String, dynamic>?)?['name'] as Map<String, dynamic>?)?['label'] as String? ?? 'Anonymous';
-      final version = (raw['im:version'] as Map<String, dynamic>?)?['label'] as String? ?? 'unknown';
+      final author =
+          ((raw['author'] as Map<String, dynamic>?)?['name'] as Map<String, dynamic>?)?['label']
+              as String? ??
+          'Anonymous';
+      final version =
+          (raw['im:version'] as Map<String, dynamic>?)?['label'] as String? ?? 'unknown';
       final id = (raw['id'] as Map<String, dynamic>?)?['label'] as String? ?? '';
-      final voteCountStr = (raw['im:voteCount'] as Map<String, dynamic>?)?['label'] as String? ?? '0';
+      final voteCountStr =
+          (raw['im:voteCount'] as Map<String, dynamic>?)?['label'] as String? ?? '0';
 
-      reviews.add(AppReview(
-        id: id,
-        author: author,
-        rating: int.tryParse(ratingStr) ?? 0,
-        title: title,
-        content: content,
-        version: version,
-        voteCount: int.tryParse(voteCountStr) ?? 0,
-        store: ReviewStore.appleAppStore,
-      ));
+      reviews.add(
+        AppReview(
+          id: id,
+          author: author,
+          rating: int.tryParse(ratingStr) ?? 0,
+          title: title,
+          content: content,
+          version: version,
+          voteCount: int.tryParse(voteCountStr) ?? 0,
+          store: ReviewStore.appleAppStore,
+        ),
+      );
     } catch (_) {
       // Continue parsing remaining valid entries
     }
@@ -432,18 +498,20 @@ List<AppReview> parseGooglePlayReviewsJson(dynamic root) {
       final device = raw['device'] as String?;
       final at = raw['at'] as String? ?? raw['date'] as String?;
 
-      reviews.add(AppReview(
-        id: id,
-        author: author,
-        rating: rating,
-        title: title,
-        content: content,
-        version: version,
-        voteCount: thumbsUp is int ? thumbsUp : (int.tryParse(thumbsUp.toString()) ?? 0),
-        store: ReviewStore.googlePlay,
-        device: device,
-        createdAt: at,
-      ));
+      reviews.add(
+        AppReview(
+          id: id,
+          author: author,
+          rating: rating,
+          title: title,
+          content: content,
+          version: version,
+          voteCount: thumbsUp is int ? thumbsUp : (int.tryParse(thumbsUp.toString()) ?? 0),
+          store: ReviewStore.googlePlay,
+          device: device,
+          createdAt: at,
+        ),
+      );
     } catch (_) {
       // Continue parsing remaining valid entries
     }
@@ -477,17 +545,19 @@ List<AppReview> parseGooglePlayReviewsCsv(String csvContent) {
       final title = tokens[7];
       final content = tokens[8];
 
-      reviews.add(AppReview(
-        id: 'gp-csv-${reviews.length + 1}',
-        author: 'GooglePlayUser',
-        rating: rating,
-        title: title,
-        content: content,
-        version: appVersion.isEmpty ? 'unknown' : appVersion,
-        store: ReviewStore.googlePlay,
-        device: device.isEmpty ? null : device,
-        createdAt: date.isEmpty ? null : date,
-      ));
+      reviews.add(
+        AppReview(
+          id: 'gp-csv-${reviews.length + 1}',
+          author: 'GooglePlayUser',
+          rating: rating,
+          title: title,
+          content: content,
+          version: appVersion.isEmpty ? 'unknown' : appVersion,
+          store: ReviewStore.googlePlay,
+          device: device.isEmpty ? null : device,
+          createdAt: date.isEmpty ? null : date,
+        ),
+      );
     } catch (_) {
       // Continue parsing
     }
@@ -559,7 +629,8 @@ List<AppReview> parseBelongInAppFeedbackJson(dynamic root) {
       }
 
       final content = raw['content'] as String? ?? raw['feedbackText'] as String? ?? '';
-      var title = raw['title'] as String? ?? raw['label'] as String? ?? raw['promptTitle'] as String? ?? '';
+      var title =
+          raw['title'] as String? ?? raw['label'] as String? ?? raw['promptTitle'] as String? ?? '';
       if (title.isEmpty && content.isNotEmpty) {
         final firstSentence = content.split(RegExp(r'[.\n]')).first.trim();
         title = firstSentence.length > 50 ? '${firstSentence.substring(0, 47)}...' : firstSentence;
@@ -571,19 +642,21 @@ List<AppReview> parseBelongInAppFeedbackJson(dynamic root) {
       final sensoryTheme = raw['sensoryTheme'] as String?;
       final createdAt = raw['createdAt'] as String?;
 
-      reviews.add(AppReview(
-        id: id,
-        author: author,
-        rating: rating,
-        title: title,
-        content: content,
-        version: version,
-        voteCount: voteCount,
-        store: ReviewStore.inAppFeedback,
-        category: category,
-        sensoryTheme: sensoryTheme,
-        createdAt: createdAt,
-      ));
+      reviews.add(
+        AppReview(
+          id: id,
+          author: author,
+          rating: rating,
+          title: title,
+          content: content,
+          version: version,
+          voteCount: voteCount,
+          store: ReviewStore.inAppFeedback,
+          category: category,
+          sensoryTheme: sensoryTheme,
+          createdAt: createdAt,
+        ),
+      );
     } catch (_) {
       // Continue parsing
     }
@@ -606,7 +679,9 @@ List<AppReview> autoDetectAndParse(String content) {
         if (first.containsKey('sensoryTheme') || first.containsKey('feedbackText')) {
           return parseBelongInAppFeedbackJson(decoded);
         }
-        if (first.containsKey('reviewId') || first.containsKey('score') || first.containsKey('userName')) {
+        if (first.containsKey('reviewId') ||
+            first.containsKey('score') ||
+            first.containsKey('userName')) {
           return parseGooglePlayReviewsJson(decoded);
         }
         // Fallback: check if standard review format
@@ -672,20 +747,22 @@ List<AppReview> scaleReviewsToCount(List<AppReview> baseReviews, int targetCount
   while (result.length < targetCount) {
     for (final r in baseReviews) {
       if (result.length >= targetCount) break;
-      result.add(AppReview(
-        id: '${r.id}-c$cycle',
-        author: cycle == 1 ? '${r.author}_${cycle + 1}' : '${r.author}$cycle',
-        rating: r.rating,
-        title: r.title,
-        content: r.content,
-        version: r.version,
-        voteCount: r.voteCount,
-        store: r.store,
-        device: r.device,
-        category: r.category,
-        sensoryTheme: r.sensoryTheme,
-        createdAt: r.createdAt,
-      ));
+      result.add(
+        AppReview(
+          id: '${r.id}-c$cycle',
+          author: cycle == 1 ? '${r.author}_${cycle + 1}' : '${r.author}$cycle',
+          rating: r.rating,
+          title: r.title,
+          content: r.content,
+          version: r.version,
+          voteCount: r.voteCount,
+          store: r.store,
+          device: r.device,
+          category: r.category,
+          sensoryTheme: r.sensoryTheme,
+          createdAt: r.createdAt,
+        ),
+      );
     }
     cycle++;
   }
@@ -709,23 +786,35 @@ Future<void> main(List<String> rawArgs) async {
   for (var i = 0; i < rawArgs.length; i++) {
     final arg = rawArgs[i];
     if (arg == '--help' || arg == '-h') {
-      stdout.writeln('📱 Mobile App Customer Review Sentiment Analyzer (Circle Benchmark & Belong Audit)');
+      stdout.writeln(
+        '📱 Mobile App Customer Review Sentiment Analyzer (Circle Benchmark & Belong Audit)',
+      );
       stdout.writeln('Usage: dart tool/analyze_app_reviews.dart [options]');
-      stdout.writeln('  --preset=<name>       Target app preset: "circle" or "belong" (default: circle)');
+      stdout.writeln(
+        '  --preset=<name>       Target app preset: "circle" or "belong" (default: circle)',
+      );
       stdout.writeln('  --app-id=<id>         Apple App Store App ID (Circle: 1506475653)');
-      stdout.writeln('  --package-name=<pkg>  Google Play Store package name (Belong: com.belongonthespectrum.sanctuary)');
+      stdout.writeln(
+        '  --package-name=<pkg>  Google Play Store package name (Belong: com.belongonthespectrum.sanctuary)',
+      );
       stdout.writeln('  --app-name=<name>     Human-readable application name');
       stdout.writeln('  --country=<code>      Storefront country code (default: us)');
-      stdout.writeln('  --pages=<n>           Number of Apple RSS pages to fetch (default: 1, max: 10)');
+      stdout.writeln(
+        '  --pages=<n>           Number of Apple RSS pages to fetch (default: 1, max: 10)',
+      );
       stdout.writeln('  --count=<n>, -n <n>   Target review count to analyze (e.g. 240 or 333)');
       stdout.writeln('  --file=<path>, -f     Path to local JSON or CSV review fixture');
-      stdout.writeln('  --store=<name>        Filter or parser store: apple, google-play, in-app, auto');
+      stdout.writeln(
+        '  --store=<name>        Filter or parser store: apple, google-play, in-app, auto',
+      );
       stdout.writeln('  --output=<path>, -o   Optional output Markdown report file path');
       stdout.writeln('  --json                Output raw parsed JSON instead of Markdown');
       stdout.writeln('  --help, -h            Display this help message');
       exitCode = 0;
       return;
-    } else if (arg.startsWith('--preset=') || arg.startsWith('--target=') || arg.startsWith('--app=')) {
+    } else if (arg.startsWith('--preset=') ||
+        arg.startsWith('--target=') ||
+        arg.startsWith('--app=')) {
       presetArg = arg.split('=').last;
     } else if (arg.startsWith('--app-id=')) {
       appId = arg.substring('--app-id='.length);
@@ -763,7 +852,9 @@ Future<void> main(List<String> rawArgs) async {
   }
 
   final preset = ReviewTargetPreset.fromString(presetArg);
-  appId ??= preset.appleAppId.isNotEmpty ? preset.appleAppId : (preset == ReviewTargetPreset.circle ? '1506475653' : 'pending');
+  appId ??= preset.appleAppId.isNotEmpty
+      ? preset.appleAppId
+      : (preset == ReviewTargetPreset.circle ? '1506475653' : 'pending');
   packageName ??= preset.playPackageId;
   appName ??= preset.appName;
 
@@ -797,10 +888,14 @@ Future<void> main(List<String> rawArgs) async {
   } else {
     // Attempt HTTP fetch or load multi-source fixtures
     if (preset == ReviewTargetPreset.circle && appId.isNotEmpty && appId != 'pending') {
-      stdout.writeln('🌐 Fetching App Store customer reviews for App ID $appId ($country, $pageCount pages)...');
+      stdout.writeln(
+        '🌐 Fetching App Store customer reviews for App ID $appId ($country, $pageCount pages)...',
+      );
 
       for (var page = 1; page <= pageCount; page++) {
-        final url = Uri.parse('https://itunes.apple.com/$country/rss/customerreviews/page=$page/id=$appId/sortBy=mostRecent/json');
+        final url = Uri.parse(
+          'https://itunes.apple.com/$country/rss/customerreviews/page=$page/id=$appId/sortBy=mostRecent/json',
+        );
         try {
           final client = HttpClient();
           client.connectionTimeout = const Duration(seconds: 10);
@@ -815,7 +910,9 @@ Future<void> main(List<String> rawArgs) async {
           }
           client.close();
         } catch (e) {
-          stderr.writeln('Notice: Network fetch unsuccessful ($e). Loading local benchmarking fixtures...');
+          stderr.writeln(
+            'Notice: Network fetch unsuccessful ($e). Loading local benchmarking fixtures...',
+          );
           break;
         }
       }
@@ -827,10 +924,14 @@ Future<void> main(List<String> rawArgs) async {
         final belongFixture = _resolveFixture('test/fixtures/belong_reviews_sample.json');
         if (await belongFixture.exists()) {
           stdout.writeln('   Using local Belong feedback fixture: ${belongFixture.path}');
-          reviews.addAll(parseBelongInAppFeedbackJson(jsonDecode(await belongFixture.readAsString())));
+          reviews.addAll(
+            parseBelongInAppFeedbackJson(jsonDecode(await belongFixture.readAsString())),
+          );
         } else {
           stdout.writeln('ℹ️ Belong on the Spectrum is preparing for production launch!');
-          stdout.writeln('   Once live in stores, audit with: dart tool/analyze_app_reviews.dart --preset=belong --app-id=<apple_id>');
+          stdout.writeln(
+            '   Once live in stores, audit with: dart tool/analyze_app_reviews.dart --preset=belong --app-id=<apple_id>',
+          );
         }
       } else {
         final appleFallback = _resolveFixture('test/fixtures/apple_reviews_sample.json');
@@ -838,7 +939,11 @@ Future<void> main(List<String> rawArgs) async {
 
         if (await appleFallback.exists()) {
           stdout.writeln('   Loaded Apple App Store fixture: ${appleFallback.path}');
-          reviews.addAll(parseAppleCustomerReviewsJson(jsonDecode(await appleFallback.readAsString()) as Map<String, dynamic>));
+          reviews.addAll(
+            parseAppleCustomerReviewsJson(
+              jsonDecode(await appleFallback.readAsString()) as Map<String, dynamic>,
+            ),
+          );
         }
         if (await playFallback.exists()) {
           stdout.writeln('   Loaded Google Play Store fixture: ${playFallback.path}');
@@ -852,7 +957,9 @@ Future<void> main(List<String> rawArgs) async {
     final originalCount = reviews.length;
     reviews = scaleReviewsToCount(reviews, requestedCount);
     if (reviews.length != originalCount) {
-      stdout.writeln('📊 Scaled review sample from $originalCount to ${reviews.length} reviews for thorough audit (--count=$requestedCount)');
+      stdout.writeln(
+        '📊 Scaled review sample from $originalCount to ${reviews.length} reviews for thorough audit (--count=$requestedCount)',
+      );
     }
   }
 
@@ -878,7 +985,9 @@ Future<void> main(List<String> rawArgs) async {
     final outFile = File(outputPath);
     await outFile.parent.create(recursive: true);
     await outFile.writeAsString(outputText);
-    stdout.writeln('✅ Successfully generated review sentiment report: $outputPath (${report.totalCount} reviews analyzed)');
+    stdout.writeln(
+      '✅ Successfully generated review sentiment report: $outputPath (${report.totalCount} reviews analyzed)',
+    );
   } else {
     stdout.writeln(outputText);
   }

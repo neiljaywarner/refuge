@@ -41,10 +41,10 @@ void main() {
             communityAnalyticsServiceProvider.overrideWithValue(fakeAnalytics),
             errorReporterServiceProvider.overrideWithValue(fakeErrorReporter),
             storageRepositoryProvider.overrideWithValue(fakeStorage),
-            firebaseInstallationsServiceProvider
-                .overrideWithValue(fakeInstallations),
-            firebaseInstallationsIdProvider
-                .overrideWith((ref) => Future.value('fid_test_device_easter_egg')),
+            firebaseInstallationsServiceProvider.overrideWithValue(fakeInstallations),
+            firebaseInstallationsIdProvider.overrideWith(
+              (ref) => Future.value('fid_test_device_easter_egg'),
+            ),
             inAppMessagingServiceProvider.overrideWithValue(fakeFiam),
             diagnosticLogServiceProvider.overrideWithValue(fakeDiagnosticLogs),
           ],
@@ -117,8 +117,7 @@ void main() {
       await $(const Key('easter_egg_trigger_analytics_button')).tap();
       await $.pumpAndSettle();
       expect(
-        fakeAnalytics.dispatchedEventsForTesting
-            .any((e) => e['name'] == 'easter_egg_test_event'),
+        fakeAnalytics.dispatchedEventsForTesting.any((e) => e['name'] == 'easter_egg_test_event'),
         isTrue,
       );
 

@@ -31,8 +31,7 @@ class PostRepositoryFactory {
     return switch (configuredBackendMode) {
       BackendMode.serverpod => ServerpodPostRepository(isDevMode: isDevMode),
       BackendMode.appwrite => AppwritePostRepository(isDevMode: isDevMode),
-      BackendMode.sqlite ||
-      BackendMode.local => LocalPostRepository(isDevMode: isDevMode),
+      BackendMode.sqlite || BackendMode.local => LocalPostRepository(isDevMode: isDevMode),
     };
   }
 }

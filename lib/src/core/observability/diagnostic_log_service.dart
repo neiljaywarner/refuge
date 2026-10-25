@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,11 +23,11 @@ class BreadcrumbEvent {
   final Map<String, dynamic>? data;
 
   Map<String, dynamic> toJson() => {
-        'timestamp': timestamp.toIso8601String(),
-        'category': category,
-        'name': name,
-        if (data != null) 'data': data,
-      };
+    'timestamp': timestamp.toIso8601String(),
+    'category': category,
+    'name': name,
+    if (data != null) 'data': data,
+  };
 
   @override
   String toString() =>
@@ -59,17 +60,17 @@ class DiagnosticSessionReplay {
   final List<String> logLines;
 
   Map<String, dynamic> toJson() => {
-        'session_id': sessionId,
-        'started_at': startedAt.toIso8601String(),
-        'installations_id': installationsId,
-        'app_version': appVersion,
-        'platform': platform,
-        'flavor': flavor,
-        'breadcrumb_count': breadcrumbs.length,
-        'breadcrumbs': breadcrumbs.map((b) => b.toJson()).toList(),
-        'log_count': logLines.length,
-        'logs': logLines,
-      };
+    'session_id': sessionId,
+    'started_at': startedAt.toIso8601String(),
+    'installations_id': installationsId,
+    'app_version': appVersion,
+    'platform': platform,
+    'flavor': flavor,
+    'breadcrumb_count': breadcrumbs.length,
+    'breadcrumbs': breadcrumbs.map((b) => b.toJson()).toList(),
+    'log_count': logLines.length,
+    'logs': logLines,
+  };
 
   String toPrettyJson() => const JsonEncoder.withIndent('  ').convert(toJson());
 
@@ -120,9 +121,8 @@ class DiagnosticLogService {
     required this.storageRepository,
     required this.installationsService,
     this.flavor = AppFlavor.prod,
-  })  : sessionId =
-             'sess_${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}',
-        sessionStartedAt = DateTime.now();
+  }) : sessionId = 'sess_${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}',
+       sessionStartedAt = DateTime.now();
 
   final StorageRepository storageRepository;
   final FirebaseInstallationsService installationsService;
@@ -133,15 +133,10 @@ class DiagnosticLogService {
   final List<BreadcrumbEvent> _breadcrumbs = [];
   static const int maxBreadcrumbs = 100;
 
-  List<BreadcrumbEvent> get breadcrumbsForTesting =>
-      List.unmodifiable(_breadcrumbs);
+  List<BreadcrumbEvent> get breadcrumbsForTesting => List.unmodifiable(_breadcrumbs);
 
   /// Records a chronological breadcrumb in the session timeline.
-  void recordBreadcrumb(
-    String name, {
-    String category = 'action',
-    Map<String, dynamic>? data,
-  }) {
+  void recordBreadcrumb(String name, {String category = 'action', Map<String, dynamic>? data}) {
     if (_breadcrumbs.length >= maxBreadcrumbs) {
       _breadcrumbs.removeAt(0);
     }
@@ -156,11 +151,8 @@ class DiagnosticLogService {
   }
 
   /// Compiles the full [DiagnosticSessionReplay] bundle.
-  Future<DiagnosticSessionReplay> generateReplayBundle({
-    String? overrideInstallationsId,
-  }) async {
-    final fid = overrideInstallationsId ??
-        await installationsService.getInstallationsId();
+  Future<DiagnosticSessionReplay> generateReplayBundle({String? overrideInstallationsId}) async {
+    final fid = overrideInstallationsId ?? await installationsService.getInstallationsId();
 
     final logs = _collectSanitizedLogs();
 
@@ -182,27 +174,19 @@ class DiagnosticLogService {
     String? installationsId,
   }) async {
     final repo = customStorage ?? storageRepository;
-    final replay = await generateReplayBundle(
-      overrideInstallationsId: installationsId,
-    );
+    final replay = await generateReplayBundle(overrideInstallationsId: installationsId);
 
     final jsonPayload = replay.toPrettyJson();
     final bytes = Uint8List.fromList(utf8.encode(jsonPayload));
-    final filename =
-        'session_${replay.sessionId}_${DateTime.now().millisecondsSinceEpoch}.json';
+    final filename = 'session_${replay.sessionId}_${DateTime.now().millisecondsSinceEpoch}.json';
 
     talker.info(
       '📦 [DIAGNOSTICS] Uploading session replay (${bytes.length} bytes) to Cloud Storage...',
     );
 
-    final downloadUrl = await repo.uploadDiagnosticLogs(
-      bytes: bytes,
-      filename: filename,
-    );
+    final downloadUrl = await repo.uploadDiagnosticLogs(bytes: bytes, filename: filename);
 
-    talker.info(
-      '🚀 [DIAGNOSTICS] Session logs successfully uploaded to: $downloadUrl',
-    );
+    talker.info('🚀 [DIAGNOSTICS] Session logs successfully uploaded to: $downloadUrl');
     return downloadUrl;
   }
 
@@ -218,14 +202,12 @@ class DiagnosticLogService {
     }
   }
 
-  Map<String, dynamic> _sanitizeData(Map<String, dynamic> data) {
-    return data.map((key, value) {
-      if (value is String) {
-        return MapEntry(key, _sanitizeText(value));
-      }
-      return MapEntry(key, value);
-    });
-  }
+  Map<String, dynamic> _sanitizeData(Map<String, dynamic> data) => data.map((key, value) {
+    if (value is String) {
+      return MapEntry(key, _sanitizeText(value));
+    }
+    return MapEntry(key, value);
+  });
 
   String _sanitizeText(String text) {
     // Redact email addresses and sensitive auth tokens
@@ -234,8 +216,7 @@ class DiagnosticLogService {
       '[REDACTED_EMAIL]',
     );
     sanitized = sanitized.replaceAll(
-      RegExp(r'(key|token|password|auth|secret)\s*[:=]\s*[^\s,]+',
-          caseSensitive: false),
+      RegExp(r'(key|token|password|auth|secret)\s*[:=]\s*[^\s,]+', caseSensitive: false),
       r'$1=[REDACTED]',
     );
     return sanitized;

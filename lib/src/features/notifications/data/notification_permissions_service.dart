@@ -103,20 +103,13 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       String? token;
       try {
         token = await messaging.getToken(
-          vapidKey: kIsWeb
-              ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum'
-              : null,
+          vapidKey: kIsWeb ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum' : null,
         );
       } catch (_) {
         token = state.fcmToken;
       }
-      if (token != null &&
-          token.isNotEmpty &&
-          !token.startsWith('fcm_token_calm')) {
-        state = state.copyWith(
-          fcmToken: token,
-          isSystemPermissionDenied: false,
-        );
+      if (token != null && token.isNotEmpty && !token.startsWith('fcm_token_calm')) {
+        state = state.copyWith(fcmToken: token, isSystemPermissionDenied: false);
       }
     } catch (_) {
       // Offline or a test harness: keep the saved switch and try register.
@@ -124,10 +117,7 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
     await _persist();
   }
 
-  void _initPlatformState({
-    bool? overrideIsWebPwaInstalled,
-    bool? overrideIsIosWebWithoutPwa,
-  }) {
+  void _initPlatformState({bool? overrideIsWebPwaInstalled, bool? overrideIsIosWebWithoutPwa}) {
     if (overrideIsWebPwaInstalled != null || overrideIsIosWebWithoutPwa != null) {
       state = state.copyWith(
         isWebPwaInstalled: overrideIsWebPwaInstalled ?? state.isWebPwaInstalled,
@@ -198,16 +188,15 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
         sound: true,
       );
 
-      final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
+      final granted =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional;
 
       if (granted) {
         String? token;
         try {
           token = await messaging.getToken(
-            vapidKey: kIsWeb
-                ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum'
-                : null,
+            vapidKey: kIsWeb ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum' : null,
           );
         } catch (_) {
           // Token retrieval may fail if offline or VAPID key not configured yet
@@ -224,10 +213,7 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
         );
         return true;
       } else {
-        state = state.copyWith(
-          enabled: false,
-          isSystemPermissionDenied: true,
-        );
+        state = state.copyWith(enabled: false, isSystemPermissionDenied: true);
         return false;
       }
     } catch (_) {
@@ -254,5 +240,5 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
 /// Global provider for [CalmNotificationPreferences].
 final calmNotificationPreferencesProvider =
     StateNotifierProvider<NotificationPermissionsService, CalmNotificationPreferences>((ref) {
-  return NotificationPermissionsService();
-});
+      return NotificationPermissionsService();
+    });

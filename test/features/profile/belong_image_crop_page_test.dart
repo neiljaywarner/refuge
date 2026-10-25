@@ -9,14 +9,7 @@ import 'package:refuge4serverpod/src/features/profile/presentation/belong_image_
 Uint8List _twoTonePhoto() {
   final image = img.Image(width: 128, height: 96);
   img.fill(image, color: img.ColorRgb8(45, 106, 106));
-  img.fillRect(
-    image,
-    x1: 0,
-    y1: 0,
-    x2: 40,
-    y2: 40,
-    color: img.ColorRgb8(220, 30, 30),
-  );
+  img.fillRect(image, x1: 0, y1: 0, x2: 40, y2: 40, color: img.ColorRgb8(220, 30, 30));
   return Uint8List.fromList(img.encodePng(image));
 }
 
@@ -58,9 +51,7 @@ void main() {
   testWidgets('Use this crop returns the framed photo', (tester) async {
     await _openCrop(tester, circular: true);
 
-    final button = tester.widget<FilledButton>(
-      find.byKey(const Key('use_cropped_photo_button')),
-    );
+    final button = tester.widget<FilledButton>(find.byKey(const Key('use_cropped_photo_button')));
     expect(button.onPressed, isNotNull);
 
     await tester.tap(find.byKey(const Key('use_cropped_photo_button')));
@@ -76,9 +67,7 @@ void main() {
     expect(find.text('Could not crop that photo.'), findsNothing);
   });
 
-  testWidgets('a pinch changes the bytes that Use this crop returns', (
-    tester,
-  ) async {
+  testWidgets('a pinch changes the bytes that Use this crop returns', (tester) async {
     await _openCrop(tester, circular: false);
     await tester.tap(find.byKey(const Key('use_cropped_photo_button')));
     await tester.runAsync(() async {

@@ -25,8 +25,6 @@ class AppwriteServices {
 /// and the local reflection cache, and still do not call Serverpod.
 AppwriteServices? createAppwriteServices(AppwriteConfig config) {
   if (!config.isConfigured) return null;
-  final client = Client()
-      .setEndpoint(config.endpoint.trim())
-      .setProject(config.projectId.trim());
+  final client = Client().setEndpoint(config.endpoint.trim()).setProject(config.projectId.trim());
   return AppwriteServices(client);
 }

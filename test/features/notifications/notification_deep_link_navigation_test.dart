@@ -13,8 +13,7 @@ import 'package:refuge4serverpod/src/home_screen.dart';
 
 void main() {
   group('Notification Deep-Link Navigation Tests (#330)', () {
-    testWidgets('CalmNotificationsView dispatches onNavigate on notification tap',
-        (tester) async {
+    testWidgets('CalmNotificationsView dispatches onNavigate on notification tap', (tester) async {
       NotificationNavigationTarget? receivedTarget;
 
       final testNotification = BelongNotification(
@@ -60,8 +59,7 @@ void main() {
       expect(receivedTarget!.openDiscussion, isTrue);
     });
 
-    testWidgets('Direct message notification navigates to msgs tab',
-        (tester) async {
+    testWidgets('Direct message notification navigates to msgs tab', (tester) async {
       NotificationNavigationTarget? receivedTarget;
 
       final dmNotification = BelongNotification(
@@ -102,8 +100,7 @@ void main() {
       expect(receivedTarget!.conversationId, equals('dm-david-1'));
     });
 
-    testWidgets('Notification without target shows polite archived snackbar',
-        (tester) async {
+    testWidgets('Notification without target shows polite archived snackbar', (tester) async {
       final archivedNotification = BelongNotification(
         id: 'notif-archived-1',
         type: BelongNotificationType.following,
@@ -120,11 +117,7 @@ void main() {
               () => BelongNotificationsNotifier(initialList: [archivedNotification]),
             ),
           ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: CalmNotificationsView(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: CalmNotificationsView())),
         ),
       );
 
@@ -133,10 +126,7 @@ void main() {
       await tester.tap(find.byType(Card));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('This reflection was unhurriedly archived or moved'),
-        findsOneWidget,
-      );
+      expect(find.text('This reflection was unhurriedly archived or moved'), findsOneWidget);
     });
   });
 }

@@ -27,9 +27,7 @@ bool showDevExampleAccounts({
 }
 
 /// Password for dev example accounts. Set at build time only; never commit.
-const String devExamplePassword = String.fromEnvironment(
-  'DEV_EXAMPLE_PASSWORD',
-);
+const String devExamplePassword = String.fromEnvironment('DEV_EXAMPLE_PASSWORD');
 
 class DevExampleAccount {
   const DevExampleAccount({
@@ -53,8 +51,7 @@ class DevExampleAccount {
   final List<String> comfortBadges;
 }
 
-const String devExampleChurchAffiliation =
-    'I am not a member of an ICOC church';
+const String devExampleChurchAffiliation = 'I am not a member of an ICOC church';
 
 /// Example User 1: longtime ICOC fellowship member focused on prayer spaces.
 /// Example User 2: welcoming visitor / newcomer exploring at a sensory-friendly pace.
@@ -66,26 +63,17 @@ const List<DevExampleAccount> devExampleAccounts = [
     shortcutLabel: 'Tap here to use Example User 1',
     bio: 'Prayer and quiet reflection. I use the Prayer Sanctuary space most.',
     icocChurchAffiliation: 'DFW Church (Partner)',
-    comfortBadges: const [
-      'Literal communication appreciated',
-      'Prayer requests welcome',
-    ],
+    comfortBadges: const ['Literal communication appreciated', 'Prayer requests welcome'],
   ),
   DevExampleAccount(
     email: 'exampleuser2@yopmail.com',
     displayName: 'Sarah K.',
     semanticsKey: 'dev_example_user_2',
     shortcutLabel: 'Tap here to use Example User 2',
-    bio:
-        'New to the fellowship — appreciates clear, low-pressure conversation.',
+    bio: 'New to the fellowship — appreciates clear, low-pressure conversation.',
     icocChurchAffiliation: devExampleChurchAffiliation,
-    comfortBadges: const [
-      'Literal communication appreciated',
-      'New here',
-      'Low sensory preferred',
-    ],
+    comfortBadges: const ['Literal communication appreciated', 'New here', 'Low sensory preferred'],
   ),
 ];
 
-const String devExamplePasswordMissingMessage =
-    'Dev example sign-in needs DEV_EXAMPLE_PASSWORD';
+const String devExamplePasswordMissingMessage = 'Dev example sign-in needs DEV_EXAMPLE_PASSWORD';

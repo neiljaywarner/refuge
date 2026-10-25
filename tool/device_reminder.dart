@@ -58,14 +58,7 @@ Future<List<AndroidDevice>> detectDevices() async {
           }
         }
 
-        devices.add(
-          AndroidDevice(
-            id: id,
-            status: parts[1],
-            model: model,
-            isPhysical: !isEmulator,
-          ),
-        );
+        devices.add(AndroidDevice(id: id, status: parts[1], model: model, isPhysical: !isEmulator));
       }
     }
 
@@ -75,34 +68,45 @@ Future<List<AndroidDevice>> detectDevices() async {
   }
 }
 
-String formatReminderEmail({
-  required AndroidDevice device,
-  required String recipient,
-}) {
+String formatReminderEmail({required AndroidDevice device, required String recipient}) {
   final buffer = StringBuffer();
   buffer.writeln('To: $recipient');
-  buffer.writeln('Subject: 📱 ${device.model} Plugged In — Belong Physical Glass Regression Ready\n');
+  buffer.writeln(
+    'Subject: 📱 ${device.model} Plugged In — Belong Physical Glass Regression Ready\n',
+  );
   buffer.writeln('Hi Neil,\n');
   buffer.writeln('Your physical test hardware has been detected over USB:');
   buffer.writeln('  • Device: ${device.model}');
   buffer.writeln('  • Hardware ID: ${device.id}');
   buffer.writeln('  • Platform: Android (${device.isPhysical ? "Physical Glass" : "Emulator"})\n');
   buffer.writeln('Whenever you are ready, run the single-command regression suite:');
-  buffer.writeln('  cd /Users/neil/belongonthespectrum/refuge && ./tool/run_physical_glass_regression.sh\n');
+  buffer.writeln(
+    '  cd /Users/neil/belongonthespectrum/refuge && ./tool/run_physical_glass_regression.sh\n',
+  );
   buffer.writeln('This turnkey command will:');
   buffer.writeln('  1. Wake and unlock the device screen');
   buffer.writeln('  2. Execute the sociable multi-user concurrency BDD suite');
-  buffer.writeln('  3. Run the interactive Maestro user journey (.maestro/belong_full_journey.yaml)');
+  buffer.writeln(
+    '  3. Run the interactive Maestro user journey (.maestro/belong_full_journey.yaml)',
+  );
   buffer.writeln('  4. Auto-capture clean-frame 1080x2160 screenshots with zero status-bar PII');
-  buffer.writeln('  5. Generate a verified markdown report at docs/benchmarks/physical_glass_regression_report.md\n');
+  buffer.writeln(
+    '  5. Generate a verified markdown report at docs/benchmarks/physical_glass_regression_report.md\n',
+  );
   buffer.writeln('Blessings,\nBelong Automated QA Daemon');
   return buffer.toString();
 }
 
 void printBanner(List<AndroidDevice> devices) {
-  stdout.writeln('\x1B[1m\x1B[34m╔════════════════════════════════════════════════════════════════════════════╗\x1B[0m');
-  stdout.writeln('\x1B[1m\x1B[34m║ 📱 Belong on the Spectrum — Physical Hardware & Glass Connection Monitor   ║\x1B[0m');
-  stdout.writeln('\x1B[1m\x1B[34m╚════════════════════════════════════════════════════════════════════════════╝\x1B[0m\n');
+  stdout.writeln(
+    '\x1B[1m\x1B[34m╔════════════════════════════════════════════════════════════════════════════╗\x1B[0m',
+  );
+  stdout.writeln(
+    '\x1B[1m\x1B[34m║ 📱 Belong on the Spectrum — Physical Hardware & Glass Connection Monitor   ║\x1B[0m',
+  );
+  stdout.writeln(
+    '\x1B[1m\x1B[34m╚════════════════════════════════════════════════════════════════════════════╝\x1B[0m\n',
+  );
 
   if (devices.isEmpty) {
     stdout.writeln('\x1B[33m⚠️ No connected Android devices detected via ADB.\x1B[0m');
@@ -150,7 +154,9 @@ Future<void> main(List<String> args) async {
   printBanner(devices);
 
   final physical = devices.where((d) => d.isPhysical).toList();
-  final primaryDevice = physical.isNotEmpty ? physical.first : (devices.isNotEmpty ? devices.first : null);
+  final primaryDevice = physical.isNotEmpty
+      ? physical.first
+      : (devices.isNotEmpty ? devices.first : null);
 
   if (primaryDevice != null && shouldPreviewEmail) {
     stdout.writeln('\n\x1B[1m📧 Formatted Reminder Email Body:\x1B[0m\n');
@@ -160,7 +166,9 @@ Future<void> main(List<String> args) async {
 
   if (primaryDevice != null && shouldMailto) {
     final emailText = formatReminderEmail(device: primaryDevice, recipient: recipient);
-    final subject = Uri.encodeComponent('📱 ${primaryDevice.model} Plugged In — Run Glass Regression');
+    final subject = Uri.encodeComponent(
+      '📱 ${primaryDevice.model} Plugged In — Run Glass Regression',
+    );
     final body = Uri.encodeComponent(emailText);
     final mailtoUri = 'mailto:$recipient?subject=$subject&body=$body';
     stdout.writeln('\n\x1B[1m🔗 Mailto URI:\x1B[0m');
@@ -174,7 +182,9 @@ Future<void> main(List<String> args) async {
   }
 
   if (isWatch) {
-    stdout.writeln('\n\x1B[36m👀 Watching for USB device connection changes (checking every 5s)... Press Ctrl+C to stop.\x1B[0m');
+    stdout.writeln(
+      '\n\x1B[36m👀 Watching for USB device connection changes (checking every 5s)... Press Ctrl+C to stop.\x1B[0m',
+    );
     var lastDeviceIds = devices.map((d) => d.id).toSet();
 
     Timer.periodic(const Duration(seconds: 5), (timer) async {
@@ -200,9 +210,17 @@ Future<void> main(List<String> args) async {
 
   if (primaryDevice != null) {
     stdout.writeln('\n\x1B[1m💡 Next Steps:\x1B[0m');
-    stdout.writeln('   • Run regression suite immediately: \x1B[32m./tool/run_physical_glass_regression.sh\x1B[0m');
-    stdout.writeln('   • Or via Dart CLI:                  \x1B[32mdart run tool/device_reminder.dart --run\x1B[0m');
-    stdout.writeln('   • Preview email reminder:           \x1B[36mdart run tool/device_reminder.dart --email-preview\x1B[0m');
-    stdout.writeln('   • Continuous USB watch mode:        \x1B[36mdart run tool/device_reminder.dart --watch\x1B[0m');
+    stdout.writeln(
+      '   • Run regression suite immediately: \x1B[32m./tool/run_physical_glass_regression.sh\x1B[0m',
+    );
+    stdout.writeln(
+      '   • Or via Dart CLI:                  \x1B[32mdart run tool/device_reminder.dart --run\x1B[0m',
+    );
+    stdout.writeln(
+      '   • Preview email reminder:           \x1B[36mdart run tool/device_reminder.dart --email-preview\x1B[0m',
+    );
+    stdout.writeln(
+      '   • Continuous USB watch mode:        \x1B[36mdart run tool/device_reminder.dart --watch\x1B[0m',
+    );
   }
 }

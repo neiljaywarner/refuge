@@ -56,14 +56,9 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            postRepositoryProvider.overrideWithValue(repository),
-          ],
+          overrides: [postRepositoryProvider.overrideWithValue(repository)],
           child: MaterialApp(
-            home: RefugeHomeScreen(
-              repository: repository,
-              themeNotifier: themeNotifier,
-            ),
+            home: RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
           ),
         ),
       );
@@ -85,7 +80,9 @@ void main() {
       expect(themeNotifier.mode, SensoryMode.sage);
     });
 
-    testWidgets('About dialog displays High Contrast switch and 4 font scaling chips', (tester) async {
+    testWidgets('About dialog displays High Contrast switch and 4 font scaling chips', (
+      tester,
+    ) async {
       SensoryFontScale? selectedScale;
 
       await tester.pumpWidget(

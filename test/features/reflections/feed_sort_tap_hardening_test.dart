@@ -13,8 +13,7 @@ import 'package:refuge4serverpod/src/features/reflections/domain/feed_sort_optio
 
 /// Comment metadata that fails the way a permission error does in production.
 class _ThrowingCommentRepository extends LocalCommentRepository {
-  _ThrowingCommentRepository()
-    : super(isDevMode: false, initialComments: const []);
+  _ThrowingCommentRepository() : super(isDevMode: false, initialComments: const []);
 
   @override
   Future<Map<String, DateTime>> getLatestActivityTimestamps() async {
@@ -34,15 +33,13 @@ class _GuestProfile extends MemberProfileNotifier {
 
 class _SignedInProfile extends MemberProfileNotifier {
   @override
-  MemberProfile build() {
-    return const MemberProfile(
-      displayName: 'Fellow Member',
-      email: 'member@belongonthespectrum.com',
-      bio: 'Church acoustics and quiet rest',
-      comfortBadges: ['Literal communication appreciated'],
-      isSignedIn: true,
-    );
-  }
+  MemberProfile build() => const MemberProfile(
+    displayName: 'Fellow Member',
+    email: 'member@belongonthespectrum.com',
+    bio: 'Church acoustics and quiet rest',
+    comfortBadges: ['Literal communication appreciated'],
+    isSignedIn: true,
+  );
 }
 
 void main() {
@@ -115,8 +112,7 @@ void main() {
           repository: repo,
           initialTheme: theme,
           overrides: [
-            if (guestProfile)
-              memberProfileProvider.overrideWith(_GuestProfile.new),
+            if (guestProfile) memberProfileProvider.overrideWith(_GuestProfile.new),
             ...overrides,
           ],
           homeOverride: const RefugeHomeScreen(),
@@ -137,86 +133,56 @@ void main() {
   }
 
   group('Sort and filter taps stay up (#485)', () {
-    patrolWidgetTest(
-      'every sort chip, rapid retap, and popup on the demo feed',
-      ($) async {
-        await pumpFeed(
-          $,
-          repo: LocalPostRepository(
-            isDevMode: false,
-            initialPosts: samplePosts(),
-          ),
-        );
+    patrolWidgetTest('every sort chip, rapid retap, and popup on the demo feed', ($) async {
+      await pumpFeed($, repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()));
 
-        expect(find.textContaining('Demo Mode'), findsOneWidget);
-        expect(
-          find.textContaining('peace of mind', skipOffstage: false),
-          findsOneWidget,
-        );
+      expect(find.textContaining('Demo Mode'), findsOneWidget);
+      expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
 
-        for (final option in FeedSortOption.values) {
-          await tapSort($, option);
-          await tapSort($, option);
-          expect(
-            find.textContaining('peace of mind', skipOffstage: false),
-            findsOneWidget,
-          );
-        }
+      for (final option in FeedSortOption.values) {
+        await tapSort($, option);
+        await tapSort($, option);
+        expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
+      }
 
-        await $.tester.tap(find.byKey(const Key('feed_sort_popup_button')));
+      await $.tester.tap(find.byKey(const Key('feed_sort_popup_button')));
+      await $.pumpAndSettle();
+      for (final option in FeedSortOption.values) {
+        expect(find.byKey(Key('feed_sort_menu_item_${option.name}')), findsOneWidget);
+      }
+      await $.tester.tap(find.byKey(const Key('feed_sort_menu_item_forYou')));
+      await $.pumpAndSettle();
+      expect(
+        $.tester.widget<ChoiceChip>(find.byKey(const Key('feed_sort_chip_forYou'))).selected,
+        isTrue,
+      );
+      expect($.tester.takeException(), isNull);
+    });
+
+    patrolWidgetTest('every tone filter then every sort on a narrow dark phone', ($) async {
+      await pumpFeed(
+        $,
+        repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()),
+        size: const Size(360, 844),
+        theme: SensoryMode.charcoal,
+      );
+
+      for (final filter in kToneFilters) {
+        final key = Key(toneFilterSemanticsId(filter));
+        await $.tester.ensureVisible(find.byKey(key));
+        await $.tester.tap(find.byKey(key));
         await $.pumpAndSettle();
-        for (final option in FeedSortOption.values) {
-          expect(
-            find.byKey(Key('feed_sort_menu_item_${option.name}')),
-            findsOneWidget,
-          );
-        }
-        await $.tester.tap(find.byKey(const Key('feed_sort_menu_item_forYou')));
-        await $.pumpAndSettle();
-        expect(
-          $.tester
-              .widget<ChoiceChip>(
-                find.byKey(const Key('feed_sort_chip_forYou')),
-              )
-              .selected,
-          isTrue,
-        );
         expect($.tester.takeException(), isNull);
-      },
-    );
-
-    patrolWidgetTest(
-      'every tone filter then every sort on a narrow dark phone',
-      ($) async {
-        await pumpFeed(
-          $,
-          repo: LocalPostRepository(
-            isDevMode: false,
-            initialPosts: samplePosts(),
-          ),
-          size: const Size(360, 844),
-          theme: SensoryMode.charcoal,
-        );
-
-        for (final filter in kToneFilters) {
-          final key = Key(toneFilterSemanticsId(filter));
-          await $.tester.ensureVisible(find.byKey(key));
-          await $.tester.tap(find.byKey(key));
-          await $.pumpAndSettle();
-          expect($.tester.takeException(), isNull);
-          expect($.tester.widget<ChoiceChip>(find.byKey(key)).selected, isTrue);
-          for (final option in FeedSortOption.values) {
-            await tapSort($, option);
-          }
+        expect($.tester.widget<ChoiceChip>(find.byKey(key)).selected, isTrue);
+        for (final option in FeedSortOption.values) {
+          await tapSort($, option);
         }
+      }
 
-        expect(find.byKey(const Key('feed_sort_chip_latest')), findsOneWidget);
-      },
-    );
+      expect(find.byKey(const Key('feed_sort_chip_latest')), findsOneWidget);
+    });
 
-    patrolWidgetTest('light theme empty feed survives every sort and filter', (
-      $,
-    ) async {
+    patrolWidgetTest('light theme empty feed survives every sort and filter', ($) async {
       await pumpFeed(
         $,
         repo: LocalPostRepository(isDevMode: false, initialPosts: const []),
@@ -224,16 +190,10 @@ void main() {
         theme: SensoryMode.sage,
       );
 
-      expect(
-        find.byKey(const Key('empty_reflections_placeholder')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       for (final option in FeedSortOption.values) {
         await tapSort($, option);
-        expect(
-          find.byKey(const Key('empty_reflections_placeholder')),
-          findsOneWidget,
-        );
+        expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       }
       for (final filter in kToneFilters) {
         final key = Key(toneFilterSemanticsId(filter));
@@ -241,16 +201,11 @@ void main() {
         await $.tester.tap(find.byKey(key));
         await $.pumpAndSettle();
         expect($.tester.takeException(), isNull);
-        expect(
-          find.byKey(const Key('empty_reflections_placeholder')),
-          findsOneWidget,
-        );
+        expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       }
     });
 
-    patrolWidgetTest('failed comment metadata does not red-screen a sort tap', (
-      $,
-    ) async {
+    patrolWidgetTest('failed comment metadata does not red-screen a sort tap', ($) async {
       final ignored = <FlutterErrorDetails>[];
       final previous = FlutterError.onError;
       FlutterError.onError = (details) {
@@ -266,59 +221,37 @@ void main() {
 
       await pumpFeed(
         $,
-        repo: LocalPostRepository(
-          isDevMode: false,
-          initialPosts: samplePosts(),
-        ),
+        repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()),
         size: const Size(390, 844),
         theme: SensoryMode.charcoal,
-        overrides: [
-          commentRepositoryProvider.overrideWithValue(
-            _ThrowingCommentRepository(),
-          ),
-        ],
+        overrides: [commentRepositoryProvider.overrideWithValue(_ThrowingCommentRepository())],
       );
 
-      expect(
-        find.textContaining('peace of mind', skipOffstage: false),
-        findsOneWidget,
-      );
+      expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
       for (final option in FeedSortOption.values) {
         await tapSort($, option);
-        expect(
-          find.textContaining('peace of mind', skipOffstage: false),
-          findsOneWidget,
-        );
+        expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
       }
       expect($.tester.takeException(), isNull);
     });
 
-    patrolWidgetTest(
-      'signed-in feed hides demo posts while sorts stay tappable',
-      ($) async {
-        await pumpFeed(
-          $,
-          repo: LocalPostRepository(
-            isDevMode: false,
-            initialPosts: samplePosts(),
-          ),
-          size: const Size(390, 844),
-          guestProfile: false,
-          overrides: [memberProfileProvider.overrideWith(_SignedInProfile.new)],
-        );
+    patrolWidgetTest('signed-in feed hides demo posts while sorts stay tappable', ($) async {
+      await pumpFeed(
+        $,
+        repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()),
+        size: const Size(390, 844),
+        guestProfile: false,
+        overrides: [memberProfileProvider.overrideWith(_SignedInProfile.new)],
+      );
 
-        expect(find.textContaining('Demo Mode'), findsNothing);
-        expect(
-          find.textContaining('peace of mind', skipOffstage: false),
-          findsNothing,
-        );
+      expect(find.textContaining('Demo Mode'), findsNothing);
+      expect(find.textContaining('peace of mind', skipOffstage: false), findsNothing);
+      expect(find.textContaining('Quiet waters'), findsOneWidget);
+      for (final option in FeedSortOption.values) {
+        await tapSort($, option);
         expect(find.textContaining('Quiet waters'), findsOneWidget);
-        for (final option in FeedSortOption.values) {
-          await tapSort($, option);
-          expect(find.textContaining('Quiet waters'), findsOneWidget);
-        }
-      },
-    );
+      }
+    });
 
     patrolWidgetTest('captures dark and light sort-strip frames', ($) async {
       Future<void> save(String name) async {
@@ -328,17 +261,13 @@ void main() {
         await $.tester.runAsync(() async {
           final image = await boundary.toImage(pixelRatio: 1);
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          await File('/tmp/$name.png')
-              .writeAsBytes(bytes!.buffer.asUint8List());
+          await File('/tmp/$name.png').writeAsBytes(bytes!.buffer.asUint8List());
         });
       }
 
       await pumpFeed(
         $,
-        repo: LocalPostRepository(
-          isDevMode: false,
-          initialPosts: samplePosts(),
-        ),
+        repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()),
         size: const Size(390, 844),
         theme: SensoryMode.charcoal,
       );
@@ -347,10 +276,7 @@ void main() {
 
       await pumpFeed(
         $,
-        repo: LocalPostRepository(
-          isDevMode: false,
-          initialPosts: samplePosts(),
-        ),
+        repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()),
         size: const Size(390, 844),
         theme: SensoryMode.sage,
       );
