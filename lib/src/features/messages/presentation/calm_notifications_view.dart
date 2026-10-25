@@ -64,9 +64,9 @@ class CalmNotificationsView extends HookConsumerWidget {
         actions: [
           // Checkbox in upper right to mark all as read (greyed out if unreadCount == 0)
           Padding(
-            padding: const .symmetric(horizontal: 4.0),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Row(
-              mainAxisSize: .min,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Checkbox(
                   key: const Key('mark_all_read_checkbox'),
@@ -79,12 +79,12 @@ class CalmNotificationsView extends HookConsumerWidget {
                 ),
                 InkWell(
                   key: const Key('mark_all_notifications_as_read_button'),
-                  borderRadius: .circular(4),
+                  borderRadius: BorderRadius.circular(4),
                   onTap: unreadCount == 0
                       ? null
                       : () => ref.read(notificationSyncServiceProvider).syncMarkAllAsRead(),
                   child: Padding(
-                    padding: const .symmetric(horizontal: 4.0, vertical: 6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
                     child: Text(
                       'Mark all read',
                       style: TextStyle(
@@ -117,19 +117,33 @@ class CalmNotificationsView extends HookConsumerWidget {
         children: [
           // Gentle banner
           Padding(
-            padding: const .fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Container(
-              padding: const .symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isContrast ? Colors.black : const Color(0xFFF3F7F5),
-                borderRadius: .circular(10),
-                border: Border.all(color: isContrast ? Colors.white : const Color(0xFFDCECE4)),
+                color: isContrast
+                    ? Colors.black
+                    : (theme.brightness == Brightness.dark
+                          ? const Color(0xFF202723)
+                          : const Color(0xFFF3F7F5)),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isContrast
+                      ? Colors.white
+                      : (theme.brightness == Brightness.dark
+                            ? const Color(0xFF3E5446)
+                            : const Color(0xFFDCECE4)),
+                ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.notifications_paused_outlined,
-                    color: isContrast ? Colors.yellow : const Color(0xFF2E6B56),
+                    color: isContrast
+                        ? Colors.yellow
+                        : (theme.brightness == Brightness.dark
+                              ? const Color(0xFF8CD4A2)
+                              : const Color(0xFF2E6B56)),
                     size: 18,
                   ),
                   const SizedBox(width: 8),
@@ -139,7 +153,11 @@ class CalmNotificationsView extends HookConsumerWidget {
                           ? 'All notifications are delivered gently without intrusive sound alerts.'
                           : 'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isContrast ? Colors.white : const Color(0xFF1E4638),
+                        color: isContrast
+                            ? Colors.white
+                            : (theme.brightness == Brightness.dark
+                                  ? const Color(0xFFE2E8F0)
+                                  : const Color(0xFF1E4638)),
                         fontSize: 11,
                       ),
                     ),
@@ -152,12 +170,12 @@ class CalmNotificationsView extends HookConsumerWidget {
           // Filter Chips Row: Inbox, Mentions, Threads, Following
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const .symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: BelongNotificationFilter.values.map((filter) {
                 final isSelected = activeFilter == filter;
                 return Padding(
-                  padding: const .only(right: 8.0),
+                  padding: const EdgeInsets.only(right: 8.0),
                   child: FilterChip(
                     key: Key('filter_chip_${filter.name}'),
                     selected: isSelected,
@@ -184,7 +202,7 @@ class CalmNotificationsView extends HookConsumerWidget {
             child: notifications.isEmpty
                 ? Center(
                     child: Padding(
-                      padding: const .all(32.0),
+                      padding: const EdgeInsets.all(32.0),
                       child: Text(
                         'No notifications in ${activeFilter.label.toLowerCase()} right now.',
                         key: const Key('empty_notifications_placeholder'),
@@ -196,9 +214,9 @@ class CalmNotificationsView extends HookConsumerWidget {
                     ),
                   )
                 : ListView.separated(
-                    padding: const .symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     itemCount: notifications.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                    separatorBuilder: (_, _) => const SizedBox(height: 6),
                     itemBuilder: (context, index) {
                       final item = notifications[index];
                       return _BelongNotificationCard(
@@ -292,12 +310,12 @@ class _BelongNotificationCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      margin: .zero,
+      margin: EdgeInsets.zero,
       color: item.isRead
           ? (isContrast ? Colors.black : theme.cardColor)
           : (isContrast ? const Color(0xFF1A1A00) : primaryColor.withValues(alpha: 0.06)),
       shape: RoundedRectangleBorder(
-        borderRadius: .circular(10),
+        borderRadius: BorderRadius.circular(10),
         side: BorderSide(
           color: isContrast
               ? (item.isRead ? Colors.white30 : Colors.yellow)
@@ -309,7 +327,7 @@ class _BelongNotificationCard extends StatelessWidget {
       child: ListTile(
         key: Key('notification_list_tile_${item.id}'),
         onTap: onTap,
-        contentPadding: const .symmetric(horizontal: 12, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -330,7 +348,7 @@ class _BelongNotificationCard extends StatelessWidget {
               right: -2,
               child: Container(
                 key: Key('notification_badge_icon_${item.id}'),
-                padding: const .all(2.5),
+                padding: const EdgeInsets.all(2.5),
                 decoration: BoxDecoration(
                   color: badgeBgColor,
                   shape: BoxShape.circle,
@@ -350,7 +368,7 @@ class _BelongNotificationCard extends StatelessWidget {
           ),
         ),
         subtitle: Padding(
-          padding: const .only(top: 4.0),
+          padding: const EdgeInsets.only(top: 4.0),
           child: Row(
             children: [
               Text(
