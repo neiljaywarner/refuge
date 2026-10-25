@@ -26,8 +26,7 @@ class MemberProfile {
   });
 
   const MemberProfile.guest()
-    : userId = '',
-      displayName = 'Fellowship Member',
+    : displayName = 'Fellowship Member',
       email = '',
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
@@ -38,8 +37,6 @@ class MemberProfile {
       tagline = 'Exploring Belong on the Spectrum',
       avatarUrl = null;
 
-  /// Firebase uid when signed in. Empty for guests. Never an email address.
-  final String userId;
   final String displayName;
   final String email;
   final String bio;
@@ -100,7 +97,6 @@ class MemberProfile {
     String? bio,
     List<String>? comfortBadges,
     bool? isSignedIn,
-    String? userId,
     String? authMethod,
     String? icocChurchAffiliation,
     String? tagline,
@@ -113,7 +109,6 @@ class MemberProfile {
       bio: bio ?? this.bio,
       comfortBadges: comfortBadges ?? this.comfortBadges,
       isSignedIn: isSignedIn ?? this.isSignedIn,
-      userId: userId ?? this.userId,
       authMethod: authMethod ?? this.authMethod,
       icocChurchAffiliation:
           icocChurchAffiliation ?? this.icocChurchAffiliation,
@@ -341,7 +336,6 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       bio: session.bio,
       comfortBadges: session.comfortBadges,
       isSignedIn: session.isSignedIn,
-      userId: session.userId,
       authMethod: session.authMethod,
       icocChurchAffiliation: session.icocChurchAffiliation,
       avatarUrl: session.photoUrl,
