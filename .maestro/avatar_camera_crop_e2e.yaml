@@ -1,0 +1,61 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Avatar — camera capture and crop"
+tags:
+  - belong
+  - avatar
+  - camera
+  - issue-587
+---
+# FM profile sheet → camera → circle crop. Frame a vertical subject before capture.
+
+- setPermissions:
+    permissions:
+      camera: allow
+
+- launchApp:
+    clearState: false
+    stopApp: true
+
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+
+- tapOn:
+    id: "fm_tab"
+    optional: true
+- tapOn: ".*FM.*"
+    optional: true
+
+- extendedWaitUntil:
+    visible: ".*edit_avatar_button.*|.*Edit.*avatar.*|.*Profile.*"
+    timeout: 20000
+    optional: true
+
+- tapOn:
+    id: "edit_avatar_button"
+    optional: true
+- tapOn: ".*Edit.*avatar.*|.*Change.*avatar.*"
+    optional: true
+
+- extendedWaitUntil:
+    visible: ".*Take Photo with Camera.*"
+    timeout: 15000
+- tapOn: ".*Take Photo with Camera.*"
+
+- extendedWaitUntil:
+    visible: ".*Shutter|.*Capture|.*Photo|.*Camera.*"
+    timeout: 15000
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,90%"
+    optional: true
+
+- extendedWaitUntil:
+    visible: ".*Crop photo.*"
+    timeout: 30000
+- tapOn: ".*Use this crop.*"
+- extendedWaitUntil:
+    visible: ".*Avatar updated peacefully.*|.*edit_avatar_button.*"
+    timeout: 30000
+    optional: true

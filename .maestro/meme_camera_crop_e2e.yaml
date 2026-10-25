@@ -1,0 +1,79 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Meme upload — camera capture and crop"
+tags:
+  - belong
+  - meme
+  - upload-e2e
+  - camera
+  - issue-587
+---
+# Point the device at a vertical subject (e.g. soda can) before Use Camera.
+# Grants camera; gallery uses the system photo picker without extra permission.
+
+- setPermissions:
+    permissions:
+      camera: allow
+
+- launchApp:
+    clearState: false
+    stopApp: true
+
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Memes.*"
+    timeout: 15000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Meme Gallery.*"
+    timeout: 15000
+- tapOn: ".*Upload Photo / Camera.*"
+- extendedWaitUntil:
+    visible: ".*Use Camera.*"
+    timeout: 10000
+- tapOn: ".*Use Camera.*"
+
+# Runtime camera prompt (Pixel / Android 13+).
+- tapOn:
+    text: "While using the app"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# System camera: settle, shutter, then confirm preview if shown.
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: ".*Shutter|.*Capture|.*Take picture.*|.*Photo.*"
+    timeout: 20000
+    optional: true
+- tapOn:
+    point: "50%,88%"
+    optional: true
+- tapOn:
+    text: ".*Shutter.*|.*Capture.*"
+    optional: true
+- tapOn:
+    text: ".*Done.*|.*OK.*|.*Save.*"
+    optional: true
+# Some devices open a system crop before returning to Refuge.
+- tapOn:
+    point: "50%,92%"
+    optional: true
+
+- extendedWaitUntil:
+    visible: ".*Crop photo.*"
+    timeout: 45000
+- assertVisible: ".*Use this crop.*"
+- tapOn: ".*Use this crop.*"
+- extendedWaitUntil:
+    visible: ".*Selected Photo Preview.*"
+    timeout: 15000
+- assertVisible: ".*Attach Photo to Reflection.*"
