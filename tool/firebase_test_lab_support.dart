@@ -189,12 +189,20 @@ File? resolveExistingApk(String repoRoot, List<String> relativePaths) {
   return null;
 }
 
+/// Splits a system PATH variable into directory segments.
+///
+/// On Windows, PATH entries are delimited by `;`.
+/// On POSIX systems (Linux, macOS), PATH entries are delimited by `:`.
+List<String> splitPathSegments(String pathEnv) {
+  final delimiter = Platform.isWindows ? ';' : ':';
+  return pathEnv.split(delimiter).where((segment) => segment.isNotEmpty).toList();
+}
+
 /// Well-known `gcloud` install paths (Homebrew, manual SDK, PATH segments).
 List<String> gcloudCandidatePaths({String? pathEnv, String? home}) {
   final paths = <String>[];
-  final path = pathEnv ?? Platform.environment['PATH'] ?? '';
-  for (final segment in path.split(Platform.pathSeparator)) {
-    if (segment.isEmpty) continue;
+  final rawPath = pathEnv ?? Platform.environment['PATH'] ?? '';
+  for (final segment in splitPathSegments(rawPath)) {
     paths.add('$segment/gcloud');
   }
   final homeDir = home ?? Platform.environment['HOME'];
@@ -217,9 +225,8 @@ String? resolvePatrolExecutable() {
     if (home != null) '$home/.pub-cache/bin/patrol',
     '/opt/homebrew/bin/patrol',
   ];
-  final pathEnv = Platform.environment['PATH'] ?? '';
-  for (final segment in pathEnv.split(Platform.pathSeparator)) {
-    if (segment.isEmpty) continue;
+  final rawPath = Platform.environment['PATH'] ?? '';
+  for (final segment in splitPathSegments(rawPath)) {
     candidates.add('$segment/patrol');
   }
   for (final candidatePath in candidates) {
