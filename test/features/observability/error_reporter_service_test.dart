@@ -10,10 +10,7 @@ void main() {
 
     setUp(() {
       analytics = CommunityAnalyticsService(flavor: AppFlavor.dev);
-      errorReporter = ErrorReporterService(
-        flavor: AppFlavor.dev,
-        analyticsService: analytics,
-      );
+      errorReporter = ErrorReporterService(flavor: AppFlavor.dev, analyticsService: analytics);
     });
 
     test('records handled non-fatal error and logs to analytics and diagnostic buffer', () async {
@@ -68,11 +65,7 @@ void main() {
     });
 
     test('handles unhandled fatal errors gracefully with reason default', () async {
-      await errorReporter.recordError(
-        'Critical out of memory',
-        null,
-        fatal: true,
-      );
+      await errorReporter.recordError('Critical out of memory', null, fatal: true);
 
       final recorded = errorReporter.recordedErrorsForTesting.first;
       expect(recorded['fatal'], isTrue);
@@ -97,13 +90,16 @@ void main() {
       expect(analytics.recordedEventsForTesting.length, 5);
 
       final names = analytics.recordedEventsForTesting.map((e) => e['name']).toList();
-      expect(names, containsAll([
-        'screen_view',
-        'vote_cast',
-        'feedback_intent_selected',
-        'reflection_published',
-        'event_rsvp',
-      ]));
+      expect(
+        names,
+        containsAll([
+          'screen_view',
+          'vote_cast',
+          'feedback_intent_selected',
+          'reflection_published',
+          'event_rsvp',
+        ]),
+      );
     });
   });
 }

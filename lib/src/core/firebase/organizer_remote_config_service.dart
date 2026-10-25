@@ -28,18 +28,17 @@ class OrganizerRemoteConfig {
     this.adminEmailsCsv = '',
   });
 
-  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) =>
-      OrganizerRemoteConfig(
-        welcomeTitle: brand.defaultOrganizerWelcomeTitle,
-        welcomeMessage: brand.defaultOrganizerWelcomeMessage,
-        bannerEnabled: true,
-        dfwChurchUrl: brand.partnerOrgUrl,
-        communityGuidelinesMarkdown: _defaultGuidelines,
-        androidAppDownloadUrl: '',
-        iosAppDownloadUrl: '',
-        previewModeEnabled: false,
-        adminEmailsCsv: '',
-      );
+  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) => OrganizerRemoteConfig(
+    welcomeTitle: brand.defaultOrganizerWelcomeTitle,
+    welcomeMessage: brand.defaultOrganizerWelcomeMessage,
+    bannerEnabled: true,
+    dfwChurchUrl: brand.partnerOrgUrl,
+    communityGuidelinesMarkdown: _defaultGuidelines,
+    androidAppDownloadUrl: '',
+    iosAppDownloadUrl: '',
+    previewModeEnabled: false,
+    adminEmailsCsv: '',
+  );
 
   static const String _defaultGuidelines = '''
 # Belong on the Spectrum — Community Guidelines
@@ -89,8 +88,7 @@ class OrganizerRemoteConfig {
     welcomeMessage: welcomeMessage ?? this.welcomeMessage,
     bannerEnabled: bannerEnabled ?? this.bannerEnabled,
     dfwChurchUrl: dfwChurchUrl ?? this.dfwChurchUrl,
-    communityGuidelinesMarkdown:
-        communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
+    communityGuidelinesMarkdown: communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
     androidAppDownloadUrl: androidAppDownloadUrl ?? this.androidAppDownloadUrl,
     iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
     previewModeEnabled: previewModeEnabled ?? this.previewModeEnabled,
@@ -120,9 +118,7 @@ class OrganizerRemoteConfigService {
       final androidUrl = rc.getString('android_app_download_url').trim();
       final iosUrl = rc.getString('ios_app_download_url').trim();
       final enabledStr = rc.getString('organizer_banner_enabled').trim();
-      final previewModeStr = rc
-          .getString('organizer_preview_mode_enabled')
-          .trim();
+      final previewModeStr = rc.getString('organizer_preview_mode_enabled').trim();
       final adminEmailsStr = rc.getString('admin_emails_csv').trim();
 
       return OrganizerRemoteConfig(
@@ -140,9 +136,7 @@ class OrganizerRemoteConfigService {
         previewModeEnabled: previewModeStr.isEmpty
             ? defaults.previewModeEnabled
             : previewModeStr.toLowerCase() == 'true',
-        adminEmailsCsv: adminEmailsStr.isNotEmpty
-            ? adminEmailsStr
-            : defaults.adminEmailsCsv,
+        adminEmailsCsv: adminEmailsStr.isNotEmpty ? adminEmailsStr : defaults.adminEmailsCsv,
       );
     } catch (_) {
       return defaults;

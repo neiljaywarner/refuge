@@ -35,10 +35,7 @@ void showDirectMessageBanner(String body) {
       content: Text(trimmed),
       leading: const Icon(Icons.message_outlined),
       actions: [
-        TextButton(
-          onPressed: messenger.hideCurrentMaterialBanner,
-          child: const Text('Dismiss'),
-        ),
+        TextButton(onPressed: messenger.hideCurrentMaterialBanner, child: const Text('Dismiss')),
       ],
     ),
   );
@@ -56,12 +53,10 @@ class DirectMessageArrivalHost extends ConsumerStatefulWidget {
   final Widget child;
 
   @override
-  ConsumerState<DirectMessageArrivalHost> createState() =>
-      _DirectMessageArrivalHostState();
+  ConsumerState<DirectMessageArrivalHost> createState() => _DirectMessageArrivalHostState();
 }
 
-class _DirectMessageArrivalHostState
-    extends ConsumerState<DirectMessageArrivalHost>
+class _DirectMessageArrivalHostState extends ConsumerState<DirectMessageArrivalHost>
     with WidgetsBindingObserver {
   var _resumed = true;
   var _sawInitialSnapshot = false;
@@ -74,11 +69,7 @@ class _DirectMessageArrivalHostState
     WidgetsBinding.instance.addObserver(this);
     _listenForSignIn();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(
-        ref
-            .read(calmNotificationPreferencesProvider.notifier)
-            .syncCloudPushRegistration(),
-      );
+      unawaited(ref.read(calmNotificationPreferencesProvider.notifier).syncCloudPushRegistration());
     });
   }
 
@@ -86,11 +77,7 @@ class _DirectMessageArrivalHostState
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _resumed = state == AppLifecycleState.resumed;
     if (state == AppLifecycleState.resumed) {
-      unawaited(
-        ref
-            .read(calmNotificationPreferencesProvider.notifier)
-            .syncCloudPushRegistration(),
-      );
+      unawaited(ref.read(calmNotificationPreferencesProvider.notifier).syncCloudPushRegistration());
     }
   }
 
@@ -129,9 +116,7 @@ class _DirectMessageArrivalHostState
       final content = data['content']?.toString() ?? '';
       showDirectMessageBanner(
         directMessagePushBody(
-          senderName: (sender == null || sender.trim().isEmpty)
-              ? 'Fellow Member'
-              : sender,
+          senderName: (sender == null || sender.trim().isEmpty) ? 'Fellow Member' : sender,
           content: content,
         ),
       );

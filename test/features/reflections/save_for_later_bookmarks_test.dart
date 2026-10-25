@@ -55,12 +55,7 @@ void main() {
 
         final repo = LocalPostRepository(isDevMode: true);
 
-        await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
-        );
+        await $.pumpWidget(RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()));
         await $.pumpAndSettle();
 
         // 1. Initial state: Post '1' is not saved
@@ -106,12 +101,7 @@ void main() {
 
         final repo = LocalPostRepository(isDevMode: true);
 
-        await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
-        );
+        await $.pumpWidget(RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()));
         await $.pumpAndSettle();
 
         final createPostBtn = $(Key('home_top_bar_create_post_button'));
@@ -131,73 +121,59 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Composer is hidden when in Saved for Later space (#446)',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1200, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Composer is hidden when in Saved for Later space (#446)', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        final repo = LocalPostRepository(isDevMode: true);
+      final repo = LocalPostRepository(isDevMode: true);
 
-        await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
-        );
+      await $.pumpWidget(RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()));
+      await $.pumpAndSettle();
+
+      // Initially in general feed: inline composer is visible
+      expect($(Key('reflection_composer_card')), findsOneWidget);
+
+      // Switch to Saved for Later
+      final spacesSubnav = $(Key('subnav_spaces_tab'));
+      if (spacesSubnav.evaluate().isNotEmpty) {
+        await $(spacesSubnav).tap();
         await $.pumpAndSettle();
 
-        // Initially in general feed: inline composer is visible
-        expect($(Key('reflection_composer_card')), findsOneWidget);
-
-        // Switch to Saved for Later
-        final spacesSubnav = $(Key('subnav_spaces_tab'));
-        if (spacesSubnav.evaluate().isNotEmpty) {
-          await $(spacesSubnav).tap();
+        final savedSpaceCard = $('Saved for Later');
+        if (savedSpaceCard.evaluate().isNotEmpty) {
+          await $(savedSpaceCard).tap();
           await $.pumpAndSettle();
 
-          final savedSpaceCard = $('Saved for Later');
-          if (savedSpaceCard.evaluate().isNotEmpty) {
-            await $(savedSpaceCard).tap();
-            await $.pumpAndSettle();
-
-            // Composer is hidden in Saved for Later
-            expect($(Key('reflection_composer_card')), findsNothing);
-          }
+          // Composer is hidden in Saved for Later
+          expect($(Key('reflection_composer_card')), findsNothing);
         }
-      },
-    );
+      }
+    });
 
-    patrolWidgetTest(
-      'Prettier offline / test authentication view renders with calm styling',
-      ($) async {
-        var signedIn = false;
+    patrolWidgetTest('Prettier offline / test authentication view renders with calm styling', (
+      $,
+    ) async {
+      var signedIn = false;
 
-        await $.pumpWidget(
-          MaterialApp(
-            home: SimpleAuthScreen(
-              auth: null,
-              onAuthenticated: () => signedIn = true,
-            ),
-          ),
-        );
-        await $.pumpAndSettle();
+      await $.pumpWidget(
+        MaterialApp(home: SimpleAuthScreen(auth: null, onAuthenticated: () => signedIn = true)),
+      );
+      await $.pumpAndSettle();
 
-        expect($('Sign In to Belong'), findsOneWidget);
-        expect($('Belong on the Spectrum'), findsOneWidget);
-        expect($('Unhurried Christian fellowship'), findsOneWidget);
+      expect($('Sign In to Belong'), findsOneWidget);
+      expect($('Belong on the Spectrum'), findsOneWidget);
+      expect($('Unhurried Christian fellowship'), findsOneWidget);
 
-        final offlineBtn = $(Key('auth_offline_sign_in_button'));
-        expect(offlineBtn, findsOneWidget);
+      final offlineBtn = $(Key('auth_offline_sign_in_button'));
+      expect(offlineBtn, findsOneWidget);
 
-        await $(offlineBtn).tap();
-        await $.pumpAndSettle();
-        expect(signedIn, isTrue);
-      },
-    );
+      await $(offlineBtn).tap();
+      await $.pumpAndSettle();
+      expect(signedIn, isTrue);
+    });
   });
 }

@@ -44,12 +44,8 @@ class ReflectionComposer extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final initialTone = isImagePost
-        ? (selectedSpace == 'memes'
-              ? '[Autism & Faith Meme]'
-              : '[Special Interest]')
-        : (selectedSpace == 'memes'
-              ? '[Autism & Faith Meme]'
-              : '[Prayer Request]');
+        ? (selectedSpace == 'memes' ? '[Autism & Faith Meme]' : '[Special Interest]')
+        : (selectedSpace == 'memes' ? '[Autism & Faith Meme]' : '[Prayer Request]');
     final selectedTone = useState(initialTone);
     final attachedMeme = useState<CalmMeme?>(null);
     final isExpanded = useState(isModal || isImagePost);
@@ -117,9 +113,7 @@ class ReflectionComposer extends HookWidget {
 
       final specialInterest = specialInterestController.text.trim().isNotEmpty
           ? specialInterestController.text.trim()
-          : (selectedTone.value.contains('Meme')
-                ? 'Faith & Neurodiversity'
-                : null);
+          : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
 
       contentController.clear();
       specialInterestController.clear();
@@ -140,8 +134,7 @@ class ReflectionComposer extends HookWidget {
     }
 
     final hasActiveImage =
-        customImageUrl.value.isNotEmpty ||
-        (attachedMeme.value?.imageUrl != null);
+        customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
     if (!isExpanded.value) {
       return Container(
@@ -158,11 +151,7 @@ class ReflectionComposer extends HookWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.edit_note_rounded,
-              color: primaryColor,
-              size: 20,
-            ),
+            Icon(Icons.edit_note_rounded, color: primaryColor, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Semantics(
@@ -180,14 +169,11 @@ class ReflectionComposer extends HookWidget {
                   },
                   decoration: InputDecoration(
                     isDense: true,
-                    hintText: 'Share an unhurried thought in #${kFellowshipSpaces[selectedSpace] ?? selectedSpace}...',
+                    hintText:
+                        'Share an unhurried thought in #${kFellowshipSpaces[selectedSpace] ?? selectedSpace}...',
                     hintStyle: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.color
-                          ?.withValues(alpha: 0.7),
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 6),
@@ -203,10 +189,7 @@ class ReflectionComposer extends HookWidget {
               visualDensity: VisualDensity.compact,
               onPressed: () {
                 isExpanded.value = true;
-                showMemeGalleryModal(
-                  context,
-                  onSelectedMeme: handleSelectMeme,
-                );
+                showMemeGalleryModal(context, onSelectedMeme: handleSelectMeme);
               },
             ),
             IconButton(
@@ -249,15 +232,11 @@ class ReflectionComposer extends HookWidget {
                   value: selectedTone.value,
                   isDense: true,
                   isExpanded: true,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
                   underline: const SizedBox(),
-                  items: kToneOptions.map((tone) {
-                    return DropdownMenuItem(value: tone, child: Text(tone));
-                  }).toList(),
+                  items: kToneOptions
+                      .map((tone) => DropdownMenuItem(value: tone, child: Text(tone)))
+                      .toList(),
                   onChanged: (val) {
                     if (val != null) selectedTone.value = val;
                   },
@@ -294,10 +273,7 @@ class ReflectionComposer extends HookWidget {
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             ),
           ],
@@ -315,10 +291,7 @@ class ReflectionComposer extends HookWidget {
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             ),
             const SizedBox(height: 6),
@@ -326,10 +299,7 @@ class ReflectionComposer extends HookWidget {
               key: const Key('image_post_alt_text_input'),
               controller: altTextController,
               decoration: InputDecoration(
-                prefixIcon: const Icon(
-                  Icons.accessibility_new_rounded,
-                  size: 16,
-                ),
+                prefixIcon: const Icon(Icons.accessibility_new_rounded, size: 16),
                 hintText: 'Image description / alt-text (for screen readers & sensory comfort)...',
                 hintStyle: const TextStyle(fontSize: 11),
                 isDense: true,
@@ -337,10 +307,7 @@ class ReflectionComposer extends HookWidget {
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             ),
           ],
@@ -366,10 +333,7 @@ class ReflectionComposer extends HookWidget {
                       errorBuilder: (_, __, ___) => Container(
                         height: 60,
                         alignment: Alignment.center,
-                        child: const Text(
-                          '🖼️ [Image Attached]',
-                          style: TextStyle(fontSize: 12),
-                        ),
+                        child: const Text('🖼️ [Image Attached]', style: TextStyle(fontSize: 12)),
                       ),
                     ),
                   ),
@@ -388,11 +352,7 @@ class ReflectionComposer extends HookWidget {
                           color: Colors.black54,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.close,
-                          size: 14,
-                          color: Colors.white,
-                        ),
+                        child: const Icon(Icons.close, size: 14, color: Colors.white),
                       ),
                     ),
                   ),
@@ -418,9 +378,7 @@ class ReflectionComposer extends HookWidget {
                   hintStyle: const TextStyle(fontSize: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                    ),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   contentPadding: const EdgeInsets.all(12.0),
                 ),
@@ -431,10 +389,7 @@ class ReflectionComposer extends HookWidget {
             Container(
               key: const Key('attached_meme_banner'),
               margin: const EdgeInsets.only(top: 8.0),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10.0,
-                vertical: 6.0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
               decoration: BoxDecoration(
                 color: Colors.amber.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8.0),
@@ -462,10 +417,7 @@ class ReflectionComposer extends HookWidget {
                       ),
                     )
                   else
-                    Text(
-                      attachedMeme.value!.icon,
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -473,9 +425,7 @@ class ReflectionComposer extends HookWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: isContrast
-                            ? Colors.yellow
-                            : Colors.amber.shade900,
+                        color: isContrast ? Colors.yellow : Colors.amber.shade900,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -498,32 +448,16 @@ class ReflectionComposer extends HookWidget {
               OutlinedButton.icon(
                 key: const Key('add_meme_gif_button'),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   side: BorderSide(
-                    color: isContrast
-                        ? Colors.white
-                        : Theme.of(context).dividerColor,
+                    color: isContrast ? Colors.white : Theme.of(context).dividerColor,
                   ),
                 ),
-                onPressed: () => showMemeGalleryModal(
-                  context,
-                  onSelectedMeme: handleSelectMeme,
-                ),
-                icon: const Icon(
-                  Icons.sentiment_very_satisfied_outlined,
-                  size: 14,
-                ),
+                onPressed: () => showMemeGalleryModal(context, onSelectedMeme: handleSelectMeme),
+                icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 14),
                 label: Text(
-                  attachedMeme.value != null
-                      ? 'Change Meme'
-                      : 'Add Meme / GIF',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  attachedMeme.value != null ? 'Change Meme' : 'Add Meme / GIF',
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ),
               if (!isModal)
@@ -535,37 +469,24 @@ class ReflectionComposer extends HookWidget {
                   ),
                   onPressed: () => isExpanded.value = false,
                   icon: const Icon(Icons.unfold_less_rounded, size: 14),
-                  label: const Text(
-                    'Collapse',
-                    style: TextStyle(fontSize: 11),
-                  ),
+                  label: const Text('Collapse', style: TextStyle(fontSize: 11)),
                 ),
               ElevatedButton.icon(
                 key: const Key('publish_reflection_button'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: isContrast ? Colors.black : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 ),
                 onPressed: handlePublish,
                 icon: Icon(
-                  isImagePost
-                      ? Icons.photo_library_outlined
-                      : Icons.send_rounded,
+                  isImagePost ? Icons.photo_library_outlined : Icons.send_rounded,
                   size: 14,
                 ),
                 label: Text(
                   isImagePost ? 'Publish Image Post' : 'Publish Reflection',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

@@ -27,18 +27,17 @@ Future<void> savePushPreference(CalmNotificationPreferences prefs) async {
   }
   if (user == null) return;
 
-  final token = shouldSendDirectMessagePush(
-    enabled: true,
-    schedule: prefs.schedule.name,
-    fcmToken: prefs.fcmToken,
-  )
+  final token =
+      shouldSendDirectMessagePush(
+        enabled: true,
+        schedule: prefs.schedule.name,
+        fcmToken: prefs.fcmToken,
+      )
       ? prefs.fcmToken
       : null;
 
   try {
-    await FirebaseFirestore.instance
-        .doc('users/${user.uid}/$pushPreferenceDocPath')
-        .set({
+    await FirebaseFirestore.instance.doc('users/${user.uid}/$pushPreferenceDocPath').set({
       'enabled': prefs.enabled && prefs.schedule.name != 'muted',
       'schedule': prefs.schedule.name,
       'fcmToken': token,

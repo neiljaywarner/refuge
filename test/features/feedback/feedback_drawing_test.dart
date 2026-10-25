@@ -19,8 +19,7 @@ void main() {
   group('PrivateFeedbackRouter Attachment Formatting', () {
     test('formatPrivateIssue does not present the storage stub as an uploaded image', () {
       const router = PrivateFeedbackRouter();
-      const stub =
-          'https://storage.belongonthespectrum.com/feedback/attachments/scribble_123.png';
+      const stub = 'https://storage.belongonthespectrum.com/feedback/attachments/scribble_123.png';
       final payload = router.formatPrivateIssue(
         sentiment: FeedbackSentiment.sad,
         message: 'hi, feedback from 20-octoberpm',
@@ -31,16 +30,10 @@ void main() {
       expect(payload.repository, 'neiljaywarner/belong_feedback');
       expect(payload.title, '[Bug / Confusing] hi, feedback from 20-octoberpm');
       expect(payload.labels, contains('bug-report'));
-      expect(
-        payload.body,
-        contains('### Annotated Screenshot / Scribble Attachment'),
-      );
+      expect(payload.body, contains('### Annotated Screenshot / Scribble Attachment'));
       expect(payload.body, isNot(contains('![Annotated Screenshot]($stub)')));
       expect(payload.body, contains('It was not uploaded'));
-      expect(
-        payload.body,
-        contains('### Feedback Note\nhi, feedback from 20-octoberpm'),
-      );
+      expect(payload.body, contains('### Feedback Note\nhi, feedback from 20-octoberpm'));
     });
 
     test('formatPrivateIssue embeds a real hosted attachment URL', () {
@@ -57,24 +50,17 @@ void main() {
   });
 
   group('FeedbackDrawingCanvas Unit & Interaction Tests', () {
-    testWidgets('FeedbackDrawingCanvas can draw strokes and export PNG bytes', (
-      tester,
-    ) async {
+    testWidgets('FeedbackDrawingCanvas can draw strokes and export PNG bytes', (tester) async {
       final key = GlobalKey<FeedbackDrawingCanvasState>();
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FeedbackDrawingCanvas(key: key, canvasHeight: 200),
-          ),
+          home: Scaffold(body: FeedbackDrawingCanvas(key: key, canvasHeight: 200)),
         ),
       );
       await tester.pumpAndSettle();
 
       // Verify canvas rendered
-      expect(
-        find.byKey(const Key('feedback_drawing_touch_area')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('feedback_drawing_touch_area')), findsOneWidget);
 
       // Perform dragging gesture to simulate user drawing
       final touchArea = find.byKey(const Key('feedback_drawing_touch_area'));
@@ -87,10 +73,7 @@ void main() {
       expect(key.currentState?.strokes.length, greaterThanOrEqualTo(1));
 
       // Test export PNG
-      final bytes = await key.currentState?.exportPngBytes(
-        width: 100,
-        height: 100,
-      );
+      final bytes = await key.currentState?.exportPngBytes(width: 100, height: 100);
       expect(bytes, isNotNull);
       expect(bytes!.length, greaterThan(0));
 
@@ -111,10 +94,7 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: Dialog(
-                insetPadding: EdgeInsets.all(16),
-                child: FeedbackDrawingDialog(),
-              ),
+              body: Dialog(insetPadding: EdgeInsets.all(16), child: FeedbackDrawingDialog()),
             ),
           ),
         );
@@ -137,16 +117,11 @@ void main() {
         // Verify zero overflow exceptions and stroke is preserved
         expect(tester.takeException(), isNull);
         expect(canvasState.strokes.length, 1);
-        expect(
-          find.text('Feedback drawing canvas, 1 stroke'),
-          findsOneWidget,
-        );
+        expect(find.text('Feedback drawing canvas, 1 stroke'), findsOneWidget);
       },
     );
 
-    testWidgets('dialog announces a captured screenshot and a close label', (
-      tester,
-    ) async {
+    testWidgets('dialog announces a captured screenshot and a close label', (tester) async {
       const png = <int>[
         0x89,
         0x50,
@@ -221,10 +196,8 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () => FeedbackDrawingDialog.show(
-                  context,
-                  screenshotBytes: Uint8List.fromList(png),
-                ),
+                onPressed: () =>
+                    FeedbackDrawingDialog.show(context, screenshotBytes: Uint8List.fromList(png)),
                 child: const Text('Open drawing'),
               ),
             ),
@@ -234,15 +207,9 @@ void main() {
       await tester.tap(find.text('Open drawing'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining('Annotating a screenshot of this screen'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Annotating a screenshot of this screen'), findsOneWidget);
       expect(find.byTooltip('Close drawing'), findsOneWidget);
-      expect(
-        find.text('Feedback drawing canvas, 0 strokes'),
-        findsOneWidget,
-      );
+      expect(find.text('Feedback drawing canvas, 0 strokes'), findsOneWidget);
     });
   });
 
@@ -264,9 +231,7 @@ void main() {
               storageRepositoryProvider.overrideWithValue(inMemoryStorage),
             ],
             child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(initialTabIndex: 1),
-              ),
+              home: Scaffold(body: BelongFeedbackAndVotingSheet(initialTabIndex: 1)),
             ),
           ),
         );
@@ -277,10 +242,8 @@ void main() {
         await $.pumpAndSettle();
 
         // Enter note
-        await $(const Key('feedback_message_input'))
-            .enterText('hi, feedback from 20-octoberpm');
-        await $(const Key('feedback_contact_input'))
-            .enterText('tester@belong.org');
+        await $(const Key('feedback_message_input')).enterText('hi, feedback from 20-octoberpm');
+        await $(const Key('feedback_contact_input')).enterText('tester@belong.org');
         await $.pumpAndSettle();
 
         // Open drawing dialog
@@ -305,10 +268,7 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify thumbnail is displayed in feedback sheet
-        expect(
-          $(const Key('attached_scribble_preview_container')),
-          findsOneWidget,
-        );
+        expect($(const Key('attached_scribble_preview_container')), findsOneWidget);
         expect($(const Key('attached_scribble_thumbnail')), findsOneWidget);
 
         // Submit feedback
@@ -337,9 +297,7 @@ void main() {
         expect(log['attachmentDelivery'], 'local_only');
         expect(log.containsKey('attachmentUrl'), isFalse);
         expect(
-          inMemoryStorage.retainedPaths.any(
-            (path) => path.startsWith('feedback/attachments/'),
-          ),
+          inMemoryStorage.retainedPaths.any((path) => path.startsWith('feedback/attachments/')),
           isTrue,
         );
         expect(
@@ -356,34 +314,24 @@ void main() {
         $.tester.view.devicePixelRatio = 1.0;
         addTearDown($.tester.view.resetPhysicalSize);
 
-        final mockHttp = MockClient((request) async {
-          return http.Response(
+        final mockHttp = MockClient(
+          (request) async => http.Response(
             jsonEncode({
               'number': 42,
-              'html_url':
-                  'https://github.com/neiljaywarner/belong_feedback/issues/42',
+              'html_url': 'https://github.com/neiljaywarner/belong_feedback/issues/42',
             }),
             201,
-          );
-        });
+          ),
+        );
 
-        final client = GitHubFeedbackClient(
-          httpClient: mockHttp,
-          token: 'ghp_sample_token',
-        );
-        final inMemoryRepo = InMemoryFeatureVotingRepository(
-          gitHubClient: client,
-        );
+        final client = GitHubFeedbackClient(httpClient: mockHttp, token: 'ghp_sample_token');
+        final inMemoryRepo = InMemoryFeatureVotingRepository(gitHubClient: client);
 
         await $.pumpWidgetAndSettle(
           ProviderScope(
-            overrides: [
-              featureVotingRepositoryProvider.overrideWithValue(inMemoryRepo),
-            ],
+            overrides: [featureVotingRepositoryProvider.overrideWithValue(inMemoryRepo)],
             child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(initialTabIndex: 1),
-              ),
+              home: Scaffold(body: BelongFeedbackAndVotingSheet(initialTabIndex: 1)),
             ),
           ),
         );

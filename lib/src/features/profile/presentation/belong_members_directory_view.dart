@@ -127,12 +127,10 @@ class BelongMembersDirectoryView extends ConsumerStatefulWidget {
   final VoidCallback? onBackToSpaces;
 
   @override
-  ConsumerState<BelongMembersDirectoryView> createState() =>
-      _BelongMembersDirectoryViewState();
+  ConsumerState<BelongMembersDirectoryView> createState() => _BelongMembersDirectoryViewState();
 }
 
-class _BelongMembersDirectoryViewState
-    extends ConsumerState<BelongMembersDirectoryView> {
+class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirectoryView> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedFilter = 'All';
@@ -148,23 +146,16 @@ class _BelongMembersDirectoryViewState
     final theme = Theme.of(context);
     final brand = ref.watch(communityBrandConfigProvider);
     final currentProfile = ref.watch(memberProfileProvider);
-    final bans =
-        ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
+    final bans = ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
 
     final filteredMembers = kDevFellowshipMembers.where((m) {
       final matchesQuery =
           _searchQuery.isEmpty ||
           m.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           m.role.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          m.churchAffiliation.toLowerCase().contains(
-            _searchQuery.toLowerCase(),
-          ) ||
-          m.effectiveTagline.toLowerCase().contains(
-            _searchQuery.toLowerCase(),
-          ) ||
-          m.comfortBadges.any(
-            (b) => b.toLowerCase().contains(_searchQuery.toLowerCase()),
-          );
+          m.churchAffiliation.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          m.effectiveTagline.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          m.comfortBadges.any((b) => b.toLowerCase().contains(_searchQuery.toLowerCase()));
 
       final matchesFilter = switch (_selectedFilter) {
         'ICOC Affiliated' => m.isIcocMember,
@@ -172,12 +163,7 @@ class _BelongMembersDirectoryViewState
         _ => true,
       };
 
-      if (isIdentityBanned(
-        bans: bans,
-        userId: m.name,
-        email: '',
-        displayName: m.name,
-      )) {
+      if (isIdentityBanned(bans: bans, userId: m.name, email: '', displayName: m.name)) {
         return false;
       }
       return matchesQuery && matchesFilter;
@@ -189,16 +175,12 @@ class _BelongMembersDirectoryViewState
           key: const Key('members_directory_back_button'),
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Back to Spaces',
-          onPressed:
-              widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
+          onPressed: widget.onBackToSpaces ?? () => Navigator.of(context).maybePop(),
         ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Member Directory',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('Member Directory', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Text(
               'Fellowship disciples & leaders',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal),
@@ -228,10 +210,7 @@ class _BelongMembersDirectoryViewState
                         )
                       : null,
                   filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -284,9 +263,7 @@ class _BelongMembersDirectoryViewState
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
                         'Fellowship Disciples (${filteredMembers.length})',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -297,17 +274,11 @@ class _BelongMembersDirectoryViewState
                       child: Center(
                         child: Column(
                           children: [
-                            const Icon(
-                              Icons.people_outline_rounded,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
+                            const Icon(Icons.people_outline_rounded, size: 48, color: Colors.grey),
                             const SizedBox(height: 12),
                             Text(
                               'No members match "$_searchQuery"',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey,
-                              ),
+                              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
                             ),
                           ],
                         ),
@@ -348,9 +319,7 @@ class _SelfMemberCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: theme.colorScheme.primary.withValues(alpha: 0.3),
-        ),
+        side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
       ),
       color: theme.colorScheme.primary.withValues(alpha: 0.04),
       child: Padding(
@@ -362,16 +331,11 @@ class _SelfMemberCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: theme.colorScheme.primary.withValues(
-                    alpha: 0.2,
-                  ),
-                  backgroundImage:
-                      (profile.avatarUrl != null &&
-                          profile.avatarUrl!.isNotEmpty)
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  backgroundImage: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
                       ? NetworkImage(profile.avatarUrl!)
                       : null,
-                  child:
-                      (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
+                  child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
                       ? Text(
                           profile.initials,
                           style: TextStyle(
@@ -392,23 +356,15 @@ class _SelfMemberCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               profile.displayName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.15,
-                              ),
+                              color: theme.colorScheme.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -426,10 +382,7 @@ class _SelfMemberCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           profile.effectiveTagline,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: theme.textTheme.bodySmall?.color,
-                          ),
+                          style: TextStyle(fontSize: 11, color: theme.textTheme.bodySmall?.color),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -454,13 +407,9 @@ class _SelfMemberCard extends StatelessWidget {
                 children: [
                   for (final badge in profile.comfortBadges)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5),
+                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(badge, style: const TextStyle(fontSize: 10)),
@@ -527,23 +476,16 @@ class _FellowshipMemberCard extends StatelessWidget {
                             Flexible(
                               child: Text(
                                 member.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (member.isIcocMember) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF4CAF50)
-                                      .withValues(alpha: 0.15),
+                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
@@ -561,10 +503,7 @@ class _FellowshipMemberCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           member.effectiveTagline,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: theme.textTheme.bodySmall?.color,
-                          ),
+                          style: TextStyle(fontSize: 11, color: theme.textTheme.bodySmall?.color),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -580,11 +519,7 @@ class _FellowshipMemberCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: Colors.grey,
-                  ),
+                  const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey),
                 ],
               ),
               const SizedBox(height: 8),
@@ -602,19 +537,12 @@ class _FellowshipMemberCard extends StatelessWidget {
                   children: [
                     for (final badge in member.comfortBadges)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2.5,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.6),
+                          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
-                          badge,
-                          style: const TextStyle(fontSize: 10),
-                        ),
+                        child: Text(badge, style: const TextStyle(fontSize: 10)),
                       ),
                   ],
                 ),
@@ -639,8 +567,7 @@ Widget _memberFilterChip({
     visualDensity: VisualDensity.compact,
   );
   if (!kIsWeb) return chip;
-  final identifier =
-      'member_filter_${label.toLowerCase().replaceAll(' ', '_')}';
+  final identifier = 'member_filter_${label.toLowerCase().replaceAll(' ', '_')}';
   return Semantics(
     label: label,
     identifier: identifier,

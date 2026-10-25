@@ -34,8 +34,7 @@ class ProfileStorageService {
       'email': email,
       if (userId != null && userId.isNotEmpty) 'userId': userId,
       if (bio != null) 'bio': bio,
-      if (icocChurchAffiliation != null)
-        'icocChurchAffiliation': icocChurchAffiliation,
+      if (icocChurchAffiliation != null) 'icocChurchAffiliation': icocChurchAffiliation,
       if (comfortBadges != null) 'comfortBadges': comfortBadges,
       'savedAt': DateTime.now().toIso8601String(),
     };
@@ -51,8 +50,7 @@ class ProfileStorageService {
           'displayName': displayName,
           'email': email,
           if (bio != null) 'bio': bio,
-          if (icocChurchAffiliation != null)
-            'icocChurchAffiliation': icocChurchAffiliation,
+          if (icocChurchAffiliation != null) 'icocChurchAffiliation': icocChurchAffiliation,
           if (comfortBadges != null) 'comfortBadges': comfortBadges,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));

@@ -18,9 +18,7 @@ void main() {
     for (final target in BackendTarget.values) {
       test('executes vote toggle, feature proposal & feedback on ${target.displayName}', () async {
         final container = ProviderContainer(
-          overrides: [
-            featureVotingBackendTargetProvider.overrideWithValue(target),
-          ],
+          overrides: [featureVotingBackendTargetProvider.overrideWithValue(target)],
         );
         addTearDown(container.dispose);
 
@@ -47,7 +45,9 @@ void main() {
         expect(afterUnvote.votes, initialVotes);
 
         // 3. Propose a new community feature
-        container.read(featureVotingProvider.notifier).proposeFeature(
+        container
+            .read(featureVotingProvider.notifier)
+            .proposeFeature(
               title: 'Audio MP3 60-Second Release Notes',
               description: 'Calm spoken summary for members who prefer listening.',
             );
@@ -59,14 +59,15 @@ void main() {
         expect(withProposed.last.userVoted, isTrue);
 
         // 4. Empty title proposal is ignored safely
-        container.read(featureVotingProvider.notifier).proposeFeature(
-              title: '   ',
-              description: 'Ignored',
-            );
+        container
+            .read(featureVotingProvider.notifier)
+            .proposeFeature(title: '   ', description: 'Ignored');
         expect(container.read(featureVotingProvider).length, initial.length + 1);
 
         // 5. Submit 3-intent feedback
-        await container.read(featureVotingProvider.notifier).submitFeedback(
+        await container
+            .read(featureVotingProvider.notifier)
+            .submitFeedback(
               sentiment: FeedbackSentiment.neutral,
               message: 'Please add high-contrast dark mode toggle in header',
               contactEmail: 'member@belongonthespectrum.com',
@@ -84,18 +85,12 @@ void main() {
       final repo = InMemoryFeatureVotingRepository();
 
       // Default star mapping when rating is omitted
-      expect(
-        FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.happy, null),
-        5,
-      );
+      expect(FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.happy, null), 5);
       expect(
         FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.neutral, null),
         3,
       );
-      expect(
-        FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.sad, null),
-        1,
-      );
+      expect(FeatureVotingStateTransformMixin.resolveStarRating(FeedbackSentiment.sad, null), 1);
 
       // Explicit 4-star rating on happy sentiment
       await repo.submitFeedback(

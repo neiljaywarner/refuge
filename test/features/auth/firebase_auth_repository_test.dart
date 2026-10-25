@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
@@ -44,9 +45,7 @@ void main() {
           displayName: 'Short Pass',
           icocChurchAffiliation: 'I am not a member of an ICOC church',
         ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'weak-password'),
-        ),
+        throwsA(isA<AuthException>().having((e) => e.code, 'code', 'weak-password')),
       );
     });
 
@@ -65,9 +64,7 @@ void main() {
           displayName: 'Second',
           icocChurchAffiliation: 'Chicago Church of Christ',
         ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'email-already-in-use'),
-        ),
+        throwsA(isA<AuthException>().having((e) => e.code, 'code', 'email-already-in-use')),
       );
     });
 
@@ -91,13 +88,8 @@ void main() {
 
     test('signInWithPassword rejects non-existent user with user-not-found', () async {
       expect(
-        () => authRepo.signInWithPassword(
-          email: 'ghost@belong.org',
-          password: 'anyPassword',
-        ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'user-not-found'),
-        ),
+        () => authRepo.signInWithPassword(email: 'ghost@belong.org', password: 'anyPassword'),
+        throwsA(isA<AuthException>().having((e) => e.code, 'code', 'user-not-found')),
       );
     });
 
@@ -111,13 +103,8 @@ void main() {
       authRepo.signOut();
 
       expect(
-        () => authRepo.signInWithPassword(
-          email: 'user@belong.org',
-          password: 'wrongPassword',
-        ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'wrong-password'),
-        ),
+        () => authRepo.signInWithPassword(email: 'user@belong.org', password: 'wrongPassword'),
+        throwsA(isA<AuthException>().having((e) => e.code, 'code', 'wrong-password')),
       );
     });
 
@@ -132,9 +119,7 @@ void main() {
           email: 'magic@belong.org',
           emailLink: 'https://belong.org/auth?bad_token=xyz',
         ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'invalid-action-code'),
-        ),
+        throwsA(isA<AuthException>().having((e) => e.code, 'code', 'invalid-action-code')),
       );
 
       // Consuming valid link succeeds
@@ -167,34 +152,37 @@ void main() {
       expect(unknown.message, 'Custom issue occurred');
     });
 
-    test('FirebaseAuthRepository resiliently creates user and signs in with Neil test email (#199)', () async {
-      final repo = FirebaseAuthRepository();
+    test(
+      'FirebaseAuthRepository resiliently creates user and signs in with Neil test email (#199)',
+      () async {
+        final repo = FirebaseAuthRepository();
 
-      final session = await repo.registerWithPassword(
-        email: 'neilwarner+2026Oct20+954pm@gmail.com',
-        password: 'BelongPassword2026!',
-        displayName: 'Neil Warner',
-        icocChurchAffiliation: 'DFW Church',
-        bio: 'Belong Organizer & Disciple',
-      );
+        final session = await repo.registerWithPassword(
+          email: 'neilwarner+2026Oct20+954pm@gmail.com',
+          password: 'BelongPassword2026!',
+          displayName: 'Neil Warner',
+          icocChurchAffiliation: 'DFW Church',
+          bio: 'Belong Organizer & Disciple',
+        );
 
-      expect(session.isSignedIn, isTrue);
-      expect(session.email, 'neilwarner+2026oct20+954pm@gmail.com');
-      expect(session.displayName, 'Neil Warner');
-      expect(session.icocChurchAffiliation, 'DFW Church');
+        expect(session.isSignedIn, isTrue);
+        expect(session.email, 'neilwarner+2026oct20+954pm@gmail.com');
+        expect(session.displayName, 'Neil Warner');
+        expect(session.icocChurchAffiliation, 'DFW Church');
 
-      await repo.signOut();
-      expect(repo.currentSession().isSignedIn, isFalse);
+        await repo.signOut();
+        expect(repo.currentSession().isSignedIn, isFalse);
 
-      final signedIn = await repo.signInWithPassword(
-        email: 'neilwarner+2026Oct20+954pm@gmail.com',
-        password: 'BelongPassword2026!',
-      );
+        final signedIn = await repo.signInWithPassword(
+          email: 'neilwarner+2026Oct20+954pm@gmail.com',
+          password: 'BelongPassword2026!',
+        );
 
-      expect(signedIn.isSignedIn, isTrue);
-      expect(signedIn.displayName, 'Neil Warner');
-      expect(signedIn.email, 'neilwarner+2026oct20+954pm@gmail.com');
-    });
+        expect(signedIn.isSignedIn, isTrue);
+        expect(signedIn.displayName, 'Neil Warner');
+        expect(signedIn.email, 'neilwarner+2026oct20+954pm@gmail.com');
+      },
+    );
   });
 
   group('Storage Repository Seam Tests (#119)', () {

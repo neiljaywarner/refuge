@@ -46,8 +46,7 @@ final List<BelongNotification> kInitialNotifications = [
     type: BelongNotificationType.directMessage,
     authorName: 'Marty',
     postTitle: 'Direct Message',
-    commentSnippet:
-        'Welcome to Belong! Let me know if you need any sensory adjustments.',
+    commentSnippet: 'Welcome to Belong! Let me know if you need any sensory adjustments.',
     timestamp: DateTime(2026, 10, 22, 11, 30),
     isRead: false,
     conversationId: 'thread-marty',
@@ -171,9 +170,7 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
     if (_explicitInitialList != null || initialList != null) return;
     try {
       final profile = ref.watch(memberProfileProvider);
-      if (!profile.isSignedIn ||
-          profile.userId.isEmpty ||
-          profile.userId == 'guest') {
+      if (!profile.isSignedIn || profile.userId.isEmpty || profile.userId == 'guest') {
         return;
       }
       if (Firebase.apps.isEmpty) return;
@@ -248,16 +245,10 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
     String currentUserId,
   ) async {
     // Show messages already cached on this device before waiting on Firestore.
-    state = mailbox.notificationsForUser(
-      currentUserId: currentUserId,
-      existing: state,
-    );
+    state = mailbox.notificationsForUser(currentUserId: currentUserId, existing: state);
     if (mailbox is FirestoreDirectMessageMailbox) {
       await mailbox.hydrateFromFirestore(currentUserId);
-      state = mailbox.notificationsForUser(
-        currentUserId: currentUserId,
-        existing: state,
-      );
+      state = mailbox.notificationsForUser(currentUserId: currentUserId, existing: state);
     }
   }
 
@@ -296,10 +287,9 @@ final belongNotificationsProvider =
     );
 
 /// Active filter chip state provider.
-final notificationActiveFilterProvider =
-    StateProvider<BelongNotificationFilter>(
-      (ref) => BelongNotificationFilter.inbox,
-    );
+final notificationActiveFilterProvider = StateProvider<BelongNotificationFilter>(
+  (ref) => BelongNotificationFilter.inbox,
+);
 
 /// Computed provider returning total count of unread notifications.
 final unreadNotificationCountProvider = Provider<int>((ref) {
@@ -320,22 +310,20 @@ final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
     BelongNotificationFilter.mentions =>
       list.where((n) => n.type == BelongNotificationType.mention).toList(),
     BelongNotificationFilter.directMessages =>
-      list
-          .where((n) => n.type == BelongNotificationType.directMessage)
-          .toList(),
+      list.where((n) => n.type == BelongNotificationType.directMessage).toList(),
     BelongNotificationFilter.threads =>
       list.where((n) => n.type == BelongNotificationType.reply).toList(),
     BelongNotificationFilter.following =>
       list
           .where(
             (n) =>
-                n.type == BelongNotificationType.following ||
-                n.type == BelongNotificationType.like,
+                n.type == BelongNotificationType.following || n.type == BelongNotificationType.like,
           )
           .toList(),
   };
 });
 
 /// Active navigation target requested by tapping a notification or deep link (#330).
-final notificationNavigationTargetProvider =
-    StateProvider<NotificationNavigationTarget?>((ref) => null);
+final notificationNavigationTargetProvider = StateProvider<NotificationNavigationTarget?>(
+  (ref) => null,
+);

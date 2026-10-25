@@ -13,7 +13,8 @@ class SpaceNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isContrast = theme.scaffoldBackgroundColor == Colors.black &&
+    final isContrast =
+        theme.scaffoldBackgroundColor == Colors.black &&
         theme.colorScheme.primary == const Color(0xFFFFEB3B);
 
     return Container(

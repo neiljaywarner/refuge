@@ -29,8 +29,7 @@ class Post {
   });
 
   /// Same relative or calendar label as a direct message, using [timestamp].
-  String formattedDate([DateTime? clockNow]) =>
-      formatRelativeDate(timestamp, clockNow);
+  String formattedDate([DateTime? clockNow]) => formatRelativeDate(timestamp, clockNow);
 
   Post copyWith({
     String? id,

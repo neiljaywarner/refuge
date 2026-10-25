@@ -19,9 +19,7 @@ void main() {
     });
 
     test('service updates schedule and generates token on permission', () async {
-      final service = NotificationPermissionsService(
-        overrideIsIosWebWithoutPwa: false,
-      );
+      final service = NotificationPermissionsService(overrideIsIosWebWithoutPwa: false);
       expect(service.state.schedule, equals(CalmDigestSchedule.twiceDaily));
 
       service.setSchedule(CalmDigestSchedule.morningOnly);
@@ -39,9 +37,7 @@ void main() {
     });
 
     test('service blocks permission when iOS web is not installed as PWA', () async {
-      final service = NotificationPermissionsService(
-        overrideIsIosWebWithoutPwa: true,
-      );
+      final service = NotificationPermissionsService(overrideIsIosWebWithoutPwa: true);
       expect(service.state.isIosWebWithoutPwa, isTrue);
 
       final granted = await service.setEnabled(true);
@@ -60,11 +56,7 @@ void main() {
       });
 
       await $.pumpWidgetAndSettle(
-        const ProviderScope(
-          child: MaterialApp(
-            home: CalmNotificationsView(),
-          ),
-        ),
+        const ProviderScope(child: MaterialApp(home: CalmNotificationsView())),
       );
 
       expect($('Notifications'), findsOneWidget);
@@ -76,10 +68,7 @@ void main() {
       expect($('Calm Notification Ethics'), findsOneWidget);
       expect($(const ValueKey('toggle-notifications-switch')), findsOneWidget);
       expect($(const ValueKey('notification-settings-help')), findsOneWidget);
-      expect(
-        $(RegExp('Apps, then Belong, then Notifications')),
-        findsOneWidget,
-      );
+      expect($(RegExp('Apps, then Belong, then Notifications')), findsOneWidget);
 
       // Toggle notifications
       await $(const ValueKey('toggle-notifications-switch')).tap();
@@ -107,22 +96,18 @@ void main() {
         ProviderScope(
           overrides: [
             calmNotificationPreferencesProvider.overrideWith((ref) {
-              return NotificationPermissionsService(
-                overrideIsIosWebWithoutPwa: true,
-              );
+              return NotificationPermissionsService(overrideIsIosWebWithoutPwa: true);
             }),
           ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: CalmNotificationPreferencesSheet(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: CalmNotificationPreferencesSheet())),
         ),
       );
 
       expect($('Calm Notification Ethics'), findsOneWidget);
       expect(
-        $(RegExp('Apple iOS Requirement: Mobile Safari requires adding Belong to your Home Screen')),
+        $(
+          RegExp('Apple iOS Requirement: Mobile Safari requires adding Belong to your Home Screen'),
+        ),
         findsOneWidget,
       );
     });

@@ -84,14 +84,17 @@ void main() {
       expect(prodRepo, isA<PostRepository>());
     });
 
-    test('LocalPostRepository in production mode starts empty without hardcoded mock data', () async {
-      final repo = LocalPostRepository(isDevMode: false);
-      final posts = await repo.getPosts(spaceKey: 'prayer');
-      expect(posts, isEmpty);
+    test(
+      'LocalPostRepository in production mode starts empty without hardcoded mock data',
+      () async {
+        final repo = LocalPostRepository(isDevMode: false);
+        final posts = await repo.getPosts(spaceKey: 'prayer');
+        expect(posts, isEmpty);
 
-      final quietPosts = await repo.getPosts(spaceKey: 'quiet');
-      expect(quietPosts, isEmpty);
-    });
+        final quietPosts = await repo.getPosts(spaceKey: 'quiet');
+        expect(quietPosts, isEmpty);
+      },
+    );
 
     test('LocalPostRepository in dev mode retains seeded mock posts', () async {
       final repo = LocalPostRepository(isDevMode: true);

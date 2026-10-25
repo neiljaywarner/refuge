@@ -26,11 +26,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
   final String authorName;
   final DevFellowshipMember? member;
 
-  const OtherMemberProfileDialog({
-    super.key,
-    required this.authorName,
-    this.member,
-  });
+  const OtherMemberProfileDialog({super.key, required this.authorName, this.member});
 
   static Future<void> show(
     BuildContext context, {
@@ -38,8 +34,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
     DevFellowshipMember? member,
   }) => showDialog<void>(
     context: context,
-    builder: (_) =>
-        OtherMemberProfileDialog(authorName: authorName, member: member),
+    builder: (_) => OtherMemberProfileDialog(authorName: authorName, member: member),
   );
 
   @override
@@ -90,11 +85,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
             backgroundColor: primary.withValues(alpha: 0.15),
             child: Text(
               effectiveMember.initials,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: primary,
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primary),
             ),
           ),
           const SizedBox(width: 12),
@@ -109,18 +100,12 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       child: Text(
                         effectiveMember.name,
                         key: const Key('other_member_profile_name'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: effectiveMember.isIcocMember
                             ? primary.withValues(alpha: 0.1)
@@ -132,9 +117,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: effectiveMember.isIcocMember
-                              ? primary
-                              : Colors.grey[800],
+                          color: effectiveMember.isIcocMember ? primary : Colors.grey[800],
                         ),
                       ),
                     ),
@@ -142,25 +125,16 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       const SizedBox(width: 6),
                       Container(
                         key: const Key('admin_mode_badge'),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.purple.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: Colors.purple.withValues(alpha: 0.3),
-                          ),
+                          border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.shield_rounded,
-                              size: 10,
-                              color: Colors.purple,
-                            ),
+                            Icon(Icons.shield_rounded, size: 10, color: Colors.purple),
                             SizedBox(width: 3),
                             Text(
                               'Admin View',
@@ -182,8 +156,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Theme.of(context).textTheme.bodySmall?.color
-                        ?.withValues(alpha: 0.8),
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -207,25 +180,16 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               if (isBanned) ...[
                 Container(
                   key: const Key('banned_member_banner'),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.redAccent.withValues(alpha: 0.4),
-                    ),
+                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.block_rounded,
-                        size: 16,
-                        color: Colors.redAccent,
-                      ),
+                      const Icon(Icons.block_rounded, size: 16, color: Colors.redAccent),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -242,22 +206,16 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                 ),
               ],
               // Bio
-              Text(
-                effectiveMember.bio,
-                style: const TextStyle(fontSize: 12.5, height: 1.4),
-              ),
+              Text(effectiveMember.bio, style: const TextStyle(fontSize: 12.5, height: 1.4)),
               const SizedBox(height: 6),
 
               // Church affiliation
               Row(
                 children: [
                   Icon(
-                    effectiveMember.isIcocMember
-                        ? Icons.church_rounded
-                        : Icons.spa_rounded,
+                    effectiveMember.isIcocMember ? Icons.church_rounded : Icons.spa_rounded,
                     size: 13,
-                    color: Theme.of(context).textTheme.bodySmall?.color
-                        ?.withValues(alpha: 0.7),
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -265,11 +223,8 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      fontStyle: effectiveMember.isIcocMember
-                          ? FontStyle.normal
-                          : FontStyle.italic,
-                      color: Theme.of(context).textTheme.bodySmall?.color
-                          ?.withValues(alpha: 0.8),
+                      fontStyle: effectiveMember.isIcocMember ? FontStyle.normal : FontStyle.italic,
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -280,13 +235,15 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               Wrap(
                 spacing: 4,
                 runSpacing: 4,
-                children: effectiveMember.comfortBadges.map((badge) {
-                  return Chip(
-                    label: Text(badge, style: const TextStyle(fontSize: 9.5)),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  );
-                }).toList(),
+                children: effectiveMember.comfortBadges
+                    .map(
+                      (badge) => Chip(
+                        label: Text(badge, style: const TextStyle(fontSize: 9.5)),
+                        padding: EdgeInsets.zero,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    )
+                    .toList(),
               ),
 
               const SizedBox(height: 14),
@@ -302,10 +259,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       borderRadius: BorderRadius.circular(10),
                       onTap: () => activeTab.value = 'posts',
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 10,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                         decoration: BoxDecoration(
                           color: activeTab.value == 'posts'
                               ? primary.withValues(alpha: 0.12)
@@ -314,8 +268,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                           border: Border.all(
                             color: activeTab.value == 'posts'
                                 ? primary
-                                : Theme.of(context).dividerColor
-                                      .withValues(alpha: 0.4),
+                                : Theme.of(context).dividerColor.withValues(alpha: 0.4),
                             width: activeTab.value == 'posts' ? 1.5 : 1.0,
                           ),
                         ),
@@ -327,9 +280,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: activeTab.value == 'posts'
-                                    ? primary
-                                    : null,
+                                color: activeTab.value == 'posts' ? primary : null,
                               ),
                             ),
                             Text(
@@ -339,9 +290,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                                 fontWeight: activeTab.value == 'posts'
                                     ? FontWeight.bold
                                     : FontWeight.normal,
-                                color: activeTab.value == 'posts'
-                                    ? primary
-                                    : null,
+                                color: activeTab.value == 'posts' ? primary : null,
                               ),
                             ),
                           ],
@@ -356,10 +305,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       borderRadius: BorderRadius.circular(10),
                       onTap: () => activeTab.value = 'comments',
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 10,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                         decoration: BoxDecoration(
                           color: activeTab.value == 'comments'
                               ? primary.withValues(alpha: 0.12)
@@ -368,8 +314,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                           border: Border.all(
                             color: activeTab.value == 'comments'
                                 ? primary
-                                : Theme.of(context).dividerColor
-                                      .withValues(alpha: 0.4),
+                                : Theme.of(context).dividerColor.withValues(alpha: 0.4),
                             width: activeTab.value == 'comments' ? 1.5 : 1.0,
                           ),
                         ),
@@ -381,9 +326,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: activeTab.value == 'comments'
-                                    ? primary
-                                    : null,
+                                color: activeTab.value == 'comments' ? primary : null,
                               ),
                             ),
                             Text(
@@ -393,9 +336,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                                 fontWeight: activeTab.value == 'comments'
                                     ? FontWeight.bold
                                     : FontWeight.normal,
-                                color: activeTab.value == 'comments'
-                                    ? primary
-                                    : null,
+                                color: activeTab.value == 'comments' ? primary : null,
                               ),
                             ),
                           ],
@@ -433,8 +374,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       onAddReaction: (r) => ref
                           .read(postRepositoryProvider)
                           .addReaction(postId: post.id, reactionType: r),
-                      onOpenDiscussion: () =>
-                          ThreadedDiscussionSheet.show(context, post: post),
+                      onOpenDiscussion: () => ThreadedDiscussionSheet.show(context, post: post),
                     ),
                   ],
               ] else ...[
@@ -461,8 +401,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
-                          color: Theme.of(context).dividerColor
-                              .withValues(alpha: 0.3),
+                          color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Padding(
@@ -473,13 +412,9 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                if (comment.toneTag != null &&
-                                    comment.toneTag!.isNotEmpty)
+                                if (comment.toneTag != null && comment.toneTag!.isNotEmpty)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: primary.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(4),
@@ -499,20 +434,14 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                                   'Under Post #${comment.postId}',
                                   style: TextStyle(
                                     fontSize: 10.5,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
+                                    color: Theme.of(context).textTheme.bodySmall?.color
                                         ?.withValues(alpha: 0.7),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 6),
-                            Text(
-                              comment.content,
-                              style: const TextStyle(fontSize: 12.5),
-                            ),
+                            Text(comment.content, style: const TextStyle(fontSize: 12.5)),
                             const SizedBox(height: 6),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -521,28 +450,23 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                                   _formatTime(comment.timestamp),
                                   style: TextStyle(
                                     fontSize: 10.5,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
+                                    color: Theme.of(context).textTheme.bodySmall?.color
                                         ?.withValues(alpha: 0.6),
                                   ),
                                 ),
                                 if (comment.reactions.isNotEmpty)
                                   Row(
-                                    children: comment.reactions.entries.map((
-                                      e,
-                                    ) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(left: 4),
-                                        child: Text(
-                                          '${e.value} ${e.key}',
-                                          style: const TextStyle(
-                                            fontSize: 10.5,
+                                    children: comment.reactions.entries
+                                        .map(
+                                          (e) => Padding(
+                                            padding: const EdgeInsets.only(left: 4),
+                                            child: Text(
+                                              '${e.value} ${e.key}',
+                                              style: const TextStyle(fontSize: 10.5),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    }).toList(),
+                                        )
+                                        .toList(),
                                   ),
                               ],
                             ),
@@ -561,17 +485,10 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
           if (!isBanned)
             TextButton.icon(
               key: const Key('admin_ban_member_button'),
-              icon: const Icon(
-                Icons.block_rounded,
-                size: 16,
-                color: Colors.redAccent,
-              ),
+              icon: const Icon(Icons.block_rounded, size: 16, color: Colors.redAccent),
               label: const Text(
                 'Ban Member',
-                style: TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
               ),
               onPressed: () => _confirmBanMember(context, ref, effectiveMember),
             )

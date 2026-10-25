@@ -36,68 +36,49 @@ void main() {
       expect(storage.getVotedFeatureIds(), isEmpty);
     });
 
-    test(
-      'Simulated page reload restores guest vote and prevents vote inflation',
-      () {
-        // Session 1: Guest opens the app and upvotes a feature
-        final container1 = ProviderContainer(
-          overrides: [
-            featureVotingBackendTargetProvider.overrideWithValue(
-              BackendTarget.inMemory,
-            ),
-          ],
-        );
+    test('Simulated page reload restores guest vote and prevents vote inflation', () {
+      // Session 1: Guest opens the app and upvotes a feature
+      final container1 = ProviderContainer(
+        overrides: [featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+      );
 
-        final features1 = container1.read(featureVotingProvider);
-        final target = features1.firstWhere(
-          (f) => f.id == 'wip-autistic-events',
-        );
-        final baselineVotes = target.votes;
-        expect(target.userVoted, isFalse);
+      final features1 = container1.read(featureVotingProvider);
+      final target = features1.firstWhere((f) => f.id == 'wip-autistic-events');
+      final baselineVotes = target.votes;
+      expect(target.userVoted, isFalse);
 
-        // Upvote
-        container1.read(featureVotingProvider.notifier).toggleVote(target.id);
-        final voted1 = container1
-            .read(featureVotingProvider)
-            .firstWhere((f) => f.id == 'wip-autistic-events');
-        expect(voted1.userVoted, isTrue);
-        expect(voted1.votes, baselineVotes + 1);
+      // Upvote
+      container1.read(featureVotingProvider.notifier).toggleVote(target.id);
+      final voted1 = container1
+          .read(featureVotingProvider)
+          .firstWhere((f) => f.id == 'wip-autistic-events');
+      expect(voted1.userVoted, isTrue);
+      expect(voted1.votes, baselineVotes + 1);
 
-        // Session 1 ends (user reloads page / closes tab)
-        container1.dispose();
+      // Session 1 ends (user reloads page / closes tab)
+      container1.dispose();
 
-        // Session 2: Fresh reload
-        final container2 = ProviderContainer(
-          overrides: [
-            featureVotingBackendTargetProvider.overrideWithValue(
-              BackendTarget.inMemory,
-            ),
-          ],
-        );
-        addTearDown(container2.dispose);
+      // Session 2: Fresh reload
+      final container2 = ProviderContainer(
+        overrides: [featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+      );
+      addTearDown(container2.dispose);
 
-        final features2 = container2.read(featureVotingProvider);
-        final restored = features2.firstWhere(
-          (f) => f.id == 'wip-autistic-events',
-        );
+      final features2 = container2.read(featureVotingProvider);
+      final restored = features2.firstWhere((f) => f.id == 'wip-autistic-events');
 
-        // Crucial assertion for #487 and #500: userVoted MUST remain true after reload!
-        expect(
-          restored.userVoted,
-          isTrue,
-          reason: 'Guest vote state must survive page reload',
-        );
-        expect(restored.votes, baselineVotes + 1);
+      // Crucial assertion for #487 and #500: userVoted MUST remain true after reload!
+      expect(restored.userVoted, isTrue, reason: 'Guest vote state must survive page reload');
+      expect(restored.votes, baselineVotes + 1);
 
-        // Tapping again removes vote instead of inflating count
-        container2.read(featureVotingProvider.notifier).toggleVote(target.id);
-        final unvoted2 = container2
-            .read(featureVotingProvider)
-            .firstWhere((f) => f.id == 'wip-autistic-events');
-        expect(unvoted2.userVoted, isFalse);
-        expect(unvoted2.votes, baselineVotes);
-      },
-    );
+      // Tapping again removes vote instead of inflating count
+      container2.read(featureVotingProvider.notifier).toggleVote(target.id);
+      final unvoted2 = container2
+          .read(featureVotingProvider)
+          .firstWhere((f) => f.id == 'wip-autistic-events');
+      expect(unvoted2.userVoted, isFalse);
+      expect(unvoted2.votes, baselineVotes);
+    });
 
     test('FirebaseFeatureVotingRepository restores userVoted from VoteStorageService', () async {
       VoteStorageService.instance.setFeatureVoted('wip-autistic-events', true);
@@ -114,22 +95,16 @@ void main() {
         await $.pumpWidgetAndSettle(
           ProviderScope(
             overrides: [
-              featureVotingBackendTargetProvider.overrideWithValue(
-                BackendTarget.inMemory,
-              ),
+              featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
             ],
-            child: const MaterialApp(
-              home: Scaffold(body: BelongFeedbackAndVotingSheet()),
-            ),
+            child: const MaterialApp(home: Scaffold(body: BelongFeedbackAndVotingSheet())),
           ),
         );
 
-        Finder countInsideVoteButton(String count) {
-          return find.descendant(
-            of: find.byKey(const Key('vote_button_wip-autistic-events')),
-            matching: find.text(count),
-          );
-        }
+        Finder countInsideVoteButton(String count) => find.descendant(
+          of: find.byKey(const Key('vote_button_wip-autistic-events')),
+          matching: find.text(count),
+        );
 
         expect(countInsideVoteButton('0'), findsOneWidget);
 
@@ -141,13 +116,9 @@ void main() {
         await $.pumpWidgetAndSettle(
           ProviderScope(
             overrides: [
-              featureVotingBackendTargetProvider.overrideWithValue(
-                BackendTarget.inMemory,
-              ),
+              featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
             ],
-            child: const MaterialApp(
-              home: Scaffold(body: BelongFeedbackAndVotingSheet()),
-            ),
+            child: const MaterialApp(home: Scaffold(body: BelongFeedbackAndVotingSheet())),
           ),
         );
 

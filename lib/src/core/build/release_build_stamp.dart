@@ -31,11 +31,7 @@ class ReleaseBuildStamp {
     if (sha == null) return null;
     final tag = releaseTag.trim();
     if (tag.isEmpty || buildTimeMs <= 0) return null;
-    return ReleaseBuildStamp(
-      gitSha: sha,
-      buildTimeMs: buildTimeMs,
-      releaseTag: tag,
-    );
+    return ReleaseBuildStamp(gitSha: sha, buildTimeMs: buildTimeMs, releaseTag: tag);
   }
 
   String get buildTimeUtc => formatUtcEpochMillis(buildTimeMs);
@@ -118,10 +114,7 @@ String? _firstNonEmptyEnv(Map<String, String> environment, List<String> names) {
 /// [joinArgsRedactingAnalyticsDefines] or [analyticsDartDefinesLogLine].
 List<String> analyticsDartDefines(Map<String, String> environment) {
   final defines = <String>[];
-  final aptabase = _firstNonEmptyEnv(environment, const [
-    'APTABASE_BELONG_KEY',
-    'APTABASE_KEY',
-  ]);
+  final aptabase = _firstNonEmptyEnv(environment, const ['APTABASE_BELONG_KEY', 'APTABASE_KEY']);
   if (aptabase != null) {
     defines.add('--dart-define=APTABASE_KEY=$aptabase');
   }
@@ -132,9 +125,7 @@ List<String> analyticsDartDefines(Map<String, String> environment) {
   if (posthog != null) {
     defines.add('--dart-define=POSTHOG_KEY=$posthog');
   }
-  final host =
-      _firstNonEmptyEnv(environment, const ['POSTHOG_HOST']) ??
-      _defaultPostHogHost;
+  final host = _firstNonEmptyEnv(environment, const ['POSTHOG_HOST']) ?? _defaultPostHogHost;
   defines.add('--dart-define=POSTHOG_HOST=$host');
   return defines;
 }
@@ -142,12 +133,8 @@ List<String> analyticsDartDefines(Map<String, String> environment) {
 /// Presence-only log line. Does not include secret values.
 String analyticsDartDefinesLogLine(Map<String, String> environment) {
   final defines = analyticsDartDefines(environment);
-  final aptabase = defines.any(
-    (define) => define.startsWith('--dart-define=APTABASE_KEY='),
-  );
-  final posthog = defines.any(
-    (define) => define.startsWith('--dart-define=POSTHOG_KEY='),
-  );
+  final aptabase = defines.any((define) => define.startsWith('--dart-define=APTABASE_KEY='));
+  final posthog = defines.any((define) => define.startsWith('--dart-define=POSTHOG_KEY='));
   return 'Analytics dart-defines: '
       'APTABASE_KEY=${aptabase ? 'set' : 'missing'} '
       'POSTHOG_KEY=${posthog ? 'set' : 'missing'} '
@@ -179,9 +166,7 @@ Map<String, Object> webVersionPayload({
 }) {
   final line = pubspecVersionLine?.trim() ?? '';
   final buildNumber = line.contains('+') ? line.split('+').last : '0';
-  final tagVersion = releaseTag.startsWith('v')
-      ? releaseTag.substring(1)
-      : releaseTag;
+  final tagVersion = releaseTag.startsWith('v') ? releaseTag.substring(1) : releaseTag;
   return {
     'app_name': 'refuge4serverpod',
     'version': tagVersion,
@@ -198,10 +183,7 @@ Map<String, Object> webVersionPayload({
 /// Null when [versionJson] records [expectedFlavor]. Otherwise a reason to
 /// refuse `--skip-build`, so a prod bundle cannot be published to the dev
 /// site or the reverse.
-String? cachedWebFlavorMismatch({
-  required String? versionJson,
-  required String expectedFlavor,
-}) {
+String? cachedWebFlavorMismatch({required String? versionJson, required String expectedFlavor}) {
   if (versionJson == null || versionJson.trim().isEmpty) {
     return 'build/web/version.json is missing. Rebuild without --skip-build.';
   }
@@ -219,11 +201,7 @@ String? cachedWebFlavorMismatch({
 
 /// Markdown section for release notes. A missing or invalid SHA is written as
 /// `unknown` and is not turned into a commit URL.
-String buildIdentityNotes({
-  required String releaseTag,
-  String? gitSha,
-  int? buildTimeMs,
-}) {
+String buildIdentityNotes({required String releaseTag, String? gitSha, int? buildTimeMs}) {
   final sha = gitSha == null ? null : fullGitShaOrNull(gitSha);
   final buffer = StringBuffer()
     ..writeln('## Build')
@@ -238,9 +216,7 @@ String buildIdentityNotes({
   if (buildTimeMs == null || buildTimeMs <= 0) {
     buffer.writeln('- Build time: unknown');
   } else {
-    buffer.writeln(
-      '- Build time: ${formatUtcEpochMillis(buildTimeMs)} ($buildTimeMs ms)',
-    );
+    buffer.writeln('- Build time: ${formatUtcEpochMillis(buildTimeMs)} ($buildTimeMs ms)');
   }
   return buffer.toString();
 }

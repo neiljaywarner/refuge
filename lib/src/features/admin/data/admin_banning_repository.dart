@@ -73,9 +73,8 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
   }
 
   @override
-  Future<bool> isUserBanned(String userIdOrName) async {
-    return _bannedUsers.containsKey(userIdOrName.trim().toLowerCase());
-  }
+  Future<bool> isUserBanned(String userIdOrName) async =>
+      _bannedUsers.containsKey(userIdOrName.trim().toLowerCase());
 
   @override
   Stream<List<SoftDeletedUser>> watchBannedUsers() async* {
@@ -87,10 +86,7 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
   Future<void> unbanUser(String userId) async {
     final q = userId.trim().toLowerCase();
     _bannedUsers.removeWhere(
-      (key, u) =>
-          key == q ||
-          u.userId.toLowerCase() == q ||
-          u.displayName.toLowerCase() == q,
+      (key, u) => key == q || u.userId.toLowerCase() == q || u.displayName.toLowerCase() == q,
     );
     _controller.add(_bannedUsers.values.toSet().toList());
   }
@@ -103,10 +99,8 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
 /// Production implementation storing soft-deleted records in Cloud Firestore
 /// collection `soft_deleted_users`.
 class FirestoreAdminBanningRepository implements AdminBanningRepository {
-  FirestoreAdminBanningRepository({
-    this.customFirestore,
-    InMemoryAdminBanningRepository? fallback,
-  }) : _fallback = fallback ?? InMemoryAdminBanningRepository();
+  FirestoreAdminBanningRepository({this.customFirestore, InMemoryAdminBanningRepository? fallback})
+    : _fallback = fallback ?? InMemoryAdminBanningRepository();
 
   final FirebaseFirestore? customFirestore;
   final InMemoryAdminBanningRepository _fallback;
@@ -201,11 +195,11 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
           .collection(collectionName)
           .where('softDeleted', isEqualTo: true)
           .snapshots()
-          .map((snapshot) {
-            return snapshot.docs.map((doc) {
-              return SoftDeletedUser.fromMap(doc.data(), id: doc.id);
-            }).toList();
-          });
+          .map(
+            (snapshot) => snapshot.docs
+                .map((doc) => SoftDeletedUser.fromMap(doc.data(), id: doc.id))
+                .toList(),
+          );
     }
     return _fallback.watchBannedUsers();
   }
@@ -215,19 +209,13 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
     final fs = firestore;
     if (fs != null) {
       final key = userId.trim();
-      final updates = {
-        'softDeleted': false,
-        'unbannedAt': FieldValue.serverTimestamp(),
-      };
+      final updates = {'softDeleted': false, 'unbannedAt': FieldValue.serverTimestamp()};
       final direct = fs.collection(collectionName).doc(key);
       final directSnap = await direct.get();
       if (directSnap.exists) {
         await direct.update(updates);
       }
-      final byName = await fs
-          .collection(collectionName)
-          .where('displayName', isEqualTo: key)
-          .get();
+      final byName = await fs.collection(collectionName).where('displayName', isEqualTo: key).get();
       for (final doc in byName.docs) {
         if (doc.data()['softDeleted'] == true) {
           await doc.reference.update(updates);
@@ -254,10 +242,7 @@ final bannedUsersStreamProvider = StreamProvider<List<SoftDeletedUser>>((ref) {
 });
 
 /// Evaluates if a given member display name, email, or user ID is soft-deleted.
-final isMemberBannedProvider = Provider.family<bool, String>((
-  ref,
-  memberNameOrId,
-) {
+final isMemberBannedProvider = Provider.family<bool, String>((ref, memberNameOrId) {
   final listAsync = ref.watch(bannedUsersStreamProvider);
   final list = listAsync.value ?? const <SoftDeletedUser>[];
   return isIdentityBanned(
@@ -272,8 +257,7 @@ final isMemberBannedProvider = Provider.family<bool, String>((
 final isCurrentMemberBannedProvider = Provider<bool>((ref) {
   final profile = ref.watch(memberProfileProvider);
   if (!profile.isSignedIn) return false;
-  final list =
-      ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
+  final list = ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
   return isIdentityBanned(
     bans: list,
     userId: profile.userId,

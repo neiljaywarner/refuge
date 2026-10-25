@@ -14,14 +14,14 @@ final activeFilterProvider = StateProvider<String>((ref) => 'All');
 final feedSortOptionProvider = StateProvider<FeedSortOption>((ref) => FeedSortOption.latest);
 
 /// FutureProvider resolving latest discussion activity timestamps across posts.
-final postActivityTimestampsProvider = FutureProvider<Map<String, DateTime>>((ref) {
-  return ref.watch(commentRepositoryProvider).getLatestActivityTimestamps();
-});
+final postActivityTimestampsProvider = FutureProvider<Map<String, DateTime>>(
+  (ref) => ref.watch(commentRepositoryProvider).getLatestActivityTimestamps(),
+);
 
 /// FutureProvider resolving total comment counts across all posts.
-final allCommentCountsProvider = FutureProvider<Map<String, int>>((ref) {
-  return ref.watch(commentRepositoryProvider).getAllCommentCounts();
-});
+final allCommentCountsProvider = FutureProvider<Map<String, int>>(
+  (ref) => ref.watch(commentRepositoryProvider).getAllCommentCounts(),
+);
 
 /// StreamProvider that yields posts for a given fellowship space.
 final postsStreamProvider = StreamProvider.autoDispose.family<List<Post>, String>(
@@ -62,7 +62,8 @@ final memberPostsStreamProvider = StreamProvider.autoDispose.family<List<Post>, 
 
 /// StreamProvider yielding comments authored by a specific member.
 final memberCommentsStreamProvider = StreamProvider.autoDispose.family<List<Comment>, String>(
-  (ref, authorName) => ref.watch(commentRepositoryProvider).watchCommentsByAuthor(authorName: authorName),
+  (ref, authorName) =>
+      ref.watch(commentRepositoryProvider).watchCommentsByAuthor(authorName: authorName),
 );
 
 /// StreamProvider yielding reflections bookmarked / saved for later.

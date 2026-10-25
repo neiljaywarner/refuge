@@ -26,113 +26,89 @@ void main() {
       expect(event['automation_tool'], isNotNull);
     });
 
-    test(
-      'Dispatches HTTP payload to Aptabase when Aptabase key is configured',
-      () async {
-        http.Request? capturedRequest;
+    test('Dispatches HTTP payload to Aptabase when Aptabase key is configured', () async {
+      http.Request? capturedRequest;
 
-        final mockClient = MockClient((request) async {
-          capturedRequest = request;
-          return http.Response('{"ok": true}', 200);
-        });
+      final mockClient = MockClient((request) async {
+        capturedRequest = request;
+        return http.Response('{"ok": true}', 200);
+      });
 
-        final service = CommunityAnalyticsService(
-          flavor: AppFlavor.prod,
-          httpClient: mockClient,
-          aptabaseKeyOverride: 'A-US-TEST-KEY',
-          postHogKeyOverride: '',
-        );
+      final service = CommunityAnalyticsService(
+        flavor: AppFlavor.prod,
+        httpClient: mockClient,
+        aptabaseKeyOverride: 'A-US-TEST-KEY',
+        postHogKeyOverride: '',
+      );
 
-        await service.logSensoryModeChanged('sage');
+      await service.logSensoryModeChanged('sage');
 
-        // Wait a tick for unawaited task
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+      // Wait a tick for unawaited task
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(capturedRequest, isNotNull);
-        expect(
-          capturedRequest!.url.toString(),
-          'https://us.aptabase.com/api/v0/event',
-        );
-        expect(capturedRequest!.headers['App-Key'], 'A-US-TEST-KEY');
-        expect(capturedRequest!.headers['Content-Type'], 'application/json');
+      expect(capturedRequest, isNotNull);
+      expect(capturedRequest!.url.toString(), 'https://us.aptabase.com/api/v0/event');
+      expect(capturedRequest!.headers['App-Key'], 'A-US-TEST-KEY');
+      expect(capturedRequest!.headers['Content-Type'], 'application/json');
 
-        final body = jsonDecode(capturedRequest!.body) as Map<String, dynamic>;
-        expect(body['eventName'], 'sensory_theme_changed');
-        expect(body['props']['sensory_mode'], 'sage');
-        expect(body['props']['flavor'], 'prod');
-      },
-    );
+      final body = jsonDecode(capturedRequest!.body) as Map<String, dynamic>;
+      expect(body['eventName'], 'sensory_theme_changed');
+      expect(body['props']['sensory_mode'], 'sage');
+      expect(body['props']['flavor'], 'prod');
+    });
 
-    test(
-      'Dispatches HTTP payload to PostHog when PostHog key is configured',
-      () async {
-        final capturedRequests = <http.Request>[];
+    test('Dispatches HTTP payload to PostHog when PostHog key is configured', () async {
+      final capturedRequests = <http.Request>[];
 
-        final mockClient = MockClient((request) async {
-          capturedRequests.add(request);
-          return http.Response('{"status": 1}', 200);
-        });
+      final mockClient = MockClient((request) async {
+        capturedRequests.add(request);
+        return http.Response('{"status": 1}', 200);
+      });
 
-        final service = CommunityAnalyticsService(
-          flavor: AppFlavor.dev,
-          httpClient: mockClient,
-          aptabaseKeyOverride: '',
-          postHogKeyOverride: 'phc_test_token_123',
-          postHogHostOverride: 'https://us.i.posthog.com',
-        );
+      final service = CommunityAnalyticsService(
+        flavor: AppFlavor.dev,
+        httpClient: mockClient,
+        aptabaseKeyOverride: '',
+        postHogKeyOverride: 'phc_test_token_123',
+        postHogHostOverride: 'https://us.i.posthog.com',
+      );
 
-        await service.logBottomTabSelected('Notifications');
+      await service.logBottomTabSelected('Notifications');
 
-        // Wait a tick for unawaited task
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+      // Wait a tick for unawaited task
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(capturedRequests, isNotEmpty);
-        expect(
-          capturedRequests.first.url.toString(),
-          'https://us.i.posthog.com/capture/',
-        );
-        expect(
-          capturedRequests.first.headers['Content-Type'],
-          'application/json',
-        );
+      expect(capturedRequests, isNotEmpty);
+      expect(capturedRequests.first.url.toString(), 'https://us.i.posthog.com/capture/');
+      expect(capturedRequests.first.headers['Content-Type'], 'application/json');
 
-        final events = capturedRequests
-            .map((request) => jsonDecode(request.body) as Map<String, dynamic>)
-            .toList();
-        expect(events.first['api_key'], 'phc_test_token_123');
-        expect(events.first['event'], 'bottom_tab_selected');
-        expect(events.first['properties']['tab'], 'Notifications');
-        expect(events.first['properties']['flavor'], 'dev');
-        expect(events.map((event) => event['event']), contains(r'$pageview'));
-      },
-    );
+      final events = capturedRequests
+          .map((request) => jsonDecode(request.body) as Map<String, dynamic>)
+          .toList();
+      expect(events.first['api_key'], 'phc_test_token_123');
+      expect(events.first['event'], 'bottom_tab_selected');
+      expect(events.first['properties']['tab'], 'Notifications');
+      expect(events.first['properties']['flavor'], 'dev');
+      expect(events.map((event) => event['event']), contains(r'$pageview'));
+    });
 
-    test(
-      'Handles HTTP non-200 or transport exceptions without throwing',
-      () async {
-        final mockClient = MockClient((request) async {
-          throw http.ClientException('Network down');
-        });
+    test('Handles HTTP non-200 or transport exceptions without throwing', () async {
+      final mockClient = MockClient((request) async {
+        throw http.ClientException('Network down');
+      });
 
-        final service = CommunityAnalyticsService(
-          flavor: AppFlavor.dev,
-          httpClient: mockClient,
-          aptabaseKeyOverride: 'A-US-TEST-KEY',
-          postHogKeyOverride: 'phc_test_token_123',
-        );
+      final service = CommunityAnalyticsService(
+        flavor: AppFlavor.dev,
+        httpClient: mockClient,
+        aptabaseKeyOverride: 'A-US-TEST-KEY',
+        postHogKeyOverride: 'phc_test_token_123',
+      );
 
-        // Must complete normally without throwing
-        await expectLater(
-          service.logVoteCast('feature-voice-rooms'),
-          completes,
-        );
+      // Must complete normally without throwing
+      await expectLater(service.logVoteCast('feature-voice-rooms'), completes);
 
-        expect(service.dispatchedEventsForTesting.length, 1);
-        expect(
-          service.dispatchedEventsForTesting.first['feature_id'],
-          'feature-voice-rooms',
-        );
-      },
-    );
+      expect(service.dispatchedEventsForTesting.length, 1);
+      expect(service.dispatchedEventsForTesting.first['feature_id'], 'feature-voice-rooms');
+    });
   });
 }

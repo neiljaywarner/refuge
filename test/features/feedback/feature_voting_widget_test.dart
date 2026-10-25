@@ -22,15 +22,9 @@ void main() {
         await $.pumpWidgetAndSettle(
           ProviderScope(
             overrides: [
-              featureVotingBackendTargetProvider.overrideWithValue(
-                BackendTarget.appwrite,
-              ),
+              featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.appwrite),
             ],
-          child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(),
-              ),
-            ),
+            child: const MaterialApp(home: Scaffold(body: BelongFeedbackAndVotingSheet())),
           ),
         );
 
@@ -63,10 +57,7 @@ void main() {
 
         // Select 'Idea / Tweak' (private suggestion)
         await $(const Key('sentiment_neutral')).tap();
-        expect(
-          $('What would make Belong clearer or calmer for you?'),
-          findsOneWidget,
-        );
+        expect($('What would make Belong clearer or calmer for you?'), findsOneWidget);
       },
     );
 
@@ -76,15 +67,9 @@ void main() {
         await $.pumpWidgetAndSettle(
           ProviderScope(
             overrides: [
-              featureVotingBackendTargetProvider.overrideWithValue(
-                BackendTarget.inMemory,
-              ),
+              featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
             ],
-            child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(),
-              ),
-            ),
+            child: const MaterialApp(home: Scaffold(body: BelongFeedbackAndVotingSheet())),
           ),
         );
 
@@ -97,15 +82,10 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify the item is listed with 0 initial votes (#304)
-        expect(
-          $('Real-Time Instant Alerts vs. Calm Batched Digest Toggle'),
-          findsOneWidget,
-        );
+        expect($('Real-Time Instant Alerts vs. Calm Batched Digest Toggle'), findsOneWidget);
         expect(
           find.descendant(
-            of: find.byKey(
-              const Key('vote_button_idea-realtime-vs-calm-notifications'),
-            ),
+            of: find.byKey(const Key('vote_button_idea-realtime-vs-calm-notifications')),
             matching: find.text('0'),
           ),
           findsOneWidget,
@@ -115,9 +95,7 @@ void main() {
         await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
         expect(
           find.descendant(
-            of: find.byKey(
-              const Key('vote_button_idea-realtime-vs-calm-notifications'),
-            ),
+            of: find.byKey(const Key('vote_button_idea-realtime-vs-calm-notifications')),
             matching: find.text('1'),
           ),
           findsOneWidget,
@@ -127,9 +105,7 @@ void main() {
         await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
         expect(
           find.descendant(
-            of: find.byKey(
-              const Key('vote_button_idea-realtime-vs-calm-notifications'),
-            ),
+            of: find.byKey(const Key('vote_button_idea-realtime-vs-calm-notifications')),
             matching: find.text('0'),
           ),
           findsOneWidget,
@@ -148,13 +124,9 @@ void main() {
 
         await $.pumpWidgetAndSettle(
           ProviderScope(
-            overrides: [
-              featureVotingRepositoryProvider.overrideWithValue(inMemoryRepo),
-            ],
+            overrides: [featureVotingRepositoryProvider.overrideWithValue(inMemoryRepo)],
             child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(initialTabIndex: 1),
-              ),
+              home: Scaffold(body: BelongFeedbackAndVotingSheet(initialTabIndex: 1)),
             ),
           ),
         );
@@ -168,33 +140,23 @@ void main() {
         await $(const Key('star_rating_2')).tap();
         await $.pumpAndSettle();
         expect($('2 ★ · Frustrating / Needs work'), findsOneWidget);
-        expect(
-          $('What felt broken, confusing, or overwhelming?'),
-          findsOneWidget,
-        );
+        expect($('What felt broken, confusing, or overwhelming?'), findsOneWidget);
 
         // Tap 3 stars -> auto-selects Idea / Tweak (neutral)
         await $(const Key('star_rating_3')).tap();
         await $.pumpAndSettle();
         expect($("3 ★ · It's okay, could be better"), findsOneWidget);
-        expect(
-          $('What would make Belong clearer or calmer for you?'),
-          findsOneWidget,
-        );
+        expect($('What would make Belong clearer or calmer for you?'), findsOneWidget);
 
         // Tap 4 stars -> auto-selects Works Great (happy)
         await $(const Key('star_rating_4')).tap();
         await $.pumpAndSettle();
         expect($('4 ★ · Good experience'), findsOneWidget);
-        expect(
-          $('What feels calm, clear, or welcoming?'),
-          findsOneWidget,
-        );
+        expect($('What feels calm, clear, or welcoming?'), findsOneWidget);
 
         // Submit 4-star feedback and verify rating is persisted
-        await $(const Key('feedback_message_input')).enterText(
-          'Love the calm PWA star rating flow!',
-        );
+        await $(const Key('feedback_message_input'))
+            .enterText('Love the calm PWA star rating flow!');
         await $(const Key('submit_feedback_button')).tap();
         await $.pumpAndSettle();
 

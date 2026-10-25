@@ -12,10 +12,7 @@ void main() {
   group('firestore.rules members-only (#601)', () {
     test('defines isSignedInMember and rejects anonymous', () {
       expect(rules, contains('function isSignedInMember()'));
-      expect(
-        rules,
-        contains("request.auth.token.firebase.sign_in_provider != 'anonymous'"),
-      );
+      expect(rules, contains("request.auth.token.firebase.sign_in_provider != 'anonymous'"));
     });
 
     test('does not allow unauthenticated reads or pre-alpha public writes', () {
@@ -44,10 +41,7 @@ void main() {
         expect(rules, contains('match /$name/{'), reason: name);
       }
       expect(rules, contains('allow read, write: if isSignedInMember();'));
-      expect(
-        rules,
-        contains('allow create, read, update, delete: if isSignedInMember();'),
-      );
+      expect(rules, contains('allow create, read, update, delete: if isSignedInMember();'));
     });
   });
 }

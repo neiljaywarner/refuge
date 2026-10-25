@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../firebase/organizer_remote_config_service.dart';
 
 /// StateNotifier that manages the single master **Preview Mode** flag.

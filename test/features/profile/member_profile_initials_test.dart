@@ -5,12 +5,12 @@ import 'package:refuge4serverpod/src/features/notifications/domain/belong_notifi
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
 
 MemberProfile _createProfile(String name) => MemberProfile(
-      displayName: name,
-      email: 'member@belongonthespectrum.com',
-      bio: 'Fellowship member',
-      comfortBadges: const [],
-      isSignedIn: true,
-    );
+  displayName: name,
+  email: 'member@belongonthespectrum.com',
+  bio: 'Fellowship member',
+  comfortBadges: const [],
+  isSignedIn: true,
+);
 
 void main() {
   group('MemberProfile.initials Dart 3 Switch Expression', () {
@@ -121,10 +121,7 @@ void main() {
         postTitle: 'Markan Chiasms',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'Marty mentioned you in a comment on "Markan Chiasms"',
-      );
+      expect(notification.displayMessage, 'Marty mentioned you in a comment on "Markan Chiasms"');
     });
 
     test('generates reply message', () {
@@ -135,10 +132,7 @@ void main() {
         postTitle: 'Quiet Rooms',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'Caleb replied to your comment on "Quiet Rooms"',
-      );
+      expect(notification.displayMessage, 'Caleb replied to your comment on "Quiet Rooms"');
     });
 
     test('generates like message', () {
@@ -149,10 +143,7 @@ void main() {
         postTitle: 'Sensory Safety',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'Sarah liked your reflection on "Sensory Safety"',
-      );
+      expect(notification.displayMessage, 'Sarah liked your reflection on "Sensory Safety"');
     });
 
     test('generates following space message', () {
@@ -163,10 +154,7 @@ void main() {
         postTitle: 'Fellowship Hall',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'David posted a new reflection in "Fellowship Hall"',
-      );
+      expect(notification.displayMessage, 'David posted a new reflection in "Fellowship Hall"');
     });
   });
 }

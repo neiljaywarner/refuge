@@ -8,11 +8,7 @@ import '../domain/account_deletion_exception.dart';
 /// An organizer does not get this control. Typing [AccountDeletionMessages.restorePhrase]
 /// is the member's own choice to come back. See discussion #590.
 class ReturnAfterDeletePanel extends HookWidget {
-  const ReturnAfterDeletePanel({
-    super.key,
-    required this.onRestore,
-    required this.onStayDeleted,
-  });
+  const ReturnAfterDeletePanel({super.key, required this.onRestore, required this.onStayDeleted});
 
   final Future<void> Function() onRestore;
   final Future<void> Function() onStayDeleted;

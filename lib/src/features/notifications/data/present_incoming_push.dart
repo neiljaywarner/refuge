@@ -5,8 +5,7 @@ import 'calm_local_notification_service.dart';
 enum IncomingPushKind { standardMessage, quietDigest }
 
 IncomingPushKind incomingPushKind(Map<String, dynamic> data) {
-  final isDirectMessage =
-      data['type'] == 'direct_message' || data['category'] == 'direct_message';
+  final isDirectMessage = data['type'] == 'direct_message' || data['category'] == 'direct_message';
   final quiet = data['quiet'] == 'true';
   if (isDirectMessage && !quiet) return IncomingPushKind.standardMessage;
   return IncomingPushKind.quietDigest;
@@ -22,15 +21,7 @@ Future<void> presentIncomingPush({
   String? payload,
 }) {
   if (incomingPushKind(data) == IncomingPushKind.standardMessage) {
-    return notifications.showMessageNotification(
-      title: title,
-      body: body,
-      payload: payload,
-    );
+    return notifications.showMessageNotification(title: title, body: body, payload: payload);
   }
-  return notifications.showCalmDigest(
-    title: title,
-    body: body,
-    payload: payload,
-  );
+  return notifications.showCalmDigest(title: title, body: body, payload: payload);
 }

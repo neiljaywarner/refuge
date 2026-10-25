@@ -36,19 +36,11 @@ void main() {
 
     test('hidden on dev iOS, dev desktop, and prod', () {
       expect(
-        showDevExampleAccounts(
-          flavor: AppFlavor.dev,
-          isWeb: false,
-          platform: TargetPlatform.iOS,
-        ),
+        showDevExampleAccounts(flavor: AppFlavor.dev, isWeb: false, platform: TargetPlatform.iOS),
         isFalse,
       );
       expect(
-        showDevExampleAccounts(
-          flavor: AppFlavor.dev,
-          isWeb: false,
-          platform: TargetPlatform.macOS,
-        ),
+        showDevExampleAccounts(flavor: AppFlavor.dev, isWeb: false, platform: TargetPlatform.macOS),
         isFalse,
       );
       expect(
@@ -71,10 +63,7 @@ void main() {
   });
 
   group('sessionMayEnterCommunity', () {
-    AuthSession signedIn({
-      String userId = 'uid-1',
-      String authMethod = 'firebase_password',
-    }) {
+    AuthSession signedIn({String userId = 'uid-1', String authMethod = 'firebase_password'}) {
       return AuthSession(
         userId: userId,
         displayName: 'David M.',
@@ -92,14 +81,8 @@ void main() {
 
     test('false for guest, anonymous, and guest-shaped ids', () {
       expect(sessionMayEnterCommunity(const AuthSession.guest()), isFalse);
-      expect(
-        sessionMayEnterCommunity(signedIn(authMethod: 'anonymous')),
-        isFalse,
-      );
-      expect(
-        sessionMayEnterCommunity(signedIn(authMethod: 'firebase_anonymous')),
-        isFalse,
-      );
+      expect(sessionMayEnterCommunity(signedIn(authMethod: 'anonymous')), isFalse);
+      expect(sessionMayEnterCommunity(signedIn(authMethod: 'firebase_anonymous')), isFalse);
       expect(sessionMayEnterCommunity(signedIn(userId: 'guest')), isFalse);
       expect(sessionMayEnterCommunity(signedIn(userId: '')), isFalse);
     });

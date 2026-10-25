@@ -19,10 +19,7 @@ class MemoryReflectionMirror implements ReflectionMirror {
   }
 
   @override
-  Future<void> incrementReaction({
-    required String postId,
-    required String column,
-  }) async {
+  Future<void> incrementReaction({required String postId, required String column}) async {
     reactions['$postId:$column'] = (reactions['$postId:$column'] ?? 0) + 1;
   }
 
@@ -51,10 +48,7 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     expect(container.read(authBackendTargetProvider), BackendTarget.firebase);
-    expect(
-      container.read(featureVotingBackendTargetProvider),
-      BackendTarget.firebase,
-    );
+    expect(container.read(featureVotingBackendTargetProvider), BackendTarget.firebase);
   });
 
   test('createPost mirrors to Appwrite and keeps the local copy', () async {
@@ -83,37 +77,31 @@ void main() {
     expect(stored.map((post) => post.id), contains('post-100'));
   });
 
-  test(
-    'addReaction increments the Appwrite column and the local count',
-    () async {
-      final mirror = MemoryReflectionMirror();
-      final repo = AppwritePostRepository(
-        isDevMode: false,
-        fallback: LocalPostRepository(isDevMode: false),
-        mirror: mirror,
-      );
-      await repo.createPost(
-        Post(
-          id: 'post-200',
-          authorName: 'Fellow Member',
-          spaceKey: 'study',
-          toneTag: '[Question]',
-          content: 'Holding this gently.',
-          timestamp: DateTime.utc(2026, 10, 24, 13),
-          reactions: const {},
-        ),
-      );
+  test('addReaction increments the Appwrite column and the local count', () async {
+    final mirror = MemoryReflectionMirror();
+    final repo = AppwritePostRepository(
+      isDevMode: false,
+      fallback: LocalPostRepository(isDevMode: false),
+      mirror: mirror,
+    );
+    await repo.createPost(
+      Post(
+        id: 'post-200',
+        authorName: 'Fellow Member',
+        spaceKey: 'study',
+        toneTag: '[Question]',
+        content: 'Holding this gently.',
+        timestamp: DateTime.utc(2026, 10, 24, 13),
+        reactions: const {},
+      ),
+    );
 
-      await repo.addReaction(postId: 'post-200', reactionType: 'peace');
+    await repo.addReaction(postId: 'post-200', reactionType: 'peace');
 
-      expect(mirror.reactions['post-200:peaceCount'], 1);
-      final stored = await repo.getPosts(spaceKey: 'study');
-      expect(
-        stored.singleWhere((post) => post.id == 'post-200').reactions['peace'],
-        1,
-      );
-    },
-  );
+    expect(mirror.reactions['post-200:peaceCount'], 1);
+    final stored = await repo.getPosts(spaceKey: 'study');
+    expect(stored.singleWhere((post) => post.id == 'post-200').reactions['peace'], 1);
+  });
 
   test('quiet digest is computed locally and mirrored', () async {
     final mirror = MemoryReflectionMirror();

@@ -7,10 +7,7 @@ void main() {
   test('dev notice points at the public site', () {
     final notice = OtherSiteNotice.forFlavor(AppFlavor.dev);
     expect(notice.message, contains('You are on the development site'));
-    expect(
-      notice.message,
-      contains('https://dev-belongonthespectrum.web.app/'),
-    );
+    expect(notice.message, contains('https://dev-belongonthespectrum.web.app/'));
     expect(notice.message, contains('The public site is'));
     expect(notice.message, contains('https://belongonthespectrum.web.app/'));
   });
@@ -19,10 +16,7 @@ void main() {
     final notice = OtherSiteNotice.forFlavor(AppFlavor.prod);
     expect(notice.message, contains('You are on the public site'));
     expect(notice.message, contains('The development site is'));
-    expect(
-      notice.message,
-      contains('https://dev-belongonthespectrum.web.app/'),
-    );
+    expect(notice.message, contains('https://dev-belongonthespectrum.web.app/'));
   });
 
   testWidgets('info icon opens the other-site explanation', (tester) async {
@@ -37,9 +31,6 @@ void main() {
 
     expect(find.text('Which site is this?'), findsOneWidget);
     expect(find.textContaining('You are on the public site'), findsOneWidget);
-    expect(
-      find.textContaining('https://dev-belongonthespectrum.web.app/'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('https://dev-belongonthespectrum.web.app/'), findsOneWidget);
   });
 }

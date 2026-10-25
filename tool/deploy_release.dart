@@ -69,8 +69,7 @@ const _repo = 'neiljaywarner/refuge';
 const _prodUrl = 'https://belongonthespectrum.web.app';
 
 /// Resolves a tool from `$<NAME>_BIN` or falls back to PATH.
-String _bin(String name) =>
-    Platform.environment['${name.toUpperCase()}_BIN'] ?? name;
+String _bin(String name) => Platform.environment['${name.toUpperCase()}_BIN'] ?? name;
 
 Future<void> main(List<String> args) async {
   if (args.contains('--help') || args.contains('-h')) {
@@ -182,9 +181,7 @@ Future<void> main(List<String> args) async {
       stderr.writeln(mismatch);
       exit(65);
     }
-    _log(
-      'Skipping Flutter build. Existing artifacts keep their previous dart-defines.',
-    );
+    _log('Skipping Flutter build. Existing artifacts keep their previous dart-defines.');
   }
 
   _log('Deploying preview channel "$channel"...');
@@ -224,13 +221,7 @@ Future<void> main(List<String> args) async {
 
   if (ghRelease) {
     _log('Publishing GitHub Release $version ...');
-    final exists = await Process.run(_bin('gh'), [
-      'release',
-      'view',
-      version,
-      '--repo',
-      _repo,
-    ]);
+    final exists = await Process.run(_bin('gh'), ['release', 'view', version, '--repo', _repo]);
     await _run(_bin('gh'), [
       'release',
       exists.exitCode == 0 ? 'edit' : 'create',
@@ -244,13 +235,9 @@ Future<void> main(List<String> args) async {
       if (exists.exitCode != 0) '--prerelease',
     ]);
     if (attachments.isNotEmpty) {
-      final validFiles = attachments
-          .where((p) => File(p).existsSync())
-          .toList();
+      final validFiles = attachments.where((p) => File(p).existsSync()).toList();
       if (validFiles.isNotEmpty) {
-        _log(
-          'Uploading ${validFiles.length} release asset(s) to GitHub Release $version ...',
-        );
+        _log('Uploading ${validFiles.length} release asset(s) to GitHub Release $version ...');
         await _run(_bin('gh'), [
           'release',
           'upload',
@@ -305,9 +292,7 @@ List<String> _argsAll(List<String> args, String flag) {
   return result;
 }
 
-void _log(String m) => stdout.writeln(
-  '[${DateTime.now().toIso8601String().substring(11, 19)}] $m',
-);
+void _log(String m) => stdout.writeln('[${DateTime.now().toIso8601String().substring(11, 19)}] $m');
 
 Future<String?> _detectAndroidAppId() async {
   final r = await Process.run(_bin('firebase'), [
@@ -318,8 +303,7 @@ Future<String?> _detectAndroidAppId() async {
     '--json',
   ]);
   if (r.exitCode != 0) return null;
-  final match = RegExp(r'"appId"\s*:\s*"([^"]+:android:[^"]+)"')
-      .firstMatch(r.stdout as String);
+  final match = RegExp(r'"appId"\s*:\s*"([^"]+:android:[^"]+)"').firstMatch(r.stdout as String);
   return match?.group(1);
 }
 
@@ -330,21 +314,9 @@ String? _extractPreviewUrl(String jsonOut) {
 
 /// Merged PR titles since the previous tag, newest first.
 Future<List<String>> _changesSinceLastTag() async {
-  final tag = await Process.run('git', [
-    'describe',
-    '--tags',
-    '--abbrev=0',
-    'HEAD^',
-  ]);
-  final range = tag.exitCode == 0
-      ? '${(tag.stdout as String).trim()}..HEAD'
-      : 'HEAD~15..HEAD';
-  final log = await Process.run('git', [
-    'log',
-    range,
-    '--no-merges',
-    '--pretty=%s',
-  ]);
+  final tag = await Process.run('git', ['describe', '--tags', '--abbrev=0', 'HEAD^']);
+  final range = tag.exitCode == 0 ? '${(tag.stdout as String).trim()}..HEAD' : 'HEAD~15..HEAD';
+  final log = await Process.run('git', ['log', range, '--no-merges', '--pretty=%s']);
   return (log.stdout as String)
       .split('\n')
       .map((l) => l.trim())
@@ -354,10 +326,7 @@ Future<List<String>> _changesSinceLastTag() async {
 
 /// Writes `build/web/version.json` so hosting and smoke tests expose the
 /// deployed release tag and the same SHA / build time baked into the binary.
-Future<void> _writeWebVersionJson(
-  String version,
-  ReleaseBuildStamp stamp,
-) async {
+Future<void> _writeWebVersionJson(String version, ReleaseBuildStamp stamp) async {
   final pubspec = File('pubspec.yaml').readAsStringSync();
   final versionLine = RegExp(
     r'^version:\s*(.+)$',

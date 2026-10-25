@@ -45,30 +45,25 @@ void main() {
       expect(brand.warmGoldAccentColor, const Color(0xFFC99F49));
     });
 
-    patrolWidgetTest(
-      'Scenario: Custom white-label tenant override in ProviderScope',
-      ($) async {
-        const customBrand = CommunityBrandConfig.belong();
-        final partnerBrand = customBrand.copyWith(
-          tenantId: 'grace_spectrum',
-          shortName: 'Grace Spectrum',
-          fullName: 'Grace Neurodivergent Fellowship',
-          defaultOrganizerWelcomeTitle: 'Welcome to Grace Spectrum',
-        );
+    patrolWidgetTest('Scenario: Custom white-label tenant override in ProviderScope', ($) async {
+      const customBrand = CommunityBrandConfig.belong();
+      final partnerBrand = customBrand.copyWith(
+        tenantId: 'grace_spectrum',
+        shortName: 'Grace Spectrum',
+        fullName: 'Grace Neurodivergent Fellowship',
+        defaultOrganizerWelcomeTitle: 'Welcome to Grace Spectrum',
+      );
 
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            overrides: [
-              communityBrandConfigProvider.overrideWithValue(partnerBrand),
-            ],
-            child: const _BrandPreviewProbe(),
-          ),
-        );
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          overrides: [communityBrandConfigProvider.overrideWithValue(partnerBrand)],
+          child: const _BrandPreviewProbe(),
+        ),
+      );
 
-        expect($('Grace Spectrum'), findsOneWidget);
-        expect($('Grace Neurodivergent Fellowship'), findsOneWidget);
-        expect($('Welcome to Grace Spectrum'), findsOneWidget);
-      },
-    );
+      expect($('Grace Spectrum'), findsOneWidget);
+      expect($('Grace Neurodivergent Fellowship'), findsOneWidget);
+      expect($('Welcome to Grace Spectrum'), findsOneWidget);
+    });
   });
 }

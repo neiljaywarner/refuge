@@ -5,10 +5,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 /// Central Talker logging service for visual debugging, RPC interception, and diagnostics.
 final talker = TalkerFlutter.init(
-  settings: TalkerSettings(
-    maxHistoryItems: 1000,
-    useConsoleLogs: true,
-  ),
+  settings: TalkerSettings(maxHistoryItems: 1000, useConsoleLogs: true),
 );
 
 /// Thin static wrapper around [Talker] and [FirebaseCrashlytics] delivering
@@ -25,11 +22,7 @@ class AppLogger {
   }
 
   /// Logs a warning message to Talker.
-  static void warning(
-    dynamic message, [
-    Object? exception,
-    StackTrace? stack,
-  ]) {
+  static void warning(dynamic message, [Object? exception, StackTrace? stack]) {
     talker.warning(message, exception, stack);
   }
 

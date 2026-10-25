@@ -6,20 +6,10 @@ import 'package:refuge4serverpod/main.dart';
 
 void main() {
   group('Comprehensive UAT Cross-Platform Flow Verification (Patrol BDD)', () {
-    Widget createTestApp({
-      Widget? home,
-      CommunityBrandConfig? brand,
-    }) {
-      return ProviderScope(
-        overrides: [
-          if (brand != null)
-            communityBrandConfigProvider.overrideWithValue(brand),
-        ],
-        child: MaterialApp(
-          home: home ?? RefugeApp(repository: LocalPostRepository()),
-        ),
-      );
-    }
+    Widget createTestApp({Widget? home, CommunityBrandConfig? brand}) => ProviderScope(
+      overrides: [if (brand != null) communityBrandConfigProvider.overrideWithValue(brand)],
+      child: MaterialApp(home: home ?? RefugeApp(repository: LocalPostRepository())),
+    );
 
     patrolWidgetTest('Flow 1: Sensory Calm Audit & Navigation Bar', ($) async {
       await $.pumpWidgetAndSettle(createTestApp());
@@ -40,12 +30,12 @@ void main() {
       expect($('Search'), findsOneWidget);
     });
 
-    patrolWidgetTest('Flow 2: Member Profile & Marty the Organizer ICOC Church Question', ($) async {
+    patrolWidgetTest('Flow 2: Member Profile & Marty the Organizer ICOC Church Question', (
+      $,
+    ) async {
       await $.tester.binding.setSurfaceSize(const Size(800, 1200));
       addTearDown(() => $.tester.binding.setSurfaceSize(null));
-      await $.pumpWidgetAndSettle(
-        createTestApp(home: const Scaffold(body: MemberProfileDialog())),
-      );
+      await $.pumpWidgetAndSettle(createTestApp(home: const Scaffold(body: MemberProfileDialog())));
 
       // Verify title and prompts
       expect($('Member Profile'), findsOneWidget);
@@ -63,13 +53,14 @@ void main() {
     patrolWidgetTest('Flow 3: Firebase Auth & Passwordless Magic Link Sheet', ($) async {
       await $.tester.binding.setSurfaceSize(const Size(800, 1200));
       addTearDown(() => $.tester.binding.setSurfaceSize(null));
-      await $.pumpWidgetAndSettle(
-        createTestApp(home: const Scaffold(body: BelongAuthSheet())),
-      );
+      await $.pumpWidgetAndSettle(createTestApp(home: const Scaffold(body: BelongAuthSheet())));
 
       // Verify Auth Header
       expect($('Sign in to Belong'), findsOneWidget);
-      expect($('Passwordless magic link sign-in for autistic individuals and allies.'), findsOneWidget);
+      expect(
+        $('Passwordless magic link sign-in for autistic individuals and allies.'),
+        findsOneWidget,
+      );
 
       // Verify Email Field
       expect($(const Key('belong_auth_email_field')), findsOneWidget);

@@ -34,17 +34,16 @@ class Comment {
     String? toneTag,
     DateTime? timestamp,
     Map<String, int>? reactions,
-  }) =>
-      Comment(
-        id: id ?? this.id,
-        postId: postId ?? this.postId,
-        parentCommentId: parentCommentId ?? this.parentCommentId,
-        authorName: authorName ?? this.authorName,
-        content: content ?? this.content,
-        toneTag: toneTag ?? this.toneTag,
-        timestamp: timestamp ?? this.timestamp,
-        reactions: reactions ?? Map<String, int>.from(this.reactions),
-      );
+  }) => Comment(
+    id: id ?? this.id,
+    postId: postId ?? this.postId,
+    parentCommentId: parentCommentId ?? this.parentCommentId,
+    authorName: authorName ?? this.authorName,
+    content: content ?? this.content,
+    toneTag: toneTag ?? this.toneTag,
+    timestamp: timestamp ?? this.timestamp,
+    reactions: reactions ?? Map<String, int>.from(this.reactions),
+  );
 
   @override
   bool operator ==(Object other) =>

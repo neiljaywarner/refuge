@@ -18,16 +18,16 @@ class AuthSession {
   });
 
   const AuthSession.guest()
-      : userId = 'guest',
-        displayName = 'Fellowship Member',
-        email = '',
-        bio = 'Exploring Belong on the Spectrum',
-        comfortBadges = const ['Literal communication appreciated'],
-        isSignedIn = false,
-        authMethod = 'guest',
-        icocChurchAffiliation = null,
-        emailVerified = false,
-        photoUrl = null;
+    : userId = 'guest',
+      displayName = 'Fellowship Member',
+      email = '',
+      bio = 'Exploring Belong on the Spectrum',
+      comfortBadges = const ['Literal communication appreciated'],
+      isSignedIn = false,
+      authMethod = 'guest',
+      icocChurchAffiliation = null,
+      emailVerified = false,
+      photoUrl = null;
 
   final String userId;
   final String displayName;
@@ -61,19 +61,16 @@ class AuthSession {
     String? icocChurchAffiliation,
     bool? emailVerified,
     String? photoUrl,
-  }) {
-    return AuthSession(
-      userId: userId ?? this.userId,
-      displayName: displayName ?? this.displayName,
-      email: email ?? this.email,
-      bio: bio ?? this.bio,
-      comfortBadges: comfortBadges ?? this.comfortBadges,
-      isSignedIn: isSignedIn ?? this.isSignedIn,
-      authMethod: authMethod ?? this.authMethod,
-      icocChurchAffiliation:
-          icocChurchAffiliation ?? this.icocChurchAffiliation,
-      emailVerified: emailVerified ?? this.emailVerified,
-      photoUrl: photoUrl ?? this.photoUrl,
-    );
-  }
+  }) => AuthSession(
+    userId: userId ?? this.userId,
+    displayName: displayName ?? this.displayName,
+    email: email ?? this.email,
+    bio: bio ?? this.bio,
+    comfortBadges: comfortBadges ?? this.comfortBadges,
+    isSignedIn: isSignedIn ?? this.isSignedIn,
+    authMethod: authMethod ?? this.authMethod,
+    icocChurchAffiliation: icocChurchAffiliation ?? this.icocChurchAffiliation,
+    emailVerified: emailVerified ?? this.emailVerified,
+    photoUrl: photoUrl ?? this.photoUrl,
+  );
 }

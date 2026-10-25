@@ -12,24 +12,15 @@ import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart
 
 void main() {
   group('BelongAuthSheet Widget & BDD Tests (#119, #163)', () {
-    Widget buildTestWidget({
-      CommunityBrandConfig? brandConfig,
-      bool? previewModeEnabled,
-    }) {
-      return ProviderScope(
-        overrides: [
-          if (brandConfig != null)
-            communityBrandConfigProvider.overrideWithValue(brandConfig),
-          if (previewModeEnabled != null)
-            previewModeUserOverrideProvider.overrideWith((ref) => previewModeEnabled),
-        ],
-        child: const MaterialApp(
-          home: Scaffold(
-            body: BelongAuthSheet(),
-          ),
-        ),
-      );
-    }
+    Widget buildTestWidget({CommunityBrandConfig? brandConfig, bool? previewModeEnabled}) =>
+        ProviderScope(
+          overrides: [
+            if (brandConfig != null) communityBrandConfigProvider.overrideWithValue(brandConfig),
+            if (previewModeEnabled != null)
+              previewModeUserOverrideProvider.overrideWith((ref) => previewModeEnabled),
+          ],
+          child: const MaterialApp(home: Scaffold(body: BelongAuthSheet())),
+        );
 
     patrolWidgetTest('renders all three tabs (Sign In, Register, Magic Link)', ($) async {
       await $.pumpWidgetAndSettle(buildTestWidget());
@@ -50,10 +41,7 @@ void main() {
 
       expect($(const Key('auth_error_banner')), findsOneWidget);
       expect($(const Key('auth_error_text')), findsOneWidget);
-      expect(
-        $('Please enter your email address.'),
-        findsOneWidget,
-      );
+      expect($('Please enter your email address.'), findsOneWidget);
     });
 
     patrolWidgetTest('requires ICOC church affiliation selection on registration', ($) async {
@@ -86,12 +74,16 @@ void main() {
       expect($(const Key('auth_error_banner')), findsOneWidget);
       expect($(const Key('auth_error_text')), findsOneWidget);
       expect(
-        $('Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".'),
+        $(
+          'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".',
+        ),
         findsOneWidget,
       );
     });
 
-    patrolWidgetTest('registers successfully with a free-form custom church affiliation', ($) async {
+    patrolWidgetTest('registers successfully with a free-form custom church affiliation', (
+      $,
+    ) async {
       $.tester.view.physicalSize = const Size(800, 1200);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -100,20 +92,14 @@ void main() {
       });
 
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: BelongAuthSheet(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: BelongAuthSheet())),
         ),
       );
 
@@ -126,7 +112,8 @@ void main() {
       await $(const Key('auth_register_password_field')).enterText('belongPassword789');
 
       // Free-form church entry into the blank required field
-      await $(const Key('auth_register_church_affiliation_dropdown')).enterText('Sydney Church of Christ');
+      await $(const Key('auth_register_church_affiliation_dropdown'))
+          .enterText('Sydney Church of Christ');
 
       await $(const Key('auth_register_submit_button')).tap();
       await $.pumpAndSettle();
@@ -155,12 +142,16 @@ void main() {
       expect($(const Key('auth_success_banner')), findsOneWidget);
       expect($(const Key('auth_success_text')), findsOneWidget);
       expect(
-        $('A secure sign-in link has been sent to magic@belong.org. Please check your inbox or paste the link below.'),
+        $(
+          'A secure sign-in link has been sent to magic@belong.org. Please check your inbox or paste the link below.',
+        ),
         findsOneWidget,
       );
     });
 
-    patrolWidgetTest('sign-in and register password fields expose visibility toggles (#593)', ($) async {
+    patrolWidgetTest('sign-in and register password fields expose visibility toggles (#593)', (
+      $,
+    ) async {
       await $.pumpWidgetAndSettle(buildTestWidget());
 
       expect($(const Key('auth_sign_in_password_visibility_toggle')), findsOneWidget);
@@ -178,21 +169,27 @@ void main() {
       expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
     });
 
-    patrolWidgetTest('hides Google Sign-In button by default when preview mode is disabled (#163)', ($) async {
-      await $.pumpWidgetAndSettle(buildTestWidget());
+    patrolWidgetTest(
+      'hides Google Sign-In button by default when preview mode is disabled (#163)',
+      ($) async {
+        await $.pumpWidgetAndSettle(buildTestWidget());
 
-      expect($(const Key('auth_google_sign_in_button')), findsNothing);
-      expect($('Continue with Google'), findsNothing);
-    });
+        expect($(const Key('auth_google_sign_in_button')), findsNothing);
+        expect($('Continue with Google'), findsNothing);
+      },
+    );
 
-    patrolWidgetTest('renders Google Sign-In button when preview mode is enabled and handles click (#163)', ($) async {
-      await $.pumpWidgetAndSettle(buildTestWidget(previewModeEnabled: true));
+    patrolWidgetTest(
+      'renders Google Sign-In button when preview mode is enabled and handles click (#163)',
+      ($) async {
+        await $.pumpWidgetAndSettle(buildTestWidget(previewModeEnabled: true));
 
-      expect($(const Key('auth_google_sign_in_button')), findsOneWidget);
-      expect($('Continue with Google'), findsOneWidget);
+        expect($(const Key('auth_google_sign_in_button')), findsOneWidget);
+        expect($('Continue with Google'), findsOneWidget);
 
-      await $(const Key('auth_google_sign_in_button')).tap();
-      await $.pump();
-    });
+        await $(const Key('auth_google_sign_in_button')).tap();
+        await $.pump();
+      },
+    );
   });
 }

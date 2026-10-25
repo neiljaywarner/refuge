@@ -48,9 +48,7 @@ class ReflectionCard extends ConsumerWidget {
               ? (isContrast ? Colors.yellow : const Color(0xFF2E6B56))
               : (isMeme
                     ? Colors.amber.withValues(alpha: 0.8)
-                    : (isContrast
-                          ? Colors.white
-                          : Theme.of(context).dividerColor)),
+                    : (isContrast ? Colors.white : Theme.of(context).dividerColor)),
           width: (isHighlighted || isMeme || isContrast) ? 2.0 : 1.0,
         ),
       ),
@@ -67,15 +65,10 @@ class ReflectionCard extends ConsumerWidget {
                       child: InkWell(
                         key: Key('author_tap_target_${post.id}'),
                         borderRadius: BorderRadius.circular(4),
-                        onTap: () => OtherMemberProfileDialog.show(
-                          context,
-                          authorName: post.authorName,
-                        ),
+                        onTap: () =>
+                            OtherMemberProfileDialog.show(context, authorName: post.authorName),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 2,
-                            horizontal: 2,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -83,8 +76,7 @@ class ReflectionCard extends ConsumerWidget {
                                 radius: 10,
                                 backgroundColor: isContrast
                                     ? Colors.yellow
-                                    : Theme.of(context).colorScheme.primary
-                                          .withValues(alpha: 0.15),
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                                 child: Text(
                                   getInitials(post.authorName),
                                   style: text.caption.copyWith(
@@ -123,15 +115,11 @@ class ReflectionCard extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 3.0,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
                     decoration: BoxDecoration(
                       color: isMeme
                           ? Colors.amber.withValues(alpha: 0.2)
-                          : Theme.of(context).colorScheme.primary
-                                .withValues(alpha: 0.12),
+                          : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Text(
@@ -150,42 +138,26 @@ class ReflectionCard extends ConsumerWidget {
                     key: Key('save_post_button_${post.id}'),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                    ),
-                    tooltip: post.isSaved
-                        ? 'Remove from Saved'
-                        : 'Save for Later (Private)',
-                    onPressed: () => ref
-                        .read(postRepositoryProvider)
-                        .toggleSavePost(postId: post.id),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    tooltip: post.isSaved ? 'Remove from Saved' : 'Save for Later (Private)',
+                    onPressed: () =>
+                        ref.read(postRepositoryProvider).toggleSavePost(postId: post.id),
                     icon: Icon(
-                      post.isSaved
-                          ? Icons.bookmark_rounded
-                          : Icons.bookmark_border_rounded,
+                      post.isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                       size: 18,
                       color: post.isSaved
-                          ? (isContrast
-                                ? Colors.yellow
-                                : Theme.of(context).colorScheme.primary)
-                          : (isContrast
-                                ? Colors.white70
-                                : Colors.grey.shade600),
+                          ? (isContrast ? Colors.yellow : Theme.of(context).colorScheme.primary)
+                          : (isContrast ? Colors.white70 : Colors.grey.shade600),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          if (post.specialInterestTag != null &&
-              post.specialInterestTag!.isNotEmpty) ...[
+          if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 3.0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
               decoration: BoxDecoration(
                 color: Colors.blueGrey.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6.0),
@@ -204,10 +176,7 @@ class ReflectionCard extends ConsumerWidget {
           Semantics(
             container: true,
             label: post.content,
-            child: Text(
-              post.content,
-              style: const TextStyle(fontSize: 13, height: 1.45),
-            ),
+            child: Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
           ),
           if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -229,8 +198,7 @@ class ReflectionCard extends ConsumerWidget {
                 child: Image.network(
                   post.imageUrl!,
                   fit: BoxFit.cover,
-                  semanticLabel:
-                      post.specialInterestTag ?? 'Community reflection image',
+                  semanticLabel: post.specialInterestTag ?? 'Community reflection image',
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
@@ -251,18 +219,11 @@ class ReflectionCard extends ConsumerWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.broken_image_outlined,
-                          size: 18,
-                          color: Colors.amber.shade800,
-                        ),
+                        Icon(Icons.broken_image_outlined, size: 18, color: Colors.amber.shade800),
                         const SizedBox(width: 8),
                         const Text(
                           'Wholesome Meme / GIF Attached',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontStyle: FontStyle.italic,
-                          ),
+                          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
                         ),
                       ],
                     ),
@@ -333,9 +294,7 @@ class ReflectionCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Builder(
                   builder: (ctx) {
-                    final countAsync = ref.watch(
-                      postCommentCountStreamProvider(post.id),
-                    );
+                    final countAsync = ref.watch(postCommentCountStreamProvider(post.id));
                     final count = countAsync.value ?? 0;
                     return OutlinedButton.icon(
                       key: Key('discussion_button_${post.id}'),
@@ -345,13 +304,10 @@ class ReflectionCard extends ConsumerWidget {
                       ),
                       onPressed:
                           onOpenDiscussion ??
-                          () =>
-                              ThreadedDiscussionSheet.show(context, post: post),
+                          () => ThreadedDiscussionSheet.show(context, post: post),
                       icon: const Text('💬', style: TextStyle(fontSize: 12)),
                       label: Text(
-                        count == 1
-                            ? '1 Reply'
-                            : (count > 1 ? '$count Replies' : 'Reply'),
+                        count == 1 ? '1 Reply' : (count > 1 ? '$count Replies' : 'Reply'),
                         style: const TextStyle(fontSize: 11),
                       ),
                     );

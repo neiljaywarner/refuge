@@ -68,10 +68,7 @@ void main() {
         );
       });
 
-      final client = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'test_pat_abc',
-      );
+      final client = GitHubFeedbackClient(httpClient: mockHttp, token: 'test_pat_abc');
       final result = await client.createIssue(
         repository: 'neiljaywarner/belong_feedback',
         title: '[Bug / Confusing] Button cut off',
@@ -81,24 +78,15 @@ void main() {
 
       expect(result, isNotNull);
       expect(result!.number, 2);
-      expect(
-        result.htmlUrl,
-        'https://github.com/neiljaywarner/belong_feedback/issues/2',
-      );
+      expect(result.htmlUrl, 'https://github.com/neiljaywarner/belong_feedback/issues/2');
     });
 
     test('createIssue survives 403 rate limit / auth errors without throwing', () async {
-      final mockHttp = MockClient((request) async {
-        return http.Response(
-          jsonEncode({'message': 'API rate limit exceeded'}),
-          403,
-        );
-      });
-
-      final client = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'test_pat_abc',
+      final mockHttp = MockClient(
+        (request) async => http.Response(jsonEncode({'message': 'API rate limit exceeded'}), 403),
       );
+
+      final client = GitHubFeedbackClient(httpClient: mockHttp, token: 'test_pat_abc');
       final result = await client.createIssue(
         repository: 'neiljaywarner/belong_feedback',
         title: '[Bug] Broken link',
@@ -114,10 +102,7 @@ void main() {
         throw http.ClientException('Network unreachable');
       });
 
-      final client = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'test_pat_abc',
-      );
+      final client = GitHubFeedbackClient(httpClient: mockHttp, token: 'test_pat_abc');
       final result = await client.createIssue(
         repository: 'neiljaywarner/belong_feedback',
         title: '[Bug] Broken link',
@@ -141,48 +126,53 @@ void main() {
         attachmentBytes: sampleBytes,
       );
 
-      expect(payload.body, contains('<img src="data:image/png;base64,$expectedBase64" alt="Annotated Screenshot" width="400" />'));
+      expect(
+        payload.body,
+        contains(
+          '<img src="data:image/png;base64,$expectedBase64" alt="Annotated Screenshot" width="400" />',
+        ),
+      );
       expect(payload.body, contains('<details><summary>Raw Base64 PNG</summary>'));
       expect(payload.body, contains(expectedBase64));
     });
   });
 
   group('InMemoryFeatureVotingRepository with GitHubFeedbackClient', () {
-    test('submitFeedback calls GitHub client and sets result metadata for private triage', () async {
-      final mockHttp = MockClient((request) async {
-        return http.Response(
-          jsonEncode({
-            'number': 5,
-            'html_url': 'https://github.com/neiljaywarner/belong_feedback/issues/5',
-          }),
-          201,
+    test(
+      'submitFeedback calls GitHub client and sets result metadata for private triage',
+      () async {
+        final mockHttp = MockClient(
+          (request) async => http.Response(
+            jsonEncode({
+              'number': 5,
+              'html_url': 'https://github.com/neiljaywarner/belong_feedback/issues/5',
+            }),
+            201,
+          ),
         );
-      });
 
-      final gitHubClient = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'pat_123',
-      );
+        final gitHubClient = GitHubFeedbackClient(httpClient: mockHttp, token: 'pat_123');
 
-      final repo = InMemoryFeatureVotingRepository(gitHubClient: gitHubClient);
-      final result = await repo.submitFeedback(
-        sentiment: FeedbackSentiment.sad,
-        message: 'Layout overflow on small phone screen.',
-        rating: 1,
-        contactEmail: 'tester@belong.org',
-      );
+        final repo = InMemoryFeatureVotingRepository(gitHubClient: gitHubClient);
+        final result = await repo.submitFeedback(
+          sentiment: FeedbackSentiment.sad,
+          message: 'Layout overflow on small phone screen.',
+          rating: 1,
+          contactEmail: 'tester@belong.org',
+        );
 
-      expect(result.isPrivateTriage, isTrue);
-      expect(result.githubIssueNumber, 5);
-      expect(result.githubIssueUrl, 'https://github.com/neiljaywarner/belong_feedback/issues/5');
-      expect(result.savedLocally, isTrue);
+        expect(result.isPrivateTriage, isTrue);
+        expect(result.githubIssueNumber, 5);
+        expect(result.githubIssueUrl, 'https://github.com/neiljaywarner/belong_feedback/issues/5');
+        expect(result.savedLocally, isTrue);
 
-      expect(repo.submittedFeedbackLog.length, 1);
-      final log = repo.submittedFeedbackLog.first;
-      expect(log['githubIssueCreated'], 'true');
-      expect(log['githubIssueNumber'], '5');
-      expect(log['githubIssueUrl'], 'https://github.com/neiljaywarner/belong_feedback/issues/5');
-    });
+        expect(repo.submittedFeedbackLog.length, 1);
+        final log = repo.submittedFeedbackLog.first;
+        expect(log['githubIssueCreated'], 'true');
+        expect(log['githubIssueNumber'], '5');
+        expect(log['githubIssueUrl'], 'https://github.com/neiljaywarner/belong_feedback/issues/5');
+      },
+    );
 
     test('submitFeedback skips GitHub client for public praise', () async {
       var requestMade = false;
@@ -191,10 +181,7 @@ void main() {
         return http.Response('{}', 201);
       });
 
-      final gitHubClient = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'pat_123',
-      );
+      final gitHubClient = GitHubFeedbackClient(httpClient: mockHttp, token: 'pat_123');
 
       final repo = InMemoryFeatureVotingRepository(gitHubClient: gitHubClient);
       final result = await repo.submitFeedback(

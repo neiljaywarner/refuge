@@ -90,7 +90,10 @@ void main() {
         await $.pumpAndSettle();
 
         // 4. Assert incoming cloud notification is visible in CalmNotificationsView
-        expect($('Dr. Temple mentioned you in a comment on "Sensory Architecture"'), findsOneWidget);
+        expect(
+          $('Dr. Temple mentioned you in a comment on "Sensory Architecture"'),
+          findsOneWidget,
+        );
 
         // 5. Tap "Mark all read" button
         await $(const Key('mark_all_notifications_as_read_button')).tap();

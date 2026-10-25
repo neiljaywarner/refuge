@@ -13,11 +13,7 @@ void main() {
       isFalse,
     );
     expect(
-      shouldSendDirectMessagePush(
-        enabled: true,
-        schedule: 'muted',
-        fcmToken: 'real-device-token',
-      ),
+      shouldSendDirectMessagePush(enabled: true, schedule: 'muted', fcmToken: 'real-device-token'),
       isFalse,
     );
   });

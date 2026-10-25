@@ -46,8 +46,7 @@ enum AppFlavor {
 
   /// Home-screen / launcher title. Non-production flavors use a VGV-style
   /// `[ENV]` prefix so dev and prod installs are easy to tell apart.
-  String get launcherTitle =>
-      launcherTitleForFlavorSlug(slug, isProduction: isProduction);
+  String get launcherTitle => launcherTitleForFlavorSlug(slug, isProduction: isProduction);
 
   /// Human-readable name (same as [launcherTitle]).
   String get displayName => launcherTitle;
@@ -88,15 +87,12 @@ enum AppFlavor {
   String get magicLinkRedirectUrl => '$firebaseHostingUrl/auth';
 
   /// Marketing / Circle website (flavor-independent brand home page).
-  static const String marketingWebsiteUrl =
-      'https://www.belongonthespectrum.com/';
+  static const String marketingWebsiteUrl = 'https://www.belongonthespectrum.com/';
 
-  static AppFlavor fromString(String value) {
-    return AppFlavor.values.firstWhere(
-      (f) => f.slug.toLowerCase() == value.trim().toLowerCase(),
-      orElse: () => AppFlavor.dev,
-    );
-  }
+  static AppFlavor fromString(String value) => AppFlavor.values.firstWhere(
+    (f) => f.slug.toLowerCase() == value.trim().toLowerCase(),
+    orElse: () => AppFlavor.dev,
+  );
 }
 
 /// Provides the active [AppFlavor] for the running instance.

@@ -88,16 +88,16 @@ void main() {
 
     test('MemberProfileNotifier records affiliation during signIn', () {
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
       expect(container.read(memberProfileProvider).isSignedIn, isFalse);
       expect(container.read(memberProfileProvider).icocChurchAffiliation, isNull);
 
-      container.read(memberProfileProvider.notifier).signIn(
+      container
+          .read(memberProfileProvider.notifier)
+          .signIn(
             displayName: 'Marty Organizer',
             email: 'marty@belongonthespectrum.com',
             bio: 'Belong Organizer',

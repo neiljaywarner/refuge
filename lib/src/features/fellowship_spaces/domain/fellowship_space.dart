@@ -40,10 +40,7 @@ class BelongSpaceItem {
 /// Represents a collapsible/grouped section in the Circle.so-style Spaces view.
 @immutable
 class BelongSpaceSection {
-  const BelongSpaceSection({
-    required this.heading,
-    required this.items,
-  });
+  const BelongSpaceSection({required this.heading, required this.items});
 
   final String heading;
   final List<BelongSpaceItem> items;

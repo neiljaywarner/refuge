@@ -39,8 +39,7 @@ class RefugeApp extends StatefulWidget {
 typedef SanctuaryApp = RefugeApp;
 
 class _RefugeAppState extends State<RefugeApp> {
-  late final ThemeNotifier _themeNotifier = ThemeNotifier()
-    ..setMode(widget.initialTheme);
+  late final ThemeNotifier _themeNotifier = ThemeNotifier()..setMode(widget.initialTheme);
 
   @override
   void dispose() {
@@ -53,9 +52,7 @@ class _RefugeAppState extends State<RefugeApp> {
     overrides: [
       postRepositoryProvider.overrideWithValue(widget.repository),
       if (widget.initialTheme != SensoryMode.sage)
-        sensoryThemeModeProvider.overrideWith(
-          (ref) => SensoryThemeNotifier(widget.initialTheme),
-        ),
+        sensoryThemeModeProvider.overrideWith((ref) => SensoryThemeNotifier(widget.initialTheme)),
       ...?widget.overrides,
     ],
     child: ListenableBuilder(
@@ -121,10 +118,7 @@ class _RefugeAppContent extends ConsumerWidget {
           homeOverride ??
           (enforceSignIn
               ? AuthGate(repository: repository, themeNotifier: themeNotifier)
-              : RefugeHomeScreen(
-                  repository: repository,
-                  themeNotifier: themeNotifier,
-                )),
+              : RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier)),
     );
   }
 }

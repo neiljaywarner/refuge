@@ -46,8 +46,7 @@ void showAboutRefugeDialog(
                 'assets/images/belong_logo.png',
                 width: 32,
                 height: 32,
-                errorBuilder: (_, _, _) =>
-                    const Text('♾️', style: TextStyle(fontSize: 22)),
+                errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 22)),
               ),
             ),
             const Gap(10),
@@ -89,9 +88,7 @@ void showAboutRefugeDialog(
                         : primaryColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isContrast
-                          ? Colors.yellow
-                          : primaryColor.withValues(alpha: 0.25),
+                      color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
                     ),
                   ),
                   child: Column(
@@ -99,10 +96,7 @@ void showAboutRefugeDialog(
                     children: [
                       Text(
                         '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontStyle: FontStyle.italic,
-                        ),
+                        style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
                       ),
                       SizedBox(height: 4),
                       Semantics(
@@ -110,10 +104,7 @@ void showAboutRefugeDialog(
                         excludeSemantics: true,
                         child: Text(
                           '— Psalm 139:14',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontStyle: FontStyle.italic,
-                          ),
+                          style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
                         ),
                       ),
                     ],
@@ -136,9 +127,7 @@ void showAboutRefugeDialog(
                   ),
                   value: currentMode == SensoryMode.contrast,
                   onChanged: (val) {
-                    onSelectMode?.call(
-                      val ? SensoryMode.contrast : SensoryMode.sage,
-                    );
+                    onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
                     Navigator.pop(ctx);
                   },
                 ),
@@ -233,20 +222,13 @@ void showAboutRefugeDialog(
           OutlinedButton.icon(
             onPressed: () {
               Navigator.of(ctx).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => TalkerScreen(talker: talker)),
-              );
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => TalkerScreen(talker: talker)));
             },
             icon: const Icon(Icons.receipt_long_rounded, size: 16),
-            label: const Text(
-              'Diagnostics & Logs',
-              style: TextStyle(fontSize: 12),
-            ),
+            label: const Text('Diagnostics & Logs', style: TextStyle(fontSize: 12)),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
         ],
       ),
     ),

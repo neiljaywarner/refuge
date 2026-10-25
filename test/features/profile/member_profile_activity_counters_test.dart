@@ -32,7 +32,9 @@ void main() {
       expect(davidComments.length, 1);
       expect(davidComments.first.content, contains('brings a lot of reassurance today'));
 
-      final pastorComments = await commentRepo.getCommentsByAuthor(authorName: 'Pastor Thomas (Melbourne)');
+      final pastorComments = await commentRepo.getCommentsByAuthor(
+        authorName: 'Pastor Thomas (Melbourne)',
+      );
       expect(pastorComments.length, 1);
       expect(pastorComments.first.content, contains('Hebrews 4:10 reminds us'));
     });
@@ -41,10 +43,7 @@ void main() {
   group('Member Profile Activity Counters BDD Widget Tests', () {
     Widget buildHarness({Widget? home, LocalPostRepository? customPostRepo}) {
       final repo = customPostRepo ?? LocalPostRepository(isDevMode: true);
-      return RefugeApp(
-        repository: repo,
-        homeOverride: home,
-      );
+      return RefugeApp(repository: repo, homeOverride: home);
     }
 
     patrolWidgetTest(
@@ -104,44 +103,37 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Tapping a member in Members Directory opens profile with activity counters',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1200, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Tapping a member in Members Directory opens profile with activity counters', (
+      $,
+    ) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        await $.pumpWidget(
-          buildHarness(
-            home: const Scaffold(
-              body: BelongMembersDirectoryView(),
-            ),
-          ),
-        );
-        await $.pumpAndSettle();
+      await $.pumpWidget(buildHarness(home: const Scaffold(body: BelongMembersDirectoryView())));
+      await $.pumpAndSettle();
 
-        // Find Nathan K. card in directory
-        final nathanCard = $(Key('dev_member_card_nathan_k___texas_'));
-        expect(nathanCard, findsOneWidget);
+      // Find Nathan K. card in directory
+      final nathanCard = $(Key('dev_member_card_nathan_k___texas_'));
+      expect(nathanCard, findsOneWidget);
 
-        // Tap Nathan K. card
-        await nathanCard.tap();
-        await $.pumpAndSettle();
+      // Tap Nathan K. card
+      await nathanCard.tap();
+      await $.pumpAndSettle();
 
-        // Verify profile opened
-        expect($(find.textContaining('Nathan K. (Texas)')), findsWidgets);
-        expect($(find.textContaining('Church Acoustics')), findsWidgets);
-        expect($(Key('profile_activity_posts_tab')), findsOneWidget);
+      // Verify profile opened
+      expect($(find.textContaining('Nathan K. (Texas)')), findsWidgets);
+      expect($(find.textContaining('Church Acoustics')), findsWidgets);
+      expect($(Key('profile_activity_posts_tab')), findsOneWidget);
 
-        // Close
-        await $(Key('other_member_profile_close_button')).tap();
-        await $.pumpAndSettle();
+      // Close
+      await $(Key('other_member_profile_close_button')).tap();
+      await $.pumpAndSettle();
 
-        expect($(Key('other_member_profile_name')), findsNothing);
-      },
-    );
+      expect($(Key('other_member_profile_name')), findsNothing);
+    });
   });
 }

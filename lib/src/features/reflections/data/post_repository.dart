@@ -9,10 +9,7 @@ abstract class PostRepository {
 
   /// Permanently removes every post by [authorName]. Used by a Circle-style ban.
   Future<int> deleteByAuthor({required String authorName});
-  Future<void> addReaction({
-    required String postId,
-    required String reactionType,
-  });
+  Future<void> addReaction({required String postId, required String reactionType});
   Stream<List<Post>> watchPosts({required String spaceKey});
   Future<String?> getQuietDigest({required String spaceKey});
   Future<List<Post>> getPostsByAuthor({required String authorName});

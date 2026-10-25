@@ -73,9 +73,7 @@ class FirebaseInitializer {
       _initialized = true;
       await _configureServices(flavor);
       await _activateRemoteConfig();
-      talker.info(
-        '🔥 [FirebaseInitializer] Firebase initialized successfully (${flavor.slug})',
-      );
+      talker.info('🔥 [FirebaseInitializer] Firebase initialized successfully (${flavor.slug})');
       return true;
     } catch (e, st) {
       _initialized = false;
@@ -92,9 +90,7 @@ class FirebaseInitializer {
     try {
       // 1. Configure Crashlytics
       if (!kIsWeb) {
-        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-          true,
-        );
+        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
         await FirebaseCrashlytics.instance.setCustomKey('flavor', flavor.slug);
         await FirebaseCrashlytics.instance.setCustomKey(
           'environment',
@@ -104,34 +100,20 @@ class FirebaseInitializer {
 
       // 2. Configure Analytics
       await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
-      await FirebaseAnalytics.instance.setUserProperty(
-        name: 'flavor',
-        value: flavor.slug,
-      );
-      await FirebaseAnalytics.instance.setUserProperty(
-        name: 'app_variant',
-        value: 'belong_refuge',
-      );
+      await FirebaseAnalytics.instance.setUserProperty(name: 'flavor', value: flavor.slug);
+      await FirebaseAnalytics.instance.setUserProperty(name: 'app_variant', value: 'belong_refuge');
       await FirebaseAnalytics.instance.setUserProperty(
         name: 'is_debug_mode',
         value: kDebugMode ? 'true' : 'false',
       );
 
-      const automationTool = String.fromEnvironment(
-        'AUTOMATION_TOOL',
-        defaultValue: '',
-      );
-      final resolvedAutomationTool = automationTool.isNotEmpty
-          ? automationTool
-          : 'none';
+      const automationTool = String.fromEnvironment('AUTOMATION_TOOL', defaultValue: '');
+      final resolvedAutomationTool = automationTool.isNotEmpty ? automationTool : 'none';
       await FirebaseAnalytics.instance.setUserProperty(
         name: 'automation_tool',
         value: resolvedAutomationTool,
       );
-      await FirebaseAnalytics.instance.setUserProperty(
-        name: 'client_flavor',
-        value: flavor.slug,
-      );
+      await FirebaseAnalytics.instance.setUserProperty(name: 'client_flavor', value: flavor.slug);
 
       // 3. Configure Firebase UI Auth providers (Email / Password / Reset)
       FirebaseUIAuth.configureProviders([EmailAuthProvider()]);
@@ -143,20 +125,12 @@ class FirebaseInitializer {
       // 5. Query and record unique Firebase Installation ID for device troubleshooting
       final installationsService = FirebaseInstallationsService();
       final fid = await installationsService.getInstallationsId();
-      await FirebaseAnalytics.instance.setUserProperty(
-        name: 'installations_id',
-        value: fid,
-      );
+      await FirebaseAnalytics.instance.setUserProperty(name: 'installations_id', value: fid);
       if (!kIsWeb) {
-        await FirebaseCrashlytics.instance.setCustomKey(
-          'installations_id',
-          fid,
-        );
+        await FirebaseCrashlytics.instance.setCustomKey('installations_id', fid);
       }
     } catch (e) {
-      talker.warning(
-        '⚠️ [FirebaseInitializer] Error configuring Firebase services: $e',
-      );
+      talker.warning('⚠️ [FirebaseInitializer] Error configuring Firebase services: $e');
     }
   }
 
@@ -171,17 +145,13 @@ class FirebaseInitializer {
       await rc.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: const Duration(seconds: 8),
-          minimumFetchInterval: kDebugMode
-              ? const Duration(minutes: 1)
-              : const Duration(hours: 12),
+          minimumFetchInterval: kDebugMode ? const Duration(minutes: 1) : const Duration(hours: 12),
         ),
       );
       await rc.setDefaults(const {'admin_emails_csv': ''});
       await rc.fetchAndActivate().timeout(const Duration(seconds: 8));
     } catch (e) {
-      talker.warning(
-        '⚠️ [FirebaseInitializer] Remote Config fetch skipped: $e',
-      );
+      talker.warning('⚠️ [FirebaseInitializer] Remote Config fetch skipped: $e');
     }
   }
 }

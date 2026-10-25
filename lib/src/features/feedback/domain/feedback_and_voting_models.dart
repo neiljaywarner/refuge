@@ -21,8 +21,7 @@ enum FeedbackSentiment {
     label: 'Idea / Tweak',
     subtitle: 'Private Suggestion',
     promptTitle: 'What would make Belong clearer or calmer for you?',
-    promptHint:
-        'Suggest a feature, a clearer label, or a sensory improvement. Routed directly to our private organizer triage queue.',
+    promptHint: 'Suggest a feature, a clearer label, or a sensory improvement. Routed directly to our private organizer triage queue.',
     isPrivateTriage: true,
   ),
 
@@ -32,8 +31,7 @@ enum FeedbackSentiment {
     label: 'Bug / Confusing',
     subtitle: 'Private Triage',
     promptTitle: 'What felt broken, confusing, or overwhelming?',
-    promptHint:
-        'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
+    promptHint: 'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
     isPrivateTriage: true,
   );
 
@@ -85,17 +83,15 @@ class VotableFeatureItem {
   final bool userVoted;
   final int? githubIssueNumber;
 
-  VotableFeatureItem copyWith({int? votes, bool? userVoted}) {
-    return VotableFeatureItem(
-      id: id,
-      title: title,
-      description: description,
-      stage: stage,
-      votes: votes ?? this.votes,
-      userVoted: userVoted ?? this.userVoted,
-      githubIssueNumber: githubIssueNumber,
-    );
-  }
+  VotableFeatureItem copyWith({int? votes, bool? userVoted}) => VotableFeatureItem(
+    id: id,
+    title: title,
+    description: description,
+    stage: stage,
+    votes: votes ?? this.votes,
+    userVoted: userVoted ?? this.userVoted,
+    githubIssueNumber: githubIssueNumber,
+  );
 }
 
 /// Sane default features + active WIP items for the Oct 24–31 Circle cutover preview.
@@ -104,7 +100,8 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-direct-messages',
     title: 'Direct Messages (Msgs Tab)',
-    description: 'Calm 1-on-1 member messaging with opt-in boundaries and zero read-receipt pressure.',
+    description:
+        'Calm 1-on-1 member messaging with opt-in boundaries and zero read-receipt pressure.',
     stage: FeatureStage.workInProgress,
     votes: 0,
     githubIssueNumber: 27,
@@ -112,7 +109,8 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'wip-notifications-bell',
     title: 'Calm Notification Bell',
-    description: 'Bundled, predictable updates when someone replies to your post or prayer request.',
+    description:
+        'Bundled, predictable updates when someone replies to your post or prayer request.',
     stage: FeatureStage.workInProgress,
     votes: 0,
     githubIssueNumber: 27,
@@ -152,14 +150,16 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
     id: 'idea-sensory-audio-rooms',
     title: 'Camera-Off Voice & Text Hangout Rooms',
-    description: 'Low-pressure voice or text-only fellowship rooms where cameras are never required.',
+    description:
+        'Low-pressure voice or text-only fellowship rooms where cameras are never required.',
     stage: FeatureStage.communityIdea,
     votes: 0,
   ),
   VotableFeatureItem(
     id: 'idea-special-interest-galleries',
     title: 'Special Interest Showcase Galleries',
-    description: 'Dedicated photo & project albums inside Geek Out! for trains, coding, music, and art.',
+    description:
+        'Dedicated photo & project albums inside Geek Out! for trains, coding, music, and art.',
     stage: FeatureStage.communityIdea,
     votes: 0,
   ),

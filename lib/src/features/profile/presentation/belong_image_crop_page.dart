@@ -9,11 +9,7 @@ import 'package:flutter/material.dart';
 /// the photo, then confirms. Avatar uses a circle. Memes use a square.
 /// Very small byte strings skip the editor and return unchanged.
 class BelongImageCropPage extends StatefulWidget {
-  const BelongImageCropPage({
-    super.key,
-    required this.bytes,
-    required this.circular,
-  });
+  const BelongImageCropPage({super.key, required this.bytes, required this.circular});
 
   final Uint8List bytes;
   final bool circular;
@@ -68,10 +64,7 @@ class _BelongImageCropPageState extends State<BelongImageCropPage> {
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              'Pinch or drag to frame the photo',
-              key: Key('crop_zoom_hint'),
-            ),
+            child: Text('Pinch or drag to frame the photo', key: Key('crop_zoom_hint')),
           ),
           Expanded(
             child: Crop(
@@ -92,11 +85,8 @@ class _BelongImageCropPageState extends State<BelongImageCropPage> {
                   case CropSuccess(:final croppedImage):
                     Navigator.of(context).pop(croppedImage);
                   case CropFailure():
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Could not crop that photo.'),
-                      ),
-                    );
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(const SnackBar(content: Text('Could not crop that photo.')));
                 }
               },
             ),

@@ -12,9 +12,7 @@ void main() {
   group('BelongMembersDirectoryView BDD Widget Tests (#93)', () {
     patrolWidgetTest('renders header, dev members, and handles back button', ($) async {
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
@@ -27,9 +25,7 @@ void main() {
           container: container,
           child: MaterialApp(
             home: Scaffold(
-              body: BelongMembersDirectoryView(
-                onBackToSpaces: () => backTapped = true,
-              ),
+              body: BelongMembersDirectoryView(onBackToSpaces: () => backTapped = true),
             ),
           ),
         ),
@@ -37,10 +33,7 @@ void main() {
 
       // Verify title and descriptions
       expect($('Member Directory'), findsOneWidget);
-      expect(
-        $('Fellowship disciples & leaders'),
-        findsOneWidget,
-      );
+      expect($('Fellowship disciples & leaders'), findsOneWidget);
 
       // Verify dev-mode community members
       expect($('Marty (Organizer)'), findsOneWidget);
@@ -83,11 +76,7 @@ void main() {
       await $.pumpWidgetAndSettle(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: BelongMembersDirectoryView(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: BelongMembersDirectoryView())),
         ),
       );
 

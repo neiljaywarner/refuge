@@ -2,8 +2,7 @@
 abstract final class AccountDeletionMessages {
   static const confirmationPhrase = 'DELETE';
 
-  static const confirmationRequired =
-      'Type DELETE to confirm you want to delete your account.';
+  static const confirmationRequired = 'Type DELETE to confirm you want to delete your account.';
 
   static const notSignedIn = 'Sign in before deleting your account.';
 
@@ -17,8 +16,7 @@ abstract final class AccountDeletionMessages {
 
   static const restorePhrase = 'RESTORE';
 
-  static const restoreConfirmationRequired =
-      'Type RESTORE to come back to this account.';
+  static const restoreConfirmationRequired = 'Type RESTORE to come back to this account.';
 
   static const nothingToRestore = 'This account is not deleted.';
 

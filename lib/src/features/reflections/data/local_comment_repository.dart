@@ -15,8 +15,7 @@ class LocalCommentRepository implements CommentRepository {
   static final LocalCommentRepository instance = LocalCommentRepository();
 
   final List<Comment> _store = [];
-  final StreamController<List<Comment>> _controller =
-      StreamController<List<Comment>>.broadcast();
+  final StreamController<List<Comment>> _controller = StreamController<List<Comment>>.broadcast();
   final FirebaseFirestore? customFirestore;
 
   FirebaseFirestore? get firestore {
@@ -112,8 +111,7 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
-  Future<List<Comment>> getComments({required String postId}) async =>
-      _getOrderedThread(postId);
+  Future<List<Comment>> getComments({required String postId}) async => _getOrderedThread(postId);
 
   @override
   Future<Comment> addComment(Comment comment) async {
@@ -126,8 +124,7 @@ class LocalCommentRepository implements CommentRepository {
       try {
         await fs.collection('comments').doc(comment.id).set({
           'postId': comment.postId,
-          if (comment.parentCommentId != null)
-            'parentCommentId': comment.parentCommentId,
+          if (comment.parentCommentId != null) 'parentCommentId': comment.parentCommentId,
           'authorName': comment.authorName,
           'content': comment.content,
           'toneTag': comment.toneTag,
@@ -151,9 +148,7 @@ class LocalCommentRepository implements CommentRepository {
         .where((comment) => comment.authorName.trim().toLowerCase() == name)
         .map((comment) => comment.id)
         .toList();
-    _store.removeWhere(
-      (comment) => comment.authorName.trim().toLowerCase() == name,
-    );
+    _store.removeWhere((comment) => comment.authorName.trim().toLowerCase() == name);
     final removed = before - _store.length;
     if (removed > 0) {
       _controller.add(List.unmodifiable(_store));
@@ -177,16 +172,12 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
-  Future<void> addReaction({
-    required String commentId,
-    required String reactionType,
-  }) async {
+  Future<void> addReaction({required String commentId, required String reactionType}) async {
     final index = _store.indexWhere((c) => c.id == commentId);
     if (index != -1) {
       final existing = _store[index];
       final updatedReactions = Map<String, int>.from(existing.reactions);
-      updatedReactions[reactionType] =
-          (updatedReactions[reactionType] ?? 0) + 1;
+      updatedReactions[reactionType] = (updatedReactions[reactionType] ?? 0) + 1;
       _store[index] = existing.copyWith(reactions: updatedReactions);
       _controller.add(List.unmodifiable(_store));
 
@@ -218,24 +209,15 @@ class LocalCommentRepository implements CommentRepository {
       watchComments(postId: postId).map((comments) => comments.length);
 
   @override
-  Future<List<Comment>> getCommentsByAuthor({
-    required String authorName,
-  }) async {
-    return _store
-        .where((c) => _matchesAuthor(c.authorName, authorName))
-        .toList();
-  }
+  Future<List<Comment>> getCommentsByAuthor({required String authorName}) async =>
+      _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
 
   @override
   Stream<List<Comment>> watchCommentsByAuthor({required String authorName}) {
     Stream<List<Comment>> generator() async* {
-      yield _store
-          .where((c) => _matchesAuthor(c.authorName, authorName))
-          .toList();
+      yield _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
       yield* _controller.stream.map(
-        (comments) => comments
-            .where((c) => _matchesAuthor(c.authorName, authorName))
-            .toList(),
+        (comments) => comments.where((c) => _matchesAuthor(c.authorName, authorName)).toList(),
       );
     }
 
@@ -262,9 +244,8 @@ class LocalCommentRepository implements CommentRepository {
     final result = <Comment>[];
     for (final parent in topLevel) {
       result.add(parent);
-      final children =
-          postComments.where((c) => c.parentCommentId == parent.id).toList()
-            ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      final children = postComments.where((c) => c.parentCommentId == parent.id).toList()
+        ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
       result.addAll(children);
     }
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/marionette_demo.dart';
@@ -293,7 +294,10 @@ emulator-5556\tdevice
 58221JEBF20835\tdevice
 ''';
       final devices = DualPixelDemoRunner.parseConnectedDevices(adbOutput);
-      expect(devices, equals(['56091JEBF14039', '58221JEBF20835', 'emulator-5554', 'emulator-5556']));
+      expect(
+        devices,
+        equals(['56091JEBF14039', '58221JEBF20835', 'emulator-5554', 'emulator-5556']),
+      );
     });
 
     test('dry run verifies devices and exits with 0', () async {

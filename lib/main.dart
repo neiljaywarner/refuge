@@ -100,10 +100,7 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
 
   final analytics = CommunityAnalyticsService(flavor: flavor);
   await FcmMessagingService.ensureInitialized(analytics: analytics);
-  final errorReporter = ErrorReporterService(
-    flavor: flavor,
-    analyticsService: analytics,
-  );
+  final errorReporter = ErrorReporterService(flavor: flavor, analyticsService: analytics);
 
   // 2. Global Flutter framework error hook
   FlutterError.onError = (FlutterErrorDetails details) {

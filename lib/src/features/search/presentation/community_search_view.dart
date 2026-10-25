@@ -10,11 +10,7 @@ import '../../reflections/presentation/reflection_card.dart';
 /// Instant keyword, author, and special-interest search view for the `Search`
 /// bottom navigation tab (#18, #22), built as a [HookConsumerWidget].
 class CommunitySearchView extends HookConsumerWidget {
-  const CommunitySearchView({
-    super.key,
-    required this.repository,
-    required this.isContrast,
-  });
+  const CommunitySearchView({super.key, required this.repository, required this.isContrast});
 
   final PostRepository repository;
   final bool isContrast;
@@ -70,18 +66,15 @@ class CommunitySearchView extends HookConsumerWidget {
             key: const Key('community_search_text_field'),
             controller: queryController,
             decoration: InputDecoration(
-              hintText:
-                  'Search posts, Memes, Online Resources / Videos, or special interests...',
+              hintText: 'Search posts, Memes, Online Resources / Videos, or special interests...',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: query.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded),
-                    onPressed: queryController.clear,
-                  )
-                : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: queryController.clear,
+                    )
+                  : null,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               isDense: true,
             ),
           ),
@@ -101,10 +94,8 @@ class CommunitySearchView extends HookConsumerWidget {
                       return ReflectionCard(
                         post: p,
                         isContrast: isContrast,
-                        onAddReaction: (reactionType) => repository.addReaction(
-                          postId: p.id,
-                          reactionType: reactionType,
-                        ),
+                        onAddReaction: (reactionType) =>
+                            repository.addReaction(postId: p.id, reactionType: reactionType),
                       );
                     },
                   ),

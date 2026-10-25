@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../config/app_flavor.dart';
 import '../logging/app_logger.dart';
 
@@ -69,10 +71,7 @@ class ServerpodTelemetryBackup {
   List<TelemetryRecord> get recentRecords => List.unmodifiable(_ringBuffer);
 
   /// Backs up a community analytics event.
-  Future<void> recordAnalyticsEvent(
-    String eventName, {
-    Map<String, Object?>? parameters,
-  }) async {
+  Future<void> recordAnalyticsEvent(String eventName, {Map<String, Object?>? parameters}) async {
     final record = TelemetryRecord(
       id: '${DateTime.now().millisecondsSinceEpoch}_${_ringBuffer.length}',
       kind: TelemetryKind.analytics,
@@ -95,9 +94,7 @@ class ServerpodTelemetryBackup {
     bool fatal = false,
     Map<String, Object?>? context,
   }) async {
-    final stackSnippet = stack != null
-        ? stack.toString().split('\n').take(5).join('\n')
-        : null;
+    final stackSnippet = stack != null ? stack.toString().split('\n').take(5).join('\n') : null;
 
     final record = TelemetryRecord(
       id: '${DateTime.now().millisecondsSinceEpoch}_${_ringBuffer.length}',

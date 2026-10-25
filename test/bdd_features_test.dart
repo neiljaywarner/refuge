@@ -56,9 +56,7 @@ void main() {
       expect($(RegExp('Error')), findsNothing);
     });
 
-    patrolWidgetTest('Scenario: Filtering reflections by mindful intent tags', (
-      $,
-    ) async {
+    patrolWidgetTest('Scenario: Filtering reflections by mindful intent tags', ($) async {
       await pumpRefuge($);
 
       // When I select the '[Comfort Only]' intent filter chip
@@ -96,31 +94,32 @@ void main() {
       await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
-    patrolWidgetTest('Scenario: Toggling through all 4 sensory themes applies appropriate styling', (
-      $,
-    ) async {
-      await pumpRefuge($);
+    patrolWidgetTest(
+      'Scenario: Toggling through all 4 sensory themes applies appropriate styling',
+      ($) async {
+        await pumpRefuge($);
 
-      // When I tap 'Dark' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Dark').tap();
-      expect($('Refuge'), findsOneWidget);
+        // When I tap 'Dark' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Dark').tap();
+        expect($('Refuge'), findsOneWidget);
 
-      // When I tap 'Contrast' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Contrast').tap();
-      expect($('Refuge'), findsOneWidget);
+        // When I tap 'Contrast' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Contrast').tap();
+        expect($('Refuge'), findsOneWidget);
 
-      // When I tap 'Clean' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Clean').tap();
-      expect($('Refuge'), findsOneWidget);
+        // When I tap 'Clean' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Clean').tap();
+        expect($('Refuge'), findsOneWidget);
 
-      // When I tap 'Sage' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Sage').tap();
-      expect($('Refuge'), findsOneWidget);
-    });
+        // When I tap 'Sage' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Sage').tap();
+        expect($('Refuge'), findsOneWidget);
+      },
+    );
 
     patrolWidgetTest('Scenario: Visual contrast and title persistence across sensory switches', (
       $,
@@ -154,9 +153,7 @@ void main() {
       await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
-    patrolWidgetTest('Scenario: Incrementing qualitative care affirmations atomically', (
-      $,
-    ) async {
+    patrolWidgetTest('Scenario: Incrementing qualitative care affirmations atomically', ($) async {
       await pumpRefuge($);
 
       // Initial Praying reaction

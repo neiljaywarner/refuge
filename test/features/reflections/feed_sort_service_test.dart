@@ -57,20 +57,14 @@ void main() {
 
     test('Sorts by "Latest" chronologically descending (newest first)', () {
       final posts = [postEarly, postLate, postMiddle];
-      final sorted = FeedSortService.sortPosts(
-        posts,
-        sortOption: FeedSortOption.latest,
-      );
+      final sorted = FeedSortService.sortPosts(posts, sortOption: FeedSortOption.latest);
 
       expect(sorted.map((p) => p.id).toList(), ['3', '2', '1']);
     });
 
     test('Sorts by "Oldest" chronologically ascending (earliest first)', () {
       final posts = [postLate, postEarly, postMiddle];
-      final sorted = FeedSortService.sortPosts(
-        posts,
-        sortOption: FeedSortOption.oldest,
-      );
+      final sorted = FeedSortService.sortPosts(posts, sortOption: FeedSortOption.oldest);
 
       expect(sorted.map((p) => p.id).toList(), ['1', '2', '3']);
     });
@@ -78,10 +72,7 @@ void main() {
     test('Sorts by "Likes" descending by total qualitative care reaction affirmations', () {
       // postMiddle: 30 likes, postEarly: 15 likes, postLate: 3 likes
       final posts = [postLate, postEarly, postMiddle];
-      final sorted = FeedSortService.sortPosts(
-        posts,
-        sortOption: FeedSortOption.likes,
-      );
+      final sorted = FeedSortService.sortPosts(posts, sortOption: FeedSortOption.likes);
 
       expect(sorted.map((p) => p.id).toList(), ['2', '1', '3']);
     });
@@ -91,10 +82,7 @@ void main() {
       // postMiddle has 0 comments (score = 30 + 0 = 30)
       // postEarly has 2 comments (score = 15 + 4 = 19)
       final posts = [postEarly, postLate, postMiddle];
-      final commentCounts = {
-        '1': 2,
-        '3': 10,
-      };
+      final commentCounts = {'1': 2, '3': 10};
 
       final sorted = FeedSortService.sortPosts(
         posts,
@@ -127,10 +115,7 @@ void main() {
 
     test('Sorts by "Alphabetical" case-insensitively by reflection content', () {
       final posts = [postLate, postEarly, postMiddle];
-      final sorted = FeedSortService.sortPosts(
-        posts,
-        sortOption: FeedSortOption.alphabetical,
-      );
+      final sorted = FeedSortService.sortPosts(posts, sortOption: FeedSortOption.alphabetical);
 
       // 'Apples...' (2) -> 'Morning...' (3) -> 'Zebras...' (1)
       expect(sorted.map((p) => p.id).toList(), ['2', '3', '1']);
@@ -204,10 +189,10 @@ void main() {
         reactions: const {},
       );
 
-      final sorted = FeedSortService.sortPosts(
-        [identical1, identical2],
-        sortOption: FeedSortOption.latest,
-      );
+      final sorted = FeedSortService.sortPosts([
+        identical1,
+        identical2,
+      ], sortOption: FeedSortOption.latest);
 
       expect(sorted.map((p) => p.id).toList(), ['B', 'A']);
     });
@@ -261,16 +246,16 @@ void main() {
         reactions: const {},
       );
 
-      final sortedLikes = FeedSortService.sortPosts(
-        [postA, postB],
-        sortOption: FeedSortOption.likes,
-      );
+      final sortedLikes = FeedSortService.sortPosts([
+        postA,
+        postB,
+      ], sortOption: FeedSortOption.likes);
       expect(sortedLikes.map((p) => p.id).toList(), ['B', 'A']); // tiebreak by timestamp desc
 
-      final sortedPopular = FeedSortService.sortPosts(
-        [postA, postB],
-        sortOption: FeedSortOption.popular,
-      );
+      final sortedPopular = FeedSortService.sortPosts([
+        postA,
+        postB,
+      ], sortOption: FeedSortOption.popular);
       expect(sortedPopular.map((p) => p.id).toList(), ['B', 'A']);
     });
 
@@ -295,10 +280,10 @@ void main() {
         reactions: const {},
       );
 
-      final sorted = FeedSortService.sortPosts(
-        [postNormal, postSpecial],
-        sortOption: FeedSortOption.alphabetical,
-      );
+      final sorted = FeedSortService.sortPosts([
+        postNormal,
+        postSpecial,
+      ], sortOption: FeedSortOption.alphabetical);
       expect(sorted.map((p) => p.id).toList(), ['1', '2']);
     });
   });
@@ -497,95 +482,202 @@ void main() {
       expect(interests, contains('Literal communication appreciated'));
     });
 
-    test('filters out test junk posts like "blah your face", "test 1", and grokbot (#501, #611)', () {
-      final postsWithJunk = [
-        ...posts,
-        Post(
-          id: 'junk-1',
-          authorName: 'Random Tester',
-          spaceKey: 'prayer',
-          toneTag: '[Comfort Only]',
-          content: 'blah your face this is a test',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-        Post(
-          id: 'junk-2',
-          authorName: 'grokbot1',
-          spaceKey: 'prayer',
-          toneTag: '[Comfort Only]',
-          content: 'Quiet hello grokbot-mention-token @grokbot2',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-        Post(
-          id: 'junk-3',
-          authorName: 'Tester',
-          spaceKey: 'prayer',
-          toneTag: '[Comfort Only]',
-          content: 'test 1 check microphone',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-        Post(
-          id: 'junk-4',
-          authorName: 'Developer',
-          spaceKey: 'general_chat',
-          toneTag: '[Question]',
-          content: 'quick test for dev backend',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-        Post(
-          id: 'junk-5',
-          authorName: 'Tester',
-          spaceKey: 'general_chat',
-          toneTag: '[Question]',
-          content: 'test 2 check sound',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-        Post(
-          id: 'junk-6',
-          authorName: 'Tester',
-          spaceKey: 'general_chat',
-          toneTag: '[Question]',
-          content: 'asdf asdf asdf',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-        Post(
-          id: 'junk-7',
-          authorName: 'Tester',
-          spaceKey: 'general_chat',
-          toneTag: '[Question]',
-          content: '   ',
-          timestamp: DateTime.now(),
-          reactions: const {},
-        ),
-      ];
+    test(
+      'filters out test junk posts like "blah your face", "test 1", and grokbot (#501, #611)',
+      () {
+        final postsWithJunk = [
+          ...posts,
+          Post(
+            id: 'junk-1',
+            authorName: 'Random Tester',
+            spaceKey: 'prayer',
+            toneTag: '[Comfort Only]',
+            content: 'blah your face this is a test',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+          Post(
+            id: 'junk-2',
+            authorName: 'grokbot1',
+            spaceKey: 'prayer',
+            toneTag: '[Comfort Only]',
+            content: 'Quiet hello grokbot-mention-token @grokbot2',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+          Post(
+            id: 'junk-3',
+            authorName: 'Tester',
+            spaceKey: 'prayer',
+            toneTag: '[Comfort Only]',
+            content: 'test 1 check microphone',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+          Post(
+            id: 'junk-4',
+            authorName: 'Developer',
+            spaceKey: 'general_chat',
+            toneTag: '[Question]',
+            content: 'quick test for dev backend',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+          Post(
+            id: 'junk-5',
+            authorName: 'Tester',
+            spaceKey: 'general_chat',
+            toneTag: '[Question]',
+            content: 'test 2 check sound',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+          Post(
+            id: 'junk-6',
+            authorName: 'Tester',
+            spaceKey: 'general_chat',
+            toneTag: '[Question]',
+            content: 'asdf asdf asdf',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+          Post(
+            id: 'junk-7',
+            authorName: 'Tester',
+            spaceKey: 'general_chat',
+            toneTag: '[Question]',
+            content: '   ',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ];
 
-      final visible = FeedQuery.apply(
-        posts: postsWithJunk,
-        toneFilter: 'All',
-        sort: FeedSortOption.latest,
-        signedIn: false,
-      );
-      expect(visible.any((p) => p.id.startsWith('junk-')), isFalse);
-      expect(visible.length, 3);
-    });
+        final visible = FeedQuery.apply(
+          posts: postsWithJunk,
+          toneFilter: 'All',
+          sort: FeedSortOption.latest,
+          signedIn: false,
+        );
+        expect(visible.any((p) => p.id.startsWith('junk-')), isFalse);
+        expect(visible.length, 3);
+      },
+    );
 
     test('isTestJunk correctly identifies all developer clutter variants (#611)', () {
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'blah your face', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'test 345', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'quick test', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'lorem ipsum dolor sit amet', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'cursor test fixture', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'grokbot', spaceKey: 's', toneTag: 't', content: 'hello', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: '  ', timestamp: DateTime.now(), reactions: const {})), isTrue);
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'A',
+            spaceKey: 's',
+            toneTag: 't',
+            content: 'blah your face',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'A',
+            spaceKey: 's',
+            toneTag: 't',
+            content: 'test 345',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'A',
+            spaceKey: 's',
+            toneTag: 't',
+            content: 'quick test',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'A',
+            spaceKey: 's',
+            toneTag: 't',
+            content: 'lorem ipsum dolor sit amet',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'A',
+            spaceKey: 's',
+            toneTag: 't',
+            content: 'cursor test fixture',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'grokbot',
+            spaceKey: 's',
+            toneTag: 't',
+            content: 'hello',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'j',
+            authorName: 'A',
+            spaceKey: 's',
+            toneTag: 't',
+            content: '  ',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isTrue,
+      );
 
       // Authentic posts are never flagged
-      expect(FeedQuery.isTestJunk(Post(id: 'c', authorName: 'Hannah', spaceKey: 'general_chat', toneTag: '[Fellowship]', content: 'Praying for everyone to have a calm evening in God.', timestamp: DateTime.now(), reactions: const {})), isFalse);
+      expect(
+        FeedQuery.isTestJunk(
+          Post(
+            id: 'c',
+            authorName: 'Hannah',
+            spaceKey: 'general_chat',
+            toneTag: '[Fellowship]',
+            content: 'Praying for everyone to have a calm evening in God.',
+            timestamp: DateTime.now(),
+            reactions: const {},
+          ),
+        ),
+        isFalse,
+      );
     });
   });
 }

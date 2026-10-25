@@ -10,16 +10,22 @@ void main() {
     'PWA Release Bundle & Smoke Verification (#396)',
     () {
       test('build/web directory and core entrypoints exist', () {
-        expect(webBuildDir.existsSync(), isTrue,
-            reason: 'build/web must exist after flutter build web --release');
+        expect(
+          webBuildDir.existsSync(),
+          isTrue,
+          reason: 'build/web must exist after flutter build web --release',
+        );
 
         final indexHtml = File('build/web/index.html');
         expect(indexHtml.existsSync(), isTrue);
 
         final mainJs = File('build/web/main.dart.js');
         expect(mainJs.existsSync(), isTrue);
-        expect(mainJs.lengthSync(), greaterThan(1000000),
-            reason: 'main.dart.js should be a compiled production bundle (> 1MB)');
+        expect(
+          mainJs.lengthSync(),
+          greaterThan(1000000),
+          reason: 'main.dart.js should be a compiled production bundle (> 1MB)',
+        );
 
         final bootstrapJs = File('build/web/flutter_bootstrap.js');
         expect(bootstrapJs.existsSync(), isTrue);
@@ -54,8 +60,11 @@ void main() {
           final iconMap = icon as Map<String, dynamic>;
           final src = iconMap['src'] as String;
           final iconFile = File('build/web/$src');
-          expect(iconFile.existsSync(), isTrue,
-              reason: 'Icon $src declared in manifest.json must exist on disk');
+          expect(
+            iconFile.existsSync(),
+            isTrue,
+            reason: 'Icon $src declared in manifest.json must exist on disk',
+          );
         }
       });
 

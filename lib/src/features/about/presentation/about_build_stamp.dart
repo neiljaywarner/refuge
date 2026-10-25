@@ -34,10 +34,7 @@ Future<AppVersionLabel> loadPackageVersion() async {
   try {
     final info = await PackageInfo.fromPlatform();
     if (info.version.trim().isEmpty) return AppVersionLabel.unknown;
-    return AppVersionLabel(
-      version: info.version.trim(),
-      buildNumber: info.buildNumber.trim(),
-    );
+    return AppVersionLabel(version: info.version.trim(), buildNumber: info.buildNumber.trim());
   } catch (_) {
     return AppVersionLabel.unknown;
   }
@@ -58,60 +55,42 @@ class AboutDialogTitle extends StatelessWidget {
   final bool isContrast;
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<AppVersionLabel>(
-      future: version,
-      builder: (context, snapshot) {
-        final suffix = snapshot.connectionState == ConnectionState.done
-            ? snapshot.data?.titleSuffix
-            : null;
-        final title = suffix == null
-            ? 'Belong on the Spectrum'
-            : 'Belong on the Spectrum ($suffix)';
-        final titleStyle = BelongTextStyles.of(context).title.copyWith(
-          color: isContrast ? const Color(0xFFFFEB3B) : primaryColor,
-        );
-        return Text(
-          title,
-          key: const Key('about_dialog_title'),
-          style: titleStyle,
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => FutureBuilder<AppVersionLabel>(
+    future: version,
+    builder: (context, snapshot) {
+      final suffix = snapshot.connectionState == ConnectionState.done
+          ? snapshot.data?.titleSuffix
+          : null;
+      final title = suffix == null ? 'Belong on the Spectrum' : 'Belong on the Spectrum ($suffix)';
+      final titleStyle = BelongTextStyles.of(context).title
+          .copyWith(color: isContrast ? const Color(0xFFFFEB3B) : primaryColor);
+      return Text(title, key: const Key('about_dialog_title'), style: titleStyle);
+    },
+  );
 }
 
 /// Calm, literal build identity under the scripture quote.
 class AboutBuildStamp extends StatelessWidget {
-  const AboutBuildStamp({
-    super.key,
-    required this.identity,
-    required this.version,
-  });
+  const AboutBuildStamp({super.key, required this.identity, required this.version});
 
   final BuildIdentity identity;
   final Future<AppVersionLabel> version;
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<AppVersionLabel>(
-      future: version,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return SizedBox(
-            key: const Key('about_build_stamp'),
-            width: double.infinity,
-            child: Text(
-              'This build',
-              style: BelongTextStyles.of(context).emphasis,
-            ),
-          );
-        }
-        final label = snapshot.data ?? AppVersionLabel.unknown;
-        return _BuildStampBody(identity: identity, version: label);
-      },
-    );
-  }
+  Widget build(BuildContext context) => FutureBuilder<AppVersionLabel>(
+    future: version,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState != ConnectionState.done) {
+        return SizedBox(
+          key: const Key('about_build_stamp'),
+          width: double.infinity,
+          child: Text('This build', style: BelongTextStyles.of(context).emphasis),
+        );
+      }
+      final label = snapshot.data ?? AppVersionLabel.unknown;
+      return _BuildStampBody(identity: identity, version: label);
+    },
+  );
 }
 
 class _BuildStampBody extends StatelessWidget {
@@ -148,11 +127,7 @@ class _BuildStampBody extends StatelessWidget {
           style: styles.caption,
         ),
         if (release != null)
-          Text(
-            'Release: $release',
-            key: const Key('about_build_release'),
-            style: styles.caption,
-          ),
+          Text('Release: $release', key: const Key('about_build_release'), style: styles.caption),
         if (commitUrl != null)
           SelectableText(
             commitUrl,
@@ -160,11 +135,7 @@ class _BuildStampBody extends StatelessWidget {
             style: styles.caption,
           ),
         if (source != null)
-          Text(
-            'Source: $source',
-            key: const Key('about_build_source'),
-            style: styles.caption,
-          ),
+          Text('Source: $source', key: const Key('about_build_source'), style: styles.caption),
       ],
     );
   }
