@@ -16,7 +16,7 @@ If you have advised organizations, churches, or business owners for years, you h
 3. Within months, friction sets in: mainstream social platforms overwhelm members with ads, noise, and privacy worries, while Circle and legacy church suites charge **\$1,000 to \$10,000+ per year** for cluttered menus, course-selling upsells, and anxious notification badges that push sensitive people away.
 
 **Why this matters as a business**:  
-What begins as an authentic ministry solving a real \$1,500/year pain for Community #1 solves the exact same problem for thousands of churches, disability ministries, recovery groups, and non-profits. Because our baseline monthly operating cost is near **\$0/month**, we can offer other organizations their own calm, branded community space at a fraction of legacy prices—with healthy margins, zero outside investors, and genuine human impact.
+What begins as an authentic ministry solving a real \$1,000/year pain for Community #1 solves the exact same problem for thousands of churches, disability ministries, recovery groups, and non-profits. Because our baseline monthly operating cost is near **\$0/month**, we can offer other organizations their own calm, branded community space at a fraction of legacy prices—with healthy margins, zero outside investors, and genuine human impact.
 
 ---
 
