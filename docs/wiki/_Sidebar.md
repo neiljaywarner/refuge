@@ -9,6 +9,7 @@
 * **[📱 More about Using Belong from the Web](PWA-Guide-for-Members-and-Organizers)**
 * **[🎥 Android Home-Screen Pictures](PWA-Installation-and-Mobile-Web-Guide)**
 * **[📣 Update the Welcome Message](Organizer-Remote-Config-Guide)**
+* **[Ban a Member](Admin-Pause-and-Restore)**
 * **[📥 Bring Past Posts Over](Circle-CSV-Migration-Guide)**
 * **[🧪 Longer Testing Checklist](Manual-Testing-and-UAT-Flows)**
 * **[👤 Dev example accounts (David M. & Sarah K.)](Dev-Example-Accounts)**

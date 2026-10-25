@@ -58,6 +58,12 @@ abstract class DirectMessageMailbox {
     required String currentUserId,
     required List<BelongNotification> existing,
   });
+
+  /// Permanently removes messages this sender wrote. Used by a Circle-style ban.
+  Future<int> deleteBySender({
+    required String senderId,
+    required String senderName,
+  });
 }
 
 class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
@@ -177,6 +183,22 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     final merged = byId.values.toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return merged;
+  }
+
+  @override
+  Future<int> deleteBySender({
+    required String senderId,
+    required String senderName,
+  }) async {
+    final id = senderId.trim();
+    final name = senderName.trim().toLowerCase();
+    final before = _messages.length;
+    _messages.removeWhere(
+      (_, message) =>
+          (id.isNotEmpty && message.senderId == id) ||
+          (name.isNotEmpty && message.senderName.trim().toLowerCase() == name),
+    );
+    return before - _messages.length;
   }
 }
 
@@ -350,6 +372,40 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
         _offline.cacheMessage(StoredDirectMessage.fromMap(doc.id, doc.data()));
       }
     } catch (_) {}
+  }
+
+  @override
+  Future<int> deleteBySender({
+    required String senderId,
+    required String senderName,
+  }) async {
+    final removedOffline = await _offline.deleteBySender(
+      senderId: senderId,
+      senderName: senderName,
+    );
+    final db = _db;
+    if (db == null) return removedOffline;
+    var removed = removedOffline;
+    try {
+      final byId = senderId.trim().isEmpty
+          ? null
+          : await db
+                .collection(collection)
+                .where('senderId', isEqualTo: senderId)
+                .get();
+      final byName = senderName.trim().isEmpty
+          ? null
+          : await db
+                .collection(collection)
+                .where('senderName', isEqualTo: senderName)
+                .get();
+      final docs = {...?byId?.docs, ...?byName?.docs};
+      for (final doc in docs) {
+        await doc.reference.delete();
+        removed++;
+      }
+    } catch (_) {}
+    return removed;
   }
 }
 

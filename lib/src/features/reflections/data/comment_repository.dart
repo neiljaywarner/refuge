@@ -12,8 +12,14 @@ abstract class CommentRepository {
   /// Adds a new comment or nested discussion reply.
   Future<Comment> addComment(Comment comment);
 
+  /// Permanently removes every comment by [authorName]. Used by a Circle-style ban.
+  Future<int> deleteByAuthor({required String authorName});
+
   /// Increments a care reaction tally for a comment.
-  Future<void> addReaction({required String commentId, required String reactionType});
+  Future<void> addReaction({
+    required String commentId,
+    required String reactionType,
+  });
 
   /// Asynchronously watches live comment additions and reaction updates for a post.
   Stream<List<Comment>> watchComments({required String postId});

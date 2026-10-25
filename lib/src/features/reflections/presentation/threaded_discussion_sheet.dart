@@ -3,6 +3,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
+import '../../admin/data/admin_banning_repository.dart';
+import '../../admin/domain/ban_standing.dart';
+import '../../admin/presentation/account_paused_banner.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/comment_repository.dart';
 import '../domain/comment.dart';
@@ -42,10 +45,15 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     final selectedTone = useState<String>('None');
     final textController = useTextEditingController();
     useListenable(textController);
-    final canSubmit = textController.text.trim().isNotEmpty;
+    final isPaused = ref.watch(isCurrentMemberBannedProvider);
+    final canSubmit = !isPaused && textController.text.trim().isNotEmpty;
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    if (isPaused) {
+      return const Material(child: Center(child: AccountPausedLockout()));
+    }
 
     return Container(
       constraints: BoxConstraints(
@@ -422,9 +430,18 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                       timestamp: DateTime.now(),
                                     );
 
-                                    await ref
-                                        .read(commentRepositoryProvider)
-                                        .addComment(newComment);
+                                    final created =
+                                        await createContributionUnlessBanned(
+                                          isBanned: ref.read(
+                                            isCurrentMemberBannedProvider,
+                                          ),
+                                          create: () async {
+                                            await ref
+                                                .read(commentRepositoryProvider)
+                                                .addComment(newComment);
+                                          },
+                                        );
+                                    if (!created) return;
 
                                     textController.clear();
                                     replyingTo.value = null;

@@ -52,8 +52,7 @@ class LocalCommentRepository implements CommentRepository {
         id: 'c1_1',
         postId: '1',
         authorName: 'Pastor Thomas (Melbourne)',
-        content:
-            'Praying for you David. Hebrews 4:10 reminds us that resting is entering His rest. Be gentle with your routine.',
+        content: 'Praying for you David. Hebrews 4:10 reminds us that resting is entering His rest. Be gentle with your routine.',
         toneTag: '[Prayer]',
         timestamp: now.subtract(const Duration(minutes: 25)),
         reactions: {'pray': 4, 'peace': 3},
@@ -63,8 +62,7 @@ class LocalCommentRepository implements CommentRepository {
         postId: '1',
         parentCommentId: 'c1_1',
         authorName: 'David M. (UK)',
-        content:
-            'Thank you Pastor Thomas, that verse brings a lot of reassurance today. Grateful for this quiet community.',
+        content: 'Thank you Pastor Thomas, that verse brings a lot of reassurance today. Grateful for this quiet community.',
         toneTag: '[Comfort Only]',
         timestamp: now.subtract(const Duration(minutes: 15)),
         reactions: {'peace': 2},
@@ -73,8 +71,7 @@ class LocalCommentRepository implements CommentRepository {
         id: 'c1_2',
         postId: '1',
         authorName: 'Elena R. (Colorado)',
-        content:
-            'Transitioning routines is so disorienting for autistic brains. Sending quiet prayers and holding space for you.',
+        content: 'Transitioning routines is so disorienting for autistic brains. Sending quiet prayers and holding space for you.',
         toneTag: '[Support]',
         timestamp: now.subtract(const Duration(minutes: 20)),
         reactions: {'pray': 2, 'peace': 4},
@@ -85,8 +82,7 @@ class LocalCommentRepository implements CommentRepository {
         id: 'c4_1',
         postId: '4',
         authorName: 'Caleb T. (Fort Worth)',
-        content:
-            'The reverberation decay calculation is too real! Loop earplugs completely changed worship service for me.',
+        content: 'The reverberation decay calculation is too real! Loop earplugs completely changed worship service for me.',
         toneTag: '[Relatable]',
         timestamp: now.subtract(const Duration(minutes: 10)),
         reactions: {'relatable': 6},
@@ -96,8 +92,7 @@ class LocalCommentRepository implements CommentRepository {
         postId: '4',
         parentCommentId: 'c4_1',
         authorName: 'Nathan K. (Texas)',
-        content:
-            'Right?! Especially during the high-hat cymbal on the drum kit. Essential gear!',
+        content: 'Right?! Especially during the high-hat cymbal on the drum kit. Essential gear!',
         toneTag: '[Relatable]',
         timestamp: now.subtract(const Duration(minutes: 6)),
         reactions: {'relatable': 3},
@@ -108,8 +103,7 @@ class LocalCommentRepository implements CommentRepository {
         id: 'c6_1',
         postId: '6',
         authorName: 'Hannah W. (Dallas)',
-        content:
-            'So happy to be here. My special interest is sensory gardening and native Texas wildflowers!',
+        content: 'So happy to be here. My special interest is sensory gardening and native Texas wildflowers!',
         toneTag: '[Welcome]',
         timestamp: now.subtract(const Duration(minutes: 7)),
         reactions: {'encouraged': 5},
@@ -149,6 +143,40 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
+  Future<int> deleteByAuthor({required String authorName}) async {
+    final name = authorName.trim().toLowerCase();
+    if (name.isEmpty) return 0;
+    final before = _store.length;
+    final removedIds = _store
+        .where((comment) => comment.authorName.trim().toLowerCase() == name)
+        .map((comment) => comment.id)
+        .toList();
+    _store.removeWhere(
+      (comment) => comment.authorName.trim().toLowerCase() == name,
+    );
+    final removed = before - _store.length;
+    if (removed > 0) {
+      _controller.add(List.unmodifiable(_store));
+    }
+    final fs = firestore;
+    if (fs != null) {
+      try {
+        final snap = await fs
+            .collection('comments')
+            .where('authorName', isEqualTo: authorName)
+            .get();
+        for (final doc in snap.docs) {
+          await doc.reference.delete();
+        }
+        for (final id in removedIds) {
+          await fs.collection('comments').doc(id).delete();
+        }
+      } catch (_) {}
+    }
+    return removed;
+  }
+
+  @override
   Future<void> addReaction({
     required String commentId,
     required String reactionType,
@@ -157,7 +185,8 @@ class LocalCommentRepository implements CommentRepository {
     if (index != -1) {
       final existing = _store[index];
       final updatedReactions = Map<String, int>.from(existing.reactions);
-      updatedReactions[reactionType] = (updatedReactions[reactionType] ?? 0) + 1;
+      updatedReactions[reactionType] =
+          (updatedReactions[reactionType] ?? 0) + 1;
       _store[index] = existing.copyWith(reactions: updatedReactions);
       _controller.add(List.unmodifiable(_store));
 
@@ -189,16 +218,24 @@ class LocalCommentRepository implements CommentRepository {
       watchComments(postId: postId).map((comments) => comments.length);
 
   @override
-  Future<List<Comment>> getCommentsByAuthor({required String authorName}) async {
-    return _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
+  Future<List<Comment>> getCommentsByAuthor({
+    required String authorName,
+  }) async {
+    return _store
+        .where((c) => _matchesAuthor(c.authorName, authorName))
+        .toList();
   }
 
   @override
   Stream<List<Comment>> watchCommentsByAuthor({required String authorName}) {
     Stream<List<Comment>> generator() async* {
-      yield _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
+      yield _store
+          .where((c) => _matchesAuthor(c.authorName, authorName))
+          .toList();
       yield* _controller.stream.map(
-        (comments) => comments.where((c) => _matchesAuthor(c.authorName, authorName)).toList(),
+        (comments) => comments
+            .where((c) => _matchesAuthor(c.authorName, authorName))
+            .toList(),
       );
     }
 
@@ -225,10 +262,9 @@ class LocalCommentRepository implements CommentRepository {
     final result = <Comment>[];
     for (final parent in topLevel) {
       result.add(parent);
-      final children = postComments
-          .where((c) => c.parentCommentId == parent.id)
-          .toList()
-        ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      final children =
+          postComments.where((c) => c.parentCommentId == parent.id).toList()
+            ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
       result.addAll(children);
     }
 

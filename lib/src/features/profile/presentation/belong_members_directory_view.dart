@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../admin/data/admin_banning_repository.dart';
+import '../../admin/domain/ban_standing.dart';
+import '../../admin/domain/soft_deleted_user.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../domain/member_profile.dart';
 import 'member_profile_sheet.dart';
@@ -145,6 +148,8 @@ class _BelongMembersDirectoryViewState
     final theme = Theme.of(context);
     final brand = ref.watch(communityBrandConfigProvider);
     final currentProfile = ref.watch(memberProfileProvider);
+    final bans =
+        ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
 
     final filteredMembers = kDevFellowshipMembers.where((m) {
       final matchesQuery =
@@ -167,6 +172,14 @@ class _BelongMembersDirectoryViewState
         _ => true,
       };
 
+      if (isIdentityBanned(
+        bans: bans,
+        userId: m.name,
+        email: '',
+        displayName: m.name,
+      )) {
+        return false;
+      }
       return matchesQuery && matchesFilter;
     }).toList();
 
