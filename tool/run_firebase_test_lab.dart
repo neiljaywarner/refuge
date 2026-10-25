@@ -20,7 +20,7 @@ import 'dart:io';
 import 'firebase_test_lab_support.dart';
 
 const _defaultProject = 'belongonthespectrum';
-const _defaultTarget = 'integration_test/patrol_hello_world_test.dart';
+const _defaultTarget = 'integration_test/patrol_ftl_home_shell_test.dart';
 const _defaultDevice = 'model=panther,version=33,locale=en,orientation=portrait';
 
 Future<void> main(List<String> args) async {
@@ -64,54 +64,68 @@ Future<void> main(List<String> args) async {
   final appApk = resolveExistingApk(repoRoot, appApkRelativePaths());
   final testApk = File('$repoRoot/$androidTestApkRelativePath');
 
-  _log('\nPhase 1: Dev debug APK assembly');
-  _log('flutter ${devFlutterApkBuildArgs().join(' ')}');
+  _log('\nPhase 1: Dev debug APK assembly (Patrol native instrumentation)');
+  _log('patrol ${patrolBuildAndroidArgs(target: target).join(' ')}');
   _log(
-    'cd android && ./gradlew app:assembleDebugAndroidTest '
+    'Fallback: flutter ${devFlutterApkBuildArgs().join(' ')} && '
+    'gradlew app:assembleDebugAndroidTest '
     '-Ptarget=${integrationTestGradleTarget(target)}',
   );
 
   if (!dryRun) {
-    final flutter = await _resolveFlutterExecutable();
-    if (flutter == null) {
-      stderr.writeln('flutter executable not found on PATH.');
-      exit(127);
-    }
+    final patrol = resolvePatrolExecutable();
+    if (patrol != null) {
+      _log('Running patrol build android...');
+      final patrolBuild = await Process.run(
+        patrol,
+        patrolBuildAndroidArgs(target: target),
+        workingDirectory: repoRoot,
+      );
+      if (patrolBuild.exitCode != 0) {
+        stderr.writeln('patrol build android failed (${patrolBuild.exitCode}).');
+        stderr.write(patrolBuild.stderr);
+        stdout.write(patrolBuild.stdout);
+        exit(patrolBuild.exitCode);
+      }
+      _log('Patrol dev APK pair built.');
+    } else {
+      final flutter = await _resolveFlutterExecutable();
+      if (flutter == null) {
+        stderr.writeln('Neither patrol nor flutter found on PATH.');
+        exit(127);
+      }
 
-    _log('Running flutter build apk (dev, Serverpod off)...');
-    final flutterBuild = await Process.run(
-      flutter,
-      devFlutterApkBuildArgs(),
-      workingDirectory: repoRoot,
-    );
-    if (flutterBuild.exitCode != 0) {
-      stderr.writeln('flutter build apk failed (${flutterBuild.exitCode}).');
-      stderr.write(flutterBuild.stderr);
-      stdout.write(flutterBuild.stdout);
-      exit(flutterBuild.exitCode);
-    }
+      _log('Patrol CLI missing; using flutter + Gradle fallback...');
+      final flutterBuild = await Process.run(
+        flutter,
+        devFlutterApkBuildArgs(),
+        workingDirectory: repoRoot,
+      );
+      if (flutterBuild.exitCode != 0) {
+        stderr.writeln('flutter build apk failed (${flutterBuild.exitCode}).');
+        stderr.write(flutterBuild.stderr);
+        stdout.write(flutterBuild.stdout);
+        exit(flutterBuild.exitCode);
+      }
 
-    final androidDir = Directory('$repoRoot/android');
-    if (!androidDir.existsSync()) {
-      stderr.writeln('android/ directory not found.');
-      exit(65);
+      final androidDir = Directory('$repoRoot/android');
+      final gradleCmd = Platform.isWindows ? 'gradlew.bat' : './gradlew';
+      final gradleProcess = await Process.run(gradleCmd, [
+        'app:assembleDebugAndroidTest',
+        '-Ptarget=${integrationTestGradleTarget(target)}',
+      ], workingDirectory: androidDir.path);
+      if (gradleProcess.exitCode != 0) {
+        stderr.writeln(
+          'Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).',
+        );
+        stderr.write(gradleProcess.stderr);
+        stdout.write(gradleProcess.stdout);
+        exit(gradleProcess.exitCode);
+      }
+      _log('Dev APK pair built (fallback).');
     }
-
-    _log('Running Gradle assembleDebugAndroidTest...');
-    final gradleCmd = Platform.isWindows ? 'gradlew.bat' : './gradlew';
-    final gradleProcess = await Process.run(gradleCmd, [
-      'app:assembleDebugAndroidTest',
-      '-Ptarget=${integrationTestGradleTarget(target)}',
-    ], workingDirectory: androidDir.path);
-    if (gradleProcess.exitCode != 0) {
-      stderr.writeln('Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).');
-      stderr.write(gradleProcess.stderr);
-      stdout.write(gradleProcess.stdout);
-      exit(gradleProcess.exitCode);
-    }
-    _log('Dev APK pair built.');
   } else {
-    _log('[Dry Run] Skipped flutter and Gradle builds.');
+    _log('[Dry Run] Skipped Patrol / Gradle builds.');
   }
 
   final resolvedAppApk = resolveExistingApk(repoRoot, appApkRelativePaths()) ?? appApk;
@@ -171,7 +185,9 @@ Future<void> main(List<String> args) async {
   }
 
   if (gcloud == null) {
-    stderr.writeln('gcloud CLI not found in PATH or ~/google-cloud-sdk/bin.');
+    stderr.writeln(
+      'gcloud CLI not found (checked PATH, ~/google-cloud-sdk, and Homebrew).',
+    );
     stderr.writeln('Install: https://cloud.google.com/sdk/docs/install');
     stderr.writeln('Then authenticate: gcloud auth login');
     stderr.writeln('Dry-run the command above after install.');

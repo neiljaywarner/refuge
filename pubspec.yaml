@@ -63,6 +63,7 @@ dev_dependencies:
     sdk: flutter
   args: ^2.5.0
   rps: ^0.10.1
+  patrol: ^4.10.0
 
 scripts:
   test:
@@ -111,6 +112,12 @@ scripts:
 dependency_overrides:
   firebase_core: ^5.0.0
   firebase_auth: ^7.0.0
+
+patrol:
+  app_name: "[DEV] Belong on the Spectrum"
+  test_directory: integration_test
+  android:
+    package_name: com.belongonthespectrum.refuge.dev
 
 flutter:
   uses-material-design: true

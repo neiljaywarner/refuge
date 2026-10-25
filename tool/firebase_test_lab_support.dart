@@ -64,6 +64,19 @@ List<String> appApkRelativePaths() => [
 const androidTestApkRelativePath =
     'build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk';
 
+/// LeanCode Patrol CLI args for a dev-safe instrumentation build.
+///
+/// See https://patrol.leancode.co/documentation/native/setup
+List<String> patrolBuildAndroidArgs({required String target}) => [
+  'build',
+  'android',
+  '-t',
+  target,
+  '--dart-define=FLAVOR=dev',
+  '--dart-define=ENABLE_SERVERPOD=false',
+  '--no-uninstall',
+];
+
 /// Parsed `aapt dump badging` fields used for the dev upload gate.
 class ApkBadging {
   const ApkBadging({required this.packageName, required this.applicationLabel});
@@ -176,21 +189,54 @@ File? resolveExistingApk(String repoRoot, List<String> relativePaths) {
   return null;
 }
 
-/// Locates `gcloud` on PATH or common install locations.
-String? resolveGcloudExecutable() {
+/// Well-known `gcloud` install paths (Homebrew, manual SDK, PATH segments).
+List<String> gcloudCandidatePaths({String? pathEnv, String? home}) {
+  final paths = <String>[];
+  final path = pathEnv ?? Platform.environment['PATH'] ?? '';
+  for (final segment in path.split(Platform.pathSeparator)) {
+    if (segment.isEmpty) continue;
+    paths.add('$segment/gcloud');
+  }
+  final homeDir = home ?? Platform.environment['HOME'];
+  if (homeDir != null) {
+    paths.addAll([
+      '$homeDir/google-cloud-sdk/bin/gcloud',
+      '/opt/homebrew/bin/gcloud',
+      '/opt/homebrew/share/google-cloud-sdk/bin/gcloud',
+      '/usr/local/bin/gcloud',
+      '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin/gcloud',
+    ]);
+  }
+  return paths;
+}
+
+/// Locates the `patrol` CLI (Patrol native instrumentation builds).
+String? resolvePatrolExecutable() {
+  final home = Platform.environment['HOME'];
+  final candidates = <String>[
+    if (home != null) '$home/.pub-cache/bin/patrol',
+    '/opt/homebrew/bin/patrol',
+  ];
   final pathEnv = Platform.environment['PATH'] ?? '';
   for (final segment in pathEnv.split(Platform.pathSeparator)) {
     if (segment.isEmpty) continue;
-    final candidate = File('$segment/gcloud');
+    candidates.add('$segment/patrol');
+  }
+  for (final candidatePath in candidates) {
+    final candidate = File(candidatePath);
     if (candidate.existsSync()) {
       return candidate.path;
     }
   }
-  final home = Platform.environment['HOME'];
-  if (home != null) {
-    final sdkCandidate = File('$home/google-cloud-sdk/bin/gcloud');
-    if (sdkCandidate.existsSync()) {
-      return sdkCandidate.path;
+  return null;
+}
+
+/// Locates `gcloud` on PATH or common install locations.
+String? resolveGcloudExecutable() {
+  for (final candidatePath in gcloudCandidatePaths()) {
+    final candidate = File(candidatePath);
+    if (candidate.existsSync()) {
+      return candidate.path;
     }
   }
   return null;
