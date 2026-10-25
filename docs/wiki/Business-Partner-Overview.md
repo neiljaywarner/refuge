@@ -4,6 +4,8 @@
 > **Live Community**: [belongonthespectrum.web.app](https://belongonthespectrum.web.app) · **Public Website**: [belongonthespectrum.com](https://www.belongonthespectrum.com/)  
 > **Product & Business Philosophy (37signals)**: [Pick a Fight](https://37signals.com/podcast/pick-a-fight/) · [Build Half a Product, Not a Half-Assed Product](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/) · [Embrace Constraints](https://37signals.com/podcast/embrace-constraints/)
 
+![Belong on the Spectrum — Business & Partnership Infographic](images/business-partner-infographic.svg)
+
 ---
 
 ## 🕊️ Executive Summary: The 60-Second Story
@@ -115,6 +117,7 @@ Friendship and mutual trust come first. There is no pitch deck pressure and no r
 * 🏡 **Public Website**: [belongonthespectrum.com](https://www.belongonthespectrum.com/)
 * 📅 **Current Transition Schedule**: [Plan through October 31](Non-Technical-Roadmap-to-Oct-31)
 * 🌿 **Our Calm Design Approach**: [Calm Design and Sensory Comfort](Calm-Tech-and-Accessibility)
+* 🎬 **Companion Video Prompts**: [Gemini Web & Google Vids Prompts](Business-Partner-Video-Prompts)
 * 💡 **37signals Principles Referenced Above**:
   * [Pick a Fight — 37signals *REWORK* Podcast & Transcript](https://37signals.com/podcast/pick-a-fight/)
   * [Build Half a Product, Not a Half-Assed Product — 37signals *REWORK* Podcast & Transcript](https://37signals.com/podcast/build-half-a-product-not-a-half-assed-product/)
