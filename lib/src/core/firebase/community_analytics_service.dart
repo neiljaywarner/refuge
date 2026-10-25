@@ -31,6 +31,7 @@ class CommunityAnalyticsService {
     this.aptabaseKeyOverride,
     this.postHogKeyOverride,
     this.postHogHostOverride,
+    this.automationToolOverride,
   }) : _httpClient = httpClient ?? http.Client();
 
   final AppFlavor flavor;
@@ -39,6 +40,9 @@ class CommunityAnalyticsService {
   final String? aptabaseKeyOverride;
   final String? postHogKeyOverride;
   final String? postHogHostOverride;
+
+  /// Test-only stand-in for `--dart-define=AUTOMATION_TOOL=...`.
+  final String? automationToolOverride;
 
   /// Default Aptabase App-Key read from build-time `--dart-define`.
   static const String kDefaultAptabaseKey = String.fromEnvironment(
@@ -80,16 +84,17 @@ class CommunityAnalyticsService {
       'AUTOMATION_TOOL',
       defaultValue: '',
     );
-    final resolvedAutomationTool = automationToolEnv.isNotEmpty
-        ? automationToolEnv
-        : (kDebugMode ? 'debug_mode' : 'none');
+    final automationToolName = (automationToolOverride ?? automationToolEnv)
+        .trim();
+    final isAutomationTool = automationToolName.isNotEmpty;
 
     final enriched = <String, Object>{
       'flavor': flavor.slug,
       'environment': kReleaseMode ? 'release' : 'debug',
       'platform': defaultTargetPlatform.name,
-      'is_debug_mode': kDebugMode ? 'true' : 'false',
-      'automation_tool': resolvedAutomationTool,
+      'is_debug_mode': kDebugMode,
+      'automation_tool': isAutomationTool,
+      if (isAutomationTool) 'automation_tool_name': automationToolName,
       ...?parameters,
     };
     recordedEventsForTesting.add({'name': name, ...enriched});
@@ -197,16 +202,11 @@ class CommunityAnalyticsService {
           : effectivePostHogHost;
       final url = Uri.parse('$host/capture/');
 
-      final distinctId = 'belong-anon-${flavor.slug}';
       final payloads = <Map<String, Object>>[
         {
           'api_key': key,
           'event': name,
-          'properties': {
-            'distinct_id': distinctId,
-            r'$process_person_profile': false,
-            ...props,
-          },
+          'properties': _postHogProperties(props),
         },
       ];
       final pathname = _pageviewPathname(name, props);
@@ -214,14 +214,12 @@ class CommunityAnalyticsService {
         payloads.add({
           'api_key': key,
           'event': r'$pageview',
-          'properties': {
-            'distinct_id': distinctId,
-            r'$process_person_profile': false,
+          'properties': _postHogProperties({
+            ...props,
             r'$pathname': pathname,
             r'$current_url': _pageviewUrl(pathname),
             r'$host': _pageviewHost,
-            'flavor': flavor.slug,
-          },
+          }),
         });
       }
 
@@ -251,6 +249,20 @@ class CommunityAnalyticsService {
     } catch (e) {
       talker.warning('⚠️ [POSTHOG] Network transport error: $e');
     }
+  }
+
+  /// Anonymous distinct id plus `$set` user properties. No emails or names.
+  Map<String, Object> _postHogProperties(Map<String, Object> props) {
+    final isDebugMode = props['is_debug_mode'] == true;
+    final isAutomationTool = props['automation_tool'] == true;
+    return {
+      'distinct_id': 'belong-anon-${flavor.slug}',
+      r'$set': <String, Object>{
+        'is_debug_mode': isDebugMode,
+        'automation_tool': isAutomationTool,
+      },
+      ...props,
+    };
   }
 
   /// Anonymous path for PostHog web analytics. No member ids or emails.

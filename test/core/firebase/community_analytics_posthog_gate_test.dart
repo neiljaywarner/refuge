@@ -79,8 +79,48 @@ void main() {
         expect(properties['distinct_id'], 'belong-anon-dev');
         expect(properties['tab'], 'Home');
         expect(properties['flavor'], 'dev');
-        expect(properties[r'$process_person_profile'], isFalse);
+        expect(properties['is_debug_mode'], isTrue);
+        expect(properties['automation_tool'], isFalse);
+        expect(properties[r'$set'], {
+          'is_debug_mode': true,
+          'automation_tool': false,
+        });
         expect(properties.containsKey('email'), isFalse);
+      },
+    );
+
+    test(
+      'automation_tool override sets boolean event and user properties',
+      () async {
+        final captured = Completer<http.Request>();
+        final client = MockClient((request) async {
+          if (!captured.isCompleted) {
+            captured.complete(request);
+          }
+          return http.Response('{"status":1}', 200);
+        });
+        final service = CommunityAnalyticsService(
+          flavor: AppFlavor.dev,
+          httpClient: client,
+          aptabaseKeyOverride: '',
+          postHogKeyOverride: _fakeCaptureKey,
+          postHogHostOverride: 'https://example.test',
+          automationToolOverride: 'maestro',
+        );
+
+        await service.logBottomTabSelected('Home');
+        final request = await captured.future.timeout(
+          const Duration(seconds: 2),
+        );
+        final properties =
+            (jsonDecode(request.body) as Map<String, dynamic>)['properties']
+                as Map<String, dynamic>;
+        expect(properties['automation_tool'], isTrue);
+        expect(properties['automation_tool_name'], 'maestro');
+        expect(properties[r'$set'], {
+          'is_debug_mode': true,
+          'automation_tool': true,
+        });
       },
     );
 
@@ -111,6 +151,8 @@ void main() {
       expect(page['distinct_id'], 'belong-anon-dev');
       expect(page[r'$pathname'], '/spaces/quiet-gardens');
       expect(page[r'$current_url'], contains('/spaces/quiet-gardens'));
+      expect(page['is_debug_mode'], isTrue);
+      expect(page[r'$set'], {'is_debug_mode': true, 'automation_tool': false});
       expect(page.containsKey('email'), isFalse);
       expect(service.dispatchedEventsForTesting, hasLength(1));
     });
