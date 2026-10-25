@@ -88,5 +88,26 @@ service cloud.firestore {
       allow update: if request.auth != null
           && resource.data.recipientUid == request.auth.uid;
     }
+
+    // 11. Self-service soft delete (#544). Members may tombstone only their own
+    // account. Hard delete stays closed until #545.
+    match /self_deleted_accounts/{docId} {
+      allow get: if request.auth != null && (
+        docId == 'dev_' + request.auth.uid ||
+        docId == 'stg_' + request.auth.uid ||
+        docId == 'qa_' + request.auth.uid ||
+        docId == 'prod_' + request.auth.uid
+      );
+      allow list: if false;
+      allow create, update: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.softDeleted == true
+        && request.resource.data.deletionKind == 'soft'
+        && request.resource.data.accountStatus == 'soft_deleted'
+        && request.resource.data.source == 'self_service'
+        && request.resource.data.flavor in ['dev', 'stg', 'qa', 'prod']
+        && docId == request.resource.data.flavor + '_' + request.auth.uid;
+      allow delete: if false;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../account_deletion/presentation/delete_my_account_dialog.dart';
 import '../../auth/presentation/belong_auth_sheet.dart';
 import '../../auth/presentation/belong_firebase_auth_screen.dart';
 import '../../auth/presentation/simple_auth.dart';
@@ -440,6 +441,18 @@ class MemberProfileDialog extends HookConsumerWidget {
                   );
                 },
               ),
+              if (profile.isSignedIn)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    key: const Key('delete_my_account_button'),
+                    onPressed: () => DeleteMyAccountDialog.show(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                    child: const Text('Delete my account'),
+                  ),
+                ),
             ],
           ),
         ),
