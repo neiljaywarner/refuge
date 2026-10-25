@@ -177,3 +177,59 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
 
 /// Riverpod StateProvider tracking the currently active fellowship space key.
 final activeSpaceKeyProvider = StateProvider<String>((ref) => 'general_chat');
+
+/// Human-friendly display metadata for a fellowship space (#618).
+@immutable
+class BelongSpaceInfo {
+  const BelongSpaceInfo({required this.slug, required this.title, required this.emoji});
+
+  final String slug;
+  final String title;
+  final String emoji;
+}
+
+/// Resolves human-friendly space title and emoji from any space slug or legacy key (#618).
+BelongSpaceInfo getBelongSpaceInfo(String slug) {
+  for (final section in kBelongSpaceSections) {
+    for (final item in section.items) {
+      if (item.slug == slug) {
+        return BelongSpaceInfo(slug: item.slug, title: item.title, emoji: item.emoji);
+      }
+    }
+  }
+
+  // Fallback to kFellowshipSpaces legacy mapping
+  if (kFellowshipSpaces.containsKey(slug)) {
+    final raw = kFellowshipSpaces[slug]!;
+    final parts = raw.split(' ');
+    final emoji = parts.isNotEmpty ? parts.first : '💬';
+    final name = switch (slug) {
+      'prayer' => 'Prayer Sanctuary',
+      'study' => 'Weekly Study',
+      'special_interests' => 'Special Interests & Memes',
+      'general' => 'Main Hall',
+      'general_chat' => 'General Chat',
+      'start_here' => 'Start Here & Introduce Yourself',
+      'announcements' => 'Announcements',
+      'saved_for_later' => 'Saved for Later',
+      _ =>
+        parts.length > 1
+            ? parts.sublist(1).join(' ').replaceAll('#', '').replaceAll('-', ' ').trim()
+            : slug,
+    };
+    return BelongSpaceInfo(slug: slug, title: name, emoji: emoji);
+  }
+
+  // Fallback for custom or unknown slugs
+  final cleanName = slug
+      .replaceAll('_', ' ')
+      .replaceAll('-', ' ')
+      .split(' ')
+      .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+      .join(' ');
+  return BelongSpaceInfo(
+    slug: slug,
+    title: cleanName.isNotEmpty ? cleanName : 'Community Feed',
+    emoji: '💬',
+  );
+}

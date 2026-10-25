@@ -101,6 +101,7 @@ test/features/reflections/threaded_comments_widget_test.dart
 test/features/sensory/calm_soundscape_sheet_test.dart
 test/features/sensory/sensory_soundscape_test.dart
 test/features/sensory/sensory_theme_and_font_scaling_test.dart
+test/features/spaces/space_room_title_test.dart
 test/smoke/pwa_release_smoke_test.dart
 test/tool/analyze_app_reviews_test.dart
 test/tool/check_line_coverage_test.dart

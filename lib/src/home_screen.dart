@@ -24,7 +24,6 @@ import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dar
 import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
-import 'features/notifications/domain/notification_navigation_target.dart';
 import 'features/notifications/presentation/notifications_controller.dart';
 import 'features/notifications/data/member_notification_store.dart';
 import 'features/observability/presentation/observability_easter_egg_dialog.dart';
@@ -253,7 +252,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
           return Column(
             children: [
-              SpaceNavigationBar(selectedSpace: selectedSpace.value, onSelectSpace: selectSpace),
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
+                onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+              ),
               ToneFilterRow(
                 activeFilter: activeFilter.value,
                 onSelectFilter: (tone) {
@@ -829,7 +832,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         : null,
                     onBackgroundImageError:
                         (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
-                        ? (_, __) {}
+                        ? (_, _) {}
                         : null,
                     child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
                         ? Text(
