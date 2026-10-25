@@ -11,9 +11,8 @@ import 'package:refuge4serverpod/src/features/sensory_themes/domain/sensory_mode
 
 /// Computes the relative luminance of a color per WCAG 2.1 specs.
 double _relativeLuminance(Color color) {
-  double transform(double channel) => channel <= 0.03928
-      ? channel / 12.92
-      : math.pow((channel + 0.055) / 1.055, 2.4).toDouble();
+  double transform(double channel) =>
+      channel <= 0.03928 ? channel / 12.92 : math.pow((channel + 0.055) / 1.055, 2.4).toDouble();
 
   final r = transform(color.r);
   final g = transform(color.g);

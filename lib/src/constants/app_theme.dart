@@ -67,9 +67,7 @@ class SensoryThemeData {
           ),
           checkmarkColor: Color(0xFF8CD4A2),
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
         ),
       ),
       SensoryMode.contrast => ThemeData(
@@ -96,12 +94,7 @@ class SensoryThemeData {
       ),
     };
     return theme.copyWith(
-      extensions: [
-        BelongTextStyles.forTheme(
-          theme,
-          contrast: mode == SensoryMode.contrast,
-        ),
-      ],
+      extensions: [BelongTextStyles.forTheme(theme, contrast: mode == SensoryMode.contrast)],
     );
   }
 }
