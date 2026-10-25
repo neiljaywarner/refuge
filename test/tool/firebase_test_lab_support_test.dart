@@ -82,6 +82,26 @@ application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic
         contains('/opt/homebrew/bin/gcloud'),
       );
     });
+
+    test('splitPathSegments parses colon-separated paths on POSIX', () {
+      final segments = splitPathSegments('/usr/bin:/bin:/custom/google-cloud-sdk/bin:');
+      if (Platform.isWindows) {
+        expect(segments, ['/usr/bin:/bin:/custom/google-cloud-sdk/bin:']);
+      } else {
+        expect(segments, ['/usr/bin', '/bin', '/custom/google-cloud-sdk/bin']);
+      }
+    });
+
+    test('gcloudCandidatePaths splits multi-entry colon PATH', () {
+      final paths = gcloudCandidatePaths(
+        pathEnv: '/usr/local/bin:/custom/google-cloud-sdk/bin',
+        home: '/tmp',
+      );
+      if (!Platform.isWindows) {
+        expect(paths, contains('/custom/google-cloud-sdk/bin/gcloud'));
+        expect(paths, contains('/usr/local/bin/gcloud'));
+      }
+    });
   });
 
   group('gcloudFirebaseTestAndroidRunArgs', () {
