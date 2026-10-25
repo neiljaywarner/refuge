@@ -129,6 +129,8 @@ CI can pass the same three defines. This repository does not add a GitHub Action
 
 ```bash
 flutter build web --release \
+  -t lib/main_prod.dart \
+  --dart-define=FLAVOR=prod \
   --dart-define=GIT_COMMIT_SHA="$GIT_COMMIT_SHA" \
   --dart-define=BUILD_TIME_MS="$BUILD_TIME_MS" \
   --dart-define=RELEASE_TAG="$RELEASE_TAG"

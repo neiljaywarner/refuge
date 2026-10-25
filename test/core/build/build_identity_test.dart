@@ -186,6 +186,33 @@ void main() {
         final encoded = jsonEncode(payload);
         expect(encoded, contains('"build_time_ms":$builtAtMs'));
         expect(encoded, isNot(contains('"build_time_ms":"')));
+        expect(
+          cachedWebFlavorMismatch(
+            versionJson: encoded,
+            expectedFlavor: 'prod',
+          ),
+          contains('missing'),
+        );
+        final stampedFlavor = webVersionPayload(
+          releaseTag: 'v0.9.1',
+          pubspecVersionLine: '0.9.1+2',
+          stamp: stamp,
+          flavor: 'dev',
+        );
+        expect(
+          cachedWebFlavorMismatch(
+            versionJson: jsonEncode(stampedFlavor),
+            expectedFlavor: 'dev',
+          ),
+          isNull,
+        );
+        expect(
+          cachedWebFlavorMismatch(
+            versionJson: jsonEncode(stampedFlavor),
+            expectedFlavor: 'prod',
+          ),
+          contains('expected prod'),
+        );
       },
     );
 
@@ -226,6 +253,7 @@ void main() {
         expect(devDeploy, contains('https://dev-belongonthespectrum.web.app'));
         expect(devDeploy, contains("targetFile: 'lib/main_dev.dart'"));
         expect(devDeploy, contains("flavor: 'dev'"));
+        expect(devDeploy, contains('--dart-define=ENABLE_SERVERPOD=false'));
         expect(devDeploy, contains('firebase.dev.json'));
         expect(
           File('firebase.dev.json').readAsStringSync(),

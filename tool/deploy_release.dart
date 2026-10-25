@@ -165,6 +165,15 @@ Future<void> main(List<String> args) async {
       );
     }
   } else {
+    final cached = File('build/web/version.json');
+    final mismatch = cachedWebFlavorMismatch(
+      versionJson: cached.existsSync() ? cached.readAsStringSync() : null,
+      expectedFlavor: 'prod',
+    );
+    if (mismatch != null) {
+      stderr.writeln(mismatch);
+      exit(65);
+    }
     _log(
       'Skipping Flutter build. Existing artifacts keep their previous dart-defines.',
     );
@@ -350,6 +359,7 @@ Future<void> _writeWebVersionJson(
     releaseTag: version,
     pubspecVersionLine: versionLine,
     stamp: stamp,
+    flavor: 'prod',
   );
   final out = File('build/web/version.json');
   if (!out.parent.existsSync()) {

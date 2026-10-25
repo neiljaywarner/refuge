@@ -92,10 +92,30 @@ Future<void> main(List<String> args) async {
     ], dryRun: dryRun);
   }
 
-  if (!skipBuild) {
+  if (skipBuild) {
+    final cached = File('build/web/version.json');
+    final mismatch = cachedWebFlavorMismatch(
+      versionJson: cached.existsSync() ? cached.readAsStringSync() : null,
+      expectedFlavor: 'dev',
+    );
+    if (mismatch != null) {
+      stderr.writeln(mismatch);
+      exit(65);
+    }
+  } else {
+    // Dev and prod share one Firebase project and one Serverpod host.
+    // The public dev site must stay on the local post repository so a
+    // visitor cannot publish into the live community.
     await _run(
       _bin('flutter'),
-      stamp.flutterArgs('web', targetFile: 'lib/main_dev.dart', flavor: 'dev'),
+      [
+        ...stamp.flutterArgs(
+          'web',
+          targetFile: 'lib/main_dev.dart',
+          flavor: 'dev',
+        ),
+        '--dart-define=ENABLE_SERVERPOD=false',
+      ],
       dryRun: dryRun,
     );
     if (!dryRun) {
@@ -140,6 +160,7 @@ Future<void> _writeWebVersionJson(
     releaseTag: version,
     pubspecVersionLine: versionLine,
     stamp: stamp,
+    flavor: 'dev',
   );
   final out = File('build/web/version.json');
   if (!out.parent.existsSync()) {

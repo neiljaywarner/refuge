@@ -42,7 +42,7 @@ We adopt the **Hybrid CodeWithAndrea + VGV Flavor Pattern**:
   - Preview channels stay on the prod site and expire. They are not the dev site.
   - `stg` / `qa` are not deployed. Auth and Firestore are still the same Firebase project; `dev` only isolates app data (for example `reflections_dev`).
 - Wrap **Firebase Remote Config**, **Firebase Analytics**, and **Firebase In-App Messaging** behind clean, Riverpod-injected interfaces (`OrganizerRemoteConfigService` and `CommunityAnalyticsService`):
-  - When Firebase is initialized for the active flavor, values are fetched from live Firebase Remote Config and events are logged to Firebase Analytics (prefixed/isolated by flavor when needed).
+  - Dev and prod share one Firebase project. Analytics events include a flavor label; that label does not isolate the Analytics property. Remote Config keys are not split by flavor. Auth and Firestore stay shared, as above.
   - In unit/BDD widget tests or offline environments where native Firebase is not initialized, the services automatically fall back to deterministic in-memory defaults from `CommunityBrandConfig.belong()` with **zero crashes and zero secret files required in Git**.
 - **Web/PWA vs. Mobile In-App Messaging**:
   - `firebase_in_app_messaging` is included for native Android and iOS builds.
