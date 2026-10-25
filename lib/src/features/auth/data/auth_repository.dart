@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
@@ -67,6 +66,12 @@ abstract interface class AuthRepository {
 
   /// Sign out current user.
   Future<AuthSession> signOut();
+
+  /// Refreshes the current user from the auth backend (e.g. after email verification).
+  Future<AuthSession> reloadCurrentUser();
+
+  /// Sends an email verification link when required for the active flavor.
+  Future<void> sendEmailVerification();
 }
 
 class _InMemoryUserRecord {
@@ -331,6 +336,17 @@ class InMemoryAuthRepository implements AuthRepository {
     _updateSession(guest);
     return guest;
   }
+
+  @override
+  Future<AuthSession> reloadCurrentUser() async {
+    if (_session.isSignedIn) {
+      _updateSession(_session.copyWith(emailVerified: true));
+    }
+    return _session;
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {}
 }
 
 /// Production Firebase Authentication repository with graceful offline/test fallback.
@@ -372,28 +388,32 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   BackendTarget get target => BackendTarget.firebase;
 
+  AuthSession _sessionFromFirebaseUser(fb_auth.User fbUser) {
+    return AuthSession(
+      userId: fbUser.uid,
+      displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
+          ? fbUser.displayName!
+          : (_savedSession?.displayName ?? 'Fellowship Member'),
+      email: fbUser.email ?? (_savedSession?.email ?? ''),
+      bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
+      comfortBadges: _savedSession?.comfortBadges ?? const [
+        'Literal communication appreciated',
+        'Firebase Cloud Verified',
+      ],
+      isSignedIn: true,
+      authMethod: 'firebase_auth',
+      icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
+      emailVerified: fbUser.emailVerified,
+      photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
+    );
+  }
+
   @override
   AuthSession currentSession() {
     if (_hasRealCredentials) {
       final fbUser = auth?.currentUser;
       if (fbUser != null) {
-        return AuthSession(
-          userId: fbUser.uid,
-          displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
-              ? fbUser.displayName!
-              : (_savedSession?.displayName ?? 'Fellowship Member'),
-          email: fbUser.email ?? (_savedSession?.email ?? ''),
-          bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
-          comfortBadges: _savedSession?.comfortBadges ?? const [
-            'Literal communication appreciated',
-            'Firebase Cloud Verified',
-          ],
-          isSignedIn: true,
-          authMethod: 'firebase_auth',
-          icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
-          emailVerified: fbUser.emailVerified,
-          photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
-        );
+        return _sessionFromFirebaseUser(fbUser);
       }
     }
     if (_savedSession != null && _savedSession!.isSignedIn) {
@@ -408,23 +428,7 @@ class FirebaseAuthRepository implements AuthRepository {
     if (liveAuth != null && _hasRealCredentials) {
       return liveAuth.authStateChanges().map((fbUser) {
         if (fbUser != null) {
-          final s = AuthSession(
-            userId: fbUser.uid,
-            displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
-                ? fbUser.displayName!
-                : (_savedSession?.displayName ?? 'Fellowship Member'),
-            email: fbUser.email ?? (_savedSession?.email ?? ''),
-            bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
-            comfortBadges: _savedSession?.comfortBadges ?? const [
-              'Literal communication appreciated',
-              'Firebase Cloud Verified',
-            ],
-            isSignedIn: true,
-            authMethod: 'firebase_auth',
-            icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
-            emailVerified: fbUser.emailVerified,
-            photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
-          );
+          final s = _sessionFromFirebaseUser(fbUser);
           _savedSession = s;
           return s;
         }
@@ -456,6 +460,15 @@ class FirebaseAuthRepository implements AuthRepository {
         final user = credential.user;
         if (user != null) {
           await user.updateDisplayName(displayName.trim());
+          if (flavor.isProduction) {
+            try {
+              await user.sendEmailVerification();
+            } catch (e) {
+              talker.warning(
+                '⚠️ [FirebaseAuthRepository] sendEmailVerification failed: $e',
+              );
+            }
+          }
           final session = AuthSession(
             userId: user.uid,
             displayName: displayName.trim(),
@@ -649,6 +662,38 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (_) {}
     return _fallback.signOut();
   }
+
+  @override
+  Future<AuthSession> reloadCurrentUser() async {
+    final liveAuth = auth;
+    if (liveAuth != null && _hasRealCredentials) {
+      final user = liveAuth.currentUser;
+      if (user != null) {
+        await user.reload();
+        final refreshed = liveAuth.currentUser;
+        if (refreshed != null) {
+          final session = _sessionFromFirebaseUser(refreshed);
+          _savedSession = session;
+          return session;
+        }
+      }
+    }
+    return _fallback.reloadCurrentUser();
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {
+    if (!flavor.isProduction) return;
+    final liveAuth = auth;
+    if (liveAuth != null && _hasRealCredentials) {
+      final user = liveAuth.currentUser;
+      if (user != null) {
+        await user.sendEmailVerification();
+      }
+      return;
+    }
+    return _fallback.sendEmailVerification();
+  }
 }
 
 class ServerpodAuthRepository extends InMemoryAuthRepository {
@@ -677,4 +722,10 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
     BackendTarget.appwrite => AppwriteAuthRepository(),
     BackendTarget.firebase => FirebaseAuthRepository(flavor: flavor),
   };
+});
+
+/// Reactive auth session for gates and shells that must not trust local profile cache.
+final authSessionStreamProvider = StreamProvider<AuthSession>((ref) {
+  final repo = ref.watch(authRepositoryProvider);
+  return repo.authStateChanges();
 });

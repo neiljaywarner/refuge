@@ -17,11 +17,19 @@ class SimpleAuthScreen extends StatelessWidget {
     this.auth,
     this.onAuthenticated,
     this.onSignedOut,
+    this.popOnSuccess = true,
+    this.allowOfflineTestSignIn = true,
   });
 
   final FirebaseAuth? auth;
   final VoidCallback? onAuthenticated;
   final VoidCallback? onSignedOut;
+
+  /// When false (auth gate), success does not pop the route.
+  final bool popOnSuccess;
+
+  /// When false, hides the offline test sign-in control on the no-Firebase card.
+  final bool allowOfflineTestSignIn;
 
   /// Opens the SimpleAuth screen directly via Navigator.
   static Future<void> show(
@@ -88,17 +96,28 @@ class SimpleAuthScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      FilledButton.icon(
-                        key: const Key('auth_offline_sign_in_button'),
-                        onPressed: () {
-                          onAuthenticated?.call();
-                          Navigator.of(context).pop();
-                        },
-                        icon: const Icon(Icons.login_rounded, size: 16),
-                        label: const Text(
-                          'Enter Community (Offline / Test Mode)',
+                      if (allowOfflineTestSignIn)
+                        FilledButton.icon(
+                          key: const Key('auth_offline_sign_in_button'),
+                          onPressed: () {
+                            onAuthenticated?.call();
+                            if (popOnSuccess && context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: const Icon(Icons.login_rounded, size: 16),
+                          label: const Text(
+                            'Enter Community (Offline / Test Mode)',
+                          ),
+                        )
+                      else
+                        Text(
+                          'Sign-in requires a connection to our authentication service.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -184,13 +203,13 @@ class SimpleAuthScreen extends StatelessWidget {
               actions: [
                 AuthStateChangeAction<UserCreated>((context, state) {
                   onAuthenticated?.call();
-                  if (context.mounted) {
+                  if (popOnSuccess && context.mounted) {
                     Navigator.of(context).pop();
                   }
                 }),
                 AuthStateChangeAction<SignedIn>((context, state) {
                   onAuthenticated?.call();
-                  if (context.mounted) {
+                  if (popOnSuccess && context.mounted) {
                     Navigator.of(context).pop();
                   }
                 }),
