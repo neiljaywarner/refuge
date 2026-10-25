@@ -1,5 +1,6 @@
 ### 🌱 Community & Organizers (Start Here)
 * **[🏠 Welcome](Home)**
+* **[🤝 Business & Partnership Overview](Business-Partner-Overview)**
 * **[🤝 How You Can Help](How-You-Can-Help-Volunteer-Guide)**
 * **[📅 Plan through October 31](Non-Technical-Roadmap-to-Oct-31)**
 * **[🏘️ Our Community Spaces](Belong-Community-Guide)**

@@ -21,10 +21,11 @@ We are gently moving from Circle into Belong. Both places stay open through **Oc
 
 ---
 
-## Guides for members and organizers
+## Guides for members, organizers, and partners
 
 | Guide | Who it is for | What you will find |
 | --- | --- | --- |
+| **[Business & Partnership Overview](Business-Partner-Overview)** | Potential partners and advisors | Executive summary, 37signals philosophy, commercial opportunity, and business FAQ |
 | **[How you can help](How-You-Can-Help-Volunteer-Guide)** | Everyone | The easy start for this week, including testing and putting Belong on your phone |
 | **[What to look for](How-You-Can-Help-Volunteer-Guide#what-to-look-for)** | Willing helpers | Calm feel, contrast, labels, voting, feedback, and whether the rooms feel warm |
 | **[Put Belong on your phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)** | Anyone with a phone | iPhone (Safari) and Android (Chrome) steps, with Android pictures |
