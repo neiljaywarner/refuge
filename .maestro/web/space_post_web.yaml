@@ -28,6 +28,11 @@ name: Belong web space post
     visible: ".*Share an unhurried thought.*"
     timeout: 20000
 - tapOn: ".*Share an unhurried thought.*"
+- extendedWaitUntil:
+    visible: "Publish Reflection"
+    timeout: 10000
+- tapOn:
+    id: "reflection_composer"
 - inputText: "Quiet note grokbot-space-post"
 - tapOn: "Publish Reflection"
 - extendedWaitUntil:

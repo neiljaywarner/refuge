@@ -180,7 +180,14 @@ class ReflectionCard extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 8),
-          Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
+          Semantics(
+            container: true,
+            label: post.content,
+            child: Text(
+              post.content,
+              style: const TextStyle(fontSize: 13, height: 1.45),
+            ),
+          ),
           if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 10),
             ClipRRect(

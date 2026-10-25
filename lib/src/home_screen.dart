@@ -306,7 +306,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   legacyMessage: quietDigestSnapshot.data,
                   isContrast: isContrast,
                 ),
-              if (!isDesktop && selectedSpace.value != 'saved_for_later')
+              // Wide native layouts use the create-post menu. Web keeps the
+              // composer on the feed so a desktop browser can publish without
+              // opening that menu.
+              if ((kIsWeb || !isDesktop) &&
+                  selectedSpace.value != 'saved_for_later')
                 ReflectionComposer(
                   selectedSpace: selectedSpace.value,
                   primaryColor: primaryColor,

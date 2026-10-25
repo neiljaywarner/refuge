@@ -122,11 +122,11 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   static MemberProfile? _persistedProfile;
   Future<void>? _publishFlight;
 
-  /// Set for this notifier when the member explicitly signs out.
+  /// Set while [signOut] is draining auth events that were already queued.
   ///
-  /// Auth updates are delivered on a later microtask. Without this latch a
-  /// sign-in event that was already queued puts the signed-in profile back
-  /// after [signOut] has cleared it.
+  /// Those events arrive on a later microtask. Leaving the latch set after
+  /// sign-out returns drops the next Firebase UI sign-in, so it is cleared
+  /// once the auth backend has signed out.
   bool _explicitlySignedOut = false;
 
   MemberProfile _profileFor(AuthSession session) {
@@ -362,24 +362,41 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
 
   Future<void> signOut() async {
     // Guest state is applied before the first await so callers that do not
-    // wait still observe a signed-out profile. Directory publish is finished
-    // first only after that, while the auth token may still be valid.
+    // wait still observe a signed-out profile. Auth sign-out runs before
+    // directory publish so a new sign-in is not undone by this method.
     _explicitlySignedOut = true;
     final pending = _publishFlight;
     _persistedProfile = null;
     ProfileStorageService.instance.clear();
     state = const MemberProfile.guest();
+
+    await ref.read(authRepositoryProvider).signOut();
+    if (!_explicitlySignedOut) return;
+
+    // Broadcast auth events are delivered one per microtask, and the next
+    // event is scheduled only after the previous one is delivered. Drain the
+    // queue that already existed when sign-out started before accepting a
+    // later sign-in.
+    for (var i = 0; i < 8; i++) {
+      await Future<void>.microtask(() {});
+      if (!_explicitlySignedOut) return;
+    }
+    _explicitlySignedOut = false;
+
+    final session = ref.read(authRepositoryProvider).currentSession();
+    if (session.isSignedIn) {
+      _applySession(session);
+    } else {
+      _persistedProfile = null;
+      ProfileStorageService.instance.clear();
+      state = const MemberProfile.guest();
+    }
+
     if (pending != null) {
       try {
         await pending;
       } catch (_) {}
     }
-    if (!_explicitlySignedOut) return;
-    await ref.read(authRepositoryProvider).signOut();
-    if (!_explicitlySignedOut) return;
-    _persistedProfile = null;
-    ProfileStorageService.instance.clear();
-    state = const MemberProfile.guest();
   }
 }
 
