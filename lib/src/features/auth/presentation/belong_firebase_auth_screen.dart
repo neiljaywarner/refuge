@@ -21,6 +21,7 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
 
     return SignInScreen(
       providers: [EmailAuthProvider()],
+      showPasswordVisibilityToggle: true,
       actions: [
         ForgotPasswordAction((context, email) {
           Navigator.of(context).push(
