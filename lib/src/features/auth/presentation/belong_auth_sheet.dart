@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../account_deletion/data/account_deletion_provider.dart';
+import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../../profile/domain/member_profile.dart';
 import '../domain/auth_exception.dart';
@@ -62,6 +64,7 @@ class BelongAuthSheet extends HookConsumerWidget {
     final isLoading = useState<bool>(false);
     final errorMessage = useState<String?>(null);
     final successMessage = useState<String?>(null);
+    final pendingReturnUserId = useState<String?>(null);
 
     final allAffiliationOptions = [
       ...brand.fellowshipAffiliationOptions,
@@ -102,6 +105,9 @@ class BelongAuthSheet extends HookConsumerWidget {
         }
       } catch (e) {
         final authEx = AuthException.fromFirebase(e);
+        if (authEx.code == 'account-soft-deleted') {
+          pendingReturnUserId.value = authEx.userId;
+        }
         errorMessage.value = authEx.message;
       } finally {
         isLoading.value = false;
@@ -204,6 +210,9 @@ class BelongAuthSheet extends HookConsumerWidget {
         }
       } catch (e) {
         final authEx = AuthException.fromFirebase(e);
+        if (authEx.code == 'account-soft-deleted') {
+          pendingReturnUserId.value = authEx.userId;
+        }
         errorMessage.value = authEx.message;
       } finally {
         isLoading.value = false;
@@ -448,7 +457,40 @@ class BelongAuthSheet extends HookConsumerWidget {
               ],
 
               // Tab 0: Sign In
-              if (activeTabIndex.value == 0) ...[
+              if (pendingReturnUserId.value != null) ...[
+                ReturnAfterDeletePanel(
+                  onRestore: () async {
+                    final userId = pendingReturnUserId.value;
+                    if (userId == null) return;
+                    await ref
+                        .read(accountDeletionRepositoryProvider)
+                        .restoreSelf(userId: userId, confirmed: true);
+                    ref
+                        .read(memberProfileProvider.notifier)
+                        .publishDirectoryAfterRestore();
+                    pendingReturnUserId.value = null;
+                    errorMessage.value = null;
+                    final email = emailController.text.trim();
+                    final password = passwordController.text;
+                    if (password.isNotEmpty) {
+                      await ref
+                          .read(memberProfileProvider.notifier)
+                          .signInWithPassword(email: email, password: password);
+                    } else {
+                      await ref
+                          .read(memberProfileProvider.notifier)
+                          .signInWithMagicLink(
+                            email: email,
+                            emailLink: magicLinkInputController.text.trim(),
+                          );
+                    }
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                  onStayDeleted: () async {
+                    pendingReturnUserId.value = null;
+                  },
+                ),
+              ] else if (activeTabIndex.value == 0) ...[
                 TextField(
                   key: const Key('auth_sign_in_email_field'),
                   controller: emailController,
@@ -518,7 +560,8 @@ class BelongAuthSheet extends HookConsumerWidget {
               ],
 
               // Tab 1: Register
-              if (activeTabIndex.value == 1) ...[
+              if (activeTabIndex.value == 1 &&
+                  pendingReturnUserId.value == null) ...[
                 TextField(
                   key: const Key('auth_register_display_name_field'),
                   controller: displayNameController,
@@ -710,7 +753,8 @@ class BelongAuthSheet extends HookConsumerWidget {
               ],
 
               // Tab 2: Magic Link
-              if (activeTabIndex.value == 2) ...[
+              if (activeTabIndex.value == 2 &&
+                  pendingReturnUserId.value == null) ...[
                 Text(
                   'Sign in without memorizing a password. We will email you a secure link that signs you in with one click.',
                   style: TextStyle(

@@ -13,6 +13,7 @@ Sample members only: David M., Fellow Member, and Sarah K. These checks do not u
 | Notification bell (sample data) | Opens Notifications and taps one unread item from Sarah K. | That item's unread mark clears. The other item stays unread, and the bell still shows a count. A Mentions filter with nothing in it says there are no mentions right now. This is the bell inside the app. | [#415](https://github.com/neiljaywarner/refuge/issues/415) |
 | Direct message (sample data) | Starts a message, chooses a sample member, and sends a short note | The conversation opens with that note. Sending with nobody chosen, or with no words, shows a gentle prompt. Choosing two people opens a group thread. This is one screen with sample people. | [#415](https://github.com/neiljaywarner/refuge/issues/415) |
 | Text post and image post (sample data) | Publishes a short reflection, then a picture post with a description | The reflection appears on the feed. The picture post keeps the picture address, the description, and the topic. No live server is contacted. | [#415](https://github.com/neiljaywarner/refuge/issues/415) |
+| Delete and come back | A synthetic member deletes their account, then types RESTORE | Sign-in turns off. An organizer unban does not turn it back on. The same member can sign in again after RESTORE. | [#589](https://github.com/neiljaywarner/refuge/issues/589) |
 
 ## Screen walkthrough, 24 Oct 2026
 

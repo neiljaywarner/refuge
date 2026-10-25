@@ -5,7 +5,7 @@
 ///
 /// Every build uses `lib/main_dev.dart`, `FLAVOR=dev`, and
 /// `ENABLE_SERVERPOD=false`. Upload is refused unless `aapt dump badging`
-/// reports `com.belongonthespectrum.refuge.dev` and label `Belong (Dev)`.
+/// reports `com.belongonthespectrum.refuge.dev` and label `[DEV] Belong on the Spectrum`.
 ///
 /// ## Usage
 /// ```bash

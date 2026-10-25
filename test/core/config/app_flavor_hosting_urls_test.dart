@@ -3,6 +3,16 @@ import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 
 void main() {
+  test('non-production flavors use VGV-style launcher titles', () {
+    expect(
+      AppFlavor.dev.launcherTitle,
+      '[DEV] ${AppFlavor.productionMarketingName}',
+    );
+    expect(AppFlavor.dev.environmentTag, 'DEV');
+    expect(AppFlavor.prod.launcherTitle, AppFlavor.productionMarketingName);
+    expect(AppFlavor.prod.environmentTag, isNull);
+  });
+
   test('web app URLs use Firebase Hosting .web.app (dev prefix / prod bare)', () {
     expect(AppFlavor.hostingBaseDomain, 'belongonthespectrum.web.app');
     expect(AppFlavor.dev.urlPrefix, 'dev-');

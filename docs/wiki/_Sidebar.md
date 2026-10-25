@@ -15,6 +15,7 @@
 * **[👤 Dev example accounts (David M. & Sarah K.)](Dev-Example-Accounts)**
 * **[🌿 Calm Design and Sensory Comfort](Calm-Tech-and-Accessibility)**
 * **[🌸 Gentle Notifications](Notifications-Product-Guide)**
+* **[🚪 Delete your account, and come back](Delete-and-Return)**
 * **[📋 Notes for First Meeting with Human Reviewer](https://github.com/neiljaywarner/refuge/blob/main/notes_for_first_meeting_with_human_reviewer.md)**
 
 ### 🛠️ Engineering, Architecture & Mentoring

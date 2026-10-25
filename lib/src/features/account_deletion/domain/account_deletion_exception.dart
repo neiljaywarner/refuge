@@ -14,6 +14,24 @@ abstract final class AccountDeletionMessages {
 
   static const signInBlocked =
       'This account was deleted. Sign-in is turned off. Your posts are still here.';
+
+  static const restorePhrase = 'RESTORE';
+
+  static const restoreConfirmationRequired =
+      'Type RESTORE to come back to this account.';
+
+  static const nothingToRestore = 'This account is not deleted.';
+
+  static const deleteExplanation =
+      'This turns off sign-in and hides you from the member list. '
+      'Your posts stay. This is not a full erase. '
+      'Only you can come back later, by signing in and typing RESTORE. '
+      'Permanent deletion is a later decision.';
+
+  static const returnExplanation =
+      'You deleted this account. Your posts are still here. '
+      'Only you can come back, by typing RESTORE. '
+      'An organizer cannot turn this back on for you.';
 }
 
 /// Failure while a member deletes their own account.
