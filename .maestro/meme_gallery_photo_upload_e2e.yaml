@@ -10,9 +10,8 @@ tags:
 # Choose Photo, assert preview + attach, then confirm the composer banner.
 # Requires photos permission; does not open the system camera UI.
 
-- launchApp:
-    clearState: false
-
+# Permissions and media first, then launch. setPermissions after launch
+# can leave this Pixel on the home screen.
 - setPermissions:
     permissions:
       camera: allow
@@ -20,6 +19,10 @@ tags:
 
 - addMedia:
     - "assets/belong_maestro_test_photo.png"
+
+- launchApp:
+    clearState: false
+    stopApp: true
 
 - extendedWaitUntil:
     visible: ".*Vote & Feedback.*"
@@ -46,24 +49,34 @@ tags:
     timeout: 10000
 
 - tapOn: ".*Choose Photo.*"
+- extendedWaitUntil:
+    visible: ".*Photos.*"
+    timeout: 15000
+
+# Android photo picker stacks notices (access, then cloud backup) over the grid.
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Dismiss.*"
+          commands:
+            - tapOn: ".*Dismiss.*"
+            - waitForAnimationToEnd
+
+# Top-left gallery cell on a 1080-wide phone, after the backup notice is gone.
+# A second tap confirms when the system picker asks for Done.
+- tapOn:
+    point: "17%, 54%"
 - waitForAnimationToEnd:
-    timeout: 8000
-
-# Android photo picker (API 33+): tap the injected test image by filename when shown.
+    timeout: 4000
 - runFlow:
     when:
-      visible: ".*belong_maestro_test_photo.*"
+      visible: "Done"
     commands:
-      - tapOn: ".*belong_maestro_test_photo.*"
-
-# Fallback: first thumbnail in the picker grid.
-- runFlow:
-    when:
-      notVisible: ".*Selected Photo Preview.*"
-    commands:
-      - tapOn:
-          point: "20%, 35%"
-      - waitForAnimationToEnd
+      - tapOn: "Done"
+      - waitForAnimationToEnd:
+          timeout: 8000
 
 - extendedWaitUntil:
     visible: ".*Selected Photo Preview.*"
