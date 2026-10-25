@@ -3,11 +3,18 @@
 /// One command that ships a release to every channel with the **same**
 /// honest, plain-language release notes:
 ///
-/// 1. Builds Flutter Web (and, with `--distribute-android`, a release APK).
-/// 2. Deploys a Firebase Hosting **preview channel** and captures its URL.
+/// 1. Builds Flutter Web **prod** (`-t lib/main_prod.dart`, `FLAVOR=prod`)
+///    and, with `--distribute-android`, a release APK the same way.
+/// 2. Deploys a Firebase Hosting **preview channel** on the prod site and
+///    captures its URL.
 /// 3. Generates `build/RELEASE_NOTES_<version>.md` from merged PR titles since
 ///    the previous tag, plus optional hand-written highlights.
 /// 4. Optionally deploys production (`https://belongonthespectrum.web.app`).
+///    That uses `firebase.json` only. It does not read `firebase.dev.json`.
+///
+/// The stable dev site (`https://dev-belongonthespectrum.web.app`) is **not**
+/// part of this command. Use `tool/deploy_dev_web.dart` for that. Preview
+/// channels are short-lived release candidates, not the dev site.
 /// 5. Optionally creates/updates the GitHub Release.
 /// 6. Optionally uploads the APK to Firebase App Distribution for a tester
 ///    group (default `pre-alpha-testers`). Firebase emails the release notes,
@@ -136,14 +143,37 @@ Future<void> main(List<String> args) async {
   }
 
   if (!skipBuild) {
-    _log('Building Flutter Web...');
-    await _run(_bin('flutter'), stamp.flutterArgs('web'));
+    _log('Building Flutter Web (prod flavor)...');
+    await _run(
+      _bin('flutter'),
+      stamp.flutterArgs(
+        'web',
+        targetFile: 'lib/main_prod.dart',
+        flavor: 'prod',
+      ),
+    );
     await _writeWebVersionJson(version, stamp);
     if (android) {
-      _log('Building release APK...');
-      await _run(_bin('flutter'), stamp.flutterArgs('apk'));
+      _log('Building release APK (prod flavor)...');
+      await _run(
+        _bin('flutter'),
+        stamp.flutterArgs(
+          'apk',
+          targetFile: 'lib/main_prod.dart',
+          flavor: 'prod',
+        ),
+      );
     }
   } else {
+    final cached = File('build/web/version.json');
+    final mismatch = cachedWebFlavorMismatch(
+      versionJson: cached.existsSync() ? cached.readAsStringSync() : null,
+      expectedFlavor: 'prod',
+    );
+    if (mismatch != null) {
+      stderr.writeln(mismatch);
+      exit(65);
+    }
     _log(
       'Skipping Flutter build. Existing artifacts keep their previous dart-defines.',
     );
@@ -329,6 +359,7 @@ Future<void> _writeWebVersionJson(
     releaseTag: version,
     pubspecVersionLine: versionLine,
     stamp: stamp,
+    flavor: 'prod',
   );
   final out = File('build/web/version.json');
   if (!out.parent.existsSync()) {

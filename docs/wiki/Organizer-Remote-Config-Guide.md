@@ -50,6 +50,6 @@ In **Belong on the Spectrum**, we connected the **"Message from the Organizer"**
 ## 4. How `dev` vs. `prod` Flavors Keep You Safe
 
 We configured separate **`dev` (Development)** and **`prod` (Production)** environments (documented in **ADR 0006** and **Issue #20**):
-- Developers and students testing new features use the **`dev`** flavor, which connects to a separate test configuration so test posts and test analytics **never** mix with real **Belong on the Spectrum** community members.
-- Real community members on `belongonthespectrum.com` always use the **`prod`** flavor.
+- Developers and students testing new features use the **`dev`** flavor (`https://dev-belongonthespectrum.web.app/`), which connects to a separate test configuration so test posts and test analytics **never** mix with real **Belong on the Spectrum** community members.
+- Real community members on the web app (`https://belongonthespectrum.web.app/`) always use the **`prod`** flavor. The marketing site at `belongonthespectrum.com` is separate.
 - When you want to send native mobile pop-up announcements in the future, **`firebase_in_app_messaging`** is also pre-installed for Android & iOS alongside our cross-platform Web/Mobile **Remote Config** banner!

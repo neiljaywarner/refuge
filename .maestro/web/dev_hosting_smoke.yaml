@@ -1,0 +1,16 @@
+url: https://dev-belongonthespectrum.web.app
+name: Dev Hosting smoke (read-only)
+tags:
+  - live-dev
+---
+# Opens the stable dev web app. Does not sign in, post, or vote.
+# Excluded from `maestro test .maestro/web` via excludeTags so local
+# localhost flows stay offline. Run this file directly:
+#   maestro test .maestro/web/dev_hosting_smoke.yaml
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 60000
+- assertVisible: "Belong"
+- assertNotVisible: "Site Not Found"
+- takeScreenshot: dev_hosting_smoke
