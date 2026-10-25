@@ -465,6 +465,9 @@ class BelongAuthSheet extends HookConsumerWidget {
                     await ref
                         .read(accountDeletionRepositoryProvider)
                         .restoreSelf(userId: userId, confirmed: true);
+                    ref
+                        .read(memberProfileProvider.notifier)
+                        .publishDirectoryAfterRestore();
                     pendingReturnUserId.value = null;
                     errorMessage.value = null;
                     final email = emailController.text.trim();
