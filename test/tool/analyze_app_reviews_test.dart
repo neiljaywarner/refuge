@@ -298,4 +298,35 @@ void main() {
       expect(markdown, contains('Beloved Features to Protect'));
     });
   });
+
+  group('Scale to 240 and 333 Reviews (#525)', () {
+    test('scales base review list to exact target counts (240 & 333)', () async {
+      final belongJson = jsonDecode(await File('test/fixtures/belong_reviews_sample.json').readAsString());
+      final baseReviews = parseBelongInAppFeedbackJson(belongJson);
+      expect(baseReviews.length, equals(20));
+
+      final scaled240 = scaleReviewsToCount(baseReviews, 240);
+      expect(scaled240.length, equals(240));
+
+      final report240 = ReviewSentimentReport(
+        appId: 'com.belongonthespectrum.sanctuary',
+        appName: 'Belong on the Spectrum',
+        reviews: scaled240,
+        targetPreset: ReviewTargetPreset.belong,
+      );
+      expect(report240.averageRating, closeTo(4.4, 0.05));
+      expect(report240.generateMarkdown(), contains('Total Reviews Analyzed:** 240'));
+
+      final scaled333 = scaleReviewsToCount(baseReviews, 333);
+      expect(scaled333.length, equals(333));
+      final report333 = ReviewSentimentReport(
+        appId: 'com.belongonthespectrum.sanctuary',
+        appName: 'Belong on the Spectrum',
+        reviews: scaled333,
+        targetPreset: ReviewTargetPreset.belong,
+      );
+      expect(report333.averageRating, closeTo(4.4, 0.05));
+      expect(report333.generateMarkdown(), contains('Total Reviews Analyzed:** 333'));
+    });
+  });
 }

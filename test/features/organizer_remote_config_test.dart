@@ -77,25 +77,35 @@ void main() {
     );
 
     test(
-      'Scenario: AppFlavor resolves refuge applicationId suffixes and subdomain URL prefixes (#389, #472)',
+      'Scenario: AppFlavor resolves refuge applicationId suffixes and Firebase Hosting URLs (#389, #472)',
       () {
         expect(AppFlavor.baseApplicationId, 'com.belongonthespectrum.refuge');
+        expect(AppFlavor.hostingBaseDomain, 'belongonthespectrum.web.app');
+        expect(
+          AppFlavor.marketingWebsiteUrl,
+          'https://www.belongonthespectrum.com/',
+        );
 
         expect(AppFlavor.dev.applicationIdSuffix, '.dev');
         expect(
           AppFlavor.dev.applicationId,
           'com.belongonthespectrum.refuge.dev',
         );
-        expect(AppFlavor.dev.urlPrefix, 'dev.');
+        expect(AppFlavor.dev.urlPrefix, 'dev-');
         expect(
           AppFlavor.dev.websiteUrl,
-          'https://dev.belongonthespectrum.com/',
+          'https://dev-belongonthespectrum.web.app/',
         );
         expect(
           AppFlavor.dev.firebaseHostingUrl,
           'https://dev-belongonthespectrum.web.app',
         );
+        expect(
+          AppFlavor.dev.shortDomainLabel,
+          'dev-belongonthespectrum.web.app',
+        );
 
+        // stg/qa remain enum hooks for #40; URLs follow the same Hosting pattern.
         expect(AppFlavor.stg.applicationIdSuffix, '.stg');
         expect(
           AppFlavor.stg.applicationId,
@@ -103,7 +113,7 @@ void main() {
         );
         expect(
           AppFlavor.stg.websiteUrl,
-          'https://stg.belongonthespectrum.com/',
+          'https://stg-belongonthespectrum.web.app/',
         );
 
         expect(AppFlavor.qa.applicationIdSuffix, '.qa');
@@ -113,7 +123,7 @@ void main() {
         );
         expect(
           AppFlavor.qa.websiteUrl,
-          'https://qa.belongonthespectrum.com/',
+          'https://qa-belongonthespectrum.web.app/',
         );
 
         expect(AppFlavor.prod.applicationIdSuffix, '');
@@ -124,20 +134,30 @@ void main() {
         expect(AppFlavor.prod.urlPrefix, '');
         expect(
           AppFlavor.prod.websiteUrl,
-          'https://www.belongonthespectrum.com/',
+          'https://belongonthespectrum.web.app/',
         );
         expect(
           AppFlavor.prod.firebaseHostingUrl,
           'https://belongonthespectrum.web.app',
         );
+        expect(
+          AppFlavor.prod.shortDomainLabel,
+          'belongonthespectrum.web.app',
+        );
 
         expect(
           CommunityBrandConfig.forFlavor(AppFlavor.dev).websiteUrl,
-          'https://dev.belongonthespectrum.com/',
+          'https://dev-belongonthespectrum.web.app/',
         );
         expect(
           CommunityBrandConfig.forFlavor(AppFlavor.prod).websiteUrl,
-          'https://www.belongonthespectrum.com/',
+          'https://belongonthespectrum.web.app/',
+        );
+        expect(
+          const CommunityBrandConfig.belong().websiteUrlForFlavor(
+            AppFlavor.dev,
+          ),
+          'https://dev-belongonthespectrum.web.app/',
         );
       },
     );

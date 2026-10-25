@@ -1,0 +1,15 @@
+name: belong_lints
+description: Analyzer plugin that keeps Belong diagnostics on AppLogger and flutter_hooks controllers.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  analysis_server_plugin: ^0.3.0
+  analyzer: ^13.0.0
+  analyzer_plugin: ^0.14.12
+
+dev_dependencies:
+  lints: ^6.0.0

@@ -38,6 +38,12 @@ class _RefugeAppState extends State<RefugeApp> {
     ..setMode(widget.initialTheme);
 
   @override
+  void dispose() {
+    _themeNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => ProviderScope(
     overrides: [
       postRepositoryProvider.overrideWithValue(widget.repository),
