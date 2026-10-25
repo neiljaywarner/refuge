@@ -41,7 +41,7 @@ class SystemInsets {
         ? mediaQuery.padding.bottom
         : math.max(mediaQuery.padding.bottom, mediaQuery.viewPadding.bottom);
     return mediaQuery.copyWith(
-      padding: EdgeInsets.fromLTRB(
+      padding: .fromLTRB(
         math.max(mediaQuery.padding.left, mediaQuery.viewPadding.left),
         math.max(mediaQuery.padding.top, mediaQuery.viewPadding.top),
         math.max(mediaQuery.padding.right, mediaQuery.viewPadding.right),
@@ -56,7 +56,7 @@ class SystemInsets {
     final nav = mediaQuery.viewInsets.bottom > 0
         ? 0.0
         : math.max(mediaQuery.padding.bottom, mediaQuery.viewPadding.bottom);
-    return EdgeInsets.fromLTRB(
+    return .fromLTRB(
       math.max(40, math.max(mediaQuery.padding.left, mediaQuery.viewPadding.left)),
       math.max(24, math.max(mediaQuery.padding.top, mediaQuery.viewPadding.top)),
       math.max(40, math.max(mediaQuery.padding.right, mediaQuery.viewPadding.right)),
@@ -86,7 +86,7 @@ class SystemBottomInset extends StatelessWidget {
     );
     return Padding(
       key: insetKey,
-      padding: EdgeInsets.only(bottom: inset),
+      padding: .only(bottom: inset),
       child: MediaQuery(data: cleared, child: child),
     );
   }

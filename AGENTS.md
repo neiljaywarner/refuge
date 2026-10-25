@@ -18,6 +18,11 @@
 - **Dart MCP Server**: ALWAYS use `analyze_files` and `run_tests` via Dart MCP instead of raw shell commands.
 - **Patrol MCP Server & Device Driving**: Use Patrol MCP or `tool/capture_device.sh` targeting connected Pixels or falling back to `emulator-5554` or Chrome.
 
+## Dart style (dot shorthands & primary constructors)
+
+- Prefer **dot shorthands** when the context type is obvious (`padding: const .all(12)`, `borderRadius: .circular(8)`). See [#610](https://github.com/neiljaywarner/refuge/issues/610) and `docs/wiki/CI-CD-FAQ.md`.
+- Prefer **primary constructors** on small immutable value types (see `lib/src/core/geometry/point.dart` and [#609](https://github.com/neiljaywarner/refuge/issues/609)).
+
 ## 2. Strict Ticket-Driven Development for EVERY Prompt
 - 1 Issue = 1 Worktree = 1 PR for EVERY single prompt without exception.
 - No direct commits to `main`.
