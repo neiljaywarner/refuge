@@ -118,12 +118,21 @@ class _AuthGateState extends ConsumerState<AuthGate> {
             email: account.email,
             password: devExamplePassword,
             displayName: account.displayName,
-            icocChurchAffiliation: devExampleChurchAffiliation,
+            bio: account.bio,
+            comfortBadges: account.comfortBadges,
+            icocChurchAffiliation: account.icocChurchAffiliation,
           );
         } else {
           rethrow;
         }
       }
+      notifier.signIn(
+        displayName: account.displayName,
+        email: account.email,
+        bio: account.bio,
+        comfortBadges: account.comfortBadges,
+        icocChurchAffiliation: account.icocChurchAffiliation,
+      );
     } on AuthException catch (e) {
       setState(() => _devExampleError = e.message);
     } catch (e) {
@@ -188,7 +197,7 @@ class _SignInWall extends StatelessWidget {
                     onPressed: passwordReady && !devExampleLoading
                         ? () => onDevExampleTap(account)
                         : null,
-                    child: Text('Tap here to use ${account.displayName}'),
+                    child: Text(account.shortcutLabel),
                   ),
                 ],
                 if (devExampleError != null) ...[
