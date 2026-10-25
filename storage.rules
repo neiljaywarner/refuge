@@ -1,0 +1,51 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Circle-style members-only community (#601, #620).
+    // Unauthenticated guests and anonymous Firebase sessions cannot read or write storage.
+    function isSignedInMember() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // 1. Member Avatars: readable by signed-in members, write only own avatar (<5MB image)
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if isSignedInMember();
+      allow write: if isSignedInMember()
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // 2. Post Media (memes, photos, scripture art): members read and create (<10MB image)
+    match /posts/{spaceSlug}/{allPaths=**} {
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember()
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow update, delete: if false;
+    }
+
+    // 3. Feedback Attachments: signed-in members can attach screenshots/diagnostics, no client read
+    match /feedback/{allPaths=**} {
+      allow read: if false; // only organizers read via Firebase Console or Admin SDK
+      allow create: if isSignedInMember()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow update, delete: if false;
+    }
+
+    // 4. Diagnostic Logs: members can upload client diagnostic logs, no client read
+    match /diagnostics/{allPaths=**} {
+      allow read: if false;
+      allow create: if isSignedInMember()
+        && request.resource.size < 2 * 1024 * 1024;
+      allow update, delete: if false;
+    }
+
+    // Default deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

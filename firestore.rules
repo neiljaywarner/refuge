@@ -17,7 +17,10 @@ service cloud.firestore {
 
     // 2. Member Feedback (Literal 3-intent cards)
     match /member_feedback/{feedbackId} {
-      allow create, read, update, delete: if isSignedInMember();
+      allow create: if isSignedInMember();
+      allow read: if isSignedInMember()
+        && (resource.data.authorId == request.auth.uid || resource.data.userId == request.auth.uid);
+      allow update, delete: if false;
     }
 
     // 3. Fellowship Reflections & Posts
@@ -42,20 +45,29 @@ service cloud.firestore {
 
     // 5. Discussion Comments & Nested Replies
     match /comments/{commentId} {
-      allow read, create, update, delete: if isSignedInMember();
+      allow read, create: if isSignedInMember();
+      allow update, delete: if isSignedInMember()
+        && (request.auth.uid == resource.data.authorId
+          || request.auth.uid == resource.data.authorUid
+          || request.auth.uid == resource.data.userId);
     }
 
     // 6. Admin Soft-Deleted Users Table (#356)
     match /soft_deleted_users/{userId} {
-      allow read, write: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow write: if isSignedInMember() && request.auth.token.email != null;
     }
 
     // 7. Reflection mirror kept while Serverpod Cloud is turned off (#212).
     match /reflections/{postId} {
-      allow read, create, update, delete: if isSignedInMember();
+      allow read, create: if isSignedInMember();
+      allow update, delete: if isSignedInMember()
+        && request.auth.uid == resource.data.authorId;
     }
     match /reflections_dev/{postId} {
-      allow read, create, update, delete: if isSignedInMember();
+      allow read, create: if isSignedInMember();
+      allow update, delete: if isSignedInMember()
+        && request.auth.uid == resource.data.authorId;
     }
 
     // 8. Direct messages (#441)
