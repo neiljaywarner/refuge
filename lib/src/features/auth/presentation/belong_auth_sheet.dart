@@ -21,12 +21,11 @@ class BelongAuthSheet extends HookConsumerWidget {
   final int initialTab;
 
   /// Shows the dialog or sheet responsively.
-  static Future<void> show(BuildContext context, {int initialTab = 0}) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => BelongAuthSheet(initialTab: initialTab),
-    );
-  }
+  static Future<void> show(BuildContext context, {int initialTab = 0}) =>
+      showDialog<void>(
+        context: context,
+        builder: (_) => BelongAuthSheet(initialTab: initialTab),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

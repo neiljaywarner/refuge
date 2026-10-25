@@ -32,19 +32,17 @@ class StoredDirectMessage {
     return sorted.join('_');
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'threadId': threadId,
-      'senderId': senderId,
-      'senderName': senderName,
-      'recipientIds': recipientIds,
-      'recipientNames': recipientNames,
-      'participantIds': participantIds,
-      if (subject != null && subject!.isNotEmpty) 'subject': subject,
-      'content': content,
-      'sentAt': sentAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'threadId': threadId,
+    'senderId': senderId,
+    'senderName': senderName,
+    'recipientIds': recipientIds,
+    'recipientNames': recipientNames,
+    'participantIds': participantIds,
+    if (subject != null && subject!.isNotEmpty) 'subject': subject,
+    'content': content,
+    'sentAt': sentAt.toIso8601String(),
+  };
 
   factory StoredDirectMessage.fromMap(String id, Map<String, dynamic> data) {
     final sentRaw = data['sentAt'];

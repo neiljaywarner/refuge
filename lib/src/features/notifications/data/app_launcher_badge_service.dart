@@ -18,10 +18,9 @@ class AppLauncherBadgeService {
     _currentBadgeCount = count < 0 ? 0 : count;
     try {
       if (kIsWeb) return false;
-      final result = await _channel.invokeMethod<bool>(
-        'setBadgeCount',
-        {'count': _currentBadgeCount},
-      );
+      final result = await _channel.invokeMethod<bool>('setBadgeCount', {
+        'count': _currentBadgeCount,
+      });
       return result ?? true;
     } on PlatformException catch (e) {
       if (kDebugMode) {
@@ -38,6 +37,6 @@ class AppLauncherBadgeService {
 }
 
 /// Riverpod provider for [AppLauncherBadgeService].
-final appLauncherBadgeServiceProvider = Provider<AppLauncherBadgeService>((ref) {
-  return AppLauncherBadgeService();
-});
+final appLauncherBadgeServiceProvider = Provider<AppLauncherBadgeService>(
+  (ref) => AppLauncherBadgeService(),
+);

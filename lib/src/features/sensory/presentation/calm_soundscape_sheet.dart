@@ -10,16 +10,13 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
   const CalmSoundscapeSheet({super.key});
 
   /// Helper to display this modal bottom sheet with safe padding.
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) =>
-          const SystemBottomInset(child: CalmSoundscapeSheet()),
-    );
-  }
+  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => const SystemBottomInset(child: CalmSoundscapeSheet()),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

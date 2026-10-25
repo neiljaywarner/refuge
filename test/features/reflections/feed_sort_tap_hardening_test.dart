@@ -34,15 +34,13 @@ class _GuestProfile extends MemberProfileNotifier {
 
 class _SignedInProfile extends MemberProfileNotifier {
   @override
-  MemberProfile build() {
-    return const MemberProfile(
-      displayName: 'Fellow Member',
-      email: 'member@belongonthespectrum.com',
-      bio: 'Church acoustics and quiet rest',
-      comfortBadges: ['Literal communication appreciated'],
-      isSignedIn: true,
-    );
-  }
+  MemberProfile build() => const MemberProfile(
+    displayName: 'Fellow Member',
+    email: 'member@belongonthespectrum.com',
+    bio: 'Church acoustics and quiet rest',
+    comfortBadges: ['Literal communication appreciated'],
+    isSignedIn: true,
+  );
 }
 
 void main() {

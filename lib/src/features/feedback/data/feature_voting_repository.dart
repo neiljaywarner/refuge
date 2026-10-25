@@ -87,15 +87,14 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
           StreamController<List<VotableFeatureItem>>.broadcast();
 
   @override
-  Stream<List<VotableFeatureItem>> watchFeatures() {
-    return streamController.stream.map((list) {
-      final votedIds = VoteStorageService.instance.getVotedFeatureIds();
-      return [
-        for (final item in list)
-          item.copyWith(userVoted: votedIds.contains(item.id)),
-      ];
-    });
-  }
+  Stream<List<VotableFeatureItem>> watchFeatures() =>
+      streamController.stream.map((list) {
+        final votedIds = VoteStorageService.instance.getVotedFeatureIds();
+        return [
+          for (final item in list)
+            item.copyWith(userVoted: votedIds.contains(item.id)),
+        ];
+      });
 
   @override
   List<VotableFeatureItem> loadInitialFeatures() {

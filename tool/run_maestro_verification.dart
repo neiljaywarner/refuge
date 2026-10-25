@@ -215,7 +215,14 @@ class MaestroVerificationRunner {
     var anyFailures = false;
 
     for (final flow in flowsToRun) {
-      final command = ['maestro', '--device', device, 'test', '--env', 'AUTOMATION_TOOL=maestro'];
+      final command = [
+        'maestro',
+        '--device',
+        device,
+        'test',
+        '--env',
+        'AUTOMATION_TOOL=maestro',
+      ];
       if (requestedFlow == null || requestedFlow.isEmpty) {
         command.addAll(['--exclude-tags', maestroDefaultSuiteExcludedTag]);
       } else if (await _flowExcludedFromDefaultSuite(flow)) {

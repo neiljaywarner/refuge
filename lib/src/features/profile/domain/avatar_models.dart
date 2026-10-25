@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 
 /// Image input source for member avatars.
@@ -16,14 +17,17 @@ enum AvatarImageSource {
 enum AvatarPermissionStatus {
   granted('Permission granted'),
   denied('Permission denied — you can grant access to continue'),
-  permanentlyDenied('Permission permanently denied — please enable in Settings'),
+  permanentlyDenied(
+    'Permission permanently denied — please enable in Settings',
+  ),
   restricted('Permission restricted by system policy');
 
   const AvatarPermissionStatus(this.description);
   final String description;
 
   bool get isGranted => this == AvatarPermissionStatus.granted;
-  bool get isPermanentlyDenied => this == AvatarPermissionStatus.permanentlyDenied;
+  bool get isPermanentlyDenied =>
+      this == AvatarPermissionStatus.permanentlyDenied;
   bool get isDenied => this == AvatarPermissionStatus.denied;
 }
 

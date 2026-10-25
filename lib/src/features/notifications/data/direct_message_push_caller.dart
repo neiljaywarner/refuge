@@ -13,11 +13,14 @@ import '../domain/direct_message_push_policy.dart';
 const directMessagePushFunctionId = 'dm-push';
 
 /// A delivered Firestore message is the only one that may ask for a card.
-bool shouldRequestDirectMessagePush(String outcomeName) => outcomeName == 'delivered';
+bool shouldRequestDirectMessagePush(String outcomeName) =>
+    outcomeName == 'delivered';
 
 /// Tells the Appwrite function about this phone, then returns.
 /// Failures stay on the device. The message itself is already stored.
-Future<void> registerDirectMessagePush(CalmNotificationPreferences prefs) async {
+Future<void> registerDirectMessagePush(
+  CalmNotificationPreferences prefs,
+) async {
   final token = prefs.fcmToken;
   final acceptable = shouldSendDirectMessagePush(
     enabled: prefs.enabled,

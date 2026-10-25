@@ -91,10 +91,7 @@ void main() {
       // postMiddle has 0 comments (score = 30 + 0 = 30)
       // postEarly has 2 comments (score = 15 + 4 = 19)
       final posts = [postEarly, postLate, postMiddle];
-      final commentCounts = {
-        '1': 2,
-        '3': 10,
-      };
+      final commentCounts = {'1': 2, '3': 10};
 
       final sorted = FeedSortService.sortPosts(
         posts,
@@ -125,32 +122,38 @@ void main() {
       expect(sorted.map((p) => p.id).toList(), ['1', '3', '2']);
     });
 
-    test('Sorts by "Alphabetical" case-insensitively by reflection content', () {
-      final posts = [postLate, postEarly, postMiddle];
-      final sorted = FeedSortService.sortPosts(
-        posts,
-        sortOption: FeedSortOption.alphabetical,
-      );
+    test(
+      'Sorts by "Alphabetical" case-insensitively by reflection content',
+      () {
+        final posts = [postLate, postEarly, postMiddle];
+        final sorted = FeedSortService.sortPosts(
+          posts,
+          sortOption: FeedSortOption.alphabetical,
+        );
 
-      // 'Apples...' (2) -> 'Morning...' (3) -> 'Zebras...' (1)
-      expect(sorted.map((p) => p.id).toList(), ['2', '3', '1']);
-    });
+        // 'Apples...' (2) -> 'Morning...' (3) -> 'Zebras...' (1)
+        expect(sorted.map((p) => p.id).toList(), ['2', '3', '1']);
+      },
+    );
 
-    test('Sorts by "For You" matching member special interests and care score', () {
-      final posts = [postEarly, postLate, postSpecialInterest];
+    test(
+      'Sorts by "For You" matching member special interests and care score',
+      () {
+        final posts = [postEarly, postLate, postSpecialInterest];
 
-      // User has special interest in acoustics
-      final userInterests = {'Acoustics', 'Cathedral'};
+        // User has special interest in acoustics
+        final userInterests = {'Acoustics', 'Cathedral'};
 
-      final sorted = FeedSortService.sortPosts(
-        posts,
-        sortOption: FeedSortOption.forYou,
-        userInterests: userInterests,
-      );
+        final sorted = FeedSortService.sortPosts(
+          posts,
+          sortOption: FeedSortOption.forYou,
+          userInterests: userInterests,
+        );
 
-      // postSpecialInterest matches interest tag -> priority 1
-      expect(sorted.first.id, '4');
-    });
+        // postSpecialInterest matches interest tag -> priority 1
+        expect(sorted.first.id, '4');
+      },
+    );
 
     test('Falls back gracefully without throwing when metadata maps are empty/null', () {
       final posts = [postLate, postEarly, postMiddle];
@@ -204,10 +207,10 @@ void main() {
         reactions: const {},
       );
 
-      final sorted = FeedSortService.sortPosts(
-        [identical1, identical2],
-        sortOption: FeedSortOption.latest,
-      );
+      final sorted = FeedSortService.sortPosts([
+        identical1,
+        identical2,
+      ], sortOption: FeedSortOption.latest);
 
       expect(sorted.map((p) => p.id).toList(), ['B', 'A']);
     });
@@ -261,79 +264,88 @@ void main() {
         reactions: const {},
       );
 
-      final sortedLikes = FeedSortService.sortPosts(
-        [postA, postB],
-        sortOption: FeedSortOption.likes,
-      );
-      expect(sortedLikes.map((p) => p.id).toList(), ['B', 'A']); // tiebreak by timestamp desc
+      final sortedLikes = FeedSortService.sortPosts([
+        postA,
+        postB,
+      ], sortOption: FeedSortOption.likes);
+      expect(sortedLikes.map((p) => p.id).toList(), [
+        'B',
+        'A',
+      ]); // tiebreak by timestamp desc
 
-      final sortedPopular = FeedSortService.sortPosts(
-        [postA, postB],
-        sortOption: FeedSortOption.popular,
-      );
+      final sortedPopular = FeedSortService.sortPosts([
+        postA,
+        postB,
+      ], sortOption: FeedSortOption.popular);
       expect(sortedPopular.map((p) => p.id).toList(), ['B', 'A']);
     });
 
-    test('Sorts Alphabetical with special characters and leading whitespace', () {
-      final postSpecial = Post(
-        id: '1',
-        authorName: 'User',
-        spaceKey: 'prayer',
-        toneTag: '[Comfort Only]',
-        content: '  #hashtag post',
-        timestamp: DateTime(2026, 10, 20),
-        reactions: const {},
-      );
+    test(
+      'Sorts Alphabetical with special characters and leading whitespace',
+      () {
+        final postSpecial = Post(
+          id: '1',
+          authorName: 'User',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: '  #hashtag post',
+          timestamp: DateTime(2026, 10, 20),
+          reactions: const {},
+        );
 
-      final postNormal = Post(
-        id: '2',
-        authorName: 'User',
-        spaceKey: 'prayer',
-        toneTag: '[Comfort Only]',
-        content: 'A regular post',
-        timestamp: DateTime(2026, 10, 20),
-        reactions: const {},
-      );
+        final postNormal = Post(
+          id: '2',
+          authorName: 'User',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: 'A regular post',
+          timestamp: DateTime(2026, 10, 20),
+          reactions: const {},
+        );
 
-      final sorted = FeedSortService.sortPosts(
-        [postNormal, postSpecial],
-        sortOption: FeedSortOption.alphabetical,
-      );
-      expect(sorted.map((p) => p.id).toList(), ['1', '2']);
-    });
+        final sorted = FeedSortService.sortPosts([
+          postNormal,
+          postSpecial,
+        ], sortOption: FeedSortOption.alphabetical);
+        expect(sorted.map((p) => p.id).toList(), ['1', '2']);
+      },
+    );
   });
 
   group('FeedSortService — For You matching details', () {
-    test('Short keywords (< 4 chars) are ignored to prevent noisy false positives', () {
-      final post = Post(
-        id: '1',
-        authorName: 'User',
-        spaceKey: 'study',
-        toneTag: '[Bible Deep-Dive]',
-        content: 'Reading the word of God',
-        timestamp: DateTime(2026, 10, 20),
-        reactions: const {},
-      );
+    test(
+      'Short keywords (< 4 chars) are ignored to prevent noisy false positives',
+      () {
+        final post = Post(
+          id: '1',
+          authorName: 'User',
+          spaceKey: 'study',
+          toneTag: '[Bible Deep-Dive]',
+          content: 'Reading the word of God',
+          timestamp: DateTime(2026, 10, 20),
+          reactions: const {},
+        );
 
-      final postOther = Post(
-        id: '2',
-        authorName: 'User',
-        spaceKey: 'study',
-        toneTag: '[Bible Deep-Dive]',
-        content: 'Other content',
-        timestamp: DateTime(2026, 10, 20),
-        reactions: const {'pray': 5},
-      );
+        final postOther = Post(
+          id: '2',
+          authorName: 'User',
+          spaceKey: 'study',
+          toneTag: '[Bible Deep-Dive]',
+          content: 'Other content',
+          timestamp: DateTime(2026, 10, 20),
+          reactions: const {'pray': 5},
+        );
 
-      final sorted = FeedSortService.sortPosts(
-        [post, postOther],
-        sortOption: FeedSortOption.forYou,
-        userInterests: {'the', 'in', 'of'}, // all < 4 chars
-      );
+        final sorted = FeedSortService.sortPosts(
+          [post, postOther],
+          sortOption: FeedSortOption.forYou,
+          userInterests: {'the', 'in', 'of'}, // all < 4 chars
+        );
 
-      // Should fall through to affinity score: postOther has 5 pray reactions -> ranked first
-      expect(sorted.first.id, '2');
-    });
+        // Should fall through to affinity score: postOther has 5 pray reactions -> ranked first
+        expect(sorted.first.id, '2');
+      },
+    );
 
     test('Matches toneTag when matching interest keyword', () {
       final post = Post(
@@ -365,26 +377,29 @@ void main() {
       expect(sorted.first.id, '1');
     });
 
-    test('Handles malformed regex chars in interest keyword without crashing', () {
-      final post = Post(
-        id: '1',
-        authorName: 'User',
-        spaceKey: 'prayer',
-        toneTag: '[Comfort Only]',
-        content: 'Some content',
-        timestamp: DateTime(2026, 10, 20),
-        reactions: const {},
-      );
+    test(
+      'Handles malformed regex chars in interest keyword without crashing',
+      () {
+        final post = Post(
+          id: '1',
+          authorName: 'User',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: 'Some content',
+          timestamp: DateTime(2026, 10, 20),
+          reactions: const {},
+        );
 
-      expect(
-        () => FeedSortService.sortPosts(
-          [post],
-          sortOption: FeedSortOption.forYou,
-          userInterests: {'[unclosed', '(parens*', 'C++'},
-        ),
-        returnsNormally,
-      );
-    });
+        expect(
+          () => FeedSortService.sortPosts(
+            [post],
+            sortOption: FeedSortOption.forYou,
+            userInterests: {'[unclosed', '(parens*', 'C++'},
+          ),
+          returnsNormally,
+        );
+      },
+    );
 
     test('New Activity with partial map sorts unlisted posts by timestamp', () {
       final base = DateTime(2026, 10, 20, 10, 0);
@@ -575,17 +590,124 @@ void main() {
       expect(visible.length, 3);
     });
 
-    test('isTestJunk correctly identifies all developer clutter variants (#611)', () {
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'blah your face', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'test 345', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'quick test', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'lorem ipsum dolor sit amet', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: 'cursor test fixture', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'grokbot', spaceKey: 's', toneTag: 't', content: 'hello', timestamp: DateTime.now(), reactions: const {})), isTrue);
-      expect(FeedQuery.isTestJunk(Post(id: 'j', authorName: 'A', spaceKey: 's', toneTag: 't', content: '  ', timestamp: DateTime.now(), reactions: const {})), isTrue);
+    test(
+      'isTestJunk correctly identifies all developer clutter variants (#611)',
+      () {
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'A',
+              spaceKey: 's',
+              toneTag: 't',
+              content: 'blah your face',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'A',
+              spaceKey: 's',
+              toneTag: 't',
+              content: 'test 345',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'A',
+              spaceKey: 's',
+              toneTag: 't',
+              content: 'quick test',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'A',
+              spaceKey: 's',
+              toneTag: 't',
+              content: 'lorem ipsum dolor sit amet',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'A',
+              spaceKey: 's',
+              toneTag: 't',
+              content: 'cursor test fixture',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'grokbot',
+              spaceKey: 's',
+              toneTag: 't',
+              content: 'hello',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'j',
+              authorName: 'A',
+              spaceKey: 's',
+              toneTag: 't',
+              content: '  ',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isTrue,
+        );
 
-      // Authentic posts are never flagged
-      expect(FeedQuery.isTestJunk(Post(id: 'c', authorName: 'Hannah', spaceKey: 'general_chat', toneTag: '[Fellowship]', content: 'Praying for everyone to have a calm evening in God.', timestamp: DateTime.now(), reactions: const {})), isFalse);
-    });
+        // Authentic posts are never flagged
+        expect(
+          FeedQuery.isTestJunk(
+            Post(
+              id: 'c',
+              authorName: 'Hannah',
+              spaceKey: 'general_chat',
+              toneTag: '[Fellowship]',
+              content: 'Praying for everyone to have a calm evening in God.',
+              timestamp: DateTime.now(),
+              reactions: const {},
+            ),
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 }

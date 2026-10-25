@@ -44,18 +44,16 @@ class SimpleAuthScreen extends StatelessWidget {
     BuildContext context, {
     VoidCallback? onAuthenticated,
     VoidCallback? onSignedOut,
-  }) {
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => SystemBottomInset(
-          child: SimpleAuthScreen(
-            onAuthenticated: onAuthenticated,
-            onSignedOut: onSignedOut,
-          ),
+  }) => Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      builder: (_) => SystemBottomInset(
+        child: SimpleAuthScreen(
+          onAuthenticated: onAuthenticated,
+          onSignedOut: onSignedOut,
         ),
       ),
-    );
-  }
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -172,9 +170,8 @@ class SimpleAuthScreen extends StatelessWidget {
     );
   }
 
-  static Widget _belongLogo(BuildContext context, {required double size}) {
-    return belongSignInLogo(context, size: size);
-  }
+  static Widget _belongLogo(BuildContext context, {required double size}) =>
+      belongSignInLogo(context, size: size);
 }
 
 /// FirebaseUI sign-in that undoes the session when the account is soft-deleted.
@@ -204,76 +201,70 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
         providers: providers,
         showPasswordVisibilityToggle: true,
         headerMaxExtent: 148,
-        headerBuilder: (context, constraints, shrinkOffset) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  belongSignInLogo(context, size: 52),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          'Belong on the Spectrum',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const OtherSiteInfoButton(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-        subtitleBuilder: (context, action) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SoftDeleteSignInNotice(message: message),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  action == AuthAction.signIn
-                      ? 'Sign in to access your reflections, spaces, and private saved items.'
-                      : 'Join our calm Christian fellowship. No algorithmic rush.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-        footerBuilder: (context, action) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+        headerBuilder: (context, constraints, shrinkOffset) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.shield_outlined,
-                  size: 14,
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Safe, sensory-friendly & private',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
+                belongSignInLogo(context, size: 52),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Belong on the Spectrum',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const OtherSiteInfoButton(),
+                  ],
                 ),
               ],
             ),
-          );
-        },
+          ),
+        ),
+        subtitleBuilder: (context, action) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SoftDeleteSignInNotice(message: message),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                action == AuthAction.signIn
+                    ? 'Sign in to access your reflections, spaces, and private saved items.'
+                    : 'Join our calm Christian fellowship. No algorithmic rush.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+        footerBuilder: (context, action) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.shield_outlined,
+                size: 14,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Safe, sensory-friendly & private',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ],
+          ),
+        ),
         actions: [
           AuthStateChangeAction<UserCreated>((context, state) {
             ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
@@ -408,18 +399,17 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
   }
 }
 
-Widget belongSignInLogo(BuildContext context, {required double size}) {
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(size * 0.28),
-    child: Image.asset(
-      'assets/images/belong_logo.png',
-      width: size,
-      height: size,
-      errorBuilder: (_, _, _) => Icon(
-        Icons.spa_rounded,
-        size: size * 0.65,
-        color: Theme.of(context).colorScheme.primary,
+Widget belongSignInLogo(BuildContext context, {required double size}) =>
+    ClipRRect(
+      borderRadius: BorderRadius.circular(size * 0.28),
+      child: Image.asset(
+        'assets/images/belong_logo.png',
+        width: size,
+        height: size,
+        errorBuilder: (_, _, _) => Icon(
+          Icons.spa_rounded,
+          size: size * 0.65,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
-    ),
-  );
-}
+    );

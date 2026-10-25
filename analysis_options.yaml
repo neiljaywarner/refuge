@@ -9,6 +9,9 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+formatter:
+  line_length: 100
+
 analyzer:
   exclude:
     - build/**
@@ -42,11 +45,8 @@ linter:
   rules:
     # avoid_print is already on via flutter_lints. lib/ also uses the
     # belong_lints no_print_use_app_logger plugin rule.
-    # prefer_single_quotes and prefer_expression_function_bodies wait for the
-    # format sweep in issue #519. Enabling them now fails the existing tree.
-    # Formatter page width stays at the SDK default for the same reason.
-    # prefer_single_quotes: true
-    # prefer_expression_function_bodies: true
+    prefer_single_quotes: true
+    prefer_expression_function_bodies: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

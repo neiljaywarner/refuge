@@ -158,11 +158,7 @@ class ReflectionComposer extends HookWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.edit_note_rounded,
-              color: primaryColor,
-              size: 20,
-            ),
+            Icon(Icons.edit_note_rounded, color: primaryColor, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Semantics(
@@ -180,13 +176,11 @@ class ReflectionComposer extends HookWidget {
                   },
                   decoration: InputDecoration(
                     isDense: true,
-                    hintText: 'Share an unhurried thought in #${kFellowshipSpaces[selectedSpace] ?? selectedSpace}...',
+                    hintText:
+                        'Share an unhurried thought in #${kFellowshipSpaces[selectedSpace] ?? selectedSpace}...',
                     hintStyle: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.color
+                      color: Theme.of(context).textTheme.bodySmall?.color
                           ?.withValues(alpha: 0.7),
                     ),
                     border: InputBorder.none,
@@ -199,14 +193,14 @@ class ReflectionComposer extends HookWidget {
             IconButton(
               key: const Key('composer_add_meme_compact_button'),
               tooltip: 'Add Meme / GIF',
-              icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 18),
+              icon: const Icon(
+                Icons.sentiment_very_satisfied_outlined,
+                size: 18,
+              ),
               visualDensity: VisualDensity.compact,
               onPressed: () {
                 isExpanded.value = true;
-                showMemeGalleryModal(
-                  context,
-                  onSelectedMeme: handleSelectMeme,
-                );
+                showMemeGalleryModal(context, onSelectedMeme: handleSelectMeme);
               },
             ),
             IconButton(
@@ -255,9 +249,12 @@ class ReflectionComposer extends HookWidget {
                     color: primaryColor,
                   ),
                   underline: const SizedBox(),
-                  items: kToneOptions.map((tone) {
-                    return DropdownMenuItem(value: tone, child: Text(tone));
-                  }).toList(),
+                  items: kToneOptions
+                      .map(
+                        (tone) =>
+                            DropdownMenuItem(value: tone, child: Text(tone)),
+                      )
+                      .toList(),
                   onChanged: (val) {
                     if (val != null) selectedTone.value = val;
                   },
@@ -517,9 +514,7 @@ class ReflectionComposer extends HookWidget {
                   size: 14,
                 ),
                 label: Text(
-                  attachedMeme.value != null
-                      ? 'Change Meme'
-                      : 'Add Meme / GIF',
+                  attachedMeme.value != null ? 'Change Meme' : 'Add Meme / GIF',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -535,10 +530,7 @@ class ReflectionComposer extends HookWidget {
                   ),
                   onPressed: () => isExpanded.value = false,
                   icon: const Icon(Icons.unfold_less_rounded, size: 14),
-                  label: const Text(
-                    'Collapse',
-                    style: TextStyle(fontSize: 11),
-                  ),
+                  label: const Text('Collapse', style: TextStyle(fontSize: 11)),
                 ),
               ElevatedButton.icon(
                 key: const Key('publish_reflection_button'),

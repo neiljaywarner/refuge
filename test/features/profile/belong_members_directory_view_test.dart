@@ -10,7 +10,9 @@ import 'package:refuge4serverpod/src/features/profile/presentation/belong_member
 
 void main() {
   group('BelongMembersDirectoryView BDD Widget Tests (#93)', () {
-    patrolWidgetTest('renders header, dev members, and handles back button', ($) async {
+    patrolWidgetTest('renders header, dev members, and handles back button', (
+      $,
+    ) async {
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
@@ -37,10 +39,7 @@ void main() {
 
       // Verify title and descriptions
       expect($('Member Directory'), findsOneWidget);
-      expect(
-        $('Fellowship disciples & leaders'),
-        findsOneWidget,
-      );
+      expect($('Fellowship disciples & leaders'), findsOneWidget);
 
       // Verify dev-mode community members
       expect($('Marty (Organizer)'), findsOneWidget);
@@ -58,45 +57,46 @@ void main() {
       expect(backTapped, isTrue);
     });
 
-    patrolWidgetTest('tapping Edit Profile opens MemberProfileDialog when signed in', ($) async {
-      final authRepo = InMemoryAuthRepository(
-        initialSession: const AuthSession(
-          userId: 'test-user-1',
-          displayName: 'Fellow Member',
-          email: 'member@belongonthespectrum.com',
-          isSignedIn: true,
-          authMethod: 'in_memory',
-          icocChurchAffiliation: 'DFW Church',
-          comfortBadges: ['Sensory Sensitive'],
-          bio: 'Calm fellowship advocate',
-        ),
-      );
+    patrolWidgetTest(
+      'tapping Edit Profile opens MemberProfileDialog when signed in',
+      ($) async {
+        final authRepo = InMemoryAuthRepository(
+          initialSession: const AuthSession(
+            userId: 'test-user-1',
+            displayName: 'Fellow Member',
+            email: 'member@belongonthespectrum.com',
+            isSignedIn: true,
+            authMethod: 'in_memory',
+            icocChurchAffiliation: 'DFW Church',
+            comfortBadges: ['Sensory Sensitive'],
+            bio: 'Calm fellowship advocate',
+          ),
+        );
 
-      final container = ProviderContainer(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(authRepo),
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
-      );
-      addTearDown(container.dispose);
+        final container = ProviderContainer(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(authRepo),
+            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      await $.pumpWidgetAndSettle(
-        UncontrolledProviderScope(
-          container: container,
-          child: const MaterialApp(
-            home: Scaffold(
-              body: BelongMembersDirectoryView(),
+        await $.pumpWidgetAndSettle(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(
+              home: Scaffold(body: BelongMembersDirectoryView()),
             ),
           ),
-        ),
-      );
+        );
 
-      expect($('Your Community Card'), findsOneWidget);
-      await $(const Key('members_edit_profile_button')).tap();
-      await $.pumpAndSettle();
+        expect($('Your Community Card'), findsOneWidget);
+        await $(const Key('members_edit_profile_button')).tap();
+        await $.pumpAndSettle();
 
-      expect($('Fellow Member'), findsWidgets);
-      expect($('Which ICOC church do you attend?'), findsOneWidget);
-    });
+        expect($('Fellow Member'), findsWidgets);
+        expect($('Which ICOC church do you attend?'), findsOneWidget);
+      },
+    );
   });
 }

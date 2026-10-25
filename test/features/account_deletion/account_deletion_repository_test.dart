@@ -17,13 +17,11 @@ void main() {
   AccountDeletionRepository repository({
     List<AccountDeletionSink>? sinks,
     String flavor = 'dev',
-  }) {
-    return AccountDeletionRepository(
-      sinks: sinks ?? [InMemoryAccountDeletionSink()],
-      flavor: flavor,
-      clock: () => deletedAt,
-    );
-  }
+  }) => AccountDeletionRepository(
+    sinks: sinks ?? [InMemoryAccountDeletionSink()],
+    flavor: flavor,
+    clock: () => deletedAt,
+  );
 
   group('AccountDeletionRecord', () {
     test('document ids keep dev and prod tombstones apart', () {

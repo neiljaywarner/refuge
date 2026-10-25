@@ -42,31 +42,29 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
           }
         }),
       ],
-      headerBuilder: (context, constraints, shrinkOffset) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.diversity_3_rounded,
-                size: 36,
-                color: Theme.of(context).colorScheme.primary,
+      headerBuilder: (context, constraints, shrinkOffset) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.diversity_3_rounded,
+              size: 36,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                'Belong on the Spectrum',
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Text(
-                  'Belong on the Spectrum',
-                  style: Theme.of(context).textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const OtherSiteInfoButton(),
-            ],
-          ),
-        );
-      },
+            ),
+            const OtherSiteInfoButton(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -87,17 +85,15 @@ class BelongFirebaseProfileScreen extends StatelessWidget {
   const BelongFirebaseProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProfileScreen(
-      providers: [EmailAuthProvider()],
-      actions: [
-        SignedOutAction((context) {
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-        }),
-      ],
-      appBar: AppBar(title: const Text('Account Profile')),
-    );
-  }
+  Widget build(BuildContext context) => ProfileScreen(
+    providers: [EmailAuthProvider()],
+    actions: [
+      SignedOutAction((context) {
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      }),
+    ],
+    appBar: AppBar(title: const Text('Account Profile')),
+  );
 }

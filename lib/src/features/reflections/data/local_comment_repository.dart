@@ -220,11 +220,8 @@ class LocalCommentRepository implements CommentRepository {
   @override
   Future<List<Comment>> getCommentsByAuthor({
     required String authorName,
-  }) async {
-    return _store
-        .where((c) => _matchesAuthor(c.authorName, authorName))
-        .toList();
-  }
+  }) async =>
+      _store.where((c) => _matchesAuthor(c.authorName, authorName)).toList();
 
   @override
   Stream<List<Comment>> watchCommentsByAuthor({required String authorName}) {

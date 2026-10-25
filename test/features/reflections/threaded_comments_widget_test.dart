@@ -32,31 +32,27 @@ void main() {
       testPost = posts.first; // Post '1' (David M.)
     });
 
-    Widget createTestApp({required Widget child}) {
-      return ProviderScope(
-        overrides: [
-          postRepositoryProvider.overrideWithValue(postRepo),
-          commentRepositoryProvider.overrideWithValue(commentRepo),
-          memberProfileProvider.overrideWith(
-            () => FakeMemberProfileNotifier(
-              const MemberProfile(
-                displayName: 'Hannah W. (Dallas)',
-                email: 'hannah@example.com',
-                bio: 'Autistic disciple & botanist',
-                comfortBadges: ['Quiet fellowship'],
-                isSignedIn: true,
-                icocChurchAffiliation: 'Dallas Church of Christ',
-              ),
+    Widget createTestApp({required Widget child}) => ProviderScope(
+      overrides: [
+        postRepositoryProvider.overrideWithValue(postRepo),
+        commentRepositoryProvider.overrideWithValue(commentRepo),
+        memberProfileProvider.overrideWith(
+          () => FakeMemberProfileNotifier(
+            const MemberProfile(
+              displayName: 'Hannah W. (Dallas)',
+              email: 'hannah@example.com',
+              bio: 'Autistic disciple & botanist',
+              comfortBadges: ['Quiet fellowship'],
+              isSignedIn: true,
+              icocChurchAffiliation: 'Dallas Church of Christ',
             ),
           ),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: child),
-          ),
         ),
-      );
-    }
+      ],
+      child: MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: child)),
+      ),
+    );
 
     patrolWidgetTest(
       'ReflectionCard renders discussion reply button with live count badge',
@@ -93,7 +89,8 @@ void main() {
             child: Builder(
               builder: (context) => ElevatedButton(
                 key: const Key('open_sheet_button'),
-                onPressed: () => ThreadedDiscussionSheet.show(context, post: testPost),
+                onPressed: () =>
+                    ThreadedDiscussionSheet.show(context, post: testPost),
                 child: const Text('Open'),
               ),
             ),
@@ -119,38 +116,36 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Care reaction increments count on comment',
-      ($) async {
-        await $.pumpWidget(
-          createTestApp(
-            child: Builder(
-              builder: (context) => ElevatedButton(
-                key: const Key('open_sheet_button'),
-                onPressed: () => ThreadedDiscussionSheet.show(context, post: testPost),
-                child: const Text('Open'),
-              ),
+    patrolWidgetTest('Care reaction increments count on comment', ($) async {
+      await $.pumpWidget(
+        createTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              key: const Key('open_sheet_button'),
+              onPressed: () =>
+                  ThreadedDiscussionSheet.show(context, post: testPost),
+              child: const Text('Open'),
             ),
           ),
-        );
-        await $.pumpAndSettle();
+        ),
+      );
+      await $.pumpAndSettle();
 
-        await $(const Key('open_sheet_button')).tap();
-        await $.pumpAndSettle();
+      await $(const Key('open_sheet_button')).tap();
+      await $.pumpAndSettle();
 
-        // Pastor Thomas's comment (c1_1) has 4 pray reactions initially
-        final prayBtn = $(const Key('comment_reaction_pray_c1_1'));
-        expect(prayBtn, findsOneWidget);
+      // Pastor Thomas's comment (c1_1) has 4 pray reactions initially
+      final prayBtn = $(const Key('comment_reaction_pray_c1_1'));
+      expect(prayBtn, findsOneWidget);
 
-        await prayBtn.tap();
-        await $.pumpAndSettle();
+      await prayBtn.tap();
+      await $.pumpAndSettle();
 
-        // Incremented reaction tally
-        final comments = await commentRepo.getComments(postId: '1');
-        final c1 = comments.firstWhere((c) => c.id == 'c1_1');
-        expect(c1.reactions['pray'], 5);
-      },
-    );
+      // Incremented reaction tally
+      final comments = await commentRepo.getComments(postId: '1');
+      final c1 = comments.firstWhere((c) => c.id == 'c1_1');
+      expect(c1.reactions['pray'], 5);
+    });
 
     patrolWidgetTest(
       'Submitting a top-level reply adds it to discussion thread',
@@ -167,7 +162,8 @@ void main() {
             child: Builder(
               builder: (context) => ElevatedButton(
                 key: const Key('open_sheet_button'),
-                onPressed: () => ThreadedDiscussionSheet.show(context, post: testPost),
+                onPressed: () =>
+                    ThreadedDiscussionSheet.show(context, post: testPost),
                 child: const Text('Open'),
               ),
             ),
@@ -216,7 +212,8 @@ void main() {
             child: Builder(
               builder: (context) => ElevatedButton(
                 key: const Key('open_sheet_button'),
-                onPressed: () => ThreadedDiscussionSheet.show(context, post: testPost),
+                onPressed: () =>
+                    ThreadedDiscussionSheet.show(context, post: testPost),
                 child: const Text('Open'),
               ),
             ),
@@ -236,9 +233,8 @@ void main() {
         expect($(const Key('cancel_reply_target_button')), findsOneWidget);
 
         // Enter reply text
-        await $(const Key('comment_input_field')).enterText(
-          'That scripture from Hebrews has helped me as well.',
-        );
+        await $(const Key('comment_input_field'))
+            .enterText('That scripture from Hebrews has helped me as well.');
         await $.pumpAndSettle();
 
         // Select tone
@@ -260,31 +256,29 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Closing sheet with close button pops dialog',
-      ($) async {
-        await $.pumpWidget(
-          createTestApp(
-            child: Builder(
-              builder: (context) => ElevatedButton(
-                key: const Key('open_sheet_button'),
-                onPressed: () => ThreadedDiscussionSheet.show(context, post: testPost),
-                child: const Text('Open'),
-              ),
+    patrolWidgetTest('Closing sheet with close button pops dialog', ($) async {
+      await $.pumpWidget(
+        createTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              key: const Key('open_sheet_button'),
+              onPressed: () =>
+                  ThreadedDiscussionSheet.show(context, post: testPost),
+              child: const Text('Open'),
             ),
           ),
-        );
-        await $.pumpAndSettle();
+        ),
+      );
+      await $.pumpAndSettle();
 
-        await $(const Key('open_sheet_button')).tap();
-        await $.pumpAndSettle();
+      await $(const Key('open_sheet_button')).tap();
+      await $.pumpAndSettle();
 
-        expect($(const Key('close_discussion_sheet_button')), findsOneWidget);
-        await $(const Key('close_discussion_sheet_button')).tap();
-        await $.pumpAndSettle();
+      expect($(const Key('close_discussion_sheet_button')), findsOneWidget);
+      await $(const Key('close_discussion_sheet_button')).tap();
+      await $.pumpAndSettle();
 
-        expect($(const Key('threaded_discussion_sheet_title')), findsNothing);
-      },
-    );
+      expect($(const Key('threaded_discussion_sheet_title')), findsNothing);
+    });
   });
 }

@@ -36,7 +36,10 @@ void main() {
       AppLogger.info('Verifying history recording');
       expect(talker.history.length, greaterThan(initialCount));
       expect(
-        talker.history.any((entry) => entry.message?.contains('Verifying history recording') ?? false),
+        talker.history.any(
+          (entry) =>
+              entry.message?.contains('Verifying history recording') ?? false,
+        ),
         isTrue,
       );
     });

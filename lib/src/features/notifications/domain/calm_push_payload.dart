@@ -23,19 +23,21 @@ CalmPushDisplay calmPushDisplayFromParts({
   Map<String, dynamic>? data,
 }) {
   final map = data ?? const <String, dynamic>{};
-  final title = _firstNonEmpty([
-    notificationTitle,
-    map['title']?.toString(),
-    map['subject']?.toString(),
-  ]) ??
+  final title =
+      _firstNonEmpty([
+        notificationTitle,
+        map['title']?.toString(),
+        map['subject']?.toString(),
+      ]) ??
       'Belong';
 
-  final body = _firstNonEmpty([
-    notificationBody,
-    map['body']?.toString(),
-    map['snippet']?.toString(),
-    map['message']?.toString(),
-  ]) ??
+  final body =
+      _firstNonEmpty([
+        notificationBody,
+        map['body']?.toString(),
+        map['snippet']?.toString(),
+        map['message']?.toString(),
+      ]) ??
       'A fellow member sent you a calm update.';
 
   final category = map['category']?.toString();

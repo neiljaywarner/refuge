@@ -258,15 +258,13 @@ class CommunityAnalyticsService {
   /// Firebase Analytics event parameters accept only String or num.
   static Map<String, Object> _firebaseEventParameters(
     Map<String, Object> props,
-  ) {
-    return {
-      for (final entry in props.entries)
-        entry.key: switch (entry.value) {
-          final bool flag => flag.toString(),
-          final value => value,
-        },
-    };
-  }
+  ) => {
+    for (final entry in props.entries)
+      entry.key: switch (entry.value) {
+        final bool flag => flag.toString(),
+        final value => value,
+      },
+  };
 
   /// Anonymous distinct id plus `$set` user properties. No emails or names.
   Map<String, Object> _postHogProperties(Map<String, Object> props) {

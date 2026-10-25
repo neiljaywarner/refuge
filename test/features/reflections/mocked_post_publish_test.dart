@@ -65,14 +65,12 @@ class _ImageResponse extends Fake implements HttpClientResponse {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
-  }) {
-    return Stream<List<int>>.value(bytes).listen(
-      onData,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
-  }
+  }) => Stream<List<int>>.value(bytes).listen(
+    onData,
+    onError: onError,
+    onDone: onDone,
+    cancelOnError: cancelOnError,
+  );
 }
 
 /// 1x1 transparent PNG so image posts never dial the network.
@@ -213,12 +211,12 @@ void main() {
           postId: any(named: 'postId'),
           reactionType: any(named: 'reactionType'),
         ),
-      ).thenAnswer((invocation) {
-        return local.addReaction(
+      ).thenAnswer(
+        (invocation) => local.addReaction(
           postId: invocation.namedArguments[#postId] as String,
           reactionType: invocation.namedArguments[#reactionType] as String,
-        );
-      });
+        ),
+      );
     });
 
     tearDown(() {
@@ -337,29 +335,25 @@ void main() {
       int? id,
       String content = 'A quiet word.',
       DateTime? createdAt,
-    }) {
-      return sp.ReflectionPost(
-        id: id,
-        authorName: 'Fellow Member',
-        spaceKey: 'study',
-        intentTag: '[Bible Deep Dive]',
-        specialInterestTag: 'Mark',
-        content: content,
-        createdAt: createdAt ?? DateTime.utc(2026, 10, 1),
-        prayingCount: 1,
-        standingWithCount: 0,
-        peaceCount: 2,
-        encouragedCount: 3,
-      );
-    }
+    }) => sp.ReflectionPost(
+      id: id,
+      authorName: 'Fellow Member',
+      spaceKey: 'study',
+      intentTag: '[Bible Deep Dive]',
+      specialInterestTag: 'Mark',
+      content: content,
+      createdAt: createdAt ?? DateTime.utc(2026, 10, 1),
+      prayingCount: 1,
+      standingWithCount: 0,
+      peaceCount: 2,
+      encouragedCount: 3,
+    );
 
-    ServerpodPostRepository buildRepo() {
-      return ServerpodPostRepository(
-        client: client,
-        fallback: LocalPostRepository(isDevMode: false),
-        isDevMode: false,
-      );
-    }
+    ServerpodPostRepository buildRepo() => ServerpodPostRepository(
+      client: client,
+      fallback: LocalPostRepository(isDevMode: false),
+      isDevMode: false,
+    );
 
     test('publishReflection success stores the server id and marks the client live', () async {
       when(() => endpoint.publishReflection(any())).thenAnswer((

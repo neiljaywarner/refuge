@@ -1,6 +1,6 @@
 #!/bin/sh
 # Formats staged Dart files, then fails if a Belong lint rule is violated.
-# Line length matches CI (SDK default) until issue #519 switches the repo to 100.
+# Line length matches CI (100 columns, issue #519).
 # Other pre-existing analyzer errors are printed and do not block the commit.
 set -eu
 cd "$(git rev-parse --show-toplevel)"
@@ -10,7 +10,7 @@ if [ -z "$files" ]; then
   exit 0
 fi
 
-printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 dart format
+printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 dart format -l 100
 printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 git add
 
 report=$(mktemp)

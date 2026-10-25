@@ -10,9 +10,8 @@ import '../logging/app_logger.dart';
 /// used across Firebase In-App Messaging, Remote Config device targeting, and Crashlytics/FCM.
 /// This enables troubleshooting and device-specific telemetry without requiring personal user accounts.
 class FirebaseInstallationsService {
-  FirebaseInstallationsService({
-    FirebaseInstallations? installations,
-  }) : _installations = installations;
+  FirebaseInstallationsService({FirebaseInstallations? installations})
+    : _installations = installations;
 
   final FirebaseInstallations? _installations;
   String? _cachedId;
@@ -72,9 +71,9 @@ class FirebaseInstallationsService {
 
 /// Global provider for [FirebaseInstallationsService].
 final firebaseInstallationsServiceProvider =
-    Provider<FirebaseInstallationsService>((ref) {
-  return FirebaseInstallationsService();
-});
+    Provider<FirebaseInstallationsService>(
+      (ref) => FirebaseInstallationsService(),
+    );
 
 /// Reactive provider for the active Firebase Installation ID string.
 final firebaseInstallationsIdProvider = FutureProvider<String>((ref) async {

@@ -12,9 +12,7 @@ void main() {
       $.tester.view.physicalSize = const Size(800, 1400);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown($.tester.view.reset);
-      await $.pumpWidgetAndSettle(
-        RefugeApp(repository: LocalPostRepository()),
-      );
+      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
       expect(find.byType(ReflectionCard), findsWidgets);
 
@@ -44,9 +42,7 @@ void main() {
       $.tester.view.physicalSize = const Size(800, 1400);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown($.tester.view.reset);
-      await $.pumpWidgetAndSettle(
-        RefugeApp(repository: LocalPostRepository()),
-      );
+      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
       await $(const Key('subnav_spaces_tab')).tap();
       await $.pumpAndSettle();

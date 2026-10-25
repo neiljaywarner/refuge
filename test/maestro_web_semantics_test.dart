@@ -41,12 +41,18 @@ void main() {
 
       await tester.tap(find.byTooltip('Sensory Themes'));
       await tester.pumpAndSettle();
-    expect(find.text('Dark'), findsWidgets);
-    expect(find.bySemanticsIdentifier('sensory_theme_charcoal'), findsOneWidget);
-    expect(find.bySemanticsIdentifier('sensory_theme_clean'), findsOneWidget);
-    expect(find.bySemanticsIdentifier('sensory_theme_contrast'), findsOneWidget);
+      expect(find.text('Dark'), findsWidgets);
+      expect(
+        find.bySemanticsIdentifier('sensory_theme_charcoal'),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsIdentifier('sensory_theme_clean'), findsOneWidget);
+      expect(
+        find.bySemanticsIdentifier('sensory_theme_contrast'),
+        findsOneWidget,
+      );
 
-    await tester.tap(find.text('Dark').last);
+      await tester.tap(find.text('Dark').last);
       await tester.pumpAndSettle();
       expect(
         find.bySemanticsLabel('Active sensory theme Dark'),

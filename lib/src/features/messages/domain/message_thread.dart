@@ -71,21 +71,19 @@ class MessageThread {
     int? unreadCount,
     bool? isBatchedDigest,
     List<DirectMessage>? messages,
-  }) {
-    return MessageThread(
-      id: id ?? this.id,
-      participantName: participantName ?? this.participantName,
-      avatarInitials: avatarInitials ?? this.avatarInitials,
-      previewSnippet: previewSnippet ?? this.previewSnippet,
-      lastActivity: lastActivity ?? this.lastActivity,
-      subject: subject ?? this.subject,
-      messageType: messageType ?? this.messageType,
-      recipientNames: recipientNames ?? this.recipientNames,
-      unreadCount: unreadCount ?? this.unreadCount,
-      isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
-      messages: messages ?? this.messages,
-    );
-  }
+  }) => MessageThread(
+    id: id ?? this.id,
+    participantName: participantName ?? this.participantName,
+    avatarInitials: avatarInitials ?? this.avatarInitials,
+    previewSnippet: previewSnippet ?? this.previewSnippet,
+    lastActivity: lastActivity ?? this.lastActivity,
+    subject: subject ?? this.subject,
+    messageType: messageType ?? this.messageType,
+    recipientNames: recipientNames ?? this.recipientNames,
+    unreadCount: unreadCount ?? this.unreadCount,
+    isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
+    messages: messages ?? this.messages,
+  );
 
   /// Default welcoming seed threads for Belong on the Spectrum pre-alpha.
   static List<MessageThread> sampleThreads() {
@@ -98,7 +96,8 @@ class MessageThread {
         subject: 'Welcome to Belong Fellowship',
         messageType: 'Fellowship',
         recipientNames: const ['Marty (Organizer)'],
-        previewSnippet: 'Welcome to Belong on the Spectrum! Glad you are here with us.',
+        previewSnippet:
+            'Welcome to Belong on the Spectrum! Glad you are here with us.',
         lastActivity: now.subtract(const Duration(minutes: 15)),
         unreadCount: 0,
         isBatchedDigest: true,
@@ -119,7 +118,8 @@ class MessageThread {
         subject: 'Wingspan & Cascadia Setup',
         messageType: 'Group',
         recipientNames: const ['Alex K.', 'Hannah M.'],
-        previewSnippet: 'Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
+        previewSnippet:
+            'Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
         lastActivity: now.subtract(const Duration(hours: 2)),
         unreadCount: 0,
         isBatchedDigest: true,
@@ -140,7 +140,8 @@ class MessageThread {
         subject: 'Tomorrow 2 PM Coworking',
         messageType: 'Group',
         recipientNames: const ['Jordan P.'],
-        previewSnippet: 'Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
+        previewSnippet:
+            'Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
         lastActivity: now.subtract(const Duration(hours: 6)),
         unreadCount: 0,
         isBatchedDigest: true,

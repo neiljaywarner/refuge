@@ -96,8 +96,8 @@ class ActuallyAutisticEventsView extends HookWidget {
           const SizedBox(height: 14),
 
           // Event Cards List
-          ...events.value.map((event) {
-            return Card(
+          ...events.value.map(
+            (event) => Card(
               key: Key('event-card-${event.id}'),
               margin: const EdgeInsets.only(bottom: 14),
               elevation: 0,
@@ -284,8 +284,8 @@ class ActuallyAutisticEventsView extends HookWidget {
                   ],
                 ),
               ),
-            );
-          }),
+            ),
+          ),
         ],
       ),
     );
@@ -299,29 +299,27 @@ class _SensoryBadge extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F3F4),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFFE2E6E9)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: const Color(0xFF2C3E50)),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF2C3E50),
-            ),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF1F3F4),
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: const Color(0xFFE2E6E9)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: const Color(0xFF2C3E50)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF2C3E50),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }

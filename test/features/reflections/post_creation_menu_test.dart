@@ -22,10 +22,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -58,10 +55,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -78,7 +72,8 @@ void main() {
         // Enter reflection text
         final input = $(Key('reflection_composer_input'));
         expect(input, findsWidgets);
-        await $(input.last).enterText('Grateful for unhurried rest in Christ today.');
+        await $(input.last)
+            .enterText('Grateful for unhurried rest in Christ today.');
         await $.pumpAndSettle();
 
         // Tap publish
@@ -86,7 +81,10 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify modal dismissed and post appears in feed
-        expect($('Grateful for unhurried rest in Christ today.'), findsOneWidget);
+        expect(
+          $('Grateful for unhurried rest in Christ today.'),
+          findsOneWidget,
+        );
       },
     );
 
@@ -101,10 +99,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -121,9 +116,13 @@ void main() {
         expect($(Key('special_interest_tag_input')), findsOneWidget);
 
         // Enter image details
-        await $(Key('image_post_url_input')).enterText('https://images.unsplash.com/photo-nature-calm');
-        await $(Key('image_post_alt_text_input')).enterText('Quiet stream flowing over smooth mossy stones in morning light');
-        await $(Key('reflection_composer_input')).last.enterText('He leads me beside quiet waters. (Psalm 23:2)');
+        await $(Key('image_post_url_input'))
+            .enterText('https://images.unsplash.com/photo-nature-calm');
+        await $(Key('image_post_alt_text_input')).enterText(
+          'Quiet stream flowing over smooth mossy stones in morning light',
+        );
+        await $(Key('reflection_composer_input')).last
+            .enterText('He leads me beside quiet waters. (Psalm 23:2)');
         await $.pumpAndSettle();
 
         // Verify preview container appeared
@@ -135,8 +134,22 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify post rendered with text and alt-text tag
-        expect($(find.textContaining('He leads me beside quiet waters. (Psalm 23:2)')), findsOneWidget);
-        expect($(find.textContaining('Quiet stream flowing over smooth mossy stones in morning light')), findsOneWidget);
+        expect(
+          $(
+            find.textContaining(
+              'He leads me beside quiet waters. (Psalm 23:2)',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          $(
+            find.textContaining(
+              'Quiet stream flowing over smooth mossy stones in morning light',
+            ),
+          ),
+          findsOneWidget,
+        );
       },
     );
 
@@ -151,10 +164,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -170,7 +180,10 @@ void main() {
 
         // Verify snackbar is displayed informing author gently
         expect($(Key('empty_reflection_warning_snackbar')), findsOneWidget);
-        expect($('Please write a thought or reflection before publishing.'), findsOneWidget);
+        expect(
+          $('Please write a thought or reflection before publishing.'),
+          findsOneWidget,
+        );
       },
     );
   });

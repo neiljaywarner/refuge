@@ -220,7 +220,13 @@ class _ReviewStatus {
 /// Fails closed: any `gh` error terminates the process instead of returning an
 /// empty list, so a network/auth/rate-limit failure can never look "clean".
 Future<List<Map<String, dynamic>>> _ghPaginated(String endpoint) async {
-  final r = await Process.run(_gh, ['api', '--paginate', endpoint, '--jq', '.[]']);
+  final r = await Process.run(_gh, [
+    'api',
+    '--paginate',
+    endpoint,
+    '--jq',
+    '.[]',
+  ]);
   if (r.exitCode != 0) {
     stderr.writeln('gh api $endpoint failed (failing closed): ${r.stderr}');
     exit(r.exitCode == 0 ? 1 : r.exitCode);
@@ -239,9 +245,12 @@ bool _isRabbit(Map<String, dynamic> o) =>
 /// "Actionable comments posted: 3" and "Outside diff range comments (2)".
 int _bodyFindings(String body) {
   var n = 0;
-  final actionable = RegExp(r'Actionable comments posted:\s*(\d+)').firstMatch(body);
+  final actionable = RegExp(r'Actionable comments posted:\s*(\d+)')
+      .firstMatch(body);
   if (actionable != null) n += int.parse(actionable.group(1)!);
-  for (final m in RegExp(r'Outside diff range comments?\s*\((\d+)\)').allMatches(body)) {
+  for (final m in RegExp(
+    r'Outside diff range comments?\s*\((\d+)\)',
+  ).allMatches(body)) {
     n += int.parse(m.group(1)!);
   }
   return n;
@@ -249,31 +258,45 @@ int _bodyFindings(String body) {
 
 Future<_ReviewStatus> _coderabbitStatus(String prNumber) async {
   final view = await Process.run(_gh, [
-    'pr', 'view', prNumber, '--repo', _repo, '--json', 'mergeStateStatus',
+    'pr',
+    'view',
+    prNumber,
+    '--repo',
+    _repo,
+    '--json',
+    'mergeStateStatus',
   ]);
   if (view.exitCode != 0) {
     stderr.writeln('gh pr view failed: ${view.stderr}');
     exit(view.exitCode);
   }
   final mergeState =
-      (jsonDecode(view.stdout as String) as Map)['mergeStateStatus'] as String? ??
-          'UNKNOWN';
+      (jsonDecode(view.stdout as String) as Map)['mergeStateStatus']
+          as String? ??
+      'UNKNOWN';
 
   // Use only the LATEST CodeRabbit review so an old CHANGES_REQUESTED review
   // does not block forever after fixes are pushed and re-reviewed.
-  final reviews = (await _ghPaginated('repos/$_repo/pulls/$prNumber/reviews'))
-      .where(_isRabbit)
-      .where((r) => r['submitted_at'] != null)
-      .toList()
-    ..sort((a, b) =>
-        (a['submitted_at'] as String).compareTo(b['submitted_at'] as String));
+  final reviews =
+      (await _ghPaginated('repos/$_repo/pulls/$prNumber/reviews'))
+          .where(_isRabbit)
+          .where((r) => r['submitted_at'] != null)
+          .toList()
+        ..sort(
+          (a, b) => (a['submitted_at'] as String).compareTo(
+            b['submitted_at'] as String,
+          ),
+        );
   final latest = reviews.isEmpty ? null : reviews.last;
 
   // Inline comments that belong to the latest review only.
   final inline = <String>[];
   if (latest != null) {
-    for (final c in await _ghPaginated('repos/$_repo/pulls/$prNumber/comments')) {
-      if (!_isRabbit(c) || c['pull_request_review_id'] != latest['id']) continue;
+    for (final c in await _ghPaginated(
+      'repos/$_repo/pulls/$prNumber/comments',
+    )) {
+      if (!_isRabbit(c) || c['pull_request_review_id'] != latest['id'])
+        continue;
       final firstLine = (c['body'] as String? ?? '')
           .split('\n')
           .firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
@@ -286,7 +309,9 @@ Future<_ReviewStatus> _coderabbitStatus(String prNumber) async {
     hasReview: latest != null,
     changesRequested: latest?['state'] == 'CHANGES_REQUESTED',
     inlineComments: inline,
-    bodyFindings: latest == null ? 0 : _bodyFindings(latest['body'] as String? ?? ''),
+    bodyFindings: latest == null
+        ? 0
+        : _bodyFindings(latest['body'] as String? ?? ''),
     mergeState: mergeState,
   );
 }
@@ -309,8 +334,18 @@ Future<void> _shipPr(List<String> rest) async {
 
   _log('2/4 Opening pull request...');
   final pr = await Process.run(_gh, [
-    'pr', 'create', '--repo', _repo, '--head', branch, '--base', 'main',
-    '--title', title, '--body', body,
+    'pr',
+    'create',
+    '--repo',
+    _repo,
+    '--head',
+    branch,
+    '--base',
+    'main',
+    '--title',
+    title,
+    '--body',
+    body,
   ]);
   final prUrl = (pr.stdout as String).trim();
   if (pr.exitCode != 0) {
@@ -320,12 +355,19 @@ Future<void> _shipPr(List<String> rest) async {
   final prNum = prUrl.split('/').last;
   _log('    $prUrl');
 
-  _log('3/4 Requesting @coderabbitai review and waiting up to $timeoutMin min...');
+  _log(
+    '3/4 Requesting @coderabbitai review and waiting up to $timeoutMin min...',
+  );
   await _runGh([
-    'pr', 'comment', prNum, '--repo', _repo, '--body',
+    'pr',
+    'comment',
+    prNum,
+    '--repo',
+    _repo,
+    '--body',
     verified
         ? '@coderabbitai review\n\nAuthor reports local `analyze_files` + '
-            '`run_tests` passed. Non-blocking polish will be deferred to #36.'
+              '`run_tests` passed. Non-blocking polish will be deferred to #36.'
         : '@coderabbitai review',
   ], ignoreErrors: true);
 
@@ -363,33 +405,47 @@ Future<void> _mergePr(List<String> rest) async {
 /// a missing review or a latest-review CHANGES_REQUESTED.
 Future<void> _mergeIfClean(_ReviewStatus s, {required bool force}) async {
   if (!s.hasReview) {
-    _log('No CodeRabbit review on PR #${s.prNumber} yet. NOT merging '
-        '(--force does not bypass this).');
+    _log(
+      'No CodeRabbit review on PR #${s.prNumber} yet. NOT merging '
+      '(--force does not bypass this).',
+    );
     exit(4);
   }
   if (s.changesRequested) {
-    _log('CodeRabbit REQUESTED CHANGES on PR #${s.prNumber}. Fix in the '
-        'worktree, push, wait for the re-review, then run merge-pr ${s.prNumber}.');
+    _log(
+      'CodeRabbit REQUESTED CHANGES on PR #${s.prNumber}. Fix in the '
+      'worktree, push, wait for the re-review, then run merge-pr ${s.prNumber}.',
+    );
     exit(2);
   }
   final findings = s.inlineComments.length + s.bodyFindings;
   if (findings > 0 && !force) {
-    _log('CodeRabbit left $findings finding(s) '
-        '(${s.inlineComments.length} inline, ${s.bodyFindings} in review body). '
-        'Triage: fix critical ones, defer polish to #36 with a link, then run '
-        'merge-pr ${s.prNumber} --force.');
+    _log(
+      'CodeRabbit left $findings finding(s) '
+      '(${s.inlineComments.length} inline, ${s.bodyFindings} in review body). '
+      'Triage: fix critical ones, defer polish to #36 with a link, then run '
+      'merge-pr ${s.prNumber} --force.',
+    );
     exit(3);
   }
   _log('4/4 Squash-merging PR #${s.prNumber} and deleting branch...');
   await _runGh([
-    'pr', 'merge', s.prNumber, '--repo', _repo, '--squash', '--delete-branch',
+    'pr',
+    'merge',
+    s.prNumber,
+    '--repo',
+    _repo,
+    '--squash',
+    '--delete-branch',
   ]);
   _log('PR #${s.prNumber} merged.');
 }
 
 Future<void> _privacyScan() async {
   final patterns = <String, RegExp>{
-    'email': RegExp(r'[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|icloud|hotmail)\.com'),
+    'email': RegExp(
+      r'[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|icloud|hotmail)\.com',
+    ),
     'home path': RegExp(r'/Users/[A-Za-z0-9._-]+/'),
     'Google API key': RegExp(r'AIza[0-9A-Za-z_-]{35}'),
     'GitHub token': RegExp(r'gh[pousr]_[0-9A-Za-z]{36}'),
@@ -432,7 +488,9 @@ Future<void> _syncWiki() async {
   final wikiDir = await Directory.systemTemp.createTemp('refuge-wiki-');
   _log('Cloning wiki into ${wikiDir.path}...');
   final clone = await Process.run('git', [
-    'clone', 'https://github.com/$_repo.wiki.git', wikiDir.path,
+    'clone',
+    'https://github.com/$_repo.wiki.git',
+    wikiDir.path,
   ]);
   if (clone.exitCode != 0) {
     stderr.writeln('Wiki clone failed: ${clone.stderr}');
@@ -441,10 +499,20 @@ Future<void> _syncWiki() async {
   _copyWikiFiles(Directory('docs/wiki'), wikiDir);
   await Process.run('git', ['-C', wikiDir.path, 'add', '-A']);
   final commit = await Process.run('git', [
-    '-C', wikiDir.path, 'commit', '-m', 'docs(wiki): sync from docs/wiki',
+    '-C',
+    wikiDir.path,
+    'commit',
+    '-m',
+    'docs(wiki): sync from docs/wiki',
   ]);
   stdout.write(commit.stdout);
-  final push = await Process.run('git', ['-C', wikiDir.path, 'push', 'origin', 'HEAD']);
+  final push = await Process.run('git', [
+    '-C',
+    wikiDir.path,
+    'push',
+    'origin',
+    'HEAD',
+  ]);
   stderr.write(push.stderr);
   if (push.exitCode != 0) {
     _log('Wiki push failed.');
@@ -461,7 +529,8 @@ void _copyWikiFiles(Directory source, Directory dest) {
     final name = entity.uri.pathSegments.where((part) => part.isNotEmpty).last;
     if (name.startsWith('.')) continue;
     if (entity is Directory) {
-      final child = Directory('${dest.path}/$name')..createSync(recursive: true);
+      final child = Directory('${dest.path}/$name')
+        ..createSync(recursive: true);
       _copyWikiFiles(entity, child);
     } else if (entity is File) {
       final dot = name.lastIndexOf('.');
@@ -482,7 +551,10 @@ Future<void> _configureMcpAndTestMarionette() async {
   final pubBin = '$home/.pub-cache/bin';
   final config = {
     'mcpServers': {
-      'dart': {'command': 'dart', 'args': ['mcp-server']},
+      'dart': {
+        'command': 'dart',
+        'args': ['mcp-server'],
+      },
       'firebase': {
         'command': 'firebase',
         'args': ['mcp', '--dir', Directory.current.path],
@@ -498,19 +570,23 @@ Future<void> _configureMcpAndTestMarionette() async {
 
   final proc = await Process.start('$pubBin/marionette_mcp', []);
   proc.stdin
-    ..writeln(jsonEncode({
-      'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
-      'params': {
-        'protocolVersion': '2024-11-05', 'capabilities': {},
-        'clientInfo': {'name': 'refuge_cli', 'version': '1.0.0'},
-      },
-    }))
+    ..writeln(
+      jsonEncode({
+        'jsonrpc': '2.0',
+        'id': 1,
+        'method': 'initialize',
+        'params': {
+          'protocolVersion': '2024-11-05',
+          'capabilities': {},
+          'clientInfo': {'name': 'refuge_cli', 'version': '1.0.0'},
+        },
+      }),
+    )
     ..writeln(jsonEncode({'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list'}));
   await proc.stdin.close();
   final out = await proc.stdout.transform(utf8.decoder).join();
   _log('marionette_mcp responded (${out.length} bytes).');
 }
-
 
 Future<void> _createDeployAndAudioIssues() async {
   stdout.writeln('==> Ensuring week1 label exists...');
@@ -527,10 +603,11 @@ Future<void> _createDeployAndAudioIssues() async {
     '--force',
   ], ignoreErrors: true);
 
-  stdout.writeln('==> Creating Issue #56: Minimum Viable Deployment Process (tool/deploy_release.dart + DEPLOYMENT.md)...');
+  stdout.writeln(
+    '==> Creating Issue #56: Minimum Viable Deployment Process (tool/deploy_release.dart + DEPLOYMENT.md)...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(deploy): Minimum Viable Deployment Process (tool/deploy_release.dart + DEPLOYMENT.md + Release Notes for belongonthespectrum.web.app)',
+    title: 'feat(deploy): Minimum Viable Deployment Process (tool/deploy_release.dart + DEPLOYMENT.md + Release Notes for belongonthespectrum.web.app)',
     labels: 'infra,documentation,mentoring',
     milestone: 'v0.5.5 - Pre-Alpha Visuals, Feedback & Preview Deploy',
     body: '''
@@ -548,10 +625,11 @@ Gives us a deterministic, 1-command pure-Dart deployment pipeline (`tool/deploy_
 ''',
   );
 
-  stdout.writeln('==> Creating Issue #57: Automated GitHub Actions CI/CD Deployment Pipeline...');
+  stdout.writeln(
+    '==> Creating Issue #57: Automated GitHub Actions CI/CD Deployment Pipeline...',
+  );
   await _createIssueWithComment(
-    title:
-        'chore(ci-deploy): Automated GitHub Actions CI/CD Deployment Pipeline (PR Preview Channels + Main Merge Production Deploy)',
+    title: 'chore(ci-deploy): Automated GitHub Actions CI/CD Deployment Pipeline (PR Preview Channels + Main Merge Production Deploy)',
     labels: 'infra,firebase,bdd-testing',
     milestone: 'v0.8.0-alpha - Usable Community Alpha (Any Auth)',
     body: '''
@@ -568,10 +646,11 @@ Builds on our minimum deployment process (#56) by automating Firebase Hosting Pr
 ''',
   );
 
-  stdout.writeln('==> Creating Issue #58: Multi-Channel Semantic Release Notes, Rollback Gate & App Distribution Automation...');
+  stdout.writeln(
+    '==> Creating Issue #58: Multi-Channel Semantic Release Notes, Rollback Gate & App Distribution Automation...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(release-ops): Multi-Channel Semantic Release Notes, Rollback Gate & Firebase App Distribution Automation',
+    title: 'feat(release-ops): Multi-Channel Semantic Release Notes, Rollback Gate & Firebase App Distribution Automation',
     labels: 'infra,firebase,coming-soon',
     milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
     body: '''
@@ -588,10 +667,11 @@ Second follow-up improvement to our deployment pipeline (#56): unifies Web PWA (
 ''',
   );
 
-  stdout.writeln('==> Creating Issue #59: Neurodivergent-Friendly Audio MP3 Release Notes (week1 label)...');
+  stdout.writeln(
+    '==> Creating Issue #59: Neurodivergent-Friendly Audio MP3 Release Notes (week1 label)...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(accessibility,audio): Neurodivergent-Friendly Audio MP3 Release Notes ("Listen to What\'s New in 60 Seconds")',
+    title: 'feat(accessibility,audio): Neurodivergent-Friendly Audio MP3 Release Notes ("Listen to What\'s New in 60 Seconds")',
     labels: 'accessibility,week1,ux-neurodivergent,enhancement',
     milestone: 'v1.0.0 - Belong Community Launch (Circle.so Cutover)',
     body: '''
@@ -611,9 +691,10 @@ Many neurodivergent community members and busy organizers experience cognitive f
   );
 }
 
-
 Future<void> _addPwaCicdStoreIssues() async {
-  stdout.writeln('==> 1. Updating Issue #20 to include firebase_in_app_messaging + Web Remote Config In-App Banner...');
+  stdout.writeln(
+    '==> 1. Updating Issue #20 to include firebase_in_app_messaging + Web Remote Config In-App Banner...',
+  );
   await _runGh([
     'issue',
     'comment',
@@ -628,10 +709,11 @@ Future<void> _addPwaCicdStoreIssues() async {
 ''',
   ]);
 
-  stdout.writeln('==> 2. Creating Issue #42: CI/CD Workflow (Scheduled at v0.8.0-alpha so we hurry to Alpha first)...');
+  stdout.writeln(
+    '==> 2. Creating Issue #42: CI/CD Workflow (Scheduled at v0.8.0-alpha so we hurry to Alpha first)...',
+  );
   await _createIssueWithComment(
-    title:
-        'chore(ci): Add VGV-style GitHub Actions CI/CD workflow matching local dart analyze & flutter test rules',
+    title: 'chore(ci): Add VGV-style GitHub Actions CI/CD workflow matching local dart analyze & flutter test rules',
     labels: 'infra,bdd-testing,mentoring',
     milestone: 'v0.8.0-alpha - Usable Community Alpha (Any Auth)',
     body: '''
@@ -649,10 +731,11 @@ Our GitHub Actions workflow uses the exact same `analysis_options.yaml` (`dart a
 ''',
   );
 
-  stdout.writeln('==> 3. Creating Issue #43: Firebase Test Lab, BrowserStack & PWA Cross-Device Testing...');
+  stdout.writeln(
+    '==> 3. Creating Issue #43: Firebase Test Lab, BrowserStack & PWA Cross-Device Testing...',
+  );
   await _createIssueWithComment(
-    title:
-        'test(device-cloud): Configure Firebase Test Lab, BrowserStack & PWA installation/responsiveness verification',
+    title: 'test(device-cloud): Configure Firebase Test Lab, BrowserStack & PWA installation/responsiveness verification',
     labels: 'bdd-testing,firebase,infra,mentoring',
     milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
     body: '''
@@ -673,10 +756,11 @@ Before our October 31st Circle.so cutover, we want confidence that **Belong on t
 ''',
   );
 
-  stdout.writeln('==> 4. Creating Issue #44: TestFlight (iOS Beta) & Google Play Closed/Internal Beta Rollout...');
+  stdout.writeln(
+    '==> 4. Creating Issue #44: TestFlight (iOS Beta) & Google Play Closed/Internal Beta Rollout...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(release-beta): Configure Apple TestFlight & Google Play Internal/Closed Beta tracks',
+    title: 'feat(release-beta): Configure Apple TestFlight & Google Play Internal/Closed Beta tracks',
     labels: 'infra,coming-soon,circle-parity',
     milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
     body: '''
@@ -693,10 +777,11 @@ While the **Belong Progressive Web App (PWA)** lets every community member join 
 ''',
   );
 
-  stdout.writeln('==> 5. Creating Issue #45: Google Play Store Production Listing & Signing...');
+  stdout.writeln(
+    '==> 5. Creating Issue #45: Google Play Store Production Listing & Signing...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(store-android): Publish Belong on the Spectrum to Google Play Store (Unlocks Issue #30 Link)',
+    title: 'feat(store-android): Publish Belong on the Spectrum to Google Play Store (Unlocks Issue #30 Link)',
     labels: 'infra,branding-icons,whitelabel',
     milestone: 'v1.0.0 - Belong Community Launch (Circle.so Cutover)',
     body: '''
@@ -715,10 +800,11 @@ Once live, the `Download the Android App` link in the Spaces `Links` section (**
 ''',
   );
 
-  stdout.writeln('==> 6. Creating Issue #46: Apple iOS App Store Production Listing & Signing...');
+  stdout.writeln(
+    '==> 6. Creating Issue #46: Apple iOS App Store Production Listing & Signing...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(store-ios): Publish Belong on the Spectrum to Apple iOS App Store (Unlocks Issue #31 Link)',
+    title: 'feat(store-ios): Publish Belong on the Spectrum to Apple iOS App Store (Unlocks Issue #31 Link)',
     labels: 'infra,branding-icons,whitelabel',
     milestone: 'v1.0.0 - Belong Community Launch (Circle.so Cutover)',
     body: '''
@@ -790,8 +876,7 @@ Future<void> _addFlavorsAndCsvIssues() async {
     '==> 2. Creating Issue #40: Add stg (prod-data mirror) and qa flavors...',
   );
   await _createIssueWithComment(
-    title:
-        'feat(flavors): Configure stg (prod-data mirror) and qa Firebase & Serverpod flavors when needed',
+    title: 'feat(flavors): Configure stg (prod-data mirror) and qa Firebase & Serverpod flavors when needed',
     labels: 'infra,firebase,mentoring',
     milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
     body: '''
@@ -817,8 +902,7 @@ As the team and contributor base grow, this issue tracks activating the **`stg` 
     '==> 3. Creating Issue #41: Circle.so CSV Data Migration Importer (Contributor-Ready)...',
   );
   await _createIssueWithComment(
-    title:
-        'feat(migration): Circle.so CSV Data Migration Importer (tool/import_circle_csv.dart) for Members, Spaces & Posts',
+    title: 'feat(migration): Circle.so CSV Data Migration Importer (tool/import_circle_csv.dart) for Members, Spaces & Posts',
     labels: 'circle-parity,education,mentoring',
     milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
     body: '''
@@ -869,8 +953,7 @@ Future<void> _addMentoringEpic() async {
     '==> Creating Issue #38: [EPIC] Exemplary Mentee, Student & Apprentice Reference Repository...',
   );
   await _createIssueWithComment(
-    title:
-        'docs(mentoring): [EPIC] Exemplary Student, Mentee & Apprentice Reference Repository (Clean Architecture, BDD, Pure Dart Tooling & Token Optimization)',
+    title: 'docs(mentoring): [EPIC] Exemplary Student, Mentee & Apprentice Reference Repository (Clean Architecture, BDD, Pure Dart Tooling & Token Optimization)',
     labels: 'epic,education,mentoring,wiki-docs',
     milestone: 'v0.6.0 - Clean Belong Circle UI, Nav, Icons, Firebase & Wiki',
     body: '''
@@ -900,8 +983,7 @@ Beyond serving **Belong on the Spectrum**, this repository (`neiljaywarner/refug
     '==> Creating Issue #39: Story — Pure-Dart Helper Scripts & Free-Tier Student Token Guide in Wiki...',
   );
   await _createIssueWithComment(
-    title:
-        'feat(mentoring): Organize pure-Dart helper scripts (tool/) & add Apprentice/Free-Tier Token Optimization Wiki section',
+    title: 'feat(mentoring): Organize pure-Dart helper scripts (tool/) & add Apprentice/Free-Tier Token Optimization Wiki section',
     labels: 'education,mentoring,wiki-docs',
     milestone: 'v0.6.0 - Clean Belong Circle UI, Nav, Icons, Firebase & Wiki',
     body: '''
@@ -923,11 +1005,14 @@ Many students, mentees, and open-source apprentices work on **free-tier or cappe
 }
 
 const String _repo = 'neiljaywarner/refuge';
+
 /// GitHub CLI executable. Override with the `GH_BIN` environment variable.
 final String _gh = Platform.environment['GH_BIN'] ?? 'gh';
 
 Future<void> _syncIssues() async {
-  stdout.writeln('==> 1. Closing early unlabelled draft duplicates (#2..#14)...');
+  stdout.writeln(
+    '==> 1. Closing early unlabelled draft duplicates (#2..#14)...',
+  );
   for (var num = 2; num <= 14; num++) {
     await _runGh([
       'issue',
@@ -940,7 +1025,9 @@ Future<void> _syncIssues() async {
     ], ignoreErrors: true);
   }
 
-  stdout.writeln('==> 2. Updating Issue #21 (Non-Technical Wiki & Oct 31 Schedule) body...');
+  stdout.writeln(
+    '==> 2. Updating Issue #21 (Non-Technical Wiki & Oct 31 Schedule) body...',
+  );
   const issue21Body = '''
 ## Why This Matters (Human Summary)
 Our documentation and GitHub Wiki should welcome **non-technical community organizers, pastors, moderators, and open-source contributors** — with **zero mention of the past hackathon**.
@@ -960,10 +1047,11 @@ Most importantly, **Belong on the Spectrum's Circle.so subscription ends on Octo
 ''';
   await _runGh(['issue', 'edit', '21', '--repo', _repo, '--body', issue21Body]);
 
-  stdout.writeln('==> 3. Creating Issue #35: hooks_riverpod & CodeWithAndrea Architecture...');
+  stdout.writeln(
+    '==> 3. Creating Issue #35: hooks_riverpod & CodeWithAndrea Architecture...',
+  );
   await _createIssueWithComment(
-    title:
-        'refactor(arch): Adopt hooks_riverpod (HookConsumerWidget) & enforce CodeWithAndrea feature-first architecture',
+    title: 'refactor(arch): Adopt hooks_riverpod (HookConsumerWidget) & enforce CodeWithAndrea feature-first architecture',
     labels: 'infra,education,mentoring',
     milestone: 'v0.6.0 - Clean Belong Circle UI, Nav, Icons, Firebase & Wiki',
     body: '''
@@ -996,10 +1084,11 @@ To keep our Flutter codebase clean, testable, and free of `StatefulWidget` boile
 ''',
   );
 
-  stdout.writeln('==> 4. Creating Issue #36: CodeRabbit Release Quality Gate...');
+  stdout.writeln(
+    '==> 4. Creating Issue #36: CodeRabbit Release Quality Gate...',
+  );
   await _createIssueWithComment(
-    title:
-        'chore(quality): CodeRabbit AI Review Audit & Zero-Smell Refactoring Gate (v0.6.0, v0.7.0, v0.8.0-alpha)',
+    title: 'chore(quality): CodeRabbit AI Review Audit & Zero-Smell Refactoring Gate (v0.6.0, v0.7.0, v0.8.0-alpha)',
     labels: 'infra,bdd-testing,mentoring',
     milestone: 'v0.7.0 - Profile, Organizer Request & 50% Coverage',
     body: '''
@@ -1021,10 +1110,11 @@ Fast development should never mean cutting corners or accumulating code smells. 
 ''',
   );
 
-  stdout.writeln('==> 5. Creating Issue #37: Dart Multi-Model Token Orchestrator Harness...');
+  stdout.writeln(
+    '==> 5. Creating Issue #37: Dart Multi-Model Token Orchestrator Harness...',
+  );
   await _createIssueWithComment(
-    title:
-        'feat(tooling): Build Dart Multi-Model Token Orchestrator & Worktree Harness (tool/token_harness.dart)',
+    title: 'feat(tooling): Build Dart Multi-Model Token Orchestrator & Worktree Harness (tool/token_harness.dart)',
     labels: 'infra,education,mentoring',
     milestone: 'v0.8.0-alpha - Usable Community Alpha (Any Auth)',
     body: '''
@@ -1046,7 +1136,9 @@ When building across multiple AI model families (**Gemini 4 Argon Low/Med/High**
 ''',
   );
 
-  stdout.writeln('==> All GitHub Issues #15..#37 are clean, labeled, milestone-assigned, and ready!');
+  stdout.writeln(
+    '==> All GitHub Issues #15..#37 are clean, labeled, milestone-assigned, and ready!',
+  );
 }
 
 Future<void> _createIssueWithComment({
@@ -1077,7 +1169,15 @@ Future<void> _createIssueWithComment({
   final url = (result.stdout as String).trim();
   final num = url.split('/').last;
   stdout.writeln('   -> Created Issue #$num: $title');
-  await _runGh(['issue', 'comment', num, '--repo', _repo, '--body', llmComment]);
+  await _runGh([
+    'issue',
+    'comment',
+    num,
+    '--repo',
+    _repo,
+    '--body',
+    llmComment,
+  ]);
 }
 
 Future<void> _runGh(List<String> ghArgs, {bool ignoreErrors = false}) async {

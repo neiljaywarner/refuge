@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:args/args.dart';
 
 class ExitCodes {
@@ -50,11 +51,11 @@ class OllamaSetupRunner {
     HttpClient Function()? clientFactory,
     IOSink? outSink,
     IOSink? errSink,
-  })  : inspector = inspector ?? const RealSystemInspector(),
-        clientFactory = clientFactory,
-        outSink = outSink ?? stdout,
-        errSink = errSink ?? stderr,
-        argParser = ArgParser() {
+  }) : inspector = inspector ?? const RealSystemInspector(),
+       clientFactory = clientFactory,
+       outSink = outSink ?? stdout,
+       errSink = errSink ?? stderr,
+       argParser = ArgParser() {
     argParser
       ..addFlag(
         'check-only',
@@ -75,11 +76,7 @@ class OllamaSetupRunner {
         abbr: 'm',
         help: 'Model to verify or pull (defaults to recommended based on unified RAM).',
       )
-      ..addOption(
-        'port',
-        defaultsTo: '11434',
-        help: 'Ollama service port.',
-      )
+      ..addOption('port', defaultsTo: '11434', help: 'Ollama service port.')
       ..addFlag(
         'help',
         abbr: 'h',
@@ -122,9 +119,15 @@ class OllamaSetupRunner {
     }
 
     if (results['help'] == true) {
-      outSink.writeln('=================================================================');
-      outSink.writeln('🦙 Belong on the Spectrum — Local Offline LLM Setup (Phase 1)');
-      outSink.writeln('=================================================================');
+      outSink.writeln(
+        '=================================================================',
+      );
+      outSink.writeln(
+        '🦙 Belong on the Spectrum — Local Offline LLM Setup (Phase 1)',
+      );
+      outSink.writeln(
+        '=================================================================',
+      );
       outSink.writeln(argParser.usage);
       return ExitCodes.success;
     }
@@ -133,21 +136,33 @@ class OllamaSetupRunner {
     final autoPull = results['pull'] as bool;
     final port = int.tryParse(results['port'] as String) ?? 11434;
 
-    outSink.writeln('=================================================================');
-    outSink.writeln('🦙 Belong on the Spectrum — Local Offline LLM Setup (Phase 1)');
-    outSink.writeln('=================================================================\n');
+    outSink.writeln(
+      '=================================================================',
+    );
+    outSink.writeln(
+      '🦙 Belong on the Spectrum — Local Offline LLM Setup (Phase 1)',
+    );
+    outSink.writeln(
+      '=================================================================\n',
+    );
 
     // 1. Hardware & System Inspection
     outSink.writeln('1. Inspecting Hardware & Memory...');
     final memoryInfo = await inspector.inspectMemory();
     if (!memoryInfo.isAppleSilicon) {
-      outSink.writeln('⚠️ Architecture is ${memoryInfo.architecture} (Expected arm64 Apple Silicon). Metal GPU shader acceleration may not be available.');
+      outSink.writeln(
+        '⚠️ Architecture is ${memoryInfo.architecture} (Expected arm64 Apple Silicon). Metal GPU shader acceleration may not be available.',
+      );
     } else {
-      outSink.writeln('✓ Apple Silicon (${memoryInfo.architecture}) detected. Metal GPU shader acceleration supported.');
+      outSink.writeln(
+        '✓ Apple Silicon (${memoryInfo.architecture}) detected. Metal GPU shader acceleration supported.',
+      );
     }
 
     outSink.writeln('✓ Unified RAM: ${memoryInfo.ramGb} GB detected.');
-    outSink.writeln('✓ Recommended Local Models: ${memoryInfo.recommendedModel}');
+    outSink.writeln(
+      '✓ Recommended Local Models: ${memoryInfo.recommendedModel}',
+    );
 
     final targetModel = (results['model'] as String?)?.isNotEmpty == true
         ? results['model'] as String
@@ -164,19 +179,27 @@ class OllamaSetupRunner {
       if (!checkOnly) {
         final hasBrew = await inspector.commandExists('brew');
         if (hasBrew) {
-          outSink.writeln('Installing Ollama via Homebrew (brew install ollama)...');
+          outSink.writeln(
+            'Installing Ollama via Homebrew (brew install ollama)...',
+          );
           await inspector.runCommand(['brew', 'install', 'ollama']);
         } else {
-          outSink.writeln('Homebrew not found. Please download Ollama directly from: https://ollama.com/download');
+          outSink.writeln(
+            'Homebrew not found. Please download Ollama directly from: https://ollama.com/download',
+          );
         }
       }
     }
 
     // 3. Check Ollama Service
-    outSink.writeln('\n3. Checking Ollama Service Status (http://127.0.0.1:$port)...');
+    outSink.writeln(
+      '\n3. Checking Ollama Service Status (http://127.0.0.1:$port)...',
+    );
     var isServiceUp = await inspector.isPortResponding(port);
     if (isServiceUp) {
-      outSink.writeln('✓ Ollama service is active and responding on port $port.');
+      outSink.writeln(
+        '✓ Ollama service is active and responding on port $port.',
+      );
     } else {
       outSink.writeln('ℹ️ Ollama service is not responding on port $port.');
       if (!checkOnly && hasOllama) {
@@ -187,7 +210,9 @@ class OllamaSetupRunner {
         if (isServiceUp) {
           outSink.writeln('✓ Ollama service successfully started.');
         } else {
-          outSink.writeln('⚠️ Service startup in progress. If needed, run "ollama serve" in a separate terminal.');
+          outSink.writeln(
+            '⚠️ Service startup in progress. If needed, run "ollama serve" in a separate terminal.',
+          );
         }
       }
     }
@@ -198,13 +223,17 @@ class OllamaSetupRunner {
       final listResult = await inspector.runCommand(['ollama', 'list']);
       final installedModels = parseModelsList(listResult);
 
-      final hasTarget = installedModels.any((m) => m.startsWith(targetModel) || m.contains(targetModel));
+      final hasTarget = installedModels.any(
+        (m) => m.startsWith(targetModel) || m.contains(targetModel),
+      );
       if (hasTarget) {
         outSink.writeln('✓ $targetModel is already downloaded.');
       } else {
         outSink.writeln('ℹ️ $targetModel not found.');
         if (autoPull && !checkOnly && isServiceUp) {
-          outSink.writeln('⬇️ Pulling $targetModel (this may take several minutes)...');
+          outSink.writeln(
+            '⬇️ Pulling $targetModel (this may take several minutes)...',
+          );
           await inspector.runCommand(['ollama', 'pull', targetModel]);
           outSink.writeln('✓ $targetModel pulled successfully.');
         } else {
@@ -217,7 +246,11 @@ class OllamaSetupRunner {
     outSink.writeln('\n5. Running Dart LLM Health Check Utility...');
     final verifyFile = File('tool/verify_ollama.dart');
     if (await verifyFile.exists()) {
-      final verifyResult = await inspector.runCommand(['dart', 'run', 'tool/verify_ollama.dart']);
+      final verifyResult = await inspector.runCommand([
+        'dart',
+        'run',
+        'tool/verify_ollama.dart',
+      ]);
       if (verifyResult.trim().isNotEmpty) {
         outSink.writeln(verifyResult.trim());
       }
@@ -225,10 +258,16 @@ class OllamaSetupRunner {
       outSink.writeln('ℹ️ tool/verify_ollama.dart not found.');
     }
 
-    outSink.writeln('\n=================================================================');
+    outSink.writeln(
+      '\n=================================================================',
+    );
     outSink.writeln('🎉 Local Offline LLM Setup Completed!');
-    outSink.writeln('Detailed documentation: docs/wiki/Local-LLMs-Phase-1-Getting-Started.md');
-    outSink.writeln('=================================================================\n');
+    outSink.writeln(
+      'Detailed documentation: docs/wiki/Local-LLMs-Phase-1-Getting-Started.md',
+    );
+    outSink.writeln(
+      '=================================================================\n',
+    );
 
     return ExitCodes.success;
   }
@@ -281,7 +320,9 @@ class RealSystemInspector implements SystemInspector {
     try {
       final client = HttpClient();
       client.connectionTimeout = const Duration(seconds: 1);
-      final request = await client.getUrl(Uri.parse('http://127.0.0.1:$port/api/tags'));
+      final request = await client.getUrl(
+        Uri.parse('http://127.0.0.1:$port/api/tags'),
+      );
       final response = await request.close();
       client.close();
       return response.statusCode == 200;

@@ -23,15 +23,13 @@ void main() {
 
     test('Android API 26+ adaptive icon XMLs and foreground mipmaps exist', () {
       expect(
-        File(
-          'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
-        ).existsSync(),
+        File('android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml')
+            .existsSync(),
         isTrue,
       );
       expect(
-        File(
-          'android/app/src/main/res/values/ic_launcher_background.xml',
-        ).readAsStringSync(),
+        File('android/app/src/main/res/values/ic_launcher_background.xml')
+            .readAsStringSync(),
         contains('#F3EFE6'),
       );
       expect(

@@ -44,14 +44,12 @@ void main() {
             );
           },
           home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: TextButton(
-                  onPressed: () => BelongFeedbackAndVotingSheet.show(context),
-                  child: const Text('Open sheet'),
-                ),
-              );
-            },
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+                child: const Text('Open sheet'),
+              ),
+            ),
           ),
         ),
       ),

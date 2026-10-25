@@ -56,10 +56,7 @@ void main() {
         final repo = LocalPostRepository(isDevMode: true);
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -107,10 +104,7 @@ void main() {
         final repo = LocalPostRepository(isDevMode: true);
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -144,10 +138,7 @@ void main() {
         final repo = LocalPostRepository(isDevMode: true);
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 

@@ -5,18 +5,15 @@ import '../../tool/firebase_test_lab_support.dart';
 void main() {
   group('devFlutterApkBuildArgs', () {
     test('pins dev entrypoint, flavor, and Serverpod off', () {
-      expect(
-        devFlutterApkBuildArgs(),
-        [
-          'build',
-          'apk',
-          '--debug',
-          '-t',
-          'lib/main_dev.dart',
-          '--dart-define=FLAVOR=dev',
-          '--dart-define=ENABLE_SERVERPOD=false',
-        ],
-      );
+      expect(devFlutterApkBuildArgs(), [
+        'build',
+        'apk',
+        '--debug',
+        '-t',
+        'lib/main_dev.dart',
+        '--dart-define=FLAVOR=dev',
+        '--dart-define=ENABLE_SERVERPOD=false',
+      ]);
     });
   });
 

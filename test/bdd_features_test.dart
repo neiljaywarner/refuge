@@ -42,19 +42,20 @@ void main() {
       },
     );
 
-    patrolWidgetTest('Scenario: Visiting an empty fellowship room shows peaceful stillness', (
-      $,
-    ) async {
-      await pumpRefuge($);
+    patrolWidgetTest(
+      'Scenario: Visiting an empty fellowship room shows peaceful stillness',
+      ($) async {
+        await pumpRefuge($);
 
-      // When I tap on '#announcements' space chip
-      await $('📢 #announcements').tap();
+        // When I tap on '#announcements' space chip
+        await $('📢 #announcements').tap();
 
-      // Then I should see 'Space is quiet right now'
-      expect($(RegExp('Space is quiet right now')), findsOneWidget);
-      // And no chaotic error banners exist
-      expect($(RegExp('Error')), findsNothing);
-    });
+        // Then I should see 'Space is quiet right now'
+        expect($(RegExp('Space is quiet right now')), findsOneWidget);
+        // And no chaotic error banners exist
+        expect($(RegExp('Error')), findsNothing);
+      },
+    );
 
     patrolWidgetTest('Scenario: Filtering reflections by mindful intent tags', (
       $,
@@ -62,7 +63,9 @@ void main() {
       await pumpRefuge($);
 
       // When I select the '[Comfort Only]' intent filter chip
-      final comfortFilter = $(find.widgetWithText(ChoiceChip, '[Comfort Only]'));
+      final comfortFilter = $(
+        find.widgetWithText(ChoiceChip, '[Comfort Only]'),
+      );
       await comfortFilter.first.tap();
 
       // Then I should see reflections from 'Elena R. (Colorado)'
@@ -96,132 +99,146 @@ void main() {
       await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
     }
 
-    patrolWidgetTest('Scenario: Toggling through all 4 sensory themes applies appropriate styling', (
-      $,
-    ) async {
-      await pumpRefuge($);
+    patrolWidgetTest(
+      'Scenario: Toggling through all 4 sensory themes applies appropriate styling',
+      ($) async {
+        await pumpRefuge($);
 
-      // When I tap 'Dark' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Dark').tap();
-      expect($('Refuge'), findsOneWidget);
+        // When I tap 'Dark' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Dark').tap();
+        expect($('Refuge'), findsOneWidget);
 
-      // When I tap 'Contrast' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Contrast').tap();
-      expect($('Refuge'), findsOneWidget);
+        // When I tap 'Contrast' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Contrast').tap();
+        expect($('Refuge'), findsOneWidget);
 
-      // When I tap 'Clean' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Clean').tap();
-      expect($('Refuge'), findsOneWidget);
+        // When I tap 'Clean' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Clean').tap();
+        expect($('Refuge'), findsOneWidget);
 
-      // When I tap 'Sage' via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Sage').tap();
-      expect($('Refuge'), findsOneWidget);
-    });
+        // When I tap 'Sage' via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Sage').tap();
+        expect($('Refuge'), findsOneWidget);
+      },
+    );
 
-    patrolWidgetTest('Scenario: Visual contrast and title persistence across sensory switches', (
-      $,
-    ) async {
-      await pumpRefuge($);
+    patrolWidgetTest(
+      'Scenario: Visual contrast and title persistence across sensory switches',
+      ($) async {
+        await pumpRefuge($);
 
-      // Tap Contrast mode via Sensory Themes menu
-      await $(find.byTooltip('Sensory Themes')).tap();
-      await $('Contrast').tap();
+        // Tap Contrast mode via Sensory Themes menu
+        await $(find.byTooltip('Sensory Themes')).tap();
+        await $('Contrast').tap();
 
-      // Verify title & calm tech subtitle remain visible and unclipped
-      expect($('Refuge'), findsOneWidget);
-      expect($(RegExp('Calm Tech')), findsOneWidget);
-    });
+        // Verify title & calm tech subtitle remain visible and unclipped
+        expect($('Refuge'), findsOneWidget);
+        expect($(RegExp('Calm Tech')), findsOneWidget);
+      },
+    );
   });
 
-  group('BDD Feature: Qualitative Care Affirmations Without Dopamine Loops', () {
-    late LocalPostRepository repository;
+  group(
+    'BDD Feature: Qualitative Care Affirmations Without Dopamine Loops',
+    () {
+      late LocalPostRepository repository;
 
-    setUp(() {
-      repository = LocalPostRepository();
-    });
-
-    Future<void> pumpRefuge(PatrolTester $) async {
-      $.tester.view.physicalSize = const Size(1200, 1600);
-      $.tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        $.tester.view.resetPhysicalSize();
-        $.tester.view.resetDevicePixelRatio();
+      setUp(() {
+        repository = LocalPostRepository();
       });
-      await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
-    }
 
-    patrolWidgetTest('Scenario: Incrementing qualitative care affirmations atomically', (
-      $,
-    ) async {
-      await pumpRefuge($);
+      Future<void> pumpRefuge(PatrolTester $) async {
+        $.tester.view.physicalSize = const Size(1200, 1600);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+        await $.pumpWidgetAndSettle(RefugeApp(repository: repository));
+      }
 
-      // Initial Praying reaction
-      final prayButton = $('6 Praying');
-      expect(prayButton, findsOneWidget);
+      patrolWidgetTest(
+        'Scenario: Incrementing qualitative care affirmations atomically',
+        ($) async {
+          await pumpRefuge($);
 
-      // When I tap '6 Praying'
-      await prayButton.tap();
+          // Initial Praying reaction
+          final prayButton = $('6 Praying');
+          expect(prayButton, findsOneWidget);
 
-      // Then counter should increment to '7 Praying'
-      expect($('7 Praying'), findsOneWidget);
-      expect($('6 Praying'), findsNothing);
-    });
+          // When I tap '6 Praying'
+          await prayButton.tap();
 
-    patrolWidgetTest('Scenario: Publishing an unhurried reflection and resetting composer', (
-      $,
-    ) async {
-      await pumpRefuge($);
+          // Then counter should increment to '7 Praying'
+          expect($('7 Praying'), findsOneWidget);
+          expect($('6 Praying'), findsNothing);
+        },
+      );
 
-      const testReflection = 'Finding rest in Scripture and quiet stillness today.';
+      patrolWidgetTest(
+        'Scenario: Publishing an unhurried reflection and resetting composer',
+        ($) async {
+          await pumpRefuge($);
 
-      // When I type into reflection composer
-      await $(TextField).enterText(testReflection);
+          const testReflection =
+              'Finding rest in Scripture and quiet stillness today.';
 
-      // And tap 'Publish Reflection'
-      await $('Publish Reflection').tap();
+          // When I type into reflection composer
+          await $(TextField).enterText(testReflection);
 
-      // Then reflection appears in the feed
-      expect($(testReflection), findsOneWidget);
-      // And input is cleared
-      final textField = $.tester.widget<TextField>(find.byType(TextField));
-      expect(textField.controller?.text, isEmpty);
-    });
-  });
+          // And tap 'Publish Reflection'
+          await $('Publish Reflection').tap();
+
+          // Then reflection appears in the feed
+          expect($(testReflection), findsOneWidget);
+          // And input is cleared
+          final textField = $.tester.widget<TextField>(find.byType(TextField));
+          expect(textField.controller?.text, isEmpty);
+        },
+      );
+    },
+  );
 
   group('BDD Feature: Serverpod 4 Resilient Client Integration', () {
-    test('Scenario: Operating in resilient offline fallback mode within 800ms', () async {
-      // Given a ServerpodPostRepository initialized with unreachable server
-      final repo = ServerpodPostRepository(serverUrl: 'http://127.0.0.1:9999/');
+    test(
+      'Scenario: Operating in resilient offline fallback mode within 800ms',
+      () async {
+        // Given a ServerpodPostRepository initialized with unreachable server
+        final repo = ServerpodPostRepository(
+          serverUrl: 'http://127.0.0.1:9999/',
+        );
 
-      // When client requests posts for space 'prayer'
-      final posts = await repo.getPosts(spaceKey: 'prayer');
+        // When client requests posts for space 'prayer'
+        final posts = await repo.getPosts(spaceKey: 'prayer');
 
-      // Then it yields seeded fellowship reflections without throwing
-      expect(posts, isNotEmpty);
-      expect(posts.any((p) => p.authorName.contains('David M.')), isTrue);
-    });
+        // Then it yields seeded fellowship reflections without throwing
+        expect(posts, isNotEmpty);
+        expect(posts.any((p) => p.authorName.contains('David M.')), isTrue);
+      },
+    );
 
-    patrolWidgetTest('Scenario: Server-side Quiet Digest banner renders peaceful aggregates', (
-      $,
-    ) async {
-      $.tester.view.physicalSize = const Size(1200, 1600);
-      $.tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        $.tester.view.resetPhysicalSize();
-        $.tester.view.resetDevicePixelRatio();
-      });
+    patrolWidgetTest(
+      'Scenario: Server-side Quiet Digest banner renders peaceful aggregates',
+      ($) async {
+        $.tester.view.physicalSize = const Size(1200, 1600);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
 
-      final repo = LocalPostRepository();
-      await $.pumpWidgetAndSettle(RefugeApp(repository: repo));
+        final repo = LocalPostRepository();
+        await $.pumpWidgetAndSettle(RefugeApp(repository: repo));
 
-      // Verify Quiet Digest banner is present
-      expect($(RegExp('Gathered in peace')), findsOneWidget);
-      expect($(RegExp(r'Gathered in peace.*reflections')), findsOneWidget);
-      expect($(RegExp('care affirmations')), findsOneWidget);
-    });
+        // Verify Quiet Digest banner is present
+        expect($(RegExp('Gathered in peace')), findsOneWidget);
+        expect($(RegExp(r'Gathered in peace.*reflections')), findsOneWidget);
+        expect($(RegExp('care affirmations')), findsOneWidget);
+      },
+    );
   });
 }

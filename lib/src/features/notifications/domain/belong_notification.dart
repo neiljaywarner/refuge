@@ -186,58 +186,53 @@ class BelongNotification extends Equatable {
     String? postId,
     String? commentSnippet,
     String? conversationId,
-  }) {
-    return BelongNotification(
-      id: id ?? this.id,
-      type: type ?? this.type,
-      authorName: authorName ?? this.authorName,
-      postTitle: postTitle ?? this.postTitle,
-      timestamp: timestamp ?? this.timestamp,
-      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
-      isRead: isRead ?? this.isRead,
-      spaceKey: spaceKey ?? this.spaceKey,
-      postId: postId ?? this.postId,
-      commentSnippet: commentSnippet ?? this.commentSnippet,
-      conversationId: conversationId ?? this.conversationId,
-    );
-  }
+  }) => BelongNotification(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    authorName: authorName ?? this.authorName,
+    postTitle: postTitle ?? this.postTitle,
+    timestamp: timestamp ?? this.timestamp,
+    authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
+    isRead: isRead ?? this.isRead,
+    spaceKey: spaceKey ?? this.spaceKey,
+    postId: postId ?? this.postId,
+    commentSnippet: commentSnippet ?? this.commentSnippet,
+    conversationId: conversationId ?? this.conversationId,
+  );
 
   /// Converts notification to JSON map for cloud sync and webhook dispatch (#530).
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'type': type.name,
-      'authorName': authorName,
-      'postTitle': postTitle,
-      'timestamp': timestamp.toIso8601String(),
-      'authorAvatarUrl': authorAvatarUrl,
-      'isRead': isRead,
-      'spaceKey': spaceKey,
-      'postId': postId,
-      'commentSnippet': commentSnippet,
-      'conversationId': conversationId,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': type.name,
+    'authorName': authorName,
+    'postTitle': postTitle,
+    'timestamp': timestamp.toIso8601String(),
+    'authorAvatarUrl': authorAvatarUrl,
+    'isRead': isRead,
+    'spaceKey': spaceKey,
+    'postId': postId,
+    'commentSnippet': commentSnippet,
+    'conversationId': conversationId,
+  };
 
   /// Creates a [BelongNotification] from JSON map.
-  factory BelongNotification.fromJson(Map<String, dynamic> json) {
-    return BelongNotification(
-      id: json['id'] as String,
-      type: BelongNotificationType.values.firstWhere(
-        (t) => t.name == json['type'],
-        orElse: () => BelongNotificationType.mention,
-      ),
-      authorName: json['authorName'] as String? ?? 'Community Member',
-      postTitle: json['postTitle'] as String? ?? 'Reflection',
-      timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
-          : DateTime.now(),
-      authorAvatarUrl: json['authorAvatarUrl'] as String?,
-      isRead: json['isRead'] as bool? ?? false,
-      spaceKey: json['spaceKey'] as String?,
-      postId: json['postId'] as String?,
-      commentSnippet: json['commentSnippet'] as String?,
-      conversationId: json['conversationId'] as String?,
-    );
-  }
+  factory BelongNotification.fromJson(Map<String, dynamic> json) =>
+      BelongNotification(
+        id: json['id'] as String,
+        type: BelongNotificationType.values.firstWhere(
+          (t) => t.name == json['type'],
+          orElse: () => BelongNotificationType.mention,
+        ),
+        authorName: json['authorName'] as String? ?? 'Community Member',
+        postTitle: json['postTitle'] as String? ?? 'Reflection',
+        timestamp: json['timestamp'] != null
+            ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
+            : DateTime.now(),
+        authorAvatarUrl: json['authorAvatarUrl'] as String?,
+        isRead: json['isRead'] as bool? ?? false,
+        spaceKey: json['spaceKey'] as String?,
+        postId: json['postId'] as String?,
+        commentSnippet: json['commentSnippet'] as String?,
+        conversationId: json['conversationId'] as String?,
+      );
 }

@@ -8,7 +8,7 @@ Parent epic: [#513](https://github.com/neiljaywarner/refuge/issues/513).
 
 | Check | Local hook | Pull request CI | Merge to `main` |
 | --- | --- | --- | --- |
-| `dart format` on staged Dart | pre-commit | files owned by the pipeline, until #519 | |
+| `dart format -l 100` on staged Dart | pre-commit | `lib`, `test`, `tool`, `packages/belong_lints` at 100 columns | |
 | `dart analyze` for Belong lint rules | pre-commit | fails on `no_print_use_app_logger`, `prefer_use_text_editing_controller`, and `dispose_controllers` | |
 | Unit and widget tests | optional, see below | 77-file manifest (`tool/ci_widget_test_manifest.txt`), 40% floor on `lcov.info` from that run | |
 | Privacy scan | pre-push | | |
@@ -42,9 +42,9 @@ CI runs the largest passing subset of `flutter test` (77 `*_test.dart` files lis
 
 ### Why did CI fail on `dart format`?
 
-The format step checks the files the pipeline owns, at the SDK default line length. It does not format the whole repository yet. About 168 Dart files still differ from `dart format`, so a repo-wide check would be red. That sweep is [#519](https://github.com/neiljaywarner/refuge/issues/519). A 100-character page width lands in the same sweep.
+CI runs `dart format --output=none --set-exit-if-changed -l 100` on `lib`, `test`, `tool`, and `packages/belong_lints`. `analysis_options.yaml` sets `formatter.line_length: 100` so editors match.
 
-Fix a format failure on a guarded file with `dart format <file>`. The pre-commit hook formats staged Dart files.
+Fix a format failure with `dart format -l 100 <path>`. The pre-commit hook formats staged Dart files at the same width.
 
 ### Why did analyze fail on `no_print_use_app_logger`?
 
@@ -66,7 +66,7 @@ A `ChangeNotifier` controller (`TextEditingController`, `ScrollController`, `Ani
 
 ### Why are fat-arrow bodies and single quotes not required yet?
 
-`prefer_expression_function_bodies` and `prefer_single_quotes` would fail on the current tree. They land with the mechanical sweep in [#519](https://github.com/neiljaywarner/refuge/issues/519). Switch expressions are preferred in review. There is no built-in lint that requires them.
+`prefer_expression_function_bodies` and `prefer_single_quotes` are enabled in `analysis_options.yaml` after the [#519](https://github.com/neiljaywarner/refuge/issues/519) sweep. CI still fails only on the three Belong plugin rules above; run `dart fix --apply` locally when analyze reports these style hints. Switch expressions are preferred in review when they stay readable.
 
 ### Why did the deploy workflow fail before the Flutter build?
 
@@ -117,4 +117,4 @@ Prefer `BelongTextStyles.of(context)` (`title`, `body`, `caption`, `emphasis`) o
 | Deploy log stops at "Missing Firebase credentials" | Add `FIREBASE_SERVICE_ACCOUNT` or `FIREBASE_TOKEN` in repository secrets. |
 | Preview channel deploy returns 403 | The service account needs Hosting admin on project `belongonthespectrum`. |
 | Coverage job fails around the floor | Look at the printed `hit/found` line. Add tests or, if the suite shrank for a good reason, change `--min` in `.github/workflows/ci.yml` in a reviewed PR. |
-| Format CI and your editor disagree | Both should use `dart format` with no `-l` flag until #519. |
+| Format CI and your editor disagree | Both should use `dart format -l 100` (or `formatter.line_length: 100` in analysis_options). |

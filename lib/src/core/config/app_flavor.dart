@@ -91,12 +91,10 @@ enum AppFlavor {
   static const String marketingWebsiteUrl =
       'https://www.belongonthespectrum.com/';
 
-  static AppFlavor fromString(String value) {
-    return AppFlavor.values.firstWhere(
-      (f) => f.slug.toLowerCase() == value.trim().toLowerCase(),
-      orElse: () => AppFlavor.dev,
-    );
-  }
+  static AppFlavor fromString(String value) => AppFlavor.values.firstWhere(
+    (f) => f.slug.toLowerCase() == value.trim().toLowerCase(),
+    orElse: () => AppFlavor.dev,
+  );
 }
 
 /// Provides the active [AppFlavor] for the running instance.

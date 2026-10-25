@@ -136,6 +136,6 @@ final memberDirectoryStoreProvider = Provider<MemberDirectoryStore>(
   (ref) => MemberDirectoryStore(),
 );
 
-final directoryMembersProvider = StreamProvider<List<DirectoryMember>>((ref) {
-  return ref.watch(memberDirectoryStoreProvider).watchDirectoryMembers();
-});
+final directoryMembersProvider = StreamProvider<List<DirectoryMember>>(
+  (ref) => ref.watch(memberDirectoryStoreProvider).watchDirectoryMembers(),
+);

@@ -15,11 +15,16 @@ void main() {
       );
     });
 
-    test('FirebaseInitializer returns headless fallback in unit test environment', () async {
-      final initialized = await FirebaseInitializer.initialize(flavor: AppFlavor.dev);
-      expect(initialized, isFalse);
-      expect(FirebaseInitializer.isInitialized, isFalse);
-    });
+    test(
+      'FirebaseInitializer returns headless fallback in unit test environment',
+      () async {
+        final initialized = await FirebaseInitializer.initialize(
+          flavor: AppFlavor.dev,
+        );
+        expect(initialized, isFalse);
+        expect(FirebaseInitializer.isInitialized, isFalse);
+      },
+    );
 
     test('ErrorReporterService records handled errors without throwing', () {
       expect(

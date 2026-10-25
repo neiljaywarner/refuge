@@ -7,11 +7,7 @@ void main() {
   patrolWidgetTest(
     'Patrol Hello World Widget Test: read-only home shell and bottom nav',
     ($) async {
-      await $.pumpWidgetAndSettle(
-        RefugeApp(
-          repository: LocalPostRepository(),
-        ),
-      );
+      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
       expect($('Belong'), findsOneWidget);
       expect($('Refuge'), findsOneWidget);

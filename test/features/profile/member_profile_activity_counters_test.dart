@@ -17,22 +17,36 @@ void main() {
     });
 
     test('getPostsByAuthor returns posts filtered by member name', () async {
-      final davidPosts = await postRepo.getPostsByAuthor(authorName: 'David M. (UK)');
+      final davidPosts = await postRepo.getPostsByAuthor(
+        authorName: 'David M. (UK)',
+      );
       expect(davidPosts.length, 1);
       expect(davidPosts.first.authorName, 'David M. (UK)');
-      expect(davidPosts.first.content, contains('routine has been disorienting'));
+      expect(
+        davidPosts.first.content,
+        contains('routine has been disorienting'),
+      );
 
-      final nathanPosts = await postRepo.getPostsByAuthor(authorName: 'Nathan K. (Texas)');
+      final nathanPosts = await postRepo.getPostsByAuthor(
+        authorName: 'Nathan K. (Texas)',
+      );
       expect(nathanPosts.length, 1);
       expect(nathanPosts.first.content, contains('reverberation decay'));
     });
 
     test('getCommentsByAuthor returns comments authored by member', () async {
-      final davidComments = await commentRepo.getCommentsByAuthor(authorName: 'David M. (UK)');
+      final davidComments = await commentRepo.getCommentsByAuthor(
+        authorName: 'David M. (UK)',
+      );
       expect(davidComments.length, 1);
-      expect(davidComments.first.content, contains('brings a lot of reassurance today'));
+      expect(
+        davidComments.first.content,
+        contains('brings a lot of reassurance today'),
+      );
 
-      final pastorComments = await commentRepo.getCommentsByAuthor(authorName: 'Pastor Thomas (Melbourne)');
+      final pastorComments = await commentRepo.getCommentsByAuthor(
+        authorName: 'Pastor Thomas (Melbourne)',
+      );
       expect(pastorComments.length, 1);
       expect(pastorComments.first.content, contains('Hebrews 4:10 reminds us'));
     });
@@ -41,10 +55,7 @@ void main() {
   group('Member Profile Activity Counters BDD Widget Tests', () {
     Widget buildHarness({Widget? home, LocalPostRepository? customPostRepo}) {
       final repo = customPostRepo ?? LocalPostRepository(isDevMode: true);
-      return RefugeApp(
-        repository: repo,
-        homeOverride: home,
-      );
+      return RefugeApp(repository: repo, homeOverride: home);
     }
 
     patrolWidgetTest(
@@ -70,7 +81,10 @@ void main() {
         // 3. Verify dialog header
         expect($(Key('other_member_profile_name')), findsOneWidget);
         expect($(find.textContaining('David M. (UK)')), findsWidgets);
-        expect($(find.textContaining('Transitioning to a new routine')), findsWidgets);
+        expect(
+          $(find.textContaining('Transitioning to a new routine')),
+          findsWidgets,
+        );
 
         // 4. Verify activity counter badges: 1 Post and 1 Comment
         expect($(Key('profile_activity_posts_tab')), findsOneWidget);
@@ -116,9 +130,7 @@ void main() {
 
         await $.pumpWidget(
           buildHarness(
-            home: const Scaffold(
-              body: BelongMembersDirectoryView(),
-            ),
+            home: const Scaffold(body: BelongMembersDirectoryView()),
           ),
         );
         await $.pumpAndSettle();

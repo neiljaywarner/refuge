@@ -9,13 +9,11 @@ import '../domain/account_deletion_exception.dart';
 class DeleteMyAccountDialog extends HookConsumerWidget {
   const DeleteMyAccountDialog({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const DeleteMyAccountDialog(),
-    );
-  }
+  static Future<void> show(BuildContext context) => showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const DeleteMyAccountDialog(),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

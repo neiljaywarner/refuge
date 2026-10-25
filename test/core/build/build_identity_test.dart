@@ -333,7 +333,7 @@ void main() {
       'deploy_release passes the stamp into web, apk, version.json, and notes',
       () {
         final source = File('tool/deploy_release.dart').readAsStringSync();
-        expect(source, contains("stamp.flutterArgs("));
+        expect(source, contains('stamp.flutterArgs('));
         expect(source, contains('analyticsDartDefines(Platform.environment)'));
         expect(source, contains('joinArgsRedactingAnalyticsDefines'));
         expect(source, contains("targetFile: 'lib/main_prod.dart'"));

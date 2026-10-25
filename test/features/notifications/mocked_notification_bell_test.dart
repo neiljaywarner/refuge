@@ -21,25 +21,21 @@ class _FakeBadge extends AppLauncherBadgeService {
 }
 
 void main() {
-  BelongNotification like() {
-    return BelongNotification(
-      id: 'notif-like-1',
-      authorName: 'David M.',
-      type: BelongNotificationType.like,
-      postTitle: 'Sensory Friendly Worship',
-      timestamp: DateTime.utc(2026, 10, 22, 15),
-    );
-  }
+  BelongNotification like() => BelongNotification(
+    id: 'notif-like-1',
+    authorName: 'David M.',
+    type: BelongNotificationType.like,
+    postTitle: 'Sensory Friendly Worship',
+    timestamp: DateTime.utc(2026, 10, 22, 15),
+  );
 
-  BelongNotification mention() {
-    return BelongNotification(
-      id: 'notif-mention-1',
-      authorName: 'Sarah K.',
-      type: BelongNotificationType.mention,
-      postTitle: 'Quiet Waters',
-      timestamp: DateTime.utc(2026, 10, 22, 16),
-    );
-  }
+  BelongNotification mention() => BelongNotification(
+    id: 'notif-mention-1',
+    authorName: 'Sarah K.',
+    type: BelongNotificationType.mention,
+    postTitle: 'Quiet Waters',
+    timestamp: DateTime.utc(2026, 10, 22, 16),
+  );
 
   group('Notification bell with an in-memory feed', () {
     patrolWidgetTest(

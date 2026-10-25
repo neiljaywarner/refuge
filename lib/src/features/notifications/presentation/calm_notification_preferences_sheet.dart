@@ -11,16 +11,14 @@ import 'package:refuge4serverpod/src/features/notifications/domain/notification_
 class CalmNotificationPreferencesSheet extends ConsumerWidget {
   const CalmNotificationPreferencesSheet({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) =>
-          const SystemBottomInset(child: CalmNotificationPreferencesSheet()),
-    );
-  }
+  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) =>
+        const SystemBottomInset(child: CalmNotificationPreferencesSheet()),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,7 +98,10 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               ),
               Text(
                 'Sign in on this phone so the notification can find you. A sample member never gets one. Immediate Gentle Cards stays quiet.',
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12, height: 1.4),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 12,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -195,12 +196,14 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                     identifier: 'preview-calm-shade-notification-button',
                     label: 'Preview shade notification debug',
                     child: OutlinedButton(
-                      key: const ValueKey('preview-calm-shade-notification-button'),
+                      key: const ValueKey(
+                        'preview-calm-shade-notification-button',
+                      ),
                       onPressed: () async {
-                      await showCalmPreviewDirectMessage(
-                        ref.read(calmLocalNotificationServiceProvider),
-                      );
-                    },
+                        await showCalmPreviewDirectMessage(
+                          ref.read(calmLocalNotificationServiceProvider),
+                        );
+                      },
                       child: const Text('Preview shade notification (debug)'),
                     ),
                   ),

@@ -135,14 +135,12 @@ void main() {
 
 class _FakeSignedInProfileNotifier extends MemberProfileNotifier {
   @override
-  MemberProfile build() {
-    return const MemberProfile(
-      displayName: 'Joy Disciple',
-      email: 'joy@belong.org',
-      bio: 'Belong Disciple',
-      comfortBadges: ['Literal communication appreciated'],
-      isSignedIn: true,
-      authMethod: 'firebase_auth',
-    );
-  }
+  MemberProfile build() => const MemberProfile(
+    displayName: 'Joy Disciple',
+    email: 'joy@belong.org',
+    bio: 'Belong Disciple',
+    comfortBadges: ['Literal communication appreciated'],
+    isSignedIn: true,
+    authMethod: 'firebase_auth',
+  );
 }

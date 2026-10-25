@@ -8,12 +8,17 @@ class SpaceNavigationBar extends ConsumerWidget {
   final String selectedSpace;
   final ValueChanged<String> onSelectSpace;
 
-  const SpaceNavigationBar({super.key, required this.selectedSpace, required this.onSelectSpace});
+  const SpaceNavigationBar({
+    super.key,
+    required this.selectedSpace,
+    required this.onSelectSpace,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isContrast = theme.scaffoldBackgroundColor == Colors.black &&
+    final isContrast =
+        theme.scaffoldBackgroundColor == Colors.black &&
         theme.colorScheme.primary == const Color(0xFFFFEB3B);
 
     return Container(
@@ -35,7 +40,9 @@ class SpaceNavigationBar extends ConsumerWidget {
                   entry.value,
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: isSelected && isContrast ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected && isContrast
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color: isSelected && isContrast
                         ? Colors.black
                         : (isContrast ? Colors.white : null),

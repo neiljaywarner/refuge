@@ -65,15 +65,13 @@ class AppwriteReflectionMirror implements ReflectionMirror {
   Future<void> incrementReaction({
     required String postId,
     required String column,
-  }) {
-    return _tables.incrementRowColumn(
-      databaseId: config.databaseId,
-      tableId: AppwriteConfig.reflectionTableId,
-      rowId: appwriteRowId(postId),
-      column: column,
-      value: 1,
-    );
-  }
+  }) => _tables.incrementRowColumn(
+    databaseId: config.databaseId,
+    tableId: AppwriteConfig.reflectionTableId,
+    rowId: appwriteRowId(postId),
+    column: column,
+    value: 1,
+  );
 
   @override
   Future<List<Post>> listPosts({required String spaceKey}) async {
@@ -143,9 +141,8 @@ class AppwriteReflectionMirror implements ReflectionMirror {
     }
   }
 
-  Post? _postFromRow(models.Row row) {
-    return postFromAppwritePayload({...row.data, r'$id': row.$id});
-  }
+  Post? _postFromRow(models.Row row) =>
+      postFromAppwritePayload({...row.data, r'$id': row.$id});
 }
 
 /// Reflection store that replaces Serverpod Cloud.
@@ -476,44 +473,38 @@ String canonicalSpaceKey(String key) {
   return clean;
 }
 
-String? reactionColumn(String reactionType) {
-  return switch (reactionType) {
-    'pray' => 'prayingCount',
-    'standing' => 'standingWithCount',
-    'peace' => 'peaceCount',
-    'encouraged' || 'relatable' => 'encouragedCount',
-    _ => null,
-  };
-}
+String? reactionColumn(String reactionType) => switch (reactionType) {
+  'pray' => 'prayingCount',
+  'standing' => 'standingWithCount',
+  'peace' => 'peaceCount',
+  'encouraged' || 'relatable' => 'encouragedCount',
+  _ => null,
+};
 
-Map<String, dynamic> reflectionRowData(Post post) {
-  return {
-    'authorName': post.authorName,
-    'spaceKey': canonicalSpaceKey(post.spaceKey),
-    'intentTag': post.toneTag.isEmpty ? '[Support]' : post.toneTag,
-    if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty)
-      'specialInterestTag': post.specialInterestTag,
-    if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-      'imageUrl': post.imageUrl,
-    'content': post.content,
-    'createdAt': post.timestamp.toUtc().toIso8601String(),
-    'prayingCount': post.reactions['pray'] ?? 0,
-    'standingWithCount': post.reactions['standing'] ?? 0,
-    'peaceCount': post.reactions['peace'] ?? 0,
-    'encouragedCount':
-        post.reactions['encouraged'] ?? post.reactions['relatable'] ?? 0,
-    'isDemo': post.isDemo,
-  };
-}
+Map<String, dynamic> reflectionRowData(Post post) => {
+  'authorName': post.authorName,
+  'spaceKey': canonicalSpaceKey(post.spaceKey),
+  'intentTag': post.toneTag.isEmpty ? '[Support]' : post.toneTag,
+  if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty)
+    'specialInterestTag': post.specialInterestTag,
+  if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
+    'imageUrl': post.imageUrl,
+  'content': post.content,
+  'createdAt': post.timestamp.toUtc().toIso8601String(),
+  'prayingCount': post.reactions['pray'] ?? 0,
+  'standingWithCount': post.reactions['standing'] ?? 0,
+  'peaceCount': post.reactions['peace'] ?? 0,
+  'encouragedCount':
+      post.reactions['encouraged'] ?? post.reactions['relatable'] ?? 0,
+  'isDemo': post.isDemo,
+};
 
-Map<String, dynamic> firestoreReflectionData(Post post) {
-  return {
-    ...reflectionRowData(post),
-    'toneTag': post.toneTag,
-    'timestamp': post.timestamp.toIso8601String(),
-    'reactions': post.reactions,
-  };
-}
+Map<String, dynamic> firestoreReflectionData(Post post) => {
+  ...reflectionRowData(post),
+  'toneTag': post.toneTag,
+  'timestamp': post.timestamp.toIso8601String(),
+  'reactions': post.reactions,
+};
 
 Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {
   final reactions = <String, int>{};

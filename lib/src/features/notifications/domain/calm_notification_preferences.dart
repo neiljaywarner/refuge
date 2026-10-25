@@ -19,7 +19,8 @@ enum CalmDigestSchedule {
   /// Delivered as calm cards without loud chimes or urgent badges.
   immediateGentle(
     title: 'Immediate Gentle Cards',
-    description: 'Silent cards appear as reflections happen. Zero auditory startles.',
+    description:
+        'Silent cards appear as reflections happen. Zero auditory startles.',
     emoji: '🌱',
   ),
 
@@ -79,25 +80,23 @@ class CalmNotificationPreferences extends Equatable {
     bool? isWebPwaInstalled,
     bool? isIosWebWithoutPwa,
     bool? isSystemPermissionDenied,
-  }) {
-    return CalmNotificationPreferences(
-      enabled: enabled ?? this.enabled,
-      schedule: schedule ?? this.schedule,
-      fcmToken: fcmToken ?? this.fcmToken,
-      isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
-      isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
-      isSystemPermissionDenied:
-          isSystemPermissionDenied ?? this.isSystemPermissionDenied,
-    );
-  }
+  }) => CalmNotificationPreferences(
+    enabled: enabled ?? this.enabled,
+    schedule: schedule ?? this.schedule,
+    fcmToken: fcmToken ?? this.fcmToken,
+    isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
+    isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
+    isSystemPermissionDenied:
+        isSystemPermissionDenied ?? this.isSystemPermissionDenied,
+  );
 
   @override
   List<Object?> get props => [
-        enabled,
-        schedule,
-        fcmToken,
-        isWebPwaInstalled,
-        isIosWebWithoutPwa,
-        isSystemPermissionDenied,
-      ];
+    enabled,
+    schedule,
+    fcmToken,
+    isWebPwaInstalled,
+    isIosWebWithoutPwa,
+    isSystemPermissionDenied,
+  ];
 }

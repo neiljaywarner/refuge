@@ -21,7 +21,8 @@ import 'firebase_test_lab_support.dart';
 
 const _defaultProject = 'belongonthespectrum';
 const _defaultTarget = 'integration_test/patrol_hello_world_test.dart';
-const _defaultDevice = 'model=panther,version=33,locale=en,orientation=portrait';
+const _defaultDevice =
+    'model=panther,version=33,locale=en,orientation=portrait';
 
 Future<void> main(List<String> args) async {
   if (args.contains('--help') || args.contains('-h')) {
@@ -32,7 +33,8 @@ Future<void> main(List<String> args) async {
   final dryRun = args.contains('--dry-run');
   final buildOnly = args.contains('--build-only');
   final target = _getArg(args, '--target') ?? _defaultTarget;
-  final project = _getArg(args, '--project') ??
+  final project =
+      _getArg(args, '--project') ??
       Platform.environment['FIREBASE_PROJECT_ID'] ??
       _defaultProject;
   final device = _getArg(args, '--device') ?? _defaultDevice;
@@ -102,14 +104,10 @@ Future<void> main(List<String> args) async {
 
     _log('Running Gradle assembleDebugAndroidTest...');
     final gradleCmd = Platform.isWindows ? 'gradlew.bat' : './gradlew';
-    final gradleProcess = await Process.run(
-      gradleCmd,
-      [
-        'app:assembleDebugAndroidTest',
-        '-Ptarget=${integrationTestGradleTarget(target)}',
-      ],
-      workingDirectory: androidDir.path,
-    );
+    final gradleProcess = await Process.run(gradleCmd, [
+      'app:assembleDebugAndroidTest',
+      '-Ptarget=${integrationTestGradleTarget(target)}',
+    ], workingDirectory: androidDir.path);
     if (gradleProcess.exitCode != 0) {
       stderr.writeln(
         'Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).',
@@ -161,7 +159,8 @@ Future<void> main(List<String> args) async {
   _log('\nPhase 2: Firebase Test Lab cloud execution');
   final gcloudArgs = gcloudFirebaseTestAndroidRunArgs(
     appApkPath: resolvedAppApk.path,
-    testApkPath: resolvedTestApk?.path ?? '$repoRoot/$androidTestApkRelativePath',
+    testApkPath:
+        resolvedTestApk?.path ?? '$repoRoot/$androidTestApkRelativePath',
     device: device,
     project: project,
     timeout: timeout,
@@ -202,9 +201,7 @@ Future<void> main(List<String> args) async {
   }
 
   _log('Test run completed.');
-  _log(
-    'Results: https://console.firebase.google.com/project/$project/testlab',
-  );
+  _log('Results: https://console.firebase.google.com/project/$project/testlab');
 }
 
 Future<String?> _devApkRefusalForFile(File apk) async {
@@ -245,11 +242,10 @@ Future<String?> _resolveFlutterExecutable() async {
       }
     }
   }
-  final which = await Process.run(
-    'bash',
-    ['-lc', 'command -v flutter'],
-    environment: Platform.environment,
-  );
+  final which = await Process.run('bash', [
+    '-lc',
+    'command -v flutter',
+  ], environment: Platform.environment);
   if (which.exitCode == 0) {
     final resolved = (which.stdout as String).trim();
     if (resolved.isNotEmpty) {

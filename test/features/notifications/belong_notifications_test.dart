@@ -237,37 +237,34 @@ void main() {
       Widget? home,
       List<BelongNotification>? initialNotifications,
       MemberProfile? profile,
-    }) {
-      return ProviderScope(
-        overrides: [
-          memberProfileProvider.overrideWith(
-            () => FakeMemberProfileNotifier(
-              profile ??
-                  const MemberProfile(
-                    displayName: 'Tester',
-                    email: 'tester@example.com',
-                    bio: 'Bio',
-                    comfortBadges: [],
-                    isSignedIn: true,
-                  ),
-            ),
+    }) => ProviderScope(
+      overrides: [
+        memberProfileProvider.overrideWith(
+          () => FakeMemberProfileNotifier(
+            profile ??
+                const MemberProfile(
+                  displayName: 'Tester',
+                  email: 'tester@example.com',
+                  bio: 'Bio',
+                  comfortBadges: [],
+                  isSignedIn: true,
+                ),
           ),
-          postRepositoryProvider.overrideWithValue(
-            LocalPostRepository(isDevMode: true),
+        ),
+        postRepositoryProvider.overrideWithValue(
+          LocalPostRepository(isDevMode: true),
+        ),
+        appLauncherBadgeServiceProvider.overrideWithValue(
+          FakeLauncherBadgeService(),
+        ),
+        if (initialNotifications != null)
+          belongNotificationsProvider.overrideWith(
+            () =>
+                BelongNotificationsNotifier(initialList: initialNotifications),
           ),
-          appLauncherBadgeServiceProvider.overrideWithValue(
-            FakeLauncherBadgeService(),
-          ),
-          if (initialNotifications != null)
-            belongNotificationsProvider.overrideWith(
-              () => BelongNotificationsNotifier(
-                initialList: initialNotifications,
-              ),
-            ),
-        ],
-        child: MaterialApp(home: home ?? const RefugeHomeScreen()),
-      );
-    }
+      ],
+      child: MaterialApp(home: home ?? const RefugeHomeScreen()),
+    );
 
     patrolWidgetTest('Bottom nav bar shows bell with unread badge counter', (
       $,

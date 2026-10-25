@@ -52,25 +52,25 @@ class SoftDeletedUser extends Equatable {
   final Map<String, dynamic> originalData;
 
   Map<String, dynamic> toMap() => {
-        'userId': userId,
-        'displayName': displayName,
-        'email': email,
-        'bannedAt': bannedAt.toIso8601String(),
-        'bannedByAdminEmail': bannedByAdminEmail,
-        'reason': reason,
-        'softDeleted': softDeleted,
-        'originalData': originalData,
-      };
+    'userId': userId,
+    'displayName': displayName,
+    'email': email,
+    'bannedAt': bannedAt.toIso8601String(),
+    'bannedByAdminEmail': bannedByAdminEmail,
+    'reason': reason,
+    'softDeleted': softDeleted,
+    'originalData': originalData,
+  };
 
   @override
   List<Object?> get props => [
-        userId,
-        displayName,
-        email,
-        bannedAt,
-        bannedByAdminEmail,
-        reason,
-        softDeleted,
-        originalData,
-      ];
+    userId,
+    displayName,
+    email,
+    bannedAt,
+    bannedByAdminEmail,
+    reason,
+    softDeleted,
+    originalData,
+  ];
 }

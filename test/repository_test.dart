@@ -22,26 +22,29 @@ void main() {
       expect(post.content, 'Original prayer text');
     });
 
-    test('LocalPostRepository supports creating posts and streaming updates', () async {
-      final repo = LocalPostRepository();
-      final initial = await repo.getPosts(spaceKey: 'prayer');
-      expect(initial.length, greaterThanOrEqualTo(2));
+    test(
+      'LocalPostRepository supports creating posts and streaming updates',
+      () async {
+        final repo = LocalPostRepository();
+        final initial = await repo.getPosts(spaceKey: 'prayer');
+        expect(initial.length, greaterThanOrEqualTo(2));
 
-      final newPost = Post(
-        id: '202',
-        authorName: 'Hannah T.',
-        spaceKey: 'prayer',
-        toneTag: '[Comfort Only]',
-        content: 'Finding quiet in the storm.',
-        timestamp: DateTime.now(),
-        reactions: {'peace': 3},
-      );
+        final newPost = Post(
+          id: '202',
+          authorName: 'Hannah T.',
+          spaceKey: 'prayer',
+          toneTag: '[Comfort Only]',
+          content: 'Finding quiet in the storm.',
+          timestamp: DateTime.now(),
+          reactions: {'peace': 3},
+        );
 
-      await repo.createPost(newPost);
-      final afterCreate = await repo.getPosts(spaceKey: 'prayer');
-      expect(afterCreate.first.id, '202');
-      expect(afterCreate.first.content, 'Finding quiet in the storm.');
-    });
+        await repo.createPost(newPost);
+        final afterCreate = await repo.getPosts(spaceKey: 'prayer');
+        expect(afterCreate.first.id, '202');
+        expect(afterCreate.first.content, 'Finding quiet in the storm.');
+      },
+    );
 
     test('addReaction increments reaction count correctly', () async {
       final repo = LocalPostRepository();
@@ -56,25 +59,30 @@ void main() {
       expect(updatedPrayCount, equals(initialPrayCount + 1));
     });
 
-    test('ServerpodPostRepository operates resiliently with fallback', () async {
-      final repo = ServerpodPostRepository(serverUrl: 'http://localhost:9999/');
-      final posts = await repo.getPosts(spaceKey: 'prayer');
-      expect(posts, isNotEmpty);
+    test(
+      'ServerpodPostRepository operates resiliently with fallback',
+      () async {
+        final repo = ServerpodPostRepository(
+          serverUrl: 'http://localhost:9999/',
+        );
+        final posts = await repo.getPosts(spaceKey: 'prayer');
+        expect(posts, isNotEmpty);
 
-      final newPost = Post(
-        id: '303',
-        authorName: 'Samuel L.',
-        spaceKey: 'prayer',
-        toneTag: '[Resource]',
-        content: 'Sharing a soothing reflection on Psalm 46:10.',
-        timestamp: DateTime.now(),
-        reactions: {'pray': 1},
-      );
+        final newPost = Post(
+          id: '303',
+          authorName: 'Samuel L.',
+          spaceKey: 'prayer',
+          toneTag: '[Resource]',
+          content: 'Sharing a soothing reflection on Psalm 46:10.',
+          timestamp: DateTime.now(),
+          reactions: {'pray': 1},
+        );
 
-      await repo.createPost(newPost);
-      final refreshed = await repo.getPosts(spaceKey: 'prayer');
-      expect(refreshed.first.id, '303');
-    });
+        await repo.createPost(newPost);
+        final refreshed = await repo.getPosts(spaceKey: 'prayer');
+        expect(refreshed.first.id, '303');
+      },
+    );
 
     test('PostRepositoryFactory creates configured repository mode', () {
       final repo = PostRepositoryFactory.create();

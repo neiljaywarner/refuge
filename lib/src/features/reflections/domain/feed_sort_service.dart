@@ -172,13 +172,11 @@ class FeedQuery {
     required Iterable<String> comfortBadges,
     required String bio,
     String? tagline,
-  }) {
-    return {
-      ...comfortBadges,
-      if (bio.isNotEmpty) ...bio.split(RegExp(r'[\s,.]+')),
-      if (tagline != null) ...tagline.split(RegExp(r'[\s,.]+')),
-    };
-  }
+  }) => {
+    ...comfortBadges,
+    if (bio.isNotEmpty) ...bio.split(RegExp(r'[\s,.]+')),
+    if (tagline != null) ...tagline.split(RegExp(r'[\s,.]+')),
+  };
 
   /// Returns true if [post] contains developer test junk, debugging tokens,
   /// numbered placeholder phrases, or bot artifacts that should not be visible

@@ -139,7 +139,9 @@ void main() {
         expect($(ReflectionCard), findsOneWidget);
         expect($('Alex Autism Advocate'), findsOneWidget);
         expect(
-          $('Finding quiet in sensory overwhelm today at the botanical gardens.'),
+          $(
+            'Finding quiet in sensory overwhelm today at the botanical gardens.',
+          ),
           findsOneWidget,
         );
       },
@@ -153,10 +155,7 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               home: Scaffold(
-                body: CommunitySearchView(
-                  repository: repo,
-                  isContrast: false,
-                ),
+                body: CommunitySearchView(repository: repo, isContrast: false),
               ),
             ),
           ),

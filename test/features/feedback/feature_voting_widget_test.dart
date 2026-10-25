@@ -26,10 +26,8 @@ void main() {
                 BackendTarget.appwrite,
               ),
             ],
-          child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(),
-              ),
+            child: const MaterialApp(
+              home: Scaffold(body: BelongFeedbackAndVotingSheet()),
             ),
           ),
         );
@@ -81,16 +79,16 @@ void main() {
               ),
             ],
             child: const MaterialApp(
-              home: Scaffold(
-                body: BelongFeedbackAndVotingSheet(),
-              ),
+              home: Scaffold(body: BelongFeedbackAndVotingSheet()),
             ),
           ),
         );
 
         // Scroll down in the ListView to bring the item into view
         await $.tester.dragUntilVisible(
-          find.byKey(const Key('vote_button_idea-realtime-vs-calm-notifications')),
+          find.byKey(
+            const Key('vote_button_idea-realtime-vs-calm-notifications'),
+          ),
           find.byType(ListView).first,
           const Offset(0, -200),
         );
@@ -112,7 +110,8 @@ void main() {
         );
 
         // Upvote (0 -> 1)
-        await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
+        await $(const Key('vote_button_idea-realtime-vs-calm-notifications'))
+            .tap();
         expect(
           find.descendant(
             of: find.byKey(
@@ -124,7 +123,8 @@ void main() {
         );
 
         // Toggle vote back off (1 -> 0)
-        await $(const Key('vote_button_idea-realtime-vs-calm-notifications')).tap();
+        await $(const Key('vote_button_idea-realtime-vs-calm-notifications'))
+            .tap();
         expect(
           find.descendant(
             of: find.byKey(
@@ -186,15 +186,11 @@ void main() {
         await $(const Key('star_rating_4')).tap();
         await $.pumpAndSettle();
         expect($('4 ★ · Good experience'), findsOneWidget);
-        expect(
-          $('What feels calm, clear, or welcoming?'),
-          findsOneWidget,
-        );
+        expect($('What feels calm, clear, or welcoming?'), findsOneWidget);
 
         // Submit 4-star feedback and verify rating is persisted
-        await $(const Key('feedback_message_input')).enterText(
-          'Love the calm PWA star rating flow!',
-        );
+        await $(const Key('feedback_message_input'))
+            .enterText('Love the calm PWA star rating flow!');
         await $(const Key('submit_feedback_button')).tap();
         await $.pumpAndSettle();
 

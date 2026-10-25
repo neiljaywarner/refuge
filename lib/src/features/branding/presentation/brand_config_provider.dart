@@ -6,6 +6,6 @@ import 'package:refuge4serverpod/src/features/branding/domain/community_brand_co
 /// Defaults to [CommunityBrandConfig.belong] (`belongonthespectrum.com`) and
 /// can be overridden in `ProviderScope` for white-label partner tenants or BDD
 /// tests.
-final communityBrandConfigProvider = Provider<CommunityBrandConfig>((ref) {
-  return const CommunityBrandConfig.belong();
-});
+final communityBrandConfigProvider = Provider<CommunityBrandConfig>(
+  (ref) => const CommunityBrandConfig.belong(),
+);

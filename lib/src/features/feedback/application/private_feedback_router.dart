@@ -168,6 +168,6 @@ class PrivateFeedbackRouter {
 }
 
 /// Riverpod provider for the [PrivateFeedbackRouter].
-final privateFeedbackRouterProvider = Provider<PrivateFeedbackRouter>((ref) {
-  return const PrivateFeedbackRouter();
-});
+final privateFeedbackRouterProvider = Provider<PrivateFeedbackRouter>(
+  (ref) => const PrivateFeedbackRouter(),
+);

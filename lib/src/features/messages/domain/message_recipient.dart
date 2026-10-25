@@ -54,14 +54,13 @@ class MessageRecipient {
     return false;
   }
 
-  factory MessageRecipient.fromDevMember(DevFellowshipMember member) {
-    return MessageRecipient(
-      id: 'sample-${member.name}',
-      name: member.name,
-      tagline: member.effectiveTagline,
-      isSample: true,
-    );
-  }
+  factory MessageRecipient.fromDevMember(DevFellowshipMember member) =>
+      MessageRecipient(
+        id: 'sample-${member.name}',
+        name: member.name,
+        tagline: member.effectiveTagline,
+        isSample: true,
+      );
 
   factory MessageRecipient.fromFirestoreUser(
     String uid,
@@ -75,7 +74,9 @@ class MessageRecipient {
       name: (data['displayName'] as String?)?.trim().isNotEmpty == true
           ? (data['displayName'] as String).trim()
           : 'Fellow Member',
-      tagline: bio?.trim().isNotEmpty == true ? bio!.trim() : 'Community member',
+      tagline: bio?.trim().isNotEmpty == true
+          ? bio!.trim()
+          : 'Community member',
       handle: handle?.isNotEmpty == true ? handle : null,
     );
   }

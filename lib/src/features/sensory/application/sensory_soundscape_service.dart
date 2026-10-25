@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../domain/sensory_soundscape.dart';
 
 /// Current playback and timer state of sensory soundscapes.
@@ -36,28 +38,26 @@ class SoundscapeState extends Equatable {
     bool clearSleepTimer = false,
     int? remainingSeconds,
     bool clearRemainingSeconds = false,
-  }) {
-    return SoundscapeState(
-      activeSoundscape: activeSoundscape ?? this.activeSoundscape,
-      isPlaying: isPlaying ?? this.isPlaying,
-      volume: volume ?? this.volume,
-      sleepTimerMinutes: clearSleepTimer
-          ? null
-          : (sleepTimerMinutes ?? this.sleepTimerMinutes),
-      remainingSeconds: clearRemainingSeconds
-          ? null
-          : (remainingSeconds ?? this.remainingSeconds),
-    );
-  }
+  }) => SoundscapeState(
+    activeSoundscape: activeSoundscape ?? this.activeSoundscape,
+    isPlaying: isPlaying ?? this.isPlaying,
+    volume: volume ?? this.volume,
+    sleepTimerMinutes: clearSleepTimer
+        ? null
+        : (sleepTimerMinutes ?? this.sleepTimerMinutes),
+    remainingSeconds: clearRemainingSeconds
+        ? null
+        : (remainingSeconds ?? this.remainingSeconds),
+  );
 
   @override
   List<Object?> get props => [
-        activeSoundscape,
-        isPlaying,
-        volume,
-        sleepTimerMinutes,
-        remainingSeconds,
-      ];
+    activeSoundscape,
+    isPlaying,
+    volume,
+    sleepTimerMinutes,
+    remainingSeconds,
+  ];
 }
 
 /// Abstract audio player interface allowing zero-dependency testing and pluggable audio engines.
@@ -99,17 +99,19 @@ class InMemorySoundscapeAudioPlayer implements SoundscapeAudioPlayer {
 }
 
 /// Provider for the audio player implementation.
-final soundscapeAudioPlayerProvider = Provider<SoundscapeAudioPlayer>((ref) {
-  return InMemorySoundscapeAudioPlayer();
-});
+final soundscapeAudioPlayerProvider = Provider<SoundscapeAudioPlayer>(
+  (ref) => InMemorySoundscapeAudioPlayer(),
+);
 
 /// Riverpod StateNotifier controlling sensory soundscape playback and sleep timer.
 class SensorySoundscapeNotifier extends StateNotifier<SoundscapeState> {
   SensorySoundscapeNotifier(this._audioPlayer)
-      : super(SoundscapeState(
+    : super(
+        SoundscapeState(
           activeSoundscape: SensorySoundscape.curatedSoundscapes.first,
           volume: SensorySoundscape.curatedSoundscapes.first.defaultVolume,
-        ));
+        ),
+      );
 
   final SoundscapeAudioPlayer _audioPlayer;
   Timer? _countdownTimer;
@@ -130,17 +132,12 @@ class SensorySoundscapeNotifier extends StateNotifier<SoundscapeState> {
     if (state.isPlaying) {
       await _audioPlayer.pause();
       _countdownTimer?.cancel();
-      state = state.copyWith(
-        isPlaying: false,
-        clearRemainingSeconds: true,
-      );
+      state = state.copyWith(isPlaying: false, clearRemainingSeconds: true);
     } else {
-      final target = state.activeSoundscape ?? SensorySoundscape.curatedSoundscapes.first;
+      final target =
+          state.activeSoundscape ?? SensorySoundscape.curatedSoundscapes.first;
       await _audioPlayer.play(target, state.volume);
-      state = state.copyWith(
-        activeSoundscape: target,
-        isPlaying: true,
-      );
+      state = state.copyWith(activeSoundscape: target, isPlaying: true);
       if (state.sleepTimerMinutes != null) {
         _startTimer(state.sleepTimerMinutes!);
       }
@@ -206,6 +203,6 @@ class SensorySoundscapeNotifier extends StateNotifier<SoundscapeState> {
 /// Provider exposing the soundscape state notifier.
 final sensorySoundscapeNotifierProvider =
     StateNotifierProvider<SensorySoundscapeNotifier, SoundscapeState>((ref) {
-  final player = ref.watch(soundscapeAudioPlayerProvider);
-  return SensorySoundscapeNotifier(player);
-});
+      final player = ref.watch(soundscapeAudioPlayerProvider);
+      return SensorySoundscapeNotifier(player);
+    });

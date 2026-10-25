@@ -21,8 +21,7 @@ enum FeedbackSentiment {
     label: 'Idea / Tweak',
     subtitle: 'Private Suggestion',
     promptTitle: 'What would make Belong clearer or calmer for you?',
-    promptHint:
-        'Suggest a feature, a clearer label, or a sensory improvement. Routed directly to our private organizer triage queue.',
+    promptHint: 'Suggest a feature, a clearer label, or a sensory improvement. Routed directly to our private organizer triage queue.',
     isPrivateTriage: true,
   ),
 
@@ -32,8 +31,7 @@ enum FeedbackSentiment {
     label: 'Bug / Confusing',
     subtitle: 'Private Triage',
     promptTitle: 'What felt broken, confusing, or overwhelming?',
-    promptHint:
-        'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
+    promptHint: 'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
     isPrivateTriage: true,
   );
 
@@ -85,17 +83,16 @@ class VotableFeatureItem {
   final bool userVoted;
   final int? githubIssueNumber;
 
-  VotableFeatureItem copyWith({int? votes, bool? userVoted}) {
-    return VotableFeatureItem(
-      id: id,
-      title: title,
-      description: description,
-      stage: stage,
-      votes: votes ?? this.votes,
-      userVoted: userVoted ?? this.userVoted,
-      githubIssueNumber: githubIssueNumber,
-    );
-  }
+  VotableFeatureItem copyWith({int? votes, bool? userVoted}) =>
+      VotableFeatureItem(
+        id: id,
+        title: title,
+        description: description,
+        stage: stage,
+        votes: votes ?? this.votes,
+        userVoted: userVoted ?? this.userVoted,
+        githubIssueNumber: githubIssueNumber,
+      );
 }
 
 /// Sane default features + active WIP items for the Oct 24–31 Circle cutover preview.

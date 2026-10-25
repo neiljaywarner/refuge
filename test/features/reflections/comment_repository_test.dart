@@ -52,44 +52,53 @@ void main() {
   });
 
   group('LocalCommentRepository Unit Tests', () {
-    test('Retrieves seeded comments and identifies nested replies for post 1', () async {
-      final repo = LocalCommentRepository();
-      final comments = await repo.getComments(postId: '1');
+    test(
+      'Retrieves seeded comments and identifies nested replies for post 1',
+      () async {
+        final repo = LocalCommentRepository();
+        final comments = await repo.getComments(postId: '1');
 
-      expect(comments, isNotEmpty);
-      final topLevel = comments.where((c) => !c.isNested).toList();
-      final nested = comments.where((c) => c.isNested).toList();
+        expect(comments, isNotEmpty);
+        final topLevel = comments.where((c) => !c.isNested).toList();
+        final nested = comments.where((c) => c.isNested).toList();
 
-      expect(topLevel, isNotEmpty);
-      expect(nested, isNotEmpty);
-      expect(nested.first.parentCommentId, equals(topLevel.first.id));
-    });
+        expect(topLevel, isNotEmpty);
+        expect(nested, isNotEmpty);
+        expect(nested.first.parentCommentId, equals(topLevel.first.id));
+      },
+    );
 
-    test('addComment creates top-level comment and broadcasts stream', () async {
-      final repo = LocalCommentRepository();
-      final now = DateTime.now();
+    test(
+      'addComment creates top-level comment and broadcasts stream',
+      () async {
+        final repo = LocalCommentRepository();
+        final now = DateTime.now();
 
-      final newComment = Comment(
-        id: 'test_c_1',
-        postId: 'test_post',
-        authorName: 'Sarah L.',
-        content: 'Thank you for this uplifting reflection.',
-        toneTag: '[Encouragement]',
-        timestamp: now,
-      );
+        final newComment = Comment(
+          id: 'test_c_1',
+          postId: 'test_post',
+          authorName: 'Sarah L.',
+          content: 'Thank you for this uplifting reflection.',
+          toneTag: '[Encouragement]',
+          timestamp: now,
+        );
 
-      final created = await repo.addComment(newComment);
-      expect(created.id, 'test_c_1');
+        final created = await repo.addComment(newComment);
+        expect(created.id, 'test_c_1');
 
-      final allComments = await repo.getComments(postId: 'test_post');
-      expect(allComments.length, 1);
-      expect(allComments.first.content, 'Thank you for this uplifting reflection.');
-      expect(allComments.first.toneTag, '[Encouragement]');
-      expect(allComments.first.isNested, isFalse);
+        final allComments = await repo.getComments(postId: 'test_post');
+        expect(allComments.length, 1);
+        expect(
+          allComments.first.content,
+          'Thank you for this uplifting reflection.',
+        );
+        expect(allComments.first.toneTag, '[Encouragement]');
+        expect(allComments.first.isNested, isFalse);
 
-      final count = await repo.getCommentCount(postId: 'test_post');
-      expect(count, 1);
-    });
+        final count = await repo.getCommentCount(postId: 'test_post');
+        expect(count, 1);
+      },
+    );
 
     test('addComment creates nested reply with parentCommentId', () async {
       final repo = LocalCommentRepository();
@@ -140,10 +149,7 @@ void main() {
 
       final expectation = expectLater(
         stream,
-        emitsInOrder([
-          isEmpty,
-          hasLength(1),
-        ]),
+        emitsInOrder([isEmpty, hasLength(1)]),
       );
 
       await Future<void>.delayed(Duration.zero);
@@ -161,14 +167,17 @@ void main() {
       await expectation;
     });
 
-    test('Production mode starts with 0 comments and no hardcoded seed data', () async {
-      final repo = LocalCommentRepository(isDevMode: false);
-      final comments = await repo.getComments(postId: '1');
-      expect(comments, isEmpty);
+    test(
+      'Production mode starts with 0 comments and no hardcoded seed data',
+      () async {
+        final repo = LocalCommentRepository(isDevMode: false);
+        final comments = await repo.getComments(postId: '1');
+        expect(comments, isEmpty);
 
-      final count = await repo.getCommentCount(postId: '1');
-      expect(count, 0);
-    });
+        final count = await repo.getCommentCount(postId: '1');
+        expect(count, 0);
+      },
+    );
 
     test('Dev mode seeds default comments for post 1', () async {
       final repo = LocalCommentRepository(isDevMode: true);

@@ -11,29 +11,28 @@ import 'package:refuge4serverpod/src/features/reflections/data/local_post_reposi
 AuthSession _signedInSession({
   required String email,
   bool emailVerified = false,
-}) {
-  return AuthSession(
-    userId: 'uid-${email.hashCode}',
-    displayName: 'Fellowship Member',
-    email: email,
-    bio: 'bio',
-    comfortBadges: const ['Literal communication appreciated'],
-    isSignedIn: true,
-    authMethod: 'in_memory_password',
-    emailVerified: emailVerified,
-  );
-}
+}) => AuthSession(
+  userId: 'uid-${email.hashCode}',
+  displayName: 'Fellowship Member',
+  email: email,
+  bio: 'bio',
+  comfortBadges: const ['Literal communication appreciated'],
+  isSignedIn: true,
+  authMethod: 'in_memory_password',
+  emailVerified: emailVerified,
+);
 
-Widget _gateApp({required AuthRepository authRepo, required AppFlavor flavor}) {
-  return RefugeApp(
-    repository: LocalPostRepository(),
-    enforceSignIn: true,
-    overrides: [
-      authRepositoryProvider.overrideWithValue(authRepo),
-      appFlavorProvider.overrideWithValue(flavor),
-    ],
-  );
-}
+Widget _gateApp({
+  required AuthRepository authRepo,
+  required AppFlavor flavor,
+}) => RefugeApp(
+  repository: LocalPostRepository(),
+  enforceSignIn: true,
+  overrides: [
+    authRepositoryProvider.overrideWithValue(authRepo),
+    appFlavorProvider.overrideWithValue(flavor),
+  ],
+);
 
 Future<void> runWithPlatform(
   WidgetTester tester,

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
@@ -19,22 +20,25 @@ void main() {
       expect(session.isGuest, isTrue);
     });
 
-    test('registerWithPassword creates an account and returns active session', () async {
-      final session = await authRepo.registerWithPassword(
-        email: 'member@belong.org',
-        password: 'securePassword123',
-        displayName: 'Neurodivergent Disciple',
-        bio: 'Learning to unmask in fellowship',
-        icocChurchAffiliation: 'Austin Christian Church',
-      );
+    test(
+      'registerWithPassword creates an account and returns active session',
+      () async {
+        final session = await authRepo.registerWithPassword(
+          email: 'member@belong.org',
+          password: 'securePassword123',
+          displayName: 'Neurodivergent Disciple',
+          bio: 'Learning to unmask in fellowship',
+          icocChurchAffiliation: 'Austin Christian Church',
+        );
 
-      expect(session.isSignedIn, isTrue);
-      expect(session.email, 'member@belong.org');
-      expect(session.displayName, 'Neurodivergent Disciple');
-      expect(session.icocChurchAffiliation, 'Austin Christian Church');
-      expect(session.isIcocMember, isTrue);
-      expect(authRepo.currentSession().isSignedIn, isTrue);
-    });
+        expect(session.isSignedIn, isTrue);
+        expect(session.email, 'member@belong.org');
+        expect(session.displayName, 'Neurodivergent Disciple');
+        expect(session.icocChurchAffiliation, 'Austin Christian Church');
+        expect(session.isIcocMember, isTrue);
+        expect(authRepo.currentSession().isSignedIn, isTrue);
+      },
+    );
 
     test('registerWithPassword rejects weak passwords (< 6 chars)', () async {
       expect(
@@ -66,7 +70,11 @@ void main() {
           icocChurchAffiliation: 'Chicago Church of Christ',
         ),
         throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'email-already-in-use'),
+          isA<AuthException>().having(
+            (e) => e.code,
+            'code',
+            'email-already-in-use',
+          ),
         ),
       );
     });
@@ -89,37 +97,51 @@ void main() {
       expect(session.displayName, 'Registered User');
     });
 
-    test('signInWithPassword rejects non-existent user with user-not-found', () async {
-      expect(
-        () => authRepo.signInWithPassword(
-          email: 'ghost@belong.org',
-          password: 'anyPassword',
-        ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'user-not-found'),
-        ),
-      );
-    });
+    test(
+      'signInWithPassword rejects non-existent user with user-not-found',
+      () async {
+        expect(
+          () => authRepo.signInWithPassword(
+            email: 'ghost@belong.org',
+            password: 'anyPassword',
+          ),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.code,
+              'code',
+              'user-not-found',
+            ),
+          ),
+        );
+      },
+    );
 
-    test('signInWithPassword rejects wrong password with wrong-password', () async {
-      await authRepo.registerWithPassword(
-        email: 'user@belong.org',
-        password: 'realPassword',
-        displayName: 'Real User',
-        icocChurchAffiliation: 'I am not a member of an ICOC church',
-      );
-      authRepo.signOut();
-
-      expect(
-        () => authRepo.signInWithPassword(
+    test(
+      'signInWithPassword rejects wrong password with wrong-password',
+      () async {
+        await authRepo.registerWithPassword(
           email: 'user@belong.org',
-          password: 'wrongPassword',
-        ),
-        throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'wrong-password'),
-        ),
-      );
-    });
+          password: 'realPassword',
+          displayName: 'Real User',
+          icocChurchAffiliation: 'I am not a member of an ICOC church',
+        );
+        authRepo.signOut();
+
+        expect(
+          () => authRepo.signInWithPassword(
+            email: 'user@belong.org',
+            password: 'wrongPassword',
+          ),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.code,
+              'code',
+              'wrong-password',
+            ),
+          ),
+        );
+      },
+    );
 
     test('sendMagicLink and signInWithMagicLink flow', () async {
       await authRepo.sendMagicLink(email: 'magic@belong.org');
@@ -133,7 +155,11 @@ void main() {
           emailLink: 'https://belong.org/auth?bad_token=xyz',
         ),
         throwsA(
-          isA<AuthException>().having((e) => e.code, 'code', 'invalid-action-code'),
+          isA<AuthException>().having(
+            (e) => e.code,
+            'code',
+            'invalid-action-code',
+          ),
         ),
       );
 
@@ -152,7 +178,10 @@ void main() {
         fb_auth.FirebaseAuthException(code: 'invalid-email'),
       );
       expect(invalidEmail.code, 'invalid-email');
-      expect(invalidEmail.message, contains('Please enter a valid email address'));
+      expect(
+        invalidEmail.message,
+        contains('Please enter a valid email address'),
+      );
 
       final expiredCode = AuthException.fromFirebase(
         fb_auth.FirebaseAuthException(code: 'expired-action-code'),
@@ -161,7 +190,10 @@ void main() {
       expect(expiredCode.message, contains('expired'));
 
       final unknown = AuthException.fromFirebase(
-        fb_auth.FirebaseAuthException(code: 'custom-error', message: 'Custom issue occurred'),
+        fb_auth.FirebaseAuthException(
+          code: 'custom-error',
+          message: 'Custom issue occurred',
+        ),
       );
       expect(unknown.code, 'custom-error');
       expect(unknown.message, 'Custom issue occurred');

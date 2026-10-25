@@ -189,20 +189,18 @@ ProviderContainer _container({
   required LocalPostRepository postRepo,
   required LocalCommentRepository commentRepo,
   required MemberProfile profile,
-}) {
-  return ProviderContainer(
-    overrides: [
-      postRepositoryProvider.overrideWithValue(postRepo),
-      commentRepositoryProvider.overrideWithValue(commentRepo),
-      organizerRemoteConfigProvider.overrideWithValue(
-        OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
-            .copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
-      ),
-      memberProfileProvider.overrideWith(() => _StaticProfileNotifier(profile)),
-      adminBanningRepositoryProvider.overrideWithValue(banningRepo),
-    ],
-  );
-}
+}) => ProviderContainer(
+  overrides: [
+    postRepositoryProvider.overrideWithValue(postRepo),
+    commentRepositoryProvider.overrideWithValue(commentRepo),
+    organizerRemoteConfigProvider.overrideWithValue(
+      OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+          .copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
+    ),
+    memberProfileProvider.overrideWith(() => _StaticProfileNotifier(profile)),
+    adminBanningRepositoryProvider.overrideWithValue(banningRepo),
+  ],
+);
 
 class _PausedPostHost extends ConsumerWidget {
   const _PausedPostHost();

@@ -13,55 +13,60 @@ import 'package:refuge4serverpod/src/home_screen.dart';
 
 void main() {
   group('Notification Deep-Link Navigation Tests (#330)', () {
-    testWidgets('CalmNotificationsView dispatches onNavigate on notification tap',
-        (tester) async {
-      NotificationNavigationTarget? receivedTarget;
+    testWidgets(
+      'CalmNotificationsView dispatches onNavigate on notification tap',
+      (tester) async {
+        NotificationNavigationTarget? receivedTarget;
 
-      final testNotification = BelongNotification(
-        id: 'notif-deep-1',
-        type: BelongNotificationType.reply,
-        authorName: 'Sarah K.',
-        postTitle: 'Quiet Waters',
-        timestamp: DateTime.now(),
-        spaceKey: 'prayer',
-        postId: 'post-prayer-1',
-      );
+        final testNotification = BelongNotification(
+          id: 'notif-deep-1',
+          type: BelongNotificationType.reply,
+          authorName: 'Sarah K.',
+          postTitle: 'Quiet Waters',
+          timestamp: DateTime.now(),
+          spaceKey: 'prayer',
+          postId: 'post-prayer-1',
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            belongNotificationsProvider.overrideWith(
-              () => BelongNotificationsNotifier(initialList: [testNotification]),
-            ),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: CalmNotificationsView(
-                onNavigate: (target) {
-                  receivedTarget = target;
-                },
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              belongNotificationsProvider.overrideWith(
+                () => BelongNotificationsNotifier(
+                  initialList: [testNotification],
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: CalmNotificationsView(
+                  onNavigate: (target) {
+                    receivedTarget = target;
+                  },
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      expect(find.text('Sarah K. replied to "Quiet Waters"'), findsOneWidget);
+        expect(find.text('Sarah K. replied to "Quiet Waters"'), findsOneWidget);
 
-      await tester.tap(find.text('Sarah K. replied to "Quiet Waters"'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Sarah K. replied to "Quiet Waters"'));
+        await tester.pumpAndSettle();
 
-      expect(receivedTarget, isNotNull);
-      expect(receivedTarget!.tab, equals(BelongBottomTab.home));
-      expect(receivedTarget!.spaceKey, equals('prayer'));
-      expect(receivedTarget!.postId, equals('post-prayer-1'));
-      expect(receivedTarget!.openDiscussion, isTrue);
-    });
+        expect(receivedTarget, isNotNull);
+        expect(receivedTarget!.tab, equals(BelongBottomTab.home));
+        expect(receivedTarget!.spaceKey, equals('prayer'));
+        expect(receivedTarget!.postId, equals('post-prayer-1'));
+        expect(receivedTarget!.openDiscussion, isTrue);
+      },
+    );
 
-    testWidgets('Direct message notification navigates to msgs tab',
-        (tester) async {
+    testWidgets('Direct message notification navigates to msgs tab', (
+      tester,
+    ) async {
       NotificationNavigationTarget? receivedTarget;
 
       final dmNotification = BelongNotification(
@@ -102,8 +107,9 @@ void main() {
       expect(receivedTarget!.conversationId, equals('dm-david-1'));
     });
 
-    testWidgets('Notification without target shows polite archived snackbar',
-        (tester) async {
+    testWidgets('Notification without target shows polite archived snackbar', (
+      tester,
+    ) async {
       final archivedNotification = BelongNotification(
         id: 'notif-archived-1',
         type: BelongNotificationType.following,
@@ -117,13 +123,13 @@ void main() {
         ProviderScope(
           overrides: [
             belongNotificationsProvider.overrideWith(
-              () => BelongNotificationsNotifier(initialList: [archivedNotification]),
+              () => BelongNotificationsNotifier(
+                initialList: [archivedNotification],
+              ),
             ),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: CalmNotificationsView(),
-            ),
+            home: Scaffold(body: CalmNotificationsView()),
           ),
         ),
       );

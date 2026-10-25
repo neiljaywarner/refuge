@@ -52,7 +52,9 @@ class CommunitySearchView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final queryController = useTextEditingController();
     final query = useValueListenable(queryController).text.trim().toLowerCase();
-    final allPostsSnapshot = useFuture(useMemoized(_loadAllPosts, [repository]));
+    final allPostsSnapshot = useFuture(
+      useMemoized(_loadAllPosts, [repository]),
+    );
 
     final posts = (allPostsSnapshot.data ?? const <Post>[]).where((p) {
       if (query.isEmpty) return true;
@@ -70,15 +72,14 @@ class CommunitySearchView extends HookConsumerWidget {
             key: const Key('community_search_text_field'),
             controller: queryController,
             decoration: InputDecoration(
-              hintText:
-                  'Search posts, Memes, Online Resources / Videos, or special interests...',
+              hintText: 'Search posts, Memes, Online Resources / Videos, or special interests...',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: query.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded),
-                    onPressed: queryController.clear,
-                  )
-                : null,
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: queryController.clear,
+                    )
+                  : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

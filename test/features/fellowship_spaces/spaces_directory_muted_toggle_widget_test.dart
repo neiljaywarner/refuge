@@ -34,14 +34,8 @@ void main() {
         );
         await $.pumpAndSettle();
 
-        expect(
-          $(const Key('notifications_muted_spaces_tile')),
-          findsNothing,
-        );
-        expect(
-          $('Notifications muted in system settings'),
-          findsNothing,
-        );
+        expect($(const Key('notifications_muted_spaces_tile')), findsNothing);
+        expect($('Notifications muted in system settings'), findsNothing);
       },
     );
 
@@ -79,14 +73,8 @@ void main() {
         );
         await $.pumpAndSettle();
 
-        expect(
-          $(const Key('notifications_muted_spaces_tile')),
-          findsOneWidget,
-        );
-        expect(
-          $('Notifications muted in system settings'),
-          findsOneWidget,
-        );
+        expect($(const Key('notifications_muted_spaces_tile')), findsOneWidget);
+        expect($('Notifications muted in system settings'), findsOneWidget);
         expect(
           $('Tap to adjust calm digest schedules or re-enable later'),
           findsOneWidget,

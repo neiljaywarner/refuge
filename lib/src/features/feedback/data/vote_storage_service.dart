@@ -18,9 +18,8 @@ class VoteStorageService {
     return _memoryCache!;
   }
 
-  bool isFeatureVoted(String featureId) {
-    return getVotedFeatureIds().contains(featureId);
-  }
+  bool isFeatureVoted(String featureId) =>
+      getVotedFeatureIds().contains(featureId);
 
   void setFeatureVoted(String featureId, bool voted) {
     final current = Set<String>.from(getVotedFeatureIds());

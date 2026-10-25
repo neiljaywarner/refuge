@@ -13,17 +13,15 @@ import 'belong_image_crop_page.dart';
 class AvatarPickerSheet extends ConsumerStatefulWidget {
   const AvatarPickerSheet({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => const SystemBottomInset(child: AvatarPickerSheet()),
-    );
-  }
+  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => const SystemBottomInset(child: AvatarPickerSheet()),
+  );
 
   @override
   ConsumerState<AvatarPickerSheet> createState() => _AvatarPickerSheetState();

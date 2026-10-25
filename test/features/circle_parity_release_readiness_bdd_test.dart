@@ -14,9 +14,7 @@ void main() {
       ProfileStorageService.instance.clear();
     });
 
-    Widget buildHarness() {
-      return RefugeApp(repository: repository);
-    }
+    Widget buildHarness() => RefugeApp(repository: repository);
 
     patrolWidgetTest(
       'Scenario: Exploring Circle spaces, sections, and member directory',

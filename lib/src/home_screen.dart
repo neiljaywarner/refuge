@@ -1146,79 +1146,77 @@ void _showCreatePostModal({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (ctx) {
-      return SystemBottomInset(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            isImagePost
-                                ? Icons.image_outlined
-                                : Icons.post_add_rounded,
-                            size: 20,
-                            color: primaryColor,
+    builder: (ctx) => SystemBottomInset(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          isImagePost
+                              ? Icons.image_outlined
+                              : Icons.post_add_rounded,
+                          size: 20,
+                          color: primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isImagePost
+                              ? 'Create Image Post'
+                              : 'Create Reflection Post',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            isImagePost
-                                ? 'Create Image Post'
-                                : 'Create Reflection Post',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.close_rounded, size: 20),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
                 ),
-                ReflectionComposer(
-                  selectedSpace: selectedSpace,
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  isImagePost: isImagePost,
-                  isModal: true,
-                  onSubmit:
-                      ({
-                        required String content,
-                        required String toneTag,
-                        String? specialInterestTag,
-                        String? imageUrl,
-                      }) async {
-                        await onSubmit(
-                          content: content,
-                          toneTag: toneTag,
-                          specialInterestTag: specialInterestTag,
-                          imageUrl: imageUrl,
-                        );
-                        if (ctx.mounted) {
-                          Navigator.of(ctx).pop();
-                        }
-                      },
-                ),
-                const SizedBox(height: 12),
-              ],
-            ),
+              ),
+              ReflectionComposer(
+                selectedSpace: selectedSpace,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                isImagePost: isImagePost,
+                isModal: true,
+                onSubmit:
+                    ({
+                      required String content,
+                      required String toneTag,
+                      String? specialInterestTag,
+                      String? imageUrl,
+                    }) async {
+                      await onSubmit(
+                        content: content,
+                        toneTag: toneTag,
+                        specialInterestTag: specialInterestTag,
+                        imageUrl: imageUrl,
+                      );
+                      if (ctx.mounted) {
+                        Navigator.of(ctx).pop();
+                      }
+                    },
+              ),
+              const SizedBox(height: 12),
+            ],
           ),
         ),
-      );
-    },
+      ),
+    ),
   );
 }
 
@@ -1264,25 +1262,23 @@ PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
   required SensoryMode mode,
   required String emoji,
   required String label,
-}) {
-  return PopupMenuItem<SensoryMode>(
-    value: mode,
-    child: Semantics(
-      identifier: 'sensory_theme_${mode.name}',
-      label: label,
-      button: true,
-      child: Row(
-        children: [
-          ExcludeSemantics(
-            child: Text(emoji, style: const TextStyle(fontSize: 14)),
-          ),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
+}) => PopupMenuItem<SensoryMode>(
+  value: mode,
+  child: Semantics(
+    identifier: 'sensory_theme_${mode.name}',
+    label: label,
+    button: true,
+    child: Row(
+      children: [
+        ExcludeSemantics(
+          child: Text(emoji, style: const TextStyle(fontSize: 14)),
+        ),
+        const SizedBox(width: 8),
+        Text(label),
+      ],
     ),
-  );
-}
+  ),
+);
 
 /// Blocks the community for a banned session, then ends that sign-in.
 class _BannedSessionLockout extends ConsumerStatefulWidget {

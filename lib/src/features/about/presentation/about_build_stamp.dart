@@ -58,27 +58,24 @@ class AboutDialogTitle extends StatelessWidget {
   final bool isContrast;
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<AppVersionLabel>(
-      future: version,
-      builder: (context, snapshot) {
-        final suffix = snapshot.connectionState == ConnectionState.done
-            ? snapshot.data?.titleSuffix
-            : null;
-        final title = suffix == null
-            ? 'Belong on the Spectrum'
-            : 'Belong on the Spectrum ($suffix)';
-        final titleStyle = BelongTextStyles.of(context).title.copyWith(
-          color: isContrast ? const Color(0xFFFFEB3B) : primaryColor,
-        );
-        return Text(
-          title,
-          key: const Key('about_dialog_title'),
-          style: titleStyle,
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => FutureBuilder<AppVersionLabel>(
+    future: version,
+    builder: (context, snapshot) {
+      final suffix = snapshot.connectionState == ConnectionState.done
+          ? snapshot.data?.titleSuffix
+          : null;
+      final title = suffix == null
+          ? 'Belong on the Spectrum'
+          : 'Belong on the Spectrum ($suffix)';
+      final titleStyle = BelongTextStyles.of(context).title
+          .copyWith(color: isContrast ? const Color(0xFFFFEB3B) : primaryColor);
+      return Text(
+        title,
+        key: const Key('about_dialog_title'),
+        style: titleStyle,
+      );
+    },
+  );
 }
 
 /// Calm, literal build identity under the scripture quote.
@@ -93,25 +90,23 @@ class AboutBuildStamp extends StatelessWidget {
   final Future<AppVersionLabel> version;
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<AppVersionLabel>(
-      future: version,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return SizedBox(
-            key: const Key('about_build_stamp'),
-            width: double.infinity,
-            child: Text(
-              'This build',
-              style: BelongTextStyles.of(context).emphasis,
-            ),
-          );
-        }
-        final label = snapshot.data ?? AppVersionLabel.unknown;
-        return _BuildStampBody(identity: identity, version: label);
-      },
-    );
-  }
+  Widget build(BuildContext context) => FutureBuilder<AppVersionLabel>(
+    future: version,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState != ConnectionState.done) {
+        return SizedBox(
+          key: const Key('about_build_stamp'),
+          width: double.infinity,
+          child: Text(
+            'This build',
+            style: BelongTextStyles.of(context).emphasis,
+          ),
+        );
+      }
+      final label = snapshot.data ?? AppVersionLabel.unknown;
+      return _BuildStampBody(identity: identity, version: label);
+    },
+  );
 }
 
 class _BuildStampBody extends StatelessWidget {

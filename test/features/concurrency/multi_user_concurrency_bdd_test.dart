@@ -54,23 +54,17 @@ void main() {
       Key? key,
       required MemberProfile profile,
       required Widget child,
-    }) {
-      return ProviderScope(
-        key: key,
-        overrides: [
-          postRepositoryProvider.overrideWithValue(postRepo),
-          commentRepositoryProvider.overrideWithValue(sharedCommentRepo),
-          memberProfileProvider.overrideWith(
-            () => FakeMemberProfileNotifier(profile),
-          ),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: child,
-          ),
+    }) => ProviderScope(
+      key: key,
+      overrides: [
+        postRepositoryProvider.overrideWithValue(postRepo),
+        commentRepositoryProvider.overrideWithValue(sharedCommentRepo),
+        memberProfileProvider.overrideWith(
+          () => FakeMemberProfileNotifier(profile),
         ),
-      );
-    }
+      ],
+      child: MaterialApp(home: Scaffold(body: child)),
+    );
 
     patrolWidgetTest(
       'Scenario: Real-Time Stream Synchronization Across Concurrent Disciples (Alpha posts, Beta receives live)',
@@ -133,7 +127,8 @@ void main() {
           id: 'c_alpha_thread_1',
           postId: testPost.id,
           authorName: discipleAlphaProfile.displayName,
-          content: 'Does anyone have calm sensory advice for Sunday fellowship?',
+          content:
+              'Does anyone have calm sensory advice for Sunday fellowship?',
           toneTag: '[Comfort Only]',
           timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
         );
@@ -148,7 +143,10 @@ void main() {
         );
         await $.pumpAndSettle();
 
-        expect($('Does anyone have calm sensory advice for Sunday fellowship?'), findsOneWidget);
+        expect(
+          $('Does anyone have calm sensory advice for Sunday fellowship?'),
+          findsOneWidget,
+        );
         expect($('Disciple Beta (Fort Worth)'), findsNothing);
 
         // 2. Beta concurrently adds a nested reply targeting Alpha's comment
@@ -170,7 +168,9 @@ void main() {
         // 4. Verify nested reply renders in Alpha's view with child indicator
         expect($('Disciple Beta (Fort Worth)'), findsOneWidget);
         expect(
-          $('Loop earplugs and stepping into the sensory quiet room helped me!'),
+          $(
+            'Loop earplugs and stepping into the sensory quiet room helped me!',
+          ),
           findsOneWidget,
         );
         expect($('↳'), findsWidgets);
@@ -197,22 +197,32 @@ void main() {
         await $.pumpAndSettle();
 
         // Comment c1_1 has initial reactions: {'pray': 4, 'peace': 3}
-        final initialComments = await sharedCommentRepo.getComments(postId: testPost.id);
+        final initialComments = await sharedCommentRepo.getComments(
+          postId: testPost.id,
+        );
         final c1Initial = initialComments.firstWhere((c) => c.id == 'c1_1');
         expect(c1Initial.reactions['pray'], 4);
         expect(c1Initial.reactions['peace'], 3);
 
         // Concurrent atomic updates fired simultaneously by Alpha and Beta
         await Future.wait([
-          sharedCommentRepo.addReaction(commentId: 'c1_1', reactionType: 'pray'),
-          sharedCommentRepo.addReaction(commentId: 'c1_1', reactionType: 'peace'),
+          sharedCommentRepo.addReaction(
+            commentId: 'c1_1',
+            reactionType: 'pray',
+          ),
+          sharedCommentRepo.addReaction(
+            commentId: 'c1_1',
+            reactionType: 'peace',
+          ),
         ]);
 
         await $.pump();
         await $.pumpAndSettle();
 
         // Verify both tallies are preserved atomically with zero lost updates
-        final updatedComments = await sharedCommentRepo.getComments(postId: testPost.id);
+        final updatedComments = await sharedCommentRepo.getComments(
+          postId: testPost.id,
+        );
         final c1Updated = updatedComments.firstWhere((c) => c.id == 'c1_1');
         expect(c1Updated.reactions['pray'], 5);
         expect(c1Updated.reactions['peace'], 4);
@@ -278,9 +288,8 @@ void main() {
         expect($('Disciple Alpha (Dallas)'), findsOneWidget);
 
         // Beta replies via the actual UI
-        await $(const Key('comment_input_field')).enterText(
-          'Amen! Standing with you from Fort Worth.',
-        );
+        await $(const Key('comment_input_field'))
+            .enterText('Amen! Standing with you from Fort Worth.');
         await $.pumpAndSettle();
         await $(ChoiceChip).$('[Relatable]').tap();
         await $.pumpAndSettle();
@@ -292,10 +301,7 @@ void main() {
           $('Grace and peace to our neurodivergent fellowship tonight.'),
           findsOneWidget,
         );
-        expect(
-          $('Amen! Standing with you from Fort Worth.'),
-          findsOneWidget,
-        );
+        expect($('Amen! Standing with you from Fort Worth.'), findsOneWidget);
         expect($('Disciple Beta (Fort Worth)'), findsOneWidget);
       },
     );

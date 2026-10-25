@@ -62,7 +62,8 @@ void main() {
         return http.Response(
           jsonEncode({
             'number': 2,
-            'html_url': 'https://github.com/neiljaywarner/belong_feedback/issues/2',
+            'html_url':
+                'https://github.com/neiljaywarner/belong_feedback/issues/2',
           }),
           201,
         );
@@ -75,7 +76,8 @@ void main() {
       final result = await client.createIssue(
         repository: 'neiljaywarner/belong_feedback',
         title: '[Bug / Confusing] Button cut off',
-        body: '## Community Feedback Submission\n\nButton cut off on landscape.',
+        body:
+            '## Community Feedback Submission\n\nButton cut off on landscape.',
         labels: ['user-feedback', 'bug-report'],
       );
 
@@ -87,46 +89,52 @@ void main() {
       );
     });
 
-    test('createIssue survives 403 rate limit / auth errors without throwing', () async {
-      final mockHttp = MockClient((request) async {
-        return http.Response(
-          jsonEncode({'message': 'API rate limit exceeded'}),
-          403,
+    test(
+      'createIssue survives 403 rate limit / auth errors without throwing',
+      () async {
+        final mockHttp = MockClient(
+          (request) async => http.Response(
+            jsonEncode({'message': 'API rate limit exceeded'}),
+            403,
+          ),
         );
-      });
 
-      final client = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'test_pat_abc',
-      );
-      final result = await client.createIssue(
-        repository: 'neiljaywarner/belong_feedback',
-        title: '[Bug] Broken link',
-        body: 'Link fails',
-        labels: ['user-feedback'],
-      );
+        final client = GitHubFeedbackClient(
+          httpClient: mockHttp,
+          token: 'test_pat_abc',
+        );
+        final result = await client.createIssue(
+          repository: 'neiljaywarner/belong_feedback',
+          title: '[Bug] Broken link',
+          body: 'Link fails',
+          labels: ['user-feedback'],
+        );
 
-      expect(result, isNull);
-    });
+        expect(result, isNull);
+      },
+    );
 
-    test('createIssue survives socket / client exceptions without throwing', () async {
-      final mockHttp = MockClient((request) async {
-        throw http.ClientException('Network unreachable');
-      });
+    test(
+      'createIssue survives socket / client exceptions without throwing',
+      () async {
+        final mockHttp = MockClient((request) async {
+          throw http.ClientException('Network unreachable');
+        });
 
-      final client = GitHubFeedbackClient(
-        httpClient: mockHttp,
-        token: 'test_pat_abc',
-      );
-      final result = await client.createIssue(
-        repository: 'neiljaywarner/belong_feedback',
-        title: '[Bug] Broken link',
-        body: 'Link fails',
-        labels: ['user-feedback'],
-      );
+        final client = GitHubFeedbackClient(
+          httpClient: mockHttp,
+          token: 'test_pat_abc',
+        );
+        final result = await client.createIssue(
+          repository: 'neiljaywarner/belong_feedback',
+          title: '[Bug] Broken link',
+          body: 'Link fails',
+          labels: ['user-feedback'],
+        );
 
-      expect(result, isNull);
-    });
+        expect(result, isNull);
+      },
+    );
   });
 
   group('PrivateFeedbackRouter Inline Base64 Screenshot Embedding', () {
@@ -141,23 +149,32 @@ void main() {
         attachmentBytes: sampleBytes,
       );
 
-      expect(payload.body, contains('<img src="data:image/png;base64,$expectedBase64" alt="Annotated Screenshot" width="400" />'));
-      expect(payload.body, contains('<details><summary>Raw Base64 PNG</summary>'));
+      expect(
+        payload.body,
+        contains(
+          '<img src="data:image/png;base64,$expectedBase64" alt="Annotated Screenshot" width="400" />',
+        ),
+      );
+      expect(
+        payload.body,
+        contains('<details><summary>Raw Base64 PNG</summary>'),
+      );
       expect(payload.body, contains(expectedBase64));
     });
   });
 
   group('InMemoryFeatureVotingRepository with GitHubFeedbackClient', () {
     test('submitFeedback calls GitHub client and sets result metadata for private triage', () async {
-      final mockHttp = MockClient((request) async {
-        return http.Response(
+      final mockHttp = MockClient(
+        (request) async => http.Response(
           jsonEncode({
             'number': 5,
-            'html_url': 'https://github.com/neiljaywarner/belong_feedback/issues/5',
+            'html_url':
+                'https://github.com/neiljaywarner/belong_feedback/issues/5',
           }),
           201,
-        );
-      });
+        ),
+      );
 
       final gitHubClient = GitHubFeedbackClient(
         httpClient: mockHttp,
@@ -174,14 +191,20 @@ void main() {
 
       expect(result.isPrivateTriage, isTrue);
       expect(result.githubIssueNumber, 5);
-      expect(result.githubIssueUrl, 'https://github.com/neiljaywarner/belong_feedback/issues/5');
+      expect(
+        result.githubIssueUrl,
+        'https://github.com/neiljaywarner/belong_feedback/issues/5',
+      );
       expect(result.savedLocally, isTrue);
 
       expect(repo.submittedFeedbackLog.length, 1);
       final log = repo.submittedFeedbackLog.first;
       expect(log['githubIssueCreated'], 'true');
       expect(log['githubIssueNumber'], '5');
-      expect(log['githubIssueUrl'], 'https://github.com/neiljaywarner/belong_feedback/issues/5');
+      expect(
+        log['githubIssueUrl'],
+        'https://github.com/neiljaywarner/belong_feedback/issues/5',
+      );
     });
 
     test('submitFeedback skips GitHub client for public praise', () async {

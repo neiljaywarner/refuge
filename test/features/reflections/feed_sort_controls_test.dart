@@ -58,10 +58,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -80,8 +77,14 @@ void main() {
         expect(latestChip.selected, isTrue);
 
         // Default latest ordering: Sarah (newest) -> David -> Hannah (oldest)
-        final sarahY = $.tester.getTopLeft(find.textContaining('Morning meditation on Psalm 139:14.')).dy;
-        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
+        final sarahY = $.tester
+            .getTopLeft(
+              find.textContaining('Morning meditation on Psalm 139:14.'),
+            )
+            .dy;
+        final hannahY = $.tester
+            .getTopLeft(find.text('Zebras and peaceful evening rest.'))
+            .dy;
         expect(sarahY, lessThan(hannahY));
       },
     );
@@ -97,10 +100,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -115,8 +115,14 @@ void main() {
         expect(oldestChip.selected, isTrue);
 
         // Under Oldest, Hannah (earliest post) is first above Sarah
-        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
-        final sarahY = $.tester.getTopLeft(find.textContaining('Morning meditation on Psalm 139:14.')).dy;
+        final hannahY = $.tester
+            .getTopLeft(find.text('Zebras and peaceful evening rest.'))
+            .dy;
+        final sarahY = $.tester
+            .getTopLeft(
+              find.textContaining('Morning meditation on Psalm 139:14.'),
+            )
+            .dy;
         expect(hannahY, lessThan(sarahY));
       },
     );
@@ -132,15 +138,14 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
         // Scroll chip into view before tapping
-        await $.tester.ensureVisible(find.byKey(const Key('feed_sort_chip_likes')));
+        await $.tester.ensureVisible(
+          find.byKey(const Key('feed_sort_chip_likes')),
+        );
         await $.pumpAndSettle();
 
         // Tap Likes chip
@@ -154,8 +159,12 @@ void main() {
         expect(likesChip.selected, isTrue);
 
         // Under Likes, Hannah (30 likes) appears above David (5 likes)
-        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
-        final davidY = $.tester.getTopLeft(find.text('Apples of gold in settings of silver.')).dy;
+        final hannahY = $.tester
+            .getTopLeft(find.text('Zebras and peaceful evening rest.'))
+            .dy;
+        final davidY = $.tester
+            .getTopLeft(find.text('Apples of gold in settings of silver.'))
+            .dy;
         expect(hannahY, lessThan(davidY));
       },
     );
@@ -171,15 +180,14 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
         // Scroll chip into view before tapping
-        await $.tester.ensureVisible(find.byKey(const Key('feed_sort_chip_alphabetical')));
+        await $.tester.ensureVisible(
+          find.byKey(const Key('feed_sort_chip_alphabetical')),
+        );
         await $.pumpAndSettle();
 
         // Tap Alphabetical chip
@@ -193,8 +201,14 @@ void main() {
         expect(alphaChip.selected, isTrue);
 
         // Content starting with 'A' (David's Apples of gold) is top above Sarah ('Morning...')
-        final davidY = $.tester.getTopLeft(find.text('Apples of gold in settings of silver.')).dy;
-        final sarahY = $.tester.getTopLeft(find.textContaining('Morning meditation on Psalm 139:14.')).dy;
+        final davidY = $.tester
+            .getTopLeft(find.text('Apples of gold in settings of silver.'))
+            .dy;
+        final sarahY = $.tester
+            .getTopLeft(
+              find.textContaining('Morning meditation on Psalm 139:14.'),
+            )
+            .dy;
         expect(davidY, lessThan(sarahY));
       },
     );
@@ -210,10 +224,7 @@ void main() {
         });
 
         await $.pumpWidget(
-          RefugeApp(
-            repository: repo,
-            homeOverride: const RefugeHomeScreen(),
-          ),
+          RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
         );
         await $.pumpAndSettle();
 
@@ -236,8 +247,12 @@ void main() {
         expect(popChip.selected, isTrue);
 
         // Verify reordering under Popular (Hannah 30 likes is above David 5 likes)
-        final hannahY = $.tester.getTopLeft(find.text('Zebras and peaceful evening rest.')).dy;
-        final davidY = $.tester.getTopLeft(find.text('Apples of gold in settings of silver.')).dy;
+        final hannahY = $.tester
+            .getTopLeft(find.text('Zebras and peaceful evening rest.'))
+            .dy;
+        final davidY = $.tester
+            .getTopLeft(find.text('Apples of gold in settings of silver.'))
+            .dy;
         expect(hannahY, lessThan(davidY));
       },
     );

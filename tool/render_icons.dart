@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 /// Standalone script to render high-contrast Belong launcher icon assets on-demand.
@@ -70,7 +71,8 @@ Future<void> main() async {
     final infinityY = cy; // Center of loop
 
     final goldPaint = Paint()
-      ..color = const Color(0xFFC89332) // Warm, high-contrast neurodivergent gold
+      ..color =
+          const Color(0xFFC89332) // Warm, high-contrast neurodivergent gold
       ..style = PaintingStyle.stroke
       ..strokeWidth = infinityStrokeWidth
       ..strokeCap = StrokeCap.round

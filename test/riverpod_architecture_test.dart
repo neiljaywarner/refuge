@@ -18,31 +18,46 @@ void main() {
       container.dispose();
     });
 
-    test('SensoryThemeNotifier initializes to Sage and updates mode immutably', () {
-      expect(container.read(sensoryThemeModeProvider), SensoryMode.sage);
+    test(
+      'SensoryThemeNotifier initializes to Sage and updates mode immutably',
+      () {
+        expect(container.read(sensoryThemeModeProvider), SensoryMode.sage);
 
-      container.read(sensoryThemeModeProvider.notifier).setMode(SensoryMode.charcoal);
-      expect(container.read(sensoryThemeModeProvider), SensoryMode.charcoal);
+        container
+            .read(sensoryThemeModeProvider.notifier)
+            .setMode(SensoryMode.charcoal);
+        expect(container.read(sensoryThemeModeProvider), SensoryMode.charcoal);
 
-      container.read(sensoryThemeModeProvider.notifier).setMode(SensoryMode.contrast);
-      expect(container.read(sensoryThemeModeProvider), SensoryMode.contrast);
+        container
+            .read(sensoryThemeModeProvider.notifier)
+            .setMode(SensoryMode.contrast);
+        expect(container.read(sensoryThemeModeProvider), SensoryMode.contrast);
 
-      container.read(sensoryThemeModeProvider.notifier).setMode(SensoryMode.clean);
-      expect(container.read(sensoryThemeModeProvider), SensoryMode.clean);
-    });
+        container
+            .read(sensoryThemeModeProvider.notifier)
+            .setMode(SensoryMode.clean);
+        expect(container.read(sensoryThemeModeProvider), SensoryMode.clean);
+      },
+    );
 
     test('activeSpaceKeyProvider tracks active fellowship room selection', () {
       expect(container.read(activeSpaceKeyProvider), 'prayer');
 
-      container.read(activeSpaceKeyProvider.notifier).state = 'special_interests';
+      container.read(activeSpaceKeyProvider.notifier).state =
+          'special_interests';
       expect(container.read(activeSpaceKeyProvider), 'special_interests');
     });
 
-    test('postsStreamProvider streams space-specific posts reactively', () async {
-      final postsAsync = await container.read(postsStreamProvider('prayer').future);
-      expect(postsAsync.isNotEmpty, isTrue);
-      expect(postsAsync.every((p) => p.spaceKey == 'prayer'), isTrue);
-    });
+    test(
+      'postsStreamProvider streams space-specific posts reactively',
+      () async {
+        final postsAsync = await container.read(
+          postsStreamProvider('prayer').future,
+        );
+        expect(postsAsync.isNotEmpty, isTrue);
+        expect(postsAsync.every((p) => p.spaceKey == 'prayer'), isTrue);
+      },
+    );
 
     test('currentSpacePostsProvider combines space stream with active intent filter', () async {
       // Set space to prayer
@@ -64,10 +79,15 @@ void main() {
       expect(filtered.first.toneTag, '[Comfort Only]');
     });
 
-    test('quietDigestProvider computes server-style calm summary for space', () async {
-      final digest = await container.read(quietDigestProvider('prayer').future);
-      expect(digest, isNotNull);
-      expect(digest, contains('Gathered in peace'));
-    });
+    test(
+      'quietDigestProvider computes server-style calm summary for space',
+      () async {
+        final digest = await container.read(
+          quietDigestProvider('prayer').future,
+        );
+        expect(digest, isNotNull);
+        expect(digest, contains('Gathered in peace'));
+      },
+    );
   });
 }

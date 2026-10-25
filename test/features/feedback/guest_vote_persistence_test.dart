@@ -124,12 +124,10 @@ void main() {
           ),
         );
 
-        Finder countInsideVoteButton(String count) {
-          return find.descendant(
-            of: find.byKey(const Key('vote_button_wip-autistic-events')),
-            matching: find.text(count),
-          );
-        }
+        Finder countInsideVoteButton(String count) => find.descendant(
+          of: find.byKey(const Key('vote_button_wip-autistic-events')),
+          matching: find.text(count),
+        );
 
         expect(countInsideVoteButton('0'), findsOneWidget);
 

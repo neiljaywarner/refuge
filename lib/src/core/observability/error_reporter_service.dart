@@ -115,7 +115,9 @@ class ErrorReporterService {
   Map<String, Object> _sanitizeMetadata(Map<String, Object>? raw) {
     if (raw == null) return {};
     final sanitized = <String, Object>{};
-    final emailRegex = RegExp(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+');
+    final emailRegex = RegExp(
+      r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+',
+    );
 
     for (final entry in raw.entries) {
       final valueStr = entry.value.toString();

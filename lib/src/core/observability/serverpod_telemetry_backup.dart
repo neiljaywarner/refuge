@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../config/app_flavor.dart';
 import '../logging/app_logger.dart';
 
@@ -40,14 +42,17 @@ class TelemetryRecord {
   };
 
   factory TelemetryRecord.fromMap(Map<String, Object?> map) => TelemetryRecord(
-    id: map['id'] as String? ?? DateTime.now().millisecondsSinceEpoch.toString(),
+    id:
+        map['id'] as String? ??
+        DateTime.now().millisecondsSinceEpoch.toString(),
     kind: TelemetryKind.values.firstWhere(
       (k) => k.name == map['kind'],
       orElse: () => TelemetryKind.analytics,
     ),
     name: map['name'] as String? ?? 'unspecified',
     flavor: map['flavor'] as String? ?? 'unknown',
-    timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now(),
+    timestamp:
+        DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now(),
     parameters: (map['parameters'] as Map<String, Object?>?) ?? {},
     isFatal: map['isFatal'] as bool? ?? false,
     stackTraceSnippet: map['stackTrace'] as String?,
@@ -116,9 +121,13 @@ class ServerpodTelemetryBackup {
 
     _addToBuffer(record);
     if (fatal) {
-      talker.critical('🚨 [Serverpod Backup Crash] $exception (Reason: $reason)');
+      talker.critical(
+        '🚨 [Serverpod Backup Crash] $exception (Reason: $reason)',
+      );
     } else {
-      talker.warning('⚠️ [Serverpod Backup Handled] $exception (Reason: $reason)');
+      talker.warning(
+        '⚠️ [Serverpod Backup Handled] $exception (Reason: $reason)',
+      );
     }
   }
 
@@ -134,7 +143,9 @@ class ServerpodTelemetryBackup {
 }
 
 /// Global provider for [ServerpodTelemetryBackup].
-final serverpodTelemetryBackupProvider = Provider<ServerpodTelemetryBackup>((ref) {
+final serverpodTelemetryBackupProvider = Provider<ServerpodTelemetryBackup>((
+  ref,
+) {
   final flavor = ref.watch(appFlavorProvider);
   return ServerpodTelemetryBackup(flavor: flavor);
 });

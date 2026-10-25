@@ -223,40 +223,36 @@ ProviderContainer _adminContainer({
   required LocalPostRepository postRepo,
   required LocalCommentRepository commentRepo,
   required AdminBanningRepository banningRepo,
-}) {
-  return ProviderContainer(
-    overrides: [
-      postRepositoryProvider.overrideWithValue(postRepo),
-      commentRepositoryProvider.overrideWithValue(commentRepo),
-      organizerRemoteConfigProvider.overrideWithValue(
-        OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
-            .copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
-      ),
-      memberProfileProvider.overrideWith(
-        () => _StaticProfileNotifier(
-          const MemberProfile(
-            displayName: 'Fellow Member',
-            email: 'organizer@belongonthespectrum.com',
-            bio: 'Community Administrator',
-            comfortBadges: [],
-            isSignedIn: true,
-            userId: 'user-organizer',
-          ),
+}) => ProviderContainer(
+  overrides: [
+    postRepositoryProvider.overrideWithValue(postRepo),
+    commentRepositoryProvider.overrideWithValue(commentRepo),
+    organizerRemoteConfigProvider.overrideWithValue(
+      OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+          .copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
+    ),
+    memberProfileProvider.overrideWith(
+      () => _StaticProfileNotifier(
+        const MemberProfile(
+          displayName: 'Fellow Member',
+          email: 'organizer@belongonthespectrum.com',
+          bio: 'Community Administrator',
+          comfortBadges: [],
+          isSignedIn: true,
+          userId: 'user-organizer',
         ),
       ),
-      adminBanningRepositoryProvider.overrideWithValue(banningRepo),
-    ],
-  );
-}
-
-Widget _profileApp(ProviderContainer container) {
-  return UncontrolledProviderScope(
-    container: container,
-    child: const MaterialApp(
-      home: Scaffold(body: OtherMemberProfileDialog(authorName: 'Caleb Stone')),
     ),
-  );
-}
+    adminBanningRepositoryProvider.overrideWithValue(banningRepo),
+  ],
+);
+
+Widget _profileApp(ProviderContainer container) => UncontrolledProviderScope(
+  container: container,
+  child: const MaterialApp(
+    home: Scaffold(body: OtherMemberProfileDialog(authorName: 'Caleb Stone')),
+  ),
+);
 
 class _ThrowingBanRepository implements AdminBanningRepository {
   @override

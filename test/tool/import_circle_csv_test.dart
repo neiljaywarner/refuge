@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/tool/circle_csv_importer.dart';
 
@@ -25,10 +26,7 @@ void main() {
         CircleSpaceMapper.resolveSpaceSlug('general'),
         equals('general_chat'),
       );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('Memes'),
-        equals('memes'),
-      );
+      expect(CircleSpaceMapper.resolveSpaceSlug('Memes'), equals('memes'));
       expect(
         CircleSpaceMapper.resolveSpaceSlug('Online Resources / Videos'),
         equals('resources_videos'),
@@ -52,10 +50,7 @@ void main() {
         CircleSpaceMapper.resolveSpaceSlug('Random Offtopic Club'),
         equals('unmapped_space'),
       );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug(''),
-        equals('unmapped_space'),
-      );
+      expect(CircleSpaceMapper.resolveSpaceSlug(''), equals('unmapped_space'));
     });
 
     test('supports custom space overrides', () {
@@ -69,23 +64,26 @@ void main() {
       );
     });
 
-    test('provides valid sections and display names for all canonical spaces', () {
-      const canonicalSlugs = [
-        'start_here',
-        'announcements',
-        'general_chat',
-        'memes',
-        'resources_videos',
-        'actually_autistic_chat',
-        'friends_chat',
-        'family_chat',
-      ];
+    test(
+      'provides valid sections and display names for all canonical spaces',
+      () {
+        const canonicalSlugs = [
+          'start_here',
+          'announcements',
+          'general_chat',
+          'memes',
+          'resources_videos',
+          'actually_autistic_chat',
+          'friends_chat',
+          'family_chat',
+        ];
 
-      for (final slug in canonicalSlugs) {
-        expect(CircleSpaceMapper.spaceSections.containsKey(slug), isTrue);
-        expect(CircleSpaceMapper.spaceDisplayNames.containsKey(slug), isTrue);
-      }
-    });
+        for (final slug in canonicalSlugs) {
+          expect(CircleSpaceMapper.spaceSections.containsKey(slug), isTrue);
+          expect(CircleSpaceMapper.spaceDisplayNames.containsKey(slug), isTrue);
+        }
+      },
+    );
   });
 
   group('CircleCsvParser Tests (#41)', () {

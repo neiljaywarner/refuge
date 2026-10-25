@@ -23,19 +23,15 @@ void main() {
       postRepo = LocalPostRepository(isDevMode: true);
     });
 
-    Widget createTestApp({required MemberProfile profile}) {
-      return ProviderScope(
-        overrides: [
-          postRepositoryProvider.overrideWithValue(postRepo),
-          memberProfileProvider.overrideWith(
-            () => FakeMemberProfileNotifier(profile),
-          ),
-        ],
-        child: const MaterialApp(
-          home: RefugeHomeScreen(),
+    Widget createTestApp({required MemberProfile profile}) => ProviderScope(
+      overrides: [
+        postRepositoryProvider.overrideWithValue(postRepo),
+        memberProfileProvider.overrideWith(
+          () => FakeMemberProfileNotifier(profile),
         ),
-      );
-    }
+      ],
+      child: const MaterialApp(home: RefugeHomeScreen()),
+    );
 
     patrolWidgetTest(
       'Guest user sees Demo Mode banner and sample reflections',
@@ -47,14 +43,17 @@ void main() {
           $.tester.view.resetDevicePixelRatio();
         });
 
-        await $.pumpWidget(
-          createTestApp(profile: const MemberProfile.guest()),
-        );
+        await $.pumpWidget(createTestApp(profile: const MemberProfile.guest()));
         await $.pumpAndSettle();
 
         // 1. Demo Mode banner is visible
         expect($(const Key('demo_mode_banner')), findsOneWidget);
-        expect($('Demo Mode · Sample reflections shown. Sign in to view and share live community reflections.'), findsWidgets);
+        expect(
+          $(
+            'Demo Mode · Sample reflections shown. Sign in to view and share live community reflections.',
+          ),
+          findsWidgets,
+        );
 
         // 2. Sample seeded reflections are visible
         expect($('David M. (UK)'), findsOneWidget);
@@ -80,9 +79,7 @@ void main() {
           icocChurchAffiliation: 'Dallas Church of Christ',
         );
 
-        await $.pumpWidget(
-          createTestApp(profile: signedInProfile),
-        );
+        await $.pumpWidget(createTestApp(profile: signedInProfile));
         await $.pumpAndSettle();
 
         // 1. Demo Mode banner is NOT visible
@@ -93,10 +90,14 @@ void main() {
 
         // 3. Peaceful empty state is rendered
         expect($(const Key('empty_reflections_placeholder')), findsOneWidget);
-        expect($('No community reflections yet in this space.'), findsOneWidget);
+        expect(
+          $('No community reflections yet in this space.'),
+          findsOneWidget,
+        );
 
         // 4. Submitting a new reflection adds real data
-        await $(const Key('reflection_composer_input')).enterText('Blessed to gather together tonight.');
+        await $(const Key('reflection_composer_input'))
+            .enterText('Blessed to gather together tonight.');
         await $.pumpAndSettle();
         await $(const Key('publish_reflection_button')).tap();
         await $.pumpAndSettle();

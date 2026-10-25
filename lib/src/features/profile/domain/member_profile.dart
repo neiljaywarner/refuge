@@ -103,21 +103,18 @@ class MemberProfile {
     String? icocChurchAffiliation,
     String? tagline,
     String? avatarUrl,
-  }) {
-    return MemberProfile(
-      userId: userId ?? this.userId,
-      displayName: displayName ?? this.displayName,
-      email: email ?? this.email,
-      bio: bio ?? this.bio,
-      comfortBadges: comfortBadges ?? this.comfortBadges,
-      isSignedIn: isSignedIn ?? this.isSignedIn,
-      authMethod: authMethod ?? this.authMethod,
-      icocChurchAffiliation:
-          icocChurchAffiliation ?? this.icocChurchAffiliation,
-      tagline: tagline ?? this.tagline,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-    );
-  }
+  }) => MemberProfile(
+    userId: userId ?? this.userId,
+    displayName: displayName ?? this.displayName,
+    email: email ?? this.email,
+    bio: bio ?? this.bio,
+    comfortBadges: comfortBadges ?? this.comfortBadges,
+    isSignedIn: isSignedIn ?? this.isSignedIn,
+    authMethod: authMethod ?? this.authMethod,
+    icocChurchAffiliation: icocChurchAffiliation ?? this.icocChurchAffiliation,
+    tagline: tagline ?? this.tagline,
+    avatarUrl: avatarUrl ?? this.avatarUrl,
+  );
 }
 
 class MemberProfileNotifier extends Notifier<MemberProfile> {
@@ -417,9 +414,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   /// Republishes the directory when a tombstone is cleared but Firebase Auth
   /// did not emit a new session (for example after RESTORE on the gate).
   void publishDirectoryAfterRestore() {
-    if (!state.isSignedIn ||
-        state.userId.isEmpty ||
-        state.userId == 'guest') {
+    if (!state.isSignedIn || state.userId.isEmpty || state.userId == 'guest') {
       return;
     }
     _publishDirectory(state);

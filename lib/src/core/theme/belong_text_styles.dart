@@ -73,14 +73,12 @@ class BelongTextStyles extends ThemeExtension<BelongTextStyles> {
     TextStyle? body,
     TextStyle? caption,
     TextStyle? emphasis,
-  }) {
-    return BelongTextStyles(
-      title: title ?? this.title,
-      body: body ?? this.body,
-      caption: caption ?? this.caption,
-      emphasis: emphasis ?? this.emphasis,
-    );
-  }
+  }) => BelongTextStyles(
+    title: title ?? this.title,
+    body: body ?? this.body,
+    caption: caption ?? this.caption,
+    emphasis: emphasis ?? this.emphasis,
+  );
 
   @override
   BelongTextStyles lerp(ThemeExtension<BelongTextStyles>? other, double t) {

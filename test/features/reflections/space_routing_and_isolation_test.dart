@@ -17,7 +17,10 @@ void main() {
       expect(prayerPosts.every((p) => p.spaceKey == 'prayer'), isTrue);
       expect(generalPosts.every((p) => p.spaceKey == 'general_chat'), isTrue);
       expect(welcomePosts.every((p) => p.spaceKey == 'start_here'), isTrue);
-      expect(announcementPosts.every((p) => p.spaceKey == 'announcements'), isTrue);
+      expect(
+        announcementPosts.every((p) => p.spaceKey == 'announcements'),
+        isTrue,
+      );
 
       // Verify feeds are not duplicate across spaces
       expect(prayerPosts.first.id, isNot(equals(welcomePosts.first.id)));
@@ -32,25 +35,28 @@ void main() {
       expect(kFellowshipSpaces.containsKey('saved_for_later'), isTrue);
     });
 
-    test('Creating a post in a specific space is isolated to that space', () async {
-      final repo = LocalPostRepository(isDevMode: true);
-      final newPost = Post(
-        id: 'new_unique_post',
-        authorName: 'Test Member',
-        spaceKey: 'start_here',
-        toneTag: '[Welcome]',
-        content: 'Hello everyone!',
-        timestamp: DateTime.now(),
-        reactions: const {},
-      );
+    test(
+      'Creating a post in a specific space is isolated to that space',
+      () async {
+        final repo = LocalPostRepository(isDevMode: true);
+        final newPost = Post(
+          id: 'new_unique_post',
+          authorName: 'Test Member',
+          spaceKey: 'start_here',
+          toneTag: '[Welcome]',
+          content: 'Hello everyone!',
+          timestamp: DateTime.now(),
+          reactions: const {},
+        );
 
-      await repo.createPost(newPost);
+        await repo.createPost(newPost);
 
-      final startHerePosts = await repo.getPosts(spaceKey: 'start_here');
-      final prayerPosts = await repo.getPosts(spaceKey: 'prayer');
+        final startHerePosts = await repo.getPosts(spaceKey: 'start_here');
+        final prayerPosts = await repo.getPosts(spaceKey: 'prayer');
 
-      expect(startHerePosts.any((p) => p.id == 'new_unique_post'), isTrue);
-      expect(prayerPosts.any((p) => p.id == 'new_unique_post'), isFalse);
-    });
+        expect(startHerePosts.any((p) => p.id == 'new_unique_post'), isTrue);
+        expect(prayerPosts.any((p) => p.id == 'new_unique_post'), isFalse);
+      },
+    );
   });
 }

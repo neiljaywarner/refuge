@@ -38,7 +38,9 @@ void main() {
       container = ProviderContainer(
         overrides: [
           appLauncherBadgeServiceProvider.overrideWithValue(fakeBadgeService),
-          calmLocalNotificationServiceProvider.overrideWithValue(fakeLocalNotificationService),
+          calmLocalNotificationServiceProvider.overrideWithValue(
+            fakeLocalNotificationService,
+          ),
           belongNotificationsProvider.overrideWith(
             () => BelongNotificationsNotifier(
               badgeService: fakeBadgeService,
@@ -56,7 +58,9 @@ void main() {
           ),
           calmNotificationPreferencesProvider.overrideWith(
             (ref) => NotificationPermissionsService(
-              initialPreferences: const CalmNotificationPreferences(enabled: false),
+              initialPreferences: const CalmNotificationPreferences(
+                enabled: false,
+              ),
             ),
           ),
         ],
@@ -115,31 +119,37 @@ void main() {
       expect(fakeBadgeService.recordedBadge, equals(2));
     });
 
-    test('Silent OS notification shade only triggers when push digests enabled', () async {
-      final syncService = container.read(notificationSyncServiceProvider);
+    test(
+      'Silent OS notification shade only triggers when push digests enabled',
+      () async {
+        final syncService = container.read(notificationSyncServiceProvider);
 
-      final notif = BelongNotification(
-        id: 'cloud-test-shade',
-        type: BelongNotificationType.mention,
-        authorName: 'Elena R.',
-        postTitle: 'Quiet Waters',
-        timestamp: DateTime.now(),
-        isRead: false,
-      );
+        final notif = BelongNotification(
+          id: 'cloud-test-shade',
+          type: BelongNotificationType.mention,
+          authorName: 'Elena R.',
+          postTitle: 'Quiet Waters',
+          timestamp: DateTime.now(),
+          isRead: false,
+        );
 
-      // 1. When preferences.enabled is false:
-      await syncService.handleIncomingNotification(notif);
-      expect(fakeLocalNotificationService.showCount, equals(0));
+        // 1. When preferences.enabled is false:
+        await syncService.handleIncomingNotification(notif);
+        expect(fakeLocalNotificationService.showCount, equals(0));
 
-      // 2. When preferences.enabled is true:
-      container.read(calmNotificationPreferencesProvider.notifier).state =
-          const CalmNotificationPreferences(enabled: true);
+        // 2. When preferences.enabled is true:
+        container.read(calmNotificationPreferencesProvider.notifier).state =
+            const CalmNotificationPreferences(enabled: true);
 
-      await syncService.handleIncomingNotification(notif);
-      expect(fakeLocalNotificationService.showCount, equals(1));
-      expect(fakeLocalNotificationService.lastTitle, equals('Belong'));
-      expect(fakeLocalNotificationService.lastBody, contains('Elena R. mentioned you'));
-    });
+        await syncService.handleIncomingNotification(notif);
+        expect(fakeLocalNotificationService.showCount, equals(1));
+        expect(fakeLocalNotificationService.lastTitle, equals('Belong'));
+        expect(
+          fakeLocalNotificationService.lastBody,
+          contains('Elena R. mentioned you'),
+        );
+      },
+    );
 
     test('handleIncomingCloudPayload parses raw FCM data payload', () async {
       final syncService = container.read(notificationSyncServiceProvider);
@@ -162,16 +172,19 @@ void main() {
       expect(found.conversationId, equals('dm-caleb-1'));
     });
 
-    test('syncMarkAllAsRead marks all read and resets launcher badge to 0', () async {
-      final syncService = container.read(notificationSyncServiceProvider);
+    test(
+      'syncMarkAllAsRead marks all read and resets launcher badge to 0',
+      () async {
+        final syncService = container.read(notificationSyncServiceProvider);
 
-      // Verify initial unread exists
-      expect(container.read(unreadNotificationCountProvider), greaterThan(0));
+        // Verify initial unread exists
+        expect(container.read(unreadNotificationCountProvider), greaterThan(0));
 
-      await syncService.syncMarkAllAsRead();
+        await syncService.syncMarkAllAsRead();
 
-      expect(container.read(unreadNotificationCountProvider), equals(0));
-      expect(fakeBadgeService.recordedBadge, equals(0));
-    });
+        expect(container.read(unreadNotificationCountProvider), equals(0));
+        expect(fakeBadgeService.recordedBadge, equals(0));
+      },
+    );
   });
 }

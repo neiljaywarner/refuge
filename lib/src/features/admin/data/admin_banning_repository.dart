@@ -73,9 +73,8 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
   }
 
   @override
-  Future<bool> isUserBanned(String userIdOrName) async {
-    return _bannedUsers.containsKey(userIdOrName.trim().toLowerCase());
-  }
+  Future<bool> isUserBanned(String userIdOrName) async =>
+      _bannedUsers.containsKey(userIdOrName.trim().toLowerCase());
 
   @override
   Stream<List<SoftDeletedUser>> watchBannedUsers() async* {
@@ -201,11 +200,11 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
           .collection(collectionName)
           .where('softDeleted', isEqualTo: true)
           .snapshots()
-          .map((snapshot) {
-            return snapshot.docs.map((doc) {
-              return SoftDeletedUser.fromMap(doc.data(), id: doc.id);
-            }).toList();
-          });
+          .map(
+            (snapshot) => snapshot.docs
+                .map((doc) => SoftDeletedUser.fromMap(doc.data(), id: doc.id))
+                .toList(),
+          );
     }
     return _fallback.watchBannedUsers();
   }

@@ -1,7 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'calm_local_notification_stub.dart'
-    if (dart.library.io) 'calm_local_notification_mobile.dart' as impl;
+    if (dart.library.io) 'calm_local_notification_mobile.dart'
+    as impl;
 
 /// Shows silent calm notifications in the OS shade (Android / future iOS).
 abstract class CalmLocalNotificationService {
@@ -30,16 +31,18 @@ abstract class CalmLocalNotificationService {
 }
 
 /// Debug / QA preview without sending FCM (#382).
-Future<void> showCalmPreviewDirectMessage(CalmLocalNotificationService service) =>
-    service.showCalmDigest(
-      title: 'Belong',
-      body: 'Fellow Member sent you a direct message',
-      payload: 'dm_preview',
-    );
+Future<void> showCalmPreviewDirectMessage(
+  CalmLocalNotificationService service,
+) => service.showCalmDigest(
+  title: 'Belong',
+  body: 'Fellow Member sent you a direct message',
+  payload: 'dm_preview',
+);
 
 CalmLocalNotificationService createCalmLocalNotificationService() =>
     impl.createCalmLocalNotificationService();
 
-final calmLocalNotificationServiceProvider = Provider<CalmLocalNotificationService>((ref) {
-  return createCalmLocalNotificationService();
-});
+final calmLocalNotificationServiceProvider =
+    Provider<CalmLocalNotificationService>(
+      (ref) => createCalmLocalNotificationService(),
+    );

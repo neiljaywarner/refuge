@@ -29,10 +29,10 @@ class NotificationNavigationTarget extends Equatable {
 
   @override
   List<Object?> get props => [
-        tab,
-        spaceKey,
-        postId,
-        conversationId,
-        openDiscussion,
-      ];
+    tab,
+    spaceKey,
+    postId,
+    conversationId,
+    openDiscussion,
+  ];
 }

@@ -114,42 +114,32 @@ class FirebaseStorageRepository implements StorageRepository {
     required String userId,
     required Uint8List bytes,
     required String filename,
-  }) async {
-    return _fallback.uploadAvatar(
-      userId: userId,
-      bytes: bytes,
-      filename: filename,
-    );
-  }
+  }) async =>
+      _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
 
   @override
   Future<String> uploadPostMedia({
     required String spaceSlug,
     required Uint8List bytes,
     required String filename,
-  }) async {
-    return _fallback.uploadPostMedia(
-      spaceSlug: spaceSlug,
-      bytes: bytes,
-      filename: filename,
-    );
-  }
+  }) async => _fallback.uploadPostMedia(
+    spaceSlug: spaceSlug,
+    bytes: bytes,
+    filename: filename,
+  );
 
   @override
   Future<String> uploadFeedbackAttachment({
     required Uint8List bytes,
     required String filename,
-  }) async {
-    return _fallback.uploadFeedbackAttachment(bytes: bytes, filename: filename);
-  }
+  }) async =>
+      _fallback.uploadFeedbackAttachment(bytes: bytes, filename: filename);
 
   @override
   Future<String> uploadDiagnosticLogs({
     required Uint8List bytes,
     required String filename,
-  }) async {
-    return _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
-  }
+  }) async => _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
 
   @override
   Future<void> deleteMedia(String downloadUrl) async {

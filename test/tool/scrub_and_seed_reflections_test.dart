@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
+
 import '../../tool/scrub_and_seed_reflections.dart';
 
 void main() {
@@ -71,33 +72,32 @@ void main() {
       }
     });
 
-    test('parseJsonPosts correctly parses JSON records and handles edge cases', () {
-      final jsonList = [
-        {
-          'id': 'json-1',
-          'authorName': 'Sarah',
-          'spaceKey': 'prayer',
-          'toneTag': '[Prayer Request]',
-          'content': 'Peace be with you all.',
-          'timestamp': '2026-10-24T12:00:00Z',
-          'reactions': {'pray': 5},
-          'isDemo': false,
-        },
-        {
-          'id': 'json-2',
-          'authorName': 'Tester',
-          'content': 'quick test',
-        },
-        'invalid non-map entry',
-      ];
+    test(
+      'parseJsonPosts correctly parses JSON records and handles edge cases',
+      () {
+        final jsonList = [
+          {
+            'id': 'json-1',
+            'authorName': 'Sarah',
+            'spaceKey': 'prayer',
+            'toneTag': '[Prayer Request]',
+            'content': 'Peace be with you all.',
+            'timestamp': '2026-10-24T12:00:00Z',
+            'reactions': {'pray': 5},
+            'isDemo': false,
+          },
+          {'id': 'json-2', 'authorName': 'Tester', 'content': 'quick test'},
+          'invalid non-map entry',
+        ];
 
-      final parsed = scrubber.parseJsonPosts(jsonList);
-      expect(parsed.length, 2);
-      expect(parsed[0].id, 'json-1');
-      expect(parsed[0].authorName, 'Sarah');
-      expect(parsed[0].reactions['pray'], 5);
-      expect(parsed[1].id, 'json-2');
-      expect(parsed[1].spaceKey, 'general_chat'); // default fallback
-    });
+        final parsed = scrubber.parseJsonPosts(jsonList);
+        expect(parsed.length, 2);
+        expect(parsed[0].id, 'json-1');
+        expect(parsed[0].authorName, 'Sarah');
+        expect(parsed[0].reactions['pray'], 5);
+        expect(parsed[1].id, 'json-2');
+        expect(parsed[1].spaceKey, 'general_chat'); // default fallback
+      },
+    );
   });
 }

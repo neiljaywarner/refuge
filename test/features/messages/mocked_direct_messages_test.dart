@@ -20,9 +20,7 @@ void main() {
       ($) async {
         useTallScreen($);
         await $.pumpWidgetAndSettle(
-          const ProviderScope(
-            child: MaterialApp(home: BelongMessagesView()),
-          ),
+          const ProviderScope(child: MaterialApp(home: BelongMessagesView())),
         );
 
         await $(const Key('add_new_message_button')).tap();
@@ -104,9 +102,7 @@ void main() {
     ) async {
       useTallScreen($);
       await $.pumpWidgetAndSettle(
-        const ProviderScope(
-          child: MaterialApp(home: BelongMessagesView()),
-        ),
+        const ProviderScope(child: MaterialApp(home: BelongMessagesView())),
       );
 
       await $(const Key('add_new_message_button')).tap();

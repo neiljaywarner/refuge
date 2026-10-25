@@ -663,36 +663,31 @@ class _CommentTile extends StatelessWidget {
     required String emoji,
     required int count,
     required VoidCallback onTap,
-  }) {
-    return InkWell(
-      key: key,
-      borderRadius: BorderRadius.circular(6),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 11)),
-            if (count > 0) ...[
-              const SizedBox(width: 4),
-              Text(
-                '$count',
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ],
-        ),
+  }) => InkWell(
+    key: key,
+    borderRadius: BorderRadius.circular(6),
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
-    );
-  }
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 11)),
+          if (count > 0) ...[
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 
   String _formatTimeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);

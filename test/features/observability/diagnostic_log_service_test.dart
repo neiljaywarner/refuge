@@ -44,63 +44,69 @@ void main() {
       );
     });
 
-    test('scrubs PII such as email addresses and secret keys from breadcrumbs',
-        () {
-      service.recordBreadcrumb(
-        'user_login_attempt',
-        category: 'auth',
-        data: {
-          'email': 'sensitive_pastor@example.com',
-          'token_value': 'token: secret1234567890',
-        },
-      );
+    test(
+      'scrubs PII such as email addresses and secret keys from breadcrumbs',
+      () {
+        service.recordBreadcrumb(
+          'user_login_attempt',
+          category: 'auth',
+          data: {
+            'email': 'sensitive_pastor@example.com',
+            'token_value': 'token: secret1234567890',
+          },
+        );
 
-      final breadcrumb = service.breadcrumbsForTesting.last;
-      expect(breadcrumb.data!['email'], equals('[REDACTED_EMAIL]'));
-      expect(breadcrumb.data!['token_value'], contains('[REDACTED]'));
-      expect(
-        breadcrumb.data!['token_value'],
-        isNot(contains('secret1234567890')),
-      );
-    });
+        final breadcrumb = service.breadcrumbsForTesting.last;
+        expect(breadcrumb.data!['email'], equals('[REDACTED_EMAIL]'));
+        expect(breadcrumb.data!['token_value'], contains('[REDACTED]'));
+        expect(
+          breadcrumb.data!['token_value'],
+          isNot(contains('secret1234567890')),
+        );
+      },
+    );
 
-    test('generates valid DiagnosticSessionReplay with JSON and formatted text',
-        () async {
-      service.recordBreadcrumb('entered_quiet_room', category: 'action');
+    test(
+      'generates valid DiagnosticSessionReplay with JSON and formatted text',
+      () async {
+        service.recordBreadcrumb('entered_quiet_room', category: 'action');
 
-      final replay = await service.generateReplayBundle(
-        overrideInstallationsId: 'test_fid_12345',
-      );
+        final replay = await service.generateReplayBundle(
+          overrideInstallationsId: 'test_fid_12345',
+        );
 
-      expect(replay.sessionId, isNotEmpty);
-      expect(replay.installationsId, equals('test_fid_12345'));
-      expect(replay.flavor, equals('dev'));
-      expect(replay.breadcrumbs.length, equals(1));
+        expect(replay.sessionId, isNotEmpty);
+        expect(replay.installationsId, equals('test_fid_12345'));
+        expect(replay.flavor, equals('dev'));
+        expect(replay.breadcrumbs.length, equals(1));
 
-      final json = replay.toJson();
-      expect(json['session_id'], equals(replay.sessionId));
-      expect(json['installations_id'], equals('test_fid_12345'));
-      expect(json['breadcrumbs'], isNotEmpty);
+        final json = replay.toJson();
+        expect(json['session_id'], equals(replay.sessionId));
+        expect(json['installations_id'], equals('test_fid_12345'));
+        expect(json['breadcrumbs'], isNotEmpty);
 
-      final text = replay.toFormattedText();
-      expect(text, contains('BELONG ON THE SPECTRUM - SESSION REPLAY'));
-      expect(text, contains('Installation ID  : test_fid_12345'));
-      expect(text, contains('entered_quiet_room'));
-    });
+        final text = replay.toFormattedText();
+        expect(text, contains('BELONG ON THE SPECTRUM - SESSION REPLAY'));
+        expect(text, contains('Installation ID  : test_fid_12345'));
+        expect(text, contains('entered_quiet_room'));
+      },
+    );
 
-    test('sendLogsToCloudStorage uploads session payload and returns download URL',
-        () async {
-      service.recordBreadcrumb('test_step_before_upload');
+    test(
+      'sendLogsToCloudStorage uploads session payload and returns download URL',
+      () async {
+        service.recordBreadcrumb('test_step_before_upload');
 
-      final url = await service.sendLogsToCloudStorage(
-        customStorage: storage,
-        installationsId: 'mock_test_device_fid',
-      );
+        final url = await service.sendLogsToCloudStorage(
+          customStorage: storage,
+          installationsId: 'mock_test_device_fid',
+        );
 
-      expect(url, isNotEmpty);
-      expect(url, contains('storage.belongonthespectrum.com'));
-      expect(url, contains('diagnostics/logs/session_'));
-      expect(url, endsWith('.json'));
-    });
+        expect(url, isNotEmpty);
+        expect(url, contains('storage.belongonthespectrum.com'));
+        expect(url, contains('diagnostics/logs/session_'));
+        expect(url, endsWith('.json'));
+      },
+    );
   });
 }

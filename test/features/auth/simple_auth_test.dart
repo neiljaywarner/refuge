@@ -25,33 +25,28 @@ void main() {
   setUp(() {
     mockAuth = _MockFirebaseAuth();
     mockApp = _MockFirebaseApp();
-    when(() => mockAuth.authStateChanges()).thenAnswer(
-      (_) => Stream<User?>.value(null),
-    );
+    when(() => mockAuth.authStateChanges())
+        .thenAnswer((_) => Stream<User?>.value(null));
     when(() => mockAuth.currentUser).thenReturn(null);
     when(() => mockAuth.app).thenReturn(mockApp);
   });
 
-  Widget buildTestableWidget(Widget child) {
-    return ProviderScope(
-      child: MaterialApp(
-        localizationsDelegates: const [
-          FirebaseUILocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        home: child,
-      ),
-    );
-  }
+  Widget buildTestableWidget(Widget child) => ProviderScope(
+    child: MaterialApp(
+      localizationsDelegates: const [
+        FirebaseUILocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: child,
+    ),
+  );
 
   patrolWidgetTest(
     'SimpleAuthScreen mounts cleanly with official firebase_ui_auth components',
     ($) async {
-      await $.pumpWidget(
-        buildTestableWidget(const SimpleAuthScreen()),
-      );
+      await $.pumpWidget(buildTestableWidget(const SimpleAuthScreen()));
       await $.pump();
 
       expect($(SimpleAuthScreen), findsOneWidget);
@@ -61,9 +56,7 @@ void main() {
   patrolWidgetTest(
     'SimpleAuthScreen shows password visibility toggle on Firebase UI sign-in (#593)',
     ($) async {
-      await $.pumpWidget(
-        buildTestableWidget(SimpleAuthScreen(auth: mockAuth)),
-      );
+      await $.pumpWidget(buildTestableWidget(SimpleAuthScreen(auth: mockAuth)));
       await $.pumpAndSettle();
 
       expect(find.byIcon(Icons.visibility), findsOneWidget);
@@ -73,9 +66,7 @@ void main() {
   patrolWidgetTest(
     'SimpleAuthScreen password visibility toggle switches eye icon (#593)',
     ($) async {
-      await $.pumpWidget(
-        buildTestableWidget(SimpleAuthScreen(auth: mockAuth)),
-      );
+      await $.pumpWidget(buildTestableWidget(SimpleAuthScreen(auth: mockAuth)));
       await $.pumpAndSettle();
 
       expect(find.byIcon(Icons.visibility), findsOneWidget);

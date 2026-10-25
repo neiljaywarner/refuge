@@ -47,7 +47,9 @@ Future<void> main(List<String> args) async {
     final report = await importer.analyzeFile(filePath, isDryRun: isDryRun);
 
     if (isJson) {
-      stdout.writeln(const JsonEncoder.withIndent('  ').convert(report.toJson()));
+      stdout.writeln(
+        const JsonEncoder.withIndent('  ').convert(report.toJson()),
+      );
     } else {
       stdout.writeln(report.toAsciiTable());
     }

@@ -18,14 +18,15 @@ void main() {
                 primaryColor: Colors.teal,
                 isContrast: false,
                 isModal: false,
-                onSubmit: ({
-                  required String content,
-                  required String toneTag,
-                  String? specialInterestTag,
-                  String? imageUrl,
-                }) async {
-                  submitted = true;
-                },
+                onSubmit:
+                    ({
+                      required String content,
+                      required String toneTag,
+                      String? specialInterestTag,
+                      String? imageUrl,
+                    }) async {
+                      submitted = true;
+                    },
               ),
             ),
           ),
@@ -34,7 +35,10 @@ void main() {
 
         // 1. Compact elements exist
         expect($(Key('reflection_composer_input')), findsOneWidget);
-        expect($(find.textContaining('Share an unhurried thought in #General Chat')), findsOneWidget);
+        expect(
+          $(find.textContaining('Share an unhurried thought in #General Chat')),
+          findsOneWidget,
+        );
         expect($(Key('composer_add_meme_compact_button')), findsOneWidget);
         expect($(Key('composer_expand_button')), findsOneWidget);
 
@@ -112,7 +116,8 @@ void main() {
         );
         await $.pumpAndSettle();
 
-        await $(Key('reflection_composer_input')).enterText('A quiet rest in God.');
+        await $(Key('reflection_composer_input'))
+            .enterText('A quiet rest in God.');
         await $.pumpAndSettle();
 
         // Auto-expanded
@@ -135,15 +140,16 @@ void main() {
                 primaryColor: Colors.teal,
                 isContrast: false,
                 isModal: false,
-                onSubmit: ({
-                  required String content,
-                  required String toneTag,
-                  String? specialInterestTag,
-                  String? imageUrl,
-                }) async {
-                  submittedText = content;
-                  submittedTone = toneTag;
-                },
+                onSubmit:
+                    ({
+                      required String content,
+                      required String toneTag,
+                      String? specialInterestTag,
+                      String? imageUrl,
+                    }) async {
+                      submittedText = content;
+                      submittedTone = toneTag;
+                    },
               ),
             ),
           ),
@@ -154,7 +160,8 @@ void main() {
         await $(Key('composer_expand_button')).tap();
         await $.pumpAndSettle();
 
-        await $(Key('reflection_composer_input')).enterText('Walking in gentle grace today.');
+        await $(Key('reflection_composer_input'))
+            .enterText('Walking in gentle grace today.');
         await $.pumpAndSettle();
 
         // Publish
@@ -167,7 +174,14 @@ void main() {
         // Verify composer collapsed back to compact state
         expect($(Key('publish_reflection_button')), findsNothing);
         expect($(Key('composer_expand_button')), findsOneWidget);
-        expect($(find.textContaining('Share an unhurried thought in #Prayer Sanctuary')), findsOneWidget);
+        expect(
+          $(
+            find.textContaining(
+              'Share an unhurried thought in #Prayer Sanctuary',
+            ),
+          ),
+          findsOneWidget,
+        );
       },
     );
 

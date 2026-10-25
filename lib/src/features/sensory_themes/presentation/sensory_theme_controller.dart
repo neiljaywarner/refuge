@@ -15,14 +15,17 @@ class SensoryThemeNotifier extends StateNotifier<SensoryMode> {
   }
 
   void toggleHighContrast() {
-    state = state == SensoryMode.contrast ? SensoryMode.sage : SensoryMode.contrast;
+    state = state == SensoryMode.contrast
+        ? SensoryMode.sage
+        : SensoryMode.contrast;
   }
 }
 
 /// Global provider for current sensory theme mode.
-final sensoryThemeModeProvider = StateNotifierProvider<SensoryThemeNotifier, SensoryMode>(
-  (ref) => SensoryThemeNotifier(),
-);
+final sensoryThemeModeProvider =
+    StateNotifierProvider<SensoryThemeNotifier, SensoryMode>(
+      (ref) => SensoryThemeNotifier(),
+    );
 
 /// Riverpod StateNotifier managing the active SensoryFontScale (Issue #277).
 class SensoryFontScaleNotifier extends StateNotifier<SensoryFontScale> {
@@ -36,9 +39,10 @@ class SensoryFontScaleNotifier extends StateNotifier<SensoryFontScale> {
 }
 
 /// Global provider for sensory font scaling preset.
-final sensoryFontScaleProvider = StateNotifierProvider<SensoryFontScaleNotifier, SensoryFontScale>(
-  (ref) => SensoryFontScaleNotifier(),
-);
+final sensoryFontScaleProvider =
+    StateNotifierProvider<SensoryFontScaleNotifier, SensoryFontScale>(
+      (ref) => SensoryFontScaleNotifier(),
+    );
 
 /// Legacy ChangeNotifier adapter for backward compatibility with existing tests and widgets.
 class ThemeNotifier extends ChangeNotifier {
@@ -56,7 +60,9 @@ class ThemeNotifier extends ChangeNotifier {
   }
 
   void toggleHighContrast() {
-    setMode(_mode == SensoryMode.contrast ? SensoryMode.sage : SensoryMode.contrast);
+    setMode(
+      _mode == SensoryMode.contrast ? SensoryMode.sage : SensoryMode.contrast,
+    );
   }
 
   void setFontScale(SensoryFontScale newScale) {

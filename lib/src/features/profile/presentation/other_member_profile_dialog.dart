@@ -280,13 +280,18 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               Wrap(
                 spacing: 4,
                 runSpacing: 4,
-                children: effectiveMember.comfortBadges.map((badge) {
-                  return Chip(
-                    label: Text(badge, style: const TextStyle(fontSize: 9.5)),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  );
-                }).toList(),
+                children: effectiveMember.comfortBadges
+                    .map(
+                      (badge) => Chip(
+                        label: Text(
+                          badge,
+                          style: const TextStyle(fontSize: 9.5),
+                        ),
+                        padding: EdgeInsets.zero,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    )
+                    .toList(),
               ),
 
               const SizedBox(height: 14),
@@ -530,19 +535,21 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                                 ),
                                 if (comment.reactions.isNotEmpty)
                                   Row(
-                                    children: comment.reactions.entries.map((
-                                      e,
-                                    ) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(left: 4),
-                                        child: Text(
-                                          '${e.value} ${e.key}',
-                                          style: const TextStyle(
-                                            fontSize: 10.5,
+                                    children: comment.reactions.entries
+                                        .map(
+                                          (e) => Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 4,
+                                            ),
+                                            child: Text(
+                                              '${e.value} ${e.key}',
+                                              style: const TextStyle(
+                                                fontSize: 10.5,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    }).toList(),
+                                        )
+                                        .toList(),
                                   ),
                               ],
                             ),

@@ -15,8 +15,7 @@ class FcmMessagingService {
     CommunityAnalyticsService? analytics,
     this.onPayloadReceived,
   }) : _messaging = messaging ?? FirebaseMessaging.instance,
-       _localNotifications =
-           localNotifications ?? createCalmLocalNotificationService(),
+       _localNotifications = localNotifications ?? createCalmLocalNotificationService(),
        _analytics = analytics;
 
   final FirebaseMessaging _messaging;
@@ -30,9 +29,7 @@ class FcmMessagingService {
 
   static bool _handlersRegistered = false;
 
-  static Future<void> ensureInitialized({
-    CommunityAnalyticsService? analytics,
-  }) async {
+  static Future<void> ensureInitialized({CommunityAnalyticsService? analytics}) async {
     if (kIsWeb) return;
     if (_handlersRegistered) return;
     _handlersRegistered = true;
@@ -62,8 +59,7 @@ class FcmMessagingService {
     // The app is open, so a direct message is a banner. A closed app gets
     // the system notification from the background handler instead.
     final isDirectMessage =
-        message.data['type'] == 'direct_message' ||
-        message.data['category'] == 'direct_message';
+        message.data['type'] == 'direct_message' || message.data['category'] == 'direct_message';
     if (isDirectMessage) {
       showDirectMessageBanner(display.body);
     } else {
@@ -83,18 +79,12 @@ class FcmMessagingService {
 
     await _analytics?.logEvent(
       'fcm_message_received',
-      parameters: {
-        'app_state': 'foreground',
-        'category': display.category ?? 'unknown',
-      },
+      parameters: {'app_state': 'foreground', 'category': display.category ?? 'unknown'},
     );
   }
 
   void _logOpenedFromBackground(RemoteMessage message) {
     final category = message.data['category']?.toString() ?? 'unknown';
-    _analytics?.logEvent(
-      'fcm_message_opened',
-      parameters: {'category': category},
-    );
+    _analytics?.logEvent('fcm_message_opened', parameters: {'category': category});
   }
 }

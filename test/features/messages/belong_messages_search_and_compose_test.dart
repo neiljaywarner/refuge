@@ -86,21 +86,15 @@ void main() {
       );
       expect(tDays.formattedDate(base), '3 days ago');
 
-      final tOld = tJustNow.copyWith(
-        lastActivity: DateTime(2026, 9, 7, 10, 0),
-      );
+      final tOld = tJustNow.copyWith(lastActivity: DateTime(2026, 9, 7, 10, 0));
       expect(tOld.formattedDate(base), 'Sep 7');
     });
   });
 
   group('BelongMessagesView Search & Compose BDD Widget Tests', () {
-    Widget buildMessagesApp({List<MessageThread>? threads}) {
-      return ProviderScope(
-        child: MaterialApp(
-          home: BelongMessagesView(initialThreads: threads),
-        ),
-      );
-    }
+    Widget buildMessagesApp({List<MessageThread>? threads}) => ProviderScope(
+      child: MaterialApp(home: BelongMessagesView(initialThreads: threads)),
+    );
 
     patrolWidgetTest(
       'Message threads render avatars, subjects, types, and timestamps',
@@ -120,15 +114,21 @@ void main() {
         expect($('Sensory Game Night Group'), findsOneWidget);
         expect($('Silent Co-Presence Fellowship'), findsOneWidget);
         expect(
-          $('Welcome to Belong Fellowship: Welcome to Belong on the Spectrum! Glad you are here with us.'),
+          $(
+            'Welcome to Belong Fellowship: Welcome to Belong on the Spectrum! Glad you are here with us.',
+          ),
           findsOneWidget,
         );
         expect(
-          $('Wingspan & Cascadia Setup: Bringing Wingspan and Cascadia this Friday! Quiet room reserved.'),
+          $(
+            'Wingspan & Cascadia Setup: Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
+          ),
           findsOneWidget,
         );
         expect(
-          $('Tomorrow 2 PM Coworking: Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.'),
+          $(
+            'Tomorrow 2 PM Coworking: Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
+          ),
           findsOneWidget,
         );
 
@@ -205,33 +205,33 @@ void main() {
         );
 
         expect($('Caleb Stone'), findsOneWidget);
-        expect(
-          $('Soundscapes, calm lighting, and tech seams'),
-          findsOneWidget,
-        );
+        expect($('Soundscapes, calm lighting, and tech seams'), findsOneWidget);
 
         expect($('Sarah Chen'), findsOneWidget);
-        expect(
-          $('Deep dive Greek word studies and chiasms'),
-          findsOneWidget,
-        );
+        expect($('Deep dive Greek word studies and chiasms'), findsOneWidget);
 
         // 1. Select two members who are in the current fellowship directory.
         await $(const Key('member_picker_item_Caleb Stone')).tap();
         await $.pumpAndSettle();
-        expect($(const Key('selected_recipient_chip_Caleb Stone')), findsOneWidget);
+        expect(
+          $(const Key('selected_recipient_chip_Caleb Stone')),
+          findsOneWidget,
+        );
 
         await $(const Key('member_picker_item_Sarah Chen')).tap();
         await $.pumpAndSettle();
-        expect($(const Key('selected_recipient_chip_Sarah Chen')), findsOneWidget);
+        expect(
+          $(const Key('selected_recipient_chip_Sarah Chen')),
+          findsOneWidget,
+        );
 
         // 2. Fill in subject and content
-        await $(const Key('new_message_subject_input')).enterText('Friday Fellowship');
+        await $(const Key('new_message_subject_input'))
+            .enterText('Friday Fellowship');
         await $.pumpAndSettle();
 
-        await $(const Key('new_message_content_input')).enterText(
-          'Looking forward to quiet conversation this week!',
-        );
+        await $(const Key('new_message_content_input'))
+            .enterText('Looking forward to quiet conversation this week!');
         await $.pumpAndSettle();
 
         // 3. Send message
@@ -257,10 +257,7 @@ void main() {
         await $.pumpAndSettle();
 
         expect($('Caleb Stone & 1 others'), findsOneWidget);
-        expect(
-          $('Friday Fellowship: Will bring teas!'),
-          findsOneWidget,
-        );
+        expect($('Friday Fellowship: Will bring teas!'), findsOneWidget);
       },
     );
   });

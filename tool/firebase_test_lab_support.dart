@@ -37,10 +37,7 @@ List<String> devReleaseFlutterApkBuildArgs({
   'apk',
   targetFile: devMainEntrypoint,
   flavor: 'dev',
-  extraDefines: [
-    '--dart-define=ENABLE_SERVERPOD=false',
-    ...extraDefines,
-  ],
+  extraDefines: ['--dart-define=ENABLE_SERVERPOD=false', ...extraDefines],
 );
 
 /// Candidate release dev APK paths (Flutter vs legacy Gradle output).
@@ -76,12 +73,10 @@ class ApkBadging {
 }
 
 ApkBadging? parseAaptBadging(String aaptOutput) {
-  final packageMatch = RegExp(
-    r"package: name='([^']+)'",
-  ).firstMatch(aaptOutput);
-  final labelMatch = RegExp(
-    r"application-label:'([^']+)'",
-  ).firstMatch(aaptOutput);
+  final packageMatch = RegExp(r"package: name='([^']+)'")
+      .firstMatch(aaptOutput);
+  final labelMatch = RegExp(r"application-label:'([^']+)'")
+      .firstMatch(aaptOutput);
   if (packageMatch == null || labelMatch == null) {
     return null;
   }

@@ -63,20 +63,19 @@ class AccountDeletionRecord {
     'restoredAt': restoredAt.toIso8601String(),
   };
 
-  AccountDeletionRecord withBackends(List<String> backends) {
-    return AccountDeletionRecord(
-      userId: userId,
-      displayName: displayName,
-      email: email,
-      flavor: flavor,
-      deletedAt: deletedAt,
-      deletionKind: deletionKind,
-      softDeleted: softDeleted,
-      source: source,
-      accountStatus: accountStatus,
-      acknowledgedBackends: List.unmodifiable(backends),
-    );
-  }
+  AccountDeletionRecord withBackends(List<String> backends) =>
+      AccountDeletionRecord(
+        userId: userId,
+        displayName: displayName,
+        email: email,
+        flavor: flavor,
+        deletedAt: deletedAt,
+        deletionKind: deletionKind,
+        softDeleted: softDeleted,
+        source: source,
+        accountStatus: accountStatus,
+        acknowledgedBackends: List.unmodifiable(backends),
+      );
 }
 
 /// One place that can record a soft delete (memory, Firestore, or Appwrite).

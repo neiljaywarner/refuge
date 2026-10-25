@@ -37,9 +37,7 @@ class _ThrowingSink implements AccountDeletionSink {
   Future<bool> isSoftDeleted({
     required String userId,
     required String flavor,
-  }) async {
-    return false;
-  }
+  }) async => false;
 
   @override
   Future<void> restore({
@@ -238,25 +236,19 @@ class _RemoteFromSink implements AppwriteAccountDeletionRemote {
   final AccountDeletionSink _sink;
 
   @override
-  Future<void> markSoftDeleted(AccountDeletionRecord record) {
-    return _sink.softDelete(record);
-  }
+  Future<void> markSoftDeleted(AccountDeletionRecord record) =>
+      _sink.softDelete(record);
 
   @override
-  Future<bool> isSoftDeleted({required String userId, required String flavor}) {
-    return _sink.isSoftDeleted(userId: userId, flavor: flavor);
-  }
+  Future<bool> isSoftDeleted({
+    required String userId,
+    required String flavor,
+  }) => _sink.isSoftDeleted(userId: userId, flavor: flavor);
 
   @override
   Future<void> clearSoftDeleted({
     required String userId,
     required String flavor,
     required DateTime restoredAt,
-  }) {
-    return _sink.restore(
-      userId: userId,
-      flavor: flavor,
-      restoredAt: restoredAt,
-    );
-  }
+  }) => _sink.restore(userId: userId, flavor: flavor, restoredAt: restoredAt);
 }

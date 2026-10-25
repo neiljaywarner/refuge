@@ -138,7 +138,8 @@ void main() {
         await $(const Key('open_sheet_button')).tap();
 
         // Enter text
-        await $(const Key('feedback_message_input')).enterText('Discard me please');
+        await $(const Key('feedback_message_input'))
+            .enterText('Discard me please');
 
         // Tap close
         await $(const Key('close_feedback_sheet_button')).tap();

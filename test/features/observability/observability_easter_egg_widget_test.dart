@@ -41,10 +41,12 @@ void main() {
             communityAnalyticsServiceProvider.overrideWithValue(fakeAnalytics),
             errorReporterServiceProvider.overrideWithValue(fakeErrorReporter),
             storageRepositoryProvider.overrideWithValue(fakeStorage),
-            firebaseInstallationsServiceProvider
-                .overrideWithValue(fakeInstallations),
-            firebaseInstallationsIdProvider
-                .overrideWith((ref) => Future.value('fid_test_device_easter_egg')),
+            firebaseInstallationsServiceProvider.overrideWithValue(
+              fakeInstallations,
+            ),
+            firebaseInstallationsIdProvider.overrideWith(
+              (ref) => Future.value('fid_test_device_easter_egg'),
+            ),
             inAppMessagingServiceProvider.overrideWithValue(fakeFiam),
             diagnosticLogServiceProvider.overrideWithValue(fakeDiagnosticLogs),
           ],
@@ -80,7 +82,9 @@ void main() {
       await $.pumpAndSettle();
 
       // 6. Verify "Send Logs to Cloud Storage" button and upload flow
-      await $.tester.ensureVisible(find.byKey(const Key('easter_egg_send_logs_button')));
+      await $.tester.ensureVisible(
+        find.byKey(const Key('easter_egg_send_logs_button')),
+      );
       expect($(const Key('easter_egg_send_logs_button')), findsOneWidget);
       await $(const Key('easter_egg_send_logs_button')).tap();
       await $.pumpAndSettle();
@@ -91,19 +95,28 @@ void main() {
       await $.pumpAndSettle();
 
       // 7. Verify "View Session Replay & Breadcrumbs" opens modal sheet
-      await $.tester.ensureVisible(find.byKey(const Key('easter_egg_view_replay_button')));
+      await $.tester.ensureVisible(
+        find.byKey(const Key('easter_egg_view_replay_button')),
+      );
       expect($(const Key('easter_egg_view_replay_button')), findsOneWidget);
       await $(const Key('easter_egg_view_replay_button')).tap();
       await $.pumpAndSettle();
       expect($('Diagnostic Session Replay'), findsOneWidget);
-      expect($(const Key('easter_egg_copy_full_replay_button')), findsOneWidget);
+      expect(
+        $(const Key('easter_egg_copy_full_replay_button')),
+        findsOneWidget,
+      );
 
       // Close bottom sheet (tap barrier or dismiss)
-      Navigator.of($.tester.element($(const Key('easter_egg_copy_full_replay_button')))).pop();
+      Navigator.of(
+        $.tester.element($(const Key('easter_egg_copy_full_replay_button'))),
+      ).pop();
       await $.pumpAndSettle();
 
       // 8. Tap "Trigger Handled NFE" and verify error is captured in buffer
-      await $.tester.ensureVisible(find.byKey(const Key('easter_egg_trigger_nfe_button')));
+      await $.tester.ensureVisible(
+        find.byKey(const Key('easter_egg_trigger_nfe_button')),
+      );
       await $(const Key('easter_egg_trigger_nfe_button')).tap();
       await $.pumpAndSettle();
       expect(fakeErrorReporter.recordedErrorsForTesting.length, 1);
@@ -113,17 +126,22 @@ void main() {
       );
 
       // 9. Tap "Emit Test Analytics Event" and verify analytics event dispatched
-      await $.tester.ensureVisible(find.byKey(const Key('easter_egg_trigger_analytics_button')));
+      await $.tester.ensureVisible(
+        find.byKey(const Key('easter_egg_trigger_analytics_button')),
+      );
       await $(const Key('easter_egg_trigger_analytics_button')).tap();
       await $.pumpAndSettle();
       expect(
-        fakeAnalytics.dispatchedEventsForTesting
-            .any((e) => e['name'] == 'easter_egg_test_event'),
+        fakeAnalytics.dispatchedEventsForTesting.any(
+          (e) => e['name'] == 'easter_egg_test_event',
+        ),
         isTrue,
       );
 
       // 10. Dismiss dialog cleanly
-      await $.tester.ensureVisible(find.byKey(const Key('easter_egg_close_button')));
+      await $.tester.ensureVisible(
+        find.byKey(const Key('easter_egg_close_button')),
+      );
       await $(const Key('easter_egg_close_button')).tap();
       await $.pumpAndSettle();
       expect($(const Key('observability_easter_egg_dialog')), findsNothing);

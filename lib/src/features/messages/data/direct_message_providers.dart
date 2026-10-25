@@ -21,11 +21,11 @@ final directMessageMailboxOverrideProvider = Provider<DirectMessageMailbox?>(
 
 final messageRecipientDirectoryProvider =
     FutureProvider<List<MessageRecipient>>((ref) async {
-  final mailbox = ref.watch(directMessageMailboxProvider);
-  final flavor = ref.watch(appFlavorProvider);
-  final includeSamples = ref.watch(messageRecipientIncludeSamplesProvider);
-  return mailbox.loadDirectory(
-    includeSamples: includeSamples,
-    isProduction: flavor.isProduction,
-  );
-});
+      final mailbox = ref.watch(directMessageMailboxProvider);
+      final flavor = ref.watch(appFlavorProvider);
+      final includeSamples = ref.watch(messageRecipientIncludeSamplesProvider);
+      return mailbox.loadDirectory(
+        includeSamples: includeSamples,
+        isProduction: flavor.isProduction,
+      );
+    });

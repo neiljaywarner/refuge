@@ -245,25 +245,23 @@ class AppwriteAccountDeletionSink implements AccountDeletionSink {
   String get name => 'appwrite';
 
   @override
-  Future<void> softDelete(AccountDeletionRecord record) {
-    return remote.markSoftDeleted(record);
-  }
+  Future<void> softDelete(AccountDeletionRecord record) =>
+      remote.markSoftDeleted(record);
 
   @override
-  Future<bool> isSoftDeleted({required String userId, required String flavor}) {
-    return remote.isSoftDeleted(userId: userId, flavor: flavor);
-  }
+  Future<bool> isSoftDeleted({
+    required String userId,
+    required String flavor,
+  }) => remote.isSoftDeleted(userId: userId, flavor: flavor);
 
   @override
   Future<void> restore({
     required String userId,
     required String flavor,
     required DateTime restoredAt,
-  }) {
-    return remote.clearSoftDeleted(
-      userId: userId,
-      flavor: flavor,
-      restoredAt: restoredAt,
-    );
-  }
+  }) => remote.clearSoftDeleted(
+    userId: userId,
+    flavor: flavor,
+    restoredAt: restoredAt,
+  );
 }

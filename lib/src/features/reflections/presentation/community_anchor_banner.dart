@@ -85,11 +85,8 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                         fontSize: 11,
                         color: isContrast
                             ? Colors.white70
-                            : Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.color
-                                ?.withValues(alpha: 0.7),
+                            : Theme.of(context).textTheme.bodySmall?.color
+                                  ?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],

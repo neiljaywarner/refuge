@@ -18,10 +18,10 @@ class NotificationSyncService {
     required this.ref,
     CalmLocalNotificationService? localNotifications,
     AppLauncherBadgeService? badgeService,
-  })  : _localNotifications =
-            localNotifications ?? ref.read(calmLocalNotificationServiceProvider),
-        _badgeService =
-            badgeService ?? ref.read(appLauncherBadgeServiceProvider);
+  }) : _localNotifications =
+           localNotifications ?? ref.read(calmLocalNotificationServiceProvider),
+       _badgeService =
+           badgeService ?? ref.read(appLauncherBadgeServiceProvider);
 
   final Ref ref;
   final CalmLocalNotificationService _localNotifications;
@@ -54,7 +54,8 @@ class NotificationSyncService {
     // 4. If push digests are enabled in member preferences, deliver silent OS notification
     final prefs = ref.read(calmNotificationPreferencesProvider);
     if (prefs.enabled && postSystemNotification) {
-      final quiet = prefs.schedule == CalmDigestSchedule.immediateGentle ||
+      final quiet =
+          prefs.schedule == CalmDigestSchedule.immediateGentle ||
           prefs.schedule == CalmDigestSchedule.muted;
       if (notification.type == BelongNotificationType.directMessage && !quiet) {
         await _localNotifications.showMessageNotification(
@@ -72,9 +73,8 @@ class NotificationSyncService {
     }
   }
 
-  bool _alreadyPostedByFcm(Map<String, dynamic> data) {
-    return data['type'] == 'direct_message' || data['category'] == 'direct_message';
-  }
+  bool _alreadyPostedByFcm(Map<String, dynamic> data) =>
+      data['type'] == 'direct_message' || data['category'] == 'direct_message';
 
   /// Parses raw cloud data map and processes it as a BelongNotification.
   Future<void> handleIncomingCloudPayload(Map<String, dynamic> data) async {
@@ -88,7 +88,8 @@ class NotificationSyncService {
       // Fallback: extract title and body using calmPushDisplayFromParts
       final display = calmPushDisplayFromParts(data: data);
       final fallbackNotif = BelongNotification(
-        id: data['id']?.toString() ??
+        id:
+            data['id']?.toString() ??
             'cloud-${DateTime.now().millisecondsSinceEpoch}',
         type: BelongNotificationType.mention,
         authorName: data['authorName']?.toString() ?? 'Fellow Member',
@@ -117,12 +118,12 @@ class NotificationSyncService {
 }
 
 /// Provider for [NotificationSyncService].
-final notificationSyncServiceProvider =
-    Provider<NotificationSyncService>((ref) {
+final notificationSyncServiceProvider = Provider<NotificationSyncService>((
+  ref,
+) {
   final service = NotificationSyncService(ref: ref);
-  Future<void> forward(Map<String, dynamic> data) {
-    return service.handleIncomingCloudPayload(data);
-  }
+  Future<void> forward(Map<String, dynamic> data) =>
+      service.handleIncomingCloudPayload(data);
 
   FcmMessagingService.cloudPayloadHandler = forward;
   ref.onDispose(() {

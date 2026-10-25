@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
@@ -29,31 +30,37 @@ void main() {
       // Second listener subscribes later: must receive reflections immediately without hanging
       final list2 = await stream.first.timeout(
         const Duration(milliseconds: 500),
-        onTimeout: () => throw TimeoutException('Subsequent listener timed out waiting for initial yield'),
+        onTimeout: () => throw TimeoutException(
+          'Subsequent listener timed out waiting for initial yield',
+        ),
       );
       expect(list2, isNotEmpty);
       expect(list2.length, equals(list1.length));
     });
 
-    test('watchSavedPosts delivers saved reflections to multiple late listeners', () async {
-      // Toggle save on a post
-      final posts = await repository.getPosts(spaceKey: 'prayer');
-      final target = posts.first;
-      await repository.toggleSavePost(postId: target.id);
+    test(
+      'watchSavedPosts delivers saved reflections to multiple late listeners',
+      () async {
+        // Toggle save on a post
+        final posts = await repository.getPosts(spaceKey: 'prayer');
+        final target = posts.first;
+        await repository.toggleSavePost(postId: target.id);
 
-      final stream = repository.watchSavedPosts();
+        final stream = repository.watchSavedPosts();
 
-      // First listener
-      final saved1 = await stream.first;
-      expect(saved1.any((p) => p.id == target.id), isTrue);
+        // First listener
+        final saved1 = await stream.first;
+        expect(saved1.any((p) => p.id == target.id), isTrue);
 
-      // Second late listener
-      final saved2 = await stream.first.timeout(
-        const Duration(milliseconds: 500),
-        onTimeout: () => throw TimeoutException('Second saved posts listener timed out'),
-      );
-      expect(saved2.any((p) => p.id == target.id), isTrue);
-    });
+        // Second late listener
+        final saved2 = await stream.first.timeout(
+          const Duration(milliseconds: 500),
+          onTimeout: () =>
+              throw TimeoutException('Second saved posts listener timed out'),
+        );
+        expect(saved2.any((p) => p.id == target.id), isTrue);
+      },
+    );
 
     test('watchPosts emits updated list when a new post is added', () async {
       final stream = repository.watchPosts(spaceKey: 'prayer');

@@ -29,44 +29,44 @@ void main() {
       );
     });
 
-    test('send delivers thread to recipient and notification includes body', () async {
-      const body = 'Quiet hello from the fellowship.';
-      final bob = MessageRecipient.fromFirestoreUser(
-        'uid-bob',
-        {
+    test(
+      'send delivers thread to recipient and notification includes body',
+      () async {
+        const body = 'Quiet hello from the fellowship.';
+        final bob = MessageRecipient.fromFirestoreUser('uid-bob', {
           'displayName': 'Community Member',
           'email': 'grokbot2@example.com',
-        },
-      );
+        });
 
-      await mailbox.sendMessage(
-        senderId: 'uid-alice',
-        senderName: 'Fellow Member',
-        recipients: [bob],
-        content: body,
-      );
+        await mailbox.sendMessage(
+          senderId: 'uid-alice',
+          senderName: 'Fellow Member',
+          recipients: [bob],
+          content: body,
+        );
 
-      final bobThreads = await mailbox.loadThreads('uid-bob');
-      expect(bobThreads, isNotEmpty);
-      expect(bobThreads.first.messages.last.content, body);
+        final bobThreads = await mailbox.loadThreads('uid-bob');
+        expect(bobThreads, isNotEmpty);
+        expect(bobThreads.first.messages.last.content, body);
 
-      final merged = mailbox.notificationsForUser(
-        currentUserId: 'uid-bob',
-        existing: const [],
-      );
-      expect(merged, isNotEmpty);
-      final dm = merged.firstWhere(
-        (n) => n.type == BelongNotificationType.directMessage,
-      );
-      expect(dm.displayMessage, contains('sent you a direct message'));
-      expect(dm.displayMessage, contains(body));
-    });
+        final merged = mailbox.notificationsForUser(
+          currentUserId: 'uid-bob',
+          existing: const [],
+        );
+        expect(merged, isNotEmpty);
+        final dm = merged.firstWhere(
+          (n) => n.type == BelongNotificationType.directMessage,
+        );
+        expect(dm.displayMessage, contains('sent you a direct message'));
+        expect(dm.displayMessage, contains(body));
+      },
+    );
 
     test('third member cannot see the thread', () async {
-      final bob = MessageRecipient.fromFirestoreUser(
-        'uid-bob',
-        {'displayName': 'Peer', 'email': 'grokbot2@example.com'},
-      );
+      final bob = MessageRecipient.fromFirestoreUser('uid-bob', {
+        'displayName': 'Peer',
+        'email': 'grokbot2@example.com',
+      });
 
       await mailbox.sendMessage(
         senderId: 'uid-alice',

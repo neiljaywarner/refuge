@@ -8,15 +8,13 @@ import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart
 
 class _SignedInProfileNotifier extends MemberProfileNotifier {
   @override
-  MemberProfile build() {
-    return const MemberProfile(
-      displayName: 'Signed In Tester',
-      email: 'test@example.com',
-      bio: 'Bio',
-      comfortBadges: [],
-      isSignedIn: true,
-    );
-  }
+  MemberProfile build() => const MemberProfile(
+    displayName: 'Signed In Tester',
+    email: 'test@example.com',
+    bio: 'Bio',
+    comfortBadges: [],
+    isSignedIn: true,
+  );
 }
 
 void main() {

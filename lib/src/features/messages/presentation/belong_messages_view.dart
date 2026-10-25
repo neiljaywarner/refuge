@@ -472,177 +472,170 @@ class BelongMessagesView extends HookConsumerWidget {
     TextEditingController replyController,
     VoidCallback onSendReply,
     VoidCallback onBack,
-  ) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          key: const Key('back-to-messages-list'),
-          icon: const Icon(Icons.arrow_back),
-          onPressed: onBack,
-        ),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: theme.colorScheme.primary.withValues(
-                alpha: 0.12,
-              ),
-              child: Text(
-                thread.avatarInitials,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    thread.participantName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (thread.subject != null)
-                    Text(
-                      thread.subject!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+  ) => Scaffold(
+    appBar: AppBar(
+      leading: IconButton(
+        key: const Key('back-to-messages-list'),
+        icon: const Icon(Icons.arrow_back),
+        onPressed: onBack,
       ),
-      body: Column(
+      title: Row(
         children: [
-          // Message History
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: thread.messages.length,
-              itemBuilder: (context, index) {
-                final msg = thread.messages[index];
-                return Align(
-                  alignment: msg.isFromMe
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    decoration: BoxDecoration(
-                      color: msg.isFromMe
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          msg.content,
-                          style: TextStyle(
-                            color: msg.isFromMe
-                                ? theme.colorScheme.onPrimary
-                                : theme.colorScheme.onSurface,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          msg.formattedDate(),
-                          key: Key('direct_message_timestamp_${msg.id}'),
-                          style: TextStyle(
-                            color: msg.isFromMe
-                                ? theme.colorScheme.onPrimary.withValues(
-                                    alpha: 0.7,
-                                  )
-                                : theme.colorScheme.onSurfaceVariant,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+            child: Text(
+              thread.avatarInitials,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
             ),
           ),
-
-          // Reply Input Bar
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      key: const Key('reply-message-field'),
-                      controller: replyController,
-                      decoration: InputDecoration(
-                        hintText: 'Type a calm reply...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF7F9FA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                      ),
-                      onSubmitted: (_) => onSendReply(),
-                    ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  thread.participantName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    key: const Key('send-reply-button'),
-                    icon: Icon(
-                      Icons.send_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                    onPressed: onSendReply,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (thread.subject != null)
+                  Text(
+                    thread.subject!,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+              ],
             ),
           ),
         ],
       ),
-    );
-  }
+    ),
+    body: Column(
+      children: [
+        // Message History
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: thread.messages.length,
+            itemBuilder: (context, index) {
+              final msg = thread.messages[index];
+              return Align(
+                alignment: msg.isFromMe
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
+                  decoration: BoxDecoration(
+                    color: msg.isFromMe
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        msg.content,
+                        style: TextStyle(
+                          color: msg.isFromMe
+                              ? theme.colorScheme.onPrimary
+                              : theme.colorScheme.onSurface,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        msg.formattedDate(),
+                        key: Key('direct_message_timestamp_${msg.id}'),
+                        style: TextStyle(
+                          color: msg.isFromMe
+                              ? theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.7,
+                                )
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        // Reply Input Bar
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: Border(top: BorderSide(color: Colors.grey.shade200)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const Key('reply-message-field'),
+                    controller: replyController,
+                    decoration: InputDecoration(
+                      hintText: 'Type a calm reply...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 13,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF7F9FA),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                    onSubmitted: (_) => onSendReply(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  key: const Key('send-reply-button'),
+                  icon: Icon(
+                    Icons.send_rounded,
+                    color: theme.colorScheme.primary,
+                  ),
+                  onPressed: onSendReply,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Compose modal sheet supporting single or multi-recipient autocomplete selection
@@ -738,23 +731,28 @@ class _NewMessageModalSheet extends HookConsumerWidget {
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
-                children: selectedRecipients.value.map((m) {
-                  return InputChip(
-                    key: Key('selected_recipient_chip_${m.name}'),
-                    avatar: CircleAvatar(
-                      child: Text(
-                        m.initials,
-                        style: const TextStyle(fontSize: 10),
+                children: selectedRecipients.value
+                    .map(
+                      (m) => InputChip(
+                        key: Key('selected_recipient_chip_${m.name}'),
+                        avatar: CircleAvatar(
+                          child: Text(
+                            m.initials,
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        ),
+                        label: Text(
+                          m.name,
+                          style: const TextStyle(fontSize: 11.5),
+                        ),
+                        onDeleted: () {
+                          selectedRecipients.value = selectedRecipients.value
+                              .where((s) => s.name != m.name)
+                              .toList();
+                        },
                       ),
-                    ),
-                    label: Text(m.name, style: const TextStyle(fontSize: 11.5)),
-                    onDeleted: () {
-                      selectedRecipients.value = selectedRecipients.value
-                          .where((s) => s.name != m.name)
-                          .toList();
-                    },
-                  );
-                }).toList(),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 8),
             ],

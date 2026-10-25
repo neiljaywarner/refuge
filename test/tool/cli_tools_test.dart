@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/marionette_demo.dart';
@@ -141,7 +142,9 @@ emulator-5554\tdevice
 offline_device\toffline
 unauthorized_device\tunauthorized
 ''';
-      final devices = PhysicalGlassRegressionRunner.parseConnectedDevices(adbOutput);
+      final devices = PhysicalGlassRegressionRunner.parseConnectedDevices(
+        adbOutput,
+      );
       expect(devices, equals(['56091JEBF14039', 'emulator-5554']));
     });
 
@@ -153,14 +156,26 @@ Current Battery Service state:
   level: 87
   scale: 100
 ''';
-      expect(PhysicalGlassRegressionRunner.parseBatteryLevel(dumpsys), equals('87%'));
-      expect(PhysicalGlassRegressionRunner.parseBatteryLevel('no battery info'), equals('N/A'));
+      expect(
+        PhysicalGlassRegressionRunner.parseBatteryLevel(dumpsys),
+        equals('87%'),
+      );
+      expect(
+        PhysicalGlassRegressionRunner.parseBatteryLevel('no battery info'),
+        equals('N/A'),
+      );
     });
 
     test('parseWakefulness extracts wakefulness state', () {
       const dumpsys = 'Display Power: state=ON\nmWakefulness=Awake';
-      expect(PhysicalGlassRegressionRunner.parseWakefulness(dumpsys), equals('Awake'));
-      expect(PhysicalGlassRegressionRunner.parseWakefulness('no info'), equals('Unknown'));
+      expect(
+        PhysicalGlassRegressionRunner.parseWakefulness(dumpsys),
+        equals('Awake'),
+      );
+      expect(
+        PhysicalGlassRegressionRunner.parseWakefulness('no info'),
+        equals('Unknown'),
+      );
     });
 
     test('captures report correctly under dry run', () async {
@@ -238,15 +253,27 @@ tags:
     });
 
     test('SystemMemoryInfo recommends models by memory tier', () {
-      const mem48 = SystemMemoryInfo(architecture: 'arm64', ramGb: 48, isAppleSilicon: true);
+      const mem48 = SystemMemoryInfo(
+        architecture: 'arm64',
+        ramGb: 48,
+        isAppleSilicon: true,
+      );
       expect(mem48.recommendedModel, contains('32b'));
       expect(mem48.defaultModelName, equals('qwen2.5-coder:14b'));
 
-      const mem24 = SystemMemoryInfo(architecture: 'arm64', ramGb: 24, isAppleSilicon: true);
+      const mem24 = SystemMemoryInfo(
+        architecture: 'arm64',
+        ramGb: 24,
+        isAppleSilicon: true,
+      );
       expect(mem24.recommendedModel, equals('qwen2.5-coder:14b'));
       expect(mem24.defaultModelName, equals('qwen2.5-coder:14b'));
 
-      const mem8 = SystemMemoryInfo(architecture: 'arm64', ramGb: 8, isAppleSilicon: true);
+      const mem8 = SystemMemoryInfo(
+        architecture: 'arm64',
+        ramGb: 8,
+        isAppleSilicon: true,
+      );
       expect(mem8.recommendedModel, equals('qwen2.5-coder:7b'));
       expect(mem8.defaultModelName, equals('qwen2.5-coder:7b'));
     });
@@ -263,7 +290,11 @@ llama3.2:3b             def67890        2.0 GB  1 week ago
 
     test('check-only reports status without pulling', () async {
       final inspector = MockSystemInspector(
-        memoryInfo: const SystemMemoryInfo(architecture: 'arm64', ramGb: 48, isAppleSilicon: true),
+        memoryInfo: const SystemMemoryInfo(
+          architecture: 'arm64',
+          ramGb: 48,
+          isAppleSilicon: true,
+        ),
       );
       final runner = OllamaSetupRunner(inspector: inspector);
       final code = await runner.run(['--check-only']);
@@ -293,13 +324,27 @@ emulator-5556\tdevice
 58221JEBF20835\tdevice
 ''';
       final devices = DualPixelDemoRunner.parseConnectedDevices(adbOutput);
-      expect(devices, equals(['56091JEBF14039', '58221JEBF20835', 'emulator-5554', 'emulator-5556']));
+      expect(
+        devices,
+        equals([
+          '56091JEBF14039',
+          '58221JEBF20835',
+          'emulator-5554',
+          'emulator-5556',
+        ]),
+      );
     });
 
     test('dry run verifies devices and exits with 0', () async {
       final executor = MockDeviceCommandExecutor();
       final runner = DualPixelDemoRunner(executor: executor);
-      final code = await runner.run(['--dry-run', '--left', 'dev1', '--right', 'dev2']);
+      final code = await runner.run([
+        '--dry-run',
+        '--left',
+        'dev1',
+        '--right',
+        'dev2',
+      ]);
       expect(code, equals(0));
     });
   });

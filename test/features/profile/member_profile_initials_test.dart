@@ -5,12 +5,12 @@ import 'package:refuge4serverpod/src/features/notifications/domain/belong_notifi
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
 
 MemberProfile _createProfile(String name) => MemberProfile(
-      displayName: name,
-      email: 'member@belongonthespectrum.com',
-      bio: 'Fellowship member',
-      comfortBadges: const [],
-      isSignedIn: true,
-    );
+  displayName: name,
+  email: 'member@belongonthespectrum.com',
+  bio: 'Fellowship member',
+  comfortBadges: const [],
+  isSignedIn: true,
+);
 
 void main() {
   group('MemberProfile.initials Dart 3 Switch Expression', () {
@@ -39,10 +39,13 @@ void main() {
       expect(profile.initials, 'CS');
     });
 
-    test('falls back to "B" (Belong community member monogram) when name is empty', () {
-      final profile = _createProfile('');
-      expect(profile.initials, 'B');
-    });
+    test(
+      'falls back to "B" (Belong community member monogram) when name is empty',
+      () {
+        final profile = _createProfile('');
+        expect(profile.initials, 'B');
+      },
+    );
 
     test('falls back to "B" when name contains only whitespace', () {
       final profile = _createProfile('    ');
@@ -56,9 +59,12 @@ void main() {
   });
 
   group('ReflectionCard.getInitials monogram parsing', () {
-    test('extracts clean initials from author with country/region parenthetical', () {
-      expect(ReflectionCard.getInitials('David M. (UK)'), 'DM');
-    });
+    test(
+      'extracts clean initials from author with country/region parenthetical',
+      () {
+        expect(ReflectionCard.getInitials('David M. (UK)'), 'DM');
+      },
+    );
 
     test('extracts clean initials from author with role parenthetical', () {
       expect(ReflectionCard.getInitials('Marty (Organizer)'), 'MO');

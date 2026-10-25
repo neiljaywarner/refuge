@@ -10,7 +10,7 @@ import 'in_app_messaging_stub.dart';
 /// backed by official [FirebaseInAppMessaging].
 class MobileInAppMessagingService implements InAppMessagingService {
   MobileInAppMessagingService({FirebaseInAppMessaging? instance})
-      : _fiam = instance;
+    : _fiam = instance;
 
   FirebaseInAppMessaging? _fiam;
 

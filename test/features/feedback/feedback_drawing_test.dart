@@ -137,10 +137,7 @@ void main() {
         // Verify zero overflow exceptions and stroke is preserved
         expect(tester.takeException(), isNull);
         expect(canvasState.strokes.length, 1);
-        expect(
-          find.text('Feedback drawing canvas, 1 stroke'),
-          findsOneWidget,
-        );
+        expect(find.text('Feedback drawing canvas, 1 stroke'), findsOneWidget);
       },
     );
 
@@ -239,10 +236,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.byTooltip('Close drawing'), findsOneWidget);
-      expect(
-        find.text('Feedback drawing canvas, 0 strokes'),
-        findsOneWidget,
-      );
+      expect(find.text('Feedback drawing canvas, 0 strokes'), findsOneWidget);
     });
   });
 
@@ -356,16 +350,16 @@ void main() {
         $.tester.view.devicePixelRatio = 1.0;
         addTearDown($.tester.view.resetPhysicalSize);
 
-        final mockHttp = MockClient((request) async {
-          return http.Response(
+        final mockHttp = MockClient(
+          (request) async => http.Response(
             jsonEncode({
               'number': 42,
               'html_url':
                   'https://github.com/neiljaywarner/belong_feedback/issues/42',
             }),
             201,
-          );
-        });
+          ),
+        );
 
         final client = GitHubFeedbackClient(
           httpClient: mockHttp,

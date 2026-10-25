@@ -9,12 +9,11 @@ import 'package:http/http.dart' as http;
 /// When no token is configured, falls back gracefully to local/Firestore storage
 /// without throwing exceptions or blocking the user.
 class GitHubFeedbackClient {
-  GitHubFeedbackClient({
-    http.Client? httpClient,
-    String? token,
-  })  : _client = httpClient ?? http.Client(),
-        _token = token ??
-            const String.fromEnvironment('FEEDBACK_GITHUB_PAT', defaultValue: '');
+  GitHubFeedbackClient({http.Client? httpClient, String? token})
+    : _client = httpClient ?? http.Client(),
+      _token =
+          token ??
+          const String.fromEnvironment('FEEDBACK_GITHUB_PAT', defaultValue: '');
 
   final http.Client _client;
   final String _token;
@@ -44,11 +43,7 @@ class GitHubFeedbackClient {
           'X-GitHub-Api-Version': '2022-11-28',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'title': title,
-          'body': body,
-          'labels': labels,
-        }),
+        body: jsonEncode({'title': title, 'body': body, 'labels': labels}),
       );
 
       if (response.statusCode == 201) {
@@ -67,6 +62,6 @@ class GitHubFeedbackClient {
 }
 
 /// Riverpod provider for the [GitHubFeedbackClient].
-final gitHubFeedbackClientProvider = Provider<GitHubFeedbackClient>((ref) {
-  return GitHubFeedbackClient();
-});
+final gitHubFeedbackClientProvider = Provider<GitHubFeedbackClient>(
+  (ref) => GitHubFeedbackClient(),
+);

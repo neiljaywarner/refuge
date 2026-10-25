@@ -273,50 +273,43 @@ class ComingSoonView extends StatelessWidget {
     required Color accentColor,
     required String platformTitle,
     required List<String> steps,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.35,
+  }) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: accentColor),
+            const SizedBox(width: 8),
+            Text(
+              platformTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20, color: accentColor),
-              const SizedBox(width: 8),
-              Text(
-                platformTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          for (final step in steps)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                step,
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.4,
-                  color: theme.textTheme.bodyMedium?.color?.withValues(
-                    alpha: 0.9,
-                  ),
+        const SizedBox(height: 8),
+        for (final step in steps)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              step,
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.9,
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
+          ),
+      ],
+    ),
+  );
 }

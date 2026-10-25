@@ -10,12 +10,10 @@ import '../domain/belong_notification.dart';
 /// Handles written as `@name` in a reflection. The `@` is not included.
 final RegExp mentionHandlePattern = RegExp(r'@([A-Za-z0-9_]+)');
 
-Set<String> extractMentionHandles(String content) {
-  return mentionHandlePattern
-      .allMatches(content)
-      .map((match) => match.group(1)!.toLowerCase())
-      .toSet();
-}
+Set<String> extractMentionHandles(String content) => mentionHandlePattern
+    .allMatches(content)
+    .map((match) => match.group(1)!.toLowerCase())
+    .toSet();
 
 /// Fields copied onto the author's public `users/{uid}` document when the
 /// private `member_notifications` collection is not writable yet.
@@ -113,50 +111,46 @@ class MemberNotificationStore {
   Stream<List<BelongNotification>> _watchPrivate(
     FirebaseFirestore fs,
     String uid,
-  ) {
-    return fs
-        .collection(collectionPath)
-        .where('recipientUid', isEqualTo: uid)
-        .snapshots()
-        .map((snapshot) {
-          final items = <BelongNotification>[];
-          for (final doc in snapshot.docs) {
-            final parsed = _fromDoc(doc.id, doc.data());
-            if (parsed != null) items.add(parsed);
-          }
-          items.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-          return items;
-        });
-  }
+  ) => fs
+      .collection(collectionPath)
+      .where('recipientUid', isEqualTo: uid)
+      .snapshots()
+      .map((snapshot) {
+        final items = <BelongNotification>[];
+        for (final doc in snapshot.docs) {
+          final parsed = _fromDoc(doc.id, doc.data());
+          if (parsed != null) items.add(parsed);
+        }
+        items.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        return items;
+      });
 
   Stream<List<BelongNotification>> _watchPublic(
     FirebaseFirestore fs,
     String uid,
-  ) {
-    return fs
-        .collection(MemberDirectoryStore.collectionPath)
-        .where(outboundRecipientsField, arrayContains: uid)
-        .snapshots()
-        .map((snapshot) {
-          final items = <BelongNotification>[];
-          for (final doc in snapshot.docs) {
-            final raw = doc.data()[outboundNoticesField];
-            if (raw is! List) continue;
-            for (final entry in raw) {
-              if (entry is! Map) continue;
-              final data = Map<String, dynamic>.from(entry);
-              if (data['recipientUid'] != uid) continue;
-              final parsed = _fromDoc('${data['id'] ?? doc.id}', {
-                ...data,
-                'createdAt': data['createdAtMillis'],
-              });
-              if (parsed != null) items.add(parsed);
-            }
+  ) => fs
+      .collection(MemberDirectoryStore.collectionPath)
+      .where(outboundRecipientsField, arrayContains: uid)
+      .snapshots()
+      .map((snapshot) {
+        final items = <BelongNotification>[];
+        for (final doc in snapshot.docs) {
+          final raw = doc.data()[outboundNoticesField];
+          if (raw is! List) continue;
+          for (final entry in raw) {
+            if (entry is! Map) continue;
+            final data = Map<String, dynamic>.from(entry);
+            if (data['recipientUid'] != uid) continue;
+            final parsed = _fromDoc('${data['id'] ?? doc.id}', {
+              ...data,
+              'createdAt': data['createdAtMillis'],
+            });
+            if (parsed != null) items.add(parsed);
           }
-          items.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-          return items;
-        });
-  }
+        }
+        items.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        return items;
+      });
 
   Future<void> notifyRecipient({
     required String recipientUid,

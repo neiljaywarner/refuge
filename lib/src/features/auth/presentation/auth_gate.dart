@@ -34,9 +34,8 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   String? _devExampleError;
   bool _devExampleLoading = false;
 
-  AuthSession _effectiveSession(AuthSession streamSession) {
-    return _reloadedSession ?? streamSession;
-  }
+  AuthSession _effectiveSession(AuthSession streamSession) =>
+      _reloadedSession ?? streamSession;
 
   @override
   Widget build(BuildContext context) {
@@ -235,45 +234,43 @@ class _VerifyEmailWall extends StatelessWidget {
   final Future<void> Function() onSignOut;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Check your email'), centerTitle: true),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'We sent a verification link to $email. Open it, then come back.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  key: const Key('auth_gate_i_verified'),
-                  onPressed: onReload,
-                  child: const Text('I verified my email'),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  key: const Key('auth_gate_resend_verification'),
-                  onPressed: onResend,
-                  child: const Text('Resend email'),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  key: const Key('auth_gate_sign_out'),
-                  onPressed: onSignOut,
-                  child: const Text('Sign out'),
-                ),
-              ],
-            ),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Check your email'), centerTitle: true),
+    body: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'We sent a verification link to $email. Open it, then come back.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                key: const Key('auth_gate_i_verified'),
+                onPressed: onReload,
+                child: const Text('I verified my email'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                key: const Key('auth_gate_resend_verification'),
+                onPressed: onResend,
+                child: const Text('Resend email'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                key: const Key('auth_gate_sign_out'),
+                onPressed: onSignOut,
+                child: const Text('Sign out'),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
