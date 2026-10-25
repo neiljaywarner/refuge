@@ -112,12 +112,10 @@ class _RefugeAppContent extends ConsumerWidget {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    home: homeOverride ??
+    home:
+        homeOverride ??
         (enforceSignIn
-            ? AuthGate(
-                repository: repository,
-                themeNotifier: themeNotifier,
-              )
+            ? AuthGate(repository: repository, themeNotifier: themeNotifier)
             : RefugeHomeScreen(
                 repository: repository,
                 themeNotifier: themeNotifier,
