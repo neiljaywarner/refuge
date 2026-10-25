@@ -412,9 +412,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                         Icon(
                                           Icons.bookmark_border_rounded,
                                           size: 40,
-                                          color: Theme.of(
-                                            context,
-                                          ).disabledColor,
+                                          color: Theme.of(context)
+                                              .disabledColor,
                                         ),
                                         const SizedBox(height: 12),
                                         Text(
@@ -464,23 +463,22 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             bottom: 48.0,
                           ),
                           sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final p = posts[index];
-                                return ReflectionCard(
-                                  post: p,
-                                  isContrast: isContrast,
-                                  isHighlighted:
-                                      highlightedPostId.value == p.id,
-                                  onAddReaction: (reactionType) =>
-                                      activeRepository.addReaction(
-                                        postId: p.id,
-                                        reactionType: reactionType,
-                                      ),
-                                );
-                              },
-                              childCount: posts.length,
-                            ),
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final p = posts[index];
+                              return ReflectionCard(
+                                post: p,
+                                isContrast: isContrast,
+                                isHighlighted: highlightedPostId.value == p.id,
+                                onAddReaction: (reactionType) =>
+                                    activeRepository.addReaction(
+                                      postId: p.id,
+                                      reactionType: reactionType,
+                                    ),
+                              );
+                            }, childCount: posts.length),
                           ),
                         ),
                       );
