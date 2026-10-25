@@ -1,0 +1,88 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Profile avatar — gallery pick smoke"
+tags:
+  - belong
+  - avatar
+  - upload-e2e
+  - issue-559
+  - known-gap
+---
+# Gallery-based avatar change. Tagged known-gap when guest mode blocks profile save.
+# Injects a test image, opens the profile avatar control, picks from gallery.
+
+# Permissions and media first, then launch. Needs a signed-in profile:
+# belong_profile_avatar_button is absent while the home bar says Sign In.
+- setPermissions:
+    permissions:
+      camera: allow
+      photos: allow
+
+- addMedia:
+    - "assets/belong_maestro_test_photo.png"
+
+- launchApp:
+    clearState: false
+    stopApp: true
+
+- extendedWaitUntil:
+    visible: ".*Belong.*"
+    timeout: 45000
+
+# The home avatar is initials while no photo is set, and the profile tooltip
+# after a photo is set. Flutter keys are not resource ids, so match the text.
+- tapOn:
+    text: "FM"
+    optional: true
+- runFlow:
+    when:
+      notVisible: "Preferred Display Name"
+    commands:
+      - tapOn: ".*Member Profile.*"
+- extendedWaitUntil:
+    visible: "Preferred Display Name"
+    timeout: 15000
+
+- tapOn:
+    id: "edit_avatar_button"
+- extendedWaitUntil:
+    visible: ".*Take Photo with Camera.*"
+    timeout: 10000
+
+- tapOn: ".*Choose from Photos / Gallery.*"
+- extendedWaitUntil:
+    visible: ".*Photos.*"
+    timeout: 15000
+
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Dismiss.*"
+          commands:
+            - tapOn: ".*Dismiss.*"
+            - waitForAnimationToEnd
+
+- tapOn:
+    point: "17%, 54%"
+- waitForAnimationToEnd:
+    timeout: 4000
+- runFlow:
+    when:
+      visible: "Done"
+    commands:
+      - tapOn: "Done"
+      - waitForAnimationToEnd:
+          timeout: 8000
+
+- extendedWaitUntil:
+    visible: ".*Crop photo.*"
+    timeout: 20000
+- tapOn: ".*Use this crop.*"
+- extendedWaitUntil:
+    notVisible: ".*Crop photo.*"
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "Preferred Display Name"
+    timeout: 15000
+- assertNotVisible: ".*Could not update avatar.*"

@@ -8,6 +8,7 @@ import '../../../core/presentation/system_insets.dart';
 import '../../../core/widgets/calm_media_image.dart';
 import '../../profile/data/avatar_upload_service.dart';
 import '../../profile/domain/avatar_models.dart';
+import '../../profile/presentation/belong_image_crop_page.dart';
 import '../domain/calm_meme.dart';
 
 /// Opens the modal bottom sheet allowing members to select an unhurried, calm-tech meme,
@@ -148,7 +149,19 @@ class _MemeGalleryModalContentState
         return;
       }
 
-      final base64String = base64Encode(bytes);
+      if (!mounted) return;
+      final framed = await BelongImageCropPage.show(
+        context,
+        bytes: bytes,
+        circular: false,
+      );
+      if (framed == null) {
+        if (!mounted) return;
+        setState(() => _isUploading = false);
+        return;
+      }
+
+      final base64String = base64Encode(framed);
       final dataUri = 'data:image/png;base64,$base64String';
 
       if (!mounted) return;
