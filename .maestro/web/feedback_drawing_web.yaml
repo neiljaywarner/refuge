@@ -15,9 +15,11 @@ name: Belong web feedback screenshot drawing
     timeout: 20000
 - tapOn:
     id: "tab_share_feedback"
-- extendedWaitUntil:
-    visible: "Share what you love.*"
-    timeout: 15000
+- scrollUntilVisible:
+    element: "Share what you love.*"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 40
 - tapOn: "Share what you love.*"
 - inputText: "hi from bot"
 - tapOn: "Draw / Annotate on Screenshot"

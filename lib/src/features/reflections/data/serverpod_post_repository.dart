@@ -111,17 +111,21 @@ class ServerpodPostRepository implements PostRepository {
     final fs = firestore;
     if (fs != null) {
       try {
-        await fs.collection(collectionName).doc(post.id).set({
-          'authorName': post.authorName,
-          'spaceKey': post.spaceKey,
-          'toneTag': post.toneTag,
-          'specialInterestTag': post.specialInterestTag,
-          'imageUrl': post.imageUrl,
-          'content': post.content,
-          'timestamp': post.timestamp.toIso8601String(),
-          'reactions': post.reactions,
-          'isDemo': post.isDemo,
-        });
+        await fs
+            .collection(collectionName)
+            .doc(post.id)
+            .set({
+              'authorName': post.authorName,
+              'spaceKey': post.spaceKey,
+              'toneTag': post.toneTag,
+              'specialInterestTag': post.specialInterestTag,
+              'imageUrl': post.imageUrl,
+              'content': post.content,
+              'timestamp': post.timestamp.toIso8601String(),
+              'reactions': post.reactions,
+              'isDemo': post.isDemo,
+            })
+            .timeout(const Duration(seconds: 2));
       } catch (_) {
         // Cross-cloud edge sync resilience
       }
@@ -202,52 +206,88 @@ class ServerpodPostRepository implements PostRepository {
   }
 
   @override
-  Stream<List<Post>> watchPosts({required String spaceKey}) async* {
-    // 1. Instantly yield local fallback so user never sees a blank screen or loading spinner
-    yield await _fallback.getPosts(spaceKey: spaceKey);
+  Stream<List<Post>> watchPosts({required String spaceKey}) {
+    // Local creates must show up even while the Serverpod socket stays open.
+    // A publish that falls back to this device never arrives on that socket.
+    // Remote rows are remembered here because they are not written back into
+    // the local store, and each socket event has to be merged with the others.
+    late StreamController<List<Post>> controller;
+    StreamSubscription<List<Post>>? localSub;
+    StreamSubscription<dynamic>? remoteSub;
+    final remoteById = <String, Post>{};
 
-    // 2. Open live streaming subscription to Serverpod endpoint
-    try {
-      final mappedSpace = _mapSpaceKey(spaceKey);
-      final stream = _client.reflection.watchSpace(mappedSpace);
-      final List<Post> livePosts = List.from(await _fallback.getPosts(spaceKey: spaceKey));
-
-      await for (final spPost in stream) {
-        _isLiveConnected = true;
-        talker.info('⚡ [Serverpod WebSocket] Real-time reflection received: "${spPost.content}" by ${spPost.authorName}');
-        final post = Post(
-          id: spPost.id?.toString() ?? UniqueKey().toString(),
-          authorName: spPost.authorName,
-          spaceKey: spaceKey,
-          toneTag: spPost.intentTag,
-          specialInterestTag: spPost.specialInterestTag,
-          content: spPost.content,
-          timestamp: spPost.createdAt,
-          reactions: {
-            'pray': spPost.prayingCount,
-            'peace': spPost.peaceCount,
-            'encouraged': spPost.encouragedCount,
-            'standing': spPost.standingWithCount,
-            'relatable': spPost.encouragedCount,
-          },
-        );
-
-        final existingIdx = livePosts.indexWhere((p) => p.id == post.id);
-        if (existingIdx >= 0) {
-          livePosts[existingIdx] = post;
-        } else {
-          livePosts.insert(0, post);
-        }
-        livePosts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        yield List<Post>.from(livePosts);
-      }
-    } catch (e, st) {
-      talker.handle(e, st, '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected');
-      debugPrint('🚨 [Serverpod Stream CATCH] watchPosts error: $e\n$st');
-      // 3. Fallback gracefully to local stream if network disconnects
-      _isLiveConnected = false;
-      yield* _fallback.watchPosts(spaceKey: spaceKey);
+    List<Post> merge(List<Post> local) {
+      final byId = <String, Post>{
+        for (final post in local) post.id: post,
+        ...remoteById,
+      };
+      final merged = byId.values.toList()
+        ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return merged;
     }
+
+    void emit(List<Post> posts) {
+      if (!controller.isClosed) controller.add(posts);
+    }
+
+    controller = StreamController<List<Post>>.broadcast(
+      onListen: () {
+        localSub = _fallback.watchPosts(spaceKey: spaceKey).listen(
+          (local) => emit(merge(local)),
+          onError: controller.addError,
+        );
+        try {
+          final mappedSpace = _mapSpaceKey(spaceKey);
+          remoteSub = _client.reflection.watchSpace(mappedSpace).listen(
+            (spPost) {
+              _isLiveConnected = true;
+              final post = Post(
+                id: spPost.id?.toString() ?? UniqueKey().toString(),
+                authorName: spPost.authorName,
+                spaceKey: spaceKey,
+                toneTag: spPost.intentTag,
+                specialInterestTag: spPost.specialInterestTag,
+                content: spPost.content,
+                timestamp: spPost.createdAt,
+                reactions: {
+                  'pray': spPost.prayingCount,
+                  'peace': spPost.peaceCount,
+                  'encouraged': spPost.encouragedCount,
+                  'standing': spPost.standingWithCount,
+                  'relatable': spPost.encouragedCount,
+                },
+              );
+              remoteById[post.id] = post;
+              _fallback.getPosts(spaceKey: spaceKey).then((local) {
+                emit(merge(local));
+              });
+            },
+            onError: (Object e, StackTrace st) {
+              _isLiveConnected = false;
+              talker.handle(
+                e,
+                st,
+                '🚨 [Serverpod WebSocket] watchPosts stream error',
+              );
+            },
+          );
+        } catch (e, st) {
+          _isLiveConnected = false;
+          talker.handle(
+            e,
+            st,
+            '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected',
+          );
+        }
+      },
+      onCancel: () async {
+        await localSub?.cancel();
+        await remoteSub?.cancel();
+        localSub = null;
+        remoteSub = null;
+      },
+    );
+    return controller.stream;
   }
 
   @override

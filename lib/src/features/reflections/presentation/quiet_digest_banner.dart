@@ -20,10 +20,18 @@ class QuietDigestBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSpace = ref.watch(activeSpaceKeyProvider);
-    final digestAsync = ref.watch(quietDigestProvider(activeSpace));
-
-    final message = legacyMessage ?? digestAsync.valueOrNull;
+    // The home screen already resolved the digest from the active repository.
+    // Watching quietDigestProvider here reads a root provider whose
+    // postRepository dependency may be overridden in a nested scope, which
+    // Riverpod rejects.
+    final String? message;
+    if (legacyMessage != null && legacyMessage!.isNotEmpty) {
+      message = legacyMessage;
+    } else {
+      final activeSpace = ref.watch(activeSpaceKeyProvider);
+      final digestAsync = ref.watch(quietDigestProvider(activeSpace));
+      message = digestAsync.valueOrNull;
+    }
     if (message == null || message.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -34,11 +42,19 @@ class QuietDigestBanner extends ConsumerWidget {
             ? Colors.yellow.withValues(alpha: 0.1)
             : primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: isContrast
+              ? Colors.yellow
+              : primaryColor.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.wb_twilight, size: 15, color: isContrast ? Colors.yellow : primaryColor),
+          Icon(
+            Icons.wb_twilight,
+            size: 15,
+            color: isContrast ? Colors.yellow : primaryColor,
+          ),
           const Gap(8),
           Expanded(
             child: Text(

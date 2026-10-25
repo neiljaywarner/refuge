@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../messages/data/direct_message_mailbox.dart';
+import '../../profile/domain/member_profile.dart';
 import '../data/app_launcher_badge_service.dart';
+import '../data/member_notification_store.dart';
 import '../domain/belong_notification.dart';
 import '../domain/notification_navigation_target.dart';
 
@@ -17,12 +21,12 @@ enum BelongNotificationFilter {
   following;
 
   String get label => switch (this) {
-        BelongNotificationFilter.inbox => 'Inbox',
-        BelongNotificationFilter.mentions => 'Mentions',
-        BelongNotificationFilter.directMessages => 'Direct Messages',
-        BelongNotificationFilter.threads => 'Threads',
-        BelongNotificationFilter.following => 'Following',
-      };
+    BelongNotificationFilter.inbox => 'Inbox',
+    BelongNotificationFilter.mentions => 'Mentions',
+    BelongNotificationFilter.directMessages => 'Direct Messages',
+    BelongNotificationFilter.threads => 'Threads',
+    BelongNotificationFilter.following => 'Following',
+  };
 }
 
 /// Simulated in-memory notification seed for development & testing (#328, #329, #442).
@@ -82,10 +86,7 @@ final List<BelongNotification> kInitialNotifications = [
 
 /// StateNotifier / Notifier managing the in-app calm notification collection.
 class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
-  BelongNotificationsNotifier({
-    this.badgeService,
-    this.initialList,
-  }) {
+  BelongNotificationsNotifier({this.badgeService, this.initialList}) {
     if (badgeService != null) {
       _explicitBadgeService = badgeService;
     }
@@ -100,6 +101,8 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
   AppLauncherBadgeService? _explicitBadgeService;
   List<BelongNotification>? _explicitInitialList;
   List<BelongNotification>? _unitTestState;
+  List<BelongNotification>? _seeds;
+  StreamSubscription<List<BelongNotification>>? _remoteSub;
 
   @override
   List<BelongNotification> get state {
@@ -130,10 +133,9 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
     badge?.setBadgeCount(unread);
   }
 
-  @override
-  List<BelongNotification> build() {
+  List<BelongNotification> _seededItems() {
     final now = DateTime.now();
-    final items = _explicitInitialList ??
+    return _explicitInitialList ??
         initialList ??
         [
           kInitialNotifications[0].copyWith(
@@ -157,8 +159,47 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
             timestamp: now.subtract(const Duration(days: 2)),
           ),
         ];
+  }
+
+  /// Prepends Firestore bell items for the signed-in account.
+  ///
+  /// Unit tests construct this notifier outside a provider, and widget tests
+  /// often inject [initialList]. Both keep the seeded list and skip Firestore.
+  void _bindRemoteNotifications() {
+    _remoteSub?.cancel();
+    _remoteSub = null;
+    if (_explicitInitialList != null || initialList != null) return;
+    try {
+      final profile = ref.watch(memberProfileProvider);
+      if (!profile.isSignedIn ||
+          profile.userId.isEmpty ||
+          profile.userId == 'guest') {
+        return;
+      }
+      if (Firebase.apps.isEmpty) return;
+      _remoteSub = ref
+          .read(memberNotificationStoreProvider)
+          .watchForRecipient(profile.userId)
+          .listen((remote) {
+            final seeds = _seeds ?? _seededItems();
+            final cachedMessages = state.where(
+              (n) => n.id.startsWith('dm-') && !n.id.startsWith('notif-'),
+            );
+            state = [...remote, ...cachedMessages, ...seeds];
+          }, onError: (_, _) {});
+      ref.onDispose(() {
+        _remoteSub?.cancel();
+      });
+    } catch (_) {}
+  }
+
+  @override
+  List<BelongNotification> build() {
+    final items = _seededItems();
+    _seeds = items;
     _unitTestState = items;
     _syncBadge(items);
+    _bindRemoteNotifications();
     return items;
   }
 
@@ -206,13 +247,18 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
     DirectMessageMailbox mailbox,
     String currentUserId,
   ) async {
-    if (mailbox is FirestoreDirectMessageMailbox) {
-      await mailbox.hydrateFromFirestore(currentUserId);
-    }
+    // Show messages already cached on this device before waiting on Firestore.
     state = mailbox.notificationsForUser(
       currentUserId: currentUserId,
       existing: state,
     );
+    if (mailbox is FirestoreDirectMessageMailbox) {
+      await mailbox.hydrateFromFirestore(currentUserId);
+      state = mailbox.notificationsForUser(
+        currentUserId: currentUserId,
+        existing: state,
+      );
+    }
   }
 
   void addDirectMessageNotification({
@@ -251,7 +297,9 @@ final belongNotificationsProvider =
 
 /// Active filter chip state provider.
 final notificationActiveFilterProvider =
-    StateProvider<BelongNotificationFilter>((ref) => BelongNotificationFilter.inbox);
+    StateProvider<BelongNotificationFilter>(
+      (ref) => BelongNotificationFilter.inbox,
+    );
 
 /// Computed provider returning total count of unread notifications.
 final unreadNotificationCountProvider = Provider<int>((ref) {
@@ -272,14 +320,19 @@ final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
     BelongNotificationFilter.mentions =>
       list.where((n) => n.type == BelongNotificationType.mention).toList(),
     BelongNotificationFilter.directMessages =>
-      list.where((n) => n.type == BelongNotificationType.directMessage).toList(),
+      list
+          .where((n) => n.type == BelongNotificationType.directMessage)
+          .toList(),
     BelongNotificationFilter.threads =>
       list.where((n) => n.type == BelongNotificationType.reply).toList(),
-    BelongNotificationFilter.following => list
-        .where((n) =>
-            n.type == BelongNotificationType.following ||
-            n.type == BelongNotificationType.like)
-        .toList(),
+    BelongNotificationFilter.following =>
+      list
+          .where(
+            (n) =>
+                n.type == BelongNotificationType.following ||
+                n.type == BelongNotificationType.like,
+          )
+          .toList(),
   };
 });
 

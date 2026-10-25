@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 
 void main() {
@@ -10,6 +11,7 @@ void main() {
 
     setUp(() {
       repository = LocalPostRepository(isDevMode: true);
+      ProfileStorageService.instance.clear();
     });
 
     Widget buildHarness() {
@@ -76,7 +78,9 @@ void main() {
         await $.pumpAndSettle();
         expect($('Notifications'), findsWidgets);
         expect(
-          $('All notifications are delivered gently without intrusive sound alerts.'),
+          $(
+            'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
+          ),
           findsOneWidget,
         );
 

@@ -72,9 +72,7 @@ class BelongMessagesView extends HookConsumerWidget {
     }, [mailbox]);
     final activeThread = useState<MessageThread?>(
       initialActiveThreadId != null
-          ? baseThreads
-              .where((t) => t.id == initialActiveThreadId)
-              .firstOrNull
+          ? baseThreads.where((t) => t.id == initialActiveThreadId).firstOrNull
           : null,
     );
 
@@ -142,8 +140,7 @@ class BelongMessagesView extends HookConsumerWidget {
             onSendMessage: (recipients, subject, content) async {
               final user = currentUser();
               final senderId = user?.uid ?? 'guest-local';
-              final senderName =
-                  user?.displayName?.trim().isNotEmpty == true
+              final senderName = user?.displayName?.trim().isNotEmpty == true
                   ? user!.displayName!.trim()
                   : 'Fellow Member';
               final result = await mailbox.sendMessage(
@@ -169,9 +166,7 @@ class BelongMessagesView extends HookConsumerWidget {
                   result.outcome == DirectMessageSendOutcome.deviceOnly) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                      'This message stayed on this device.',
-                    ),
+                    content: Text('This message stayed on this device.'),
                   ),
                 );
               }
@@ -683,8 +678,8 @@ class _NewMessageModalSheet extends HookConsumerWidget {
     final directoryAsync = ref.watch(messageRecipientDirectoryProvider);
 
     final directory = directoryAsync.valueOrNull ?? [];
-    final showingSamplesOnly = directory.isNotEmpty &&
-        directory.every((m) => m.isSample);
+    final showingSamplesOnly =
+        directory.isNotEmpty && directory.every((m) => m.isSample);
 
     final availableMembers = directory.where((m) {
       final notAlreadySelected = !selectedRecipients.value.any(
@@ -739,10 +734,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   'Sample members shown while the directory is offline.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ),
 
@@ -819,33 +811,33 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                           availableMembers.length == 1 &&
                           recipientQuery.value.trim().isNotEmpty;
                       final tile = ListTile(
-                          key: Key('member_picker_item_${member.name}'),
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                          leading: CircleAvatar(
-                            radius: 14,
-                            child: Text(
-                              member.initials,
-                              style: const TextStyle(fontSize: 10),
-                            ),
+                        key: Key('member_picker_item_${member.name}'),
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        leading: CircleAvatar(
+                          radius: 14,
+                          child: Text(
+                            member.initials,
+                            style: const TextStyle(fontSize: 10),
                           ),
-                          title: Text(
-                            member.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12.5,
-                            ),
+                        ),
+                        title: Text(
+                          member.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
                           ),
-                          subtitle: Text(
-                            member.pickerSubtitle,
-                            key: Key('member_tagline_${member.name}'),
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              color: Colors.grey.shade600,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          member.pickerSubtitle,
+                          key: Key('member_tagline_${member.name}'),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Colors.grey.shade600,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         trailing: const Icon(
                           Icons.add_circle_outline_rounded,
                           size: 16,
@@ -901,18 +893,21 @@ class _NewMessageModalSheet extends HookConsumerWidget {
               child: TextField(
                 key: const Key('new_message_content_input'),
                 controller: contentController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Write your calm, unhurried message...',
-                hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                filled: true,
-                fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Write your calm, unhurried message...',
+                  hintStyle: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                  filled: true,
+                  fillColor: theme.cardColor,
+                  contentPadding: const EdgeInsets.all(12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
                 ),
-              ),
               ),
             ),
             const SizedBox(height: 14),
@@ -949,9 +944,7 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                       if (contentController.text.trim().isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              'Please write a message content.',
-                            ),
+                            content: Text('Please write a message content.'),
                           ),
                         );
                         return;

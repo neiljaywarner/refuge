@@ -18,6 +18,8 @@ class DevFellowshipMember {
     required this.isIcocMember,
     required this.comfortBadges,
     this.tagline,
+    this.accountId,
+    this.handle,
   });
 
   final String name;
@@ -27,6 +29,12 @@ class DevFellowshipMember {
   final bool isIcocMember;
   final List<String> comfortBadges;
   final String? tagline;
+
+  /// Firebase uid for a real account. Sample members leave this null.
+  final String? accountId;
+
+  /// Public plus-tag, without `@`. Sample members leave this null.
+  final String? handle;
 
   String get effectiveTagline => tagline ?? role;
 
@@ -47,6 +55,16 @@ class DevFellowshipMember {
       [final first, ..., final last] => '${first[0]}${last[0]}'.toUpperCase(),
     };
   }
+}
+
+/// True when [query] matches the member's name, tagline, or public handle.
+bool memberMatchesPickerQuery(DevFellowshipMember member, String query) {
+  final q = query.trim().toLowerCase();
+  if (q.isEmpty) return true;
+  final handle = (member.handle ?? '').toLowerCase();
+  return member.name.toLowerCase().contains(q) ||
+      member.effectiveTagline.toLowerCase().contains(q) ||
+      (handle.isNotEmpty && (handle.contains(q) || '@$handle'.contains(q)));
 }
 
 /// Curated dev fellowship members for Belong on the Spectrum.

@@ -22,11 +22,7 @@ fb_auth.User? _currentFirebaseUser() {
 }
 
 /// Result of attempting to deliver a message to Firestore.
-enum DirectMessageSendOutcome {
-  delivered,
-  localOnly,
-  deviceOnly,
-}
+enum DirectMessageSendOutcome { delivered, localOnly, deviceOnly }
 
 class DirectMessageSendResult {
   const DirectMessageSendResult({
@@ -67,8 +63,8 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
   InMemoryDirectMessageMailbox({
     Map<String, StoredDirectMessage>? seed,
     Map<String, Map<String, dynamic>>? seedUsers,
-  })  : _messages = {...?seed},
-        _users = {...?seedUsers};
+  }) : _messages = {...?seed},
+       _users = {...?seedUsers};
 
   final Map<String, StoredDirectMessage> _messages;
   final Map<String, Map<String, dynamic>> _users;
@@ -113,8 +109,10 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     required String content,
     String? subject,
   }) async {
-    final recipientIds =
-        recipients.where((r) => !r.isSample).map((r) => r.id).toList();
+    final recipientIds = recipients
+        .where((r) => !r.isSample)
+        .map((r) => r.id)
+        .toList();
     final allSample = recipients.every((r) => r.isSample);
     final participantIds = <String>{
       if (!allSample) senderId,
@@ -306,6 +304,9 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
           .doc(id)
           .set(message.toMap())
           .timeout(sendTimeout);
+      // Keep the row on this device too. The recipient's bell can show it
+      // in the same session when the Firestore read is not deployed yet.
+      _offline.cacheMessage(message);
       return DirectMessageSendResult(
         outcome: DirectMessageSendOutcome.delivered,
         message: message,
@@ -342,9 +343,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
           .where('participantIds', arrayContains: currentUserId)
           .get();
       for (final doc in snap.docs) {
-        _offline.cacheMessage(
-          StoredDirectMessage.fromMap(doc.id, doc.data()),
-        );
+        _offline.cacheMessage(StoredDirectMessage.fromMap(doc.id, doc.data()));
       }
     } catch (_) {}
   }
@@ -384,11 +383,7 @@ List<MessageThread> _threadsFromMessages(
         ? otherNames.first
         : '${otherNames.first} & ${otherNames.length - 1} others';
     final initials = participantName.isNotEmpty
-        ? MessageRecipient(
-            id: 'x',
-            name: participantName,
-            tagline: '',
-          ).initials
+        ? MessageRecipient(id: 'x', name: participantName, tagline: '').initials
         : 'B';
     threads.add(
       MessageThread(
@@ -447,6 +442,8 @@ MessageThread _threadForMessage(
   );
 }
 
-DirectMessageMailbox createDirectMessageMailbox({AppFlavor flavor = AppFlavor.dev}) {
+DirectMessageMailbox createDirectMessageMailbox({
+  AppFlavor flavor = AppFlavor.dev,
+}) {
   return FirestoreDirectMessageMailbox(isProduction: flavor.isProduction);
 }

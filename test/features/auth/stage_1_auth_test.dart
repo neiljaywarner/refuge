@@ -10,7 +10,7 @@ import 'package:refuge4serverpod/src/features/profile/presentation/member_profil
 void main() {
   group('Stage 1 Any Auth & Pluggable AuthRepository Adapter Tests (#26, ADR-0009)', () {
     for (final target in BackendTarget.values) {
-      test('signs in with email/name, OAuth, and signs out cleanly on ${target.displayName}', () {
+      test('signs in with email/name, OAuth, and signs out cleanly on ${target.displayName}', () async {
         final container = ProviderContainer(
           overrides: [
             authBackendTargetProvider.overrideWithValue(target),
@@ -37,7 +37,7 @@ void main() {
         expect(oauthSession.isSignedIn, isTrue);
         expect(oauthSession.authMethod, '${target.name}_google');
 
-        container.read(memberProfileProvider.notifier).signOut();
+        await container.read(memberProfileProvider.notifier).signOut();
         expect(container.read(memberProfileProvider).isSignedIn, isFalse);
       });
     }

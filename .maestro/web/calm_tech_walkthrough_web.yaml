@@ -57,7 +57,7 @@ name: Belong web calm-tech walkthrough
     timeout: 15000
 - tapOn:
     id: "feed_tab"
-- assertVisible: "Welcome to Belong on the Spectrum"
+- assertVisible: ".*Create post or image post.*"
 
 - tapOn: "About Belong"
 - extendedWaitUntil:
@@ -65,4 +65,4 @@ name: Belong web calm-tech walkthrough
     timeout: 10000
 - tapOn: "Close"
 - assertNotVisible: "Psalm 139:14"
-- assertVisible: "Welcome to Belong on the Spectrum"
+- assertVisible: ".*Create post or image post.*"

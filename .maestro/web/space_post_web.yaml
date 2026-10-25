@@ -1,0 +1,42 @@
+url: http://127.0.0.1:8095
+name: Belong web space post
+---
+# Publishes one reflection in General Chat and checks that it appears.
+# Signed-out posts stay in the local session. No account addresses are used.
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Member Profile.*"
+    commands:
+      - tapOn: ".*Member Profile.*"
+      - tapOn: "Sign Out"
+      - extendedWaitUntil:
+          visible: "Sign In"
+          timeout: 20000
+- tapOn:
+    id: "spaces_tab"
+- extendedWaitUntil:
+    visible: ".*General Chat.*"
+    timeout: 20000
+- tapOn:
+    text: ".*General Chat.*"
+    index: 0
+- extendedWaitUntil:
+    visible: ".*Share an unhurried thought.*"
+    timeout: 20000
+- tapOn: ".*Share an unhurried thought.*"
+- extendedWaitUntil:
+    visible: "Publish Reflection"
+    timeout: 10000
+- tapOn:
+    id: "reflection_composer"
+- inputText: "Quiet note grokbot-space-post"
+- tapOn: "Publish Reflection"
+- extendedWaitUntil:
+    visible: ".*grokbot-space-post.*"
+    timeout: 20000
+- assertVisible: ".*grokbot-space-post.*"
+- takeScreenshot: web_space_post

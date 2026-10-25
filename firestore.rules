@@ -21,6 +21,9 @@ service cloud.firestore {
     }
 
     // 4. Member Profiles
+    // Public directory fields (displayName, handle, tagline, listedInDirectory)
+    // live here so the message picker works with the already-deployed rule.
+    // Never store an email address on this document.
     match /users/{userId} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
@@ -59,6 +62,26 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.senderId == request.auth.uid
         && request.auth.uid in request.resource.data.participantIds;
+    }
+
+    // 9. Public member directory used by the direct-message picker.
+    // Documents store a public name and plus-tag handle, never an email.
+    match /directory_members/{userId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null
+          && request.auth.uid == userId;
+    }
+
+    // 10. Cross-account bell items (direct messages and @-mentions).
+    match /member_notifications/{notificationId} {
+      allow read: if request.auth != null
+          && resource.data.recipientUid == request.auth.uid;
+      allow create: if request.auth != null
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.recipientUid is string
+          && request.resource.data.recipientUid != request.auth.uid;
+      allow update: if request.auth != null
+          && resource.data.recipientUid == request.auth.uid;
     }
   }
 }
