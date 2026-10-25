@@ -400,7 +400,7 @@ class FirebaseFeatureVotingRepository
           rating,
         );
         final destination = privateRouter.resolveDestination(sentiment);
-        await fs.collection(feedbackCollectionPath).add({
+        final docData = <String, dynamic>{
           'sentiment': sentiment.name,
           'rating': resolvedRating,
           'isPrivateTriage': sentiment.isPrivateTriage,
@@ -419,7 +419,11 @@ class FirebaseFeatureVotingRepository
           if (result.githubIssueUrl != null) 'githubIssueUrl': result.githubIssueUrl,
           'storedIn': feedbackCollectionPath,
           'createdAt': FieldValue.serverTimestamp(),
-        });
+        };
+        await fs
+            .collection(feedbackCollectionPath)
+            .add(docData)
+            .timeout(const Duration(seconds: 6));
       } catch (_) {
         // Resilient offline fallback
       }
