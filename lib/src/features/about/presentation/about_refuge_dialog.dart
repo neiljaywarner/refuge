@@ -26,6 +26,7 @@ void showAboutRefugeDialog(
   ValueChanged<SensoryFontScale>? onSelectFontScale,
   BuildIdentity? buildIdentity,
   Future<AppVersionLabel> Function()? loadVersion,
+  VoidCallback? onOpenFeedback,
 }) {
   final identity = buildIdentity ?? BuildIdentity.fromEnvironment;
   final versionFuture = (loadVersion ?? loadPackageVersion)();
@@ -214,11 +215,32 @@ void showAboutRefugeDialog(
                   '• Community announcements and guidance are updated unhurriedly by organizers.',
                   style: TextStyle(fontSize: 11.5, height: 1.4),
                 ),
+                const Divider(height: 20),
+                const Text(
+                  'Community Support & Feedback:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(4),
+                const Text(
+                  '• Primary support during open alpha is through in-app Vote & Feedback (tap Vote & Feedback on the Home screen).\n'
+                  '• Need help, want to suggest an improvement, or report a quirk? Share your thoughts with zero pressure.',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
               ],
             ),
           ),
         ),
         actions: [
+          if (onOpenFeedback != null)
+            TextButton.icon(
+              key: const Key('about_dialog_open_feedback_button'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                onOpenFeedback();
+              },
+              icon: const Icon(Icons.how_to_vote_outlined, size: 16),
+              label: const Text('Vote & Feedback', style: TextStyle(fontSize: 12)),
+            ),
           OutlinedButton.icon(
             onPressed: () {
               Navigator.of(ctx).pop();
@@ -246,6 +268,7 @@ void showAboutSanctuaryDialog(
   ValueChanged<SensoryFontScale>? onSelectFontScale,
   BuildIdentity? buildIdentity,
   Future<AppVersionLabel> Function()? loadVersion,
+  VoidCallback? onOpenFeedback,
 }) => showAboutRefugeDialog(
   context,
   primaryColor: primaryColor,
@@ -256,4 +279,5 @@ void showAboutSanctuaryDialog(
   onSelectFontScale: onSelectFontScale,
   buildIdentity: buildIdentity,
   loadVersion: loadVersion,
+  onOpenFeedback: onOpenFeedback,
 );

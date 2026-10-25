@@ -664,6 +664,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 isContrast: isContrast,
                 currentMode: currentMode,
                 onSelectMode: setSensoryMode,
+                onOpenFeedback: () async {
+                  final bytes = await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+                  if (context.mounted) {
+                    BelongFeedbackAndVotingSheet.show(context, screenshotBytes: bytes);
+                  }
+                },
               ),
             ),
           ),
