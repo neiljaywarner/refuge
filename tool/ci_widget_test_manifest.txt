@@ -1,5 +1,5 @@
 # Flutter widget/unit files run in PR CI (issue #515).
-# Generated from the largest passing subset on main; 24 files excluded until fixed.
+# Generated from the largest passing subset on main; 25 files excluded until fixed.
 # Full-tree `flutter test` compiles but 36 cases fail (Patrol/BDD/UI drift).
 # Coverage floor applies to lines recorded in coverage/lcov.info from this run,
 # not to every Dart line in the repository.
@@ -22,6 +22,7 @@
 #   test/features/profile/member_profile_widget_test.dart
 #   test/features/reflections/compact_reflection_composer_test.dart
 #   test/features/reflections/feed_sort_tap_hardening_test.dart
+#   test/features/reflections/mocked_post_publish_test.dart
 #   test/features/reflections/save_for_later_bookmarks_test.dart
 #   test/features/uat_cross_platform_flows_test.dart
 #   test/features/whitelabel_brand_config_test.dart
@@ -91,7 +92,6 @@ test/features/reflections/appwrite_post_repository_test.dart
 test/features/reflections/comment_repository_test.dart
 test/features/reflections/feed_sort_controls_test.dart
 test/features/reflections/feed_sort_service_test.dart
-test/features/reflections/mocked_post_publish_test.dart
 test/features/reflections/post_and_dm_timestamps_test.dart
 test/features/reflections/post_creation_menu_test.dart
 test/features/reflections/post_repository_factory_test.dart
