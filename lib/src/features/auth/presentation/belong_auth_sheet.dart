@@ -14,18 +14,12 @@ import '../../../core/config/preview_mode_provider.dart';
 /// 2. Account Registration with required ICOC church affiliation selection
 /// 3. Passwordless Magic Link Sign-In / Link consumption
 class BelongAuthSheet extends HookConsumerWidget {
-  const BelongAuthSheet({
-    super.key,
-    this.initialTab = 0,
-  });
+  const BelongAuthSheet({super.key, this.initialTab = 0});
 
   final int initialTab;
 
   /// Shows the dialog or sheet responsively.
-  static Future<void> show(
-    BuildContext context, {
-    int initialTab = 0,
-  }) {
+  static Future<void> show(BuildContext context, {int initialTab = 0}) {
     return showDialog<void>(
       context: context,
       builder: (_) => BelongAuthSheet(initialTab: initialTab),
@@ -38,7 +32,10 @@ class BelongAuthSheet extends HookConsumerWidget {
     final currentProfile = ref.watch(memberProfileProvider);
     final previewFeaturesEnabled = ref.watch(previewFeaturesEnabledProvider);
 
-    final tabController = useTabController(initialLength: 3, initialIndex: initialTab);
+    final tabController = useTabController(
+      initialLength: 3,
+      initialIndex: initialTab,
+    );
     final activeTabIndex = useState<int>(initialTab);
 
     // Form inputs
@@ -50,6 +47,7 @@ class BelongAuthSheet extends HookConsumerWidget {
       text: currentProfile.isSignedIn ? currentProfile.displayName : '',
     );
     final magicLinkInputController = useTextEditingController();
+    final resetEmailController = useTextEditingController();
 
     // Church affiliation for registration
     final churchAffiliationController = useTextEditingController(
@@ -96,10 +94,9 @@ class BelongAuthSheet extends HookConsumerWidget {
       isLoading.value = true;
       errorMessage.value = null;
       try {
-        await ref.read(memberProfileProvider.notifier).signInWithPassword(
-              email: email,
-              password: password,
-            );
+        await ref
+            .read(memberProfileProvider.notifier)
+            .signInWithPassword(email: email, password: password);
         if (context.mounted) {
           Navigator.of(context).pop();
         }
@@ -118,7 +115,8 @@ class BelongAuthSheet extends HookConsumerWidget {
       final affiliation = churchAffiliationController.text.trim();
 
       if (displayName.isEmpty) {
-        errorMessage.value = 'Please enter a name or nickname you would like to be called.';
+        errorMessage.value =
+            'Please enter a name or nickname you would like to be called.';
         return;
       }
       if (email.isEmpty) {
@@ -129,8 +127,7 @@ class BelongAuthSheet extends HookConsumerWidget {
         errorMessage.value = 'For your security, please choose a password with at least 6 characters.';
         return;
       }
-      if (brand.enableFellowshipAffiliationField &&
-          affiliation.isEmpty) {
+      if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
         errorMessage.value =
             'Please select which ICOC church you attend, or choose "${brand.fellowshipNonMemberOption}".';
         return;
@@ -139,7 +136,9 @@ class BelongAuthSheet extends HookConsumerWidget {
       isLoading.value = true;
       errorMessage.value = null;
       try {
-        await ref.read(memberProfileProvider.notifier).registerWithPassword(
+        await ref
+            .read(memberProfileProvider.notifier)
+            .registerWithPassword(
               email: email,
               password: password,
               displayName: displayName,
@@ -159,7 +158,8 @@ class BelongAuthSheet extends HookConsumerWidget {
     Future<void> handleSendMagicLink() async {
       final email = emailController.text.trim();
       if (email.isEmpty) {
-        errorMessage.value = 'Please enter your email address so we can send your sign-in link.';
+        errorMessage.value =
+            'Please enter your email address so we can send your sign-in link.';
         return;
       }
 
@@ -167,7 +167,9 @@ class BelongAuthSheet extends HookConsumerWidget {
       errorMessage.value = null;
       successMessage.value = null;
       try {
-        await ref.read(memberProfileProvider.notifier).sendMagicLink(email: email);
+        await ref
+            .read(memberProfileProvider.notifier)
+            .sendMagicLink(email: email);
         successMessage.value =
             'A secure sign-in link has been sent to $email. Please check your inbox or paste the link below.';
       } catch (e) {
@@ -186,17 +188,17 @@ class BelongAuthSheet extends HookConsumerWidget {
         return;
       }
       if (link.isEmpty) {
-        errorMessage.value = 'Please paste the magic link received in your email.';
+        errorMessage.value =
+            'Please paste the magic link received in your email.';
         return;
       }
 
       isLoading.value = true;
       errorMessage.value = null;
       try {
-        await ref.read(memberProfileProvider.notifier).signInWithMagicLink(
-              email: email,
-              emailLink: link,
-            );
+        await ref
+            .read(memberProfileProvider.notifier)
+            .signInWithMagicLink(email: email, emailLink: link);
         if (context.mounted) {
           Navigator.of(context).pop();
         }
@@ -209,7 +211,7 @@ class BelongAuthSheet extends HookConsumerWidget {
     }
 
     Future<void> handleForgotPassword() async {
-      final resetEmailController = TextEditingController(text: emailController.text.trim());
+      resetEmailController.text = emailController.text.trim();
       final dialogContext = context;
 
       final requested = await showDialog<bool>(
@@ -263,8 +265,11 @@ class BelongAuthSheet extends HookConsumerWidget {
         errorMessage.value = null;
         successMessage.value = null;
         try {
-          await ref.read(memberProfileProvider.notifier).sendPasswordResetEmail(email: email);
-          successMessage.value = 'Password reset instructions have been sent to $email.';
+          await ref
+              .read(memberProfileProvider.notifier)
+              .sendPasswordResetEmail(email: email);
+          successMessage.value =
+              'Password reset instructions have been sent to $email.';
         } catch (e) {
           final authEx = AuthException.fromFirebase(e);
           errorMessage.value = authEx.message;
@@ -288,7 +293,10 @@ class BelongAuthSheet extends HookConsumerWidget {
               Expanded(
                 child: Text(
                   '${brand.fullName} Account',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               IconButton(
@@ -303,7 +311,10 @@ class BelongAuthSheet extends HookConsumerWidget {
           TabBar(
             controller: tabController,
             isScrollable: false,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
             unselectedLabelStyle: const TextStyle(fontSize: 13),
             tabs: const [
               Tab(key: Key('auth_tab_sign_in'), text: 'Sign In'),
@@ -334,13 +345,18 @@ class BelongAuthSheet extends HookConsumerWidget {
                       ),
                     ),
                     onPressed: () {
-                      ref.read(memberProfileProvider.notifier).signInWithOAuth('google');
+                      ref
+                          .read(memberProfileProvider.notifier)
+                          .signInWithOAuth('google');
                       Navigator.of(context).pop();
                     },
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 24),
                     label: const Text(
                       'Continue with Google',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -368,18 +384,27 @@ class BelongAuthSheet extends HookConsumerWidget {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.35),
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.info_outline_rounded, size: 18, color: Colors.red),
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 18,
+                        color: Colors.red,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           errorMessage.value!,
                           key: const Key('auth_error_text'),
-                          style: const TextStyle(fontSize: 12, color: Colors.red),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.red,
+                          ),
                         ),
                       ),
                     ],
@@ -394,19 +419,27 @@ class BelongAuthSheet extends HookConsumerWidget {
                   decoration: BoxDecoration(
                     color: Colors.teal.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.teal.withValues(alpha: 0.35)),
+                    border: Border.all(
+                      color: Colors.teal.withValues(alpha: 0.35),
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.check_circle_outline_rounded,
-                          size: 18, color: Colors.teal),
+                      const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 18,
+                        color: Colors.teal,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           successMessage.value!,
                           key: const Key('auth_success_text'),
-                          style: const TextStyle(fontSize: 12, color: Colors.teal),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.teal,
+                          ),
                         ),
                       ),
                     ],
@@ -442,7 +475,8 @@ class BelongAuthSheet extends HookConsumerWidget {
                             : Icons.visibility_off_outlined,
                         size: 18,
                       ),
-                      onPressed: () => obscurePassword.value = !obscurePassword.value,
+                      onPressed: () =>
+                          obscurePassword.value = !obscurePassword.value,
                     ),
                     border: const OutlineInputBorder(),
                     isDense: true,
@@ -514,7 +548,10 @@ class BelongAuthSheet extends HookConsumerWidget {
                   obscureText: obscurePassword.value,
                   decoration: InputDecoration(
                     labelText: 'Password (min 6 chars)',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscurePassword.value
@@ -522,7 +559,8 @@ class BelongAuthSheet extends HookConsumerWidget {
                             : Icons.visibility_off_outlined,
                         size: 18,
                       ),
-                      onPressed: () => obscurePassword.value = !obscurePassword.value,
+                      onPressed: () =>
+                          obscurePassword.value = !obscurePassword.value,
                     ),
                     border: const OutlineInputBorder(),
                     isDense: true,
@@ -534,9 +572,18 @@ class BelongAuthSheet extends HookConsumerWidget {
                     children: [
                       Text(
                         brand.fellowshipAffiliationPrompt,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const Text(' *', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      const Text(
+                        ' *',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 2),
@@ -544,7 +591,8 @@ class BelongAuthSheet extends HookConsumerWidget {
                     'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
                     style: TextStyle(
                       fontSize: 10.5,
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                      color: Theme.of(context).textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -553,7 +601,10 @@ class BelongAuthSheet extends HookConsumerWidget {
                     controller: churchAffiliationController,
                     decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
                       border: const OutlineInputBorder(),
                       hintText: 'Select or enter your church affiliation...',
                       hintStyle: TextStyle(
@@ -561,7 +612,9 @@ class BelongAuthSheet extends HookConsumerWidget {
                         color: Theme.of(context).hintColor,
                       ),
                       suffixIcon: PopupMenuButton<String>(
-                        key: const Key('auth_register_church_dropdown_trigger_button'),
+                        key: const Key(
+                          'auth_register_church_dropdown_trigger_button',
+                        ),
                         tooltip: 'Select church affiliation',
                         icon: const Icon(Icons.arrow_drop_down, size: 24),
                         onSelected: (val) {
@@ -569,24 +622,31 @@ class BelongAuthSheet extends HookConsumerWidget {
                           selectedAffiliation.value = val;
                           errorMessage.value = null;
                         },
-                        itemBuilder: (context) => allAffiliationOptions.map((opt) {
-                          final isNonMember = opt == brand.fellowshipNonMemberOption;
-                          return PopupMenuItem<String>(
-                            value: opt,
-                            child: Text(
-                              opt,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                        itemBuilder: (context) =>
+                            allAffiliationOptions.map((opt) {
+                              final isNonMember =
+                                  opt == brand.fellowshipNonMemberOption;
+                              return PopupMenuItem<String>(
+                                value: opt,
+                                child: Text(
+                                  opt,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontStyle: isNonMember
+                                        ? FontStyle.italic
+                                        : FontStyle.normal,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                       ),
                     ),
                     onTap: () async {
-                      final RenderBox? box = context.findRenderObject() as RenderBox?;
-                      final offset = box != null ? box.localToGlobal(Offset.zero) : Offset.zero;
+                      final RenderBox? box =
+                          context.findRenderObject() as RenderBox?;
+                      final offset = box != null
+                          ? box.localToGlobal(Offset.zero)
+                          : Offset.zero;
                       final size = box?.size ?? Size.zero;
                       final selected = await showMenu<String>(
                         context: context,
@@ -597,14 +657,17 @@ class BelongAuthSheet extends HookConsumerWidget {
                           offset.dy + size.height + 250,
                         ),
                         items: allAffiliationOptions.map((opt) {
-                          final isNonMember = opt == brand.fellowshipNonMemberOption;
+                          final isNonMember =
+                              opt == brand.fellowshipNonMemberOption;
                           return PopupMenuItem<String>(
                             value: opt,
                             child: Text(
                               opt,
                               style: TextStyle(
                                 fontSize: 12,
-                                fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                                fontStyle: isNonMember
+                                    ? FontStyle.italic
+                                    : FontStyle.normal,
                               ),
                             ),
                           );
@@ -648,7 +711,8 @@ class BelongAuthSheet extends HookConsumerWidget {
                   'Sign in without memorizing a password. We will email you a secure link that signs you in with one click.',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.8),
+                    color: Theme.of(context).textTheme.bodySmall?.color
+                        ?.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 12),

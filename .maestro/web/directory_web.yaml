@@ -4,7 +4,7 @@ name: Belong web spaces and member directory
 # Read-only. Does not publish, RSVP, or open external links.
 - launchApp
 - extendedWaitUntil:
-    visible: "Belong"
+    visible: ".*Belong.*"
     timeout: 120000
 - tapOn:
     id: "spaces_tab"
@@ -26,7 +26,7 @@ name: Belong web spaces and member directory
     visible:
       id: "feed_tab"
     timeout: 15000
-- assertVisible: "Belong"
+- assertVisible: ".*Belong.*"
 - tapOn:
     id: "spaces_tab"
 
@@ -77,7 +77,8 @@ name: Belong web spaces and member directory
     element: ".*Actually Autistic Events.*"
     direction: DOWN
     timeout: 30000
-    visibilityPercentage: 40
+    visibilityPercentage: 80
+    centerElement: true
 - tapOn: ".*Actually Autistic Events.*"
 - extendedWaitUntil:
     visible: ".*Sensory-Friendly.*"
@@ -101,4 +102,4 @@ name: Belong web spaces and member directory
 - tapOn: "Return to Feed"
 - assertVisible:
     id: "feed_tab"
-- assertVisible: "Belong"
+- assertVisible: ".*Belong.*"

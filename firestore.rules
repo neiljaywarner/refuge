@@ -42,7 +42,20 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // 7. Public member directory used by the direct-message picker.
+    // 7. Reflection mirror kept while Serverpod Cloud is turned off (#212).
+    //    Appwrite is the other copy. Firebase Auth still signs members in.
+    match /reflections/{postId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if request.auth != null;
+    }
+    match /reflections_dev/{postId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if request.auth != null;
+    }
+
+    // 8. Public member directory used by the direct-message picker.
     // Documents store a public name and plus-tag handle, never an email.
     match /directory_members/{userId} {
       allow read: if true;
@@ -50,7 +63,7 @@ service cloud.firestore {
           && request.auth.uid == userId;
     }
 
-    // 8. Cross-account bell items (direct messages and @-mentions).
+    // 9. Cross-account bell items (direct messages and @-mentions).
     match /member_notifications/{notificationId} {
       allow read: if request.auth != null
           && resource.data.recipientUid == request.auth.uid;

@@ -21,6 +21,7 @@
 * **[🎨 Circle Post Creation Pattern & Calm Improvements](Circle-Post-Creation-Pattern-Improvement)**
 * **[⚙️ Deep Technical Breakdown: Android APK vs. Web PWA](Android-APK-vs-Web-PWA-Details)**
 * **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
+* **[🗄️ One Database Plus a Backup (ADR-0011)](Reflection-Redundancy-and-Backup)**
 * **[🔌 Serverpod Deprecation & $0/Mo Teardown Guide](Serverpod-Deprecation-and-Teardown-Guide)**
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
 * **[🔔 Notifications Technical Architecture & State](Notifications-Technical-Architecture)**
@@ -38,6 +39,7 @@
 * **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)**
 * **[💬 Threaded Comments & Nested Discussion Architecture](Threaded-Comments-and-Discussion-Architecture)**
 * **[🛠️ Refuge CLI Developer Tool](Refuge-CLI)**
+* **[🧪 CI/CD FAQ and Troubleshooting](CI-CD-FAQ)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
 
 ### 🏛️ Historical Archives & Early Prototypes

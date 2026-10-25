@@ -50,6 +50,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  belong_lints:
+    path: packages/belong_lints
+  pyramid_lint: ^3.0.0
   mocktail: ^1.0.4
   patrol_finders: ^3.6.0
   integration_test:
@@ -70,7 +73,7 @@ scripts:
     $description: "Performs static analysis with zero lint warnings"
     $default: flutter analyze
   format:
-    $description: "Checks or formats Dart code styling"
+    $description: "Checks or formats Dart code styling. Page width stays at the SDK default until issue #519."
     $default: dart format --output=none --set-exit-if-changed .
     apply: dart format .
   check:

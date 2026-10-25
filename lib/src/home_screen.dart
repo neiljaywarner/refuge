@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'core/firebase/community_analytics_service.dart';
+import 'core/theme/belong_text_styles.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
@@ -26,6 +27,7 @@ import 'features/profile/data/member_directory_store.dart';
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
+import 'features/reflections/data/appwrite_post_repository.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/reflections/data/serverpod_post_repository.dart';
 import 'features/reflections/domain/feed_sort_option.dart';
@@ -127,9 +129,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
         themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final isLiveServerpod =
-        activeRepository is ServerpodPostRepository &&
-        activeRepository.isLiveConnected;
+    final isLiveFeed = switch (activeRepository) {
+      ServerpodPostRepository(:final isLiveConnected) => isLiveConnected,
+      AppwritePostRepository(:final isLiveConnected) => isLiveConnected,
+      _ => false,
+    };
 
     void setSensoryMode(SensoryMode mode) {
       if (themeNotifier != null) {
@@ -171,9 +175,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
           imageUrl: imageUrl,
         ),
       );
+      final lengthBucket = content.length <= 140
+          ? 1
+          : content.length <= 280
+          ? 2
+          : 3;
       analytics.logReflectionPublished(
         tag: toneTag,
-        lengthBucket: content.length,
+        lengthBucket: lengthBucket,
       );
       try {
         await ref
@@ -202,14 +211,16 @@ class RefugeHomeScreen extends HookConsumerWidget {
         return BelongSpacesDirectoryView(
           selectedSpaceSlug: selectedSpace.value,
           onSelectSpaceItem: (item) {
-            if (item.slug == 'members_directory') {
-              homeSubView.value = BelongHomeSubView.membersDirectory;
-            } else if (item.isComingSoon) {
+            if (item.isComingSoon) {
               activeComingSoonItem.value = item;
               homeSubView.value = BelongHomeSubView.comingSoonItem;
-            } else {
-              selectSpace(item.slug);
+              return;
             }
+            if (item.slug == 'members_directory') {
+              homeSubView.value = BelongHomeSubView.membersDirectory;
+              return;
+            }
+            selectSpace(item.slug);
           },
         );
       }
@@ -552,21 +563,20 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 brand.shortName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: BelongTextStyles.of(context).emphasis
+                                    .copyWith(fontSize: 15),
                               ),
                             ),
                             const SizedBox(width: 5),
-                            const Text(
+                            Text(
                               'Refuge',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: BelongTextStyles.of(context).emphasis
+                                  .copyWith(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                             ),
                           ],
                         ),
@@ -579,7 +589,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isLiveServerpod
+                              color: isLiveFeed
                                   ? const Color(0xFF4CAF50)
                                   : const Color(0xFF68A67D),
                             ),
@@ -594,7 +604,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               container: true,
                               explicitChildNodes: true,
                               child: Text(
-                                'Calm Tech • ${isLiveServerpod ? "Live" : "Resilient"}',
+                                'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 11,
@@ -901,17 +911,42 @@ class RefugeHomeScreen extends HookConsumerWidget {
             ),
         ],
       ),
-      body: RepaintBoundary(
-        key: rootFeedbackRepaintBoundaryKey,
-        child: SafeArea(
-          top: false,
-          bottom: true,
-          left: true,
-          right: true,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 820),
-              child: buildActiveBottomTabBody(),
+      body: PopScope(
+        canPop:
+            activeBottomTab.value == BelongBottomTab.home &&
+            homeSubView.value == BelongHomeSubView.feed &&
+            selectedSpace.value == 'prayer',
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          if (homeSubView.value == BelongHomeSubView.comingSoonItem ||
+              homeSubView.value == BelongHomeSubView.membersDirectory) {
+            homeSubView.value = BelongHomeSubView.spaces;
+            return;
+          }
+          if (homeSubView.value == BelongHomeSubView.spaces) {
+            homeSubView.value = BelongHomeSubView.feed;
+            return;
+          }
+          if (activeBottomTab.value != BelongBottomTab.home) {
+            activeBottomTab.value = BelongBottomTab.home;
+            return;
+          }
+          if (selectedSpace.value != 'prayer') {
+            selectedSpace.value = 'prayer';
+          }
+        },
+        child: RepaintBoundary(
+          key: rootFeedbackRepaintBoundaryKey,
+          child: SafeArea(
+            top: false,
+            bottom: true,
+            left: true,
+            right: true,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 820),
+                child: buildActiveBottomTabBody(),
+              ),
             ),
           ),
         ),

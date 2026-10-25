@@ -1,24 +1,60 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
-# Feed Bookmark Ribbon & Multi-Criteria Sort Flow
+# Intent filters on the live home feed: All, [Prayer Request], [Comfort Only],
+# [Bible Deep-Dive]. Sort chips use Semantics ids. The runner fails the
+# command if logcat shows a Flutter exception after the New Activity tap.
+# Saved for Later is a Spaces row.
+
 - launchApp:
     clearState: false
 
-# 1. Verify Feed is active
-- assertVisible: "Feed"
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Feed.*"
+- assertVisible: ".*\\[Prayer Request\\].*"
+- assertVisible: ".*\\[Comfort Only\\].*"
+- assertVisible: ".*\\[Bible Deep-Dive\\].*"
 
-# 2. Tap on Sort: For you
-- tapOn: ".*For you.*"
+# Chip ids are feed_sort_chip_${opt.name}. Scroll the horizontal row
+# until the id is on screen, then tap it. A screen swipe scrolls the feed.
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_forYou"
+    direction: RIGHT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "feed_sort_chip_forYou"
+- assertVisible:
+    id: "feed_sort_chip_forYou"
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_newActivity"
+    direction: RIGHT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "feed_sort_chip_newActivity"
+- assertVisible:
+    id: "feed_sort_chip_newActivity"
+- scrollUntilVisible:
+    element:
+      id: "feed_sort_chip_latest"
+    direction: LEFT
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: "feed_sort_chip_latest"
+- assertVisible:
+    id: "feed_sort_chip_latest"
 
-# 3. Tap on Sort: New Activity
-- tapOn: ".*New Activity.*"
-
-# 4. Tap on Sort: Latest
-- tapOn: ".*Latest.*"
-
-# 5. Tap on Spaces
-- tapOn: "Spaces"
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Saved for Later.*"
+    timeout: 15000
 - assertVisible: ".*Saved for Later.*"
 
-# 6. Return to Feed
-- tapOn: "Feed"
+- tapOn: ".*Feed.*"
+- assertVisible: ".*Feed.*"

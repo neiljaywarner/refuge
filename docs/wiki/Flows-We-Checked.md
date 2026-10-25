@@ -14,8 +14,25 @@ Sample members only: David M., Fellow Member, and Sarah K. These checks do not u
 | Direct message (sample data) | Starts a message, chooses a sample member, and sends a short note | The conversation opens with that note. Sending with nobody chosen, or with no words, shows a gentle prompt. Choosing two people opens a group thread. This is one screen with sample people. | [#415](https://github.com/neiljaywarner/refuge/issues/415) |
 | Text post and image post (sample data) | Publishes a short reflection, then a picture post with a description | The reflection appears on the feed. The picture post keeps the picture address, the description, and the topic. No live server is contacted. | [#415](https://github.com/neiljaywarner/refuge/issues/415) |
 
+## Screen walkthrough, 24 Oct 2026
+
+Guest demo on the **dev** app. The recording is cropped so the clock, battery, and notification shade are not in the picture. Nobody signed in, and no account was created. The only names on screen are sample members already in the demo (Marty, Sarah L., and Fellow Member).
+
+![Home, spaces, and notifications](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/528-home-directory-notifications.gif)
+
+[Same clip as a video](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/528-home-directory-notifications.mp4)
+
+The clip moves through:
+
+- The home feed while signed out, including Vote & Feedback, the topic filters, and the `dev.belongonthespectrum.com` label
+- Spaces, then the member directory, with the sample organizer Marty
+- Notifications in demo mode, then Calm Notification Ethics
+
+Creating an account, and opening the Circle app, are not in this clip. Those checks stay off the public pages. Ticket [#528](https://github.com/neiljaywarner/refuge/issues/528), pull request [#537](https://github.com/neiljaywarner/refuge/pull/537).
+
 ## Not part of these checks
 
 - A conversation between two phones was not run.
 - The icon on the phone's home screen still does not show a dot ([#331](https://github.com/neiljaywarner/refuge/issues/331)). The count on the in-app bell is a separate check.
 - An installed Belong web app was not on the phones, so its notifications were not checked ([#411](https://github.com/neiljaywarner/refuge/issues/411)).
+- Account registration and the Circle app were not recorded. The dev package is the only target for a later local check, and credentials stay off this page.

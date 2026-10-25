@@ -10,6 +10,13 @@ abstract class CalmLocalNotificationService {
     required String body,
     String? payload,
   });
+
+  /// Displays an immediate silent notification in the OS notification shade (#530).
+  Future<void> showSilentNotification({
+    required String title,
+    required String body,
+    String? payload,
+  });
 }
 
 /// Debug / QA preview without sending FCM (#382).

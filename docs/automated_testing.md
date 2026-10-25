@@ -145,34 +145,31 @@ patrolWidgetTest(
 
 ## 📱 4. Maestro Device Automation
 
-Maestro drives our physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and `emulator-5554` without needing brittle selector code:
+Maestro drives our physical Google Pixels (`56091JEBF14039`, `58221JEBF20835`) and `emulator-5554` without needing brittle selector code.
+
+Debug verification flows use `com.belongonthespectrum.refuge.dev`. The production release id is `com.belongonthespectrum.refuge` (no suffix). `com.belongonthespectrum.sanctuary` is the legacy package name and is not what `.maestro` launches. Package notes live in `.maestro/config.yaml`.
 
 ### Declarative Notification Flow Example (`.maestro/notification_deep_link_flow.yaml`):
 
 ```yaml
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
 name: "Notification Deep Link Flow"
 ---
 - launchApp:
     clearState: false
 
-- tapOn:
-    id: "bottom_nav_icon_notifications"
-- assertVisible: "Notifications"
+- tapOn: ".*Notifications tab.*"
+- assertVisible: "Notifications.*"
 
-- tapOn:
-    id: "notification_list_tile_notif-dm-1"
+- tapOn: ".*sent you a direct message.*"
 
-- assertVisible: "Marty & Community Team"
-- assertVisible: "Welcome to Belong!"
+- assertVisible: ".*Marty.*"
+- assertVisible: ".*Welcome to Belong.*"
 
-- tapOn:
-    id: "bottom_nav_icon_notifications"
-- tapOn:
-    id: "notification_list_tile_notif-mention-1"
+- tapOn: ".*Notifications tab.*"
+- tapOn: ".*mentioned you.*"
 
-- assertVisible:
-    id: "belong_bottom_nav_bar"
+- assertVisible: ".*(Home tab|Vote & Feedback).*"
 ```
 
 ---

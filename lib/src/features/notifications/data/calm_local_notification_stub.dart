@@ -20,6 +20,18 @@ class CalmLocalNotificationStub implements CalmLocalNotificationService {
     lastBody = body;
     onShow?.call(title: title, body: body, payload: payload);
   }
+
+  @override
+  Future<void> showSilentNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    showCount++;
+    lastTitle = title;
+    lastBody = body;
+    onShow?.call(title: title, body: body, payload: payload);
+  }
 }
 
 CalmLocalNotificationService createCalmLocalNotificationService() =>

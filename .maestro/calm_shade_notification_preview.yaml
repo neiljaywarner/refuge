@@ -1,10 +1,14 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Calm shade notification preview (debug APK)"
 tags:
   - notifications
   - fcm
   - regression
 ---
+# bottom_nav_tab_notifications is often absent. The visible name is
+# "Notifications tab". Preview button copy: "Preview shade notification".
+
 - setPermissions:
     permissions:
       notifications: allow
@@ -12,19 +16,22 @@ tags:
 - launchApp:
     clearState: false
 
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
+
 - startRecording: calm_shade_preview.mp4
 
-- tapOn:
-    id: "bottom_nav_tab_notifications"
-- assertVisible: "Notifications"
+- tapOn: ".*Notifications tab.*"
+- assertVisible: "Notifications.*"
 
-- tapOn:
-    id: "notification-preferences-button"
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Ethics.*"
+    timeout: 10000
+- assertVisible: ".*Calm Notification Ethics.*"
 
-- assertVisible: "Calm Notification Ethics"
-
-- tapOn:
-    id: "preview-calm-shade-notification-button"
+- tapOn: ".*Preview shade notification.*"
 
 - pressKey: Home
 
@@ -36,5 +43,8 @@ tags:
 - assertVisible:
     text: ".*Fellow Member.*"
     optional: true
+
+# Close the shade so a later flow is not stuck on the system UI.
+- pressKey: back
 
 - stopRecording

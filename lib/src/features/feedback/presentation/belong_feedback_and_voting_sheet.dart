@@ -130,6 +130,42 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     return FeedbackSentiment.sad;
   }
 
+  /// Displays a friendly, neurodivergent-affirming dialog confirming whether
+  /// the user wants to discard unsaved feedback text or drawing strokes.
+  static Future<bool> confirmDiscardDraft(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final colorScheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          key: const Key('confirm_discard_feedback_dialog'),
+          title: const Text('Discard unsaved feedback?'),
+          content: const Text(
+            'You have written a message or drawn on a screenshot that has not been sent yet. '
+            'If you leave now, your draft will be discarded.',
+          ),
+          actions: [
+            TextButton(
+              key: const Key('discard_feedback_cancel_button'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Keep Editing'),
+            ),
+            FilledButton(
+              key: const Key('discard_feedback_confirm_button'),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.error,
+                foregroundColor: colorScheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Discard'),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabController = useTabController(
@@ -141,6 +177,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     );
     final selectedStarRating = useState<int>(5);
     final feedbackController = useTextEditingController();
+    useListenable(feedbackController);
     final contactController = useTextEditingController();
     final contactError = useState<String?>(null);
     final drawingAttachment = useState<Uint8List?>(null);
@@ -153,41 +190,66 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final bottomInset = SystemInsets.bottom(MediaQuery.of(context));
     final listPadding = EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset);
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-          child: Row(
-            children: [
-              Icon(Icons.how_to_vote_outlined, color: colorScheme.primary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Belong Roadmap & Feedback',
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+    final hasUnsavedDraft =
+        feedbackController.text.trim().isNotEmpty ||
+        drawingAttachment.value != null;
+
+    return PopScope(
+      canPop: !hasUnsavedDraft && !isSubmitting.value,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (isSubmitting.value) return;
+        final shouldDiscard = await confirmDiscardDraft(context);
+        if (shouldDiscard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+            child: Row(
+              children: [
+                Icon(Icons.how_to_vote_outlined, color: colorScheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Belong Roadmap & Feedback',
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '1-tap feature voting + literal, low-pressure feedback',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      Text(
+                        '1-tap feature voting + literal, low-pressure feedback',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                tooltip: 'Close',
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close),
-              ),
-            ],
+                IconButton(
+                  key: const Key('close_feedback_sheet_button'),
+                  tooltip: 'Close',
+                  onPressed: () async {
+                    if (isSubmitting.value) return;
+                    if (hasUnsavedDraft) {
+                      final shouldDiscard = await confirmDiscardDraft(context);
+                      if (shouldDiscard && context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
           ),
-        ),
         TabBar(
           controller: tabController,
           tabs: [
@@ -859,8 +921,9 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }
 
 /// Web Maestro drops some button labels. This node keeps [label] as the

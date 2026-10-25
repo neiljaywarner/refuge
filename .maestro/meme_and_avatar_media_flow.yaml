@@ -1,48 +1,49 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. Production is com.belongonthespectrum.refuge.
+# Legacy com.belongonthespectrum.sanctuary is not the current applicationId.
+# See .maestro/config.yaml.
 ---
-# ==============================================================================
-# Belong on the Spectrum: Meme & Avatar Media Flow
-# Verifying Meme Photo Upload, Camera Option, Gallery Selection & Zero-Storage-Perms
-# ==============================================================================
+# Meme gallery on the live dev build (emulator accessibility tree).
+# Flutter Keys such as add_meme_gif_button, meme_upload_camera_button, and
+# meme_gallery_close_button are not resource ids in the tree.
+# Visible labels: Spaces row "Memes", composer "Add Meme / GIF",
+# sheet "Autism & Faith Meme Gallery", chip "Upload Photo / Camera",
+# button "Use Camera". The close control is an unlabeled Button, so Back
+# dismisses the sheet. These steps are required; a missing label fails the flow.
 - launchApp:
     clearState: false
 
-# 1. Confirm Belong branding
-- assertVisible:
-    text: "Belong.*"
-    optional: true
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
 
-# 2. Tap on Memes space
-- tapOn:
-    text: "Memes.*"
-    optional: true
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Memes.*"
+    timeout: 15000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+- assertVisible: ".*Add Meme / GIF.*"
 
-# 3. Tap on Add Meme / GIF button
-- tapOn:
-    id: "add_meme_gif_button"
-    optional: true
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Meme Gallery.*"
+    timeout: 15000
+- assertVisible: ".*Meme Gallery.*"
+- assertVisible: ".*Curated Calm Memes.*"
 
-# 4. Verify Meme Gallery Modal
-- assertVisible:
-    text: ".*Meme Gallery.*"
-    optional: true
+- tapOn: ".*Upload Photo / Camera.*"
+- extendedWaitUntil:
+    visible: ".*Use Camera.*"
+    timeout: 10000
+- assertVisible: ".*Use Camera.*"
+- assertVisible: ".*Choose Photo.*"
 
-# 5. Switch to Upload Photo / Camera tab
-- tapOn:
-    text: "Upload Photo / Camera"
-    optional: true
-
-# 6. Test Camera or Gallery button
-- tapOn:
-    id: "meme_upload_camera_button"
-    optional: true
-
-# 7. Auto-grant OS permission prompt if system camera prompt appears
-- tapOn:
-    text: "While using the app|Only this time|Allow|ALLOW"
-    optional: true
-
-# 8. Close modal peacefully
-- tapOn:
-    id: "meme_gallery_close_button"
-    optional: true
+# Do not open the system camera. Asserting Use Camera is the live stand-in
+# for the old meme_upload_camera_button id. Back closes the unlabeled sheet.
+- pressKey: back
+- assertNotVisible: ".*Meme Gallery.*"
+- assertVisible: ".*Add Meme / GIF.*"

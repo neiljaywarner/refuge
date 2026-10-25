@@ -12,7 +12,7 @@ name: grokbot direct message notification
 
 - launchApp
 - extendedWaitUntil:
-    visible: "Belong"
+    visible: ".*Belong.*"
     timeout: 120000
 - runFlow:
     when:

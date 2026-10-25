@@ -1,7 +1,20 @@
 # Default and CI suite policy.
 #
+# Android application ids:
+# - Debug verification flows in this directory launch
+#   com.belongonthespectrum.refuge.dev (the dev-flavor package on emulator
+#   and debug APKs).
+# - Production release applicationId is com.belongonthespectrum.refuge
+#   (no suffix). Point appId at that package before a release-binary run.
+# - com.belongonthespectrum.sanctuary is the legacy package name. It is not
+#   the current applicationId, and these flows do not launch it.
+# - circle_app_discovery_careful.yaml targets so.circle.circle. That is the
+#   Circle app, not a Belong package.
+#
 # `maestro test .maestro` only discovers flows in this directory, not web/.
 # Web flows, including the grokbot direct-message and mention flows, are run
 # with `maestro test .maestro/web`. Tag a flow `known-gap` to skip it there.
+# belong_auth_journey.yaml is tagged known-gap so the default suite does not
+# submit registration. It reads credentials from the environment only.
 excludeTags:
   - known-gap
