@@ -92,7 +92,7 @@ void main() {
     );
 
     patrolWidgetTest(
-      'navigating to a different space and triggering PopScope returns to general_chat',
+      'navigating to a different space and triggering PopScope returns to prayer',
       ($) async {
         await $.pumpWidgetAndSettle(
           RefugeApp(repository: LocalPostRepository()),

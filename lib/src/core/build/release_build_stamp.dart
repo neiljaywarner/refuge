@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'build_identity.dart';
 
 /// Stamp resolved by `tool/deploy_release.dart` before `flutter build`.
@@ -45,10 +47,21 @@ class ReleaseBuildStamp {
   ];
 
   /// Arguments after the `flutter` executable for `flutter build <target>`.
-  List<String> flutterArgs(String target) => [
+  ///
+  /// [targetFile] is the Flutter `-t` entrypoint (`lib/main_prod.dart` or
+  /// `lib/main_dev.dart`). [flavor] is passed as `--dart-define=FLAVOR=`.
+  /// Omit both only for callers that intentionally keep the default `main.dart`
+  /// entrypoint (which resolves to `dev` unless `FLAVOR` is set).
+  List<String> flutterArgs(
+    String target, {
+    String? targetFile,
+    String? flavor,
+  }) => [
     'build',
     target,
     '--release',
+    if (targetFile != null) ...['-t', targetFile],
+    if (flavor != null) '--dart-define=FLAVOR=$flavor',
     ...dartDefines,
   ];
 }
@@ -59,6 +72,7 @@ Map<String, Object> webVersionPayload({
   required String releaseTag,
   required String? pubspecVersionLine,
   required ReleaseBuildStamp stamp,
+  String? flavor,
 }) {
   final line = pubspecVersionLine?.trim() ?? '';
   final buildNumber = line.contains('+') ? line.split('+').last : '0';
@@ -74,7 +88,30 @@ Map<String, Object> webVersionPayload({
     'git_sha': stamp.gitSha,
     'build_time_ms': stamp.buildTimeMs,
     'build_time_utc': stamp.buildTimeUtc,
+    if (flavor != null) 'flavor': flavor,
   };
+}
+
+/// Null when [versionJson] records [expectedFlavor]. Otherwise a reason to
+/// refuse `--skip-build`, so a prod bundle cannot be published to the dev
+/// site or the reverse.
+String? cachedWebFlavorMismatch({
+  required String? versionJson,
+  required String expectedFlavor,
+}) {
+  if (versionJson == null || versionJson.trim().isEmpty) {
+    return 'build/web/version.json is missing. Rebuild without --skip-build.';
+  }
+  try {
+    final decoded = jsonDecode(versionJson);
+    final found = decoded is Map ? decoded['flavor'] : null;
+    if (found == expectedFlavor) return null;
+    return 'Cached web bundle flavor is ${found ?? 'missing'}, '
+        'expected $expectedFlavor. Refusing --skip-build.';
+  } on FormatException {
+    return 'build/web/version.json is not valid JSON. '
+        'Rebuild without --skip-build.';
+  }
 }
 
 /// Markdown section for release notes. A missing or invalid SHA is written as

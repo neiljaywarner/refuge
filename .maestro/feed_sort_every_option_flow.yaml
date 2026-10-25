@@ -2,6 +2,14 @@ appId: com.belongonthespectrum.refuge.dev
 ---
 # Every feed sort option on a debug dev build (#485).
 # Release/prod applicationId is com.belongonthespectrum.refuge (no .dev suffix).
+#
+# A 1080-wide phone only puts Latest, For you, New Activity, and a clipped
+# Oldest chip in the semantics tree. Popular, Likes, and Alphabetical sit in
+# the nested horizontal scroller and are not exposed until that scroller
+# moves. scrollUntilVisible cannot target them, and a screen-level swipe at
+# the chip row scrolls the feed instead. Those three options (and a second
+# pass over the rest) go through the sort menu, which calls the same
+# selection callback as the chips.
 - launchApp:
     clearState: true
 - extendedWaitUntil:
@@ -16,23 +24,56 @@ appId: com.belongonthespectrum.refuge.dev
     id: "feed_sort_chip_newActivity"
 - tapOn:
     id: "feed_sort_chip_oldest"
-
-- scrollUntilVisible:
-    element:
-      id: "feed_sort_chip_alphabetical"
-    direction: LEFT
-    timeout: 15000
-    visibilityPercentage: 50
-    centerElement: true
+- tapOn:
+    id: "feed_sort_chip_oldest"
 
 - tapOn:
-    id: "feed_sort_chip_popular"
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_popular"
+    timeout: 10000
 - tapOn:
-    id: "feed_sort_chip_likes"
+    id: "feed_sort_menu_item_popular"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
+
 - tapOn:
-    id: "feed_sort_chip_alphabetical"
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_likes"
+    timeout: 10000
 - tapOn:
-    id: "feed_sort_chip_latest"
+    id: "feed_sort_menu_item_likes"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_alphabetical"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_alphabetical"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_latest"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_latest"
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 10000
 
 - tapOn:
     id: "feed_sort_popup_button"
@@ -45,12 +86,6 @@ appId: com.belongonthespectrum.refuge.dev
 - assertVisible:
     id: "feed_sort_chip_forYou"
 
-- scrollUntilVisible:
-    element:
-      id: "tone_filter_chip_comfort_only"
-    direction: LEFT
-    timeout: 15000
-    visibilityPercentage: 50
 - tapOn:
     id: "tone_filter_chip_comfort_only"
 - extendedWaitUntil:
@@ -58,4 +93,11 @@ appId: com.belongonthespectrum.refuge.dev
     timeout: 10000
 - tapOn:
     id: "tone_filter_chip_all"
-- assertVisible: ".*peace of mind.*"
+# For you ranks the comfort reflection above the prayer seed, and a phone
+# only keeps the first cards in the semantics tree. The comfort post staying
+# visible after All proves the filter cleared without dropping the feed.
+- assertVisible: "Demo Mode.*"
+- assertVisible: ".*quiet space exists.*"
+- assertVisible:
+    id: "feed_sort_chip_forYou"
+- takeScreenshot: maestro_feed_sort_every_option

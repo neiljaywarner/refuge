@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+
+      - name: Resolve packages
+        run: flutter pub get
+
+      # The tree is not format-clean yet (issue #519). This step guards the
+      # files this pipeline owns so new code stays formatted.
+      - name: Check formatting
+        run: |
+          dart format --output=none --set-exit-if-changed \
+            packages/belong_lints \
+            tool/check_line_coverage.dart \
+            tool/install_git_hooks.dart \
+            lib/src/core/theme/belong_text_styles.dart \
+            lib/src/constants/app_theme.dart \
+            lib/src/features/about/presentation/about_build_stamp.dart \
+            lib/src/features/auth/presentation/belong_auth_sheet.dart \
+            lib/src/features/reflections/presentation/reflection_card.dart \
+            lib/src/home_screen.dart \
+            lib/src/app.dart \
+            test/core/theme/belong_text_styles_test.dart \
+            test/tool/check_line_coverage_test.dart
+
+      - name: Analyze lint plugin
+        run: dart analyze packages/belong_lints
+
+      # The app still has analyzer errors that predate this workflow.
+      # This step fails only when a new Belong or pyramid rule is violated.
+      - name: Belong lint rules
+        run: |
+          dart analyze > analyze.txt || true
+          if grep -E 'no_print_use_app_logger|prefer_use_text_editing_controller|dispose_controllers' analyze.txt; then
+            echo "A Belong lint rule failed."
+            exit 1
+          fi
+          echo "No Belong lint violations."
+
+      - name: Unit and widget tests
+        # The full `flutter test` tree does not compile on main
+        # (home_screen.dart and calm_notifications_view.dart). This slice does.
+        run: |
+          flutter test --coverage --reporter compact \
+            test/core/build/build_identity_test.dart \
+            test/core/theme/belong_text_styles_test.dart \
+            test/features/about/about_build_stamp_test.dart \
+            test/tool/check_line_coverage_test.dart
+
+      - name: Coverage floor
+        run: dart run tool/check_line_coverage.dart --min 40

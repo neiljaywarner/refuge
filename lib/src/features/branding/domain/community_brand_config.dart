@@ -75,22 +75,26 @@ class CommunityBrandConfig {
           'A peaceful sanctuary for autistic Christians, families, and friends to connect at their own pace.',
       enableFellowshipAffiliationField = true;
 
-  /// Flavor-aware flagship configuration for **Belong on the Spectrum**
-  /// (`https://dev.belongonthespectrum.com/` in `dev`, `https://www.belongonthespectrum.com/` in `prod`).
+  /// Flavor-aware flagship configuration for **Belong on the Spectrum**.
+  /// Uses Firebase Hosting web app URLs (`https://dev-belongonthespectrum.web.app/`
+  /// in `dev`, `https://belongonthespectrum.web.app/` in `prod`). The marketing
+  /// site at [AppFlavor.marketingWebsiteUrl] stays separate.
   factory CommunityBrandConfig.forFlavor(AppFlavor flavor) {
     return const CommunityBrandConfig.belong().copyWith(
       websiteUrl: flavor.websiteUrl,
     );
   }
 
-  /// Resolves the canonical website URL for the given [flavor], preserving custom
-  /// white-label tenant URLs while applying flavor prefixes (`dev.`, `stg.`, `qa.`)
-  /// for the flagship Belong tenant.
+  /// Resolves the canonical web app URL for the given [flavor], preserving custom
+  /// white-label tenant URLs while mapping the flagship Belong marketing or
+  /// hosting origins onto the active flavor's Firebase Hosting URL.
   String websiteUrlForFlavor(AppFlavor flavor) {
-    if (tenantId == 'belong' &&
-        websiteUrl == 'https://www.belongonthespectrum.com/') {
-      return flavor.websiteUrl;
-    }
+    if (tenantId != 'belong') return websiteUrl;
+    final recognized = <String>{
+      AppFlavor.marketingWebsiteUrl,
+      for (final known in AppFlavor.values) known.websiteUrl,
+    };
+    if (recognized.contains(websiteUrl)) return flavor.websiteUrl;
     return websiteUrl;
   }
 

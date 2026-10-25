@@ -1,29 +1,27 @@
 import '../../../core/config/app_flavor.dart';
+import 'appwrite_post_repository.dart';
 import 'local_post_repository.dart';
 import 'post_repository.dart';
 import 'serverpod_post_repository.dart';
 
-/// Backend runtime environment determined via --dart-define=BACKEND=...
-/// or toggled via --dart-define=ENABLE_SERVERPOD=false.
+/// Backend selected with `--dart-define=BACKEND=...`.
 ///
-/// The default remains [BackendMode.serverpod]. That repository writes each
-/// reflection to Serverpod and a second copy to Cloud Firestore. Selecting
-/// `appwrite` still uses the local repository until a later migration; the
-/// Appwrite SDK is only constructed when `APPWRITE_ENDPOINT` and
-/// `APPWRITE_PROJECT_ID` are both set.
+/// The default is [BackendMode.appwrite]. That repository writes each
+/// reflection to Appwrite and a second copy to Cloud Firestore, then falls
+/// back to the local cache. Firebase Auth is unchanged.
+///
+/// Serverpod Cloud is contacted only when the build sets both
+/// `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`.
 enum BackendMode { local, serverpod, sqlite, appwrite }
 
 BackendMode get configuredBackendMode {
-  const enableServerpod = bool.fromEnvironment('ENABLE_SERVERPOD', defaultValue: true);
-  if (!enableServerpod) {
-    return BackendMode.local;
-  }
-  const backend = String.fromEnvironment('BACKEND', defaultValue: 'serverpod');
+  const backend = String.fromEnvironment('BACKEND', defaultValue: 'appwrite');
+  const enableServerpod = bool.fromEnvironment('ENABLE_SERVERPOD');
   return switch (backend.toLowerCase()) {
     'local' => BackendMode.local,
     'sqlite' || 'postgres' || 'docker' => BackendMode.sqlite,
-    'appwrite' => BackendMode.appwrite,
-    _ => BackendMode.serverpod,
+    'serverpod' when enableServerpod => BackendMode.serverpod,
+    _ => BackendMode.appwrite,
   };
 }
 
@@ -32,9 +30,9 @@ class PostRepositoryFactory {
     final isDevMode = !flavor.isProduction;
     return switch (configuredBackendMode) {
       BackendMode.serverpod => ServerpodPostRepository(isDevMode: isDevMode),
-      BackendMode.sqlite || BackendMode.local || BackendMode.appwrite => LocalPostRepository(
-        isDevMode: isDevMode,
-      ),
+      BackendMode.appwrite => AppwritePostRepository(isDevMode: isDevMode),
+      BackendMode.sqlite ||
+      BackendMode.local => LocalPostRepository(isDevMode: isDevMode),
     };
   }
 }

@@ -74,11 +74,12 @@ void enableWebSemanticsForAutomation() {
   _webSemanticsHandle ??= SemanticsBinding.instance.ensureSemantics();
 }
 
-/// Entrypoint with runtime flavor resolution for Dev, TestFlight/Play Beta,
-/// and Production (#52, ADR-0006).
+/// Default entrypoint. Honors `--dart-define=FLAVOR=` and otherwise stays on
+/// `dev`, so a plain `flutter run` / `flutter build web` does not ship as prod.
+/// Release deploys pass `-t lib/main_prod.dart` as well (ADR-0006).
 void main() async {
-  const flavor = AppFlavor.dev;
-  await runWithFlavor(flavor);
+  const envFlavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
+  await runWithFlavor(AppFlavor.fromString(envFlavor));
 }
 
 /// Backward compatibility entrypoint for `main_dev.dart` and `main_prod.dart`.

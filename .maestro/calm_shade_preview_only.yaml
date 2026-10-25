@@ -1,4 +1,5 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Calm shade preview tap only"
 ---
 - setPermissions:
@@ -6,9 +7,12 @@ name: "Calm shade preview tap only"
       notifications: allow
 - launchApp:
     clearState: false
-- tapOn:
-    id: "bottom_nav_tab_notifications"
-- tapOn:
-    id: "notification-preferences-button"
-- tapOn:
-    id: "preview-calm-shade-notification-button"
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
+- tapOn: ".*Notifications tab.*"
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*Preview shade notification.*"
+    timeout: 10000
+- tapOn: ".*Preview shade notification.*"

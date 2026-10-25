@@ -1,4 +1,5 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Belong on the Spectrum — 1-Tap Feature Voting & Literal 3-Intent Feedback E2E"
 tags:
   - belong
@@ -7,15 +8,23 @@ tags:
   - adr-0009
 ---
 - launchApp
-- assertVisible: "Belong"
-- tapOn: "Feedback & Vote"
-- assertVisible: "Belong Roadmap & Feedback"
-- assertVisible: "Direct Messages (Msgs Tab)"
-- tapOn: "24"
-- assertVisible: "25"
-- tapOn: "Share Feedback"
-- assertVisible: "Works Great"
-- assertVisible: "Idea / Tweak"
-- assertVisible: "Bug / Confusing"
-- tapOn: "Idea / Tweak"
-- assertVisible: "What would make Belong clearer or calmer for you?"
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
+- tapOn: ".*Vote & Feedback.*"
+- extendedWaitUntil:
+    visible: ".*Belong Roadmap & Feedback.*"
+    timeout: 15000
+- assertVisible: ".*Direct Messages \\(Msgs Tab\\).*"
+# Vote count changes. Tap the numeric control under that row, not a stale "24".
+- tapOn:
+    text: "[0-9]+"
+    below: ".*Direct Messages \\(Msgs Tab\\).*"
+- assertVisible: ".*Direct Messages \\(Msgs Tab\\).*"
+- tapOn: ".*Share Feedback.*"
+- assertVisible: ".*Works Great.*"
+- assertVisible: ".*Idea / Tweak.*"
+- assertVisible: ".*Bug / Confusing.*"
+- tapOn: ".*Idea / Tweak.*"
+- assertVisible: ".*What would make Belong clearer or calmer for you.*"

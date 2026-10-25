@@ -1,0 +1,12 @@
+#!/bin/sh
+# Privacy scan on every push. Full unit/widget tests run in GitHub Actions
+# because the suite is larger than the local commit budget.
+# Opt in with REFUGE_PRE_PUSH_TESTS=1.
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+
+dart run tool/refuge_cli.dart privacy-scan
+
+if [ "${REFUGE_PRE_PUSH_TESTS:-}" = "1" ]; then
+  flutter test test/core test/features/about
+fi

@@ -2,8 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/core/appwrite/appwrite_client_factory.dart';
 import 'package:refuge4serverpod/src/core/appwrite/appwrite_config.dart';
+import 'package:refuge4serverpod/src/features/reflections/data/appwrite_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/post_repository_factory.dart';
-import 'package:refuge4serverpod/src/features/reflections/data/serverpod_post_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -11,15 +11,22 @@ void main() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(pathProvider, (call) async => '.');
 
-  test(
-    'default Appwrite config stays off so Serverpod remains the live backend',
-    () {
-      expect(AppwriteConfig.fromEnvironment.isConfigured, isFalse);
-      expect(createAppwriteServices(AppwriteConfig.fromEnvironment), isNull);
-      expect(configuredBackendMode, BackendMode.serverpod);
-      expect(PostRepositoryFactory.create(), isA<ServerpodPostRepository>());
-    },
-  );
+  test('default config uses Appwrite and does not select Serverpod', () {
+    expect(AppwriteConfig.fromEnvironment.isConfigured, isTrue);
+    expect(
+      AppwriteConfig.fromEnvironment.endpoint,
+      AppwriteConfig.belongEndpoint,
+    );
+    expect(
+      AppwriteConfig.fromEnvironment.projectId,
+      AppwriteConfig.belongProjectId,
+    );
+    final services = createAppwriteServices(AppwriteConfig.fromEnvironment);
+    expect(services, isNotNull);
+    expect(services!.tables, isNotNull);
+    expect(configuredBackendMode, BackendMode.appwrite);
+    expect(PostRepositoryFactory.create(), isA<AppwritePostRepository>());
+  });
 
   test('https without a host is not treated as configured', () {
     const config = AppwriteConfig(
@@ -49,6 +56,7 @@ void main() {
     final services = createAppwriteServices(config);
     expect(services, isNotNull);
     expect(services!.databases, isNotNull);
+    expect(services.tables, isNotNull);
     expect(services.realtime, isNotNull);
     expect(services.account, isNotNull);
   });
