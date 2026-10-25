@@ -4,7 +4,7 @@
 > **Related Issue**: [#384: feat(backend): Appwrite migration architecture, client provider and MCP tooling integration](https://github.com/neiljaywarner/refuge/issues/384)  
 > **Target Cost**: **\$0.00/month** (Eliminate \$5.00/mo Serverpod Cloud billing before the 20-day renewal)
 
-> **Reviewed 24 October 2026 ([#212](https://github.com/neiljaywarner/refuge/issues/212), [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md)).** A normal build no longer opens Serverpod Cloud. The accepted steady state is one live store, Cloud Firestore, plus Firestore point-in-time recovery and scheduled backups. The Appwrite tables from the first cutover are disabled until writes are tied to a real session. See [Reflection redundancy and backup](Reflection-Redundancy-and-Backup).
+> **Reviewed 24 October 2026 ([#212](https://github.com/neiljaywarner/refuge/issues/212), [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md)).** A normal build no longer opens Serverpod Cloud. With no credit card in the plan, Firestore Spark stays the live store, Appwrite is a one-way free mirror, and a private weekly JSON file is the backup. See [Reflection redundancy and backup](Reflection-Redundancy-and-Backup).
 
 ---
 

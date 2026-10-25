@@ -41,20 +41,19 @@ A bad client write that reaches two live databases corrupts both. A backup is an
 
 ## 3. Decision
 
+Same-evening revision: the project is not taking payments, so the plan must stay on free tiers and must not ask for a credit card. Blaze, Appwrite Pro, and Neon paid history are documented below as later upgrades, not the current plan.
+
 1. **Leave Serverpod Cloud.** The $5 monthly cluster is the cost to remove. Cancel it only after a released build no longer calls it.
-2. **Keep one live reflection database: Cloud Firestore**, for as long as Firebase Auth is the session. Security rules can require `request.auth`. Appwrite cannot, until a member has an Appwrite session or a server checks the Firebase token and writes with an API key.
-3. **Use Firestore's own recovery features as the backup**, after the Firebase project is on the Blaze plan with a budget alert:
-   * [Point-in-time recovery](https://firebase.google.com/docs/firestore/pitr): 7 days, one-minute granularity, including a surgical read of the damaged documents.
-   * [Scheduled backups](https://firebase.google.com/docs/firestore/backups): one daily schedule and one weekly schedule, retention up to 14 weeks, restore into a new database.
-   * Spark cannot enable either feature. Blaze for this community's data size should stay under the old $5 Serverpod bill, and it is metered, so a budget alert belongs next to it.
-4. **Do not adopt Appwrite Pro for backups in order to save $5.** Pro is $25 per month per project and includes a daily backup kept for 7 days ([pricing](https://appwrite.io/pricing), [TablesDB backups](https://appwrite.io/docs/products/databases/tablesdb/backups)). The database created for this cutover is serverless TablesDB. Postgres point-in-time recovery applies to dedicated compute, which starts near $10 per month before the recovery add-on. Both cost more than Serverpod.
-5. **PR #546 stays a seam, not the steady state.** Shipping it as the live dual-write would publish a client that writes to a disabled Appwrite table and a Firestore collection whose rules are not deployed. The accepted follow-up is a Firestore-only repository, rules that require a Firebase user for creates, and Blaze recovery turned on before Serverpod is cancelled.
+2. **Firestore on the Spark plan is the live reflection database.** Firebase Auth is the session, and rules can require `request.auth`. Spark already keeps about one hour of document versions with point-in-time recovery left off ([PITR](https://firebase.google.com/docs/firestore/pitr)).
+3. **A one-way mirror to Appwrite is a good free redundancy, and the pull request's two-way merge is not the way to build it.** Firestore stays the copy the app reads. An Appwrite Function on the free plan checks the Firebase ID token and writes the row with an API key stored as a function secret. The phone never holds that key. If Appwrite is down, the note is still in Firestore. If Firestore is over the free quota, the mirror can be read until the quota resets. A bad write can still reach both, which is why the mirror is not the backup.
+4. **The backup is a JSON snapshot in a private GitHub repository.** A weekly Dart script, or a GitHub Action using the free minutes on a private repo, exports reflections to `reflections-YYYY-MM-DD.json` and keeps several weeks of files. Restoring means reading an older file back into Firestore. Those files stay out of the public `refuge` repo because the notes can contain personal stories.
+5. **Do not buy a backup plan yet.** When a card is acceptable later, Firestore point-in-time recovery (7 days) and scheduled backups (up to 14 weeks) on Blaze are the upgrade. Appwrite Pro is $25 per month for a daily backup kept 7 days. Cloudflare D1 on Workers Free is the $0 product that already includes 7-day time travel, if the live database ever moves.
 
 Firebase Hosting, Cloud Messaging, Analytics, and Remote Config stay on Firebase. That split is unchanged from ADR-0009.
 
 ## 4. Consequences
 
-* Members keep one sign-in. Reflection permissions follow that sign-in.
-* A deleted or overwritten post can be read back from the last 7 days once point-in-time recovery is on, and from a daily snapshot for up to 14 weeks once scheduled backups are on.
-* Appwrite remains available for a later move, after auth can protect the rows. The empty disabled tables can stay as the schema sketch.
-* Two live databases would still be justified for a short, monitored import, with one writer and a copy job. They are not justified as the everyday safety net.
+* Members keep one sign-in. The screen reads Firestore. Appwrite is the spare copy.
+* The undo window without a credit card is the weekly private JSON file, plus about one hour of Firestore history.
+* The Appwrite tables stay disabled until the function, not the phone, is the writer.
+* [PR #546](https://github.com/neiljaywarner/refuge/pull/546) remains a seam. Its client-side dual-write and three-way merge are not the accepted mirror.

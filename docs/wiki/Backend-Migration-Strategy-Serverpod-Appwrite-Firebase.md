@@ -4,7 +4,7 @@
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 > **Deployment Runbook**: [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md)
 
-> **Reviewed 24 October 2026.** [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md) and the [redundancy wiki](Reflection-Redundancy-and-Backup) supersede the dual-write as the steady state. Serverpod can still go. The live notes stay on Cloud Firestore, with Firestore point-in-time recovery and scheduled backups as the restore path. [PR #546](https://github.com/neiljaywarner/refuge/pull/546) is the seam under review, not the accepted design.
+> **Reviewed 24 October 2026, revised the same evening for a no-card budget.** [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md) and the [redundancy wiki](Reflection-Redundancy-and-Backup): Firestore Spark stays the live copy, Appwrite is a one-way free mirror, and a private weekly JSON file is the backup. Blaze backups wait until a credit card is acceptable.
 
 ---
 
