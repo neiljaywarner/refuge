@@ -172,6 +172,43 @@ void main() {
     );
 
     patrolWidgetTest(
+      'expanded action row does not overflow on 360px phone width (#557)',
+      ($) async {
+        await $.tester.binding.setSurfaceSize(const Size(360, 800));
+        addTearDown(() => $.tester.binding.setSurfaceSize(null));
+
+        await $.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: ReflectionComposer(
+                  selectedSpace: 'memes',
+                  primaryColor: Colors.teal,
+                  isContrast: false,
+                  isModal: false,
+                  onSubmit: ({
+                    required String content,
+                    required String toneTag,
+                    String? specialInterestTag,
+                    String? imageUrl,
+                  }) async {},
+                ),
+              ),
+            ),
+          ),
+        );
+        await $.pumpAndSettle();
+
+        await $(Key('composer_expand_button')).tap();
+        await $.pumpAndSettle();
+
+        expect($(Key('add_meme_gif_button')), findsOneWidget);
+        expect($(Key('publish_reflection_button')), findsOneWidget);
+        expect($.tester.takeException(), isNull);
+      },
+    );
+
+    patrolWidgetTest(
       'Modal mode (isModal: true) renders in expanded state by default without collapse button',
       ($) async {
         await $.pumpWidget(
