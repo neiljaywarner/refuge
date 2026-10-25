@@ -1,14 +1,20 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
-import '../../profile/presentation/belong_members_directory_view.dart';
+import '../../notifications/presentation/notifications_controller.dart';
+import '../data/direct_message_mailbox.dart';
+import '../data/direct_message_providers.dart';
+import '../domain/message_recipient.dart';
 import '../domain/message_thread.dart';
 
 /// Direct Messages View featuring calm, asynchronous communication (Issue #288, #330).
 /// Supports message searching, thread list with avatars, dates, subjects,
 /// and cute "Add Msg" compose modal with multi-recipient autocomplete member selection.
-class BelongMessagesView extends HookWidget {
+class BelongMessagesView extends HookConsumerWidget {
   const BelongMessagesView({
     super.key,
     this.initialThreads,
@@ -21,18 +27,52 @@ class BelongMessagesView extends HookWidget {
   final String? initialActiveThreadId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
     final baseThreads = initialThreads ?? MessageThread.sampleThreads();
     final threads = useState<List<MessageThread>>(baseThreads);
     final calmDigestEnabled = useState(true);
+    final mailbox = ref.watch(directMessageMailboxProvider);
+
+    fb_auth.User? currentUser() {
+      try {
+        if (Firebase.apps.isEmpty) return null;
+        return fb_auth.FirebaseAuth.instance.currentUser;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    useEffect(() {
+      if (initialThreads != null) return null;
+      final user = currentUser();
+      if (user == null) return null;
+      var cancelled = false;
+      Future.microtask(() async {
+        final remote = await mailbox.loadThreads(user.uid);
+        if (cancelled || remote.isEmpty) return;
+        threads.value = remote;
+      });
+      return () {
+        cancelled = true;
+      };
+    }, [mailbox]);
+
+    useEffect(() {
+      final user = currentUser();
+      if (user == null) return null;
+      Future.microtask(() async {
+        await ref
+            .read(belongNotificationsProvider.notifier)
+            .syncDirectMessageNotifications(mailbox, user.uid);
+      });
+      return null;
+    }, [mailbox]);
     final activeThread = useState<MessageThread?>(
       initialActiveThreadId != null
-          ? baseThreads
-              .where((t) => t.id == initialActiveThreadId)
-              .firstOrNull
+          ? baseThreads.where((t) => t.id == initialActiveThreadId).firstOrNull
           : null,
     );
 
@@ -97,36 +137,39 @@ class BelongMessagesView extends HookWidget {
         backgroundColor: Colors.transparent,
         builder: (ctx) => SystemBottomInset(
           child: _NewMessageModalSheet(
-            onSendMessage: (recipients, subject, content) {
-              final now = DateTime.now();
-              final participantName = recipients.length == 1
-                  ? recipients.first.name
-                  : '${recipients.first.name} & ${recipients.length - 1} others';
-              final initials = recipients.first.initials;
-
-              final newThread = MessageThread(
-                id: 'thread-${now.millisecondsSinceEpoch}',
-                participantName: participantName,
-                avatarInitials: initials,
+            onSendMessage: (recipients, subject, content) async {
+              final user = currentUser();
+              final senderId = user?.uid ?? 'guest-local';
+              final senderName = user?.displayName?.trim().isNotEmpty == true
+                  ? user!.displayName!.trim()
+                  : 'Fellow Member';
+              final result = await mailbox.sendMessage(
+                senderId: senderId,
+                senderName: senderName,
+                recipients: recipients,
+                content: content,
                 subject: subject.trim().isEmpty ? null : subject.trim(),
-                messageType: recipients.length > 1 ? 'Group' : 'Direct',
-                recipientNames: recipients.map((r) => r.name).toList(),
-                previewSnippet: content,
-                lastActivity: now,
-                unreadCount: 0,
-                messages: [
-                  DirectMessage(
-                    id: 'msg-${now.millisecondsSinceEpoch}',
-                    senderName: 'You',
-                    isFromMe: true,
-                    content: content,
-                    sentAt: now,
-                  ),
-                ],
               );
-
-              threads.value = [newThread, ...threads.value];
-              activeThread.value = newThread;
+              final updated = [
+                result.thread,
+                ...threads.value.where((t) => t.id != result.thread.id),
+              ];
+              threads.value = updated;
+              activeThread.value = result.thread;
+              if (user != null &&
+                  result.outcome == DirectMessageSendOutcome.delivered) {
+                await ref
+                    .read(belongNotificationsProvider.notifier)
+                    .syncDirectMessageNotifications(mailbox, user.uid);
+              }
+              if (context.mounted &&
+                  result.outcome == DirectMessageSendOutcome.deviceOnly) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('This message stayed on this device.'),
+                  ),
+                );
+              }
             },
           ),
         ),
@@ -611,37 +654,38 @@ class BelongMessagesView extends HookWidget {
 
 /// Compose modal sheet supporting single or multi-recipient autocomplete selection
 /// with Member Name as title and Member Profile Tagline as subtitle.
-class _NewMessageModalSheet extends HookWidget {
+class _NewMessageModalSheet extends HookConsumerWidget {
   const _NewMessageModalSheet({required this.onSendMessage});
 
-  final void Function(
-    List<DevFellowshipMember> recipients,
+  final Future<void> Function(
+    List<MessageRecipient> recipients,
     String subject,
     String content,
   )
   onSendMessage;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
-    final selectedRecipients = useState<List<DevFellowshipMember>>([]);
+    final selectedRecipients = useState<List<MessageRecipient>>([]);
     final recipientQuery = useState('');
+    final sending = useState(false);
     final recipientSearchController = useTextEditingController();
     final subjectController = useTextEditingController();
     final contentController = useTextEditingController();
+    final directoryAsync = ref.watch(messageRecipientDirectoryProvider);
 
-    // Filter available members excluding already selected ones
-    final availableMembers = kDevFellowshipMembers.where((m) {
+    final directory = directoryAsync.valueOrNull ?? [];
+    final showingSamplesOnly =
+        directory.isNotEmpty && directory.every((m) => m.isSample);
+
+    final availableMembers = directory.where((m) {
       final notAlreadySelected = !selectedRecipients.value.any(
-        (s) => s.name == m.name,
+        (s) => s.id == m.id,
       );
-      final q = recipientQuery.value.trim().toLowerCase();
-      if (q.isEmpty) return notAlreadySelected;
-      final nameMatches = m.name.toLowerCase().contains(q);
-      final taglineMatches = m.effectiveTagline.toLowerCase().contains(q);
-      return notAlreadySelected && (nameMatches || taglineMatches);
+      return notAlreadySelected && m.matchesQuery(recipientQuery.value);
     }).toList();
 
     return Container(
@@ -684,6 +728,15 @@ class _NewMessageModalSheet extends HookWidget {
               ],
             ),
             const SizedBox(height: 8),
+
+            if (showingSamplesOnly)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Sample members shown while the directory is offline.',
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                ),
+              ),
 
             // Selected Recipients Chips
             if (selectedRecipients.value.isNotEmpty) ...[
@@ -754,7 +807,10 @@ class _NewMessageModalSheet extends HookWidget {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, idx) {
                       final member = availableMembers[idx];
-                      return ListTile(
+                      final singleMatch =
+                          availableMembers.length == 1 &&
+                          recipientQuery.value.trim().isNotEmpty;
+                      final tile = ListTile(
                         key: Key('member_picker_item_${member.name}'),
                         dense: true,
                         visualDensity: VisualDensity.compact,
@@ -765,7 +821,6 @@ class _NewMessageModalSheet extends HookWidget {
                             style: const TextStyle(fontSize: 10),
                           ),
                         ),
-                        // Title: Member Name
                         title: Text(
                           member.name,
                           style: const TextStyle(
@@ -773,15 +828,14 @@ class _NewMessageModalSheet extends HookWidget {
                             fontSize: 12.5,
                           ),
                         ),
-                        // Subtitle: Member's Profile Tagline!
                         subtitle: Text(
-                          member.effectiveTagline,
+                          member.pickerSubtitle,
                           key: Key('member_tagline_${member.name}'),
                           style: TextStyle(
                             fontSize: 10.5,
                             color: Colors.grey.shade600,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: const Icon(
@@ -796,6 +850,13 @@ class _NewMessageModalSheet extends HookWidget {
                           recipientSearchController.clear();
                           recipientQuery.value = '';
                         },
+                      );
+                      if (!singleMatch) return tile;
+                      return Semantics(
+                        identifier: 'dm-recipient-match',
+                        button: true,
+                        label: member.name,
+                        child: tile,
                       );
                     },
                   ),
@@ -826,19 +887,26 @@ class _NewMessageModalSheet extends HookWidget {
             const SizedBox(height: 10),
 
             // Content Field
-            TextField(
-              key: const Key('new_message_content_input'),
-              controller: contentController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Write your calm, unhurried message...',
-                hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                filled: true,
-                fillColor: theme.cardColor,
-                contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+            Semantics(
+              identifier: 'new_message_content_input',
+              textField: true,
+              child: TextField(
+                key: const Key('new_message_content_input'),
+                controller: contentController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Write your calm, unhurried message...',
+                  hintStyle: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                  filled: true,
+                  fillColor: theme.cardColor,
+                  contentPadding: const EdgeInsets.all(12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
                 ),
               ),
             ),
@@ -860,31 +928,42 @@ class _NewMessageModalSheet extends HookWidget {
                 'Send Message',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              onPressed: () {
-                if (selectedRecipients.value.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select at least one recipient.'),
-                    ),
-                  );
-                  return;
-                }
-                if (contentController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please write a message content.'),
-                    ),
-                  );
-                  return;
-                }
+              onPressed: sending.value
+                  ? null
+                  : () async {
+                      if (selectedRecipients.value.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select at least one recipient.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      if (contentController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please write a message content.'),
+                          ),
+                        );
+                        return;
+                      }
 
-                onSendMessage(
-                  selectedRecipients.value,
-                  subjectController.text,
-                  contentController.text.trim(),
-                );
-                Navigator.of(context).pop();
-              },
+                      sending.value = true;
+                      try {
+                        await onSendMessage(
+                          selectedRecipients.value,
+                          subjectController.text,
+                          contentController.text.trim(),
+                        );
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      } finally {
+                        sending.value = false;
+                      }
+                    },
             ),
           ],
         ),

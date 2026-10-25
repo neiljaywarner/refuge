@@ -11,12 +11,12 @@ enum BelongNotificationType {
   following;
 
   String get label => switch (this) {
-        BelongNotificationType.mention => 'Mention',
-        BelongNotificationType.directMessage => 'Direct Message',
-        BelongNotificationType.reply => 'Reply',
-        BelongNotificationType.like => 'Like',
-        BelongNotificationType.following => 'Following',
-      };
+    BelongNotificationType.mention => 'Mention',
+    BelongNotificationType.directMessage => 'Direct Message',
+    BelongNotificationType.reply => 'Reply',
+    BelongNotificationType.like => 'Like',
+    BelongNotificationType.following => 'Following',
+  };
 }
 
 /// Domain model for a calm notification item in **Belong on the Spectrum** (#327, #329, #442).
@@ -49,34 +49,40 @@ class BelongNotification extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        type,
-        authorName,
-        postTitle,
-        timestamp,
-        authorAvatarUrl,
-        isRead,
-        spaceKey,
-        postId,
-        commentSnippet,
-        conversationId,
-      ];
+    id,
+    type,
+    authorName,
+    postTitle,
+    timestamp,
+    authorAvatarUrl,
+    isRead,
+    spaceKey,
+    postId,
+    commentSnippet,
+    conversationId,
+  ];
 
   /// Author initials for the Avatar widget fallback, stripping parentheses,
   /// punctuation, and bracketed qualifiers (e.g. "Pastor Thomas (Melbourne)" -> "PT").
   String get authorInitials {
-    final cleanName =
-        authorName.replaceAll(RegExp(r'[\(\[\{].*?[\)\]\}]'), '').trim();
+    final cleanName = authorName
+        .replaceAll(RegExp(r'[\(\[\{].*?[\)\]\}]'), '')
+        .trim();
     final parts = cleanName
         .split(RegExp(r'[\s_.-]+'))
         .where((p) => p.isNotEmpty)
         .toList();
     if (parts.isEmpty) {
-      final fallbackParts =
-          authorName.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+      final fallbackParts = authorName
+          .trim()
+          .split(RegExp(r'\s+'))
+          .where((p) => p.isNotEmpty)
+          .toList();
       if (fallbackParts.isEmpty) return '?';
-      final firstChar =
-          fallbackParts[0].replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+      final firstChar = fallbackParts[0].replaceAll(
+        RegExp(r'[^a-zA-Z0-9]'),
+        '',
+      );
       return firstChar.isNotEmpty ? firstChar[0].toUpperCase() : '?';
     }
 
@@ -94,17 +100,17 @@ class BelongNotification extends Equatable {
   /// Human-readable title message following the user's specification:
   /// e.g. "Sarah L. mentioned you in a comment on 'Markan Chiasms'"
   String get displayMessage => switch (type) {
-        BelongNotificationType.mention =>
-          '$authorName mentioned you in a comment on "$postTitle"',
-        BelongNotificationType.directMessage =>
-          '$authorName sent you a direct message: "${commentSnippet ?? postTitle}"',
-        BelongNotificationType.reply =>
-          '$authorName replied to your comment on "$postTitle"',
-        BelongNotificationType.like =>
-          '$authorName liked your reflection on "$postTitle"',
-        BelongNotificationType.following =>
-          '$authorName posted a new reflection in "$postTitle"',
-      };
+    BelongNotificationType.mention =>
+      '$authorName mentioned you in a comment on "$postTitle"',
+    BelongNotificationType.directMessage =>
+      '$authorName sent you a direct message: "${commentSnippet ?? postTitle}"',
+    BelongNotificationType.reply =>
+      '$authorName replied to your comment on "$postTitle"',
+    BelongNotificationType.like =>
+      '$authorName liked your reflection on "$postTitle"',
+    BelongNotificationType.following =>
+      '$authorName posted a new reflection in "$postTitle"',
+  };
 
   /// Relative human-readable timestamp:
   /// e.g. "1 hr ago", "2 days ago", "Sep 7th", "Just now"

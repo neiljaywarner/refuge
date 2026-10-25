@@ -102,7 +102,12 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     final votedIds = VoteStorageService.instance.getVotedFeatureIds();
     return [
       for (final item in kDefaultBelongVotableFeatures)
-        item.copyWith(userVoted: votedIds.contains(item.id)),
+        item.copyWith(
+          userVoted: votedIds.contains(item.id),
+          // Seed tallies do not include this device's guest vote. Add it
+          // back so a reload keeps the count and a second tap removes it.
+          votes: item.votes + (votedIds.contains(item.id) ? 1 : 0),
+        ),
     ];
   }
 
@@ -364,9 +369,7 @@ class FirebaseFeatureVotingRepository
                 userVoted: votedIds.contains(item.id),
               )
             else
-              item.copyWith(
-                userVoted: votedIds.contains(item.id),
-              ),
+              item.copyWith(userVoted: votedIds.contains(item.id)),
         ];
       });
     } catch (_) {
@@ -425,9 +428,9 @@ class FirebaseFeatureVotingRepository
       try {
         final resolvedRating =
             FeatureVotingStateTransformMixin.resolveStarRating(
-          sentiment,
-          rating,
-        );
+              sentiment,
+              rating,
+            );
         final destination = privateRouter.resolveDestination(sentiment);
         await fs.collection(feedbackCollectionPath).add({
           'sentiment': sentiment.name,
@@ -478,16 +481,16 @@ final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((
   final gitHubClient = ref.watch(gitHubFeedbackClientProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryFeatureVotingRepository(
-        gitHubClient: gitHubClient,
-      ),
+      gitHubClient: gitHubClient,
+    ),
     BackendTarget.serverpod => ServerpodFeatureVotingRepository(
-        gitHubClient: gitHubClient,
-      ),
+      gitHubClient: gitHubClient,
+    ),
     BackendTarget.appwrite => AppwriteFeatureVotingRepository(
-        gitHubClient: gitHubClient,
-      ),
+      gitHubClient: gitHubClient,
+    ),
     BackendTarget.firebase => FirebaseFeatureVotingRepository(
-        gitHubClient: gitHubClient,
-      ),
+      gitHubClient: gitHubClient,
+    ),
   };
 });

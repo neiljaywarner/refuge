@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -30,6 +31,7 @@ class CommunityAnalyticsService {
     this.aptabaseKeyOverride,
     this.postHogKeyOverride,
     this.postHogHostOverride,
+    this.automationToolOverride,
   }) : _httpClient = httpClient ?? http.Client();
 
   final AppFlavor flavor;
@@ -39,16 +41,25 @@ class CommunityAnalyticsService {
   final String? postHogKeyOverride;
   final String? postHogHostOverride;
 
+  /// Test-only stand-in for `--dart-define=AUTOMATION_TOOL=...`.
+  final String? automationToolOverride;
+
   /// Default Aptabase App-Key read from build-time `--dart-define`.
   static const String kDefaultAptabaseKey = String.fromEnvironment(
     'APTABASE_KEY',
-    defaultValue: String.fromEnvironment('APTABASE_BELONG_KEY', defaultValue: ''),
+    defaultValue: String.fromEnvironment(
+      'APTABASE_BELONG_KEY',
+      defaultValue: '',
+    ),
   );
 
   /// Default PostHog API Key / Project Token read from `--dart-define`.
   static const String kDefaultPostHogKey = String.fromEnvironment(
     'POSTHOG_KEY',
-    defaultValue: String.fromEnvironment('POSTHOG_BELONG_PROJECT_TOKEN', defaultValue: ''),
+    defaultValue: String.fromEnvironment(
+      'POSTHOG_BELONG_PROJECT_TOKEN',
+      defaultValue: '',
+    ),
   );
 
   /// Default PostHog Ingestion Host (defaults to US Cloud).
@@ -64,24 +75,26 @@ class CommunityAnalyticsService {
   final List<Map<String, Object>> recordedEventsForTesting = [];
 
   /// In-memory testing hook alias for verifying dispatched analytics events.
-  List<Map<String, Object>> get dispatchedEventsForTesting => recordedEventsForTesting;
+  List<Map<String, Object>> get dispatchedEventsForTesting =>
+      recordedEventsForTesting;
 
   /// Dispatches a telemetry event across all configured analytics destinations.
-  Future<void> logEvent(
-    String name, {
-    Map<String, Object>? parameters,
-  }) async {
-    const automationToolEnv = String.fromEnvironment('AUTOMATION_TOOL', defaultValue: '');
-    final resolvedAutomationTool = automationToolEnv.isNotEmpty
-        ? automationToolEnv
-        : (kDebugMode ? 'debug_mode' : 'none');
+  Future<void> logEvent(String name, {Map<String, Object>? parameters}) async {
+    const automationToolEnv = String.fromEnvironment(
+      'AUTOMATION_TOOL',
+      defaultValue: '',
+    );
+    final automationToolName = (automationToolOverride ?? automationToolEnv)
+        .trim();
+    final isAutomationTool = automationToolName.isNotEmpty;
 
     final enriched = <String, Object>{
       'flavor': flavor.slug,
       'environment': kReleaseMode ? 'release' : 'debug',
       'platform': defaultTargetPlatform.name,
-      'is_debug_mode': kDebugMode ? 'true' : 'false',
-      'automation_tool': resolvedAutomationTool,
+      'is_debug_mode': kDebugMode,
+      'automation_tool': isAutomationTool,
+      if (isAutomationTool) 'automation_tool_name': automationToolName,
       ...?parameters,
     };
     recordedEventsForTesting.add({'name': name, ...enriched});
@@ -99,16 +112,25 @@ class CommunityAnalyticsService {
       );
     }
 
-    // 2. Dispatch to Firebase Analytics (fire-and-forget)
+    // 2. Dispatch to Firebase Analytics (fire-and-forget).
+    // FA event params must be String or num; PostHog keeps native booleans.
     if (Firebase.apps.isNotEmpty) {
       unawaited(
         FirebaseAnalytics.instance
-            .logEvent(name: name, parameters: enriched)
+            .logEvent(
+              name: name,
+              parameters: _firebaseEventParameters(enriched),
+            )
             .then((_) {
-          talker.debug('🔥 [FIREBASE ANALYTICS] Event "$name" logged to Firebase.');
-        }).catchError((e) {
-          talker.warning('⚠️ [FIREBASE ANALYTICS] Failed to log event "$name": $e');
-        }),
+              talker.debug(
+                '🔥 [FIREBASE ANALYTICS] Event "$name" logged to Firebase.',
+              );
+            })
+            .catchError((e) {
+              talker.warning(
+                '⚠️ [FIREBASE ANALYTICS] Failed to log event "$name": $e',
+              );
+            }),
       );
     } else {
       talker.debug(
@@ -151,15 +173,14 @@ class CommunityAnalyticsService {
 
       final response = await _httpClient.post(
         url,
-        headers: {
-          'App-Key': key,
-          'Content-Type': 'application/json',
-        },
+        headers: {'App-Key': key, 'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        talker.info('📈 [APTABASE] Event "$name" sent successfully (HTTP ${response.statusCode})');
+        talker.info(
+          '📈 [APTABASE] Event "$name" sent successfully (HTTP ${response.statusCode})',
+        );
       } else {
         talker.warning(
           '⚠️ [APTABASE] Non-2xx response (${response.statusCode}): ${response.body}',
@@ -185,34 +206,112 @@ class CommunityAnalyticsService {
           : effectivePostHogHost;
       final url = Uri.parse('$host/capture/');
 
-      final payload = {
-        'api_key': key,
-        'event': name,
-        'properties': {
-          'distinct_id': 'belong-anon-${flavor.slug}',
-          ...props,
+      final payloads = <Map<String, Object>>[
+        {
+          'api_key': key,
+          'event': name,
+          'properties': _postHogProperties(props),
         },
-      };
+      ];
+      final pathname = _pageviewPathname(name, props);
+      if (pathname != null) {
+        payloads.add({
+          'api_key': key,
+          'event': r'$pageview',
+          'properties': _postHogProperties({
+            ...props,
+            r'$pathname': pathname,
+            r'$current_url': _pageviewUrl(pathname),
+            r'$host': _pageviewHost,
+          }),
+        });
+      }
 
-      final response = await _httpClient.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'RefugeAnalytics/1.0.0',
-        },
-        body: jsonEncode(payload),
-      );
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        talker.info('🦔 [POSTHOG] Event "$name" sent successfully (HTTP ${response.statusCode})');
-      } else {
-        talker.warning(
-          '⚠️ [POSTHOG] Non-2xx response (${response.statusCode}): ${response.body}',
+      for (final payload in payloads) {
+        final eventName = payload['event'] as String;
+        final response = await _httpClient.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'RefugeAnalytics/1.0.0',
+          },
+          body: jsonEncode(payload),
         );
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          talker.info(
+            '🦔 [POSTHOG] Event "$eventName" sent successfully '
+            '(HTTP ${response.statusCode})',
+          );
+        } else {
+          talker.warning(
+            '⚠️ [POSTHOG] Non-2xx response (${response.statusCode}): '
+            '${response.body}',
+          );
+        }
       }
     } catch (e) {
       talker.warning('⚠️ [POSTHOG] Network transport error: $e');
     }
+  }
+
+  /// Firebase Analytics event parameters accept only String or num.
+  static Map<String, Object> _firebaseEventParameters(
+    Map<String, Object> props,
+  ) {
+    return {
+      for (final entry in props.entries)
+        entry.key: switch (entry.value) {
+          final bool flag => flag.toString(),
+          final value => value,
+        },
+    };
+  }
+
+  /// Anonymous distinct id plus `$set` user properties. No emails or names.
+  Map<String, Object> _postHogProperties(Map<String, Object> props) {
+    final isDebugMode = props['is_debug_mode'] == true;
+    final isAutomationTool = props['automation_tool'] == true;
+    return {
+      'distinct_id': 'belong-anon-${flavor.slug}',
+      r'$set': <String, Object>{
+        'is_debug_mode': isDebugMode,
+        'automation_tool': isAutomationTool,
+      },
+      ...props,
+    };
+  }
+
+  /// Anonymous path for PostHog web analytics. No member ids or emails.
+  static String? _pageviewPathname(String name, Map<String, Object> props) {
+    switch (name) {
+      case 'space_viewed':
+        return '/spaces/${props['space_slug'] ?? 'unknown'}';
+      case 'bottom_tab_selected':
+        return '/tab/${props['tab'] ?? 'unknown'}';
+      case 'screen_view':
+        return '/screen/${props['screen_name'] ?? 'unknown'}';
+      default:
+        return null;
+    }
+  }
+
+  static String get _pageviewHost {
+    if (kIsWeb) {
+      final host = Uri.base.host;
+      if (host.isNotEmpty) return host;
+    }
+    return 'belongonthespectrum.web.app';
+  }
+
+  static String _pageviewUrl(String pathname) {
+    if (kIsWeb) {
+      final origin = Uri.base.origin;
+      if (origin.isNotEmpty && origin != 'null') {
+        return '$origin$pathname';
+      }
+    }
+    return 'https://belongonthespectrum.web.app$pathname';
   }
 
   Future<void> logSpaceViewed(String spaceSlug) =>
@@ -230,17 +329,26 @@ class CommunityAnalyticsService {
   Future<void> logVoteCast(String featureId) =>
       logEvent('vote_cast', parameters: {'feature_id': featureId});
 
-  Future<void> logFeedbackIntent(String sentimentLabel) =>
-      logEvent('feedback_intent_selected', parameters: {'sentiment': sentimentLabel});
+  Future<void> logFeedbackIntent(String sentimentLabel) => logEvent(
+    'feedback_intent_selected',
+    parameters: {'sentiment': sentimentLabel},
+  );
 
-  Future<void> logReflectionPublished({required String tag, required int lengthBucket}) =>
-      logEvent('reflection_published', parameters: {
-        'tag': tag,
-        'length_bucket': lengthBucket,
-      });
+  Future<void> logReflectionPublished({
+    required String tag,
+    required int lengthBucket,
+  }) => logEvent(
+    'reflection_published',
+    parameters: {'tag': tag, 'length_bucket': lengthBucket},
+  );
 
-  Future<void> logEventRsvp({required String eventId, required String status}) =>
-      logEvent('event_rsvp', parameters: {'event_id': eventId, 'status': status});
+  Future<void> logEventRsvp({
+    required String eventId,
+    required String status,
+  }) => logEvent(
+    'event_rsvp',
+    parameters: {'event_id': eventId, 'status': status},
+  );
 }
 
 final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((
@@ -248,5 +356,8 @@ final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((
 ) {
   final flavor = ref.watch(appFlavorProvider);
   final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
-  return CommunityAnalyticsService(flavor: flavor, serverpodBackup: serverpodBackup);
+  return CommunityAnalyticsService(
+    flavor: flavor,
+    serverpodBackup: serverpodBackup,
+  );
 });
