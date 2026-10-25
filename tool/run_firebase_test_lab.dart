@@ -126,8 +126,12 @@ Future<void> main(List<String> args) async {
     _log('[Dry Run] Skipped Patrol / Gradle builds.');
   }
 
-  final resolvedAppApk = resolveExistingApk(repoRoot, appApkRelativePaths()) ?? appApk;
-  final resolvedTestApk = testApk.existsSync() ? testApk : null;
+  final resolvedAppApk =
+      resolveExistingApk(repoRoot, appApkRelativePaths()) ??
+      (dryRun ? File('$repoRoot/${appApkRelativePaths().first}') : null);
+  final resolvedTestApk = testApk.existsSync()
+      ? testApk
+      : (dryRun ? File('$repoRoot/$androidTestApkRelativePath') : null);
 
   if (resolvedAppApk == null) {
     stderr.writeln('App APK not found after build. Expected one of:');

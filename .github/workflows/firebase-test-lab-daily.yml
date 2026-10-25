@@ -33,16 +33,31 @@ jobs:
       - name: Build dev APK pair and verify badging
         run: dart run tool/run_firebase_test_lab.dart --build-only
 
-      - name: Upload to Firebase Test Lab
+      - name: Check Firebase credentials
+        id: ftl_auth
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -z "${FIREBASE_SERVICE_ACCOUNT}" ]; then
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "has_sa=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_sa=false" >> "$GITHUB_OUTPUT"
             echo "FIREBASE_SERVICE_ACCOUNT is not set. Build-only gate passed; skipping upload."
             echo "Add the secret to enable daily cloud upload (issue #573)."
-            exit 0
           fi
-          echo "${FIREBASE_SERVICE_ACCOUNT}" > "${RUNNER_TEMP}/gcp-sa.json"
-          gcloud auth activate-service-account --key-file="${RUNNER_TEMP}/gcp-sa.json"
-          gcloud config set project belongonthespectrum
-          dart run tool/run_firebase_test_lab.dart
+
+      - name: Authenticate to Google Cloud
+        if: steps.ftl_auth.outputs.has_sa == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        if: steps.ftl_auth.outputs.has_sa == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: belongonthespectrum
+
+      - name: Upload to Firebase Test Lab
+        if: steps.ftl_auth.outputs.has_sa == 'true'
+        run: dart run tool/run_firebase_test_lab.dart
