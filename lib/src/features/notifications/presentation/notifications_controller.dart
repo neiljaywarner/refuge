@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../messages/data/direct_message_mailbox.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/app_launcher_badge_service.dart';
 import '../data/member_notification_store.dart';
@@ -181,7 +182,10 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
           .watchForRecipient(profile.userId)
           .listen((remote) {
             final seeds = _seeds ?? _seededItems();
-            state = [...remote, ...seeds];
+            final cachedMessages = state.where(
+              (n) => n.id.startsWith('dm-') && !n.id.startsWith('notif-'),
+            );
+            state = [...remote, ...cachedMessages, ...seeds];
           }, onError: (_, _) {});
       ref.onDispose(() {
         _remoteSub?.cancel();
@@ -237,6 +241,24 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
         isRead: false,
       ),
     );
+  }
+
+  Future<void> syncDirectMessageNotifications(
+    DirectMessageMailbox mailbox,
+    String currentUserId,
+  ) async {
+    // Show messages already cached on this device before waiting on Firestore.
+    state = mailbox.notificationsForUser(
+      currentUserId: currentUserId,
+      existing: state,
+    );
+    if (mailbox is FirestoreDirectMessageMailbox) {
+      await mailbox.hydrateFromFirestore(currentUserId);
+      state = mailbox.notificationsForUser(
+        currentUserId: currentUserId,
+        existing: state,
+      );
+    }
   }
 
   void addDirectMessageNotification({

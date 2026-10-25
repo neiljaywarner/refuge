@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/messages/presentation/belong_messages_view.dart';
 
@@ -19,7 +20,9 @@ void main() {
       ($) async {
         useTallScreen($);
         await $.pumpWidgetAndSettle(
-          const MaterialApp(home: BelongMessagesView()),
+          const ProviderScope(
+            child: MaterialApp(home: BelongMessagesView()),
+          ),
         );
 
         await $(const Key('add_new_message_button')).tap();
@@ -42,8 +45,10 @@ void main() {
         useTallScreen($);
         var leftMessages = false;
         await $.pumpWidgetAndSettle(
-          MaterialApp(
-            home: BelongMessagesView(onBackToHome: () => leftMessages = true),
+          ProviderScope(
+            child: MaterialApp(
+              home: BelongMessagesView(onBackToHome: () => leftMessages = true),
+            ),
           ),
         );
 
@@ -99,7 +104,9 @@ void main() {
     ) async {
       useTallScreen($);
       await $.pumpWidgetAndSettle(
-        const MaterialApp(home: BelongMessagesView()),
+        const ProviderScope(
+          child: MaterialApp(home: BelongMessagesView()),
+        ),
       );
 
       await $(const Key('add_new_message_button')).tap();

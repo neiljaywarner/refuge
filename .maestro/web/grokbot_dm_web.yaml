@@ -4,9 +4,8 @@ name: grokbot direct message notification
 # Credentials come from the shell environment. No addresses are stored here.
 # Expects both accounts to already exist.
 #
-# The recipient signs in first so a public directory entry exists, then the
-# sender selects that entry and sends a message. The recipient's bell must
-# show a direct message.
+# The recipient signs in first so a directory entry exists, then the sender
+# selects that entry and sends a message. The recipient's bell must show it.
 #
 # Included in the web suite. See .maestro/web/config.yaml.
 
@@ -67,16 +66,17 @@ name: grokbot direct message notification
 - inputText: "grokbot2"
 - extendedWaitUntil:
     visible:
-      id: "member_picker_item_grokbot2"
+      id: "dm-recipient-match"
     timeout: 20000
 - takeScreenshot: grokbot1_dm_recipient_search
 - tapOn:
-    id: "member_picker_item_grokbot2"
-- tapOn: "Write your calm, unhurried message.*"
-- inputText: "Quiet hello from the fellowship"
+    id: "dm-recipient-match"
+- tapOn:
+    id: "new_message_content_input"
+- inputText: "Quiet hello from the fellowship."
 - tapOn: "Send Message"
 - extendedWaitUntil:
-    visible: ".*Quiet hello from the fellowship.*"
+    notVisible: "New Message"
     timeout: 20000
 - takeScreenshot: grokbot1_dm_send_result
 - tapOn: ".*Member Profile.*"
@@ -102,4 +102,6 @@ name: grokbot direct message notification
     visible: "Mark all read"
     timeout: 15000
 - takeScreenshot: grokbot2_bell_after_dm
-- assertVisible: ".*sent you a direct message.*"
+- extendedWaitUntil:
+    visible: ".*Quiet hello from the fellowship.*"
+    timeout: 20000
