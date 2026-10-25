@@ -77,7 +77,8 @@ name: Belong web spaces and member directory
     element: ".*Actually Autistic Events.*"
     direction: DOWN
     timeout: 30000
-    visibilityPercentage: 40
+    visibilityPercentage: 80
+    centerElement: true
 - tapOn: ".*Actually Autistic Events.*"
 - extendedWaitUntil:
     visible: ".*Sensory-Friendly.*"
