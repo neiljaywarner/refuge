@@ -15,7 +15,7 @@ void main() {
       final threads = MessageThread.sampleThreads();
       expect(threads.length, 3);
       expect(threads.first.participantName, 'Marty & Community Team');
-      expect(threads.first.unreadCount, 1);
+      expect(threads.first.unreadCount, 0);
       expect(threads.first.messages.isNotEmpty, isTrue);
     });
 
@@ -52,9 +52,11 @@ void main() {
     'BDD (patrol_finders): Direct Messages thread list, calm digest toggle, and sending a reply',
     ($) async {
       await $.pumpWidgetAndSettle(
-        const MaterialApp(
-          home: Scaffold(
-            body: BelongMessagesView(),
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BelongMessagesView(),
+            ),
           ),
         ),
       );

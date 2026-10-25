@@ -1,17 +1,8 @@
 url: http://127.0.0.1:8095
 name: grokbot direct message notification
-tags:
-  - known-gap
 ---
 # Credentials come from the shell environment. No addresses are stored here.
 # Expects both accounts to already exist.
-#
-# Known product gap: https://github.com/neiljaywarner/refuge/issues/441
-# The new-message picker only lists sample members, so a real account cannot
-# be selected. Tagged known-gap so directory runs
-# (`maestro test .maestro/web`) and the default suite in
-# tool/run_maestro_verification.dart skip this file. See .maestro/config.yaml.
-# Passing this file path still runs it.
 
 - launchApp
 - extendedWaitUntil:
@@ -50,12 +41,19 @@ tags:
     timeout: 15000
 - tapOn: "Search members \\(single or multiple\\).*"
 - inputText: "grokbot2"
-- takeScreenshot: grokbot1_dm_recipient_search
-- tapOn: "Send Message"
-- takeScreenshot: grokbot1_dm_send_result
+- extendedWaitUntil:
+    visible:
+      id: "dm-recipient-match"
+    timeout: 15000
 - tapOn:
-    text: "Close new message"
-    optional: true
+    id: "dm-recipient-match"
+- tapOn:
+    id: "new_message_content_input"
+- inputText: "Quiet hello from the fellowship."
+- tapOn: "Send Message"
+- extendedWaitUntil:
+    notVisible: "New Message"
+    timeout: 20000
 - tapOn: ".*Member Profile.*"
 - tapOn: "Sign Out"
 - extendedWaitUntil:
@@ -79,4 +77,4 @@ tags:
     visible: "Mark all read"
     timeout: 15000
 - takeScreenshot: grokbot2_bell_after_dm
-- assertVisible: ".*sent you a direct message.*"
+- assertVisible: "Quiet hello from the fellowship."

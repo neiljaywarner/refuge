@@ -82,9 +82,11 @@ void main() {
 
       // When the conversation is opened
       await $.pumpWidgetAndSettle(
-        MaterialApp(
-          theme: ThemeData.light(),
-          home: BelongMessagesView(initialThreads: [thread]),
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData.light(),
+            home: BelongMessagesView(initialThreads: [thread]),
+          ),
         ),
       );
       await $(const Key('thread-dm-timestamp')).tap();
