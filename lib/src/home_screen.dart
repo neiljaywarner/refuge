@@ -320,41 +320,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     ],
                   ),
                 ),
-              if (remoteConfig.bannerEnabled)
-                CommunityAnchorBanner(
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                ),
-              if (quietDigestSnapshot.hasData &&
-                  quietDigestSnapshot.data != null &&
-                  quietDigestSnapshot.data!.isNotEmpty)
-                QuietDigestBanner(
-                  primaryColor: primaryColor,
-                  legacyMessage: quietDigestSnapshot.data,
-                  isContrast: isContrast,
-                ),
-              // Wide native layouts use the create-post menu. Web keeps the
-              // composer on the feed so a desktop browser can publish without
-              // opening that menu.
-              if ((kIsWeb || !isDesktop) &&
-                  selectedSpace.value != 'saved_for_later')
-                ReflectionComposer(
-                  selectedSpace: selectedSpace.value,
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                  onSubmit:
-                      ({
-                        required String content,
-                        required String toneTag,
-                        String? specialInterestTag,
-                        String? imageUrl,
-                      }) => submitPost(
-                        content: content,
-                        toneTag: toneTag,
-                        specialInterestTag: specialInterestTag,
-                        imageUrl: imageUrl,
-                      ),
-                ),
               Expanded(
                 child: Builder(
                   builder: (context) {
@@ -389,75 +354,137 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       commentCounts: commentCounts,
                     );
 
-                    if (posts.isEmpty) {
-                      if (selectedSpace.value == 'saved_for_later') {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.bookmark_border_rounded,
-                                  size: 40,
-                                  color: Theme.of(context).disabledColor,
+                    final showInlineComposer =
+                        (kIsWeb || !isDesktop) &&
+                        selectedSpace.value != 'saved_for_later';
+
+                    final feedSlivers = <Widget>[
+                      if (remoteConfig.bannerEnabled)
+                        SliverToBoxAdapter(
+                          child: CommunityAnchorBanner(
+                            primaryColor: primaryColor,
+                            isContrast: isContrast,
+                          ),
+                        ),
+                      if (quietDigestSnapshot.hasData &&
+                          quietDigestSnapshot.data != null &&
+                          quietDigestSnapshot.data!.isNotEmpty)
+                        SliverToBoxAdapter(
+                          child: QuietDigestBanner(
+                            primaryColor: primaryColor,
+                            legacyMessage: quietDigestSnapshot.data,
+                            isContrast: isContrast,
+                          ),
+                        ),
+                      if (showInlineComposer)
+                        SliverToBoxAdapter(
+                          child: ReflectionComposer(
+                            selectedSpace: selectedSpace.value,
+                            primaryColor: primaryColor,
+                            isContrast: isContrast,
+                            onSubmit:
+                                ({
+                                  required String content,
+                                  required String toneTag,
+                                  String? specialInterestTag,
+                                  String? imageUrl,
+                                }) => submitPost(
+                                  content: content,
+                                  toneTag: toneTag,
+                                  specialInterestTag: specialInterestTag,
+                                  imageUrl: imageUrl,
                                 ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No saved reflections yet.\nTap the bookmark icon on any reflection to save it for quiet contemplation.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color
-                                        ?.withValues(alpha: 0.7),
+                          ),
+                        ),
+                    ];
+
+                    if (posts.isEmpty) {
+                      feedSlivers.add(
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: selectedSpace.value == 'saved_for_later'
+                              ? Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(24.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.bookmark_border_rounded,
+                                          size: 40,
+                                          color: Theme.of(context)
+                                              .disabledColor,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'No saved reflections yet.\nTap the bookmark icon on any reflection to save it for quiet contemplation.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.color
+                                                ?.withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    profile.isSignedIn
+                                        ? 'No community reflections yet in this space.'
+                                        : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
+                                    key: const Key(
+                                      'empty_reflections_placeholder',
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color
+                                          ?.withValues(alpha: 0.6),
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
+                        ),
+                      );
+                    } else {
+                      feedSlivers.add(
+                        SliverPadding(
+                          padding: const EdgeInsets.only(
+                            left: 12.0,
+                            right: 12.0,
+                            top: 8.0,
+                            bottom: 48.0,
                           ),
-                        );
-                      }
-                      return Center(
-                        child: Text(
-                          profile.isSignedIn
-                              ? 'No community reflections yet in this space.'
-                              : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                          key: const Key('empty_reflections_placeholder'),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.6),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final p = posts[index];
+                              return ReflectionCard(
+                                post: p,
+                                isContrast: isContrast,
+                                isHighlighted: highlightedPostId.value == p.id,
+                                onAddReaction: (reactionType) =>
+                                    activeRepository.addReaction(
+                                      postId: p.id,
+                                      reactionType: reactionType,
+                                    ),
+                              );
+                            }, childCount: posts.length),
                           ),
                         ),
                       );
                     }
 
-                    return ListView.builder(
-                      itemCount: posts.length,
-                      padding: const EdgeInsets.only(
-                        left: 12.0,
-                        right: 12.0,
-                        top: 8.0,
-                        bottom: 48.0,
-                      ),
-                      itemBuilder: (context, index) {
-                        final p = posts[index];
-                        return ReflectionCard(
-                          post: p,
-                          isContrast: isContrast,
-                          isHighlighted: highlightedPostId.value == p.id,
-                          onAddReaction: (reactionType) =>
-                              activeRepository.addReaction(
-                                postId: p.id,
-                                reactionType: reactionType,
-                              ),
-                        );
-                      },
-                    );
+                    return CustomScrollView(slivers: feedSlivers);
                   },
                 ),
               ),
