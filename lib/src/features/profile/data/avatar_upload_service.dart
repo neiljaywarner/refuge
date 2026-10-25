@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -80,8 +81,11 @@ class PlatformAvatarUploadService implements AvatarUploadService {
         return await xFile.readAsBytes();
       }
       return null;
-    } catch (e) {
-      debugPrint('ℹ️ [AvatarUploadService] Fallback to sample avatar: $e');
+    } on MissingPluginException catch (e) {
+      // Unit tests and hosts without the picker plugin have no camera.
+      // A denied permission or a failed pick on a device must not look like
+      // a successful photo, so only this case returns a sample image.
+      debugPrint('ℹ️ [AvatarUploadService] Image picker plugin unavailable: $e');
       return _generateSampleAvatarBytes();
     }
   }

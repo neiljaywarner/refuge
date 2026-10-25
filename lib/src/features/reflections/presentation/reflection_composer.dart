@@ -348,7 +348,7 @@ class ReflectionComposer extends HookWidget {
             const SizedBox(height: 8),
             Container(
               key: const Key('image_post_preview_container'),
-              constraints: const BoxConstraints(maxHeight: 140),
+              constraints: BoxConstraints(maxHeight: isModal ? 140 : 100),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(color: Colors.amber.shade300),
@@ -409,7 +409,7 @@ class ReflectionComposer extends HookWidget {
               child: TextField(
                 key: const Key('reflection_composer_input'),
                 controller: contentController,
-                maxLines: isImagePost ? 2 : 3,
+                maxLines: isImagePost || attachedMeme.value != null ? 2 : 3,
                 decoration: InputDecoration(
                   hintText: isImagePost
                       ? 'Add an optional caption, thought, or context for this image...'
@@ -488,7 +488,7 @@ class ReflectionComposer extends HookWidget {
               ),
             ),
           ],
-          const SizedBox(height: 10),
+          SizedBox(height: attachedMeme.value != null ? 0 : 10),
           Wrap(
             spacing: 6,
             runSpacing: 6,

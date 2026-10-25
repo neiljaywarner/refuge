@@ -10,9 +10,8 @@ tags:
 # Gallery-based avatar change. Tagged known-gap when guest mode blocks profile save.
 # Injects a test image, opens the profile avatar control, picks from gallery.
 
-- launchApp:
-    clearState: false
-
+# Permissions and media first, then launch. Needs a signed-in profile:
+# belong_profile_avatar_button is absent while the home bar says Sign In.
 - setPermissions:
     permissions:
       camera: allow
@@ -20,6 +19,10 @@ tags:
 
 - addMedia:
     - "assets/belong_maestro_test_photo.png"
+
+- launchApp:
+    clearState: false
+    stopApp: true
 
 - extendedWaitUntil:
     visible: ".*Belong.*"
@@ -38,22 +41,31 @@ tags:
     timeout: 10000
 
 - tapOn: ".*Choose from Photos / Gallery.*"
+- extendedWaitUntil:
+    visible: ".*Photos.*"
+    timeout: 15000
+
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Dismiss.*"
+          commands:
+            - tapOn: ".*Dismiss.*"
+            - waitForAnimationToEnd
+
+- tapOn:
+    point: "17%, 54%"
 - waitForAnimationToEnd:
-    timeout: 8000
-
+    timeout: 4000
 - runFlow:
     when:
-      visible: ".*belong_maestro_test_photo.*"
+      visible: "Done"
     commands:
-      - tapOn: ".*belong_maestro_test_photo.*"
-
-- runFlow:
-    when:
-      notVisible: ".*Avatar updated peacefully.*"
-    commands:
-      - tapOn:
-          point: "20%, 35%"
-      - waitForAnimationToEnd
+      - tapOn: "Done"
+      - waitForAnimationToEnd:
+          timeout: 8000
 
 - extendedWaitUntil:
     visible: ".*Avatar updated peacefully.*"
