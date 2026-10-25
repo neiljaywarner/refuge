@@ -46,6 +46,7 @@ void main() {
       expect(dev.toMap()['deletionKind'], 'soft');
       expect(dev.toMap()['accountStatus'], 'soft_deleted');
       expect(dev.profilePatch()['softDeleted'], isTrue);
+      expect(dev.profilePatch()['listedInDirectory'], isFalse);
     });
   });
 

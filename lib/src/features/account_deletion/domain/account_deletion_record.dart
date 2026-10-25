@@ -52,6 +52,7 @@ class AccountDeletionRecord {
     'deletionKind': deletionKind,
     'flavor': flavor,
     'softDeleted': softDeleted,
+    'listedInDirectory': false,
   };
 
   AccountDeletionRecord withBackends(List<String> backends) {

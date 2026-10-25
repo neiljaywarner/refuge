@@ -12,6 +12,7 @@ class DeleteMyAccountDialog extends HookConsumerWidget {
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (_) => const DeleteMyAccountDialog(),
     );
   }
@@ -36,9 +37,11 @@ class DeleteMyAccountDialog extends HookConsumerWidget {
         if (navigator.canPop()) navigator.pop();
         if (navigator.canPop()) navigator.pop();
       } on AccountDeletionException catch (error) {
+        if (!context.mounted) return;
         errorText.value = error.message;
         submitting.value = false;
       } catch (_) {
+        if (!context.mounted) return;
         errorText.value = AccountDeletionMessages.backendFailed;
         submitting.value = false;
       }
