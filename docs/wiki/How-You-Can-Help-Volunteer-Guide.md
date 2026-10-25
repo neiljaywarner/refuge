@@ -99,7 +99,7 @@ Open **Spaces** and see whether you can find:
 
 If a room you used on Circle is missing, or a name is confusing, that is useful to say. A short hello in **Start Here** helps the room feel lived in. You do not owe anyone a long introduction.
 
-**Saved for Later** is for private bookmarks. **Members** is the directory. **DFW Church** opens the church website. **Actually Autistic Events** is not ready yet. If you see "coming soon," that is expected.
+**Saved for Later** is for private bookmarks. **Members Section & Directory** is the member list. **DFW Church** opens the church website. **Actually Autistic Events** is not ready yet. If you see "coming soon," that is expected.
 
 The bar at the bottom says **Home**, **Notifications**, **Messages**, and **Search**. Tap each one and make sure you can get back. If a number on **Notifications** feels stressful, please say so.
 
@@ -113,13 +113,6 @@ Use the phone's own browser for these steps. On iPhone, that is **Safari**. On A
 
 ### iPhone and iPad (Safari)
 
-iPhone pictures are not in this guide yet. These are the steps Safari shows. Pictures that would help, if someone can take them on an iPhone:
-
-1. Safari open to Belong, with the Share button visible
-2. The share list, with **Add to Home Screen** visible
-3. The Add screen, with the name **Belong on the Spectrum**
-4. The Belong icon on the Home Screen
-
 Do this:
 
 1. Open **Safari** (the compass). On iPhone, Chrome cannot add Belong to the Home Screen in the same way.
@@ -130,6 +123,13 @@ Do this:
 6. Find the Belong icon on your Home Screen and tap it.
 
 Look for: the icon is there, Belong opens without Safari's address bar, and you can still reach **Spaces**.
+
+iPhone pictures are not in this guide yet. These are optional pictures to add later, not extra steps:
+
+- Safari open to Belong, with the Share button visible
+- The share list, with **Add to Home Screen** visible
+- The Add screen, with the name **Belong on the Spectrum**
+- The Belong icon on the Home Screen
 
 ### Android (Chrome)
 
