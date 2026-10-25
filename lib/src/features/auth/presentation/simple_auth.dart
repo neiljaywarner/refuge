@@ -2,8 +2,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
+import '../../account_deletion/data/account_deletion_provider.dart';
+import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
+import '../../account_deletion/presentation/soft_delete_sign_in_notice.dart';
 
 /// Minimal, plain-vanilla wrapper around the official [firebase_ui_auth] example.
 ///
@@ -70,7 +75,7 @@ class SimpleAuthScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _belongLogo(context, size: 56),
+                      SimpleAuthScreen._belongLogo(context, size: 56),
                       const SizedBox(height: 12),
                       const Text(
                         'Belong on the Spectrum',
@@ -114,88 +119,10 @@ class SimpleAuthScreen extends StatelessWidget {
       builder: (context, snapshot) {
         final user = snapshot.data ?? effectiveAuth.currentUser;
         if (user == null) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Sign In to Belong'),
-              centerTitle: true,
-            ),
-            body: SignInScreen(
-              auth: effectiveAuth,
-              providers: providers,
-              headerMaxExtent: 120,
-              headerBuilder: (context, constraints, shrinkOffset) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _belongLogo(context, size: 52),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Belong on the Spectrum',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              subtitleBuilder: (context, action) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    action == AuthAction.signIn
-                        ? 'Sign in to access your reflections, spaces, and private saved items.'
-                        : 'Join our calm Christian fellowship. No algorithmic rush.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                );
-              },
-              footerBuilder: (context, action) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        size: 14,
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Safe, sensory-friendly & private',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              actions: [
-                AuthStateChangeAction<UserCreated>((context, state) {
-                  onAuthenticated?.call();
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }),
-                AuthStateChangeAction<SignedIn>((context, state) {
-                  onAuthenticated?.call();
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }),
-              ],
-            ),
+          return _BelongFirebaseSignIn(
+            auth: effectiveAuth,
+            providers: providers,
+            onAuthenticated: onAuthenticated,
           );
         }
 
@@ -217,18 +144,146 @@ class SimpleAuthScreen extends StatelessWidget {
   }
 
   static Widget _belongLogo(BuildContext context, {required double size}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(size * 0.28),
-      child: Image.asset(
-        'assets/images/belong_logo.png',
-        width: size,
-        height: size,
-        errorBuilder: (_, _, _) => Icon(
-          Icons.spa_rounded,
-          size: size * 0.65,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+    return belongSignInLogo(context, size: size);
+  }
+}
+
+/// FirebaseUI sign-in that undoes the session when the account is soft-deleted.
+class _BelongFirebaseSignIn extends HookConsumerWidget {
+  const _BelongFirebaseSignIn({
+    required this.auth,
+    required this.providers,
+    required this.onAuthenticated,
+  });
+
+  final FirebaseAuth auth;
+  final List<EmailAuthProvider> providers;
+  final VoidCallback? onAuthenticated;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final blockedMessage = useState<String?>(null);
+    final watchedNotice = ref.watch(softDeleteSignInNoticeProvider);
+    final message = blockedMessage.value ?? watchedNotice;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sign In to Belong'), centerTitle: true),
+      body: SignInScreen(
+        auth: auth,
+        providers: providers,
+        headerMaxExtent: 120,
+        headerBuilder: (context, constraints, shrinkOffset) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  belongSignInLogo(context, size: 52),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Belong on the Spectrum',
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        subtitleBuilder: (context, action) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SoftDeleteSignInNotice(message: message),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  action == AuthAction.signIn
+                      ? 'Sign in to access your reflections, spaces, and private saved items.'
+                      : 'Join our calm Christian fellowship. No algorithmic rush.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        footerBuilder: (context, action) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.shield_outlined,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Safe, sensory-friendly & private',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        actions: [
+          AuthStateChangeAction<UserCreated>((context, state) {
+            ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
+            onAuthenticated?.call();
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          }),
+          AuthStateChangeAction<SignedIn>((context, state) {
+            final userId = state.user?.uid ?? '';
+            final isBlocked = ref
+                .read(accountDeletionRepositoryProvider)
+                .isSignInBlocked;
+            () async {
+              final notice = await softDeleteSignInBlockMessage(
+                userId: userId,
+                isBlocked: isBlocked,
+              );
+              if (!context.mounted) return;
+              if (notice != null) {
+                blockedMessage.value = notice;
+                ref.read(softDeleteSignInNoticeProvider.notifier).state =
+                    notice;
+                try {
+                  await auth.signOut();
+                } catch (_) {}
+                return;
+              }
+              ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
+              onAuthenticated?.call();
+              if (context.mounted) Navigator.of(context).pop();
+            }();
+          }),
+        ],
       ),
     );
   }
+}
+
+Widget belongSignInLogo(BuildContext context, {required double size}) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(size * 0.28),
+    child: Image.asset(
+      'assets/images/belong_logo.png',
+      width: size,
+      height: size,
+      errorBuilder: (_, _, _) => Icon(
+        Icons.spa_rounded,
+        size: size * 0.65,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    ),
+  );
 }

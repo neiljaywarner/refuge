@@ -145,13 +145,18 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          accountDeletionRepositoryProvider.overrideWithValue(
+            AccountDeletionRepository(
+              sinks: [InMemoryAccountDeletionSink()],
+              flavor: 'dev',
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);
-      container.read(memberProfileProvider.notifier).signIn(
-            displayName: 'Fellow Member',
-            email: 'tester@example.com',
-          );
+      container
+          .read(memberProfileProvider.notifier)
+          .signIn(displayName: 'Fellow Member', email: 'tester@example.com');
       container.read(memberProfileProvider.notifier).signInWithOAuth('google');
       container.read(memberProfileProvider.notifier).signOut();
       expect(container.read(memberProfileProvider).isSignedIn, isFalse);
@@ -161,6 +166,12 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.serverpod),
+          accountDeletionRepositoryProvider.overrideWithValue(
+            AccountDeletionRepository(
+              sinks: [InMemoryAccountDeletionSink()],
+              flavor: 'dev',
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -169,9 +180,14 @@ void main() {
     });
 
     test('password sign-in is refused after a soft delete', () async {
+      final repo = AccountDeletionRepository(
+        sinks: [InMemoryAccountDeletionSink()],
+        flavor: 'dev',
+      );
       final container = ProviderContainer(
         overrides: [
           authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          accountDeletionRepositoryProvider.overrideWithValue(repo),
         ],
       );
       addTearDown(container.dispose);
@@ -185,14 +201,12 @@ void main() {
       );
       final userId = auth.currentSession().userId;
 
-      await container
-          .read(accountDeletionRepositoryProvider)
-          .softDeleteSelf(
-            userId: userId,
-            displayName: 'Fellow Member',
-            email: 'tester@example.com',
-            confirmed: true,
-          );
+      await repo.softDeleteSelf(
+        userId: userId,
+        displayName: 'Fellow Member',
+        email: 'tester@example.com',
+        confirmed: true,
+      );
       await auth.signOut();
 
       expect(

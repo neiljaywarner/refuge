@@ -9,6 +9,7 @@ import 'package:refuge4serverpod/src/features/account_deletion/domain/account_de
 import 'package:refuge4serverpod/src/features/account_deletion/domain/account_deletion_record.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/account_deletion/presentation/soft_delete_sign_in_notice.dart';
 import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
@@ -148,5 +149,24 @@ void main() {
       expect(container.read(memberProfileProvider).isSignedIn, isTrue);
       verify(() => sink.softDelete(any())).called(1);
     });
+  });
+
+  patrolWidgetTest('shows the blocked sign-in notice', ($) async {
+    await $.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SoftDeleteSignInNotice(
+            message: 'This account was deleted. Sign-in is turned off. Your posts are still here.',
+          ),
+        ),
+      ),
+    );
+    expect($(const Key('soft_delete_sign_in_blocked')), findsOneWidget);
+    expect(
+      $(
+        'This account was deleted. Sign-in is turned off. Your posts are still here.',
+      ),
+      findsOneWidget,
+    );
   });
 }

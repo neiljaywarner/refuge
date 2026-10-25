@@ -8,6 +8,9 @@ import '../../feedback/data/feature_voting_repository.dart';
 import '../domain/account_deletion_record.dart';
 import 'account_deletion_sinks.dart';
 
+/// Set when FirebaseUI must undo a sign-in for a soft-deleted account.
+final softDeleteSignInNoticeProvider = StateProvider<String?>((ref) => null);
+
 /// Active self-service deletion backend for the signed-in member.
 ///
 /// Firebase and Appwrite targets write Cloud Firestore. An Appwrite project

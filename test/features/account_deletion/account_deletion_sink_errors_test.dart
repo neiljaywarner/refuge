@@ -189,6 +189,39 @@ void main() {
       expect(primary.calls, 1);
       expect(mirror.calls, 0);
     });
+
+    test(
+      'a missing Appwrite session still keeps the Firestore tombstone',
+      () async {
+        final account = MockAccount();
+        when(() => account.get()).thenThrow(
+          AppwriteException('User (role: guests) missing scope', 401),
+        );
+        final memory = InMemoryAccountDeletionSink();
+        final repo = AccountDeletionRepository(
+          sinks: [
+            memory,
+            AppwriteAccountDeletionSink(
+              remote: AppwritePrefsAccountDeletionRemote(account),
+            ),
+          ],
+          flavor: 'dev',
+          clock: () => deletedAt,
+        );
+
+        final saved = await repo.softDeleteSelf(
+          userId: 'member-1',
+          displayName: 'Fellow Member',
+          email: 'tester@example.com',
+          confirmed: true,
+        );
+
+        expect(saved.acknowledgedBackends, ['memory', 'appwrite']);
+        expect(memory.records['dev_member-1']?.softDeleted, isTrue);
+        expect(await repo.isSignInBlocked('member-1'), isTrue);
+        verifyNever(() => account.updatePrefs(prefs: any(named: 'prefs')));
+      },
+    );
   });
 }
 

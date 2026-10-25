@@ -114,9 +114,16 @@ class AppwritePrefsAccountDeletionRemote
   @override
   Future<void> markSoftDeleted(AccountDeletionRecord record) async {
     try {
+      await _account.get();
       await _account.updatePrefs(prefs: record.toMap());
+    } on AccountDeletionSinkException {
+      rethrow;
     } catch (error) {
-      throw AccountDeletionSinkException(
+      // Firebase Auth is the member session. Appwrite prefs exist only when
+      // that same person also has an Appwrite session. A guest 401 must not
+      // undo the Firestore tombstone or keep them signed in.
+      if (_isMissingAppwriteSession(error)) return;
+      throw const AccountDeletionSinkException(
         'Appwrite could not save the deletion.',
       );
     }
@@ -133,10 +140,17 @@ class AppwritePrefsAccountDeletionRemote
       return prefs['softDeleted'] == true &&
           prefs['flavor'] == flavor &&
           prefs['userId'] == userId;
-    } catch (_) {
+    } catch (error) {
+      if (_isMissingAppwriteSession(error)) return true;
       return false;
     }
   }
+}
+
+bool _isMissingAppwriteSession(Object error) {
+  if (error is! AppwriteException) return false;
+  final code = error.code;
+  return code == 401 || code == 403;
 }
 
 class AppwriteAccountDeletionSink implements AccountDeletionSink {
