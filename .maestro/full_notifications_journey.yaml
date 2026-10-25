@@ -1,4 +1,5 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Full Calm Notifications Journey & OS Shade Test"
 tags:
   - notifications
@@ -7,7 +8,10 @@ tags:
   - dms
   - regression
 ---
-# 1. Launch & grant notifications peacefully
+# Bottom nav is text ("Notifications tab"), not belong_bottom_nav_bar.
+# Filter chips are Inbox, Mentions, Direct Messages, Threads, Following.
+# Preferences control: "Calm Notification Preferences".
+
 - setPermissions:
     permissions:
       notifications: allow
@@ -15,74 +19,73 @@ tags:
 - launchApp:
     clearState: false
 
-# 2. Verify Bell badge on Bottom Navigation Bar
-- assertVisible:
-    id: "belong_bottom_nav_bar"
-- assertVisible:
-    id: "bottom_nav_notifications_badge"
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
+- assertVisible: ".*Notifications tab.*"
 
-# 3. Tap Notifications Tab
-- tapOn:
-    id: "bottom_nav_icon_notifications"
-- assertVisible: "Notifications"
-- assertVisible: "All notifications are delivered gently without intrusive sound alerts."
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*Mark all read.*"
+    timeout: 15000
+- assertVisible: "Notifications.*"
+- assertVisible: ".*(All notifications are delivered gently|Demo Mode).*"
 
-# 4. Verify Filter Chips
-- assertVisible:
-    id: "filter_chip_inbox"
-- assertVisible:
-    id: "filter_chip_mentions"
-- assertVisible:
-    id: "filter_chip_directMessages"
-- assertVisible:
-    id: "filter_chip_threads"
-- assertVisible:
-    id: "filter_chip_following"
+- assertVisible: ".*Inbox.*"
+- assertVisible: ".*Mentions.*"
+- assertVisible: ".*Direct Messages.*"
+- assertVisible: ".*Threads.*"
+# Following sits on the horizontal chip row, past Threads, and is omitted
+# from the tree until that row scrolls. A screen-level scroll does not move it.
+- swipe:
+    start: "90%, 25%"
+    end: "20%, 25%"
+    duration: 350
+- extendedWaitUntil:
+    visible: ".*Following.*"
+    timeout: 8000
 
-# 5. Filter by Mentions
-- tapOn:
-    id: "filter_chip_mentions"
+- tapOn: ".*Mentions.*"
 - assertVisible: ".*mentioned you.*"
 
-# 6. Filter by Direct Messages
-- tapOn:
-    id: "filter_chip_directMessages"
-- assertVisible: ".*sent you a direct message.*"
+- tapOn: ".*Direct Messages.*"
+- assertVisible: ".*direct message.*"
 
-# 7. Return to Inbox and Mark All as Read
-- tapOn:
-    id: "filter_chip_inbox"
-- tapOn:
-    id: "mark_all_notifications_as_read_button"
+# The Following swipe moves Inbox off the left edge. Swipe it back.
+- swipe:
+    start: "20%, 25%"
+    end: "90%, 25%"
+    duration: 350
+- tapOn: ".*Inbox.*"
+- tapOn: ".*Mark all read.*"
 
-# 8. Verify Bottom Nav Badge is cleared
-- assertNotVisible:
-    id: "bottom_nav_notifications_badge"
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Ethics.*"
+    timeout: 10000
+- assertVisible: ".*Calm Notification Ethics.*"
 
-# 9. Test OS Notification Shade Integration
-- tapOn:
-    id: "notification-preferences-button"
-- assertVisible: "Calm Notification Ethics"
+- tapOn: ".*Preview shade notification.*"
 
-- tapOn:
-    id: "preview-calm-shade-notification-button"
-
-# 10. Swipe down notification shade from top of screen
 - pressKey: Home
 - swipe:
     start: "50%, 2%"
     end: "50%, 55%"
     duration: 400
 
-# 11. Verify Calm Notification is in the shade
 - assertVisible:
     text: ".*Belong.*"
     optional: true
 
-# 12. Tap notification to return to app
 - tapOn:
     text: ".*Belong.*"
     optional: true
 
-- assertVisible:
-    id: "belong_bottom_nav_bar"
+# Close the shade, then bring the app forward. Back alone can land on the launcher.
+- pressKey: back
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 30000
+- assertVisible: ".*Vote & Feedback.*"

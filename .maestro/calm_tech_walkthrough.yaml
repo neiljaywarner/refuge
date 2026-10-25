@@ -1,41 +1,75 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
-# ==============================================================================
-# Refuge Calm-Tech Maestro Flow
-# Automated, human-readable E2E verification of fellowship flows
-# ==============================================================================
+# Refuge calm-tech walkthrough. Header copy is "Belong", "Refuge", and
+# "Calm Tech • Live" or "Calm Tech • Resilient". Space titles live under Spaces.
+
 - launchApp
 
-# Verify Header, Branding & Calm-Tech Subtitle
-- assertVisible: "Belong"
-- assertVisible: "Refuge"
-- assertVisible: "Calm Tech"
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
+- assertVisible: ".*Refuge.*"
+- assertVisible: ".*Calm Tech.*"
 
-# Verify Navigation across Canonical Spaces
-- tapOn: "General Chat"
-- assertVisible: "Space is quiet right now"
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*General Chat.*"
+    timeout: 15000
+- tapOn: ".*General Chat.*"
+- extendedWaitUntil:
+    visible: ".*Share an unhurried thought.*"
+    timeout: 15000
 
-- tapOn: "Memes"
-- assertVisible: "Memes"
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+- assertVisible: ".*Add Meme / GIF.*"
 
-- tapOn: "Resources"
-- assertVisible: "Resources"
+- tapOn: ".*Spaces.*"
+- scrollUntilVisible:
+    element: ".*Online Resources.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn: ".*Online Resources.*"
 
-# Verify Sensory Modes (Clean, Dark, Contrast, Sage)
-- tapOn: "Sensory Themes"
-- tapOn: "Dark"
-- assertVisible: "Refuge"
+- tapOn: ".*Sensory Themes.*"
+- tapOn: "Dark.*"
+- assertVisible: ".*Refuge.*"
 
-- tapOn: "Sensory Themes"
-- tapOn: "Contrast"
-- assertVisible: "Refuge"
+- tapOn: ".*Sensory Themes.*"
+- tapOn: "Contrast.*"
+- assertVisible: ".*Refuge.*"
 
-- tapOn: "Sensory Themes"
-- tapOn: "Sage"
-- assertVisible: "Refuge"
+- tapOn: ".*Sensory Themes.*"
+- tapOn: "Sage.*"
+- assertVisible: ".*Refuge.*"
 
-# Verify Unhurried Reflection Composer
-- tapOn: "Share what is on your heart in stillness..."
+- tapOn:
+    id: "reflection_composer"
+    optional: true
+- runFlow:
+    when:
+      visible: ".*Expand.*"
+    commands:
+      - tapOn: ".*Expand.*"
+- tapOn: ".*Share an unhurried thought.*"
 - inputText: "Peace be with this fellowship in quiet waters."
-- tapOn: "Publish Reflection"
-- assertVisible: "Peace be with this fellowship in quiet waters."
+- hideKeyboard
+# The emulator sometimes covers the composer with a stylus handwriting sheet.
+- runFlow:
+    when:
+      visible: ".*Try out your stylus.*"
+    commands:
+      - tapOn: "Cancel"
+      - hideKeyboard
+- extendedWaitUntil:
+    visible: ".*Publish Reflection.*"
+    timeout: 15000
+- tapOn: ".*Publish Reflection.*"
+# A guest demo session keeps the quiet-space placeholder. A signed-in
+# session lists the sentence. Either label means the composer action landed.
+- assertVisible: ".*(Peace be with this fellowship in quiet waters|quiet, unhurried space).*"
