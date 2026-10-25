@@ -24,7 +24,6 @@ import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dar
 import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
-import 'features/notifications/domain/notification_navigation_target.dart';
 import 'features/notifications/presentation/notifications_controller.dart';
 import 'features/notifications/data/member_notification_store.dart';
 import 'features/observability/presentation/observability_easter_egg_dialog.dart';
@@ -253,7 +252,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
           return Column(
             children: [
-              SpaceNavigationBar(selectedSpace: selectedSpace.value, onSelectSpace: selectSpace),
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
+                onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+              ),
               ToneFilterRow(
                 activeFilter: activeFilter.value,
                 onSelectFilter: (tone) {
@@ -652,7 +655,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
           Semantics(
             identifier: 'about_belong_info_button',
             child: IconButton(
-              tooltip: 'About Belong',
+              tooltip: kIsWeb ? '' : 'About Belong',
               icon: const Icon(Icons.info_outline_rounded, size: 18),
               visualDensity: VisualDensity.compact,
               onPressed: () => showAboutRefugeDialog(
@@ -666,129 +669,135 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            child: PopupMenuButton<String>(
-              key: const Key('home_top_bar_create_post_button'),
-              tooltip: 'Create post or image post (+)',
-              offset: const Offset(0, 40),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: isContrast ? Colors.white : Theme.of(context).dividerColor),
-              ),
-              onSelected: (action) {
-                if (ref.read(isCurrentMemberBannedProvider)) return;
-                if (action == 'create_post') {
-                  _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value == 'saved_for_later'
-                        ? 'general_chat'
-                        : selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: false,
-                    onSubmit: submitPost,
-                  );
-                } else if (action == 'create_image_post') {
-                  _showCreatePostModal(
-                    context: context,
-                    selectedSpace: selectedSpace.value == 'saved_for_later'
-                        ? 'general_chat'
-                        : selectedSpace.value,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                    isImagePost: true,
-                    onSubmit: submitPost,
-                  );
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem<String>(
-                  key: const Key('menu_item_create_post'),
-                  value: 'create_post',
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.edit_note_rounded, color: primaryColor, size: 18),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Create Post',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Share an unhurried thought or prayer',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+            child: Semantics(
+              label: 'Create post or image post (+)',
+              button: true,
+              child: PopupMenuButton<String>(
+                key: const Key('home_top_bar_create_post_button'),
+                tooltip: '',
+                offset: const Offset(0, 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(
+                    color: isContrast ? Colors.white : Theme.of(context).dividerColor,
                   ),
                 ),
-                const PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  key: const Key('menu_item_create_image_post'),
-                  value: 'create_image_post',
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
+                onSelected: (action) {
+                  if (ref.read(isCurrentMemberBannedProvider)) return;
+                  if (action == 'create_post') {
+                    _showCreatePostModal(
+                      context: context,
+                      selectedSpace: selectedSpace.value == 'saved_for_later'
+                          ? 'general_chat'
+                          : selectedSpace.value,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      isImagePost: false,
+                      onSubmit: submitPost,
+                    );
+                  } else if (action == 'create_image_post') {
+                    _showCreatePostModal(
+                      context: context,
+                      selectedSpace: selectedSpace.value == 'saved_for_later'
+                          ? 'general_chat'
+                          : selectedSpace.value,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      isImagePost: true,
+                      onSubmit: submitPost,
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    key: const Key('menu_item_create_post'),
+                    value: 'create_post',
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.edit_note_rounded, color: primaryColor, size: 18),
                         ),
-                        child: const Icon(Icons.image_outlined, color: Colors.amber, size: 18),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Create Image Post',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Share a meme, photo, or scripture art',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Create Post',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                               ),
-                            ),
-                          ],
+                              Text(
+                                'Share an unhurried thought or prayer',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.add_rounded,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  const PopupMenuDivider(),
+                  PopupMenuItem<String>(
+                    key: const Key('menu_item_create_image_post'),
+                    value: 'create_image_post',
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.image_outlined, color: Colors.amber, size: 18),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Create Image Post',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Share a meme, photo, or scripture art',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.add_rounded,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ),
             ),
@@ -829,7 +838,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         : null,
                     onBackgroundImageError:
                         (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
-                        ? (_, __) {}
+                        ? (_, _) {}
                         : null,
                     child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
                         ? Text(
@@ -936,11 +945,15 @@ class _BelongSubHeaderBar extends StatelessWidget {
       identifier: 'feed_tab',
       selected: isFeed,
       onTap: onSelectFeed,
-      child: ChoiceChip(
-        key: const Key('subnav_feed_tab'),
-        label: const Text('Feed'),
-        selected: isFeed,
-        onSelected: (_) => onSelectFeed(),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: ChoiceChip(
+          key: const Key('subnav_feed_tab'),
+          label: const Text('Feed'),
+          selected: isFeed,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          onSelected: (_) => onSelectFeed(),
+        ),
       ),
     );
     final spacesChip = _webSemanticsTarget(
@@ -948,27 +961,35 @@ class _BelongSubHeaderBar extends StatelessWidget {
       identifier: 'spaces_tab',
       selected: isSpaces,
       onTap: onSelectSpaces,
-      child: ChoiceChip(
-        key: const Key('subnav_spaces_tab'),
-        label: const Text('Spaces'),
-        selected: isSpaces,
-        onSelected: (_) => onSelectSpaces(),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: ChoiceChip(
+          key: const Key('subnav_spaces_tab'),
+          label: const Text('Spaces'),
+          selected: isSpaces,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          onSelected: (_) => onSelectSpaces(),
+        ),
       ),
     );
     final voteChip = _webSemanticsTarget(
       label: 'Vote & Feedback',
       identifier: 'vote_feedback_button',
       onTap: openVoteAndFeedback,
-      child: ActionChip(
-        key: const Key('open_feedback_and_voting_button'),
-        avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
-        label: const Text('Vote & Feedback'),
-        onPressed: openVoteAndFeedback,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: ActionChip(
+          key: const Key('open_feedback_and_voting_button'),
+          avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
+          label: const Text('Vote & Feedback'),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          onPressed: openVoteAndFeedback,
+        ),
       ),
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // A single row plus a trailing spacer pushes Vote & Feedback past
