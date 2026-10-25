@@ -94,24 +94,19 @@ Friendship and mutual trust come first. There is no pitch deck pressure and no r
 **A**: Speed, independence, and economics. With a single web link, members can open Belong immediately on any phone, tablet, or computer—and add it straight to their iPhone or Android home screen so it opens full-screen like any other app. That means **zero 15–30% Apple/Google commission**, **no forgotten app-store passwords** blocking non-technical members, and **instant updates** without waiting on store review bureaucracy. Store listings remain an easy option down the road whenever a specific customer group values them.
 
 ### Q4: What does it cost each month to keep the lights on right now?
-**A**: Practically nothing—well under \$5/month (and \$0/month at our current baseline usage). Because there is no heavy monthly server bill ticking in the background, we never have to rush bad decisions or squeeze our founding members for money. Operating costs only rise meaningfully alongside paying organizations.
+**A**: Practically nothing—probably aroudn $25/month for quite awhile (and \$0/month at our current baseline usage). Because there is no heavy monthly server bill ticking in the background, we never have to rush bad decisions or squeeze our founding members for money. Operating costs only rise meaningfully alongside paying organizations.
 
 ### Q5: How do you solve the "empty room" problem when an existing group switches platforms?
-**A**: Nobody wants to walk into an empty hall. For our own move off Circle, we built a clean import process that brings past introductions, announcements, and conversations into the new rooms ahead of time—paired with an unhurried 7-day overlap week so members move at their own pace. Offering that same warm, stress-free transition to other communities is a major competitive advantage.
+**A**: circle.so ha an export we could consider using
 
-### Q6: Where is the project right this week?
-**A**: Live and welcoming real members! During **October 24–31, 2026**, our founding community is exploring [belongonthespectrum.web.app](https://belongonthespectrum.web.app), saying hello in *Start Here*, voting on upcoming priorities, and settling in ahead of turning off our paid Circle subscription on October 31.
 
 ### Q7: If I'm curious, what is the easiest first step?
-**A**: Spend five unhurried minutes clicking around [belongonthespectrum.web.app](https://belongonthespectrum.web.app) on your phone or laptop, skim our [Plan through October 31](Non-Technical-Roadmap-to-Oct-31), and share your candid business gut check—what resonates, what you would trim or sharpen, and whether any angle of advising or partnering sounds life-giving to you.
+**A**: Spend five unhurried minutes clicking around our prototype on your phone or laptop (ask me for the link or look around), skim our [Plan through October 31](Non-Technical-Roadmap-to-Oct-31), and share your candid business gut check—what resonates, what you would trim or sharpen, and whether any angle of advising or partnering sounds life-giving to you.
 
 ---
 
 ## 🔗 Quick Links & Reading
 
-* 🌐 **Live Community**: [belongonthespectrum.web.app](https://belongonthespectrum.web.app)
-* 🏡 **Public Website**: [belongonthespectrum.com](https://www.belongonthespectrum.com/)
-* 📅 **Current Transition Schedule**: [Plan through October 31](Non-Technical-Roadmap-to-Oct-31)
 * 🌿 **Our Calm Design Approach**: [Calm Design and Sensory Comfort](Calm-Tech-and-Accessibility)
 * 🎬 **Companion Video Prompts**: [Gemini Web & Google Vids Prompts](Business-Partner-Video-Prompts)
 * 💡 **37signals Principles Referenced Above**:
