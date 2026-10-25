@@ -4,7 +4,7 @@
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 > **Deployment Runbook**: [`DEPLOYMENT.md`](https://github.com/neiljaywarner/refuge/blob/main/DEPLOYMENT.md)
 
-> **Proposal only (22 October 2026).** The grades below are a future migration sketch. They are not the live stack. Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
+> **Reviewed 24 October 2026, revised the same evening for a no-card budget.** [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md) and the [redundancy wiki](Reflection-Redundancy-and-Backup): Firestore Spark stays the live copy, Appwrite is a one-way free mirror, and a private weekly JSON file is the backup. Blaze backups wait until a credit card is acceptable.
 
 ---
 
@@ -39,6 +39,6 @@ Because all data access in `lib/src/features/` sits behind **Riverpod Repository
 
 Every feature module exposes 4 pluggable adapters verified by the exact same Unit, Widget BDD (`patrolWidgetTest`), Integration, and Maestro E2E tests:
 1. **`InMemory*Repository`**: Deterministic offline/test adapter.
-2. **`Serverpod*Repository`**: Still the default post backend on `main` (22 October 2026).
-3. **`Appwrite*Repository`**: On `main` via [PR #412](https://github.com/neiljaywarner/refuge/pull/412) (`fc71fd4`). Stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. It has not replaced Serverpod. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
-4. **`Firebase*Repository`**: Cloud Firestore remains the second copy of posts, plus Analytics where a build is configured.
+2. **`Serverpod*Repository`**: Rollback only. A build must set both `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`.
+3. **`Appwrite*Repository`**: Default post backend as of [#212](https://github.com/neiljaywarner/refuge/issues/212). Uses project `6adae5c40013c409e109` unless `APPWRITE_ENDPOINT` is passed empty.
+4. **`Firebase*Repository`**: Cloud Firestore remains the second copy of posts. Firebase Auth remains the session. Analytics stays where a build is configured.

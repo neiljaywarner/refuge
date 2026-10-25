@@ -4,7 +4,7 @@
 > **Related Issue**: [#384: feat(backend): Appwrite migration architecture, client provider and MCP tooling integration](https://github.com/neiljaywarner/refuge/issues/384)  
 > **Target Cost**: **\$0.00/month** (Eliminate \$5.00/mo Serverpod Cloud billing before the 20-day renewal)
 
-> **Not started (22 October 2026).** Do not run this teardown for the overlap week. Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Reviewed 24 October 2026 ([#212](https://github.com/neiljaywarner/refuge/issues/212), [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md)).** A normal build no longer opens Serverpod Cloud. With no credit card in the plan, Firestore Spark stays the live store, Appwrite is a one-way free mirror, and a private weekly JSON file is the backup. See [Reflection redundancy and backup](Reflection-Redundancy-and-Backup).
 
 ---
 
