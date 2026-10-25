@@ -12,7 +12,7 @@ Checked against `origin/main` for the overlap week. This section does not record
 
 - **Posts.** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
 - **Android debug compile.** `android/app/build.gradle.kts` on `main` sets `jvmTarget` to `org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17`. That change is on `main` via [PR #413](https://github.com/neiljaywarner/refuge/pull/413). This note does not record a new debug build from the docs pass.
-- **PostHog.** A smoke event was ingested. The app does not send product events unless `POSTHOG_KEY` or `POSTHOG_BELONG_PROJECT_TOKEN` is passed at build time. [Issue #410](https://github.com/neiljaywarner/refuge/issues/410) tracks that. Product conversion analytics are not live.
+- **PostHog and Aptabase.** Debug, release, and web build paths forward `POSTHOG_KEY` and `APTABASE_KEY` from the environment or GitHub Actions secrets. Tokens are not committed. [Issue #410](https://github.com/neiljaywarner/refuge/issues/410) is the ingest check. Session replay stays off until [#367](https://github.com/neiljaywarner/refuge/issues/367).
 - **Feedback drawings.** Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself. Drawings stay with the note and are not presented as https://storage.belongonthespectrum.com uploads. [Issue #407](https://github.com/neiljaywarner/refuge/issues/407) is open.
 - **Notifications.** The in-app bell exists. The launcher-dot MethodChannel (`com.belongonthespectrum.sanctuary/badge`) has no native handler. FCM permission requests set `badge: false`. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) is the test matrix and is not closed. Launcher badges and calm FCM are not fully verified on device.
 - **Package name.** The Flutter package is still `refuge4serverpod`. Rename [Issue #233](https://github.com/neiljaywarner/refuge/issues/233) is not done.
@@ -133,8 +133,13 @@ flutter build web --release \
   --dart-define=FLAVOR=prod \
   --dart-define=GIT_COMMIT_SHA="$GIT_COMMIT_SHA" \
   --dart-define=BUILD_TIME_MS="$BUILD_TIME_MS" \
-  --dart-define=RELEASE_TAG="$RELEASE_TAG"
+  --dart-define=RELEASE_TAG="$RELEASE_TAG" \
+  --dart-define=APTABASE_KEY="$APTABASE_KEY" \
+  --dart-define=POSTHOG_KEY="$POSTHOG_KEY" \
+  --dart-define=POSTHOG_HOST=https://us.i.posthog.com
 ```
+
+`tool/deploy_release.dart` reads `APTABASE_KEY` / `APTABASE_BELONG_KEY` and `POSTHOG_KEY` / `POSTHOG_BELONG_PROJECT_TOKEN` from the process environment. GitHub Actions maps repository secrets of the same names. Missing keys keep analytics in mock mode and are not printed.
 
 ---
 

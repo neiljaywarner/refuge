@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
@@ -7,32 +8,27 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   patrolWidgetTest(
-    'Firebase Test Lab Hello World: Boots Belong App, checks top bar and bottom nav',
+    'Firebase Test Lab Hello World: read-only home shell and bottom nav',
     ($) async {
       await $.pumpWidgetAndSettle(
-        SanctuaryApp(
+        RefugeApp(
           repository: LocalPostRepository(),
         ),
       );
 
-      // 1. Verify community app title and branding
-      expect($('Belong on the Spectrum'), findsOneWidget);
+      expect($('Belong'), findsOneWidget);
+      expect($('Refuge'), findsOneWidget);
 
-      // 2. Verify bottom navigation tabs are present
       expect($('Home'), findsOneWidget);
-      expect($('Spaces'), findsOneWidget);
-      expect($('Msgs'), findsOneWidget);
-      expect($('Events'), findsOneWidget);
+      expect($('Notifications'), findsOneWidget);
+      expect($('Messages'), findsOneWidget);
+      expect($('Search'), findsOneWidget);
 
-      // 3. Verify emotional tone filter chips
-      expect($('🌱 Gentle'), findsOneWidget);
-      expect($('🎯 Clarity'), findsOneWidget);
-      expect($('🎉 Joy'), findsOneWidget);
-      expect($('🤝 Help'), findsOneWidget);
+      expect($('Filter: '), findsOneWidget);
+      expect($(ChoiceChip), findsWidgets);
+      expect($('[Prayer Request]'), findsWidgets);
 
-      // 4. Tap the Gentle tone filter chip and settle
-      await $(find.text('🌱 Gentle')).tap();
-      await $.pumpAndSettle();
+      expect($('Vote & Feedback'), findsOneWidget);
     },
   );
 }
