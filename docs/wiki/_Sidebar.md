@@ -37,6 +37,7 @@
 * **[🎓 Engineering Lessons Learned & Accomplishments](Engineering-Lessons-Learned-and-Accomplishments)**
 * **[💬 Threaded Comments & Nested Discussion Architecture](Threaded-Comments-and-Discussion-Architecture)**
 * **[🛠️ Refuge CLI Developer Tool](Refuge-CLI)**
+* **[🧪 CI/CD FAQ and Troubleshooting](CI-CD-FAQ)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
 
 ### 🏛️ Historical Archives & Early Prototypes
