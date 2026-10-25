@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// on iOS and Android devices, keeping unread notification count synchronized.
 class AppLauncherBadgeService {
   static const MethodChannel _channel = MethodChannel(
-    'com.belongonthespectrum.sanctuary/badge',
+    'com.belongonthespectrum.refuge/badge',
   );
 
   int _currentBadgeCount = 0;
@@ -23,20 +23,21 @@ class AppLauncherBadgeService {
         {'count': _currentBadgeCount},
       );
       return result ?? true;
-    } catch (e) {
-      // Graceful fallback for test runners or devices where launcher badge
-      // provider is not supported or not yet bound.
-      debugPrint('ℹ️ [LauncherBadge] setBadgeCount($_currentBadgeCount): $e');
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AppLauncherBadgeService] Failed to set badge count: $e');
+      }
+      return false;
+    } catch (_) {
       return false;
     }
   }
 
-  /// Removes/clears the launcher icon badge.
-  Future<bool> clearBadge() async {
-    return setBadgeCount(0);
-  }
+  /// Clears the app badge count to 0.
+  Future<bool> clearBadge() => setBadgeCount(0);
 }
 
+/// Riverpod provider for [AppLauncherBadgeService].
 final appLauncherBadgeServiceProvider = Provider<AppLauncherBadgeService>((ref) {
   return AppLauncherBadgeService();
 });

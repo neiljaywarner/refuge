@@ -10,25 +10,48 @@ import '../../profile/domain/member_profile.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
 import '../domain/message_thread.dart';
 
-/// Direct Messages View featuring calm, asynchronous communication (Issue #288).
+/// Direct Messages View featuring calm, asynchronous communication (Issue #288, #330).
 /// Supports message searching, thread list with avatars, dates, subjects,
 /// and cute "Add Msg" compose modal with multi-recipient autocomplete member selection.
 class BelongMessagesView extends HookWidget {
-  const BelongMessagesView({super.key, this.initialThreads, this.onBackToHome});
+  const BelongMessagesView({
+    super.key,
+    this.initialThreads,
+    this.onBackToHome,
+    this.initialActiveThreadId,
+  });
 
   final List<MessageThread>? initialThreads;
   final VoidCallback? onBackToHome;
+  final String? initialActiveThreadId;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
-    final threads = useState<List<MessageThread>>(
-      initialThreads ?? MessageThread.sampleThreads(),
-    );
+    final baseThreads = initialThreads ?? MessageThread.sampleThreads();
+    final threads = useState<List<MessageThread>>(baseThreads);
     final calmDigestEnabled = useState(true);
-    final activeThread = useState<MessageThread?>(null);
+    final activeThread = useState<MessageThread?>(
+      initialActiveThreadId != null
+          ? baseThreads
+              .where((t) => t.id == initialActiveThreadId)
+              .firstOrNull
+          : null,
+    );
+
+    useEffect(() {
+      if (initialActiveThreadId != null) {
+        final matching = threads.value
+            .where((t) => t.id == initialActiveThreadId)
+            .firstOrNull;
+        if (matching != null) {
+          activeThread.value = matching;
+        }
+      }
+      return null;
+    }, [initialActiveThreadId]);
     final searchQuery = useState('');
     final searchController = useTextEditingController();
     final replyController = useTextEditingController();

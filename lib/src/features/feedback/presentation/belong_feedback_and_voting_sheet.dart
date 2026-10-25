@@ -10,7 +10,9 @@ import '../../../core/presentation/system_insets.dart';
 import '../../storage/data/storage_repository.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
+import '../data/vote_storage_service.dart';
 import '../domain/feedback_and_voting_models.dart';
+import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
 
 /// State notifier managing community feature votes via the pluggable
@@ -23,13 +25,14 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     final repo = ref.watch(featureVotingRepositoryProvider);
     _subscription?.cancel();
     _subscription = repo.watchFeatures().listen((updatedList) {
+      final votedIds = VoteStorageService.instance.getVotedFeatureIds();
       final currentMap = {for (final item in state) item.id: item};
       state = [
         for (final remote in updatedList)
-          if (currentMap.containsKey(remote.id))
-            remote.copyWith(userVoted: currentMap[remote.id]!.userVoted)
-          else
-            remote,
+          remote.copyWith(
+            userVoted: votedIds.contains(remote.id) ||
+                (currentMap[remote.id]?.userVoted ?? false),
+          ),
       ];
     });
     ref.onDispose(() {
@@ -48,7 +51,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     state = repo.proposeFeature(state, title: title, description: description);
   }
 
-  Future<void> submitFeedback({
+  Future<FeedbackSubmissionResult> submitFeedback({
     required FeedbackSentiment sentiment,
     required String message,
     int? rating,
@@ -80,11 +83,20 @@ final featureVotingProvider =
 /// 2. **Literal 3-Intent Feedback Funnel ("Private Feedback, Public Praise")**
 ///    evaluated in ADR-0007 (`docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`).
 class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
-  const BelongFeedbackAndVotingSheet({super.key, this.initialTabIndex = 0});
+  const BelongFeedbackAndVotingSheet({
+    super.key,
+    this.initialTabIndex = 0,
+    this.screenshotBytes,
+  });
 
   final int initialTabIndex;
+  final Uint8List? screenshotBytes;
 
-  static Future<void> show(BuildContext context, {int initialTabIndex = 0}) {
+  static Future<void> show(
+    BuildContext context, {
+    int initialTabIndex = 0,
+    Uint8List? screenshotBytes,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -93,7 +105,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       builder: (_) => SystemBottomInset(
         child: FractionallySizedBox(
           heightFactor: 0.88,
-          child: BelongFeedbackAndVotingSheet(initialTabIndex: initialTabIndex),
+          child: BelongFeedbackAndVotingSheet(
+            initialTabIndex: initialTabIndex,
+            screenshotBytes: screenshotBytes,
+          ),
         ),
       ),
     );
@@ -127,6 +142,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final selectedStarRating = useState<int>(5);
     final feedbackController = useTextEditingController();
     final contactController = useTextEditingController();
+    final contactError = useState<String?>(null);
     final drawingAttachment = useState<Uint8List?>(null);
     final isSubmitting = useState<bool>(false);
     final submittedMessage = useState<String?>(null);
@@ -570,9 +586,15 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           TextField(
                             key: const Key('feedback_contact_input'),
                             controller: contactController,
-                            decoration: const InputDecoration(
+                            onChanged: (value) {
+                              contactError.value =
+                                  OptionalFeedbackContact.errorText(value);
+                            },
+                            decoration: InputDecoration(
                               labelText: 'Optional name or email (if you would like a reply)',
-                              border: OutlineInputBorder(),
+                              errorText: contactError.value,
+                              errorMaxLines: 3,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -646,7 +668,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             OutlinedButton.icon(
                               key: const Key('open_feedback_drawing_button'),
                               onPressed: () async {
-                                final screenshot =
+                                final screenshot = screenshotBytes ??
                                     await captureEnclosingScreenshot(context);
                                 if (!context.mounted) return;
                                 final result = await FeedbackDrawingDialog.show(
@@ -698,16 +720,25 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     : () async {
                                         final text = feedbackController.text
                                             .trim();
+                                        final contact = contactController.text
+                                            .trim();
+                                        final contactProblem =
+                                            OptionalFeedbackContact.errorText(
+                                              contact,
+                                            );
+                                        contactError.value = contactProblem;
                                         if (text.isEmpty) {
                                           submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
+                                          return;
+                                        }
+                                        if (contactProblem != null) {
+                                          submittedMessage.value = null;
                                           return;
                                         }
                                         isSubmitting.value = true;
                                         try {
                                           final sentiment =
                                               selectedSentiment.value;
-                                          final contact = contactController.text
-                                              .trim();
                                           String? attachmentUrl;
                                           final attachmentBytes =
                                               drawingAttachment.value;
@@ -724,7 +755,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                                 );
                                           }
 
-                                          await ref
+                                          final result = await ref
                                               .read(
                                                 featureVotingProvider.notifier,
                                               )
@@ -752,9 +783,15 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                           if (contact.isNotEmpty) {
                                             summary.writeln('From: $contact');
                                           }
-                                          summary.writeln(
-                                            'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
-                                          );
+                                          if (result.githubIssueNumber != null) {
+                                            summary.writeln(
+                                              'GitHub triage issue created: belong_feedback#${result.githubIssueNumber}',
+                                            );
+                                          } else {
+                                            summary.writeln(
+                                              'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
+                                            );
+                                          }
                                           if (attachmentBytes != null &&
                                               !hostedUpload) {
                                             summary.writeln(
@@ -775,15 +812,20 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             );
                                           } catch (_) {}
 
-                                          final saved =
-                                              sentiment.isPrivateTriage
-                                              ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
-                                              : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
-                                          submittedMessage.value =
-                                              attachmentBytes != null &&
-                                                  !hostedUpload
-                                              ? '$saved The drawing stayed with the note and was not uploaded.'
-                                              : saved;
+                                          if (result.githubIssueNumber != null) {
+                                            submittedMessage.value =
+                                                'Thank you! Your feedback was routed to our private triage queue (belong_feedback#${result.githubIssueNumber}).';
+                                          } else {
+                                            final saved =
+                                                sentiment.isPrivateTriage
+                                                ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
+                                                : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                            submittedMessage.value =
+                                                attachmentBytes != null &&
+                                                    !hostedUpload
+                                                ? '$saved The drawing stayed with the note and was not uploaded.'
+                                                : saved;
+                                          }
                                           feedbackController.clear();
                                           drawingAttachment.value = null;
                                         } catch (e) {

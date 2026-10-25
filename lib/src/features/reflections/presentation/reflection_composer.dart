@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../../core/widgets/calm_media_image.dart';
+import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../../memes/domain/calm_meme.dart';
 import '../../memes/presentation/meme_gallery_modal.dart';
 
@@ -21,6 +22,7 @@ class ReflectionComposer extends HookWidget {
   final Color primaryColor;
   final bool isContrast;
   final bool isImagePost;
+  final bool isModal;
   final Future<void> Function({
     required String content,
     required String toneTag,
@@ -35,6 +37,7 @@ class ReflectionComposer extends HookWidget {
     required this.primaryColor,
     required this.isContrast,
     this.isImagePost = false,
+    this.isModal = false,
     required this.onSubmit,
   });
 
@@ -49,6 +52,7 @@ class ReflectionComposer extends HookWidget {
               : '[Prayer Request]');
     final selectedTone = useState(initialTone);
     final attachedMeme = useState<CalmMeme?>(null);
+    final isExpanded = useState(isModal || isImagePost);
     final contentController = useTextEditingController();
     final specialInterestController = useTextEditingController();
     final imageUrlController = useTextEditingController();
@@ -65,6 +69,7 @@ class ReflectionComposer extends HookWidget {
     }, [imageUrlController]);
 
     void handleSelectMeme(CalmMeme meme) {
+      isExpanded.value = true;
       attachedMeme.value = meme;
       if (meme.imageUrl != null) {
         imageUrlController.text = meme.imageUrl!;
@@ -128,13 +133,98 @@ class ReflectionComposer extends HookWidget {
         specialInterestTag: specialInterest,
         imageUrl: effectiveImageUrl,
       );
+
+      if (!isModal) {
+        isExpanded.value = false;
+      }
     }
 
     final hasActiveImage =
         customImageUrl.value.isNotEmpty ||
         (attachedMeme.value?.imageUrl != null);
 
+    if (!isExpanded.value) {
+      return Container(
+        key: const Key('reflection_composer_card'),
+        margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(14.0),
+          border: Border.all(
+            color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+            width: isContrast ? 2.0 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.edit_note_rounded,
+              color: primaryColor,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Semantics(
+                identifier: 'reflection_composer',
+                child: TextField(
+                  key: const Key('reflection_composer_input'),
+                  controller: contentController,
+                  onTap: () {
+                    isExpanded.value = true;
+                  },
+                  onChanged: (val) {
+                    if (val.trim().isNotEmpty && !isExpanded.value) {
+                      isExpanded.value = true;
+                    }
+                  },
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: 'Share an unhurried thought in #${kFellowshipSpaces[selectedSpace] ?? selectedSpace}...',
+                    hintStyle: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withValues(alpha: 0.7),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                  ),
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+            IconButton(
+              key: const Key('composer_add_meme_compact_button'),
+              tooltip: 'Add Meme / GIF',
+              icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 18),
+              visualDensity: VisualDensity.compact,
+              onPressed: () {
+                isExpanded.value = true;
+                showMemeGalleryModal(
+                  context,
+                  onSelectedMeme: handleSelectMeme,
+                );
+              },
+            ),
+            IconButton(
+              key: const Key('composer_expand_button'),
+              tooltip: 'Expand',
+              icon: const Icon(Icons.open_in_full_rounded, size: 16),
+              visualDensity: VisualDensity.compact,
+              onPressed: () {
+                isExpanded.value = true;
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
+      key: const Key('reflection_composer_card'),
       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
@@ -170,6 +260,17 @@ class ReflectionComposer extends HookWidget {
                   if (val != null) selectedTone.value = val;
                 },
               ),
+              const Spacer(),
+              if (!isModal)
+                IconButton(
+                  key: const Key('composer_collapse_button'),
+                  tooltip: 'Collapse',
+                  icon: const Icon(Icons.close_fullscreen_rounded, size: 16),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    isExpanded.value = false;
+                  },
+                ),
             ],
           ),
           if (isImagePost ||
@@ -389,34 +490,56 @@ class ReflectionComposer extends HookWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton.icon(
-                key: const Key('add_meme_gif_button'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
+              Wrap(
+                spacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  OutlinedButton.icon(
+                    key: const Key('add_meme_gif_button'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      side: BorderSide(
+                        color: isContrast
+                            ? Colors.white
+                            : Theme.of(context).dividerColor,
+                      ),
+                    ),
+                    onPressed: () => showMemeGalleryModal(
+                      context,
+                      onSelectedMeme: handleSelectMeme,
+                    ),
+                    icon: const Icon(
+                      Icons.sentiment_very_satisfied_outlined,
+                      size: 14,
+                    ),
+                    label: Text(
+                      attachedMeme.value != null
+                          ? 'Change Meme'
+                          : 'Add Meme / GIF',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                  side: BorderSide(
-                    color: isContrast
-                        ? Colors.white
-                        : Theme.of(context).dividerColor,
-                  ),
-                ),
-                onPressed: () => showMemeGalleryModal(
-                  context,
-                  onSelectedMeme: handleSelectMeme,
-                ),
-                icon: const Icon(
-                  Icons.sentiment_very_satisfied_outlined,
-                  size: 14,
-                ),
-                label: Text(
-                  attachedMeme.value != null ? 'Change Meme' : 'Add Meme / GIF',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                  if (!isModal)
+                    TextButton.icon(
+                      key: const Key('composer_collapse_bottom_button'),
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                      ),
+                      onPressed: () => isExpanded.value = false,
+                      icon: const Icon(Icons.unfold_less_rounded, size: 14),
+                      label: const Text(
+                        'Collapse',
+                        style: TextStyle(fontSize: 11),
+                      ),
+                    ),
+                ],
               ),
               ElevatedButton.icon(
                 key: const Key('publish_reflection_button'),

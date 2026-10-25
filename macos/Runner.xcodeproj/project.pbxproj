@@ -395,7 +395,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.refuge13oct2026PrototypeForServerpodHackathon.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.belongonthespectrum.refuge.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/refuge_13oct_2026_prototype_for_serverpod_hackathon.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/refuge_13oct_2026_prototype_for_serverpod_hackathon";
@@ -409,7 +409,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.refuge13oct2026PrototypeForServerpodHackathon.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.belongonthespectrum.refuge.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/refuge_13oct_2026_prototype_for_serverpod_hackathon.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/refuge_13oct_2026_prototype_for_serverpod_hackathon";
@@ -423,7 +423,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.refuge13oct2026PrototypeForServerpodHackathon.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.belongonthespectrum.refuge.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/refuge_13oct_2026_prototype_for_serverpod_hackathon.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/refuge_13oct_2026_prototype_for_serverpod_hackathon";

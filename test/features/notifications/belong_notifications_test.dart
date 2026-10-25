@@ -5,6 +5,7 @@ import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/app_launcher_badge_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/belong_notification.dart';
 import 'package:refuge4serverpod/src/features/notifications/presentation/notifications_controller.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/post_repository.dart';
 import 'package:refuge4serverpod/src/home_screen.dart';
@@ -17,6 +18,23 @@ class FakeLauncherBadgeService extends AppLauncherBadgeService {
     recordedBadge = count;
     return true;
   }
+}
+
+class FakeMemberProfileNotifier extends MemberProfileNotifier {
+  FakeMemberProfileNotifier([
+    this._profile = const MemberProfile(
+      displayName: 'Tester',
+      email: 'tester@example.com',
+      bio: 'Bio',
+      comfortBadges: [],
+      isSignedIn: true,
+    ),
+  ]);
+
+  final MemberProfile _profile;
+
+  @override
+  MemberProfile build() => _profile;
 }
 
 void main() {
@@ -82,6 +100,16 @@ void main() {
         'John Doe liked your reflection on "Sensory Worship"',
       );
 
+      final dm = mention.copyWith(
+        type: BelongNotificationType.directMessage,
+        postTitle: 'Direct Message',
+        commentSnippet: 'Welcome to Belong!',
+      );
+      expect(
+        dm.displayMessage,
+        'John Doe sent you a direct message: "Welcome to Belong!"',
+      );
+
       final following = mention.copyWith(
         type: BelongNotificationType.following,
         postTitle: 'Quiet Waters',
@@ -97,7 +125,7 @@ void main() {
       );
       expect(
         directMessage.displayMessage,
-        'John Doe sent you a direct message',
+        'John Doe sent you a direct message: "Quiet hello"',
       );
     });
 
@@ -152,10 +180,41 @@ void main() {
       notifier = BelongNotificationsNotifier(badgeService: badgeService);
     });
 
-    test('Initial unread count is 3 and badge is synchronized', () {
+    test('Initial unread count is 4 and badge is synchronized', () {
       final unread = notifier.state.where((n) => !n.isRead).length;
-      expect(unread, 3);
-      expect(badgeService.recordedBadge, 3);
+      expect(unread, 4);
+      expect(badgeService.recordedBadge, 4);
+    });
+
+    test(
+      'addMentionNotification dynamically inserts item and increments badge',
+      () {
+        notifier.addMentionNotification(
+          authorName: 'Sarah Chen',
+          postTitle: 'Neurodivergent Study',
+          postId: 'post-study-1',
+          spaceKey: 'study',
+          commentSnippet: 'Check this out!',
+        );
+        final unread = notifier.state.where((n) => !n.isRead).length;
+        expect(unread, 5);
+        expect(badgeService.recordedBadge, 5);
+        expect(notifier.state.first.type, BelongNotificationType.mention);
+        expect(notifier.state.first.authorName, 'Sarah Chen');
+      },
+    );
+
+    test('addDirectMessageNotification dynamically inserts DM and increments badge', () {
+      notifier.addDirectMessageNotification(
+        senderName: 'Caleb',
+        conversationId: 'thread-caleb',
+        snippet: 'Are you available to chat?',
+      );
+      final unread = notifier.state.where((n) => !n.isRead).length;
+      expect(unread, 5);
+      expect(badgeService.recordedBadge, 5);
+      expect(notifier.state.first.type, BelongNotificationType.directMessage);
+      expect(notifier.state.first.commentSnippet, 'Are you available to chat?');
     });
 
     test('markAllAsRead clears unread items and sets launcher badge to 0', () {
@@ -169,7 +228,7 @@ void main() {
       notifier.markAsRead('notif-mention-1');
       final notif = notifier.state.firstWhere((n) => n.id == 'notif-mention-1');
       expect(notif.isRead, isTrue);
-      expect(badgeService.recordedBadge, 2);
+      expect(badgeService.recordedBadge, 3);
     });
   });
 
@@ -177,9 +236,22 @@ void main() {
     Widget buildTestHarness({
       Widget? home,
       List<BelongNotification>? initialNotifications,
+      MemberProfile? profile,
     }) {
       return ProviderScope(
         overrides: [
+          memberProfileProvider.overrideWith(
+            () => FakeMemberProfileNotifier(
+              profile ??
+                  const MemberProfile(
+                    displayName: 'Tester',
+                    email: 'tester@example.com',
+                    bio: 'Bio',
+                    comfortBadges: [],
+                    isSignedIn: true,
+                  ),
+            ),
+          ),
           postRepositoryProvider.overrideWithValue(
             LocalPostRepository(isDevMode: true),
           ),
@@ -212,7 +284,7 @@ void main() {
 
       // Check badge on Notifications tab
       expect($(const Key('bottom_nav_notifications_badge')), findsOneWidget);
-      expect($('3'), findsWidgets);
+      expect($('4'), findsWidgets);
     });
 
     patrolWidgetTest(
@@ -244,12 +316,19 @@ void main() {
         // 2. Verify filter chips are present
         expect($(const Key('filter_chip_inbox')), findsOneWidget);
         expect($(const Key('filter_chip_mentions')), findsOneWidget);
+        expect($(const Key('filter_chip_directMessages')), findsOneWidget);
         expect($(const Key('filter_chip_threads')), findsOneWidget);
         expect($(const Key('filter_chip_following')), findsOneWidget);
 
         // 3. Verify notification item title and author initials
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
+          findsOneWidget,
+        );
+        expect(
+          $(
+            'Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."',
+          ),
           findsOneWidget,
         );
         expect(
@@ -269,7 +348,7 @@ void main() {
         await $(const Key('filter_chip_mentions')).tap();
         await $.pumpAndSettle();
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsOneWidget,
         );
         expect(
@@ -277,7 +356,21 @@ void main() {
           findsNothing,
         );
 
-        // 5. Test filtering by Threads
+        // 5. Test filtering by Direct Messages
+        await $(const Key('filter_chip_directMessages')).tap();
+        await $.pumpAndSettle();
+        expect(
+          $(
+            'Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
+          findsNothing,
+        );
+
+        // 6. Test filtering by Threads
         await $(const Key('filter_chip_threads')).tap();
         await $.pumpAndSettle();
         expect(
@@ -285,11 +378,11 @@ void main() {
           findsOneWidget,
         );
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsNothing,
         );
 
-        // 6. Test filtering by Following
+        // 7. Test filtering by Following
         await $(const Key('filter_chip_following')).tap();
         await $.pumpAndSettle();
         expect(
@@ -301,15 +394,15 @@ void main() {
           findsOneWidget,
         );
 
-        // 7. Return to Inbox
+        // 8. Return to Inbox
         await $(const Key('filter_chip_inbox')).tap();
         await $.pumpAndSettle();
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsOneWidget,
         );
 
-        // 8. Test Mark All as Read button
+        // 9. Test Mark All as Read button
         expect($(const Key('mark_all_read_checkbox')), findsOneWidget);
         await $(const Key('mark_all_notifications_as_read_button')).tap();
         await $.pumpAndSettle();

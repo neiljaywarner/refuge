@@ -21,7 +21,8 @@ enum FeedbackSentiment {
     label: 'Idea / Tweak',
     subtitle: 'Private Suggestion',
     promptTitle: 'What would make Belong clearer or calmer for you?',
-    promptHint: 'Suggest a feature, a clearer label, or a sensory improvement. Saved for organizers. The app does not file a GitHub issue.',
+    promptHint:
+        'Suggest a feature, a clearer label, or a sensory improvement. Routed directly to our private organizer triage queue.',
     isPrivateTriage: true,
   ),
 
@@ -31,7 +32,8 @@ enum FeedbackSentiment {
     label: 'Bug / Confusing',
     subtitle: 'Private Triage',
     promptTitle: 'What felt broken, confusing, or overwhelming?',
-    promptHint: 'Tell us what happened. Organizers can read the saved note. The app does not file a GitHub issue.',
+    promptHint:
+        'Tell us what happened — this goes straight to our private organizer & engineering triage queue.',
     isPrivateTriage: true,
   );
 
@@ -54,9 +56,9 @@ enum FeedbackSentiment {
 
 /// Lifecycle stage of a feature on the community voting board.
 enum FeatureStage {
-  workInProgress('WIP · Shipping Before Oct 31'),
-  planned('Planned · Post-Cutover'),
-  communityIdea('Community Idea · Vote to Prioritize');
+  workInProgress('In Progress'),
+  planned('Planned'),
+  communityIdea('Community Idea');
 
   const FeatureStage(this.badgeLabel);
   final String badgeLabel;
@@ -169,3 +171,26 @@ const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
     votes: 0,
   ),
 ];
+
+/// Result metadata returned from submitting user feedback.
+@immutable
+class FeedbackSubmissionResult {
+  const FeedbackSubmissionResult({
+    required this.isPrivateTriage,
+    this.githubIssueNumber,
+    this.githubIssueUrl,
+    this.savedLocally = true,
+  });
+
+  /// Whether this was intended for private triage vs public community praise.
+  final bool isPrivateTriage;
+
+  /// The GitHub issue number if created via the direct GitHub client (e.g. 2).
+  final int? githubIssueNumber;
+
+  /// The web URL to the created GitHub issue.
+  final String? githubIssueUrl;
+
+  /// Whether the submission was saved to Firestore / local audit storage.
+  final bool savedLocally;
+}

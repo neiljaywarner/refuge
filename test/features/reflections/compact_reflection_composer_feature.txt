@@ -1,0 +1,26 @@
+Feature: Compact Mobile Reflection Composer (#447)
+  As a Belong community member on a mobile device
+  I want the feed composer to occupy minimal vertical space by default
+  So that I can read existing reflections and community discussions without them being crowded out
+
+  Scenario: Inline reflection composer appears compact on feed load
+    Given the member is viewing any fellowship space feed
+    Then they should see a slim single-line reflection trigger bar
+    And the bar contains "Share an unhurried thought..."
+    And the bar contains an "Add Meme" shortcut button and "Expand" button
+    And the full card with "Intent Tag" dropdown and large multiline input is hidden
+
+  Scenario: Expanding the inline composer reveals full options
+    Given the member is looking at the compact reflection bar
+    When they tap the expand button or begin typing a thought
+    Then the composer smoothly expands in place
+    And they see the "Intent Tag" dropdown
+    And they see the "Add Meme / GIF" button
+    And they see the "Publish Reflection" button
+    And they see the "Collapse" icon button
+
+  Scenario: Publishing collapses the inline composer back to compact
+    Given the member has entered an unhurried thought in the expanded composer
+    When they tap "Publish Reflection"
+    Then the reflection is posted to the active fellowship space
+    And the composer collapses back to the calm, compact single-line bar

@@ -285,15 +285,8 @@ class ServerpodPostRepository implements PostRepository {
   Stream<List<Post>> watchSavedPosts() => _fallback.watchSavedPosts();
 
   String _mapSpaceKey(String key) {
-    switch (key) {
-      case 'prayer':
-        return 'prayer';
-      case 'study':
-        return 'study';
-      case 'special_interests':
-        return 'special_interests';
-      default:
-        return 'prayer';
-    }
+    final clean = key.trim().toLowerCase();
+    if (clean.isEmpty) return 'general_chat';
+    return clean;
   }
 }

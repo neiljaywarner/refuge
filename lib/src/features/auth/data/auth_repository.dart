@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../feedback/data/feature_voting_repository.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
@@ -334,14 +335,18 @@ class InMemoryAuthRepository implements AuthRepository {
 
 /// Production Firebase Authentication repository with graceful offline/test fallback.
 class FirebaseAuthRepository implements AuthRepository {
+  static AuthSession? _savedSession;
+
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? firebaseAuth,
     InMemoryAuthRepository? fallback,
+    this.flavor = AppFlavor.prod,
   })  : _auth = firebaseAuth,
         _fallback = fallback ?? InMemoryAuthRepository();
 
   final fb_auth.FirebaseAuth? _auth;
   final InMemoryAuthRepository _fallback;
+  final AppFlavor flavor;
 
   fb_auth.FirebaseAuth? get auth {
     if (_auth != null) return _auth;
@@ -374,19 +379,25 @@ class FirebaseAuthRepository implements AuthRepository {
       if (fbUser != null) {
         return AuthSession(
           userId: fbUser.uid,
-          displayName: fbUser.displayName ?? 'Fellowship Member',
-          email: fbUser.email ?? '',
-          bio: 'Verified Member of Belong on the Spectrum',
-          comfortBadges: const [
+          displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
+              ? fbUser.displayName!
+              : (_savedSession?.displayName ?? 'Fellowship Member'),
+          email: fbUser.email ?? (_savedSession?.email ?? ''),
+          bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
+          comfortBadges: _savedSession?.comfortBadges ?? const [
             'Literal communication appreciated',
             'Firebase Cloud Verified',
           ],
           isSignedIn: true,
           authMethod: 'firebase_auth',
+          icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
           emailVerified: fbUser.emailVerified,
-          photoUrl: fbUser.photoURL,
+          photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
         );
       }
+    }
+    if (_savedSession != null && _savedSession!.isSignedIn) {
+      return _savedSession!;
     }
     return _fallback.currentSession();
   }
@@ -397,20 +408,28 @@ class FirebaseAuthRepository implements AuthRepository {
     if (liveAuth != null && _hasRealCredentials) {
       return liveAuth.authStateChanges().map((fbUser) {
         if (fbUser != null) {
-          return AuthSession(
+          final s = AuthSession(
             userId: fbUser.uid,
-            displayName: fbUser.displayName ?? 'Fellowship Member',
-            email: fbUser.email ?? '',
-            bio: 'Verified Member of Belong on the Spectrum',
-            comfortBadges: const [
+            displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
+                ? fbUser.displayName!
+                : (_savedSession?.displayName ?? 'Fellowship Member'),
+            email: fbUser.email ?? (_savedSession?.email ?? ''),
+            bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
+            comfortBadges: _savedSession?.comfortBadges ?? const [
               'Literal communication appreciated',
               'Firebase Cloud Verified',
             ],
             isSignedIn: true,
             authMethod: 'firebase_auth',
+            icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
             emailVerified: fbUser.emailVerified,
-            photoUrl: fbUser.photoURL,
+            photoUrl: fbUser.photoURL ?? _savedSession?.photoUrl,
           );
+          _savedSession = s;
+          return s;
+        }
+        if (_savedSession != null && _savedSession!.isSignedIn) {
+          return _savedSession!;
         }
         return const AuthSession.guest();
       });
@@ -512,12 +531,12 @@ class FirebaseAuthRepository implements AuthRepository {
     if (liveAuth != null && _hasRealCredentials) {
       try {
         final actionCodeSettings = fb_auth.ActionCodeSettings(
-          url: redirectUrl ?? 'https://belongonthespectrum.web.app/auth',
+          url: redirectUrl ?? flavor.magicLinkRedirectUrl,
           handleCodeInApp: true,
-          androidPackageName: 'com.belongonthespectrum.refuge',
+          androidPackageName: flavor.applicationId,
           androidInstallApp: true,
           androidMinimumVersion: '12',
-          iOSBundleId: 'com.belongonthespectrum.refuge',
+          iOSBundleId: flavor.applicationId,
         );
         await liveAuth.sendSignInLinkToEmail(
           email: email.trim(),
@@ -593,6 +612,14 @@ class FirebaseAuthRepository implements AuthRepository {
     List<String>? comfortBadges,
     String? icocChurchAffiliation,
   }) {
+    final liveAuth = auth;
+    final currentUser = liveAuth?.currentUser;
+    if (currentUser != null) {
+      try {
+        currentUser.updateDisplayName(displayName);
+      } catch (_) {}
+    }
+
     final session = _fallback.signInWithEmailAndName(
       displayName: displayName,
       email: email,
@@ -600,7 +627,12 @@ class FirebaseAuthRepository implements AuthRepository {
       comfortBadges: comfortBadges,
       icocChurchAffiliation: icocChurchAffiliation,
     );
-    return session.copyWith(authMethod: 'firebase_email');
+    final effective = session.copyWith(
+      authMethod: 'firebase_email',
+      icocChurchAffiliation: icocChurchAffiliation,
+    );
+    _savedSession = effective;
+    return effective;
   }
 
   @override
@@ -611,6 +643,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<AuthSession> signOut() async {
+    _savedSession = null;
     try {
       await auth?.signOut();
     } catch (_) {}
@@ -637,10 +670,11 @@ final authBackendTargetProvider = Provider<BackendTarget>(
 /// Active [AuthRepository] adapter.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final target = ref.watch(authBackendTargetProvider);
+  final flavor = ref.watch(appFlavorProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryAuthRepository(),
     BackendTarget.serverpod => ServerpodAuthRepository(),
     BackendTarget.appwrite => AppwriteAuthRepository(),
-    BackendTarget.firebase => FirebaseAuthRepository(),
+    BackendTarget.firebase => FirebaseAuthRepository(flavor: flavor),
   };
 });

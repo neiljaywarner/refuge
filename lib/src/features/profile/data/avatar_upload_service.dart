@@ -150,11 +150,15 @@ class FakeAvatarUploadService implements AvatarUploadService {
     this.cameraPermission = AvatarPermissionStatus.granted,
     this.galleryPermission = AvatarPermissionStatus.granted,
     this.imageToReturn,
+    this.returnNullOnPick = false,
+    this.throwOnPick = false,
   });
 
   AvatarPermissionStatus cameraPermission;
   AvatarPermissionStatus galleryPermission;
   Uint8List? imageToReturn;
+  bool returnNullOnPick;
+  bool throwOnPick;
   bool appSettingsOpened = false;
 
   @override
@@ -171,6 +175,8 @@ class FakeAvatarUploadService implements AvatarUploadService {
   Future<Uint8List?> pickImage(AvatarImageSource source) async {
     final status = await requestPermission(source);
     if (!status.isGranted) return null;
+    if (throwOnPick) throw Exception('Simulated camera hardware disconnect');
+    if (returnNullOnPick) return null;
     return imageToReturn ??
         Uint8List.fromList([
           0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,

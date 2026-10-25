@@ -19,10 +19,10 @@ class OrganizerRemoteConfig {
     required this.welcomeTitle,
     required this.welcomeMessage,
     required this.bannerEnabled,
-    required this.dfwChurchUrl,
+    this.dfwChurchUrl = 'https://dfwchurch.org',
     required this.communityGuidelinesMarkdown,
-    required this.androidAppDownloadUrl,
-    required this.iosAppDownloadUrl,
+    this.androidAppDownloadUrl = '',
+    this.iosAppDownloadUrl = '',
     this.previewModeEnabled = false,
     this.adminEmailsCsv = '',
   });

@@ -71,10 +71,17 @@ class CommunityAnalyticsService {
     String name, {
     Map<String, Object>? parameters,
   }) async {
+    const automationToolEnv = String.fromEnvironment('AUTOMATION_TOOL', defaultValue: '');
+    final resolvedAutomationTool = automationToolEnv.isNotEmpty
+        ? automationToolEnv
+        : (kDebugMode ? 'debug_mode' : 'none');
+
     final enriched = <String, Object>{
       'flavor': flavor.slug,
       'environment': kReleaseMode ? 'release' : 'debug',
       'platform': defaultTargetPlatform.name,
+      'is_debug_mode': kDebugMode ? 'true' : 'false',
+      'automation_tool': resolvedAutomationTool,
       ...?parameters,
     };
     recordedEventsForTesting.add({'name': name, ...enriched});

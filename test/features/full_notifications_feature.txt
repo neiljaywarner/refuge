@@ -1,0 +1,38 @@
+# Full Calm Notifications BDD Specification (Issue #442)
+# Driver: Marionette MCP / CLI / PatrolWidgetTest
+# Neurodivergent Target: Calm, unhurried notifications with @ mentions, DMs, shade, and badge support.
+
+Feature: Full Calm Notifications Feature
+  As an autistic member of Belong on the Spectrum
+  I want an unhurried, sensory-friendly notifications hub with @ mentions and direct messages
+  And I want OS badges and notifications delivered silently to the shade
+  So that I stay informed without sensory panic or urgency red dots
+
+  Scenario: Unread notification badge on bottom navigation bell
+    Given I launch Belong on the Spectrum
+    Then I see the bottom navigation bar
+    And the "Notifications" bell tab displays an unread count badge
+    And the badge uses calm forest green styling instead of bright red
+
+  Scenario: Browsing and filtering notification history
+    Given I tap the "Notifications" tab in the bottom bar
+    Then I see the "Notifications" view
+    And I see the calm delivery banner
+    When I tap the "Mentions" filter chip
+    Then I see only notifications where other members mentioned me with @
+    When I tap the "Direct Messages" filter chip
+    Then I see only notifications for private 1-on-1 messages
+
+  Scenario: Marking all notifications as read
+    Given I am on the "Notifications" view with unread items
+    When I tap the "Mark all read" button
+    Then all unread indicators are removed
+    And the bottom navigation bell badge disappears
+    And the OS launcher icon badge is cleared
+
+  Scenario: Testing OS Notification Shade delivery
+    Given I am on the "Notifications" view
+    When I open "Calm Notification Preferences"
+    And I tap "Preview shade notification (debug)"
+    Then a silent notification is delivered to the Android notification shade
+    And pulling down the shade displays "Belong" without triggering sound or vibration

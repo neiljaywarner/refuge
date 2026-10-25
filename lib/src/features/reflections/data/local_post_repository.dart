@@ -129,6 +129,18 @@ class LocalPostRepository implements PostRepository {
         reactions: {'pray': 4, 'peace': 9, 'encouraged': 11},
         isDemo: true,
       ),
+      Post(
+        id: '10',
+        authorName: 'Belong Leadership',
+        spaceKey: 'announcements',
+        toneTag: '[Announcement]',
+        specialInterestTag: 'Community Update',
+        content:
+            'Welcome to the soft launch of Belong on the Spectrum! Our transition from Circle.so is underway. Feel free to explore spaces at your own pace.',
+        timestamp: now.subtract(const Duration(hours: 1)),
+        reactions: {'peace': 15, 'encouraged': 18},
+        isDemo: true,
+      ),
     ]);
     _notify();
   }

@@ -23,6 +23,7 @@ class CalmLocalNotificationMobile implements CalmLocalNotificationService {
       importance: Importance.defaultImportance,
       playSound: false,
       enableVibration: false,
+      showBadge: false,
     );
 
     await _plugin

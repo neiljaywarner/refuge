@@ -7,31 +7,49 @@ import '../../profile/domain/member_profile.dart';
 import '../data/app_launcher_badge_service.dart';
 import '../data/member_notification_store.dart';
 import '../domain/belong_notification.dart';
+import '../domain/notification_navigation_target.dart';
+
+export '../domain/notification_navigation_target.dart';
 
 /// Active filter chip for Calm Notifications
 enum BelongNotificationFilter {
   inbox,
   mentions,
+  directMessages,
   threads,
   following;
 
   String get label => switch (this) {
     BelongNotificationFilter.inbox => 'Inbox',
     BelongNotificationFilter.mentions => 'Mentions',
+    BelongNotificationFilter.directMessages => 'Direct Messages',
     BelongNotificationFilter.threads => 'Threads',
     BelongNotificationFilter.following => 'Following',
   };
 }
 
-/// Simulated in-memory notification seed for development & testing (#328, #329).
+/// Simulated in-memory notification seed for development & testing (#328, #329, #442).
 final List<BelongNotification> kInitialNotifications = [
   BelongNotification(
     id: 'notif-mention-1',
     type: BelongNotificationType.mention,
-    authorName: 'John Doe',
+    authorName: 'Sarah L.',
     postTitle: 'Markan Chiasms',
     timestamp: DateTime(2026, 10, 22, 11, 55),
     isRead: false,
+    spaceKey: 'theology',
+    postId: 'post-markan-chiasms',
+  ),
+  BelongNotification(
+    id: 'notif-dm-1',
+    type: BelongNotificationType.directMessage,
+    authorName: 'Marty',
+    postTitle: 'Direct Message',
+    commentSnippet:
+        'Welcome to Belong! Let me know if you need any sensory adjustments.',
+    timestamp: DateTime(2026, 10, 22, 11, 30),
+    isRead: false,
+    conversationId: 'thread-marty',
   ),
   BelongNotification(
     id: 'notif-reply-1',
@@ -40,6 +58,8 @@ final List<BelongNotification> kInitialNotifications = [
     postTitle: 'Prayer & Healing',
     timestamp: DateTime(2026, 10, 22, 11, 0),
     isRead: false,
+    spaceKey: 'prayer',
+    postId: 'post-prayer-healing',
   ),
   BelongNotification(
     id: 'notif-like-1',
@@ -48,6 +68,8 @@ final List<BelongNotification> kInitialNotifications = [
     postTitle: 'Sensory Friendly Worship',
     timestamp: DateTime(2026, 10, 22, 9, 0),
     isRead: false,
+    spaceKey: 'fellowship',
+    postId: 'post-sensory-worship',
   ),
   BelongNotification(
     id: 'notif-following-1',
@@ -56,6 +78,8 @@ final List<BelongNotification> kInitialNotifications = [
     postTitle: 'Psalm 23 Meditations',
     timestamp: DateTime(2026, 10, 20, 12, 0),
     isRead: true,
+    spaceKey: 'meditations',
+    postId: 'post-psalm-23',
   ),
 ];
 
@@ -118,14 +142,18 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
             timestamp: now.subtract(const Duration(minutes: 5)),
           ),
           kInitialNotifications[1].copyWith(
+            id: 'notif-dm-1',
+            timestamp: now.subtract(const Duration(minutes: 30)),
+          ),
+          kInitialNotifications[2].copyWith(
             id: 'notif-reply-1',
             timestamp: now.subtract(const Duration(hours: 1)),
           ),
-          kInitialNotifications[2].copyWith(
+          kInitialNotifications[3].copyWith(
             id: 'notif-like-1',
             timestamp: now.subtract(const Duration(hours: 3)),
           ),
-          kInitialNotifications[3].copyWith(
+          kInitialNotifications[4].copyWith(
             id: 'notif-following-1',
             timestamp: now.subtract(const Duration(days: 2)),
           ),
@@ -189,6 +217,51 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
     state = [notification, ...state];
   }
 
+  void addMentionNotification({
+    required String authorName,
+    required String postTitle,
+    required String postId,
+    required String spaceKey,
+    String? commentSnippet,
+  }) {
+    addNotification(
+      BelongNotification(
+        id: 'mention-${DateTime.now().millisecondsSinceEpoch}',
+        type: BelongNotificationType.mention,
+        authorName: authorName,
+        postTitle: postTitle,
+        postId: postId,
+        spaceKey: spaceKey,
+        commentSnippet: commentSnippet,
+        timestamp: DateTime.now(),
+        isRead: false,
+      ),
+    );
+  }
+
+  void addDirectMessageNotification({
+    required String senderName,
+    required String conversationId,
+    required String snippet,
+  }) {
+    addNotification(
+      BelongNotification(
+        id: 'dm-${DateTime.now().millisecondsSinceEpoch}',
+        type: BelongNotificationType.directMessage,
+        authorName: senderName,
+        postTitle: 'Direct Message',
+        commentSnippet: snippet,
+        conversationId: conversationId,
+        timestamp: DateTime.now(),
+        isRead: false,
+      ),
+    );
+  }
+
+  void removeNotification(String notificationId) {
+    state = state.where((n) => n.id != notificationId).toList();
+  }
+
   void clearAll() {
     state = [];
   }
@@ -224,6 +297,10 @@ final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
     BelongNotificationFilter.inbox => list,
     BelongNotificationFilter.mentions =>
       list.where((n) => n.type == BelongNotificationType.mention).toList(),
+    BelongNotificationFilter.directMessages =>
+      list
+          .where((n) => n.type == BelongNotificationType.directMessage)
+          .toList(),
     BelongNotificationFilter.threads =>
       list.where((n) => n.type == BelongNotificationType.reply).toList(),
     BelongNotificationFilter.following =>
@@ -236,3 +313,7 @@ final filteredNotificationsProvider = Provider<List<BelongNotification>>((ref) {
           .toList(),
   };
 });
+
+/// Active navigation target requested by tapping a notification or deep link (#330).
+final notificationNavigationTargetProvider =
+    StateProvider<NotificationNavigationTarget?>((ref) => null);

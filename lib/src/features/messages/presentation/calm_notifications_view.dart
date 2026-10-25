@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../navigation/presentation/belong_bottom_nav_bar.dart';
 import '../../notifications/domain/belong_notification.dart';
 import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
 import '../../notifications/presentation/notifications_controller.dart';
+import '../../profile/domain/member_profile.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 
-/// Calm Notification Bell view (Issue #286).
+/// Calm Notification Bell view (Issue #286, #330).
 /// Presents unhurried, digestible notifications with filter chips (Inbox, Mentions, Threads, Following),
 /// author avatars with lower-right action badges, relative timestamps, and a 'Mark all as read' action.
 class CalmNotificationsView extends HookConsumerWidget {
-  const CalmNotificationsView({super.key, this.onBackToHome});
+  const CalmNotificationsView({super.key, this.onBackToHome, this.onNavigate});
 
   final VoidCallback? onBackToHome;
+  final ValueChanged<NotificationNavigationTarget>? onNavigate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +28,7 @@ class CalmNotificationsView extends HookConsumerWidget {
     final activeFilter = ref.watch(notificationActiveFilterProvider);
     final notifications = ref.watch(filteredNotificationsProvider);
     final unreadCount = ref.watch(unreadNotificationsCountProvider);
+    final profile = ref.watch(currentUserProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -121,7 +125,9 @@ class CalmNotificationsView extends HookConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'All notifications are delivered gently without intrusive sound alerts.',
+                      profile.isSignedIn
+                          ? 'All notifications are delivered gently without intrusive sound alerts.'
+                          : 'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isContrast
                             ? Colors.white
@@ -209,6 +215,48 @@ class CalmNotificationsView extends HookConsumerWidget {
                                 .read(belongNotificationsProvider.notifier)
                                 .markAsRead(item.id);
                           }
+
+                          NotificationNavigationTarget? target;
+                          if (item.type ==
+                              BelongNotificationType.directMessage) {
+                            target = NotificationNavigationTarget(
+                              tab: BelongBottomTab.msgs,
+                              conversationId: item.conversationId,
+                            );
+                          } else if (item.spaceKey != null ||
+                              item.postId != null) {
+                            target = NotificationNavigationTarget(
+                              tab: BelongBottomTab.home,
+                              spaceKey: item.spaceKey ?? 'general_chat',
+                              postId: item.postId,
+                              openDiscussion:
+                                  item.type == BelongNotificationType.reply ||
+                                  item.type == BelongNotificationType.mention,
+                            );
+                          } else {
+                            // Polite fallback when referenced item was archived/deleted
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                key: Key('notification_archived_snackbar'),
+                                content: Text(
+                                  'This reflection was unhurriedly archived or moved',
+                                ),
+                                duration: Duration(seconds: 3),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+
+                          if (target != null) {
+                            ref
+                                    .read(
+                                      notificationNavigationTargetProvider
+                                          .notifier,
+                                    )
+                                    .state =
+                                target;
+                            onNavigate?.call(target);
+                          }
                         },
                       );
                     },
@@ -258,14 +306,14 @@ class _BelongNotificationCard extends StatelessWidget {
         const Color(0xFF4CAF50),
         Colors.white,
       ),
+      BelongNotificationType.directMessage => (
+        Icons.chat_bubble_outline_rounded,
+        const Color(0xFF009688),
+        Colors.white,
+      ),
       BelongNotificationType.following => (
         Icons.person_add_rounded,
         const Color(0xFF9C27B0),
-        Colors.white,
-      ),
-      BelongNotificationType.directMessage => (
-        Icons.maps_ugc_rounded,
-        const Color(0xFF00796B),
         Colors.white,
       ),
     };

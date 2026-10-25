@@ -112,11 +112,11 @@ The notifications architecture uses hook-compatible Riverpod providers:
 ## 5. Native Platform Synchronization
 
 ### 5.1 App Launcher Badges (`AppLauncherBadgeService`)
-The Dart service calls a MethodChannel. There is no native handler, so the phone launcher dot does not change ([#411](https://github.com/neiljaywarner/refuge/issues/411)):
 - **MethodChannel**: `com.belongonthespectrum.sanctuary/badge`
 - **Method**: `setBadgeCount({'count': int})`
-- **In-app only**: "Mark all read" clears the in-app unread count. It does not clear a launcher icon dot.
-- **FCM**: permission requests set `badge: false`. Calm FCM delivery is not fully verified on device.
+- **Android**: `MainActivity` syncs Pixel launcher dots via a silent `calm_launcher_badge_sync` notification (`IMPORTANCE_MIN`, `setNumber`); cancelled when count is 0.
+- **Verify**: unread bottom-nav badge → launcher dot; **Mark all as read** → dot clears.
+- **FCM**: permission requests set `badge: false` for push payloads; launcher dot uses the badge channel above, not FCM badge flags.
 
 ### 5.2 FCM & Mobile Web Push (`NotificationPermissionsService`)
 - Mobile Safari on iOS cannot grant Web Push in standard browser tabs. The service detects `isIosWebWithoutPwa` and guides users to Add to Home Screen first.

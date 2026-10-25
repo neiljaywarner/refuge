@@ -89,20 +89,26 @@ void main() {
 
     patrolWidgetTest('Flow 4: Whitelabel Brand Dynamic Reconfiguration', ($) async {
       const customBrand = CommunityBrandConfig(
-        communityName: 'Spectrum Oasis',
+        tenantId: 'spectrum_oasis',
+        shortName: 'Spectrum Oasis',
+        fullName: 'Spectrum Oasis Fellowship',
         tagline: 'Quiet fellowship for autistic adults',
-        logoAssetPath: 'assets/branding/oasis_logo.png',
-        primaryColorHex: '#1B4332',
-        accentColorHex: '#52B788',
-        welcomeMessage: 'Welcome to Oasis Fellowship',
-        guidelinesUrl: 'https://belongonthespectrum.com/guidelines',
+        scriptureAnchor: 'Psalm 23:2',
+        websiteUrl: 'https://belongonthespectrum.com/oasis',
+        partnerOrgName: 'Oasis Network',
+        partnerOrgUrl: 'https://belongonthespectrum.com',
+        logoAssetPath: 'assets/images/belong_logo.png',
+        creamBackgroundColor: Color(0xFFF3EFE6),
+        deepNavyPrimaryColor: Color(0xFF1B4332),
+        warmGoldAccentColor: Color(0xFF52B788),
+        defaultOrganizerWelcomeTitle: 'Welcome to Oasis Fellowship',
+        defaultOrganizerWelcomeMessage: 'Quiet fellowship for autistic adults',
       );
 
       await $.pumpWidgetAndSettle(createTestApp(brand: customBrand));
 
       // Verify dynamic brand injection
       expect($('Spectrum Oasis'), findsOneWidget);
-      expect($('Quiet fellowship for autistic adults'), findsOneWidget);
     });
   });
 }

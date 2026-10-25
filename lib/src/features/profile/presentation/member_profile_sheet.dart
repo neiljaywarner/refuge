@@ -213,18 +213,6 @@ class MemberProfileDialog extends HookConsumerWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('profile_bio_field'),
-                controller: bioController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Bio / Note to Fellowship',
-                  helperText: 'A quiet sentence about yourself',
-                  isDense: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
               if (brand.enableFellowshipAffiliationField) ...[
                 const SizedBox(height: 12),
                 Row(
@@ -265,22 +253,77 @@ class MemberProfileDialog extends HookConsumerWidget {
                       vertical: 10,
                     ),
                     border: const OutlineInputBorder(),
-                    hintText:
-                        'Enter your church affiliation (or select below)...',
+                    hintText: 'Select or enter your church affiliation...',
                     hintStyle: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).hintColor,
                     ),
-                    suffixIcon: churchAffiliationController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 16),
-                            onPressed: () {
-                              churchAffiliationController.clear();
-                              selectedAffiliation.value = '';
-                            },
-                          )
-                        : null,
+                    suffixIcon: PopupMenuButton<String>(
+                      key: const Key('profile_church_dropdown_trigger_button'),
+                      tooltip: 'Select church affiliation',
+                      icon: const Icon(Icons.arrow_drop_down, size: 24),
+                      onSelected: (val) {
+                        churchAffiliationController.text = val;
+                        selectedAffiliation.value = val;
+                        validationError.value = null;
+                      },
+                      itemBuilder: (context) =>
+                          allAffiliationOptions.map((opt) {
+                            final isNonMember =
+                                opt == brand.fellowshipNonMemberOption;
+                            return PopupMenuItem<String>(
+                              value: opt,
+                              child: Text(
+                                opt,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: isNonMember
+                                      ? FontStyle.italic
+                                      : FontStyle.normal,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                    ),
                   ),
+                  onTap: () async {
+                    final RenderBox? box =
+                        context.findRenderObject() as RenderBox?;
+                    final offset = box != null
+                        ? box.localToGlobal(Offset.zero)
+                        : Offset.zero;
+                    final size = box?.size ?? Size.zero;
+                    final selected = await showMenu<String>(
+                      context: context,
+                      position: RelativeRect.fromLTRB(
+                        offset.dx,
+                        offset.dy + size.height,
+                        offset.dx + size.width,
+                        offset.dy + size.height + 250,
+                      ),
+                      items: allAffiliationOptions.map((opt) {
+                        final isNonMember =
+                            opt == brand.fellowshipNonMemberOption;
+                        return PopupMenuItem<String>(
+                          value: opt,
+                          child: Text(
+                            opt,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: isNonMember
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                    if (selected != null) {
+                      churchAffiliationController.text = selected;
+                      selectedAffiliation.value = selected;
+                      validationError.value = null;
+                    }
+                  },
                   onChanged: (val) {
                     selectedAffiliation.value = val;
                     if (val.trim().isNotEmpty) {
@@ -288,31 +331,19 @@ class MemberProfileDialog extends HookConsumerWidget {
                     }
                   },
                 ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: allAffiliationOptions.map((opt) {
-                    final isNonMember = opt == brand.fellowshipNonMemberOption;
-                    return ActionChip(
-                      label: Text(
-                        opt,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontStyle: isNonMember
-                              ? FontStyle.italic
-                              : FontStyle.normal,
-                        ),
-                      ),
-                      onPressed: () {
-                        churchAffiliationController.text = opt;
-                        selectedAffiliation.value = opt;
-                        validationError.value = null;
-                      },
-                    );
-                  }).toList(),
-                ),
               ],
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('profile_bio_field'),
+                controller: bioController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Bio / Note to Fellowship',
+                  helperText: 'A quiet sentence about yourself',
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
               const SizedBox(height: 14),
               const Text(
                 'Official Firebase Auth UI (Google / Firebase Team)',

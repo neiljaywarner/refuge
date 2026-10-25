@@ -1,0 +1,25 @@
+Feature: Profile Persistence and ICOC Church Dropdown Selection (#448)
+  As a Belong community member
+  I want my preferred display name and ICOC church selection to persist across browser refreshes and app reboots
+  And I want an accessible dropdown selector for my church congregation rather than tapping buttons
+
+  Scenario: Member selects church congregation via dropdown and saves profile
+    Given the member opens the Sign-In / Member Profile dialog
+    When they enter their preferred display name
+    And they open the ICOC church affiliation dropdown
+    And they select their congregation from the list
+    And they tap "Save & Sign In"
+    Then their profile is saved with the chosen display name and church
+    And the session is persisted to local and cloud storage
+
+  Scenario: Member profile metadata persists across app restarts and page reloads
+    Given a member previously signed in with a preferred display name and ICOC church
+    When the member refreshes the web browser or reboots the mobile app
+    Then the app restores their preferred display name without reverting to guest defaults
+    And their ICOC church affiliation is immediately displayed
+
+  Scenario: Signing out clears persistent storage
+    Given a signed-in member with persisted profile metadata
+    When they open the profile dialog and tap "Sign Out"
+    Then the local profile storage is cleared
+    And the app reverts to the peaceful guest member state

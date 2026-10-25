@@ -1,4 +1,4 @@
-package com.belongonthespectrum.sanctuary
+package com.belongonthespectrum.refuge
 
 import io.flutter.embedding.android.FlutterActivity
 

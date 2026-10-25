@@ -1,17 +1,18 @@
-### 🌱 Community & Organizers (Start Here — No Coding Needed)
-* **[🏠 Welcome & Overview](Home)**
-* **[❓ Questions for Product & Alpha Testers](Questions-for-Product-Users-and-Alpha-Testers)**
-* **[📅 Oct 31 Cutover Plan & 7-Day Overlap](Non-Technical-Roadmap-to-Oct-31)**
-* **[🏘️ Belong Community Rooms Guide](Belong-Community-Guide)**
-* **[📱 Why Isn't Belong in the App Store? (And Why You Don't Need One)](Why-No-App-Store-App)**
-* **[📱 How to Install on iPhone & Android (PWA)](PWA-Guide-for-Members-and-Organizers)**
-* **[🎥 PWA Visual Installation & Video Guide](PWA-Installation-and-Mobile-Web-Guide)**
-* **[🎛️ Updating Announcements & Welcome Banner Without Coding](Organizer-Remote-Config-Guide)**
-* **[📥 Bringing Over Past Posts (Spreadsheet / CSV Guide)](Circle-CSV-Migration-Guide)**
-* **[🤝 Volunteer & Welcome Team Guide](How-You-Can-Help-Volunteer-Guide)**
-* **[🧪 Manual Testing & UAT Playbook ("How Can I Help Test?")](Manual-Testing-and-UAT-Flows)**
-* **[🌿 Sensory Themes & Calm-Tech Philosophy](Calm-Tech-and-Accessibility)**
-* **[🌸 Calm Notifications: Member & Product Guide](Notifications-Product-Guide)**
+### 🌱 Community & Organizers (Start Here)
+* **[🏠 Welcome](Home)**
+* **[🤝 How You Can Help](How-You-Can-Help-Volunteer-Guide)**
+* **[📅 Plan through October 31](Non-Technical-Roadmap-to-Oct-31)**
+* **[🏘️ Our Community Spaces](Belong-Community-Guide)**
+* **[❓ Questions for Members and Organizers](Questions-for-Product-Users-and-Alpha-Testers)**
+* **[📱 Why Belong Is Not in the App Stores Yet](Why-No-App-Store-App)**
+* **[📱 Put Belong on Your Phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)**
+* **[📱 More about Using Belong from the Web](PWA-Guide-for-Members-and-Organizers)**
+* **[🎥 Android Home-Screen Pictures](PWA-Installation-and-Mobile-Web-Guide)**
+* **[📣 Update the Welcome Message](Organizer-Remote-Config-Guide)**
+* **[📥 Bring Past Posts Over](Circle-CSV-Migration-Guide)**
+* **[🧪 Longer Testing Checklist](Manual-Testing-and-UAT-Flows)**
+* **[🌿 Calm Design and Sensory Comfort](Calm-Tech-and-Accessibility)**
+* **[🌸 Gentle Notifications](Notifications-Product-Guide)**
 * **[📋 Notes for First Meeting with Human Reviewer](https://github.com/neiljaywarner/refuge/blob/main/notes_for_first_meeting_with_human_reviewer.md)**
 
 ### 🛠️ Engineering, Architecture & Mentoring

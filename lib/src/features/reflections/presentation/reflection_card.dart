@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../profile/domain/member_profile.dart';
 import '../../profile/presentation/other_member_profile_dialog.dart';
 import '../data/post_repository.dart';
 import '../domain/post.dart';
@@ -13,6 +14,7 @@ class ReflectionCard extends ConsumerWidget {
   final bool isContrast;
   final ValueChanged<String> onAddReaction;
   final VoidCallback? onOpenDiscussion;
+  final bool isHighlighted;
 
   const ReflectionCard({
     super.key,
@@ -20,6 +22,7 @@ class ReflectionCard extends ConsumerWidget {
     required this.isContrast,
     required this.onAddReaction,
     this.onOpenDiscussion,
+    this.isHighlighted = false,
   });
 
   @override
@@ -27,16 +30,23 @@ class ReflectionCard extends ConsumerWidget {
     final isMeme = post.toneTag.contains('Meme');
 
     return Container(
+      key: Key('reflection_card_${post.id}'),
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       padding: const EdgeInsets.all(14.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isHighlighted
+            ? (isContrast
+                ? const Color(0xFF1A1A00)
+                : Theme.of(context).primaryColor.withValues(alpha: 0.08))
+            : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
-          color: isMeme
-              ? Colors.amber.withValues(alpha: 0.8)
-              : (isContrast ? Colors.white : Theme.of(context).dividerColor),
-          width: isMeme ? 2.0 : (isContrast ? 2.0 : 1.0),
+          color: isHighlighted
+              ? (isContrast ? Colors.yellow : const Color(0xFF2E6B56))
+              : (isMeme
+                  ? Colors.amber.withValues(alpha: 0.8)
+                  : (isContrast ? Colors.white : Theme.of(context).dividerColor)),
+          width: (isHighlighted || isMeme || isContrast) ? 2.0 : 1.0,
         ),
       ),
       child: Column(
@@ -63,13 +73,17 @@ class ReflectionCard extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: 10,
-                                backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                                backgroundColor: isContrast
+                                    ? Colors.yellow
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                                 child: Text(
-                                  _getInitials(post.authorName),
+                                  getInitials(post.authorName),
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: isContrast
+                                        ? Colors.black
+                                        : Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ),
@@ -319,10 +333,19 @@ class ReflectionCard extends ConsumerWidget {
   );
   }
 
-  static String _getInitials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty) return 'M';
-    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'.toUpperCase();
+  /// Extracts clean monogram initials for cards, stripping parenthetical roles or locations.
+  static String getInitials(String name) {
+    final cleaned = name.replaceAll(RegExp(r'\([^)]*\)'), '').trim();
+    final parts = cleaned
+        .split(RegExp(r'\s+'))
+        .map((p) => p.replaceAll(RegExp(r'^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$'), ''))
+        .where((p) => p.isNotEmpty)
+        .where((p) => !MemberProfile.isHonorificToken(p))
+        .toList();
+    return switch (parts) {
+      [] => 'B',
+      [final single] => single[0].toUpperCase(),
+      [final first, ..., final last] => '${first[0]}${last[0]}'.toUpperCase(),
+    };
   }
 }

@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_session.dart';
 import '../data/member_directory_store.dart';
+import '../data/profile_storage_service.dart';
 
 /// Represents the signed-in community member's profile and Stage 1 ("Any Auth")
 /// session state (#23, #26), backed by the pluggable [AuthRepository] (#52, ADR-0009).
@@ -118,42 +119,48 @@ class MemberProfile {
 
 class MemberProfileNotifier extends Notifier<MemberProfile> {
   StreamSubscription<AuthSession>? _sub;
-  int _applyGeneration = 0;
+  static MemberProfile? _persistedProfile;
   Future<void>? _publishFlight;
 
-  MemberProfile _profileFrom(AuthSession session) {
+  /// Set for this notifier when the member explicitly signs out.
+  ///
+  /// Auth updates are delivered on a later microtask. Without this latch a
+  /// sign-in event that was already queued puts the signed-in profile back
+  /// after [signOut] has cleared it.
+  bool _explicitlySignedOut = false;
+
+  MemberProfile _profileFor(AuthSession session) {
+    final persisted = _persistedProfile;
     return MemberProfile(
       userId: session.userId,
-      displayName: session.displayName,
-      email: session.email,
-      bio: session.bio,
-      comfortBadges: session.comfortBadges,
+      displayName:
+          session.displayName.isNotEmpty &&
+              session.displayName != 'Fellowship Member'
+          ? session.displayName
+          : (persisted?.displayName ?? session.displayName),
+      email: session.email.isNotEmpty
+          ? session.email
+          : (persisted?.email ?? session.email),
+      bio: session.bio.isNotEmpty
+          ? session.bio
+          : (persisted?.bio ?? session.bio),
+      comfortBadges: session.comfortBadges.isNotEmpty
+          ? session.comfortBadges
+          : (persisted?.comfortBadges ?? session.comfortBadges),
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
-      icocChurchAffiliation: session.icocChurchAffiliation,
+      icocChurchAffiliation:
+          session.icocChurchAffiliation ?? persisted?.icocChurchAffiliation,
+      avatarUrl: session.photoUrl ?? persisted?.avatarUrl,
     );
   }
 
-  bool _shouldPublish(MemberProfile profile) =>
-      profile.isSignedIn &&
-      profile.userId.isNotEmpty &&
-      profile.userId != 'guest';
-
-  /// Applies [session] immediately, then publishes the public directory entry.
-  ///
-  /// The profile update stays synchronous up to the first await so in-memory
-  /// sign-in tests observe it before this method yields. The Firestore write
-  /// continues even if the member signs out, because the picker reads that
-  /// document from the other account.
-  Future<void> _applySession(AuthSession session) async {
-    final ticket = ++_applyGeneration;
-    final profile = _profileFrom(session);
-    try {
-      state = profile;
-    } catch (_) {
+  void _publishDirectory(MemberProfile profile) {
+    if (!profile.isSignedIn ||
+        profile.userId.isEmpty ||
+        profile.userId == 'guest') {
       return;
     }
-    if (!_shouldPublish(profile)) return;
     final flight = ref
         .read(memberDirectoryStoreProvider)
         .publishSignedInMember(
@@ -164,25 +171,75 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         )
         .timeout(const Duration(seconds: 8));
     _publishFlight = flight;
-    try {
-      await flight;
-    } catch (_) {}
-    if (identical(_publishFlight, flight)) _publishFlight = null;
-    if (ticket != _applyGeneration) return;
+    unawaited(
+      flight.then(
+        (_) {
+          if (identical(_publishFlight, flight)) _publishFlight = null;
+        },
+        onError: (_, _) {
+          if (identical(_publishFlight, flight)) _publishFlight = null;
+        },
+      ),
+    );
   }
 
   @override
   MemberProfile build() {
+    // Reconcile with storage on every build so a cleared session file does
+    // not leave a stale in-memory profile looking signed in.
+    final local = ProfileStorageService.instance.load();
+    if (local != null && local['displayName'] != null) {
+      _persistedProfile = MemberProfile(
+        displayName: local['displayName'] as String? ?? 'Fellowship Member',
+        email: local['email'] as String? ?? '',
+        bio: local['bio'] as String? ?? '',
+        comfortBadges:
+            (local['comfortBadges'] as List<dynamic>?)?.cast<String>() ??
+            const ['Literal communication appreciated'],
+        isSignedIn: true,
+        authMethod: 'persisted_storage',
+        icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
+        userId: _persistedProfile?.userId ?? '',
+        avatarUrl: _persistedProfile?.avatarUrl,
+        tagline: _persistedProfile?.tagline,
+      );
+    } else {
+      _persistedProfile = null;
+    }
+
     final repo = ref.watch(authRepositoryProvider);
     _sub?.cancel();
     _sub = repo.authStateChanges().listen((session) {
-      unawaited(_applySession(session));
+      if (_explicitlySignedOut) {
+        _persistedProfile = null;
+        state = const MemberProfile.guest();
+        return;
+      }
+      if (session.isSignedIn) {
+        state = _profileFor(session);
+        _persistedProfile = state;
+        _publishDirectory(state);
+      } else if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
+        state = _persistedProfile!;
+      } else {
+        state = const MemberProfile.guest();
+      }
     });
     ref.onDispose(() {
       _sub?.cancel();
     });
 
-    return _profileFrom(repo.currentSession());
+    final session = repo.currentSession();
+    if (session.isSignedIn) {
+      final effective = _profileFor(session);
+      _persistedProfile = effective;
+      return effective;
+    }
+
+    if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
+      return _persistedProfile!;
+    }
+    return const MemberProfile.guest();
   }
 
   void signIn({
@@ -201,7 +258,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       icocChurchAffiliation:
           icocChurchAffiliation ?? state.icocChurchAffiliation,
     );
-    unawaited(_applySession(session));
+    _applySession(session);
   }
 
   Future<void> signInWithPassword({
@@ -213,7 +270,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       password: password,
     );
-    await _applySession(session);
+    _applySession(session);
   }
 
   Future<void> registerWithPassword({
@@ -233,7 +290,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       comfortBadges: comfortBadges ?? state.comfortBadges,
       icocChurchAffiliation: icocChurchAffiliation,
     );
-    await _applySession(session);
+    _applySession(session);
   }
 
   Future<void> sendMagicLink({
@@ -258,29 +315,70 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       emailLink: emailLink,
     );
-    await _applySession(session);
+    _applySession(session);
   }
 
   void signInWithOAuth(String provider) {
     final repo = ref.read(authRepositoryProvider);
     final session = repo.signInWithOAuthProvider(provider);
-    unawaited(_applySession(session));
+    _applySession(session);
+  }
+
+  void _applySession(AuthSession session) {
+    if (session.isSignedIn) {
+      _explicitlySignedOut = false;
+    }
+    state = MemberProfile(
+      userId: session.userId,
+      displayName: session.displayName,
+      email: session.email,
+      bio: session.bio,
+      comfortBadges: session.comfortBadges,
+      isSignedIn: session.isSignedIn,
+      authMethod: session.authMethod,
+      icocChurchAffiliation: session.icocChurchAffiliation,
+      avatarUrl: session.photoUrl,
+    );
+    if (session.isSignedIn) {
+      _persistedProfile = state;
+      ProfileStorageService.instance.save(
+        displayName: state.displayName,
+        email: state.email,
+        bio: state.bio,
+        icocChurchAffiliation: state.icocChurchAffiliation,
+        comfortBadges: state.comfortBadges,
+      );
+      _publishDirectory(state);
+    } else {
+      _persistedProfile = null;
+      ProfileStorageService.instance.clear();
+    }
   }
 
   void setAvatarUrl(String? url) {
     state = state.copyWith(avatarUrl: url);
+    _persistedProfile = state;
   }
 
   Future<void> signOut() async {
+    // Guest state is applied before the first await so callers that do not
+    // wait still observe a signed-out profile. Directory publish is finished
+    // first only after that, while the auth token may still be valid.
+    _explicitlySignedOut = true;
     final pending = _publishFlight;
+    _persistedProfile = null;
+    ProfileStorageService.instance.clear();
+    state = const MemberProfile.guest();
     if (pending != null) {
       try {
         await pending;
       } catch (_) {}
     }
-    final repo = ref.read(authRepositoryProvider);
-    unawaited(repo.signOut());
-    _applyGeneration++;
+    if (!_explicitlySignedOut) return;
+    await ref.read(authRepositoryProvider).signOut();
+    if (!_explicitlySignedOut) return;
+    _persistedProfile = null;
+    ProfileStorageService.instance.clear();
     state = const MemberProfile.guest();
   }
 }
@@ -289,3 +387,6 @@ final memberProfileProvider =
     NotifierProvider<MemberProfileNotifier, MemberProfile>(
       MemberProfileNotifier.new,
     );
+
+/// Alias provider for backwards compatibility and clean semantic naming.
+final currentUserProfileProvider = memberProfileProvider;

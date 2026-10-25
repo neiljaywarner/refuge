@@ -21,6 +21,8 @@ void main() {
       expect(event['name'], 'space_viewed');
       expect(event['flavor'], 'dev');
       expect(event['space_slug'], 'quiet-gardens');
+      expect(event['is_debug_mode'], isNotNull);
+      expect(event['automation_tool'], isNotNull);
     });
 
     test('Dispatches HTTP payload to Aptabase when Aptabase key is configured', () async {

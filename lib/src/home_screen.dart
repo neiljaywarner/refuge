@@ -8,18 +8,20 @@ import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
-import 'features/auth/presentation/belong_auth_sheet.dart';
 import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
+import 'features/feedback/presentation/feedback_drawing_canvas.dart';
 import 'features/fellowship_spaces/domain/fellowship_space.dart';
 import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
 import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
-import 'features/observability/presentation/observability_easter_egg_dialog.dart';
+import 'features/notifications/domain/notification_navigation_target.dart';
+import 'features/notifications/presentation/notifications_controller.dart';
 import 'features/notifications/data/member_notification_store.dart';
+import 'features/observability/presentation/observability_easter_egg_dialog.dart';
 import 'features/profile/data/member_directory_store.dart';
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/belong_members_directory_view.dart';
@@ -36,9 +38,9 @@ import 'features/reflections/presentation/reflection_card.dart';
 import 'features/reflections/presentation/reflection_composer.dart';
 import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
+import 'features/reflections/presentation/threaded_discussion_sheet.dart';
 import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
-import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
@@ -72,8 +74,31 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final activeBottomTab = useState<BelongBottomTab>(BelongBottomTab.home);
     final homeSubView = useState<BelongHomeSubView>(BelongHomeSubView.feed);
     final activeComingSoonItem = useState<BelongSpaceItem?>(null);
+    final activeDirectMessageThreadId = useState<String?>(null);
+    final highlightedPostId = useState<String?>(null);
     final easterEggTapCount = useState<int>(0);
     final easterEggLastTap = useState<DateTime?>(null);
+
+    // Deep-link navigation handler for in-app or push notifications (#330)
+    ref.listen<NotificationNavigationTarget?>(
+      notificationNavigationTargetProvider,
+      (_, target) {
+        if (target != null) {
+          activeBottomTab.value = target.tab;
+          if (target.spaceKey != null) {
+            selectedSpace.value = target.spaceKey!;
+            homeSubView.value = BelongHomeSubView.feed;
+          }
+          if (target.conversationId != null) {
+            activeDirectMessageThreadId.value = target.conversationId;
+          }
+          if (target.postId != null) {
+            highlightedPostId.value = target.postId;
+          }
+          ref.read(notificationNavigationTargetProvider.notifier).state = null;
+        }
+      },
+    );
 
     final PostRepository activeRepository =
         repository ?? ref.watch(postRepositoryProvider);
@@ -100,8 +125,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
     final SensoryMode currentMode =
         themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
-    final SensoryFontScale currentFontScale =
-        themeNotifier?.fontScale ?? ref.watch(sensoryFontScaleProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isLiveServerpod =
@@ -117,13 +140,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
       analytics.logSensoryModeChanged(mode.name);
     }
 
-    void setSensoryFontScale(SensoryFontScale scale) {
-      if (themeNotifier != null) {
-        themeNotifier!.setFontScale(scale);
-      }
-      ref.read(sensoryFontScaleProvider.notifier).setScale(scale);
-    }
-
     void selectSpace(String spaceKey) {
       selectedSpace.value = spaceKey;
       homeSubView.value = BelongHomeSubView.feed;
@@ -137,21 +153,27 @@ class RefugeHomeScreen extends HookConsumerWidget {
       String? specialInterestTag,
       String? imageUrl,
     }) async {
-      final targetSpace = selectedSpace.value == 'saved_for_later'
-          ? 'general_chat'
-          : selectedSpace.value;
+      if (selectedSpace.value == 'saved_for_later') {
+        // Saved for later is a private bookmarks sanctuary; public reflections cannot be posted here.
+        return;
+      }
+      final targetSpace = selectedSpace.value;
       await activeRepository.createPost(
         Post(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: 'post-${DateTime.now().millisecondsSinceEpoch}',
           authorName: profile.displayName,
+          content: content,
+          timestamp: DateTime.now(),
           spaceKey: targetSpace,
+          reactions: {},
           toneTag: toneTag,
           specialInterestTag: specialInterestTag,
           imageUrl: imageUrl,
-          content: content,
-          timestamp: DateTime.now(),
-          reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
         ),
+      );
+      analytics.logReflectionPublished(
+        tag: toneTag,
+        lengthBucket: content.length,
       );
       try {
         await ref
@@ -195,169 +217,166 @@ class RefugeHomeScreen extends HookConsumerWidget {
       if (homeSubView.value == BelongHomeSubView.comingSoonItem &&
           activeComingSoonItem.value != null) {
         final item = activeComingSoonItem.value!;
-        if (item.slug == 'actually_autistic_events') {
-          return ActuallyAutisticEventsView(
-            onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-          );
-        }
-        final isMobileAppLink =
-            item.slug == 'link_android_app' || item.slug == 'link_ios_app';
-        final extraNote = item.slug == 'link_community_guidelines'
-            ? remoteConfig.communityGuidelinesMarkdown
-            : isMobileAppLink
-            ? 'Tip: You can add Belong directly to your phone Home Screen right now via Safari ("Add to Home Screen") or Chrome ("Install App") with zero App Store wait!'
-            : null;
         return ComingSoonView(
           title: item.title,
           emoji: item.emoji,
           description: item.subtitle,
           trackedIssueNumber: item.trackedIssueNumber,
-          extraMarkdownOrNote: extraNote,
-          showPwaInstallGuide: isMobileAppLink,
-          onBackToFeed: () => homeSubView.value = BelongHomeSubView.feed,
+          onBackToFeed: () => homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
+      // Default: Feed View
       return LayoutBuilder(
         builder: (context, constraints) {
-          final isCompactHeight = constraints.maxHeight < 520;
+          final isDesktop = constraints.maxWidth >= 768;
+
           return Column(
             children: [
-              if (!isCompactHeight)
-                CommunityAnchorBanner(
-                  primaryColor: primaryColor,
-                  isContrast: isContrast,
-                ),
-              if (!profile.isSignedIn)
+              SpaceNavigationBar(
+                selectedSpace: selectedSpace.value,
+                onSelectSpace: selectSpace,
+              ),
+              ToneFilterRow(
+                activeFilter: activeFilter.value,
+                onSelectFilter: (tone) {
+                  activeFilter.value = tone;
+                },
+              ),
+              FeedSortRow(
+                activeSort: activeSort.value,
+                onSelectSort: (sort) {
+                  activeSort.value = sort;
+                },
+                isContrast: isContrast,
+              ),
+              if (selectedSpace.value == 'saved_for_later')
                 Container(
-                  key: const Key('demo_mode_banner'),
                   margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
+                    horizontal: 14.0,
+                    vertical: 4.0,
                   ),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 12.0,
+                    vertical: 8.0,
                   ),
                   decoration: BoxDecoration(
                     color: isContrast
                         ? Colors.black
                         : primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                       color: isContrast
-                          ? Colors.white
-                          : primaryColor.withValues(alpha: 0.25),
+                          ? Colors.yellow
+                          : primaryColor.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Text('🎭', style: TextStyle(fontSize: 14)),
-                      SizedBox(width: 8),
+                      Icon(
+                        Icons.bookmark_added_rounded,
+                        size: 16,
+                        color: isContrast ? Colors.yellow : primaryColor,
+                      ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Demo Mode · Sample reflections shown. Sign in to view and share live community reflections.',
+                          'Your private bookmarks sanctuary. Only you can see reflections saved here.',
                           style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                            color: isContrast
+                                ? Colors.white
+                                : Theme.of(context).textTheme.bodySmall?.color,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              SpaceNavigationBar(
-                selectedSpace: selectedSpace.value,
-                onSelectSpace: selectSpace,
-              ),
-              if (!isCompactHeight)
-                QuietDigestBanner(
+              if (remoteConfig.bannerEnabled)
+                CommunityAnchorBanner(
                   primaryColor: primaryColor,
                   isContrast: isContrast,
-                  legacyMessage: quietDigestSnapshot.data,
                 ),
-              ReflectionComposer(
-                selectedSpace: selectedSpace.value,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-                onSubmit: submitPost,
-              ),
-              ToneFilterRow(
-                activeFilter: activeFilter.value,
-                onSelectFilter: (f) => activeFilter.value = f,
-              ),
-              FeedSortRow(
-                activeSort: activeSort.value,
-                isContrast: isContrast,
-                onSelectSort: (s) {
-                  activeSort.value = s;
-                  ref.read(feedSortOptionProvider.notifier).state = s;
-                  analytics.logEvent(
-                    'feed_sort_changed',
-                    parameters: {'sort': s.name},
-                  );
-                },
-              ),
+              if (quietDigestSnapshot.hasData &&
+                  quietDigestSnapshot.data != null &&
+                  quietDigestSnapshot.data!.isNotEmpty)
+                QuietDigestBanner(
+                  primaryColor: primaryColor,
+                  legacyMessage: quietDigestSnapshot.data,
+                  isContrast: isContrast,
+                ),
+              if (!isDesktop && selectedSpace.value != 'saved_for_later')
+                ReflectionComposer(
+                  selectedSpace: selectedSpace.value,
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                  onSubmit:
+                      ({
+                        required String content,
+                        required String toneTag,
+                        String? specialInterestTag,
+                        String? imageUrl,
+                      }) => submitPost(
+                        content: content,
+                        toneTag: toneTag,
+                        specialInterestTag: specialInterestTag,
+                        imageUrl: imageUrl,
+                      ),
+                ),
               Expanded(
                 child: Builder(
                   builder: (context) {
-                    final snapshot = postsSnapshot;
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator.adaptive(),
+                    if (postsSnapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error loading reflections: ${postsSnapshot.error}',
+                        ),
                       );
                     }
+                    if (!postsSnapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                    final allPosts = snapshot.data!;
-                    final availablePosts = profile.isSignedIn
-                        ? allPosts.where((p) => !p.isDemo).toList()
-                        : allPosts;
-                    final filteredPosts = activeFilter.value == 'All'
-                        ? availablePosts
-                        : availablePosts
-                              .where((p) => p.toneTag == activeFilter.value)
-                              .toList();
+                    var posts = postsSnapshot.data!;
 
-                    final userInterests = {
-                      ...profile.comfortBadges,
-                      if (profile.bio.isNotEmpty)
-                        ...profile.bio.split(RegExp(r'[\s,.]+')),
-                      if (profile.tagline != null)
-                        ...profile.tagline!.split(RegExp(r'[\s,.]+')),
-                    };
+                    // Apply Tone Filter
+                    if (activeFilter.value != 'All') {
+                      posts = posts
+                          .where((p) => p.toneTag == activeFilter.value)
+                          .toList();
+                    }
 
-                    final posts = FeedSortService.sortPosts(
-                      filteredPosts,
+                    // Apply Feed Sort
+                    final activityTimestamps =
+                        activityTimestampsAsync.value ?? {};
+                    final commentCounts = commentCountsAsync.value ?? {};
+                    posts = FeedSortService.sortPosts(
+                      posts,
                       sortOption: activeSort.value,
-                      latestActivityByPost: activityTimestampsAsync.value,
-                      commentCounts: commentCountsAsync.value,
-                      userInterests: userInterests,
+                      latestActivityByPost: activityTimestamps,
+                      commentCounts: commentCounts,
                     );
 
                     if (posts.isEmpty) {
                       if (selectedSpace.value == 'saved_for_later') {
                         return Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24.0,
-                            ),
+                            padding: const EdgeInsets.all(24.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.bookmark_border_rounded,
                                   size: 40,
-                                  color: Colors.grey,
+                                  color: Theme.of(context).disabledColor,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 12),
                                 Text(
-                                  'No saved reflections yet.\nTap the bookmark ribbon (🔖) on any reflection to save it for quiet, unhurried reading later.',
-                                  key: const Key(
-                                    'empty_saved_reflections_placeholder',
-                                  ),
+                                  'No saved reflections yet.\nTap the bookmark icon on any reflection to save it for quiet contemplation.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.5,
                                     color: Theme.of(context)
                                         .textTheme
                                         .bodySmall
@@ -399,6 +418,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         return ReflectionCard(
                           post: p,
                           isContrast: isContrast,
+                          isHighlighted: highlightedPostId.value == p.id,
                           onAddReaction: (reactionType) =>
                               activeRepository.addReaction(
                                 postId: p.id,
@@ -435,9 +455,35 @@ class RefugeHomeScreen extends HookConsumerWidget {
         case BelongBottomTab.notifications:
           return CalmNotificationsView(
             onBackToHome: () => activeBottomTab.value = BelongBottomTab.home,
+            onNavigate: (target) async {
+              activeBottomTab.value = target.tab;
+              if (target.spaceKey != null) {
+                selectSpace(target.spaceKey!);
+              }
+              if (target.postId != null && target.openDiscussion) {
+                final posts = await activeRepository
+                    .watchPosts(
+                      spaceKey: target.spaceKey ?? selectedSpace.value,
+                    )
+                    .first
+                    .timeout(
+                      const Duration(milliseconds: 600),
+                      onTimeout: () => [],
+                    );
+                final post = posts.cast<Post?>().firstWhere(
+                  (p) => p?.id == target.postId,
+                  orElse: () => null,
+                );
+                if (context.mounted && post != null) {
+                  ThreadedDiscussionSheet.show(context, post: post);
+                }
+              }
+            },
           );
         case BelongBottomTab.msgs:
-          return const BelongMessagesView();
+          return BelongMessagesView(
+            initialActiveThreadId: activeDirectMessageThreadId.value,
+          );
         case BelongBottomTab.search:
           return CommunitySearchView(
             repository: activeRepository,
@@ -655,7 +701,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 if (action == 'create_post') {
                   _showCreatePostModal(
                     context: context,
-                    selectedSpace: selectedSpace.value,
+                    selectedSpace: selectedSpace.value == 'saved_for_later'
+                        ? 'general_chat'
+                        : selectedSpace.value,
                     primaryColor: primaryColor,
                     isContrast: isContrast,
                     isImagePost: false,
@@ -664,7 +712,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 } else if (action == 'create_image_post') {
                   _showCreatePostModal(
                     context: context,
-                    selectedSpace: selectedSpace.value,
+                    selectedSpace: selectedSpace.value == 'saved_for_later'
+                        ? 'general_chat'
+                        : selectedSpace.value,
                     primaryColor: primaryColor,
                     isContrast: isContrast,
                     isImagePost: true,
@@ -847,15 +897,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
             ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        bottom: true,
-        left: true,
-        right: true,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: buildActiveBottomTabBody(),
+      body: RepaintBoundary(
+        key: rootFeedbackRepaintBoundaryKey,
+        child: SafeArea(
+          top: false,
+          bottom: true,
+          left: true,
+          right: true,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: buildActiveBottomTabBody(),
+            ),
           ),
         ),
       ),
@@ -894,6 +947,15 @@ class _BelongSubHeaderBar extends StatelessWidget {
     final isFeed = activeSubView == BelongHomeSubView.feed;
     final isSpaces = activeSubView == BelongHomeSubView.spaces;
 
+    Future<void> openVoteAndFeedback() async {
+      final bytes = await captureRepaintBoundary(
+        rootFeedbackRepaintBoundaryKey,
+      );
+      if (context.mounted) {
+        BelongFeedbackAndVotingSheet.show(context, screenshotBytes: bytes);
+      }
+    }
+
     final feedChip = _webSemanticsTarget(
       label: 'Feed',
       identifier: 'feed_tab',
@@ -921,12 +983,12 @@ class _BelongSubHeaderBar extends StatelessWidget {
     final voteChip = _webSemanticsTarget(
       label: 'Vote & Feedback',
       identifier: 'vote_feedback_button',
-      onTap: () => BelongFeedbackAndVotingSheet.show(context),
+      onTap: openVoteAndFeedback,
       child: ActionChip(
         key: const Key('open_feedback_and_voting_button'),
         avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
         label: const Text('Vote & Feedback'),
-        onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+        onPressed: openVoteAndFeedback,
       ),
     );
 
@@ -1029,6 +1091,7 @@ void _showCreatePostModal({
                   primaryColor: primaryColor,
                   isContrast: isContrast,
                   isImagePost: isImagePost,
+                  isModal: true,
                   onSubmit:
                       ({
                         required String content,
@@ -1059,13 +1122,6 @@ void _showCreatePostModal({
 
 /// Web Maestro reads semantics identifiers even when a chip's label text is
 /// dropped from the accessibility tree. Mobile keeps the chip unchanged.
-///
-/// Web Maestro reads [label] and [identifier] even when the chip text is
-/// dropped from the accessibility tree. Mobile keeps the chip unchanged.
-///
-/// The node stays a button because that is what Maestro activates. A phone-width
-/// row used to push the vote chip past the hit-test bounds; the subheader wraps
-/// instead, so a click on the chip can land.
 Widget _webSemanticsTarget({
   required String label,
   required String identifier,

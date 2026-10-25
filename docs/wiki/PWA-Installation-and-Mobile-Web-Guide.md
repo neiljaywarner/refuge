@@ -1,5 +1,7 @@
 # 📱 Progressive Web App (PWA) Installation & Mobile Web Guide
 
+> **iPhone steps, plus a short Android path:** **[Put Belong on your phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)**. The pictures below are Android only.
+
 > **Welcome to Belong on the Spectrum!**
 > This guide walks you step-by-step through installing the **Belong on the Spectrum** Progressive Web App (PWA) directly onto your phone, tablet, or computer — with **zero App Store wait, zero account passwords, and zero storage bloat**!
 

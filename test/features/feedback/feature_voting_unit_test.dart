@@ -1,10 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 void main() {
+  setUp(() {
+    VoteStorageService.instance.clear();
+  });
+
+  tearDown(() {
+    VoteStorageService.instance.clear();
+  });
+
   group('FeatureVotingRepository & 1-Line Backend Adapter Switching (ADR-0009)', () {
     for (final target in BackendTarget.values) {
       test('executes vote toggle, feature proposal & feedback on ${target.displayName}', () async {

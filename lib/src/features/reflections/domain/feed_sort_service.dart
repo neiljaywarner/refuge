@@ -16,6 +16,29 @@ class FeedSortService {
     Set<String>? userInterests,
   }) {
     final list = List<Post>.from(posts);
+    try {
+      _sortInPlace(
+        list,
+        sortOption: sortOption,
+        latestActivityByPost: latestActivityByPost,
+        commentCounts: commentCounts,
+        userInterests: userInterests,
+      );
+    } catch (_) {
+      // A comparator failure must not red-screen the feed. Keep the
+      // pre-sort copy so the member can still read reflections.
+      return List<Post>.from(posts);
+    }
+    return list;
+  }
+
+  static void _sortInPlace(
+    List<Post> list, {
+    required FeedSortOption sortOption,
+    Map<String, DateTime>? latestActivityByPost,
+    Map<String, int>? commentCounts,
+    Set<String>? userInterests,
+  }) {
     switch (sortOption) {
       case FeedSortOption.latest:
         list.sort((a, b) {
@@ -35,8 +58,14 @@ class FeedSortService {
 
       case FeedSortOption.likes:
         list.sort((a, b) {
-          final aLikes = a.reactions.values.fold<int>(0, (sum, val) => sum + val);
-          final bLikes = b.reactions.values.fold<int>(0, (sum, val) => sum + val);
+          final aLikes = a.reactions.values.fold<int>(
+            0,
+            (sum, val) => sum + val,
+          );
+          final bLikes = b.reactions.values.fold<int>(
+            0,
+            (sum, val) => sum + val,
+          );
           final comp = bLikes.compareTo(aLikes);
           if (comp != 0) return comp;
           return b.timestamp.compareTo(a.timestamp);
@@ -45,8 +74,14 @@ class FeedSortService {
 
       case FeedSortOption.popular:
         list.sort((a, b) {
-          final aLikes = a.reactions.values.fold<int>(0, (sum, val) => sum + val);
-          final bLikes = b.reactions.values.fold<int>(0, (sum, val) => sum + val);
+          final aLikes = a.reactions.values.fold<int>(
+            0,
+            (sum, val) => sum + val,
+          );
+          final bLikes = b.reactions.values.fold<int>(
+            0,
+            (sum, val) => sum + val,
+          );
           final aComments = commentCounts?[a.id] ?? 0;
           final bComments = commentCounts?[b.id] ?? 0;
           final aScore = aLikes + (aComments * 2);
@@ -93,7 +128,6 @@ class FeedSortService {
         });
         break;
     }
-    return list;
   }
 
   static bool _matchesUserInterest(Post post, Set<String>? userInterests) {
@@ -104,10 +138,14 @@ class FeedSortService {
     for (final interest in userInterests) {
       final i = interest.toLowerCase().trim();
       if (i.length < 4) continue;
-      final pattern = RegExp('\\b${RegExp.escape(i)}\\b');
-      if (tag != null && pattern.hasMatch(tag)) return true;
-      if (pattern.hasMatch(tone)) return true;
-      if (pattern.hasMatch(content)) return true;
+      try {
+        final pattern = RegExp('\\b${RegExp.escape(i)}\\b');
+        if (tag != null && pattern.hasMatch(tag)) return true;
+        if (pattern.hasMatch(tone)) return true;
+        if (pattern.hasMatch(content)) return true;
+      } catch (_) {
+        continue;
+      }
     }
     return false;
   }
@@ -117,6 +155,62 @@ class FeedSortService {
     final peace = post.reactions['peace'] ?? 0;
     final encouraged = post.reactions['encouraged'] ?? 0;
     final relatable = post.reactions['relatable'] ?? 0;
-    return (pray * 1.5) + (peace * 1.5) + (encouraged * 1.2) + (relatable * 1.0);
+    return (pray * 1.5) +
+        (peace * 1.5) +
+        (encouraged * 1.2) +
+        (relatable * 1.0);
+  }
+}
+
+/// Signed-in / demo / tone filter plus [FeedSortService] ordering.
+///
+/// The feed screen applies this on every sort or filter tap. Metadata maps
+/// are optional so a failed comment lookup sorts with creation time and
+/// zero replies instead of throwing.
+class FeedQuery {
+  static Set<String> interestsFrom({
+    required Iterable<String> comfortBadges,
+    required String bio,
+    String? tagline,
+  }) {
+    return {
+      ...comfortBadges,
+      if (bio.isNotEmpty) ...bio.split(RegExp(r'[\s,.]+')),
+      if (tagline != null) ...tagline.split(RegExp(r'[\s,.]+')),
+    };
+  }
+
+  static bool _isTestJunk(Post post) {
+    final content = post.content.toLowerCase();
+    final author = post.authorName.toLowerCase();
+    return content.contains('blah your face') ||
+        content.contains('test 1') ||
+        content.contains('grokbot') ||
+        author.contains('grokbot');
+  }
+
+  static List<Post> apply({
+    required List<Post> posts,
+    required String toneFilter,
+    required FeedSortOption sort,
+    required bool signedIn,
+    Map<String, DateTime>? latestActivityByPost,
+    Map<String, int>? commentCounts,
+    Set<String>? userInterests,
+  }) {
+    final nonJunk = posts.where((p) => !_isTestJunk(p)).toList();
+    final available = signedIn
+        ? nonJunk.where((p) => !p.isDemo).toList()
+        : nonJunk;
+    final filtered = toneFilter == 'All'
+        ? available
+        : available.where((p) => p.toneTag == toneFilter).toList();
+    return FeedSortService.sortPosts(
+      filtered,
+      sortOption: sort,
+      latestActivityByPost: latestActivityByPost,
+      commentCounts: commentCounts,
+      userInterests: userInterests,
+    );
   }
 }

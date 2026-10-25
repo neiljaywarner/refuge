@@ -263,6 +263,81 @@ void main() {
       await $(const Key('meme_open_settings_button')).tap();
       expect(fakeService.appSettingsOpened, isTrue);
     });
+
+    patrolWidgetTest('canceling photo picker without choosing leaves modal in clean state', ($) async {
+      final fakeService = FakeAvatarUploadService(returnNullOnPick: true);
+
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (_) {},
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
+
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
+
+      // No preview is displayed, remains in initial upload state
+      expect($(const Key('uploaded_photo_preview')), findsNothing);
+      expect($(const Key('meme_upload_camera_button')), findsOneWidget);
+    });
+
+    patrolWidgetTest('hardware exception during photo selection displays calm error banner', ($) async {
+      final fakeService = FakeAvatarUploadService(throwOnPick: true);
+
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (_) {},
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
+
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
+
+      // Error banner is displayed
+      expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
+      expect($('Could not select photo: Exception: Simulated camera hardware disconnect'), findsOneWidget);
+    });
+
+    patrolWidgetTest('meme gallery close button dismisses modal', ($) async {
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
+      await $('Open Gallery').tap();
+
+      expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
+      await $(const Key('meme_gallery_close_button')).tap();
+      await $.pumpAndSettle();
+
+      expect($('🖼️ Autism & Faith Meme Gallery'), findsNothing);
+    });
+
+    patrolWidgetTest('tab switching between custom presets and back to curated list', ($) async {
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
+      await $('Open Gallery').tap();
+
+      // Switch to custom tab
+      await $(const Key('tab_custom_meme')).tap();
+      await $.pumpAndSettle();
+
+      // Tap special interest preset
+      await $(const Key('preset_special_interest')).tap();
+      await $.pumpAndSettle();
+      expect($(const Key('custom_meme_preview')), findsOneWidget);
+
+      // Tap quiet waters preset
+      await $(const Key('preset_quiet_waters')).tap();
+      await $.pumpAndSettle();
+      expect($(const Key('custom_meme_preview')), findsOneWidget);
+
+      // Switch back to curated memes tab
+      await $(const Key('tab_curated_memes')).tap();
+      await $.pumpAndSettle();
+      expect($('Elijah Under the Broom Tree'), findsOneWidget);
+    });
   });
 
   group('ReflectionCard Media & Meme Rendering Tests', () {
@@ -380,6 +455,7 @@ void main() {
                 selectedSpace: 'memes',
                 primaryColor: Colors.teal,
                 isContrast: false,
+                isModal: true,
                 onSubmit: ({
                   required content,
                   required toneTag,
@@ -447,6 +523,7 @@ void main() {
                 selectedSpace: 'memes',
                 primaryColor: Colors.teal,
                 isContrast: false,
+                isModal: true,
                 onSubmit: ({
                   required content,
                   required toneTag,
@@ -516,6 +593,145 @@ void main() {
       );
 
       expect(find.text('Custom Fallback Calm'), findsOneWidget);
+    });
+
+    testWidgets('renders fallback on malformed base64 data URI', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: r'data:image/png;base64,invalid!@#$not_base64',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.image_outlined), findsOneWidget);
+    });
+
+    testWidgets('renders custom fallbackWidget on malformed base64', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: r'data:image/png;base64,invalid!@#$',
+              fallbackWidget: Text('Safe Fallback Base64'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Safe Fallback Base64'), findsOneWidget);
+    });
+
+    testWidgets('renders valid base64 image data URI using Image.memory', (tester) async {
+      const dataUri =
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: dataUri,
+              width: 100,
+              height: 100,
+              semanticLabel: 'Calm 1x1 test image',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('renders network image using Image.network', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600',
+              width: 200,
+              height: 150,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('renders asset image using Image.asset', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CalmMediaImage(
+              imageUrl: 'assets/images/belong_logo.png',
+              width: 50,
+              height: 50,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('CalmMediaImage.buildLoadingProgress displays progress indicator when loading', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => CalmMediaImage.buildLoadingProgress(
+                context: ctx,
+                child: const Text('Loaded Image Child'),
+                loadingProgress: const ImageChunkEvent(
+                  cumulativeBytesLoaded: 50,
+                  expectedTotalBytes: 100,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('CalmMediaImage.buildLoadingProgress handles indeterminate loading and null progress', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => CalmMediaImage.buildLoadingProgress(
+                context: ctx,
+                child: const Text('Loaded Image Child'),
+                loadingProgress: const ImageChunkEvent(
+                  cumulativeBytesLoaded: 50,
+                  expectedTotalBytes: null,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => CalmMediaImage.buildLoadingProgress(
+                context: ctx,
+                child: const Text('Loaded Image Child'),
+                loadingProgress: null,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Loaded Image Child'), findsOneWidget);
     });
   });
 }

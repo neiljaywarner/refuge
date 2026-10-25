@@ -85,6 +85,39 @@ dart run tool/deploy_release.dart --version v0.8.0-alpha \
   --highlights-file docs/release_highlights/v0.8.0-alpha.md
 ```
 
+### Build identity
+
+Every web and APK build this script compiles is stamped with three compile-time defines. The About Belong dialog reads them with `String.fromEnvironment` and shows the same values that were written into `build/web/version.json`.
+
+| Define | Value | About dialog |
+| :--- | :--- | :--- |
+| `GIT_COMMIT_SHA` | Full 40-character hex from `git rev-parse HEAD` | Git commit, plus `https://github.com/neiljaywarner/refuge/commit/<sha>` |
+| `BUILD_TIME_MS` | UTC Unix epoch milliseconds, captured once before `flutter build` | Build time, as ISO-8601 UTC and the same millisecond count |
+| `RELEASE_TAG` | The `--version` flag (for example `v0.9.1`) | Release, when the define is non-empty |
+
+`build/web/version.json` keeps its existing `version`, `build_number`, and `release_tag` fields and adds:
+
+| Field | Example |
+| :--- | :--- |
+| `git_sha` | `0123456789abcdef0123456789abcdef01234567` |
+| `build_time_ms` | `1792881722123` |
+| `build_time_utc` | `2026-10-24T22:42:02.123Z` |
+
+`--github-release` publishes those notes, so the GitHub tag's release body includes the SHA and the commit URL. The tag name stays the `--version` value.
+
+`--skip-build` reuses artifacts already in `build/web` or `build/app`. It does not bake new defines into that binary and does not rewrite `version.json`.
+
+A local `flutter run` that does not pass the defines shows Git commit `unknown`, build time `unknown`, and source `dev`. The app does not invent a SHA.
+
+CI can pass the same three defines. This repository does not add a GitHub Actions deploy workflow here.
+
+```bash
+flutter build web --release \
+  --dart-define=GIT_COMMIT_SHA="$GIT_COMMIT_SHA" \
+  --dart-define=BUILD_TIME_MS="$BUILD_TIME_MS" \
+  --dart-define=RELEASE_TAG="$RELEASE_TAG"
+```
+
 ---
 
 ## ⚙️ 4. CLI Flags & Options Reference
@@ -100,7 +133,7 @@ dart run tool/deploy_release.dart --version v0.8.0-alpha \
 | `--groups` | `pre-alpha-testers` | Tester group aliases in Firebase Console |
 | `--highlights-file` | `none` | Path to custom markdown highlights prepended to release notes |
 | `--attach` | `none` | Repeatable file path(s) to attach to GitHub Release (e.g. screenshots/videos) |
-| `--skip-build` | `false` | Skips build step, deploying existing artifacts in `build/web` or `build/app` |
+| `--skip-build` | `false` | Skips the Flutter build and does not re-stamp dart-defines. Deploys existing artifacts in `build/web` or `build/app` |
 | `--dry-run` | `false` | Previews release notes and actions without executing builds or deploys |
 
 ---

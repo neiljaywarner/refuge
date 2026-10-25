@@ -1,0 +1,63 @@
+url: http://127.0.0.1:8095
+name: Belong web every feed sort option
+---
+# Covers each on-screen sort chip, then every sort from the menu (#485).
+# Off-screen chips are not in the semantics tree, so Popular, Likes, and
+# Alphabetical are selected from the sort menu (same callback as the chips).
+- launchApp
+- extendedWaitUntil:
+    visible: "Demo Mode.*"
+    timeout: 45000
+
+- tapOn:
+    id: "feed_sort_chip_latest"
+- tapOn:
+    id: "feed_sort_chip_forYou"
+- tapOn:
+    id: "feed_sort_chip_newActivity"
+- tapOn:
+    id: "feed_sort_chip_oldest"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_popular"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_popular"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_likes"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_likes"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_alphabetical"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_alphabetical"
+
+- tapOn:
+    id: "feed_sort_popup_button"
+- extendedWaitUntil:
+    visible:
+      id: "feed_sort_menu_item_newActivity"
+    timeout: 10000
+- tapOn:
+    id: "feed_sort_menu_item_newActivity"
+
+- tapOn:
+    id: "tone_filter_chip_comfort_only"
+- assertVisible: ".*sensory fatigue.*"
+- tapOn:
+    id: "tone_filter_chip_all"
+- assertVisible: "Demo Mode.*"
+- assertVisible: ".*quiet space exists.*"

@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
+import '../../../core/build/build_identity.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../sensory_themes/domain/sensory_font_scale.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
+import 'about_build_stamp.dart';
 
 /// Shows the About Belong on the Spectrum & Sensory Settings dialog
 /// (with all hackathon / Judge API Explorer clutter removed per Issue #18).
+///
+/// [buildIdentity] defaults to the compile-time dart-defines. When they are
+/// absent the dialog shows git commit `unknown`, build time `unknown`, and
+/// source `dev`. It does not invent a commit SHA.
+/// [loadVersion] defaults to the platform package version from pubspec.
 void showAboutRefugeDialog(
   BuildContext context, {
   required Color primaryColor,
@@ -16,7 +23,11 @@ void showAboutRefugeDialog(
   ValueChanged<SensoryMode>? onSelectMode,
   SensoryFontScale currentFontScale = SensoryFontScale.standard,
   ValueChanged<SensoryFontScale>? onSelectFontScale,
+  BuildIdentity? buildIdentity,
+  Future<AppVersionLabel> Function()? loadVersion,
 }) {
+  final identity = buildIdentity ?? BuildIdentity.fromEnvironment;
+  final versionFuture = (loadVersion ?? loadPackageVersion)();
   showDialog(
     context: context,
     builder: (ctx) => Semantics(
@@ -44,13 +55,10 @@ void showAboutRefugeDialog(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Belong on the Spectrum (v0.8.0-alpha)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isContrast ? Colors.yellow : primaryColor,
-                    ),
+                  AboutDialogTitle(
+                    version: versionFuture,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
                   ),
                   Text(
                     'belongonthespectrum.com • Partnered with DFW Church',
@@ -110,12 +118,14 @@ void showAboutRefugeDialog(
                   ),
                 ),
                 const Gap(12),
+                AboutBuildStamp(identity: identity, version: versionFuture),
+                const Gap(12),
                 // Dedicated High Contrast Mode Toggle (Issue #277)
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                   title: const Text(
-                    'High Contrast Mode (WCAG AAA)',
+                    'High Contrast Mode',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                   subtitle: const Text(
@@ -210,7 +220,7 @@ void showAboutRefugeDialog(
                 const Text(
                   '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
                   '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
-                  '• Organizers can update community announcements live via Firebase Remote Config.',
+                  '• Community announcements and guidance are updated unhurriedly by organizers.',
                   style: TextStyle(fontSize: 11.5, height: 1.4),
                 ),
               ],
@@ -250,6 +260,8 @@ void showAboutSanctuaryDialog(
   ValueChanged<SensoryMode>? onSelectMode,
   SensoryFontScale currentFontScale = SensoryFontScale.standard,
   ValueChanged<SensoryFontScale>? onSelectFontScale,
+  BuildIdentity? buildIdentity,
+  Future<AppVersionLabel> Function()? loadVersion,
 }) => showAboutRefugeDialog(
   context,
   primaryColor: primaryColor,
@@ -258,4 +270,6 @@ void showAboutSanctuaryDialog(
   onSelectMode: onSelectMode,
   currentFontScale: currentFontScale,
   onSelectFontScale: onSelectFontScale,
+  buildIdentity: buildIdentity,
+  loadVersion: loadVersion,
 );

@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// Predefined calm-tech fellowship spaces in Refuge (kept for backward compatibility
 /// with existing unit and BDD tests, plus Belong Circle.so spaces).
 const Map<String, String> kFellowshipSpaces = {
+  'general_chat': '📌 #general-chat',
+  'start_here': '👋 #start-here',
   'prayer': '🙏 #prayer-sanctuary',
   'study': '📖 #weekly-study',
   'announcements': '📢 #announcements',
@@ -94,12 +96,6 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         subtitle: 'Community profiles, church affiliations & fellowship connections',
       ),
       BelongSpaceItem(
-        slug: 'general_chat',
-        title: 'General Chat',
-        emoji: '💬',
-        subtitle: 'Open community conversation',
-      ),
-      BelongSpaceItem(
         slug: 'memes',
         title: 'Memes',
         emoji: '😂',
@@ -138,7 +134,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'actually_autistic_events',
         title: 'Actually Autistic Events',
         emoji: '🗓️',
-        subtitle: 'Upcoming sensory-friendly meetups & gatherings (Active)',
+        subtitle: 'Upcoming sensory-friendly meetups & gatherings',
         isComingSoon: true,
         trackedIssueNumber: 28,
       ),
@@ -183,4 +179,4 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
 ];
 
 /// Riverpod StateProvider tracking the currently active fellowship space key.
-final activeSpaceKeyProvider = StateProvider<String>((ref) => 'prayer');
+final activeSpaceKeyProvider = StateProvider<String>((ref) => 'general_chat');
