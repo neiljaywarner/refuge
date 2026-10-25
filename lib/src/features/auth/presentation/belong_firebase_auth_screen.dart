@@ -42,9 +42,9 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
         }),
       ],
       headerBuilder: (context, constraints, shrinkOffset) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+        padding: const .fromLTRB(20, 24, 20, 10),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: .center,
           children: [
             Icon(Icons.diversity_3_rounded, size: 36, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 12),

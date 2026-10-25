@@ -29,11 +29,11 @@ class CommunityAnchorBanner extends HookConsumerWidget {
 
     return Container(
       key: const Key('organizer_message_banner'),
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const .fromLTRB(12, 8, 12, 4),
+      padding: const .symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: .circular(10),
         border: Border.all(
           color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
         ),
@@ -41,7 +41,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(5),
+            padding: const .all(5),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isContrast
@@ -53,8 +53,8 @@ class CommunityAnchorBanner extends HookConsumerWidget {
           const Gap(8),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
               children: [
                 Row(
                   children: [
@@ -111,7 +111,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
               ),
               style: TextButton.styleFrom(
                 visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const .symmetric(horizontal: 6, vertical: 2),
               ),
               child: Text(
                 'About',

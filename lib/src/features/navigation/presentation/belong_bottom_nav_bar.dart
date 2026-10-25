@@ -55,11 +55,11 @@ class BelongBottomNavBar extends HookConsumerWidget {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
+        padding: .only(bottom: bottomInset),
         child: SizedBox(
           height: 64,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: .stretch,
             children: [
               for (final tab in BelongBottomTab.values)
                 Expanded(
@@ -119,7 +119,7 @@ class _BottomNavItem extends StatelessWidget {
         ? BoxDecoration(
             color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.14),
             border: isContrast ? Border.all(color: Colors.yellow, width: 2) : null,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: .circular(16),
           )
         : const BoxDecoration(color: Colors.transparent);
 
@@ -149,17 +149,17 @@ class _BottomNavItem extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             key: Key('bottom_nav_tab_${tab.name}'),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: .circular(12),
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              padding: const .symmetric(vertical: 4, horizontal: 2),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: .center,
+                mainAxisSize: .min,
                 children: [
                   AnimatedContainer(
                     duration: animationDuration,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                    padding: const .symmetric(horizontal: 14, vertical: 3),
                     decoration: pillDecoration,
                     child: iconWidget,
                   ),

@@ -82,7 +82,7 @@ Production pilots include `CalmPushDisplay`, `AvatarCropResult`, and `lib/src/co
 
 ### Dot shorthands (#610)
 
-When the context type is known (for example `padding:` expects `EdgeInsets`), prefer constructor dot-shorthands: `const .symmetric(...)`, `const .all(...)`, `.circular(...)`, and enum-style `.start` on `CrossAxisAlignment`. Pilot directory: `lib/src/core/presentation/`. Skip shorthands when the analyzer reports `dot_shorthand_missing_context`. A custom `belong_lints` rule is deferred ([#610](https://github.com/neiljaywarner/refuge/issues/610)).
+When the context type is known (for example `padding:` expects `EdgeInsets`), prefer constructor dot-shorthands: `const .symmetric(...)`, `const .all(...)`, `.circular(...)`, and enum-style `.start` on `CrossAxisAlignment`. Pilot started in `lib/src/core/presentation/`; most other `lib/` files use shorthands after [#632](https://github.com/neiljaywarner/refuge/issues/632). `home_screen.dart` may lag during parallel agent work. Skip shorthands when the analyzer reports `dot_shorthand_missing_context`. A custom `belong_lints` rule is deferred ([#610](https://github.com/neiljaywarner/refuge/issues/610)).
 
 ### Why did the deploy workflow fail before the Flutter build?
 

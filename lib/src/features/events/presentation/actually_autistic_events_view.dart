@@ -43,24 +43,24 @@ class ActuallyAutisticEventsView extends HookWidget {
             : null,
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const .symmetric(horizontal: 16, vertical: 12),
         children: [
           // Sensory Commitment Banner
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const .all(12),
             decoration: BoxDecoration(
               color: const Color(0xFFF3F7F5),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: .circular(10),
               border: Border.all(color: const Color(0xFFDCECE4)),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 const Icon(Icons.spa_outlined, color: Color(0xFF2E6B56), size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Text(
                         'Sensory-Friendly & Masking-Free',
@@ -89,10 +89,10 @@ class ActuallyAutisticEventsView extends HookWidget {
           ...events.value.map(
             (event) => Card(
               key: Key('event-card-${event.id}'),
-              margin: const EdgeInsets.only(bottom: 14),
+              margin: const .only(bottom: 14),
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: .circular(12),
                 side: BorderSide(
                   color: event.userRsvpd ? const Color(0xFF2E6B56) : Colors.grey.shade200,
                   width: event.userRsvpd ? 1.5 : 1,
@@ -100,19 +100,19 @@ class ActuallyAutisticEventsView extends HookWidget {
               ),
               color: event.userRsvpd ? const Color(0xFFFAFCFA) : const Color(0xFFFAFAFA),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const .all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     // Header: Date & RSVP Badge
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: .spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const .symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE8ECEF),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: .circular(6),
                           ),
                           child: Text(
                             '${event.dateDescription} · ${event.timeDescription}',
@@ -125,10 +125,10 @@ class ActuallyAutisticEventsView extends HookWidget {
                         ),
                         if (event.userRsvpd)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const .symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: const Color(0xFF2E6B56),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: .circular(6),
                             ),
                             child: const Text(
                               '✅ RSVP Confirmed',
@@ -191,7 +191,7 @@ class ActuallyAutisticEventsView extends HookWidget {
 
                     // RSVP Button
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: .spaceBetween,
                       children: [
                         Text(
                           '${event.rsvpCount} members attending',
@@ -217,8 +217,8 @@ class ActuallyAutisticEventsView extends HookWidget {
                                 ? const Color(0xFF2E6B56)
                                 : Colors.transparent,
                             side: const BorderSide(color: Color(0xFF2E6B56)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: .circular(8)),
+                            padding: const .symmetric(horizontal: 12, vertical: 8),
                           ),
                           onPressed: () => toggleRsvp(event.id),
                         ),
@@ -243,14 +243,14 @@ class _SensoryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    padding: const .symmetric(horizontal: 8, vertical: 4),
     decoration: BoxDecoration(
       color: const Color(0xFFF1F3F4),
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: .circular(6),
       border: Border.all(color: const Color(0xFFE2E6E9)),
     ),
     child: Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: .min,
       children: [
         Icon(icon, size: 12, color: const Color(0xFF2C3E50)),
         const SizedBox(width: 4),

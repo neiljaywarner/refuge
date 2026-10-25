@@ -41,7 +41,7 @@ class QuietDigestBanner extends ConsumerWidget {
         color: isContrast
             ? Colors.yellow.withValues(alpha: 0.1)
             : primaryColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: .circular(8),
         border: Border.all(color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.2)),
       ),
       child: Row(

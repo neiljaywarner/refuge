@@ -323,15 +323,15 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
             : const Color(0xFFF3F6F8));
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: .min,
+      crossAxisAlignment: .stretch,
       children: [
         // Controls Toolbar
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const .symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: const .vertical(top: .circular(12)),
           ),
           child: Row(
             children: [
@@ -340,9 +340,9 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
                 InkWell(
                   key: Key('color_choice_${color.toARGB32()}'),
                   onTap: () => setState(() => _selectedColor = color),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: .circular(999),
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    margin: const .symmetric(horizontal: 3),
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
@@ -402,7 +402,7 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
+          padding: const .fromLTRB(10, 6, 10, 0),
           child: Text(
             canvasSemanticsLabel,
             key: const Key('feedback_drawing_stroke_count'),
@@ -411,7 +411,7 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
         ),
         // Interactive Drawing Canvas
         ClipRRect(
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+          borderRadius: const .vertical(bottom: .circular(12)),
           child: Container(
             height: widget.canvasHeight,
             color: bgColor,
@@ -472,7 +472,7 @@ class FeedbackDrawingDialog extends StatefulWidget {
       showDialog<Uint8List>(
         context: context,
         builder: (_) => Dialog(
-          insetPadding: const EdgeInsets.all(16),
+          insetPadding: const .all(16),
           child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),
         ),
       );
@@ -525,10 +525,10 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
     final responsiveCanvasHeight = (screenHeight * 0.42).clamp(150.0, 260.0);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const .all(16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: .min,
+        crossAxisAlignment: .stretch,
         children: [
           Row(
             children: [

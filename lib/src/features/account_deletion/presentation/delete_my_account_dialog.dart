@@ -48,8 +48,8 @@ class DeleteMyAccountDialog extends HookConsumerWidget {
     return AlertDialog(
       title: const Text('Delete my account'),
       content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: .min,
+        crossAxisAlignment: .start,
         children: [
           const Text(AccountDeletionMessages.deleteExplanation),
           const SizedBox(height: 12),

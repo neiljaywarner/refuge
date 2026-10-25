@@ -162,9 +162,9 @@ class _SignInWall extends StatelessWidget {
         if (showExamples) ...[
           const Divider(height: 1),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: const .fromLTRB(16, 12, 16, 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: .stretch,
               children: [
                 if (!passwordReady)
                   Text(
@@ -218,11 +218,11 @@ class _VerifyEmailWall extends StatelessWidget {
     appBar: AppBar(title: const Text('Check your email'), centerTitle: true),
     body: Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const .all(24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: [
               Text(
                 'We sent a verification link to $email. Open it, then come back.',

@@ -75,9 +75,9 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
     final comments = commentsAsync.value ?? <Comment>[];
 
     return AlertDialog(
-      titlePadding: const EdgeInsets.fromLTRB(20, 18, 16, 6),
-      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      titlePadding: const .fromLTRB(20, 18, 16, 6),
+      contentPadding: const .fromLTRB(20, 0, 20, 16),
+      actionsPadding: const .fromLTRB(16, 0, 16, 12),
       title: Row(
         children: [
           CircleAvatar(
@@ -91,8 +91,8 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
               children: [
                 Row(
                   children: [
@@ -105,12 +105,12 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const .symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: effectiveMember.isIcocMember
                             ? primary.withValues(alpha: 0.1)
                             : Colors.grey.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: .circular(4),
                       ),
                       child: Text(
                         effectiveMember.isIcocMember ? 'ICOC' : 'Guest',
@@ -125,14 +125,14 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                       const SizedBox(width: 6),
                       Container(
                         key: const Key('admin_mode_badge'),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const .symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.purple.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: .circular(4),
                           border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
                         ),
                         child: const Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisSize: .min,
                           children: [
                             Icon(Icons.shield_rounded, size: 10, color: Colors.purple),
                             SizedBox(width: 3),
@@ -174,17 +174,17 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
         width: 480,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
               if (isBanned) ...[
                 Container(
                   key: const Key('banned_member_banner'),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const .symmetric(horizontal: 10, vertical: 8),
+                  margin: const .only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: .circular(8),
                     border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
                   ),
                   child: Row(
@@ -239,7 +239,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                     .map(
                       (badge) => Chip(
                         label: Text(badge, style: const TextStyle(fontSize: 9.5)),
-                        padding: EdgeInsets.zero,
+                        padding: .zero,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     )
@@ -256,15 +256,15 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                   Expanded(
                     child: InkWell(
                       key: const Key('profile_activity_posts_tab'),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: .circular(10),
                       onTap: () => activeTab.value = 'posts',
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                        padding: const .symmetric(vertical: 8, horizontal: 10),
                         decoration: BoxDecoration(
                           color: activeTab.value == 'posts'
                               ? primary.withValues(alpha: 0.12)
                               : Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: .circular(10),
                           border: Border.all(
                             color: activeTab.value == 'posts'
                                 ? primary
@@ -302,15 +302,15 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                   Expanded(
                     child: InkWell(
                       key: const Key('profile_activity_comments_tab'),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: .circular(10),
                       onTap: () => activeTab.value = 'comments',
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                        padding: const .symmetric(vertical: 8, horizontal: 10),
                         decoration: BoxDecoration(
                           color: activeTab.value == 'comments'
                               ? primary.withValues(alpha: 0.12)
                               : Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: .circular(10),
                           border: Border.all(
                             color: activeTab.value == 'comments'
                                 ? primary
@@ -353,7 +353,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               if (activeTab.value == 'posts') ...[
                 if (posts.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const .symmetric(vertical: 16),
                     child: Center(
                       child: Text(
                         'No reflections shared yet.',
@@ -380,7 +380,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               ] else ...[
                 if (comments.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const .symmetric(vertical: 16),
                     child: Center(
                       child: Text(
                         'No comments shared yet in discussions.',
@@ -396,28 +396,28 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                   for (final comment in comments) ...[
                     Card(
                       key: Key('author_comment_card_${comment.id}'),
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const .only(bottom: 8),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: .circular(8),
                         side: BorderSide(
                           color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(10),
+                        padding: const .all(10),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: .start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: .spaceBetween,
                               children: [
                                 if (comment.toneTag != null && comment.toneTag!.isNotEmpty)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const .symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: .circular(4),
                                     ),
                                     child: Text(
                                       comment.toneTag!,
@@ -444,7 +444,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                             Text(comment.content, style: const TextStyle(fontSize: 12.5)),
                             const SizedBox(height: 6),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: .spaceBetween,
                               children: [
                                 Text(
                                   _formatTime(comment.timestamp),
@@ -459,7 +459,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                                     children: comment.reactions.entries
                                         .map(
                                           (e) => Padding(
-                                            padding: const EdgeInsets.only(left: 4),
+                                            padding: const .only(left: 4),
                                             child: Text(
                                               '${e.value} ${e.key}',
                                               style: const TextStyle(fontSize: 10.5),
@@ -494,7 +494,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
             )
           else
             const Padding(
-              padding: EdgeInsets.only(right: 8),
+              padding: .only(right: 8),
               child: Text(
                 'Ban stays. Deleted writing is not restored.',
                 key: Key('admin_ban_permanent_note'),
@@ -527,8 +527,8 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
           ],
         ),
         content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: .min,
+          crossAxisAlignment: .start,
           children: [
             Text(
               'Ban ${member.name}?\n\n'

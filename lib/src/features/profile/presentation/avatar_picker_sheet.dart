@@ -17,9 +17,7 @@ class AvatarPickerSheet extends ConsumerStatefulWidget {
     context: context,
     useSafeArea: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: .vertical(top: .circular(20))),
     builder: (_) => const SystemBottomInset(child: AvatarPickerSheet()),
   );
 
@@ -156,13 +154,13 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const .fromLTRB(16, 16, 16, 24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: .min,
+          crossAxisAlignment: .stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: .spaceBetween,
               children: [
                 Row(
                   children: [
@@ -186,11 +184,11 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
             if (_permissionDeniedMessage != null)
               Container(
                 key: const Key('avatar_permission_denied_banner'),
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                margin: const .only(bottom: 12),
+                padding: const .symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.amber.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: .circular(8),
                   border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                 ),
                 child: Row(

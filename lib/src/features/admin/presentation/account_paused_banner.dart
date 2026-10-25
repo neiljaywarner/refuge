@@ -13,9 +13,9 @@ class AccountPausedLockout extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       key: const Key('account_paused_lockout'),
-      padding: const EdgeInsets.all(28),
+      padding: const .all(28),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Icon(Icons.pause_circle_outline_rounded, size: 40, color: theme.colorScheme.primary),
           const SizedBox(height: 16),

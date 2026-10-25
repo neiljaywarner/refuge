@@ -27,9 +27,9 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const .vertical(top: .circular(24)),
       ),
-      padding: EdgeInsets.only(
+      padding: .only(
         top: 20,
         left: 20,
         right: 20,
@@ -37,8 +37,8 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
       ),
       child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: .min,
+          crossAxisAlignment: .start,
           children: [
             // Drag handle
             Center(
@@ -47,7 +47,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: theme.colorScheme.onSurfaceVariant.withAlpha(76),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: .circular(2),
                 ),
               ),
             ),
@@ -57,7 +57,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const .all(10),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2E6B56).withAlpha(30),
                     shape: BoxShape.circle,
@@ -67,7 +67,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Text(
                         'Calm Sensory Soundscapes',
@@ -98,18 +98,18 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
               final isPlayingThis = isSelected && soundscapeState.isPlaying;
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const .only(bottom: 10),
                 child: InkWell(
                   key: Key('soundscape_card_${soundscape.id}'),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: .circular(16),
                   onTap: () => notifier.selectSoundscape(soundscape),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const .symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFF2E6B56).withAlpha(25)
                           : theme.colorScheme.surfaceContainerHighest.withAlpha(128),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: .circular(16),
                       border: Border.all(
                         color: isSelected ? const Color(0xFF2E6B56) : Colors.transparent,
                         width: 1.5,
@@ -121,7 +121,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: .start,
                             children: [
                               Text(
                                 soundscape.title,
@@ -143,7 +143,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                         ),
                         if (isPlayingThis)
                           const Padding(
-                            padding: EdgeInsets.only(left: 8),
+                            padding: .only(left: 8),
                             child: Icon(
                               Icons.graphic_eq_rounded,
                               color: Color(0xFF2E6B56),
@@ -152,7 +152,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                           )
                         else if (isSelected)
                           const Padding(
-                            padding: EdgeInsets.only(left: 8),
+                            padding: .only(left: 8),
                             child: Icon(
                               Icons.check_circle_rounded,
                               color: Color(0xFF2E6B56),
@@ -251,7 +251,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                 key: const Key('toggle_soundscape_playback_button'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF2E6B56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(borderRadius: .circular(14)),
                 ),
                 onPressed: () => notifier.togglePlay(),
                 icon: Icon(

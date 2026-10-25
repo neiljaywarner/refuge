@@ -63,19 +63,19 @@ class SimpleAuthScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('Sign In to Belong'), centerTitle: true),
         body: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: const .all(24.0),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: .circular(16),
                   side: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const .all(24.0),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     children: [
                       SimpleAuthScreen._belongLogo(context, size: 56),
                       const SizedBox(height: 12),
@@ -186,15 +186,15 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
         showPasswordVisibilityToggle: true,
         headerMaxExtent: 148,
         headerBuilder: (context, constraints, shrinkOffset) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const .symmetric(horizontal: 16, vertical: 8),
           child: Center(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: .min,
               children: [
                 belongSignInLogo(context, size: 52),
                 const SizedBox(height: 6),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: .center,
                   children: [
                     Flexible(
                       child: Text(
@@ -212,11 +212,11 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
           ),
         ),
         subtitleBuilder: (context, action) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: .stretch,
           children: [
             SoftDeleteSignInNotice(message: message),
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const .only(bottom: 12),
               child: Text(
                 action == AuthAction.signIn
                     ? 'Sign in to access your reflections, spaces, and private saved items.'
@@ -228,9 +228,9 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
           ],
         ),
         footerBuilder: (context, action) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const .symmetric(vertical: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: .center,
             children: [
               Icon(Icons.shield_outlined, size: 14, color: Theme.of(context).colorScheme.outline),
               const SizedBox(width: 6),
@@ -358,7 +358,7 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
 }
 
 Widget belongSignInLogo(BuildContext context, {required double size}) => ClipRRect(
-  borderRadius: BorderRadius.circular(size * 0.28),
+  borderRadius: .circular(size * 0.28),
   child: Image.asset(
     'assets/images/belong_logo.png',
     width: size,

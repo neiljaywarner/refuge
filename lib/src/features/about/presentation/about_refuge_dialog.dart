@@ -41,7 +41,7 @@ void showAboutRefugeDialog(
         title: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: .circular(8),
               child: Image.asset(
                 'assets/images/belong_logo.png',
                 width: 32,
@@ -52,8 +52,8 @@ void showAboutRefugeDialog(
             const Gap(10),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: .start,
+                mainAxisSize: .min,
                 children: [
                   AboutDialogTitle(
                     version: versionFuture,
@@ -77,22 +77,22 @@ void showAboutRefugeDialog(
           width: 520,
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const .all(10),
                   decoration: BoxDecoration(
                     color: isContrast
                         ? Colors.yellow.withValues(alpha: 0.1)
                         : primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: .circular(8),
                     border: Border.all(
                       color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Text(
                         '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
@@ -115,7 +115,7 @@ void showAboutRefugeDialog(
                 const Gap(12),
                 // Dedicated High Contrast Mode Toggle (Issue #277)
                 SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: .zero,
                   dense: true,
                   title: const Text(
                     'High Contrast Mode',

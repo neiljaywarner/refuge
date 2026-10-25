@@ -107,7 +107,7 @@ class _BuildStampBody extends StatelessWidget {
     final source = identity.sourceLabel;
     return Column(
       key: const Key('about_build_stamp'),
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         Text('This build', style: styles.emphasis),
         const Gap(4),

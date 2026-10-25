@@ -74,7 +74,7 @@ class CommunitySearchView extends HookConsumerWidget {
                       onPressed: queryController.clear,
                     )
                   : null,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(borderRadius: .circular(12)),
               isDense: true,
             ),
           ),
