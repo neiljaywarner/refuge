@@ -55,6 +55,14 @@ class AccountDeletionRecord {
     'listedInDirectory': false,
   };
 
+  /// Fields merged onto `users/{userId}` when the same member comes back.
+  static Map<String, dynamic> directoryRestorePatch(DateTime restoredAt) => {
+    'accountStatus': 'active',
+    'softDeleted': false,
+    'listedInDirectory': true,
+    'restoredAt': restoredAt.toIso8601String(),
+  };
+
   AccountDeletionRecord withBackends(List<String> backends) {
     return AccountDeletionRecord(
       userId: userId,
@@ -78,6 +86,13 @@ abstract interface class AccountDeletionSink {
   Future<void> softDelete(AccountDeletionRecord record);
 
   Future<bool> isSoftDeleted({required String userId, required String flavor});
+
+  /// Clears this flavor's tombstone. Does not touch an admin ban.
+  Future<void> restore({
+    required String userId,
+    required String flavor,
+    required DateTime restoredAt,
+  });
 }
 
 /// Coordinates confirmation, tombstones, and sign-in blocking.
@@ -181,6 +196,49 @@ class AccountDeletionRepository {
       return await sinks.first.isSoftDeleted(userId: userId, flavor: flavor);
     } catch (_) {
       return false;
+    }
+  }
+
+  /// The same member comes back. [confirmed] is true only after they type
+  /// [AccountDeletionMessages.restorePhrase]. An organizer ban is untouched.
+  Future<void> restoreSelf({
+    required String userId,
+    required bool confirmed,
+  }) async {
+    if (!confirmed) {
+      throw const AccountDeletionException(
+        code: 'confirmation-required',
+        message: AccountDeletionMessages.restoreConfirmationRequired,
+      );
+    }
+
+    final id = userId.trim();
+    if (id.isEmpty || id == 'guest') {
+      throw const AccountDeletionException(
+        code: 'not-signed-in',
+        message: AccountDeletionMessages.notSignedIn,
+      );
+    }
+
+    if (!await isSignInBlocked(id)) {
+      throw const AccountDeletionException(
+        code: 'nothing-to-restore',
+        message: AccountDeletionMessages.nothingToRestore,
+      );
+    }
+
+    final restoredAt = _clock();
+    for (final sink in sinks) {
+      try {
+        await sink.restore(userId: id, flavor: flavor, restoredAt: restoredAt);
+      } catch (error) {
+        throw AccountDeletionException(
+          code: 'backend-failed',
+          message: AccountDeletionMessages.backendFailed,
+          backend: sink.name,
+          cause: error,
+        );
+      }
     }
   }
 }

@@ -9,6 +9,7 @@ import '../../../core/config/other_site_info_button.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
+import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../account_deletion/presentation/soft_delete_sign_in_notice.dart';
 
 /// Minimal, plain-vanilla wrapper around the official [firebase_ui_auth] example.
@@ -121,7 +122,9 @@ class SimpleAuthScreen extends StatelessWidget {
                           'Sign-in requires a connection to our authentication service.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
                           ),
                         ),
                     ],
@@ -294,13 +297,12 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
                 isBlocked: isBlocked,
               );
               if (notice != null) {
+                // Stay signed in long enough for the return panel. Signing
+                // out here would hide the only person who can type RESTORE.
                 noticeNotifier.state = notice;
                 if (context.mounted) {
                   blockedMessage.value = notice;
                 }
-                try {
-                  await auth.signOut();
-                } catch (_) {}
                 return;
               }
               noticeNotifier.state = null;
@@ -318,8 +320,8 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
 
 /// Holds the profile screen until Firestore says this sign-in is allowed.
 ///
-/// A soft-deleted member is signed out here. The sign-in form then shows
-/// the blocked message from [softDeleteSignInNoticeProvider].
+/// A soft-deleted member sees [ReturnAfterDeletePanel] here. Stay deleted
+/// signs them out. RESTORE clears only their own tombstone.
 class _SoftDeleteSessionGate extends HookConsumerWidget {
   const _SoftDeleteSessionGate({
     required this.auth,
@@ -334,6 +336,7 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allowed = useState<bool?>(null);
+    final offerReturn = useState(false);
 
     useEffect(() {
       var alive = true;
@@ -346,14 +349,12 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
           userId: userId,
           isBlocked: isBlocked,
         );
+        if (!alive) return;
         if (message != null) {
           notice.state = message;
-          try {
-            await auth.signOut();
-          } catch (_) {}
+          offerReturn.value = true;
           return;
         }
-        if (!alive) return;
         notice.state = null;
         allowed.value = true;
       }();
@@ -361,6 +362,33 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
         alive = false;
       };
     }, [userId]);
+
+    if (offerReturn.value) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Come back?'), centerTitle: true),
+        body: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ReturnAfterDeletePanel(
+              onStayDeleted: () async {
+                try {
+                  await auth.signOut();
+                } catch (_) {}
+              },
+              onRestore: () async {
+                await ref
+                    .read(accountDeletionRepositoryProvider)
+                    .restoreSelf(userId: userId, confirmed: true);
+                if (!context.mounted) return;
+                ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
+                offerReturn.value = false;
+                allowed.value = true;
+              },
+            ),
+          ),
+        ),
+      );
+    }
 
     if (allowed.value != true) {
       return Scaffold(

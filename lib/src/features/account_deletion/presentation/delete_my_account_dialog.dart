@@ -53,11 +53,7 @@ class DeleteMyAccountDialog extends HookConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'This hides your profile and turns off sign-in on this account. '
-            'Your posts stay. We keep the account record until a later '
-            'decision about permanent deletion.',
-          ),
+          const Text(AccountDeletionMessages.deleteExplanation),
           const SizedBox(height: 12),
           TextField(
             key: const Key('delete_my_account_confirm_field'),
