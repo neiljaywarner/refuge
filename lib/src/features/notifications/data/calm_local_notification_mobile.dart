@@ -60,6 +60,35 @@ class CalmLocalNotificationMobile implements CalmLocalNotificationService {
       payload: payload,
     );
   }
+
+  @override
+  Future<void> showSilentNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await _ensureInitialized();
+
+    const androidDetails = AndroidNotificationDetails(
+      kCalmDigestNotificationChannelId,
+      'Calm digests',
+      channelDescription: 'Silent digests for messages and community updates',
+      importance: Importance.low,
+      priority: Priority.low,
+      playSound: false,
+      enableVibration: false,
+      showWhen: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    await _plugin.show(
+      id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(android: androidDetails),
+      payload: payload,
+    );
+  }
 }
 
 CalmLocalNotificationService createCalmLocalNotificationService() =>
