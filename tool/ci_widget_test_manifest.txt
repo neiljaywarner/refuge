@@ -33,6 +33,7 @@
 
 test/core/appwrite/appwrite_config_test.dart
 test/core/build/build_identity_test.dart
+test/core/geometry/point_test.dart
 test/core/config/app_flavor_hosting_urls_test.dart
 test/core/firebase/community_analytics_posthog_gate_test.dart
 test/core/firebase/community_analytics_service_test.dart
