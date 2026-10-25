@@ -42,9 +42,15 @@ flowchart TD
 ```bash
 dart run tool/run_firebase_test_lab.dart --dry-run
 ```
-Outputs the target test paths, Gradle compilation commands, and exact `gcloud` cloud execution string.
+Outputs the dev `flutter build apk` flags (`lib/main_dev.dart`, `FLAVOR=dev`, `ENABLE_SERVERPOD=false`), the Gradle instrumentation step, and the exact `gcloud` command.
 
-### 2. Full Cloud Test Execution
+### 2. Build Only (local gate, no upload)
+```bash
+dart run tool/run_firebase_test_lab.dart --build-only
+```
+Builds the APK pair and refuses to continue unless `aapt dump badging` reports `com.belongonthespectrum.refuge.dev` and label `Belong (Dev)`.
+
+### 3. Full Cloud Test Execution
 When run on a machine with `gcloud` authenticated (`gcloud auth login`):
 ```bash
 dart run tool/run_firebase_test_lab.dart \
