@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/other_site_info_button.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
@@ -175,7 +176,7 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
       body: SignInScreen(
         auth: auth,
         providers: providers,
-        headerMaxExtent: 120,
+        headerMaxExtent: 148,
         headerBuilder: (context, constraints, shrinkOffset) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -185,10 +186,19 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
                 children: [
                   belongSignInLogo(context, size: 52),
                   const SizedBox(height: 6),
-                  Text(
-                    'Belong on the Spectrum',
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Belong on the Spectrum',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const OtherSiteInfoButton(),
+                    ],
                   ),
                 ],
               ),

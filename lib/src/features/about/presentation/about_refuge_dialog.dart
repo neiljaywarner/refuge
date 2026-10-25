@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import '../../../core/build/build_identity.dart';
+import '../../../core/config/other_site_info_button.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../sensory_themes/domain/sensory_font_scale.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
@@ -70,6 +71,7 @@ void showAboutRefugeDialog(
                 ],
               ),
             ),
+            const OtherSiteInfoButton(),
           ],
         ),
         content: SizedBox(
