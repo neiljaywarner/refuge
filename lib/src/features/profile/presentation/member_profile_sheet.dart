@@ -441,20 +441,23 @@ class MemberProfileDialog extends HookConsumerWidget {
                   );
                 },
               ),
+              if (profile.isSignedIn)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    key: const Key('delete_my_account_button'),
+                    onPressed: () => DeleteMyAccountDialog.show(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                    child: const Text('Delete my account'),
+                  ),
+                ),
             ],
           ),
         ),
       ),
       actions: [
-        if (profile.isSignedIn)
-          TextButton(
-            key: const Key('delete_my_account_button'),
-            onPressed: () => DeleteMyAccountDialog.show(context),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Delete my account'),
-          ),
         if (profile.isSignedIn)
           TextButton(
             key: const Key('profile_sign_out_button'),

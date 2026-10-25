@@ -126,18 +126,22 @@ class SimpleAuthScreen extends StatelessWidget {
           );
         }
 
-        return ProfileScreen(
+        return _SoftDeleteSessionGate(
           auth: effectiveAuth,
-          providers: providers,
-          actions: [
-            SignedOutAction((context) {
-              onSignedOut?.call();
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
-            }),
-          ],
-          appBar: AppBar(title: const Text('Account Profile')),
+          userId: user.uid,
+          child: ProfileScreen(
+            auth: effectiveAuth,
+            providers: providers,
+            actions: [
+              SignedOutAction((context) {
+                onSignedOut?.call();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              }),
+            ],
+            appBar: AppBar(title: const Text('Account Profile')),
+          ),
         );
       },
     );
@@ -246,22 +250,28 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
             final isBlocked = ref
                 .read(accountDeletionRepositoryProvider)
                 .isSignInBlocked;
+            final noticeNotifier = ref.read(
+              softDeleteSignInNoticeProvider.notifier,
+            );
+            // FirebaseUI replaces this screen as soon as Auth has a user.
+            // The tombstone read is async, so sign-out must not wait on
+            // this widget still being mounted.
             () async {
               final notice = await softDeleteSignInBlockMessage(
                 userId: userId,
                 isBlocked: isBlocked,
               );
-              if (!context.mounted) return;
               if (notice != null) {
-                blockedMessage.value = notice;
-                ref.read(softDeleteSignInNoticeProvider.notifier).state =
-                    notice;
+                noticeNotifier.state = notice;
+                if (context.mounted) {
+                  blockedMessage.value = notice;
+                }
                 try {
                   await auth.signOut();
                 } catch (_) {}
                 return;
               }
-              ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
+              noticeNotifier.state = null;
               onAuthenticated?.call();
               if (context.mounted) Navigator.of(context).pop();
             }();
@@ -269,6 +279,65 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Holds the profile screen until Firestore says this sign-in is allowed.
+///
+/// A soft-deleted member is signed out here. The sign-in form then shows
+/// the blocked message from [softDeleteSignInNoticeProvider].
+class _SoftDeleteSessionGate extends HookConsumerWidget {
+  const _SoftDeleteSessionGate({
+    required this.auth,
+    required this.userId,
+    required this.child,
+  });
+
+  final FirebaseAuth auth;
+  final String userId;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allowed = useState<bool?>(null);
+
+    useEffect(() {
+      var alive = true;
+      final isBlocked = ref
+          .read(accountDeletionRepositoryProvider)
+          .isSignInBlocked;
+      final notice = ref.read(softDeleteSignInNoticeProvider.notifier);
+      () async {
+        final message = await softDeleteSignInBlockMessage(
+          userId: userId,
+          isBlocked: isBlocked,
+        );
+        if (message != null) {
+          notice.state = message;
+          try {
+            await auth.signOut();
+          } catch (_) {}
+          return;
+        }
+        if (!alive) return;
+        notice.state = null;
+        allowed.value = true;
+      }();
+      return () {
+        alive = false;
+      };
+    }, [userId]);
+
+    if (allowed.value != true) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Sign In to Belong'),
+          centerTitle: true,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    return child;
   }
 }
 
