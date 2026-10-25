@@ -202,6 +202,7 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
       body: SignInScreen(
         auth: auth,
         providers: providers,
+        showPasswordVisibilityToggle: true,
         headerMaxExtent: 148,
         headerBuilder: (context, constraints, shrinkOffset) {
           return Padding(
