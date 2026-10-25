@@ -200,6 +200,22 @@ Future<void> main(List<String> args) async {
   if (testProcess.exitCode != 0) {
     stderr.writeln('Test Lab run failed (${testProcess.exitCode}):');
     stderr.write(testProcess.stderr);
+    final err = testProcess.stderr.toString();
+    if (err.contains('Not authorized for project') ||
+        err.contains('ResponseError 403') ||
+        err.contains('PERMISSION_DENIED')) {
+      stderr.writeln('\n============================================================');
+      stderr.writeln('IAM Role Check for FIREBASE_SERVICE_ACCOUNT:');
+      stderr.writeln('The service account is missing Cloud Test Service permissions.');
+      stderr.writeln('Grant the following roles in Google Cloud IAM on $project:');
+      stderr.writeln('  - Cloud Test Service Editor (roles/cloudtestservice.editor)');
+      stderr.writeln('  - Cloud Tool Results Editor (roles/toolresults.editor)');
+      stderr.writeln('And enable APIs:');
+      stderr.writeln('  - cloudtesting.googleapis.com');
+      stderr.writeln('  - toolresults.googleapis.com');
+      stderr.writeln('See issue #649 for details.');
+      stderr.writeln('============================================================\n');
+    }
     exit(testProcess.exitCode);
   }
 
