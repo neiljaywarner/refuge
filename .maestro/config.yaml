@@ -1,8 +1,7 @@
 # Default and CI suite policy.
 #
-# `maestro test .maestro` only discovers flows in this directory. The two
-# grokbot gap flows live under web/ and are also tagged known-gap, so a
-# directory run skips them even if discovery is widened to `**`.
-# Passing a flow file path still runs that file.
+# `maestro test .maestro` only discovers flows in this directory, not web/.
+# Web flows, including the grokbot direct-message and mention flows, are run
+# with `maestro test .maestro/web`. Tag a flow `known-gap` to skip it there.
 excludeTags:
   - known-gap

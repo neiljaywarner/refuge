@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_session.dart';
+import '../data/member_directory_store.dart';
 
 /// Represents the signed-in community member's profile and Stage 1 ("Any Auth")
 /// session state (#23, #26), backed by the pluggable [AuthRepository] (#52, ADR-0009).
@@ -16,6 +17,7 @@ class MemberProfile {
     required this.bio,
     required this.comfortBadges,
     required this.isSignedIn,
+    this.userId = '',
     this.authMethod = 'guest',
     this.icocChurchAffiliation,
     this.tagline,
@@ -23,7 +25,8 @@ class MemberProfile {
   });
 
   const MemberProfile.guest()
-    : displayName = 'Fellowship Member',
+    : userId = '',
+      displayName = 'Fellowship Member',
       email = '',
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
@@ -33,6 +36,8 @@ class MemberProfile {
       tagline = 'Exploring Belong on the Spectrum',
       avatarUrl = null;
 
+  /// Firebase uid when signed in. Empty for guests. Never an email address.
+  final String userId;
   final String displayName;
   final String email;
   final String bio;
@@ -44,10 +49,9 @@ class MemberProfile {
   final String? avatarUrl;
 
   /// Effective tagline for community display.
-  String get effectiveTagline =>
-      (tagline != null && tagline!.trim().isNotEmpty)
-          ? tagline!
-          : (bio.isNotEmpty ? bio : 'Fellowship member');
+  String get effectiveTagline => (tagline != null && tagline!.trim().isNotEmpty)
+      ? tagline!
+      : (bio.isNotEmpty ? bio : 'Fellowship member');
 
   /// Returns true if the member has confirmed affiliation with an ICOC church congregation.
   bool get isIcocMember =>
@@ -79,11 +83,13 @@ class MemberProfile {
   }
 
   /// Skips title tokens like `Dr.` when forming fellowship monograms.
-  static bool isHonorificToken(String token) =>
-      RegExp(r'^(dr|mr|mrs|ms|miss|prof)\.?$', caseSensitive: false)
-          .hasMatch(token);
+  static bool isHonorificToken(String token) => RegExp(
+    r'^(dr|mr|mrs|ms|miss|prof)\.?$',
+    caseSensitive: false,
+  ).hasMatch(token);
 
   MemberProfile copyWith({
+    String? userId,
     String? displayName,
     String? email,
     String? bio,
@@ -95,6 +101,7 @@ class MemberProfile {
     String? avatarUrl,
   }) {
     return MemberProfile(
+      userId: userId ?? this.userId,
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
       bio: bio ?? this.bio,
@@ -111,28 +118,12 @@ class MemberProfile {
 
 class MemberProfileNotifier extends Notifier<MemberProfile> {
   StreamSubscription<AuthSession>? _sub;
+  int _applyGeneration = 0;
+  Future<void>? _publishFlight;
 
-  @override
-  MemberProfile build() {
-    final repo = ref.watch(authRepositoryProvider);
-    _sub?.cancel();
-    _sub = repo.authStateChanges().listen((session) {
-      state = MemberProfile(
-        displayName: session.displayName,
-        email: session.email,
-        bio: session.bio,
-        comfortBadges: session.comfortBadges,
-        isSignedIn: session.isSignedIn,
-        authMethod: session.authMethod,
-        icocChurchAffiliation: session.icocChurchAffiliation,
-      );
-    });
-    ref.onDispose(() {
-      _sub?.cancel();
-    });
-
-    final session = repo.currentSession();
+  MemberProfile _profileFrom(AuthSession session) {
     return MemberProfile(
+      userId: session.userId,
       displayName: session.displayName,
       email: session.email,
       bio: session.bio,
@@ -141,6 +132,57 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       authMethod: session.authMethod,
       icocChurchAffiliation: session.icocChurchAffiliation,
     );
+  }
+
+  bool _shouldPublish(MemberProfile profile) =>
+      profile.isSignedIn &&
+      profile.userId.isNotEmpty &&
+      profile.userId != 'guest';
+
+  /// Applies [session] immediately, then publishes the public directory entry.
+  ///
+  /// The profile update stays synchronous up to the first await so in-memory
+  /// sign-in tests observe it before this method yields. The Firestore write
+  /// continues even if the member signs out, because the picker reads that
+  /// document from the other account.
+  Future<void> _applySession(AuthSession session) async {
+    final ticket = ++_applyGeneration;
+    final profile = _profileFrom(session);
+    try {
+      state = profile;
+    } catch (_) {
+      return;
+    }
+    if (!_shouldPublish(profile)) return;
+    final flight = ref
+        .read(memberDirectoryStoreProvider)
+        .publishSignedInMember(
+          uid: profile.userId,
+          displayName: profile.displayName,
+          email: profile.email,
+          tagline: profile.effectiveTagline,
+        )
+        .timeout(const Duration(seconds: 8));
+    _publishFlight = flight;
+    try {
+      await flight;
+    } catch (_) {}
+    if (identical(_publishFlight, flight)) _publishFlight = null;
+    if (ticket != _applyGeneration) return;
+  }
+
+  @override
+  MemberProfile build() {
+    final repo = ref.watch(authRepositoryProvider);
+    _sub?.cancel();
+    _sub = repo.authStateChanges().listen((session) {
+      unawaited(_applySession(session));
+    });
+    ref.onDispose(() {
+      _sub?.cancel();
+    });
+
+    return _profileFrom(repo.currentSession());
   }
 
   void signIn({
@@ -159,7 +201,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       icocChurchAffiliation:
           icocChurchAffiliation ?? state.icocChurchAffiliation,
     );
-    _applySession(session);
+    unawaited(_applySession(session));
   }
 
   Future<void> signInWithPassword({
@@ -171,7 +213,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       password: password,
     );
-    _applySession(session);
+    await _applySession(session);
   }
 
   Future<void> registerWithPassword({
@@ -191,10 +233,13 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       comfortBadges: comfortBadges ?? state.comfortBadges,
       icocChurchAffiliation: icocChurchAffiliation,
     );
-    _applySession(session);
+    await _applySession(session);
   }
 
-  Future<void> sendMagicLink({required String email, String? redirectUrl}) async {
+  Future<void> sendMagicLink({
+    required String email,
+    String? redirectUrl,
+  }) async {
     final repo = ref.read(authRepositoryProvider);
     await repo.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
@@ -213,34 +258,29 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       emailLink: emailLink,
     );
-    _applySession(session);
+    await _applySession(session);
   }
 
   void signInWithOAuth(String provider) {
     final repo = ref.read(authRepositoryProvider);
     final session = repo.signInWithOAuthProvider(provider);
-    _applySession(session);
-  }
-
-  void _applySession(AuthSession session) {
-    state = MemberProfile(
-      displayName: session.displayName,
-      email: session.email,
-      bio: session.bio,
-      comfortBadges: session.comfortBadges,
-      isSignedIn: session.isSignedIn,
-      authMethod: session.authMethod,
-      icocChurchAffiliation: session.icocChurchAffiliation,
-    );
+    unawaited(_applySession(session));
   }
 
   void setAvatarUrl(String? url) {
     state = state.copyWith(avatarUrl: url);
   }
 
-  void signOut() {
+  Future<void> signOut() async {
+    final pending = _publishFlight;
+    if (pending != null) {
+      try {
+        await pending;
+      } catch (_) {}
+    }
     final repo = ref.read(authRepositoryProvider);
-    repo.signOut();
+    unawaited(repo.signOut());
+    _applyGeneration++;
     state = const MemberProfile.guest();
   }
 }

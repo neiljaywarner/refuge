@@ -90,6 +90,15 @@ void main() {
         following.displayMessage,
         'John Doe posted a new reflection in "Quiet Waters"',
       );
+
+      final directMessage = mention.copyWith(
+        type: BelongNotificationType.directMessage,
+        postTitle: 'Quiet hello',
+      );
+      expect(
+        directMessage.displayMessage,
+        'John Doe sent you a direct message',
+      );
     });
 
     test('formattedTimeAgo produces friendly relative strings', () {
@@ -129,9 +138,7 @@ void main() {
       expect(nDays.formattedTimeAgo(base), '2 days ago');
 
       // Older date
-      final nDate = nJustNow.copyWith(
-        timestamp: DateTime(2026, 9, 7, 10, 0),
-      );
+      final nDate = nJustNow.copyWith(timestamp: DateTime(2026, 9, 7, 10, 0));
       expect(nDate.formattedTimeAgo(base), 'Sep 7th');
     });
   });
@@ -186,30 +193,27 @@ void main() {
               ),
             ),
         ],
-        child: MaterialApp(
-          home: home ?? const RefugeHomeScreen(),
-        ),
+        child: MaterialApp(home: home ?? const RefugeHomeScreen()),
       );
     }
 
-    patrolWidgetTest(
-      'Bottom nav bar shows bell with unread badge counter',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1200, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Bottom nav bar shows bell with unread badge counter', (
+      $,
+    ) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        await $.pumpWidget(buildTestHarness());
-        await $.pumpAndSettle();
+      await $.pumpWidget(buildTestHarness());
+      await $.pumpAndSettle();
 
-        // Check badge on Notifications tab
-        expect($(const Key('bottom_nav_notifications_badge')), findsOneWidget);
-        expect($('3'), findsWidgets);
-      },
-    );
+      // Check badge on Notifications tab
+      expect($(const Key('bottom_nav_notifications_badge')), findsOneWidget);
+      expect($('3'), findsWidgets);
+    });
 
     patrolWidgetTest(
       'Tapping notification bell navigates to Calm Notifications view with filter chips and avatar badges',
@@ -231,7 +235,9 @@ void main() {
         // 1. Verify screen title and banner
         expect($('Notifications'), findsWidgets);
         expect(
-          $('All notifications are delivered gently without intrusive sound alerts.'),
+          $(
+            'All notifications are delivered gently without intrusive sound alerts.',
+          ),
           findsOneWidget,
         );
 

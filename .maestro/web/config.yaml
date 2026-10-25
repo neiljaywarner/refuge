@@ -1,4 +1,4 @@
-# `maestro test .maestro/web` skips flows tagged known-gap.
-# Those flows stay in this directory. Passing a flow file path still runs it.
+# `maestro test .maestro/web` runs every flow here except those tagged
+# known-gap. The grokbot direct-message and mention flows are included.
 excludeTags:
   - known-gap

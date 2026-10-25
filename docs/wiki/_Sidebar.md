@@ -26,6 +26,7 @@
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
 * **[📡 Dual Observability, Analytics & Crash Reporting](Observability-Crashlytics-Analytics-and-Diagnostics)**
 * **[🧪 QA, Device Driving & Beta Testing](QA-and-Beta-Testing-Guide)**
+* **[🎥 Maestro UI Tests](Maestro-UI-Tests)**
 * **[📱 Real Device Driving & Maestro Automation](https://github.com/neiljaywarner/refuge/blob/main/docs/real_device_driving_and_automation.md)**
 * **[📋 Comprehensive Test Cases & QA Matrix](Test-Cases)**
 * **[🧪 Firebase Test Lab & Patrol Integration Guide](Firebase-Test-Lab-and-Patrol-Guide)**

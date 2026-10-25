@@ -1,17 +1,11 @@
 url: http://127.0.0.1:8095
 name: grokbot mention notification
-tags:
-  - known-gap
 ---
 # Credentials come from the shell environment. No addresses are stored here.
-# Publishes one reflection that @-mentions grokbot2. Owner approved this test data.
+# The mentioned account signs in first so a public directory entry exists.
+# Owner approved this test data.
 #
-# Known product gap: https://github.com/neiljaywarner/refuge/issues/442
-# The notification bell only shows seeded local notices, so a real @-mention
-# never appears. Tagged known-gap so directory runs
-# (`maestro test .maestro/web`) and the default suite in
-# tool/run_maestro_verification.dart skip this file. See .maestro/config.yaml.
-# Passing this file path still runs it.
+# Included in the web suite. See .maestro/web/config.yaml.
 
 - launchApp
 - extendedWaitUntil:
@@ -26,6 +20,24 @@ tags:
       - extendedWaitUntil:
           visible: "Sign In"
           timeout: 20000
+
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${GROKBOT2_EMAIL}
+- tapOn: "Password"
+- inputText: ${GROKBOT_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 40000
+- tapOn: ".*Member Profile.*"
+- tapOn: "Sign Out"
+- extendedWaitUntil:
+    visible: "Sign In"
+    timeout: 20000
 
 - tapOn: "Sign In"
 - extendedWaitUntil:

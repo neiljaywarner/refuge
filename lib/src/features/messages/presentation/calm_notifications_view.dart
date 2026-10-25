@@ -11,10 +11,7 @@ import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 /// Presents unhurried, digestible notifications with filter chips (Inbox, Mentions, Threads, Following),
 /// author avatars with lower-right action badges, relative timestamps, and a 'Mark all as read' action.
 class CalmNotificationsView extends HookConsumerWidget {
-  const CalmNotificationsView({
-    super.key,
-    this.onBackToHome,
-  });
+  const CalmNotificationsView({super.key, this.onBackToHome});
 
   final VoidCallback? onBackToHome;
 
@@ -54,8 +51,8 @@ class CalmNotificationsView extends HookConsumerWidget {
                   onChanged: unreadCount == 0
                       ? null
                       : (_) => ref
-                          .read(belongNotificationsProvider.notifier)
-                          .markAllAsRead(),
+                            .read(belongNotificationsProvider.notifier)
+                            .markAllAsRead(),
                 ),
                 InkWell(
                   key: const Key('mark_all_notifications_as_read_button'),
@@ -63,8 +60,8 @@ class CalmNotificationsView extends HookConsumerWidget {
                   onTap: unreadCount == 0
                       ? null
                       : () => ref
-                          .read(belongNotificationsProvider.notifier)
-                          .markAllAsRead(),
+                            .read(belongNotificationsProvider.notifier)
+                            .markAllAsRead(),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4.0,
@@ -77,8 +74,8 @@ class CalmNotificationsView extends HookConsumerWidget {
                         fontWeight: FontWeight.w600,
                         color: unreadCount == 0
                             ? (isContrast
-                                ? Colors.white38
-                                : theme.disabledColor)
+                                  ? Colors.white38
+                                  : theme.disabledColor)
                             : (isContrast ? Colors.yellow : primary),
                       ),
                     ),
@@ -108,14 +105,10 @@ class CalmNotificationsView extends HookConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isContrast
-                    ? Colors.black
-                    : const Color(0xFFF3F7F5),
+                color: isContrast ? Colors.black : const Color(0xFFF3F7F5),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: isContrast
-                      ? Colors.white
-                      : const Color(0xFFDCECE4),
+                  color: isContrast ? Colors.white : const Color(0xFFDCECE4),
                 ),
               ),
               child: Row(
@@ -157,8 +150,9 @@ class CalmNotificationsView extends HookConsumerWidget {
                     label: Text(filter.label),
                     labelStyle: TextStyle(
                       fontSize: 12,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       color: isSelected
                           ? (isContrast ? Colors.black : Colors.white)
                           : null,
@@ -167,8 +161,9 @@ class CalmNotificationsView extends HookConsumerWidget {
                     checkmarkColor: isContrast ? Colors.black : Colors.white,
                     onSelected: (_) {
                       ref
-                          .read(notificationActiveFilterProvider.notifier)
-                          .state = filter;
+                              .read(notificationActiveFilterProvider.notifier)
+                              .state =
+                          filter;
                     },
                   ),
                 );
@@ -188,8 +183,9 @@ class CalmNotificationsView extends HookConsumerWidget {
                         key: const Key('empty_notifications_placeholder'),
                         style: TextStyle(
                           fontSize: 12,
-                          color: theme.textTheme.bodySmall?.color
-                              ?.withValues(alpha: 0.6),
+                          color: theme.textTheme.bodySmall?.color?.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                     ),
@@ -242,57 +238,60 @@ class _BelongNotificationCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     // Lower-right badge icon and background color
-    final (IconData badgeIcon, Color badgeBgColor, Color badgeIconColor) =
-        switch (item.type) {
+    final (
+      IconData badgeIcon,
+      Color badgeBgColor,
+      Color badgeIconColor,
+    ) = switch (item.type) {
       BelongNotificationType.like => (
-          Icons.favorite,
-          const Color(0xFFE91E63),
-          Colors.white,
-        ),
+        Icons.favorite,
+        const Color(0xFFE91E63),
+        Colors.white,
+      ),
       BelongNotificationType.reply => (
-          Icons.reply_rounded,
-          const Color(0xFF2196F3),
-          Colors.white,
-        ),
+        Icons.reply_rounded,
+        const Color(0xFF2196F3),
+        Colors.white,
+      ),
       BelongNotificationType.mention => (
-          Icons.alternate_email_rounded,
-          const Color(0xFF4CAF50),
-          Colors.white,
-        ),
+        Icons.alternate_email_rounded,
+        const Color(0xFF4CAF50),
+        Colors.white,
+      ),
       BelongNotificationType.following => (
-          Icons.person_add_rounded,
-          const Color(0xFF9C27B0),
-          Colors.white,
-        ),
+        Icons.person_add_rounded,
+        const Color(0xFF9C27B0),
+        Colors.white,
+      ),
+      BelongNotificationType.directMessage => (
+        Icons.maps_ugc_rounded,
+        const Color(0xFF00796B),
+        Colors.white,
+      ),
     };
 
     return Card(
       elevation: 0,
       margin: EdgeInsets.zero,
       color: item.isRead
-          ? (isContrast
-              ? Colors.black
-              : theme.cardColor)
+          ? (isContrast ? Colors.black : theme.cardColor)
           : (isContrast
-              ? const Color(0xFF1A1A00)
-              : primaryColor.withValues(alpha: 0.06)),
+                ? const Color(0xFF1A1A00)
+                : primaryColor.withValues(alpha: 0.06)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
           color: isContrast
               ? (item.isRead ? Colors.white30 : Colors.yellow)
               : (item.isRead
-                  ? theme.dividerColor.withValues(alpha: 0.15)
-                  : primaryColor.withValues(alpha: 0.25)),
+                    ? theme.dividerColor.withValues(alpha: 0.15)
+                    : primaryColor.withValues(alpha: 0.25)),
         ),
       ),
       child: ListTile(
         key: Key('notification_list_tile_${item.id}'),
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 4,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -324,11 +323,7 @@ class _BelongNotificationCard extends StatelessWidget {
                     width: 1.5,
                   ),
                 ),
-                child: Icon(
-                  badgeIcon,
-                  size: 10,
-                  color: badgeIconColor,
-                ),
+                child: Icon(badgeIcon, size: 10, color: badgeIconColor),
               ),
             ),
           ],
@@ -352,8 +347,9 @@ class _BelongNotificationCard extends StatelessWidget {
                   fontSize: 11,
                   color: isContrast
                       ? Colors.white70
-                      : theme.textTheme.bodySmall?.color
-                          ?.withValues(alpha: 0.7),
+                      : theme.textTheme.bodySmall?.color?.withValues(
+                          alpha: 0.7,
+                        ),
                 ),
               ),
               if (item.commentSnippet != null) ...[
@@ -370,8 +366,9 @@ class _BelongNotificationCard extends StatelessWidget {
                       fontStyle: FontStyle.italic,
                       color: isContrast
                           ? Colors.white70
-                          : theme.textTheme.bodySmall?.color
-                              ?.withValues(alpha: 0.7),
+                          : theme.textTheme.bodySmall?.color?.withValues(
+                              alpha: 0.7,
+                            ),
                     ),
                   ),
                 ),

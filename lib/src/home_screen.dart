@@ -19,6 +19,8 @@ import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
 import 'features/observability/presentation/observability_easter_egg_dialog.dart';
+import 'features/notifications/data/member_notification_store.dart';
+import 'features/profile/data/member_directory_store.dart';
 import 'features/profile/domain/member_profile.dart';
 import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
@@ -151,6 +153,20 @@ class RefugeHomeScreen extends HookConsumerWidget {
           reactions: {'pray': 1, 'peace': 1, 'encouraged': 1, 'relatable': 1},
         ),
       );
+      try {
+        await ref
+            .read(memberNotificationStoreProvider)
+            .notifyMentionsInContent(
+              content: content,
+              authorUid: profile.userId,
+              authorName: publicDisplayName(
+                displayName: profile.displayName,
+                email: profile.email,
+              ),
+              spaceKey: targetSpace,
+            )
+            .timeout(const Duration(seconds: 8));
+      } catch (_) {}
     }
 
     Widget buildHomeBody() {
@@ -551,25 +567,30 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
         ),
         actions: [
-          IconButton(
-            key: const Key('home_high_contrast_toggle_button'),
-            tooltip: isContrast
+          Semantics(
+            // The name stays here without a tooltip. A tooltip hit region was
+            // remaining over Vote & Feedback after the pointer passed this icon.
+            label: isContrast
                 ? 'Switch to Sage Theme'
                 : 'Switch to High Contrast',
-            icon: Icon(
-              isContrast ? Icons.contrast_rounded : Icons.circle_outlined,
-              color: isContrast ? Colors.yellow : null,
-              size: 20,
+            excludeSemantics: true,
+            child: IconButton(
+              key: const Key('home_high_contrast_toggle_button'),
+              icon: Icon(
+                isContrast ? Icons.contrast_rounded : Icons.circle_outlined,
+                color: isContrast ? Colors.yellow : null,
+                size: 20,
+              ),
+              onPressed: () {
+                if (themeNotifier != null) {
+                  themeNotifier!.toggleHighContrast();
+                } else {
+                  ref
+                      .read(sensoryThemeModeProvider.notifier)
+                      .toggleHighContrast();
+                }
+              },
             ),
-            onPressed: () {
-              if (themeNotifier != null) {
-                themeNotifier!.toggleHighContrast();
-              } else {
-                ref
-                    .read(sensoryThemeModeProvider.notifier)
-                    .toggleHighContrast();
-              }
-            },
           ),
           Semantics(
             identifier: 'sensory_theme_toggle_button',
@@ -873,48 +894,67 @@ class _BelongSubHeaderBar extends StatelessWidget {
     final isFeed = activeSubView == BelongHomeSubView.feed;
     final isSpaces = activeSubView == BelongHomeSubView.spaces;
 
+    final feedChip = _webSemanticsTarget(
+      label: 'Feed',
+      identifier: 'feed_tab',
+      selected: isFeed,
+      onTap: onSelectFeed,
+      child: ChoiceChip(
+        key: const Key('subnav_feed_tab'),
+        label: const Text('Feed'),
+        selected: isFeed,
+        onSelected: (_) => onSelectFeed(),
+      ),
+    );
+    final spacesChip = _webSemanticsTarget(
+      label: 'Spaces',
+      identifier: 'spaces_tab',
+      selected: isSpaces,
+      onTap: onSelectSpaces,
+      child: ChoiceChip(
+        key: const Key('subnav_spaces_tab'),
+        label: const Text('Spaces'),
+        selected: isSpaces,
+        onSelected: (_) => onSelectSpaces(),
+      ),
+    );
+    final voteChip = _webSemanticsTarget(
+      label: 'Vote & Feedback',
+      identifier: 'vote_feedback_button',
+      onTap: () => BelongFeedbackAndVotingSheet.show(context),
+      child: ActionChip(
+        key: const Key('open_feedback_and_voting_button'),
+        avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
+        label: const Text('Vote & Feedback'),
+        onPressed: () => BelongFeedbackAndVotingSheet.show(context),
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
-      child: Row(
-        children: [
-          _webSemanticsTarget(
-            label: 'Feed',
-            identifier: 'feed_tab',
-            selected: isFeed,
-            onTap: onSelectFeed,
-            child: ChoiceChip(
-              key: const Key('subnav_feed_tab'),
-              label: const Text('Feed'),
-              selected: isFeed,
-              onSelected: (_) => onSelectFeed(),
-            ),
-          ),
-          const SizedBox(width: 8),
-          _webSemanticsTarget(
-            label: 'Spaces',
-            identifier: 'spaces_tab',
-            selected: isSpaces,
-            onTap: onSelectSpaces,
-            child: ChoiceChip(
-              key: const Key('subnav_spaces_tab'),
-              label: const Text('Spaces'),
-              selected: isSpaces,
-              onSelected: (_) => onSelectSpaces(),
-            ),
-          ),
-          const Spacer(),
-          _webSemanticsTarget(
-            label: 'Vote & Feedback',
-            identifier: 'vote_feedback_button',
-            onTap: () => BelongFeedbackAndVotingSheet.show(context),
-            child: ActionChip(
-              key: const Key('open_feedback_and_voting_button'),
-              avatar: const Icon(Icons.how_to_vote_outlined, size: 16),
-              label: const Text('Vote & Feedback'),
-              onPressed: () => BelongFeedbackAndVotingSheet.show(context),
-            ),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // A single row plus a trailing spacer pushes Vote & Feedback past
+          // the right edge on a phone-width web viewport, where hit testing
+          // ignores the overflow. Wide layouts keep the chip on the right.
+          if (constraints.maxWidth >= 520) {
+            return Row(
+              children: [
+                feedChip,
+                const SizedBox(width: 8),
+                spacesChip,
+                const Spacer(),
+                voteChip,
+              ],
+            );
+          }
+          return Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [feedChip, spacesChip, voteChip],
+          );
+        },
       ),
     );
   }
@@ -1019,6 +1059,13 @@ void _showCreatePostModal({
 
 /// Web Maestro reads semantics identifiers even when a chip's label text is
 /// dropped from the accessibility tree. Mobile keeps the chip unchanged.
+///
+/// Web Maestro reads [label] and [identifier] even when the chip text is
+/// dropped from the accessibility tree. Mobile keeps the chip unchanged.
+///
+/// The node stays a button because that is what Maestro activates. A phone-width
+/// row used to push the vote chip past the hit-test bounds; the subheader wraps
+/// instead, so a click on the chip can land.
 Widget _webSemanticsTarget({
   required String label,
   required String identifier,

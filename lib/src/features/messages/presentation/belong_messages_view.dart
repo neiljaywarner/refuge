@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
+import '../../notifications/data/member_notification_store.dart';
+import '../../notifications/domain/belong_notification.dart';
+import '../../profile/data/member_directory_store.dart';
+import '../../profile/domain/member_profile.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
 import '../domain/message_thread.dart';
 
@@ -588,7 +593,7 @@ class BelongMessagesView extends HookWidget {
 
 /// Compose modal sheet supporting single or multi-recipient autocomplete selection
 /// with Member Name as title and Member Profile Tagline as subtitle.
-class _NewMessageModalSheet extends HookWidget {
+class _NewMessageModalSheet extends HookConsumerWidget {
   const _NewMessageModalSheet({required this.onSendMessage});
 
   final void Function(
@@ -599,7 +604,7 @@ class _NewMessageModalSheet extends HookWidget {
   onSendMessage;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
@@ -608,17 +613,40 @@ class _NewMessageModalSheet extends HookWidget {
     final recipientSearchController = useTextEditingController();
     final subjectController = useTextEditingController();
     final contentController = useTextEditingController();
+    final sending = useState(false);
 
-    // Filter available members excluding already selected ones
-    final availableMembers = kDevFellowshipMembers.where((m) {
+    final signedIn = ref.watch(memberProfileProvider);
+    final directory =
+        ref.watch(directoryMembersProvider).valueOrNull ??
+        const <DirectoryMember>[];
+    final pickerMembers = [
+      for (final member in directory)
+        if (member.uid.isNotEmpty && member.uid != signedIn.userId)
+          DevFellowshipMember(
+            name: member.displayName,
+            role: member.handle.isEmpty
+                ? 'Community member'
+                : '@${member.handle}',
+            bio: member.tagline,
+            churchAffiliation: '',
+            isIcocMember: false,
+            comfortBadges: const [],
+            tagline: member.handle.isEmpty
+                ? member.tagline
+                : '@${member.handle}',
+            accountId: member.uid,
+            handle: member.handle,
+          ),
+      ...kDevFellowshipMembers,
+    ];
+
+    // Real accounts first, then the sample fellowship, minus chips already chosen.
+    final availableMembers = pickerMembers.where((m) {
       final notAlreadySelected = !selectedRecipients.value.any(
-        (s) => s.name == m.name,
+        (s) => s.name == m.name && s.accountId == m.accountId,
       );
-      final q = recipientQuery.value.trim().toLowerCase();
-      if (q.isEmpty) return notAlreadySelected;
-      final nameMatches = m.name.toLowerCase().contains(q);
-      final taglineMatches = m.effectiveTagline.toLowerCase().contains(q);
-      return notAlreadySelected && (nameMatches || taglineMatches);
+      return notAlreadySelected &&
+          memberMatchesPickerQuery(m, recipientQuery.value);
     }).toList();
 
     return Container(
@@ -731,48 +759,59 @@ class _NewMessageModalSheet extends HookWidget {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, idx) {
                       final member = availableMembers[idx];
-                      return ListTile(
-                        key: Key('member_picker_item_${member.name}'),
-                        dense: true,
-                        visualDensity: VisualDensity.compact,
-                        leading: CircleAvatar(
-                          radius: 14,
-                          child: Text(
-                            member.initials,
-                            style: const TextStyle(fontSize: 10),
+                      final pickerId = member.handle?.isNotEmpty == true
+                          ? member.handle!
+                          : member.name;
+                      void selectMember() {
+                        selectedRecipients.value = [
+                          ...selectedRecipients.value,
+                          member,
+                        ];
+                        recipientSearchController.clear();
+                        recipientQuery.value = '';
+                      }
+
+                      return Semantics(
+                        identifier: 'member_picker_item_$pickerId',
+                        button: true,
+                        explicitChildNodes: true,
+                        onTap: selectMember,
+                        child: ListTile(
+                          key: Key('member_picker_item_${member.name}'),
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          leading: CircleAvatar(
+                            radius: 14,
+                            child: Text(
+                              member.initials,
+                              style: const TextStyle(fontSize: 10),
+                            ),
                           ),
-                        ),
-                        // Title: Member Name
-                        title: Text(
-                          member.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
+                          // Title: Member Name
+                          title: Text(
+                            member.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.5,
+                            ),
                           ),
-                        ),
-                        // Subtitle: Member's Profile Tagline!
-                        subtitle: Text(
-                          member.effectiveTagline,
-                          key: Key('member_tagline_${member.name}'),
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: Colors.grey.shade600,
+                          // Subtitle: Member's Profile Tagline!
+                          subtitle: Text(
+                            member.effectiveTagline,
+                            key: Key('member_tagline_${member.name}'),
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: Colors.grey.shade600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          trailing: const Icon(
+                            Icons.add_circle_outline_rounded,
+                            size: 16,
+                          ),
+                          onTap: selectMember,
                         ),
-                        trailing: const Icon(
-                          Icons.add_circle_outline_rounded,
-                          size: 16,
-                        ),
-                        onTap: () {
-                          selectedRecipients.value = [
-                            ...selectedRecipients.value,
-                            member,
-                          ];
-                          recipientSearchController.clear();
-                          recipientQuery.value = '';
-                        },
                       );
                     },
                   ),
@@ -837,31 +876,62 @@ class _NewMessageModalSheet extends HookWidget {
                 'Send Message',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              onPressed: () {
-                if (selectedRecipients.value.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select at least one recipient.'),
-                    ),
-                  );
-                  return;
-                }
-                if (contentController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please write a message content.'),
-                    ),
-                  );
-                  return;
-                }
+              onPressed: sending.value
+                  ? null
+                  : () async {
+                      if (selectedRecipients.value.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select at least one recipient.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      final message = contentController.text.trim();
+                      if (message.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please write a message content.'),
+                          ),
+                        );
+                        return;
+                      }
 
-                onSendMessage(
-                  selectedRecipients.value,
-                  subjectController.text,
-                  contentController.text.trim(),
-                );
-                Navigator.of(context).pop();
-              },
+                      sending.value = true;
+                      final authorName = publicDisplayName(
+                        displayName: signedIn.displayName,
+                        email: signedIn.email,
+                      );
+                      final store = ref.read(memberNotificationStoreProvider);
+                      try {
+                        await Future.wait([
+                          for (final recipient in selectedRecipients.value)
+                            if (recipient.accountId != null &&
+                                recipient.accountId!.isNotEmpty)
+                              store.notifyRecipient(
+                                recipientUid: recipient.accountId!,
+                                authorUid: signedIn.userId,
+                                authorName: authorName,
+                                type: BelongNotificationType.directMessage,
+                                postTitle: subjectController.text.trim().isEmpty
+                                    ? message
+                                    : subjectController.text.trim(),
+                                commentSnippet: message,
+                              ),
+                        ]).timeout(const Duration(seconds: 8));
+                      } catch (_) {}
+
+                      onSendMessage(
+                        selectedRecipients.value,
+                        subjectController.text,
+                        message,
+                      );
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
             ),
           ],
         ),
