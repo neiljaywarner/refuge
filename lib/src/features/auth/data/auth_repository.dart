@@ -121,9 +121,10 @@ class InMemoryAuthRepository implements AuthRepository {
   Future<void> _rejectIfSoftDeleted(String userId) async {
     final blocked = await isAccountSoftDeleted?.call(userId) ?? false;
     if (!blocked) return;
-    throw const AuthException(
+    throw AuthException(
       code: 'account-soft-deleted',
       message: AccountDeletionMessages.signInBlocked,
+      userId: userId,
     );
   }
 
@@ -405,9 +406,10 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       await liveAuth.signOut();
     } catch (_) {}
-    throw const AuthException(
+    throw AuthException(
       code: 'account-soft-deleted',
       message: AccountDeletionMessages.signInBlocked,
+      userId: userId,
     );
   }
 
@@ -438,15 +440,18 @@ class FirebaseAuthRepository implements AuthRepository {
   AuthSession _sessionFromFirebaseUser(fb_auth.User fbUser) {
     return AuthSession(
       userId: fbUser.uid,
-      displayName: (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
+      displayName:
+          (fbUser.displayName != null && fbUser.displayName!.isNotEmpty)
           ? fbUser.displayName!
           : (_savedSession?.displayName ?? 'Fellowship Member'),
       email: fbUser.email ?? (_savedSession?.email ?? ''),
       bio: _savedSession?.bio ?? 'Verified Member of Belong on the Spectrum',
-      comfortBadges: _savedSession?.comfortBadges ?? const [
-        'Literal communication appreciated',
-        'Firebase Cloud Verified',
-      ],
+      comfortBadges:
+          _savedSession?.comfortBadges ??
+          const [
+            'Literal communication appreciated',
+            'Firebase Cloud Verified',
+          ],
       isSignedIn: true,
       authMethod: 'firebase_auth',
       icocChurchAffiliation: _savedSession?.icocChurchAffiliation,
