@@ -96,12 +96,6 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         subtitle: 'Community profiles, church affiliations & fellowship connections',
       ),
       BelongSpaceItem(
-        slug: 'general_chat',
-        title: 'General Chat',
-        emoji: '💬',
-        subtitle: 'Open community conversation',
-      ),
-      BelongSpaceItem(
         slug: 'memes',
         title: 'Memes',
         emoji: '😂',
@@ -140,7 +134,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'actually_autistic_events',
         title: 'Actually Autistic Events',
         emoji: '🗓️',
-        subtitle: 'Upcoming sensory-friendly meetups & gatherings (Active)',
+        subtitle: 'Upcoming sensory-friendly meetups & gatherings',
         isComingSoon: true,
         trackedIssueNumber: 28,
       ),

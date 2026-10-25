@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
 import '../../notifications/presentation/notifications_controller.dart';
+import '../../profile/domain/member_profile.dart';
 
 /// Primary 4-tab Bottom Navigation Bar for **Belong on the Spectrum**
 /// (`Home`, `Notifications`, `Messages`, `Search`) vetted in ADR 0005 (#18, #362).
@@ -39,9 +40,10 @@ class BelongBottomNavBar extends HookConsumerWidget {
     final primary = theme.colorScheme.primary;
     final disableAnimations =
         MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final unreadNotificationsCount = ref.watch(
-      unreadNotificationsCountProvider,
-    );
+    final profile = ref.watch(currentUserProfileProvider);
+    final unreadNotificationsCount = profile.isSignedIn
+        ? ref.watch(unreadNotificationsCountProvider)
+        : 0;
 
     final backgroundColor = isContrast
         ? Colors.black

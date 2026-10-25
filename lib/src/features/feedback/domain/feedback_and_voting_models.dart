@@ -56,9 +56,9 @@ enum FeedbackSentiment {
 
 /// Lifecycle stage of a feature on the community voting board.
 enum FeatureStage {
-  workInProgress('WIP · Shipping Before Oct 31'),
-  planned('Planned · Post-Cutover'),
-  communityIdea('Community Idea · Vote to Prioritize');
+  workInProgress('In Progress'),
+  planned('Planned'),
+  communityIdea('Community Idea');
 
   const FeatureStage(this.badgeLabel);
   final String badgeLabel;

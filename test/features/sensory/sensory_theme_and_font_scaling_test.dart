@@ -115,7 +115,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify High Contrast Mode SwitchListTile
-      expect(find.text('High Contrast Mode (WCAG AAA)'), findsOneWidget);
+      expect(find.text('High Contrast Mode'), findsOneWidget);
 
       // Verify 4 Font Scaling chips exist
       expect(find.text('Standard (100%)'), findsOneWidget);

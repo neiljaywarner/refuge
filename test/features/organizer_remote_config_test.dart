@@ -57,8 +57,8 @@ void main() {
     test(
       'Scenario: CommunityAnalyticsService correctly separates Dev and Prod event payloads',
       () {
-        final devAnalytics = CommunityAnalyticsService(flavor: 'dev');
-        final prodAnalytics = CommunityAnalyticsService(flavor: 'prod');
+        final devAnalytics = CommunityAnalyticsService(flavor: AppFlavor.dev);
+        final prodAnalytics = CommunityAnalyticsService(flavor: AppFlavor.prod);
 
         devAnalytics.logSpaceViewed('general_chat');
         prodAnalytics.logSpaceViewed('memes');

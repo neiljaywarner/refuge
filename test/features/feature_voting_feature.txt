@@ -7,7 +7,7 @@ Feature: Neurodivergent-First 1-Tap Feature Voting & Literal 3-Intent Feedback (
     Given the Belong on the Spectrum app is running
     When I tap the "Feedback & Vote" button in the top bar
     Then I see the "Belong Roadmap & Feedback" sheet
-    And I see "Direct Messages (Msgs Tab)" with badge "WIP · Shipping Before Oct 31"
+    And I see "Direct Messages (Msgs Tab)" with badge "In Progress"
     When I tap the upvote button for "wip-direct-messages"
     Then the vote count for "Direct Messages (Msgs Tab)" increases by 1
 

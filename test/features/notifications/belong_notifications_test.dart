@@ -5,6 +5,7 @@ import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/app_launcher_badge_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/belong_notification.dart';
 import 'package:refuge4serverpod/src/features/notifications/presentation/notifications_controller.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/post_repository.dart';
 import 'package:refuge4serverpod/src/home_screen.dart';
@@ -17,6 +18,21 @@ class FakeLauncherBadgeService extends AppLauncherBadgeService {
     recordedBadge = count;
     return true;
   }
+}
+
+class FakeMemberProfileNotifier extends MemberProfileNotifier {
+  FakeMemberProfileNotifier([this._profile = const MemberProfile(
+    displayName: 'Tester',
+    email: 'tester@example.com',
+    bio: 'Bio',
+    comfortBadges: [],
+    isSignedIn: true,
+  )]);
+
+  final MemberProfile _profile;
+
+  @override
+  MemberProfile build() => _profile;
 }
 
 void main() {
@@ -208,9 +224,22 @@ void main() {
     Widget buildTestHarness({
       Widget? home,
       List<BelongNotification>? initialNotifications,
+      MemberProfile? profile,
     }) {
       return ProviderScope(
         overrides: [
+          memberProfileProvider.overrideWith(
+            () => FakeMemberProfileNotifier(
+              profile ??
+                  const MemberProfile(
+                    displayName: 'Tester',
+                    email: 'tester@example.com',
+                    bio: 'Bio',
+                    comfortBadges: [],
+                    isSignedIn: true,
+                  ),
+            ),
+          ),
           postRepositoryProvider.overrideWithValue(
             LocalPostRepository(isDevMode: true),
           ),
@@ -282,7 +311,7 @@ void main() {
 
         // 3. Verify notification item title and author initials
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsOneWidget,
         );
         expect(
@@ -306,7 +335,7 @@ void main() {
         await $(const Key('filter_chip_mentions')).tap();
         await $.pumpAndSettle();
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsOneWidget,
         );
         expect(
@@ -322,7 +351,7 @@ void main() {
           findsOneWidget,
         );
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsNothing,
         );
 
@@ -334,7 +363,7 @@ void main() {
           findsOneWidget,
         );
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsNothing,
         );
 
@@ -354,7 +383,7 @@ void main() {
         await $(const Key('filter_chip_inbox')).tap();
         await $.pumpAndSettle();
         expect(
-          $('John Doe mentioned you in a comment on "Markan Chiasms"'),
+          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
           findsOneWidget,
         );
 
