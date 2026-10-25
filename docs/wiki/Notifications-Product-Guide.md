@@ -7,7 +7,7 @@
 > **Technical Companion**: [[Notifications-Technical-Architecture]]  
 > **Architectural Decisions**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]
 
-> **Status (24 October 2026).** Message alerts are opt-in. See [Direct message alerts](ADR-0012-Direct-Message-Alerts) and [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md). The cloud send is written and tested, and it is not deployed: the Firebase project is still on Spark. Phone launcher dots are still not updated. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) remains open for that badge.
+> **Status (24 October 2026).** Message alerts are opt-in. See [Direct message alerts](ADR-0012-Direct-Message-Alerts) and [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md). The send function is in `appwrite/functions/dm-push` and is deployed. Firebase Cloud Functions stay unused because the project is still on Spark. Phone launcher dots are still not updated. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) remains open for that badge.
 
 ---
 
@@ -58,6 +58,30 @@ Tap the tune icon (🎛️) in the upper right of the Notifications screen to op
 
 When it is on, a new direct message shows as a normal notification, with sound, including while Belong is closed. It uses the Android channel named Direct messages. Completely Muted sends nothing. Immediate Gentle Cards is the quiet extra: the notification still appears, without sound. Other community updates can still wait for the schedule you picked.
 
-Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the card to reach. Practice names in the New Message list never receive a push.
+The sheet also says where the system controls live. On Android that is Settings, then Apps, then Belong, then Notifications, then the Direct messages channel. On iPhone that is Settings, then Notifications, then Belong. On Mac that is System Settings, then Notifications, then Belong. In a browser it is the lock or tune icon in the address bar, then Notifications.
 
-The phone half of this was checked on Pixel Left and Pixel Right on October 24, 2026. The cloud function that would send the card is in the repository and is not deployed yet. Details are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the notification to reach. Practice names in the New Message list never receive a push.
+
+The phone half of the switch was checked on Pixel Left and Pixel Right on October 24, 2026. The send function is deployed. How it is built and tested is on [Direct message push](Direct-Message-Push-Function). A real notification still needs two different signed-in members, both with Message alerts on. Details are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+
+## 5. If a message does not show up
+
+Send is the ordinary button. It turns into a spinner, then one of three results:
+
+* **OK, it worked.** The message is stored. The sheet closes.
+* **Sent on this phone only.** The recipient is a practice name. The other phone does not get it.
+* **Not sent.** The write failed. The sheet stays open and says the message stayed on this phone.
+
+What the other person sees follows the platform:
+
+* **App open.** A Material banner. Belong does not also post a system notification for that same moment.
+* **App closed or in the background.** The system notification, with sound, on the Direct messages channel. Message alerts must be on. Completely Muted sends nothing. Immediate Gentle Cards is the quiet notification.
+
+Check these before assuming the send failed:
+
+1. Tap the person until a chip appears. Text in the search box is not a recipient.
+2. Read the button. **Not sent.** and **Sent on this phone only.** do not reach the other phone. **OK, it worked** does.
+3. On Android, sound and banners are under Settings, then Apps, then Belong, then Notifications, then Direct messages. On iPhone they are under Settings, then Notifications, then Belong.
+4. The three practice conversations (Marty & Community Team, Sensory Game Night Group, Silent Co-Presence Fellowship) stay listed until a real conversation exists. They are not a delivery.
+
+A signed-in send on October 24, 2026 did not store a message, and the other phone still showed those practice conversations. That pass is not a successful delivery.

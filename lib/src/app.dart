@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
 import 'core/presentation/system_insets.dart';
+import 'features/messages/presentation/direct_message_arrival_banner.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
@@ -77,6 +78,7 @@ class _RefugeAppContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
+    scaffoldMessengerKey: rootScaffoldMessengerKey,
     debugShowCheckedModeBanner: false,
     title: 'Belong',
     theme: SensoryThemeData.getTheme(themeNotifier.mode),
@@ -96,7 +98,7 @@ class _RefugeAppContent extends ConsumerWidget {
               insetPadding: SystemInsets.dialogInsetPadding(repaired),
             ),
           ),
-          child: child!,
+          child: DirectMessageArrivalHost(child: child!),
         ),
       );
     },

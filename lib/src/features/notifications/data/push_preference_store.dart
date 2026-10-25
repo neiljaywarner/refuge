@@ -35,14 +35,19 @@ Future<void> savePushPreference(CalmNotificationPreferences prefs) async {
       ? prefs.fcmToken
       : null;
 
-  await FirebaseFirestore.instance
-      .doc('users/${user.uid}/$pushPreferenceDocPath')
-      .set({
-    'enabled': prefs.enabled && prefs.schedule.name != 'muted',
-    'schedule': prefs.schedule.name,
-    'fcmToken': token,
-    'updatedAt': DateTime.now().toUtc().toIso8601String(),
-  }, SetOptions(merge: true));
+  try {
+    await FirebaseFirestore.instance
+        .doc('users/${user.uid}/$pushPreferenceDocPath')
+        .set({
+      'enabled': prefs.enabled && prefs.schedule.name != 'muted',
+      'schedule': prefs.schedule.name,
+      'fcmToken': token,
+      'updatedAt': DateTime.now().toUtc().toIso8601String(),
+    }, SetOptions(merge: true));
+  } catch (_) {
+    // The private copy can fail when that rule is not deployed. The phone
+    // still has to register, because the sender reads the push table.
+  }
   await registerDirectMessagePush(prefs);
 }
 

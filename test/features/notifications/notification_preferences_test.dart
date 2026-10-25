@@ -19,7 +19,9 @@ void main() {
     });
 
     test('service updates schedule and generates token on permission', () async {
-      final service = NotificationPermissionsService();
+      final service = NotificationPermissionsService(
+        overrideIsIosWebWithoutPwa: false,
+      );
       expect(service.state.schedule, equals(CalmDigestSchedule.twiceDaily));
 
       service.setSchedule(CalmDigestSchedule.morningOnly);
@@ -73,6 +75,11 @@ void main() {
 
       expect($('Calm Notification Ethics'), findsOneWidget);
       expect($(const ValueKey('toggle-notifications-switch')), findsOneWidget);
+      expect($(const ValueKey('notification-settings-help')), findsOneWidget);
+      expect(
+        $(RegExp('Apps, then Belong, then Notifications')),
+        findsOneWidget,
+      );
 
       // Toggle notifications
       await $(const ValueKey('toggle-notifications-switch')).tap();

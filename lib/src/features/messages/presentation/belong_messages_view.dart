@@ -162,14 +162,7 @@ class BelongMessagesView extends HookConsumerWidget {
                     .read(belongNotificationsProvider.notifier)
                     .syncDirectMessageNotifications(mailbox, user.uid);
               }
-              if (context.mounted &&
-                  result.outcome == DirectMessageSendOutcome.deviceOnly) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('This message stayed on this device.'),
-                  ),
-                );
-              }
+              return result.outcome;
             },
           ),
         ),
@@ -657,7 +650,7 @@ class BelongMessagesView extends HookConsumerWidget {
 class _NewMessageModalSheet extends HookConsumerWidget {
   const _NewMessageModalSheet({required this.onSendMessage});
 
-  final Future<void> Function(
+  final Future<DirectMessageSendOutcome> Function(
     List<MessageRecipient> recipients,
     String subject,
     String content,
@@ -672,6 +665,8 @@ class _NewMessageModalSheet extends HookConsumerWidget {
     final selectedRecipients = useState<List<MessageRecipient>>([]);
     final recipientQuery = useState('');
     final sending = useState(false);
+    final sendResult = useState<String?>(null);
+    final sendError = useState<String?>(null);
     final recipientSearchController = useTextEditingController();
     final subjectController = useTextEditingController();
     final contentController = useTextEditingController();
@@ -912,7 +907,16 @@ class _NewMessageModalSheet extends HookConsumerWidget {
             ),
             const SizedBox(height: 14),
 
-            // Send Button
+            if (sendError.value != null) ...[
+              Text(
+                sendError.value!,
+                key: const Key('send_message_error'),
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+              const SizedBox(height: 8),
+            ],
+
+            // Send stays in place: spinner, then Sent or the error.
             ElevatedButton.icon(
               key: const Key('send_new_message_button'),
               style: ElevatedButton.styleFrom(
@@ -923,45 +927,74 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              icon: const Icon(Icons.send_rounded, size: 16),
-              label: const Text(
-                'Send Message',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              icon: sending.value
+                  ? const SizedBox(
+                      key: Key('send_message_spinner'),
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      sendResult.value == 'OK, it worked'
+                          ? Icons.check_rounded
+                          : Icons.send_rounded,
+                      size: 16,
+                    ),
+              label: Text(
+                sending.value
+                    ? 'Sending'
+                    : (sendResult.value ?? 'Send Message'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              onPressed: sending.value
+              onPressed: sending.value || sendResult.value != null
                   ? null
                   : () async {
+                      sendError.value = null;
                       if (selectedRecipients.value.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please select at least one recipient.',
-                            ),
-                          ),
-                        );
+                        sendError.value =
+                            'Please select at least one recipient.';
                         return;
                       }
                       if (contentController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please write a message content.'),
-                          ),
-                        );
+                        sendError.value = 'Please write a message content.';
                         return;
                       }
 
                       sending.value = true;
                       try {
-                        await onSendMessage(
+                        final outcome = await onSendMessage(
                           selectedRecipients.value,
                           subjectController.text,
                           contentController.text.trim(),
                         );
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                        }
-                      } finally {
                         sending.value = false;
+                        if (!context.mounted) return;
+                        if (outcome == DirectMessageSendOutcome.delivered) {
+                          sendResult.value = 'OK, it worked';
+                          await Future<void>.delayed(
+                            const Duration(milliseconds: 1500),
+                          );
+                          if (context.mounted) Navigator.of(context).pop();
+                        } else if (outcome ==
+                            DirectMessageSendOutcome.localOnly) {
+                          sendResult.value = 'Sent on this phone only.';
+                          sendError.value =
+                              'A sample member does not get this message.';
+                          await Future<void>.delayed(
+                            const Duration(milliseconds: 700),
+                          );
+                          if (context.mounted) Navigator.of(context).pop();
+                        } else {
+                          sendResult.value = 'Not sent.';
+                          sendError.value = 'It stayed on this phone. Sign in, then try again.';
+                        }
+                      } catch (_) {
+                        sending.value = false;
+                        sendResult.value = 'Not sent.';
+                        sendError.value = 'Something went wrong. Try again.';
                       }
                     },
             ),

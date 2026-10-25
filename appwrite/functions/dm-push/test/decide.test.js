@@ -6,7 +6,7 @@ const {
   shouldSendDirectMessagePush,
   directMessagePushBody,
   directMessageAndroidConfig,
-} = require('./src/decide');
+} = require('../src/decide');
 
 test('off and muted do not send', () => {
   assert.equal(shouldSendDirectMessagePush({ enabled: false, schedule: 'twiceDaily', fcmToken: 'abc' }), false);

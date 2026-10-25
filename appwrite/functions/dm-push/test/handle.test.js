@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { handleDirectMessagePush, messageFromFirestoreDocument } = require('./src/handle');
+const { handleDirectMessagePush, messageFromFirestoreDocument } = require('../src/handle');
 
 const member = { sub: 'member-a', user_id: 'member-a' };
 

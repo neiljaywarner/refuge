@@ -1,6 +1,7 @@
 # Direct message alerts
 
 > **Decision**: [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md)
+> **Function**: [Direct message push](Direct-Message-Push-Function)
 > **Issue**: [#571](https://github.com/neiljaywarner/refuge/issues/571)
 > **Product page**: [Gentle notifications](Notifications-Product-Guide)
 > **Checked**: October 24, 2026, on Pixel Left and Pixel Right
@@ -14,38 +15,37 @@ A direct message can arrive as a normal notification, with sound. Nothing is sen
 3. Turn **Message alerts** on.
 4. Sign in on that phone.
 
-The switch starts off. Turning it on asks Android for permission once. After that, the phone remembers the choice, including the next time you open Belong.
+The switch starts off. Turning it on asks the phone for permission once. After that, the phone remembers the choice, including the next time you open Belong.
 
-The card has no chime and no red badge. The words say who wrote, then a short piece of the message.
+When alerts are on, the notification uses the Android channel named Direct messages. That channel has sound. Completely Muted sends nothing. Immediate Gentle Cards still appears, without sound.
 
-If the phone is not signed in, the switch can still be on, but the card has nobody to find. The sheet says so: "Sign in on this phone so the card can find you."
+The sheet says where the system controls live:
 
-Sample members (Marty, Caleb Stone, Sarah Chen) are practice names. A message to them stays on your phone. It does not push, and it does not email.
+- Android: Settings, then Apps, then Belong, then Notifications, then Direct messages.
+- iPhone: Settings, then Notifications, then Belong.
+- Mac: System Settings, then Notifications, then Belong.
+- Browser: the lock or tune icon in the address bar, then Notifications.
 
-Completely Muted still sends nothing.
+If the phone is not signed in, the switch can still be on, but the notification has nobody to find. The sheet says so.
 
-## What this does not do yet
+Sample members are practice names. A message to them stays on your phone. It does not push, and it does not email.
 
-The sending code is in the repo. It is not running in the cloud. The Firebase project has to move to the Blaze plan before that function can be deployed. Until then, turning the switch on saves your choice and, once you are signed in, saves a private token. It does not yet deliver a card to another phone.
+## What is deployed
+
+The send function is `appwrite/functions/dm-push` in this repository. It is deployed. The phone calls it after a message is stored. The FCM credential is a secret on that function and is not in git.
+
+A live notification from one signed-in member to another has not been run. Both phones were signed out during the October 24 check. No message was sent to a real community member.
 
 Email when a message arrives is a later item, [#570](https://github.com/neiljaywarner/refuge/issues/570). That mail will say a message is waiting. It will not include the whole message.
 
-## What the two phones showed
-
-Both phones were signed out of the dev app. Maestro turned Message alerts on. A new launch of the app still showed the switch on. New Message opened, with the line "Sample members shown while the directory is offline."
-
-![Message alerts on](images/message-alerts-on.png)
-
-The picture is the app only. The status bar and the gesture pill are cropped out. No community member is named.
-
 ## How the send is decided
 
-The same rule lives in Dart and in the Cloud Function:
+The same rule lives in Dart and in `appwrite/functions/dm-push/src/decide.js`:
 
 - Alerts are on.
 - The schedule is not muted.
 - The token is present and is not a test placeholder (`fcm_token_calm…`).
 
-The token is stored at `users/{uid}/notification_settings/push`. The public profile document stays free of tokens and email addresses. Only that member can read or write the private document. The function reads it with the admin SDK.
+The function stores the token in an Appwrite row the client cannot read. The public profile document stays free of tokens and email addresses. The function reads the stored message with the sender's own sign-in token. It does not trust text supplied by the phone.
 
 A sample send and a send that never reached the database do not create a `direct_messages` document, so they cannot notify anyone.

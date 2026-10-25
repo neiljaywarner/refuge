@@ -1,5 +1,22 @@
 'use strict';
 
+/**
+ * Appwrite entry for direct-message notifications.
+ *
+ * Runtime: node-22. Entrypoint: src/main.js. Function id: dm-push.
+ * Execute permission is `any` because the caller has a Firebase session,
+ * not an Appwrite user session. This file checks that Firebase ID token.
+ *
+ * Environment, set by Appwrite unless noted:
+ * - APPWRITE_FUNCTION_API_ENDPOINT
+ * - APPWRITE_FUNCTION_PROJECT_ID
+ * - APPWRITE_API_KEY
+ * - FCM_SERVICE_ACCOUNT_JSON (secret; the Firebase Admin SDK JSON).
+ *   Absent or unreadable means the function reports that push is not
+ *   configured and does not pretend a notification was sent.
+ * Never commit that JSON. Never log the private key.
+ */
+
 const crypto = require('crypto');
 const {
   handleDirectMessagePush,

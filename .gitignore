@@ -33,7 +33,7 @@ migrate_working_dir/
 /build/
 /coverage/
 .firebase/
-functions/node_modules/
+appwrite/functions/*/node_modules/
 
 # Symbolication related
 app.*.symbols
