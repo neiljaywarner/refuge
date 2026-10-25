@@ -160,8 +160,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
         Post(
           id: 'post-${DateTime.now().millisecondsSinceEpoch}',
           authorName: profile.displayName,
-          authorInitials: profile.initials,
-          authorAvatarUrl: profile.avatarUrl,
           content: content,
           timestamp: DateTime.now(),
           spaceKey: targetSpace,
@@ -171,23 +169,36 @@ class RefugeHomeScreen extends HookConsumerWidget {
           imageUrl: imageUrl,
         ),
       );
-      analytics.logPostCreated(targetSpace, toneTag);
+      final lengthBucket = content.length <= 140
+          ? 1
+          : content.length <= 280
+          ? 2
+          : 3;
+      analytics.logReflectionPublished(tag: toneTag, lengthBucket: lengthBucket);
     }
 
     Widget buildHomeBody() {
       if (homeSubView.value == BelongHomeSubView.membersDirectory) {
         return BelongMembersDirectoryView(
-          onBack: () => homeSubView.value = BelongHomeSubView.feed,
+          onBackToSpaces: () =>
+              homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
       if (homeSubView.value == BelongHomeSubView.spaces) {
         return BelongSpacesDirectoryView(
-          selectedSpaceKey: selectedSpace.value,
-          onSelectSpace: selectSpace,
-          onSelectComingSoon: (item) {
-            activeComingSoonItem.value = item;
-            homeSubView.value = BelongHomeSubView.comingSoonItem;
+          selectedSpaceSlug: selectedSpace.value,
+          onSelectSpaceItem: (item) {
+            if (item.isComingSoon) {
+              activeComingSoonItem.value = item;
+              homeSubView.value = BelongHomeSubView.comingSoonItem;
+              return;
+            }
+            if (item.slug == 'members_directory') {
+              homeSubView.value = BelongHomeSubView.membersDirectory;
+              return;
+            }
+            selectSpace(item.slug);
           },
         );
       }
@@ -197,10 +208,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
         final item = activeComingSoonItem.value!;
         return ComingSoonView(
           title: item.title,
-          description: item.description,
-          icon: item.icon,
-          badge: item.badge,
-          onBack: () => homeSubView.value = BelongHomeSubView.spaces,
+          emoji: item.emoji,
+          description: item.subtitle,
+          trackedIssueNumber: item.trackedIssueNumber,
+          onBackToFeed: () => homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
@@ -214,21 +225,17 @@ class RefugeHomeScreen extends HookConsumerWidget {
               SpaceNavigationBar(
                 selectedSpace: selectedSpace.value,
                 onSelectSpace: selectSpace,
-                isContrast: isContrast,
               ),
               ToneFilterRow(
                 activeFilter: activeFilter.value,
                 onSelectFilter: (tone) {
                   activeFilter.value = tone;
-                  analytics.logToneFilterChanged(tone);
                 },
-                isContrast: isContrast,
               ),
               FeedSortRow(
-                currentSort: activeSort.value,
-                onSortChanged: (sort) {
+                activeSort: activeSort.value,
+                onSelectSort: (sort) {
                   activeSort.value = sort;
-                  analytics.logFeedSortChanged(sort.label);
                 },
                 isContrast: isContrast,
               ),
@@ -268,23 +275,24 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             fontSize: 11,
                             color: isContrast
                                 ? Colors.white
-                                : theme.textTheme.bodySmall?.color,
+                                : Theme.of(context).textTheme.bodySmall?.color,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              if (remoteConfig.communityAnchorBannerText.isNotEmpty)
+              if (remoteConfig.bannerEnabled)
                 CommunityAnchorBanner(
-                  bannerText: remoteConfig.communityAnchorBannerText,
+                  primaryColor: primaryColor,
                   isContrast: isContrast,
                 ),
               if (quietDigestSnapshot.hasData &&
                   quietDigestSnapshot.data != null &&
                   quietDigestSnapshot.data!.isNotEmpty)
                 QuietDigestBanner(
-                  summaryText: quietDigestSnapshot.data!,
+                  primaryColor: primaryColor,
+                  legacyMessage: quietDigestSnapshot.data,
                   isContrast: isContrast,
                 ),
               if (!isDesktop && selectedSpace.value != 'saved_for_later')
@@ -333,9 +341,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         activityTimestampsAsync.value ?? {};
                     final commentCounts = commentCountsAsync.value ?? {};
                     posts = FeedSortService.sortPosts(
-                      posts: posts,
+                      posts,
                       sortOption: activeSort.value,
-                      activityTimestamps: activityTimestamps,
+                      latestActivityByPost: activityTimestamps,
                       commentCounts: commentCounts,
                     );
 
