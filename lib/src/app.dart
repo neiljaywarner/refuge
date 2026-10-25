@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
+import 'core/config/app_flavor.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
@@ -82,9 +83,11 @@ class _RefugeAppContent extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flavor = ref.watch(appFlavorProvider);
+    return MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'Belong',
+    title: flavor.launcherTitle,
     theme: SensoryThemeData.getTheme(themeNotifier.mode),
     builder: (context, child) {
       final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
@@ -121,4 +124,5 @@ class _RefugeAppContent extends ConsumerWidget {
                 themeNotifier: themeNotifier,
               )),
   );
+  }
 }

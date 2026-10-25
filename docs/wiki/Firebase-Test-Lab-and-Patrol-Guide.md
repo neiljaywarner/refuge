@@ -48,7 +48,7 @@ Outputs the dev `flutter build apk` flags (`lib/main_dev.dart`, `FLAVOR=dev`, `E
 ```bash
 dart run tool/run_firebase_test_lab.dart --build-only
 ```
-Builds the APK pair and refuses to continue unless `aapt dump badging` reports `com.belongonthespectrum.refuge.dev` and label `Belong (Dev)`.
+Builds the APK pair and refuses to continue unless `aapt dump badging` reports `com.belongonthespectrum.refuge.dev` and label `[DEV] Belong on the Spectrum`.
 
 ### 3. Full Cloud Test Execution
 When run on a machine with `gcloud` authenticated (`gcloud auth login`):

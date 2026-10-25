@@ -82,6 +82,7 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          FIREBASE_ANDROID_DEV_APP_ID: ${{ secrets.FIREBASE_ANDROID_DEV_APP_ID }}
           APTABASE_KEY: ${{ secrets.APTABASE_KEY }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           POSTHOG_HOST: https://us.i.posthog.com
@@ -100,5 +101,19 @@ jobs:
             fi
             dart run tool/deploy_release.dart "${args[@]}"
           else
-            dart run tool/deploy_dev_web.dart --version "ci-$short"
+            dev_args=(--version "ci-$short" --build-android)
+            if [ -n "${FIREBASE_ANDROID_DEV_APP_ID:-}" ]; then
+              dev_args+=(--distribute-android)
+            fi
+            dart run tool/deploy_dev_web.dart "${dev_args[@]}"
           fi
+
+      - name: Upload dev APK artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: refuge-dev-release-apk
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/apk/release/app-release.apk
+          if-no-files-found: ignore

@@ -24,8 +24,8 @@ void main() {
     test('reads package and label from aapt output', () {
       const sample = '''
 package: name='com.belongonthespectrum.refuge.dev' versionCode='2'
-application-label:'Belong (Dev)'
-application: label='Belong (Dev)' icon='res/mipmap-anydpi-v26/ic_launcher.xml'
+application-label:'[DEV] Belong on the Spectrum'
+application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic_launcher.xml'
 ''';
       final parsed = parseAaptBadging(sample);
       expect(parsed?.packageName, devAndroidPackageId);
