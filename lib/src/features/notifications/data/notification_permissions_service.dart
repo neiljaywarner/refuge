@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:refuge4serverpod/src/features/notifications/data/push_preference_store.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_push_constants.dart';
 
@@ -15,6 +20,41 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       overrideIsWebPwaInstalled: overrideIsWebPwaInstalled,
       overrideIsIosWebWithoutPwa: overrideIsIosWebWithoutPwa,
     );
+    if (overrideIsWebPwaInstalled == null && overrideIsIosWebWithoutPwa == null) {
+      unawaited(_restore());
+      _watchSignIn();
+    }
+  }
+
+  int _edits = 0;
+  StreamSubscription<User?>? _authSub;
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _restore() async {
+    final seen = _edits;
+    final stored = await readStoredPushPreference();
+    if (stored == null || seen != _edits) return;
+    state = state.copyWith(
+      enabled: stored.enabled,
+      schedule: stored.schedule,
+      fcmToken: stored.fcmToken,
+    );
+  }
+
+  void _watchSignIn() {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+        if (user != null) unawaited(_persist());
+      });
+    } catch (_) {
+      // Tests and a cold start before Firebase initializes skip the listener.
+    }
   }
 
   void _initPlatformState({
@@ -41,20 +81,34 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
 
   /// Updates the calm batched digest schedule without triggering urgent popups.
   void setSchedule(CalmDigestSchedule schedule) {
+    _edits += 1;
     if (schedule == CalmDigestSchedule.muted) {
       state = state.copyWith(schedule: schedule, enabled: false);
     } else {
       state = state.copyWith(schedule: schedule);
     }
+    unawaited(_persist());
   }
 
   /// Toggles push notifications on or off with sensory-safe defaults.
   Future<bool> setEnabled(bool enable) async {
+    _edits += 1;
     if (!enable) {
       state = state.copyWith(enabled: false);
+      await _persist();
       return false;
     }
-    return requestPushPermission();
+    final granted = await requestPushPermission();
+    await _persist();
+    return granted;
+  }
+
+  Future<void> _persist() async {
+    try {
+      await savePushPreference(state);
+    } catch (_) {
+      // A failed save keeps the on-device choice. The next toggle retries.
+    }
   }
 
   /// Requests notification permission with respectful transparency across Web, PWA, and Android.
@@ -70,11 +124,11 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       final settings = await messaging.requestPermission(
         alert: true,
         announcement: false,
-        badge: false, // Calm-tech: no anxiety red dots
+        badge: false,
         carPlay: false,
         criticalAlert: false,
         provisional: false,
-        sound: false, // Calm-tech: silent by default
+        sound: true,
       );
 
       final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||

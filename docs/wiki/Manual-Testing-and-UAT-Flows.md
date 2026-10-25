@@ -31,6 +31,8 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
 
 ## 👥 2. Testing Personas (Pick One to Roleplay!)
 
+On **dev** Android or [dev web](https://dev-belongonthespectrum.web.app/), you can also sign in as two fixed test members (**David M.** and **Sarah K.**) via the one-tap example buttons. See **[Dev example accounts](Dev-Example-Accounts)** for emails, roles, and how `DEV_EXAMPLE_PASSWORD` fits in (password is never in the wiki).
+
 1. **Alex (Autistic Community Member)**: Sensitive to bright lights, motion, and sudden popups. Wants a gentle, predictable experience where text is easy to read and colors are soothing.
 2. **Marty (Community Organizer)**: Wants to verify that newcomers can easily identify their church affiliation (or declare they are a welcoming visitor) and that community announcements are clear.
 3. **Jordan (Welcoming Friend / Guest)**: Not a member of any church, but wants to support neurodivergent friends and check out the public discussion spaces.

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../account_deletion/data/account_deletion_provider.dart';
+import '../../account_deletion/domain/account_deletion_exception.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_session.dart';
 import '../data/member_directory_store.dart';
@@ -162,15 +164,20 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         profile.userId == 'guest') {
       return;
     }
-    final flight = ref
-        .read(memberDirectoryStoreProvider)
-        .publishSignedInMember(
-          uid: profile.userId,
-          displayName: profile.displayName,
-          email: profile.email,
-          tagline: profile.effectiveTagline,
-        )
-        .timeout(const Duration(seconds: 8));
+    final flight = () async {
+      final blocked = await ref
+          .read(accountDeletionRepositoryProvider)
+          .isSignInBlocked(profile.userId);
+      if (blocked) return;
+      await ref
+          .read(memberDirectoryStoreProvider)
+          .publishSignedInMember(
+            uid: profile.userId,
+            displayName: profile.displayName,
+            email: profile.email,
+            tagline: profile.effectiveTagline,
+          );
+    }().timeout(const Duration(seconds: 8));
     _publishFlight = flight;
     unawaited(
       flight.then(
@@ -186,26 +193,30 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
 
   @override
   MemberProfile build() {
-    // Reconcile with storage on every build so a cleared session file does
-    // not leave a stale in-memory profile looking signed in.
-    final local = ProfileStorageService.instance.load();
-    if (local != null && local['displayName'] != null) {
-      _persistedProfile = MemberProfile(
-        displayName: local['displayName'] as String? ?? 'Fellowship Member',
-        email: local['email'] as String? ?? '',
-        bio: local['bio'] as String? ?? '',
-        comfortBadges:
-            (local['comfortBadges'] as List<dynamic>?)?.cast<String>() ??
-            const ['Literal communication appreciated'],
-        isSignedIn: true,
-        authMethod: 'persisted_storage',
-        icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
-        userId: local['userId'] as String? ?? _persistedProfile?.userId ?? '',
-        avatarUrl: _persistedProfile?.avatarUrl,
-        tagline: _persistedProfile?.tagline,
-      );
-    } else {
+    if (_explicitlySignedOut) {
       _persistedProfile = null;
+    } else {
+      // Reconcile with storage on every build so a cleared session file does
+      // not leave a stale in-memory profile looking signed in.
+      final local = ProfileStorageService.instance.load();
+      if (local != null && local['displayName'] != null) {
+        _persistedProfile = MemberProfile(
+          displayName: local['displayName'] as String? ?? 'Fellowship Member',
+          email: local['email'] as String? ?? '',
+          bio: local['bio'] as String? ?? '',
+          comfortBadges:
+              (local['comfortBadges'] as List<dynamic>?)?.cast<String>() ??
+              const ['Literal communication appreciated'],
+          isSignedIn: true,
+          authMethod: 'persisted_storage',
+          icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
+          userId: local['userId'] as String? ?? _persistedProfile?.userId ?? '',
+          avatarUrl: _persistedProfile?.avatarUrl,
+          tagline: _persistedProfile?.tagline,
+        );
+      } else {
+        _persistedProfile = null;
+      }
     }
 
     final repo = ref.watch(authRepositoryProvider);
@@ -231,13 +242,15 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     });
 
     final session = repo.currentSession();
-    if (session.isSignedIn) {
+    if (!_explicitlySignedOut && session.isSignedIn) {
       final effective = _profileFor(session);
       _persistedProfile = effective;
       return effective;
     }
 
-    if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
+    if (!_explicitlySignedOut &&
+        _persistedProfile != null &&
+        _persistedProfile!.isSignedIn) {
       return _persistedProfile!;
     }
     return const MemberProfile.guest();
@@ -399,6 +412,23 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         await pending;
       } catch (_) {}
     }
+  }
+
+  /// Soft-deletes the signed-in account, then signs out on this device.
+  ///
+  /// Throws [AccountDeletionException] when confirmation, auth, or a backend
+  /// write fails. The caller should stay on the confirm dialog in that case.
+  Future<void> deleteMyAccount() async {
+    final session = ref.read(authRepositoryProvider).currentSession();
+    await ref
+        .read(accountDeletionRepositoryProvider)
+        .softDeleteSelf(
+          userId: session.isSignedIn ? session.userId : '',
+          displayName: state.displayName,
+          email: session.email.isNotEmpty ? session.email : state.email,
+          confirmed: true,
+        );
+    await signOut();
   }
 }
 

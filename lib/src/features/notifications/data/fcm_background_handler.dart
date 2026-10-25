@@ -13,13 +13,28 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 
   final notification = message.notification;
+  // A notification payload is already posted by Android on the message channel.
+  if (notification != null) return;
+
   final display = calmPushDisplayFromParts(
     notificationTitle: notification?.title,
     notificationBody: notification?.body,
     data: message.data,
   );
 
-  await createCalmLocalNotificationService().showCalmDigest(
+  final service = createCalmLocalNotificationService();
+  final isDirectMessage = message.data['type'] == 'direct_message' ||
+      message.data['category'] == 'direct_message';
+  final quiet = message.data['quiet'] == 'true';
+  if (isDirectMessage && !quiet) {
+    await service.showMessageNotification(
+      title: display.title,
+      body: display.body,
+      payload: display.category,
+    );
+    return;
+  }
+  await service.showCalmDigest(
     title: display.title,
     body: display.body,
     payload: display.category,

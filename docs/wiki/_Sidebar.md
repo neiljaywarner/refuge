@@ -12,6 +12,7 @@
 * **[Ban a Member](Admin-Pause-and-Restore)**
 * **[📥 Bring Past Posts Over](Circle-CSV-Migration-Guide)**
 * **[🧪 Longer Testing Checklist](Manual-Testing-and-UAT-Flows)**
+* **[👤 Dev example accounts (David M. & Sarah K.)](Dev-Example-Accounts)**
 * **[🌿 Calm Design and Sensory Comfort](Calm-Tech-and-Accessibility)**
 * **[🌸 Gentle Notifications](Notifications-Product-Guide)**
 * **[📋 Notes for First Meeting with Human Reviewer](https://github.com/neiljaywarner/refuge/blob/main/notes_for_first_meeting_with_human_reviewer.md)**
@@ -25,6 +26,7 @@
 * **[🗄️ One Database Plus a Backup (ADR-0011)](Reflection-Redundancy-and-Backup)**
 * **[🔌 Serverpod Deprecation & $0/Mo Teardown Guide](Serverpod-Deprecation-and-Teardown-Guide)**
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
+* **[💬 Direct Message Alerts (ADR-0012)](ADR-0012-Direct-Message-Alerts)**
 * **[🔔 Notifications Technical Architecture & State](Notifications-Technical-Architecture)**
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
 * **[📡 Dual Observability, Analytics & Crash Reporting](Observability-Crashlytics-Analytics-and-Diagnostics)**

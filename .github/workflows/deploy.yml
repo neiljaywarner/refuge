@@ -81,6 +81,9 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          APTABASE_KEY: ${{ secrets.APTABASE_KEY }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          POSTHOG_HOST: https://us.i.posthog.com
         run: |
           set -eu
           version="ci-${GITHUB_SHA::7}"

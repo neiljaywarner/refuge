@@ -35,6 +35,7 @@ class FcmMessagingService {
     _handlersRegistered = true;
 
     final service = FcmMessagingService(analytics: analytics);
+    await service._localNotifications.ensureChannels();
     await service._wireHandlers();
   }
 
@@ -55,11 +56,22 @@ class FcmMessagingService {
       data: message.data,
     );
 
-    await _localNotifications.showCalmDigest(
-      title: display.title,
-      body: display.body,
-      payload: display.category,
-    );
+    final isDirectMessage = message.data['type'] == 'direct_message' ||
+        message.data['category'] == 'direct_message';
+    final quiet = message.data['quiet'] == 'true';
+    if (isDirectMessage && !quiet) {
+      await _localNotifications.showMessageNotification(
+        title: display.title,
+        body: display.body,
+        payload: display.category,
+      );
+    } else {
+      await _localNotifications.showCalmDigest(
+        title: display.title,
+        body: display.body,
+        payload: display.category,
+      );
+    }
 
     final handler = onPayloadReceived ?? cloudPayloadHandler;
     if (handler != null) {
