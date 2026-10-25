@@ -1,0 +1,77 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Meme gallery — real gallery pick, preview, and attach"
+tags:
+  - belong
+  - meme
+  - upload-e2e
+  - issue-559
+---
+# End-to-end: inject a test image into the device gallery, pick it from
+# Choose Photo, assert preview + attach, then confirm the composer banner.
+# Requires photos permission; does not open the system camera UI.
+
+- launchApp:
+    clearState: false
+
+- setPermissions:
+    permissions:
+      camera: allow
+      photos: allow
+
+- addMedia:
+    - "assets/belong_maestro_test_photo.png"
+
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
+
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Memes.*"
+    timeout: 15000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Meme Gallery.*"
+    timeout: 15000
+
+- tapOn: ".*Upload Photo / Camera.*"
+- extendedWaitUntil:
+    visible: ".*Choose Photo.*"
+    timeout: 10000
+
+- tapOn: ".*Choose Photo.*"
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# Android photo picker (API 33+): tap the injected test image by filename when shown.
+- runFlow:
+    when:
+      visible: ".*belong_maestro_test_photo.*"
+    commands:
+      - tapOn: ".*belong_maestro_test_photo.*"
+
+# Fallback: first thumbnail in the picker grid.
+- runFlow:
+    when:
+      notVisible: ".*Selected Photo Preview.*"
+    commands:
+      - tapOn:
+          point: "20%, 35%"
+      - waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible: ".*Selected Photo Preview.*"
+    timeout: 20000
+- assertVisible: ".*Attach Photo to Reflection.*"
+
+- tapOn: ".*Attach Photo to Reflection.*"
+- extendedWaitUntil:
+    notVisible: ".*Meme Gallery.*"
+    timeout: 15000
+- assertVisible: ".*Attached:.*"
