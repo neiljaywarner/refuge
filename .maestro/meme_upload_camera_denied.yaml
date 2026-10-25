@@ -1,0 +1,48 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Meme upload — camera permission denied"
+tags:
+  - belong
+  - meme
+  - upload-e2e
+  - negative
+  - known-gap
+  - issue-559
+---
+# Negative path. Widget tests cover the in-app denial banner.
+# On Pixel hardware, Maestro camera:deny still opens the system camera
+# intent, so this flow is not a green device proof.
+
+# Deny first, then launch. On this Pixel, setPermissions after launch
+# leaves the app in the background and the home screen in front.
+- setPermissions:
+    permissions:
+      camera: deny
+
+- launchApp:
+    clearState: false
+    stopApp: true
+
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Memes.*"
+    timeout: 15000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Meme Gallery.*"
+    timeout: 15000
+- tapOn: ".*Upload Photo / Camera.*"
+- extendedWaitUntil:
+    visible: ".*Use Camera.*"
+    timeout: 10000
+- tapOn: ".*Use Camera.*"
+- extendedWaitUntil:
+    visible: ".*permission was denied.*|.*Could not select photo.*|.*Permission.*"
+    timeout: 20000

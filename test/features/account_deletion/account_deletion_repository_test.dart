@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:refuge4serverpod/src/features/admin/data/admin_banning_repository.dart';
 import 'package:refuge4serverpod/src/features/account_deletion/data/account_deletion_provider.dart';
 import 'package:refuge4serverpod/src/features/account_deletion/data/account_deletion_sinks.dart';
 import 'package:refuge4serverpod/src/features/account_deletion/domain/account_deletion_exception.dart';
@@ -46,6 +47,7 @@ void main() {
       expect(dev.toMap()['deletionKind'], 'soft');
       expect(dev.toMap()['accountStatus'], 'soft_deleted');
       expect(dev.profilePatch()['softDeleted'], isTrue);
+      expect(dev.profilePatch()['listedInDirectory'], isFalse);
     });
   });
 
@@ -223,6 +225,124 @@ void main() {
         ),
       );
       expect(auth.currentSession().isSignedIn, isFalse);
+    });
+
+    test(
+      'a member created now can delete, stay blocked, then come back',
+      () async {
+        final stamp = DateTime.now().toUtc().millisecondsSinceEpoch;
+        final email = 'tester-$stamp@example.com';
+        final sink = InMemoryAccountDeletionSink();
+        final repo = repository(sinks: [sink]);
+
+        final record = await repo.softDeleteSelf(
+          userId: 'member-$stamp',
+          displayName: 'Fellow Member',
+          email: email,
+          confirmed: true,
+        );
+
+        expect(record.profilePatch()['listedInDirectory'], isFalse);
+        expect(await repo.isSignInBlocked('member-$stamp'), isTrue);
+
+        expect(
+          () => repo.restoreSelf(userId: 'member-$stamp', confirmed: false),
+          throwsA(
+            isA<AccountDeletionException>().having(
+              (error) => error.code,
+              'code',
+              'confirmation-required',
+            ),
+          ),
+        );
+        expect(await repo.isSignInBlocked('member-$stamp'), isTrue);
+
+        await repo.restoreSelf(userId: 'member-$stamp', confirmed: true);
+
+        expect(await repo.isSignInBlocked('member-$stamp'), isFalse);
+        expect(sink.records['dev_member-$stamp']?.softDeleted, isFalse);
+        expect(
+          AccountDeletionRecord.directoryRestorePatch(
+            DateTime.utc(2026, 10, 25),
+          )['listedInDirectory'],
+          isTrue,
+        );
+      },
+    );
+
+    test('admin unban does not clear a self-delete tombstone', () async {
+      final sink = InMemoryAccountDeletionSink();
+      final repo = repository(sinks: [sink]);
+      await repo.softDeleteSelf(
+        userId: 'member-1',
+        displayName: 'Fellow Member',
+        email: 'tester@example.com',
+        confirmed: true,
+      );
+
+      final admin = InMemoryAdminBanningRepository();
+      addTearDown(admin.dispose);
+      await admin.banUser(
+        userId: 'member-1',
+        displayName: 'Fellow Member',
+        email: 'tester@example.com',
+        bannedByAdminEmail: 'organizer@belongonthespectrum.com',
+      );
+      await admin.unbanUser('member-1');
+
+      expect(await admin.isUserBanned('member-1'), isFalse);
+      expect(await repo.isSignInBlocked('member-1'), isTrue);
+    });
+
+    test('password sign-in works again after the member restores', () async {
+      final stamp = DateTime.now().toUtc().millisecondsSinceEpoch;
+      final email = 'tester-return-$stamp@example.com';
+      final repo = AccountDeletionRepository(
+        sinks: [InMemoryAccountDeletionSink()],
+        flavor: 'dev',
+      );
+      final container = ProviderContainer(
+        overrides: [
+          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          accountDeletionRepositoryProvider.overrideWithValue(repo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final auth = container.read(authRepositoryProvider);
+      await auth.registerWithPassword(
+        email: email,
+        password: 'password1',
+        displayName: 'Fellow Member',
+        icocChurchAffiliation: 'Chicago Church of Christ',
+      );
+      final userId = auth.currentSession().userId;
+      await repo.softDeleteSelf(
+        userId: userId,
+        displayName: 'Fellow Member',
+        email: email,
+        confirmed: true,
+      );
+      await auth.signOut();
+
+      expect(
+        () => auth.signInWithPassword(email: email, password: 'password1'),
+        throwsA(
+          isA<AuthException>().having(
+            (error) => error.userId,
+            'userId',
+            userId,
+          ),
+        ),
+      );
+
+      await repo.restoreSelf(userId: userId, confirmed: true);
+      final session = await auth.signInWithPassword(
+        email: email,
+        password: 'password1',
+      );
+      expect(session.isSignedIn, isTrue);
+      expect(session.email, email);
     });
   });
 }

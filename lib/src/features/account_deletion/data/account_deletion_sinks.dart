@@ -25,6 +25,27 @@ class InMemoryAccountDeletionSink implements AccountDeletionSink {
     final record = records['${flavor}_$userId'];
     return record != null && record.softDeleted && record.flavor == flavor;
   }
+
+  @override
+  Future<void> restore({
+    required String userId,
+    required String flavor,
+    required DateTime restoredAt,
+  }) async {
+    final existing = records['${flavor}_$userId'];
+    if (existing == null) return;
+    records['${flavor}_$userId'] = AccountDeletionRecord(
+      userId: existing.userId,
+      displayName: existing.displayName,
+      email: existing.email,
+      flavor: existing.flavor,
+      deletedAt: existing.deletedAt,
+      deletionKind: existing.deletionKind,
+      softDeleted: false,
+      source: existing.source,
+      accountStatus: 'active',
+    );
+  }
 }
 
 /// Writes `self_deleted_accounts/{flavor}_{userId}` and merges the profile.
@@ -94,6 +115,37 @@ class FirestoreAccountDeletionSink implements AccountDeletionSink {
       return false;
     }
   }
+
+  @override
+  Future<void> restore({
+    required String userId,
+    required String flavor,
+    required DateTime restoredAt,
+  }) async {
+    final fs = firestore;
+    if (fs == null) {
+      throw const AccountDeletionSinkException(
+        'Cloud Firestore is not ready on this device.',
+      );
+    }
+    final patch = AccountDeletionRecord.directoryRestorePatch(restoredAt);
+    try {
+      await fs.collection(tombstoneCollection).doc('${flavor}_$userId').set({
+        ...patch,
+        'userId': userId,
+        'flavor': flavor,
+      }, SetOptions(merge: true));
+      await fs
+          .collection(usersCollection)
+          .doc(userId)
+          .set(patch, SetOptions(merge: true));
+    } catch (error) {
+      if (error is AccountDeletionSinkException) rethrow;
+      throw const AccountDeletionSinkException(
+        'Firestore could not restore the account.',
+      );
+    }
+  }
 }
 
 /// Admin or client operation that records the soft delete in Appwrite.
@@ -101,6 +153,12 @@ abstract interface class AppwriteAccountDeletionRemote {
   Future<void> markSoftDeleted(AccountDeletionRecord record);
 
   Future<bool> isSoftDeleted({required String userId, required String flavor});
+
+  Future<void> clearSoftDeleted({
+    required String userId,
+    required String flavor,
+    required DateTime restoredAt,
+  });
 }
 
 /// Client-session prefs update. Blocking the user (`status: false`) is an
@@ -145,6 +203,31 @@ class AppwritePrefsAccountDeletionRemote
       return false;
     }
   }
+
+  @override
+  Future<void> clearSoftDeleted({
+    required String userId,
+    required String flavor,
+    required DateTime restoredAt,
+  }) async {
+    try {
+      await _account.get();
+      await _account.updatePrefs(
+        prefs: {
+          ...AccountDeletionRecord.directoryRestorePatch(restoredAt),
+          'userId': userId,
+          'flavor': flavor,
+        },
+      );
+    } on AccountDeletionSinkException {
+      rethrow;
+    } catch (error) {
+      if (_isMissingAppwriteSession(error)) return;
+      throw const AccountDeletionSinkException(
+        'Appwrite could not restore the account.',
+      );
+    }
+  }
 }
 
 bool _isMissingAppwriteSession(Object error) {
@@ -169,5 +252,18 @@ class AppwriteAccountDeletionSink implements AccountDeletionSink {
   @override
   Future<bool> isSoftDeleted({required String userId, required String flavor}) {
     return remote.isSoftDeleted(userId: userId, flavor: flavor);
+  }
+
+  @override
+  Future<void> restore({
+    required String userId,
+    required String flavor,
+    required DateTime restoredAt,
+  }) {
+    return remote.clearSoftDeleted(
+      userId: userId,
+      flavor: flavor,
+      restoredAt: restoredAt,
+    );
   }
 }

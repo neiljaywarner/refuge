@@ -57,14 +57,13 @@ jobs:
           echo "No Belong lint violations."
 
       - name: Unit and widget tests
-        # The full `flutter test` tree does not compile on main
-        # (home_screen.dart and calm_notifications_view.dart). This slice does.
+        # Largest passing subset on main (77 files). See tool/ci_widget_test_manifest.txt
+        # and docs/wiki/CI-CD-FAQ.md. Full `flutter test` compiles but 36 cases fail.
         run: |
-          flutter test --coverage --reporter compact \
-            test/core/build/build_identity_test.dart \
-            test/core/theme/belong_text_styles_test.dart \
-            test/features/about/about_build_stamp_test.dart \
-            test/tool/check_line_coverage_test.dart
+          mapfile -t CI_TEST_FILES < <(grep -v '^#' tool/ci_widget_test_manifest.txt | grep -v '^[[:space:]]*$')
+          flutter test --coverage --reporter compact "${CI_TEST_FILES[@]}"
 
       - name: Coverage floor
+        # Floor applies to lines in coverage/lcov.info from the manifest run (~77% in Oct 2026),
+        # not to every Dart line in the repository.
         run: dart run tool/check_line_coverage.dart --min 40

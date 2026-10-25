@@ -180,14 +180,33 @@ class FeedQuery {
     };
   }
 
-  static bool _isTestJunk(Post post) {
-    final content = post.content.toLowerCase();
-    final author = post.authorName.toLowerCase();
-    return content.contains('blah your face') ||
-        content.contains('test 1') ||
+  /// Returns true if [post] contains developer test junk, debugging tokens,
+  /// numbered placeholder phrases, or bot artifacts that should not be visible
+  /// in calm community feeds (#501, #611).
+  static bool isTestJunk(Post post) {
+    final content = post.content.toLowerCase().trim();
+    final author = post.authorName.toLowerCase().trim();
+    if (content.isEmpty) return true;
+
+    if (content.contains('blah your face') ||
         content.contains('grokbot') ||
-        author.contains('grokbot');
+        author.contains('grokbot') ||
+        content.contains('cursor test') ||
+        content.contains('[test]')) {
+      return true;
+    }
+
+    final junkRegex = RegExp(
+      r'\b(test\s*\d+|test\s*post|quick\s*test|debug\s*test|hello\s*world\s*test|asdf+|lorem\s*ipsum|foo\s*bar)\b',
+    );
+    if (junkRegex.hasMatch(content) || junkRegex.hasMatch(author)) {
+      return true;
+    }
+
+    return false;
   }
+
+  static bool _isTestJunk(Post post) => isTestJunk(post);
 
   static List<Post> apply({
     required List<Post> posts,

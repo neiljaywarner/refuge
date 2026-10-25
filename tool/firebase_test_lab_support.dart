@@ -4,14 +4,17 @@ library;
 
 import 'dart:io';
 
+import 'package:refuge4serverpod/src/core/build/release_build_stamp.dart';
+import 'package:refuge4serverpod/src/core/config/native_launcher_labels.dart';
+
 /// Production Android application id — uploads with this package are refused.
 const prodAndroidPackageId = 'com.belongonthespectrum.refuge';
 
 /// Required debug dev package for Firebase Test Lab on project belongonthespectrum.
 const devAndroidPackageId = 'com.belongonthespectrum.refuge.dev';
 
-/// Required launcher label for dev debug builds.
-const devAndroidApplicationLabel = 'Belong (Dev)';
+/// Required launcher label for dev builds (VGV-style `[DEV]` prefix).
+const devAndroidApplicationLabel = devLauncherTitle;
 
 const devMainEntrypoint = 'lib/main_dev.dart';
 
@@ -24,6 +27,26 @@ List<String> devFlutterApkBuildArgs() => [
   devMainEntrypoint,
   '--dart-define=FLAVOR=dev',
   '--dart-define=ENABLE_SERVERPOD=false',
+];
+
+/// `flutter build apk --release` arguments for CI / App Distribution dev APKs.
+List<String> devReleaseFlutterApkBuildArgs({
+  required ReleaseBuildStamp stamp,
+  List<String> extraDefines = const [],
+}) => stamp.flutterArgs(
+  'apk',
+  targetFile: devMainEntrypoint,
+  flavor: 'dev',
+  extraDefines: [
+    '--dart-define=ENABLE_SERVERPOD=false',
+    ...extraDefines,
+  ],
+);
+
+/// Candidate release dev APK paths (Flutter vs legacy Gradle output).
+List<String> devReleaseApkRelativePaths() => [
+  'build/app/outputs/flutter-apk/app-release.apk',
+  'build/app/outputs/apk/release/app-release.apk',
 ];
 
 /// Relative Gradle target for the hello-world instrumentation APK.
@@ -83,6 +106,23 @@ String? devApkUploadRefusal(ApkBadging badging) {
         'got "${badging.applicationLabel}".';
   }
   return null;
+}
+
+/// Returns a refusal reason when [apk] is not a safe dev package, or null when OK.
+Future<String?> devApkUploadRefusalForFile(File apk) async {
+  final aapt = resolveAaptExecutable();
+  if (aapt == null) {
+    return 'Could not locate aapt (set ANDROID_HOME or ANDROID_SDK_ROOT).';
+  }
+  final result = await Process.run(aapt, ['dump', 'badging', apk.path]);
+  if (result.exitCode != 0) {
+    return 'aapt dump badging failed for ${apk.path}.';
+  }
+  final badging = parseAaptBadging(result.stdout.toString());
+  if (badging == null) {
+    return 'Could not parse aapt badging for ${apk.path}.';
+  }
+  return devApkUploadRefusal(badging);
 }
 
 /// Builds the `gcloud firebase test android run` argument list (no shell quoting).

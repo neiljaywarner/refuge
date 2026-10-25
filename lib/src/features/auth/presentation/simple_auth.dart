@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/other_site_info_button.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
+import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../account_deletion/presentation/soft_delete_sign_in_notice.dart';
+import '../../profile/domain/member_profile.dart';
 
 /// Minimal, plain-vanilla wrapper around the official [firebase_ui_auth] example.
 ///
@@ -22,11 +25,19 @@ class SimpleAuthScreen extends StatelessWidget {
     this.auth,
     this.onAuthenticated,
     this.onSignedOut,
+    this.popOnSuccess = true,
+    this.allowOfflineTestSignIn = true,
   });
 
   final FirebaseAuth? auth;
   final VoidCallback? onAuthenticated;
   final VoidCallback? onSignedOut;
+
+  /// When false (auth gate), success does not pop the route.
+  final bool popOnSuccess;
+
+  /// When false, hides the offline test sign-in control on the no-Firebase card.
+  final bool allowOfflineTestSignIn;
 
   /// Opens the SimpleAuth screen directly via Navigator.
   static Future<void> show(
@@ -93,17 +104,30 @@ class SimpleAuthScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      FilledButton.icon(
-                        key: const Key('auth_offline_sign_in_button'),
-                        onPressed: () {
-                          onAuthenticated?.call();
-                          Navigator.of(context).pop();
-                        },
-                        icon: const Icon(Icons.login_rounded, size: 16),
-                        label: const Text(
-                          'Enter Community (Offline / Test Mode)',
+                      if (allowOfflineTestSignIn)
+                        FilledButton.icon(
+                          key: const Key('auth_offline_sign_in_button'),
+                          onPressed: () {
+                            onAuthenticated?.call();
+                            if (popOnSuccess && context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: const Icon(Icons.login_rounded, size: 16),
+                          label: const Text(
+                            'Enter Community (Offline / Test Mode)',
+                          ),
+                        )
+                      else
+                        Text(
+                          'Sign-in requires a connection to our authentication service.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -123,6 +147,7 @@ class SimpleAuthScreen extends StatelessWidget {
             auth: effectiveAuth,
             providers: providers,
             onAuthenticated: onAuthenticated,
+            popOnSuccess: popOnSuccess,
           );
         }
 
@@ -158,11 +183,13 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
     required this.auth,
     required this.providers,
     required this.onAuthenticated,
+    this.popOnSuccess = true,
   });
 
   final FirebaseAuth auth;
   final List<EmailAuthProvider> providers;
   final VoidCallback? onAuthenticated;
+  final bool popOnSuccess;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -175,7 +202,8 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
       body: SignInScreen(
         auth: auth,
         providers: providers,
-        headerMaxExtent: 120,
+        showPasswordVisibilityToggle: true,
+        headerMaxExtent: 148,
         headerBuilder: (context, constraints, shrinkOffset) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -185,10 +213,19 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
                 children: [
                   belongSignInLogo(context, size: 52),
                   const SizedBox(height: 6),
-                  Text(
-                    'Belong on the Spectrum',
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Belong on the Spectrum',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const OtherSiteInfoButton(),
+                    ],
                   ),
                 ],
               ),
@@ -241,7 +278,7 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
           AuthStateChangeAction<UserCreated>((context, state) {
             ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
             onAuthenticated?.call();
-            if (context.mounted) {
+            if (popOnSuccess && context.mounted) {
               Navigator.of(context).pop();
             }
           }),
@@ -262,18 +299,19 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
                 isBlocked: isBlocked,
               );
               if (notice != null) {
+                // Stay signed in long enough for the return panel. Signing
+                // out here would hide the only person who can type RESTORE.
                 noticeNotifier.state = notice;
                 if (context.mounted) {
                   blockedMessage.value = notice;
                 }
-                try {
-                  await auth.signOut();
-                } catch (_) {}
                 return;
               }
               noticeNotifier.state = null;
               onAuthenticated?.call();
-              if (context.mounted) Navigator.of(context).pop();
+              if (popOnSuccess && context.mounted) {
+                Navigator.of(context).pop();
+              }
             }();
           }),
         ],
@@ -284,8 +322,8 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
 
 /// Holds the profile screen until Firestore says this sign-in is allowed.
 ///
-/// A soft-deleted member is signed out here. The sign-in form then shows
-/// the blocked message from [softDeleteSignInNoticeProvider].
+/// A soft-deleted member sees [ReturnAfterDeletePanel] here. Stay deleted
+/// signs them out. RESTORE clears only their own tombstone.
 class _SoftDeleteSessionGate extends HookConsumerWidget {
   const _SoftDeleteSessionGate({
     required this.auth,
@@ -300,6 +338,7 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allowed = useState<bool?>(null);
+    final offerReturn = useState(false);
 
     useEffect(() {
       var alive = true;
@@ -312,14 +351,12 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
           userId: userId,
           isBlocked: isBlocked,
         );
+        if (!alive) return;
         if (message != null) {
           notice.state = message;
-          try {
-            await auth.signOut();
-          } catch (_) {}
+          offerReturn.value = true;
           return;
         }
-        if (!alive) return;
         notice.state = null;
         allowed.value = true;
       }();
@@ -327,6 +364,36 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
         alive = false;
       };
     }, [userId]);
+
+    if (offerReturn.value) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Come back?'), centerTitle: true),
+        body: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ReturnAfterDeletePanel(
+              onStayDeleted: () async {
+                try {
+                  await auth.signOut();
+                } catch (_) {}
+              },
+              onRestore: () async {
+                await ref
+                    .read(accountDeletionRepositoryProvider)
+                    .restoreSelf(userId: userId, confirmed: true);
+                if (!context.mounted) return;
+                ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
+                ref
+                    .read(memberProfileProvider.notifier)
+                    .publishDirectoryAfterRestore();
+                offerReturn.value = false;
+                allowed.value = true;
+              },
+            ),
+          ),
+        ),
+      );
+    }
 
     if (allowed.value != true) {
       return Scaffold(

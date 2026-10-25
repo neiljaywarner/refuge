@@ -186,6 +186,28 @@ void main() {
           ]),
           'build web --dart-define=POSTHOG_KEY=<redacted> --dart-define=FLAVOR=prod',
         );
+        expect(
+          joinArgsRedactingAnalyticsDefines(const [
+            '--dart-define=DEV_EXAMPLE_PASSWORD=unit-test-secret',
+          ]),
+          '--dart-define=DEV_EXAMPLE_PASSWORD=<redacted>',
+        );
+        expect(devExamplePasswordDartDefines(const {}), isEmpty);
+        expect(
+          devExamplePasswordDartDefines(const {
+            'DEV_EXAMPLE_PASSWORD': 'unit-test-secret',
+          }),
+          ['--dart-define=DEV_EXAMPLE_PASSWORD=unit-test-secret'],
+        );
+        expect(
+          devExamplePasswordDartDefinesLogLine(const {
+            'DEV_EXAMPLE_PASSWORD': 'unit-test-secret',
+          }),
+          allOf(
+            contains('DEV_EXAMPLE_PASSWORD=set'),
+            isNot(contains('unit-test-secret')),
+          ),
+        );
       },
     );
 
@@ -316,6 +338,7 @@ void main() {
         expect(source, contains('joinArgsRedactingAnalyticsDefines'));
         expect(source, contains("targetFile: 'lib/main_prod.dart'"));
         expect(source, contains("flavor: 'prod'"));
+        expect(source, isNot(contains('DEV_EXAMPLE_PASSWORD')));
         expect(source, isNot(contains("'--config'")));
         final devDeploy = File('tool/deploy_dev_web.dart').readAsStringSync();
         expect(devDeploy, contains('https://dev-belongonthespectrum.web.app'));
@@ -325,6 +348,10 @@ void main() {
         expect(
           devDeploy,
           contains('analyticsDartDefines(Platform.environment)'),
+        );
+        expect(
+          devDeploy,
+          contains('devExamplePasswordDartDefines(Platform.environment)'),
         );
         expect(devDeploy, contains('joinArgsRedactingAnalyticsDefines'));
         expect(devDeploy, contains('firebase.dev.json'));
@@ -343,6 +370,14 @@ void main() {
             .readAsStringSync();
         expect(deployWorkflow, contains('secrets.APTABASE_KEY'));
         expect(deployWorkflow, contains('secrets.POSTHOG_KEY'));
+        expect(deployWorkflow, contains("tags: ['v*']"));
+        expect(deployWorkflow, contains('tool/deploy_dev_web.dart'));
+        expect(
+          deployWorkflow,
+          contains(
+            'Push to main deploys the dev site only. Production is a v* tag or an explicit release run.',
+          ),
+        );
       },
       skip: kIsWeb,
     );

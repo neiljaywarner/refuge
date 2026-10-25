@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/config/other_site_info_button.dart';
+
 /// Pre-built, Google/Firebase team official authentication screens
 /// powered by [firebase_ui_auth].
 ///
@@ -18,17 +20,14 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
     _ensureProvidersConfigured();
 
     return SignInScreen(
-      providers: [
-        EmailAuthProvider(),
-      ],
+      providers: [EmailAuthProvider()],
+      showPasswordVisibilityToggle: true,
       actions: [
         ForgotPasswordAction((context, email) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ForgotPasswordScreen(
-                email: email,
-                headerMaxExtent: 160,
-              ),
+              builder: (context) =>
+                  ForgotPasswordScreen(email: email, headerMaxExtent: 160),
             ),
           );
         }),
@@ -58,12 +57,12 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
               Flexible(
                 child: Text(
                   'Belong on the Spectrum',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const OtherSiteInfoButton(),
             ],
           ),
         );
@@ -75,9 +74,7 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
     if (Firebase.apps.isNotEmpty &&
         !FirebaseUIAuth.isAppConfigured(Firebase.app())) {
       try {
-        FirebaseUIAuth.configureProviders([
-          EmailAuthProvider(),
-        ]);
+        FirebaseUIAuth.configureProviders([EmailAuthProvider()]);
       } catch (_) {
         // Ignored if already configured or in test mode.
       }
@@ -92,9 +89,7 @@ class BelongFirebaseProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfileScreen(
-      providers: [
-        EmailAuthProvider(),
-      ],
+      providers: [EmailAuthProvider()],
       actions: [
         SignedOutAction((context) {
           if (context.mounted) {
@@ -102,9 +97,7 @@ class BelongFirebaseProfileScreen extends StatelessWidget {
           }
         }),
       ],
-      appBar: AppBar(
-        title: const Text('Account Profile'),
-      ),
+      appBar: AppBar(title: const Text('Account Profile')),
     );
   }
 }

@@ -28,24 +28,25 @@ class MemberProfile {
   });
 
   const MemberProfile.guest()
-    : userId = '',
-      displayName = 'Fellowship Member',
+    : displayName = 'Fellowship Member',
       email = '',
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
       isSignedIn = false,
+      userId = 'guest',
       authMethod = 'guest',
       icocChurchAffiliation = null,
       tagline = 'Exploring Belong on the Spectrum',
       avatarUrl = null;
 
-  /// Firebase uid when signed in. Empty for guests. Never an email address.
-  final String userId;
   final String displayName;
   final String email;
   final String bio;
   final List<String> comfortBadges;
   final bool isSignedIn;
+
+  /// Auth session id. Empty until a session is applied. Guests use `guest`.
+  final String userId;
   final String authMethod;
   final String? icocChurchAffiliation;
   final String? tagline;
@@ -163,15 +164,20 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         profile.userId == 'guest') {
       return;
     }
-    final flight = ref
-        .read(memberDirectoryStoreProvider)
-        .publishSignedInMember(
-          uid: profile.userId,
-          displayName: profile.displayName,
-          email: profile.email,
-          tagline: profile.effectiveTagline,
-        )
-        .timeout(const Duration(seconds: 8));
+    final flight = () async {
+      final blocked = await ref
+          .read(accountDeletionRepositoryProvider)
+          .isSignInBlocked(profile.userId);
+      if (blocked) return;
+      await ref
+          .read(memberDirectoryStoreProvider)
+          .publishSignedInMember(
+            uid: profile.userId,
+            displayName: profile.displayName,
+            email: profile.email,
+            tagline: profile.effectiveTagline,
+          );
+    }().timeout(const Duration(seconds: 8));
     _publishFlight = flight;
     unawaited(
       flight.then(
@@ -204,7 +210,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
           isSignedIn: true,
           authMethod: 'persisted_storage',
           icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
-          userId: _persistedProfile?.userId ?? '',
+          userId: local['userId'] as String? ?? _persistedProfile?.userId ?? '',
           avatarUrl: _persistedProfile?.avatarUrl,
           tagline: _persistedProfile?.tagline,
         );
@@ -352,6 +358,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       ProfileStorageService.instance.save(
         displayName: state.displayName,
         email: state.email,
+        userId: state.userId,
         bio: state.bio,
         icocChurchAffiliation: state.icocChurchAffiliation,
         comfortBadges: state.comfortBadges,
@@ -405,6 +412,17 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         await pending;
       } catch (_) {}
     }
+  }
+
+  /// Republishes the directory when a tombstone is cleared but Firebase Auth
+  /// did not emit a new session (for example after RESTORE on the gate).
+  void publishDirectoryAfterRestore() {
+    if (!state.isSignedIn ||
+        state.userId.isEmpty ||
+        state.userId == 'guest') {
+      return;
+    }
+    _publishDirectory(state);
   }
 
   /// Soft-deletes the signed-in account, then signs out on this device.

@@ -1,0 +1,97 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Meme gallery — real gallery pick, preview, and attach"
+tags:
+  - belong
+  - meme
+  - upload-e2e
+  - issue-559
+---
+# End-to-end: inject a test image into the device gallery, pick it from
+# Choose Photo, assert preview + attach, then confirm the composer banner.
+# Requires photos permission; does not open the system camera UI.
+
+# Permissions and media first, then launch. setPermissions after launch
+# can leave this Pixel on the home screen.
+- setPermissions:
+    permissions:
+      camera: allow
+      photos: allow
+
+- addMedia:
+    - "assets/belong_maestro_test_photo.png"
+
+- launchApp:
+    clearState: false
+    stopApp: true
+
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
+
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Memes.*"
+    timeout: 15000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Meme Gallery.*"
+    timeout: 15000
+
+- tapOn: ".*Upload Photo / Camera.*"
+- extendedWaitUntil:
+    visible: ".*Choose Photo.*"
+    timeout: 10000
+
+- tapOn: ".*Choose Photo.*"
+- extendedWaitUntil:
+    visible: ".*Photos.*"
+    timeout: 15000
+
+# Android photo picker stacks notices (access, then cloud backup) over the grid.
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Dismiss.*"
+          commands:
+            - tapOn: ".*Dismiss.*"
+            - waitForAnimationToEnd
+
+# Top-left gallery cell on a 1080-wide phone, after the backup notice is gone.
+# A second tap confirms when the system picker asks for Done.
+- tapOn:
+    point: "17%, 54%"
+- waitForAnimationToEnd:
+    timeout: 4000
+- runFlow:
+    when:
+      visible: "Done"
+    commands:
+      - tapOn: "Done"
+      - waitForAnimationToEnd:
+          timeout: 8000
+
+- extendedWaitUntil:
+    visible: ".*Crop photo.*"
+    timeout: 20000
+- tapOn: ".*Use this crop.*"
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- extendedWaitUntil:
+    visible: ".*Selected Photo Preview.*"
+    timeout: 20000
+- assertVisible: ".*Attach Photo to Reflection.*"
+
+- tapOn: ".*Attach Photo to Reflection.*"
+- extendedWaitUntil:
+    notVisible: ".*Meme Gallery.*"
+    timeout: 15000
+- assertVisible: ".*Attached:.*"

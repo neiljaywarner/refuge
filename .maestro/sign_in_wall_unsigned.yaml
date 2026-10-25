@@ -1,0 +1,19 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Unsigned launch shows the sign-in wall"
+tags:
+  - belong
+  - auth
+  - members-only
+  - issue-601
+---
+# Circle-style: a signed-out person sees only the sign-in wall.
+# They do not see the feed, Demo Mode, or Vote & Feedback (#574, #601).
+
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Sign In to Belong"
+    timeout: 45000
+- assertVisible: "Sign In to Belong"
+- assertNotVisible: "Demo Mode"
+- assertNotVisible: "Vote & Feedback"

@@ -10,7 +10,7 @@ Parent epic: [#513](https://github.com/neiljaywarner/refuge/issues/513).
 | --- | --- | --- | --- |
 | `dart format` on staged Dart | pre-commit | files owned by the pipeline, until #519 | |
 | `dart analyze` for Belong lint rules | pre-commit | fails on `no_print_use_app_logger`, `prefer_use_text_editing_controller`, and `dispose_controllers` | |
-| Unit and widget tests | optional, see below | compiling slice, with a 40% line-coverage floor on the lines that slice loads | |
+| Unit and widget tests | optional, see below | 77-file manifest (`tool/ci_widget_test_manifest.txt`), 40% floor on `lcov.info` from that run | |
 | Privacy scan | pre-push | | |
 | Firebase Hosting preview, then production | | | deploy workflow |
 | Patrol, Maestro, Firebase Test Lab | | | manual or a later workflow |
@@ -36,7 +36,7 @@ REFUGE_PRE_PUSH_TESTS=1 git push
 
 The floor is 40% line coverage. Very Good Ventures workflows default to 100% and a spell checker. We do not. The goal is to stop large untested drops, not to chase a perfect number.
 
-CI currently runs a compiling slice (`test/core/build`, `test/core/theme`, `test/features/about`, and the coverage-tool test) because `flutter test` of the whole tree fails to compile: `lib/src/home_screen.dart` and `lib/src/features/messages/presentation/calm_notifications_view.dart` are out of date with the widgets they call. The 40% floor applies to the lines that slice loads (about 75% when this landed). It is not a measurement of the whole app. Widen the `flutter test` list in `.github/workflows/ci.yml` once the app compiles again. Integration tests, Patrol, and Maestro stay outside this floor.
+CI runs the largest passing subset of `flutter test` (77 `*_test.dart` files listed in `tool/ci_widget_test_manifest.txt`). The full tree compiles on `main`, but 36 cases in 23 other files fail (Patrol/BDD/UI drift). The old four-file slice was about 75% on the small number of lines its tests loaded. The widened manifest run is about 77% on the lines recorded in `coverage/lcov.info` from those tests (for example 6851/8936 hit/found in Oct 2026). That is not whole-repository line coverage. Integration tests, Patrol, and Maestro stay outside this floor. Shrink or grow the manifest in a reviewed pull request when failures are fixed or new ones appear.
 
 `tool/check_line_coverage.dart` reads `coverage/lcov.info` and exits non-zero under the floor.
 

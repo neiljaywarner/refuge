@@ -23,6 +23,7 @@ A flow tagged `known-gap` is skipped by [`.maestro/web/config.yaml`](https://git
 | `grokbot_dm_web.yaml` | A signed-in member can be picked and a direct message shows up in the recipient’s bell. |
 | `grokbot_mention_web.yaml` | An `@handle` on a reflection shows up in the mentioned member’s bell. |
 | `calm_tech_walkthrough_web.yaml` | Read-only theme and navigation walkthrough. |
+| `account_delete_and_return.yaml` | Opt-in dev flow. A synthetic member deletes, sees return copy, types `RESTORE`. Tagged `known-gap`. |
 
 ## Recordings
 

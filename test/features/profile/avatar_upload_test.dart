@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/profile/data/avatar_upload_service.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/avatar_models.dart';
@@ -85,6 +87,23 @@ void main() {
       // openAppSettings completes without uncaught exceptions
       final opened = await service.openAppSettings();
       expect(opened, isA<bool>());
+    });
+
+    test('a denied camera or gallery pick is not returned as a sample photo', () async {
+      final service = PlatformAvatarUploadService(
+        picker: _DeniedImagePicker(),
+      );
+
+      expect(
+        () => service.pickImage(AvatarImageSource.camera),
+        throwsA(
+          isA<PlatformException>().having(
+            (error) => error.code,
+            'code',
+            'camera_access_denied',
+          ),
+        ),
+      );
     });
 
     test('FakeAvatarUploadService handles pickImage and permissions properly', () async {
@@ -314,6 +333,23 @@ class _CustomProfileNotifier extends MemberProfileNotifier {
 
   @override
   MemberProfile build() => _initial;
+}
+
+class _DeniedImagePicker extends ImagePicker {
+  @override
+  Future<XFile?> pickImage({
+    required ImageSource source,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+    CameraDevice preferredCameraDevice = CameraDevice.rear,
+    bool requestFullMetadata = true,
+  }) {
+    throw PlatformException(
+      code: 'camera_access_denied',
+      message: 'The user denied camera access.',
+    );
+  }
 }
 
 class _FailingStorageRepository extends InMemoryStorageRepository {

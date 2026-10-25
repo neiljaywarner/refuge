@@ -31,6 +31,8 @@
 /// dart run tool/deploy_dev_web.dart --dry-run
 /// dart run tool/deploy_dev_web.dart
 /// dart run tool/deploy_dev_web.dart --skip-build
+/// dart run tool/deploy_dev_web.dart --build-android
+/// dart run tool/deploy_dev_web.dart --build-android --distribute-android
 /// ```
 library;
 
@@ -39,9 +41,12 @@ import 'dart:io';
 
 import 'package:refuge4serverpod/src/core/build/release_build_stamp.dart';
 
+import 'firebase_test_lab_support.dart';
+
 const _project = 'belongonthespectrum';
 const _siteId = 'dev-belongonthespectrum';
 const _devUrl = 'https://dev-belongonthespectrum.web.app';
+const _defaultTesterGroups = 'pre-alpha-testers';
 
 String _bin(String name) =>
     Platform.environment['${name.toUpperCase()}_BIN'] ?? name;
@@ -64,7 +69,10 @@ Future<void> main(List<String> args) async {
   final dryRun = args.contains('--dry-run');
   final skipBuild = args.contains('--skip-build');
   final createSite = args.contains('--create-site');
+  final buildAndroid = args.contains('--build-android');
+  final distributeAndroid = args.contains('--distribute-android');
   final version = _arg(args, '--version') ?? 'dev';
+  final groups = _arg(args, '--groups') ?? _defaultTesterGroups;
 
   final git = await Process.run('git', ['rev-parse', 'HEAD']);
   final stamp = ReleaseBuildStamp.tryFromGitHead(
@@ -80,7 +88,8 @@ Future<void> main(List<String> args) async {
 
   stdout.writeln(
     'Dev web $_devUrl | tag=$version sha=${stamp.gitSha} '
-    'createSite=$createSite skipBuild=$skipBuild dryRun=$dryRun',
+    'createSite=$createSite skipBuild=$skipBuild buildAndroid=$buildAndroid '
+    'distributeAndroid=$distributeAndroid dryRun=$dryRun',
   );
 
   if (createSite) {
@@ -91,6 +100,14 @@ Future<void> main(List<String> args) async {
       _project,
     ], dryRun: dryRun);
   }
+
+  final analyticsDefines = analyticsDartDefines(Platform.environment);
+  stdout.writeln(analyticsDartDefinesLogLine(Platform.environment));
+  stdout.writeln(devExamplePasswordDartDefinesLogLine(Platform.environment));
+  final extraDefines = [
+    ...analyticsDefines,
+    ...devExamplePasswordDartDefines(Platform.environment),
+  ];
 
   if (skipBuild) {
     final cached = File('build/web/version.json');
@@ -106,19 +123,45 @@ Future<void> main(List<String> args) async {
     // Dev and prod share one Firebase project and one Serverpod host.
     // The public dev site must stay on the local post repository so a
     // visitor cannot publish into the live community.
-    final analyticsDefines = analyticsDartDefines(Platform.environment);
-    stdout.writeln(analyticsDartDefinesLogLine(Platform.environment));
     await _run(_bin('flutter'), [
       ...stamp.flutterArgs(
         'web',
         targetFile: 'lib/main_dev.dart',
         flavor: 'dev',
-        extraDefines: analyticsDefines,
+        extraDefines: extraDefines,
       ),
       '--dart-define=ENABLE_SERVERPOD=false',
     ], dryRun: dryRun);
     if (!dryRun) {
       await _writeWebVersionJson(version, stamp);
+    }
+  }
+
+  if (buildAndroid && !skipBuild) {
+    stdout.writeln('Building release dev APK...');
+    await _run(
+      _bin('flutter'),
+      devReleaseFlutterApkBuildArgs(stamp: stamp, extraDefines: extraDefines),
+      dryRun: dryRun,
+    );
+    if (!dryRun) {
+      final apk = resolveExistingApk(
+        Directory.current.path,
+        devReleaseApkRelativePaths(),
+      );
+      if (apk == null) {
+        stderr.writeln('Dev APK build finished but no release APK was found.');
+        exit(66);
+      }
+      final refusal = await devApkUploadRefusalForFile(apk);
+      if (refusal != null) {
+        stderr.writeln(refusal);
+        exit(67);
+      }
+      stdout.writeln(
+        'Verified dev APK ${apk.path} ($devAndroidPackageId / '
+        '$devAndroidApplicationLabel).',
+      );
     }
   }
 
@@ -133,6 +176,56 @@ Future<void> main(List<String> args) async {
     '--message',
     'Dev web $version ${stamp.gitSha}',
   ], dryRun: dryRun);
+
+  if (distributeAndroid) {
+    if (!buildAndroid) {
+      stderr.writeln('--distribute-android requires --build-android.');
+      exit(64);
+    }
+    final androidAppId =
+        _arg(args, '--android-app-id') ??
+        Platform.environment['FIREBASE_ANDROID_DEV_APP_ID'] ??
+        Platform.environment['FIREBASE_ANDROID_APP_ID'];
+    if (androidAppId == null || androidAppId.isEmpty) {
+      stderr.writeln(
+        'Missing Firebase Android app id for dev distribution. '
+        'Set FIREBASE_ANDROID_DEV_APP_ID or pass --android-app-id.',
+      );
+      exit(65);
+    }
+    final apk = resolveExistingApk(
+      Directory.current.path,
+      devReleaseApkRelativePaths(),
+    );
+    if (apk == null && !dryRun) {
+      stderr.writeln('No dev release APK to upload.');
+      exit(66);
+    }
+    final notes = File('build/DEV_ANDROID_RELEASE_NOTES_$version.txt');
+    if (!dryRun) {
+      await notes.writeAsString(
+        'Dev Android $version\n'
+        'Web: $_devUrl\n'
+        'Package: $devAndroidPackageId\n'
+        'Git: ${stamp.gitSha}\n',
+      );
+    }
+    stdout.writeln(
+      'Uploading dev APK to App Distribution (groups: $groups)...',
+    );
+    await _run(_bin('firebase'), [
+      'appdistribution:distribute',
+      apk?.path ?? devReleaseApkRelativePaths().first,
+      '--app',
+      androidAppId,
+      '--groups',
+      groups,
+      '--release-notes-file',
+      notes.path,
+      '--project',
+      _project,
+    ], dryRun: dryRun);
+  }
 
   stdout.writeln('Dev web target: $_devUrl');
 }

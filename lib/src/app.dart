@@ -4,7 +4,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
+import 'core/config/app_flavor.dart';
 import 'core/presentation/system_insets.dart';
+import 'features/auth/presentation/auth_gate.dart';
 import 'features/messages/presentation/direct_message_arrival_banner.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
@@ -18,6 +20,7 @@ class RefugeApp extends StatefulWidget {
   final List<Override>? overrides;
   final Widget? homeOverride;
   final SensoryMode initialTheme;
+  final bool enforceSignIn;
 
   const RefugeApp({
     super.key,
@@ -25,6 +28,7 @@ class RefugeApp extends StatefulWidget {
     this.overrides,
     this.homeOverride,
     this.initialTheme = SensoryMode.sage,
+    this.enforceSignIn = false,
   });
 
   @override
@@ -60,6 +64,7 @@ class _RefugeAppState extends State<RefugeApp> {
         repository: widget.repository,
         themeNotifier: _themeNotifier,
         homeOverride: widget.homeOverride,
+        enforceSignIn: widget.enforceSignIn,
       ),
     ),
   );
@@ -69,47 +74,57 @@ class _RefugeAppContent extends ConsumerWidget {
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
   final Widget? homeOverride;
+  final bool enforceSignIn;
 
   const _RefugeAppContent({
     required this.repository,
     required this.themeNotifier,
     this.homeOverride,
+    required this.enforceSignIn,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
-    scaffoldMessengerKey: rootScaffoldMessengerKey,
-    debugShowCheckedModeBanner: false,
-    title: 'Belong',
-    theme: SensoryThemeData.getTheme(themeNotifier.mode),
-    builder: (context, child) {
-      final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
-      final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
-          ? themeNotifier.fontScale
-          : riverpodFontScale;
-      final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
-          .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
-      final theme = Theme.of(context);
-      return MediaQuery(
-        data: repaired,
-        child: Theme(
-          data: theme.copyWith(
-            dialogTheme: theme.dialogTheme.copyWith(
-              insetPadding: SystemInsets.dialogInsetPadding(repaired),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flavor = ref.watch(appFlavorProvider);
+    return MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
+      debugShowCheckedModeBanner: false,
+      title: flavor.launcherTitle,
+      theme: SensoryThemeData.getTheme(themeNotifier.mode),
+      builder: (context, child) {
+        final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
+        final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
+            ? themeNotifier.fontScale
+            : riverpodFontScale;
+        final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
+            .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
+        final theme = Theme.of(context);
+        return MediaQuery(
+          data: repaired,
+          child: Theme(
+            data: theme.copyWith(
+              dialogTheme: theme.dialogTheme.copyWith(
+                insetPadding: SystemInsets.dialogInsetPadding(repaired),
+              ),
             ),
+            child: DirectMessageArrivalHost(child: child!),
           ),
-          child: DirectMessageArrivalHost(child: child!),
-        ),
-      );
-    },
-    localizationsDelegates: [
-      FirebaseUILocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    home:
-        homeOverride ??
-        RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
-  );
+        );
+      },
+      localizationsDelegates: [
+        FirebaseUILocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home:
+          homeOverride ??
+          (enforceSignIn
+              ? AuthGate(repository: repository, themeNotifier: themeNotifier)
+              : RefugeHomeScreen(
+                  repository: repository,
+                  themeNotifier: themeNotifier,
+                )),
+    );
+  }
 }

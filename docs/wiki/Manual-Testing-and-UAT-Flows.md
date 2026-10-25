@@ -31,6 +31,8 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
 
 ## 👥 2. Testing Personas (Pick One to Roleplay!)
 
+On **dev** Android or [dev web](https://dev-belongonthespectrum.web.app/), you can also sign in as two fixed test members (**David M.** and **Sarah K.**) via the one-tap example buttons. See **[Dev example accounts](Dev-Example-Accounts)** for emails, roles, and how `DEV_EXAMPLE_PASSWORD` fits in (password is never in the wiki).
+
 1. **Alex (Autistic Community Member)**: Sensitive to bright lights, motion, and sudden popups. Wants a gentle, predictable experience where text is easy to read and colors are soothing.
 2. **Marty (Community Organizer)**: Wants to verify that newcomers can easily identify their church affiliation (or declare they are a welcoming visitor) and that community announcements are clear.
 3. **Jordan (Welcoming Friend / Guest)**: Not a member of any church, but wants to support neurodivergent friends and check out the public discussion spaces.
@@ -185,17 +187,17 @@ This playbook breaks down everything you need to test in simple, step-by-step fl
 
 ---
 
-### Flow 8: Clean Top Bar Auth State 👤
-*Goal: Ensure the top app bar displays a clean, unambiguous state for both guests and authenticated members.*
+### Flow 8: Sign-in wall, then signed-in top bar 👤
+*Goal: A signed-out person never sees the feed. After sign-in, the top bar shows only the member avatar.*
 
-1. **Guest / Signed-Out State**:
-   - Sign out of your account.
-   - Look at the top-right corner of the app bar.
-   - **Expected**: A single **Sign In** button appears with an icon. No initials avatar is shown.
+1. **Signed-out / members-only wall**:
+   - Sign out of your account, or launch with a cleared session.
+   - **Expected**: Only the **Sign In to Belong** wall. No feed, no Demo Mode banner, no Vote & Feedback, no top-bar **Sign In** on a populated home screen.
+   - On **dev** Android or [dev web](https://dev-belongonthespectrum.web.app/), the two example-user buttons may appear under the form (see **[Dev example accounts](Dev-Example-Accounts)**).
 2. **Authenticated / Signed-In State**:
-   - Sign in to your account.
+   - Sign in with a real account, or tap an example-user button on a dev build.
    - Look at the top-right corner of the app bar.
-   - **Expected**: A circular initials avatar (e.g., `NF`) is shown. The redundant **Sign In** button is completely hidden.
+   - **Expected**: A circular initials avatar is shown. The feed is visible. There is no guest/demo browse.
 
 ---
 

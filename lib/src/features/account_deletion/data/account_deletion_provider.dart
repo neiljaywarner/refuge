@@ -30,13 +30,15 @@ final accountDeletionRepositoryProvider = Provider<AccountDeletionRepository>((
       InMemoryAccountDeletionSink(),
   ];
 
-  final appwrite = createAppwriteServices(AppwriteConfig.fromEnvironment);
-  if (appwrite != null) {
-    sinks.add(
-      AppwriteAccountDeletionSink(
-        remote: AppwritePrefsAccountDeletionRemote(appwrite.account),
-      ),
-    );
+  if (useFirestore) {
+    final appwrite = createAppwriteServices(AppwriteConfig.fromEnvironment);
+    if (appwrite != null) {
+      sinks.add(
+        AppwriteAccountDeletionSink(
+          remote: AppwritePrefsAccountDeletionRemote(appwrite.account),
+        ),
+      );
+    }
   }
 
   return AccountDeletionRepository(sinks: sinks, flavor: flavor);

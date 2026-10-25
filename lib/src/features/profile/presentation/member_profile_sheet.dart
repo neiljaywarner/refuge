@@ -49,64 +49,69 @@ class MemberProfileDialog extends HookConsumerWidget {
         children: [
           Tooltip(
             message: 'Change profile avatar',
-            child: InkWell(
-              key: const Key('edit_avatar_button'),
-              borderRadius: BorderRadius.circular(999),
-              onTap: () => AvatarPickerSheet.show(context),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Theme.of(context)
-                        .colorScheme
-                        .primaryContainer,
-                    backgroundImage:
-                        (profile.avatarUrl != null &&
-                            profile.avatarUrl!.isNotEmpty)
-                        ? NetworkImage(profile.avatarUrl!)
-                        : null,
-                    onBackgroundImageError:
-                        (profile.avatarUrl != null &&
-                            profile.avatarUrl!.isNotEmpty)
-                        ? (_, __) {}
-                        : null,
-                    child:
-                        (profile.avatarUrl == null ||
-                            profile.avatarUrl!.isEmpty)
-                        ? Text(
-                            profile.initials,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer,
-                            ),
-                          )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: -2,
-                    right: -2,
-                    child: Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).cardColor,
-                          width: 1.5,
+            child: Semantics(
+              identifier: 'edit_avatar_button',
+              button: true,
+              label: 'Change profile avatar',
+              child: InkWell(
+                key: const Key('edit_avatar_button'),
+                borderRadius: BorderRadius.circular(999),
+                onTap: () => AvatarPickerSheet.show(context),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer,
+                      backgroundImage:
+                          (profile.avatarUrl != null &&
+                              profile.avatarUrl!.isNotEmpty)
+                          ? NetworkImage(profile.avatarUrl!)
+                          : null,
+                      onBackgroundImageError:
+                          (profile.avatarUrl != null &&
+                              profile.avatarUrl!.isNotEmpty)
+                          ? (_, __) {}
+                          : null,
+                      child:
+                          (profile.avatarUrl == null ||
+                              profile.avatarUrl!.isEmpty)
+                          ? Text(
+                              profile.initials,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                            )
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: -2,
+                      right: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).cardColor,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 9,
+                          color: Colors.white,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        size: 9,
-                        color: Colors.white,
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

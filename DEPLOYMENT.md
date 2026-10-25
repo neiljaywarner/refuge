@@ -125,7 +125,7 @@ Every web and APK build this script compiles is stamped with three compile-time 
 
 A local `flutter run` that does not pass the defines shows Git commit `unknown`, build time `unknown`, and source `dev`. The app does not invent a SHA.
 
-CI can pass the same three defines. On every push to `main`, [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs this script with `--prod`. Pull requests do not deploy. See [docs/wiki/CI-CD-FAQ.md](docs/wiki/CI-CD-FAQ.md).
+CI can pass the same three defines. A push to `main` deploys the dev site only. Production Hosting runs from a `v*` tag or an explicit release. Pull requests do not deploy. See [docs/wiki/CI-CD-FAQ.md](docs/wiki/CI-CD-FAQ.md).
 
 ```bash
 flutter build web --release \
@@ -217,15 +217,13 @@ Flutter is pinned to 3.47.7. There is no spell check and no 100% coverage gate.
 
 Local hooks match the fast part of that list. Install them with `dart run tool/install_git_hooks.dart`.
 
-### Production deploy (`.github/workflows/deploy.yml`)
+### Hosting deploy (`.github/workflows/deploy.yml`)
 
-On every push to `main`, and on `workflow_dispatch`:
+A push to `main` runs `dart run tool/deploy_dev_web.dart` and updates `https://dev-belongonthespectrum.web.app/`. It does not publish production.
 
-1. Checkout the full history so release notes can see tags.
-2. Run `dart run tool/deploy_release.dart --version ci-<short-sha> --prod`.
-3. The script builds web with `GIT_COMMIT_SHA`, `BUILD_TIME_MS`, and `RELEASE_TAG`, writes `build/web/version.json`, deploys a 14-day Hosting preview channel, then deploys production Hosting.
+A `v*` tag, or a manual run with production turned on, runs `dart run tool/deploy_release.dart --prod`. That builds the prod flavor, deploys a 14-day preview channel, then publishes `https://belongonthespectrum.web.app/`. A manual run defaults production to off, so opening the workflow without that switch deploys the dev site. A manual release can also upload an APK to App Distribution. Automatic pushes do not create a GitHub Release and do not upload an APK.
 
-A manual run can choose a dry run (no Firebase), skip production, or also upload an APK to App Distribution. Automatic pushes do not create a GitHub Release and do not upload an APK.
+Pull requests do not deploy.
 
 ### Secrets
 
