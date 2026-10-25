@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/branding/presentation/brand_config_provider.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
@@ -27,17 +28,18 @@ class OrganizerRemoteConfig {
     this.adminEmailsCsv = '',
   });
 
-  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) => OrganizerRemoteConfig(
-    welcomeTitle: brand.defaultOrganizerWelcomeTitle,
-    welcomeMessage: brand.defaultOrganizerWelcomeMessage,
-    bannerEnabled: true,
-    dfwChurchUrl: brand.partnerOrgUrl,
-    communityGuidelinesMarkdown: _defaultGuidelines,
-    androidAppDownloadUrl: '',
-    iosAppDownloadUrl: '',
-    previewModeEnabled: false,
-    adminEmailsCsv: '',
-  );
+  factory OrganizerRemoteConfig.defaults(CommunityBrandConfig brand) =>
+      OrganizerRemoteConfig(
+        welcomeTitle: brand.defaultOrganizerWelcomeTitle,
+        welcomeMessage: brand.defaultOrganizerWelcomeMessage,
+        bannerEnabled: true,
+        dfwChurchUrl: brand.partnerOrgUrl,
+        communityGuidelinesMarkdown: _defaultGuidelines,
+        androidAppDownloadUrl: '',
+        iosAppDownloadUrl: '',
+        previewModeEnabled: false,
+        adminEmailsCsv: '',
+      );
 
   static const String _defaultGuidelines = '''
 # Belong on the Spectrum — Community Guidelines
@@ -87,7 +89,8 @@ class OrganizerRemoteConfig {
     welcomeMessage: welcomeMessage ?? this.welcomeMessage,
     bannerEnabled: bannerEnabled ?? this.bannerEnabled,
     dfwChurchUrl: dfwChurchUrl ?? this.dfwChurchUrl,
-    communityGuidelinesMarkdown: communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
+    communityGuidelinesMarkdown:
+        communityGuidelinesMarkdown ?? this.communityGuidelinesMarkdown,
     androidAppDownloadUrl: androidAppDownloadUrl ?? this.androidAppDownloadUrl,
     iosAppDownloadUrl: iosAppDownloadUrl ?? this.iosAppDownloadUrl,
     previewModeEnabled: previewModeEnabled ?? this.previewModeEnabled,
@@ -117,7 +120,9 @@ class OrganizerRemoteConfigService {
       final androidUrl = rc.getString('android_app_download_url').trim();
       final iosUrl = rc.getString('ios_app_download_url').trim();
       final enabledStr = rc.getString('organizer_banner_enabled').trim();
-      final previewModeStr = rc.getString('organizer_preview_mode_enabled').trim();
+      final previewModeStr = rc
+          .getString('organizer_preview_mode_enabled')
+          .trim();
       final adminEmailsStr = rc.getString('admin_emails_csv').trim();
 
       return OrganizerRemoteConfig(
@@ -145,9 +150,34 @@ class OrganizerRemoteConfigService {
   }
 }
 
+/// Merges a non-production dart-define admin list into Remote Config.
+///
+/// Production ignores [devEmails]. An empty [devEmails] leaves [remoteCsv]
+/// unchanged. [devEmails] is the `DEV_ADMIN_EMAILS` compile-time define.
+String mergeAdminEmails({
+  required String remoteCsv,
+  required String devEmails,
+  required bool isProduction,
+}) {
+  if (isProduction) return remoteCsv;
+  final extra = devEmails.trim();
+  if (extra.isEmpty) return remoteCsv;
+  if (remoteCsv.trim().isEmpty) return extra;
+  return '$remoteCsv,$extra';
+}
+
 final organizerRemoteConfigProvider = Provider<OrganizerRemoteConfig>((ref) {
   final brand = ref.watch(communityBrandConfigProvider);
-  return OrganizerRemoteConfigService(brand).readCurrent();
+  final flavor = ref.watch(appFlavorProvider);
+  final config = OrganizerRemoteConfigService(brand).readCurrent();
+  const devAdminEmails = String.fromEnvironment('DEV_ADMIN_EMAILS');
+  final merged = mergeAdminEmails(
+    remoteCsv: config.adminEmailsCsv,
+    devEmails: devAdminEmails,
+    isProduction: flavor.isProduction,
+  );
+  if (merged == config.adminEmailsCsv) return config;
+  return config.copyWith(adminEmailsCsv: merged);
 });
 
 /// Evaluates whether the currently signed-in user is recognized as an Admin

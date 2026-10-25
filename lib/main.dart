@@ -135,6 +135,7 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
   runApp(
     RefugeApp(
       repository: PostRepositoryFactory.create(flavor: flavor),
+      enforceSignIn: true,
       overrides: [
         appFlavorProvider.overrideWithValue(flavor),
         communityAnalyticsServiceProvider.overrideWithValue(analytics),

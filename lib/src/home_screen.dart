@@ -8,6 +8,9 @@ import 'core/theme/belong_text_styles.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
+import 'features/admin/data/admin_banning_repository.dart';
+import 'features/admin/domain/ban_standing.dart';
+import 'features/admin/presentation/account_paused_banner.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
@@ -168,19 +171,25 @@ class RefugeHomeScreen extends HookConsumerWidget {
         return;
       }
       final targetSpace = selectedSpace.value;
-      await activeRepository.createPost(
-        Post(
-          id: 'post-${DateTime.now().millisecondsSinceEpoch}',
-          authorName: profile.displayName,
-          content: content,
-          timestamp: DateTime.now(),
-          spaceKey: targetSpace,
-          reactions: {},
-          toneTag: toneTag,
-          specialInterestTag: specialInterestTag,
-          imageUrl: imageUrl,
-        ),
+      final created = await createContributionUnlessBanned(
+        isBanned: ref.read(isCurrentMemberBannedProvider),
+        create: () async {
+          await activeRepository.createPost(
+            Post(
+              id: 'post-${DateTime.now().millisecondsSinceEpoch}',
+              authorName: profile.displayName,
+              content: content,
+              timestamp: DateTime.now(),
+              spaceKey: targetSpace,
+              reactions: {},
+              toneTag: toneTag,
+              specialInterestTag: specialInterestTag,
+              imageUrl: imageUrl,
+            ),
+          );
+        },
       );
+      if (!created) return;
       final lengthBucket = content.length <= 140
           ? 1
           : content.length <= 280
@@ -356,7 +365,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
                     final showInlineComposer =
                         (kIsWeb || !isDesktop) &&
-                        selectedSpace.value != 'saved_for_later';
+                        selectedSpace.value != 'saved_for_later' &&
+                        !ref.watch(isCurrentMemberBannedProvider);
 
                     final feedSlivers = <Widget>[
                       if (remoteConfig.bannerEnabled)
@@ -755,6 +765,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 ),
               ),
               onSelected: (action) {
+                if (ref.read(isCurrentMemberBannedProvider)) return;
                 if (action == 'create_post') {
                   _showCreatePostModal(
                     context: context,
@@ -985,12 +996,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
             bottom: true,
             left: true,
             right: true,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 820),
-                child: buildActiveBottomTabBody(),
-              ),
-            ),
+            child: ref.watch(isCurrentMemberBannedProvider)
+                ? const Center(child: _BannedSessionLockout())
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 820),
+                      child: buildActiveBottomTabBody(),
+                    ),
+                  ),
           ),
         ),
       ),
@@ -1262,4 +1275,27 @@ PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
       ),
     ),
   );
+}
+
+/// Blocks the community for a banned session, then ends that sign-in.
+class _BannedSessionLockout extends ConsumerStatefulWidget {
+  const _BannedSessionLockout();
+
+  @override
+  ConsumerState<_BannedSessionLockout> createState() =>
+      _BannedSessionLockoutState();
+}
+
+class _BannedSessionLockoutState extends ConsumerState<_BannedSessionLockout> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(memberProfileProvider.notifier).signOut();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const AccountPausedLockout();
 }

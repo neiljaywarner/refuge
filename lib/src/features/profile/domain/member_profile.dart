@@ -28,24 +28,25 @@ class MemberProfile {
   });
 
   const MemberProfile.guest()
-    : userId = '',
-      displayName = 'Fellowship Member',
+    : displayName = 'Fellowship Member',
       email = '',
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
       isSignedIn = false,
+      userId = 'guest',
       authMethod = 'guest',
       icocChurchAffiliation = null,
       tagline = 'Exploring Belong on the Spectrum',
       avatarUrl = null;
 
-  /// Firebase uid when signed in. Empty for guests. Never an email address.
-  final String userId;
   final String displayName;
   final String email;
   final String bio;
   final List<String> comfortBadges;
   final bool isSignedIn;
+
+  /// Auth session id. Empty until a session is applied. Guests use `guest`.
+  final String userId;
   final String authMethod;
   final String? icocChurchAffiliation;
   final String? tagline;
@@ -209,7 +210,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
           isSignedIn: true,
           authMethod: 'persisted_storage',
           icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
-          userId: _persistedProfile?.userId ?? '',
+          userId: local['userId'] as String? ?? _persistedProfile?.userId ?? '',
           avatarUrl: _persistedProfile?.avatarUrl,
           tagline: _persistedProfile?.tagline,
         );
@@ -357,6 +358,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       ProfileStorageService.instance.save(
         displayName: state.displayName,
         email: state.email,
+        userId: state.userId,
         bio: state.bio,
         icocChurchAffiliation: state.icocChurchAffiliation,
         comfortBadges: state.comfortBadges,

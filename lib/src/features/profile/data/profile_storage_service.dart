@@ -24,6 +24,7 @@ class ProfileStorageService {
   void save({
     required String displayName,
     required String email,
+    String? userId,
     String? bio,
     String? icocChurchAffiliation,
     List<String>? comfortBadges,
@@ -31,6 +32,7 @@ class ProfileStorageService {
     final data = <String, dynamic>{
       'displayName': displayName,
       'email': email,
+      if (userId != null && userId.isNotEmpty) 'userId': userId,
       if (bio != null) 'bio': bio,
       if (icocChurchAffiliation != null)
         'icocChurchAffiliation': icocChurchAffiliation,

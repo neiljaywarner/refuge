@@ -1,0 +1,33 @@
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. A regular signed-in or guest session must not see Ban.
+# The admin ban and unban of a second account is driven separately on the
+# emulator with DEV_ADMIN_EMAILS and is not stored in this file.
+name: "Belong on the Spectrum — regular member does not see Ban"
+tags:
+  - belong
+  - admin
+  - issue-562
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Belong.*"
+    timeout: 45000
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*COMMUNITY.*"
+    timeout: 20000
+- scrollUntilVisible:
+    element: ".*Members Section & Directory.*"
+    direction: DOWN
+    timeout: 20000
+- tapOn: ".*Members Section & Directory.*"
+- extendedWaitUntil:
+    visible: ".*Caleb Stone.*"
+    timeout: 20000
+- tapOn: ".*Caleb Stone.*"
+- extendedWaitUntil:
+    visible: ".*Caleb Stone.*"
+    timeout: 15000
+- assertNotVisible: "Ban Member"
+- assertNotVisible: "Restore Member"

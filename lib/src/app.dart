@@ -9,6 +9,7 @@ import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
+import 'features/auth/presentation/auth_gate.dart';
 import 'home_screen.dart';
 
 /// Root application widget wrapping Refuge in a Riverpod ProviderScope.
@@ -17,6 +18,7 @@ class RefugeApp extends StatefulWidget {
   final List<Override>? overrides;
   final Widget? homeOverride;
   final SensoryMode initialTheme;
+  final bool enforceSignIn;
 
   const RefugeApp({
     super.key,
@@ -24,6 +26,7 @@ class RefugeApp extends StatefulWidget {
     this.overrides,
     this.homeOverride,
     this.initialTheme = SensoryMode.sage,
+    this.enforceSignIn = false,
   });
 
   @override
@@ -59,6 +62,7 @@ class _RefugeAppState extends State<RefugeApp> {
         repository: widget.repository,
         themeNotifier: _themeNotifier,
         homeOverride: widget.homeOverride,
+        enforceSignIn: widget.enforceSignIn,
       ),
     ),
   );
@@ -68,11 +72,13 @@ class _RefugeAppContent extends ConsumerWidget {
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
   final Widget? homeOverride;
+  final bool enforceSignIn;
 
   const _RefugeAppContent({
     required this.repository,
     required this.themeNotifier,
     this.homeOverride,
+    required this.enforceSignIn,
   });
 
   @override
@@ -106,8 +112,15 @@ class _RefugeAppContent extends ConsumerWidget {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    home:
-        homeOverride ??
-        RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier),
+    home: homeOverride ??
+        (enforceSignIn
+            ? AuthGate(
+                repository: repository,
+                themeNotifier: themeNotifier,
+              )
+            : RefugeHomeScreen(
+                repository: repository,
+                themeNotifier: themeNotifier,
+              )),
   );
 }
