@@ -23,7 +23,7 @@ Belong’s default is different on purpose: the member who left is the one who c
 
 | Check | Where |
 | --- | --- |
-| Gherkin scenario | `test/features/account_deletion/delete_and_return_account.feature` |
+| Gherkin scenario (human-readable spec, not codegen) | `test/features/account_deletion/delete_and_return_account.feature` |
 | Widget test, synthetic email with the current timestamp | `test/features/account_deletion/account_return_widget_test.dart` |
 | Repository: delete, blocked sign-in, restore, admin unban does not clear it | `test/features/account_deletion/account_deletion_repository_test.dart` |
 | Patrol integration | `integration_test/account_return_patrol_test.dart` |

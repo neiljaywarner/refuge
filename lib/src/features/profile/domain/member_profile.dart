@@ -414,6 +414,17 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     }
   }
 
+  /// Republishes the directory when a tombstone is cleared but Firebase Auth
+  /// did not emit a new session (for example after RESTORE on the gate).
+  void publishDirectoryAfterRestore() {
+    if (!state.isSignedIn ||
+        state.userId.isEmpty ||
+        state.userId == 'guest') {
+      return;
+    }
+    _publishDirectory(state);
+  }
+
   /// Soft-deletes the signed-in account, then signs out on this device.
   ///
   /// Throws [AccountDeletionException] when confirmation, auth, or a backend

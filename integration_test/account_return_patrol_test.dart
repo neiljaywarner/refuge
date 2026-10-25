@@ -45,11 +45,9 @@ void main() {
           ),
         ),
       );
+      await $.pumpAndSettle();
 
-      expect(
-        $('An organizer cannot turn this back on for you.'),
-        findsOneWidget,
-      );
+      expect($(const Key('return_after_delete_explanation')), findsOneWidget);
       await $(const Key('return_after_delete_field')).enterText('RESTORE');
       await $(const Key('return_after_delete_submit_button')).tap();
       await $.pumpAndSettle();
