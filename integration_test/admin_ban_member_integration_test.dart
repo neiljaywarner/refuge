@@ -67,14 +67,13 @@ void main() {
       expect($(const Key('banned_member_banner')), findsOneWidget);
       expect(await banningRepo.isUserBanned('Caleb Stone'), isTrue);
 
-      await $(const Key('admin_unban_member_button')).tap();
-      await $.pumpAndSettle();
-      expect(await banningRepo.isUserBanned('Caleb Stone'), isFalse);
-      expect($(const Key('banned_member_banner')), findsNothing);
+      expect($(const Key('admin_unban_member_button')), findsNothing);
+      expect($(const Key('admin_ban_permanent_note')), findsOneWidget);
+      expect(await banningRepo.isUserBanned('Caleb Stone'), isTrue);
     },
   );
 
-  patrolWidgetTest('Scenario: Restore brings the card back and posting works', (
+  patrolWidgetTest('Scenario: A banned session cannot read the feed', (
     $,
   ) async {
     final banningRepo = InMemoryAdminBanningRepository();
@@ -111,12 +110,8 @@ void main() {
       ),
     );
     expect($(const Key('account_paused_lockout')), findsOneWidget);
+    expect($("This account can't sign in."), findsOneWidget);
     expect($('A quiet note from the feed'), findsNothing);
-
-    await banningRepo.unbanUser('caleb-123');
-    await $.pumpAndSettle();
-    expect($(const Key('account_paused_lockout')), findsNothing);
-    expect($('A quiet note from the feed'), findsOneWidget);
   });
 }
 

@@ -31,6 +31,18 @@ void main() {
       final commentRepo = LocalCommentRepository();
       addTearDown(banningRepo.dispose);
 
+      await postRepo.createPost(
+        Post(
+          id: 'post-caleb',
+          authorName: 'Caleb Stone',
+          content: 'A note that should be removed',
+          timestamp: DateTime.utc(2026, 10, 24),
+          spaceKey: 'prayer',
+          reactions: const {},
+          toneTag: '[Prayer Request]',
+        ),
+      );
+
       final admin = _container(
         banningRepo: banningRepo,
         postRepo: postRepo,
@@ -90,8 +102,8 @@ void main() {
       );
 
       expect($(const Key('account_paused_lockout')), findsOneWidget);
+      expect($("This account can't sign in."), findsOneWidget);
       expect($('A quiet note from the feed'), findsNothing);
-      expect($('You can still read'), findsNothing);
       expect(await postRepo.getPosts(spaceKey: 'prayer'), isEmpty);
 
       await $(const Key('try_post_button')).tap();
@@ -100,9 +112,7 @@ void main() {
     },
   );
 
-  patrolWidgetTest('Scenario: Restore brings the card back and posting works', (
-    $,
-  ) async {
+  patrolWidgetTest('Scenario: A ban is not undone from the app', ($) async {
     $.tester.view.physicalSize = const Size(1080, 2400);
     $.tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -120,8 +130,6 @@ void main() {
       email: 'caleb@example.com',
       bannedByAdminEmail: 'organizer@belongonthespectrum.com',
     );
-    await banningRepo.unbanUser('Caleb Stone');
-
     final admin = _container(
       banningRepo: banningRepo,
       postRepo: postRepo,
@@ -145,8 +153,7 @@ void main() {
         ),
       ),
     );
-    await $(const Key('dev_member_card_caleb_stone')).scrollTo();
-    expect($(const Key('dev_member_card_caleb_stone')), findsOneWidget);
+    expect($(const Key('dev_member_card_caleb_stone')), findsNothing);
 
     final caleb = _container(
       banningRepo: banningRepo,
@@ -169,13 +176,11 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: _PausedPostHost())),
       ),
     );
-    expect($(const Key('account_paused_lockout')), findsNothing);
-    expect($('A quiet note from the feed'), findsOneWidget);
+    expect($(const Key('account_paused_lockout')), findsOneWidget);
+    expect($('A quiet note from the feed'), findsNothing);
     await $(const Key('try_post_button')).tap();
     await $.pumpAndSettle();
-    final posts = await postRepo.getPosts(spaceKey: 'prayer');
-    expect(posts, hasLength(1));
-    expect(posts.single.authorName, 'Caleb Stone');
+    expect(await postRepo.getPosts(spaceKey: 'prayer'), isEmpty);
   });
 }
 

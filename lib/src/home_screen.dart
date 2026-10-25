@@ -970,7 +970,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
             left: true,
             right: true,
             child: ref.watch(isCurrentMemberBannedProvider)
-                ? const Center(child: AccountPausedLockout())
+                ? const Center(child: _BannedSessionLockout())
                 : Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 820),
@@ -1248,4 +1248,27 @@ PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
       ),
     ),
   );
+}
+
+/// Blocks the community for a banned session, then ends that sign-in.
+class _BannedSessionLockout extends ConsumerStatefulWidget {
+  const _BannedSessionLockout();
+
+  @override
+  ConsumerState<_BannedSessionLockout> createState() =>
+      _BannedSessionLockoutState();
+}
+
+class _BannedSessionLockoutState extends ConsumerState<_BannedSessionLockout> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(memberProfileProvider.notifier).signOut();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const AccountPausedLockout();
 }

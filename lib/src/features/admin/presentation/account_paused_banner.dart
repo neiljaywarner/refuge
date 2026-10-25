@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../domain/circle_ban.dart';
+
 /// Full-screen lockout for a signed-in member whose account is paused.
 ///
 /// Reading and posting are both paused. The screen does not include a reason.
@@ -22,13 +24,13 @@ class AccountPausedLockout extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'This account is paused.',
+            circleBanSignInMessage,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           const Text(
-            'Reading and posting are paused for now.',
+            'Posts, comments, and messages from this member were removed.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 15, height: 1.4),
           ),

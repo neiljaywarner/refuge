@@ -16,10 +16,12 @@ Feature: Admin ban quarantine
   Scenario: Ban hides the directory card and pauses posting
     Given an admin bans Caleb Stone from the directory
     Then the directory no longer lists Caleb Stone
-    And a session named Caleb Stone sees the paused lockout and cannot read the feed
+    And a session named Caleb Stone cannot sign in or read the feed
     And that session cannot create a post
+    And Caleb Stone's posts, comments, and messages are removed
 
-  Scenario: Restore brings the card back and posting works
-    Given Caleb Stone was banned and then restored
-    Then the directory lists Caleb Stone again
-    And that session can create a post
+  Scenario: A ban is not undone from the app
+    Given Caleb Stone was banned
+    Then the directory does not list Caleb Stone
+    And the app does not offer Restore
+    And Caleb Stone's posts stay removed

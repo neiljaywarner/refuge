@@ -52,12 +52,14 @@ class ServerpodPostRepository implements PostRepository {
              defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
            ),
        _fallback = fallback ?? LocalPostRepository(isDevMode: isDevMode),
-       _client = client ??
+       _client =
+           client ??
            sp.Client(
              serverUrl ??
                  const String.fromEnvironment(
                    'SERVERPOD_URL',
-                   defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
+                   defaultValue:
+                       'https://refuge4serverpod.api.serverpod.space/',
                  ),
            );
 
@@ -105,7 +107,9 @@ class ServerpodPostRepository implements PostRepository {
 
   @override
   Future<Post> createPost(Post post) async {
-    talker.info('📤 [Serverpod RPC] Publishing reflection: tag=${post.toneTag} specialInterest=${post.specialInterestTag} content="${post.content}"');
+    talker.info(
+      '📤 [Serverpod RPC] Publishing reflection: tag=${post.toneTag} specialInterest=${post.specialInterestTag} content="${post.content}"',
+    );
 
     // Dual-redundancy: dispatch to Firebase Cloud Firestore
     final fs = firestore;
@@ -149,10 +153,16 @@ class ServerpodPostRepository implements PostRepository {
           .publishReflection(spReflection)
           .timeout(const Duration(milliseconds: 1200));
       _isLiveConnected = true;
-      talker.info('✅ [Serverpod RPC SUCCESS] Reflection published with id ${created.id}');
+      talker.info(
+        '✅ [Serverpod RPC SUCCESS] Reflection published with id ${created.id}',
+      );
       return post.copyWith(id: created.id?.toString());
     } catch (e, st) {
-      talker.handle(e, st, '🚨 [Serverpod RPC FAILED] publishReflection error, falling back to local');
+      talker.handle(
+        e,
+        st,
+        '🚨 [Serverpod RPC FAILED] publishReflection error, falling back to local',
+      );
       debugPrint('🚨 [Serverpod RPC FAILED] publishReflection error: $e\n$st');
       _isLiveConnected = false;
       return _fallback.createPost(post);
@@ -190,15 +200,23 @@ class ServerpodPostRepository implements PostRepository {
           'relatable': 'relatable',
         };
         final mappedKey = keyMap[reactionType] ?? reactionType;
-        talker.info('💖 [Serverpod RPC] Affirming care: post=$parsedId reaction=$reactionType (mapped: $mappedKey)');
+        talker.info(
+          '💖 [Serverpod RPC] Affirming care: post=$parsedId reaction=$reactionType (mapped: $mappedKey)',
+        );
         await _client.reflection
             .affirmCare(parsedId, mappedKey)
             .timeout(const Duration(milliseconds: 4000));
-        talker.info('✅ [Serverpod RPC SUCCESS] Care affirmed for post $parsedId ($reactionType)');
+        talker.info(
+          '✅ [Serverpod RPC SUCCESS] Care affirmed for post $parsedId ($reactionType)',
+        );
         _isLiveConnected = true;
         return;
       } catch (e, st) {
-        talker.handle(e, st, '🚨 [Serverpod RPC FAILED] affirmCare error, falling back to local');
+        talker.handle(
+          e,
+          st,
+          '🚨 [Serverpod RPC FAILED] affirmCare error, falling back to local',
+        );
         _isLiveConnected = false;
       }
     }
@@ -232,45 +250,49 @@ class ServerpodPostRepository implements PostRepository {
 
     controller = StreamController<List<Post>>.broadcast(
       onListen: () {
-        localSub = _fallback.watchPosts(spaceKey: spaceKey).listen(
-          (local) => emit(merge(local)),
-          onError: controller.addError,
-        );
+        localSub = _fallback
+            .watchPosts(spaceKey: spaceKey)
+            .listen(
+              (local) => emit(merge(local)),
+              onError: controller.addError,
+            );
         try {
           final mappedSpace = _mapSpaceKey(spaceKey);
-          remoteSub = _client.reflection.watchSpace(mappedSpace).listen(
-            (spPost) {
-              _isLiveConnected = true;
-              final post = Post(
-                id: spPost.id?.toString() ?? UniqueKey().toString(),
-                authorName: spPost.authorName,
-                spaceKey: spaceKey,
-                toneTag: spPost.intentTag,
-                specialInterestTag: spPost.specialInterestTag,
-                content: spPost.content,
-                timestamp: spPost.createdAt,
-                reactions: {
-                  'pray': spPost.prayingCount,
-                  'peace': spPost.peaceCount,
-                  'encouraged': spPost.encouragedCount,
-                  'standing': spPost.standingWithCount,
-                  'relatable': spPost.encouragedCount,
+          remoteSub = _client.reflection
+              .watchSpace(mappedSpace)
+              .listen(
+                (spPost) {
+                  _isLiveConnected = true;
+                  final post = Post(
+                    id: spPost.id?.toString() ?? UniqueKey().toString(),
+                    authorName: spPost.authorName,
+                    spaceKey: spaceKey,
+                    toneTag: spPost.intentTag,
+                    specialInterestTag: spPost.specialInterestTag,
+                    content: spPost.content,
+                    timestamp: spPost.createdAt,
+                    reactions: {
+                      'pray': spPost.prayingCount,
+                      'peace': spPost.peaceCount,
+                      'encouraged': spPost.encouragedCount,
+                      'standing': spPost.standingWithCount,
+                      'relatable': spPost.encouragedCount,
+                    },
+                  );
+                  remoteById[post.id] = post;
+                  _fallback.getPosts(spaceKey: spaceKey).then((local) {
+                    emit(merge(local));
+                  });
+                },
+                onError: (Object e, StackTrace st) {
+                  _isLiveConnected = false;
+                  talker.handle(
+                    e,
+                    st,
+                    '🚨 [Serverpod WebSocket] watchPosts stream error',
+                  );
                 },
               );
-              remoteById[post.id] = post;
-              _fallback.getPosts(spaceKey: spaceKey).then((local) {
-                emit(merge(local));
-              });
-            },
-            onError: (Object e, StackTrace st) {
-              _isLiveConnected = false;
-              talker.handle(
-                e,
-                st,
-                '🚨 [Serverpod WebSocket] watchPosts stream error',
-              );
-            },
-          );
         } catch (e, st) {
           _isLiveConnected = false;
           talker.handle(
@@ -298,12 +320,31 @@ class ServerpodPostRepository implements PostRepository {
           .getQuietDigest(mappedSpace)
           .timeout(const Duration(milliseconds: 800));
       _isLiveConnected = true;
-      talker.info('📜 [Serverpod RPC] Fetched quiet digest for space $spaceKey: "${digest.summaryMessage}"');
+      talker.info(
+        '📜 [Serverpod RPC] Fetched quiet digest for space $spaceKey: "${digest.summaryMessage}"',
+      );
       return digest.summaryMessage;
     } catch (e) {
       _isLiveConnected = false;
       return _fallback.getQuietDigest(spaceKey: spaceKey);
     }
+  }
+
+  @override
+  Future<int> deleteByAuthor({required String authorName}) async {
+    final removed = await _fallback.deleteByAuthor(authorName: authorName);
+    final fs = firestore;
+    if (fs == null || authorName.trim().isEmpty) return removed;
+    try {
+      final snap = await fs
+          .collection(collectionName)
+          .where('authorName', isEqualTo: authorName)
+          .get();
+      for (final doc in snap.docs) {
+        await doc.reference.delete();
+      }
+    } catch (_) {}
+    return removed;
   }
 
   @override

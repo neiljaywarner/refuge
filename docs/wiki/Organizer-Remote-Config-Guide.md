@@ -29,7 +29,7 @@ In **Belong on the Spectrum**, we connected the **"Message from the Organizer"**
 | **`ios_app_download_url`** | URL for `Download the iOS App` under `Links` (leave empty for *"Pending / PWA Guide"*) | `""` *(Pending until App Store launch)* |
 | **`admin_emails_csv`** | Comma-separated emails that may pause and restore a member. Empty means nobody. | `""` *(published in Remote Config, not in git)* |
 
-The pause and restore steps are in **[Pause and restore a member](Admin-Pause-and-Restore)**. Production uses only this published list. Do not copy the addresses into the wiki, an issue, or a screenshot.
+The ban steps are in **[Ban a member](Admin-Pause-and-Restore)**. Production uses only this published list. Do not copy the addresses into the wiki, an issue, or a screenshot.
 
 ---
 

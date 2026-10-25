@@ -377,7 +377,8 @@ class AppwritePostRepository implements PostRepository {
     final affirmations = posts.fold<int>(
       0,
       (total, post) =>
-          total + post.reactions.values.fold<int>(0, (inner, value) => inner + value),
+          total +
+          post.reactions.values.fold<int>(0, (inner, value) => inner + value),
     );
     final summary =
         'Gathered in peace • ${posts.length} reflections shared with $affirmations care affirmations.';
@@ -427,6 +428,24 @@ class AppwritePostRepository implements PostRepository {
     } catch (error, stack) {
       talker.handle(error, stack, 'Firestore reflection mirror failed');
     }
+  }
+
+  @override
+  Future<int> deleteByAuthor({required String authorName}) async {
+    final removed = await _fallback.deleteByAuthor(authorName: authorName);
+    final fs = firestore;
+    if (fs != null && authorName.trim().isNotEmpty) {
+      try {
+        final snap = await fs
+            .collection(collectionName)
+            .where('authorName', isEqualTo: authorName)
+            .get();
+        for (final doc in snap.docs) {
+          await doc.reference.delete();
+        }
+      } catch (_) {}
+    }
+    return removed;
   }
 
   Future<void> _writeAppwrite(Post post) async {

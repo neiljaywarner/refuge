@@ -1,8 +1,8 @@
-# Pause and restore a member
+# Ban a member
 
-Organizers can pause a member who is hurting the calm of the room, and they can welcome that member back. For now a pause is a complete ban: the member cannot read the feed, discussions, directory, messages, or search, and they cannot post or comment. The app does not show a reason.
+Organizers can ban a member who is hurting the calm of the room. This follows [Circle's ban](https://help.circle.so/p/audience/member-management/removing-members-from-your-community), except Belong does not lock IP addresses.
 
-This is the guide for the November walkthrough with Marty ([#566](https://github.com/neiljaywarner/refuge/issues/566)). The control itself landed in [#356](https://github.com/neiljaywarner/refuge/issues/356). Quarantine is [#562](https://github.com/neiljaywarner/refuge/issues/562). The complete ban, where a paused member cannot read, is [#578](https://github.com/neiljaywarner/refuge/issues/578). Both are on pull request [#565](https://github.com/neiljaywarner/refuge/pull/565).
+This is the guide for the November walkthrough with Marty ([#566](https://github.com/neiljaywarner/refuge/issues/566)). The admin control landed in [#356](https://github.com/neiljaywarner/refuge/issues/356). Quarantine is [#562](https://github.com/neiljaywarner/refuge/issues/562). Hiding the community from a paused session is [#578](https://github.com/neiljaywarner/refuge/issues/578). The Circle-style ban is [#579](https://github.com/neiljaywarner/refuge/issues/579). Whether a later ban should also block recent IP addresses is an open discussion in [#580](https://github.com/neiljaywarner/refuge/issues/580). There is no code for that.
 
 ---
 
@@ -20,52 +20,48 @@ To change the list later, open [Firebase Remote Config](https://console.firebase
 
 ---
 
-## What a pause does
+## What a ban does
 
-- The member's display name disappears from the directory.
-- Their existing posts stay stored, and other members can still read them.
-- The paused member does not see the feed, discussions, directory, messages, or search.
-- The composer is hidden.
-- Choosing **Create Post** does not open a composer.
-- Comments do not send.
-- A calm lockout says: "This account is paused. Reading and posting are paused for now."
-- **Restore Member** turns reading and posting back on and returns the name to the directory.
+Circle removes the member's posts, comments, and messages, and that account can no longer use the community. Belong does the same:
 
-**Cancel** on the confirm step writes nothing. If the save fails, a short error snackbar appears and the member is not paused.
+- Their posts, comments, and direct messages are deleted.
+- Their display name disappears from the directory.
+- A matching sign-in does not open a session. The screen says: "This account can't sign in."
+- While that session is still on screen, the feed, discussions, directory, messages, and search stay hidden.
+- The composer is hidden, and comments do not send.
+- The app does not show a ban reason.
+- The app does not record or block IP addresses.
+- There is no **Restore Member** button. Deleted writing stays deleted. The profile says the ban stays.
+
+**Cancel** on the confirm step writes nothing. If the save fails, a short error snackbar appears and the member is not banned.
+
+### What this does not copy from Circle
+
+Circle also locks every IP address that member used in the prior 30 days. An admin cannot see that list or undo it; only Circle support can. That lock is out of scope here. [#580](https://github.com/neiljaywarner/refuge/issues/580) is the place to decide whether Belong should do it later.
+
+Circle deletes the account, so the same email can register again as a new member from an IP that was not blocked. Belong does not delete the Firebase Auth user. The app refuses a matching session, and that email stays reserved in Firebase until the Auth user is deleted. There is no Cloud Function for that in this change.
+
+A guest who is not signed in can still open the public feed. The ban stops that member's session and removes their writing. It does not hide other members' posts from a signed-out device.
 
 ---
 
-## How to pause someone
+## How to ban someone
 
 1. Sign in with an organizer mailbox from the allowlist.
 2. On the feed, tap the author's name on one of their posts.
 3. The profile shows a small **Admin View** mark.
-4. Tap **Ban Member**, then confirm.
-5. The profile now says the member is paused, and the button changes to **Restore Member**.
+4. Tap **Ban Member**, then **Confirm Ban**.
+5. The profile says the member is banned, their writing was removed, and the account cannot sign in. A short note says the ban stays.
 
 ## How to check the member's side
 
 1. Sign out.
 2. Sign in as that member.
-3. The feed is replaced by the paused lockout. Posts, discussions, the directory, messages, and search are not on screen.
-4. **Create Post** does not open a composer.
-
-## How to restore
-
-1. Sign back in as the organizer.
-2. Tap the author's name.
-3. Tap **Restore Member**.
-4. Sign in as the member again. The feed is back, the composer is back, and a new post appears on the feed.
+3. The session does not stay open. The screen says this account can't sign in. The feed is not shown.
+4. Their earlier posts, comments, and messages are gone for everyone.
 
 ---
 
 ## What we already checked
 
-On the emulator, an organizer paused a test member and then restored them. While paused, posting did nothing. After restore, that member posted again. A later change hides reading as well, so a paused member now sees the lockout instead of the feed.
-
-Automated checks on the same emulator:
-
-- Unit, widget, and sociable tests for cancel, a failed ban, hiding the directory card, the paused lockout, and restore.
-- An integration test with two scenarios: pause hides the card and blocks a post, and restore brings the card back.
-
-The committed Maestro flow only checks that a guest does not see **Ban Member**. It does not contain organizer addresses.
+Widget and unit tests cover cancel, a failed ban, hiding the directory card, deleting a post by that author, keeping the ban record, and the missing Restore button. Device proof of the erase-and-refuse flow is still outstanding: the emulators were already in use for other work.

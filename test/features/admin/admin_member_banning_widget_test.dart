@@ -138,7 +138,10 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify confirmation dialog appeared
-        expect($('Soft-Delete & Ban Member'), findsOneWidget);
+        expect(
+          find.textContaining('does not block an IP address'),
+          findsOneWidget,
+        );
         expect($(const Key('cancel_ban_button')), findsOneWidget);
         expect($(const Key('confirm_ban_button')), findsOneWidget);
 
@@ -149,18 +152,10 @@ void main() {
         // Verify user was soft-deleted in repository
         expect(await banningRepo.isUserBanned('Caleb Stone'), isTrue);
 
-        // Verify banner and restore button now appear
         expect($(const Key('banned_member_banner')), findsOneWidget);
-        expect($(const Key('admin_unban_member_button')), findsOneWidget);
-
-        // Tap Restore Member
-        await $(const Key('admin_unban_member_button')).tap();
-        await $.pumpAndSettle();
-
-        // Verify user is restored / unbanned
-        expect(await banningRepo.isUserBanned('Caleb Stone'), isFalse);
-        expect($(const Key('banned_member_banner')), findsNothing);
-        expect($(const Key('admin_ban_member_button')), findsOneWidget);
+        expect($(const Key('admin_ban_permanent_note')), findsOneWidget);
+        expect($(const Key('admin_unban_member_button')), findsNothing);
+        expect(await banningRepo.isUserBanned('Caleb Stone'), isTrue);
       },
     );
 
