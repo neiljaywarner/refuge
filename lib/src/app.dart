@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants/app_theme.dart';
+import 'core/config/app_flavor.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
@@ -82,43 +83,46 @@ class _RefugeAppContent extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: 'Belong',
-    theme: SensoryThemeData.getTheme(themeNotifier.mode),
-    builder: (context, child) {
-      final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
-      final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
-          ? themeNotifier.fontScale
-          : riverpodFontScale;
-      final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
-          .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
-      final theme = Theme.of(context);
-      return MediaQuery(
-        data: repaired,
-        child: Theme(
-          data: theme.copyWith(
-            dialogTheme: theme.dialogTheme.copyWith(
-              insetPadding: SystemInsets.dialogInsetPadding(repaired),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flavor = ref.watch(appFlavorProvider);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: flavor.launcherTitle,
+      theme: SensoryThemeData.getTheme(themeNotifier.mode),
+      builder: (context, child) {
+        final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
+        final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
+            ? themeNotifier.fontScale
+            : riverpodFontScale;
+        final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
+            .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
+        final theme = Theme.of(context);
+        return MediaQuery(
+          data: repaired,
+          child: Theme(
+            data: theme.copyWith(
+              dialogTheme: theme.dialogTheme.copyWith(
+                insetPadding: SystemInsets.dialogInsetPadding(repaired),
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
-        ),
-      );
-    },
-    localizationsDelegates: [
-      FirebaseUILocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    home:
-        homeOverride ??
-        (enforceSignIn
-            ? AuthGate(repository: repository, themeNotifier: themeNotifier)
-            : RefugeHomeScreen(
-                repository: repository,
-                themeNotifier: themeNotifier,
-              )),
-  );
+        );
+      },
+      localizationsDelegates: [
+        FirebaseUILocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home:
+          homeOverride ??
+          (enforceSignIn
+              ? AuthGate(repository: repository, themeNotifier: themeNotifier)
+              : RefugeHomeScreen(
+                  repository: repository,
+                  themeNotifier: themeNotifier,
+                )),
+    );
+  }
 }
