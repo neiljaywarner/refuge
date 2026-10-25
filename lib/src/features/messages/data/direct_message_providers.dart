@@ -15,17 +15,11 @@ final directMessageMailboxProvider = Provider<DirectMessageMailbox>((ref) {
 });
 
 /// Test override for an in-memory mailbox.
-final directMessageMailboxOverrideProvider = Provider<DirectMessageMailbox?>(
-  (ref) => null,
-);
+final directMessageMailboxOverrideProvider = Provider<DirectMessageMailbox?>((ref) => null);
 
-final messageRecipientDirectoryProvider =
-    FutureProvider<List<MessageRecipient>>((ref) async {
-      final mailbox = ref.watch(directMessageMailboxProvider);
-      final flavor = ref.watch(appFlavorProvider);
-      final includeSamples = ref.watch(messageRecipientIncludeSamplesProvider);
-      return mailbox.loadDirectory(
-        includeSamples: includeSamples,
-        isProduction: flavor.isProduction,
-      );
-    });
+final messageRecipientDirectoryProvider = FutureProvider<List<MessageRecipient>>((ref) async {
+  final mailbox = ref.watch(directMessageMailboxProvider);
+  final flavor = ref.watch(appFlavorProvider);
+  final includeSamples = ref.watch(messageRecipientIncludeSamplesProvider);
+  return mailbox.loadDirectory(includeSamples: includeSamples, isProduction: flavor.isProduction);
+});

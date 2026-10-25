@@ -10,26 +10,17 @@ void main() {
     expect(publicHandleFromEmail('tester@example.com'), isNull);
     expect(publicHandleFromEmail(''), isNull);
     expect(
-      publicDisplayName(
-        displayName: 'Fellowship Member',
-        email: 'member+sampletag@example.com',
-      ),
+      publicDisplayName(displayName: 'Fellowship Member', email: 'member+sampletag@example.com'),
       'sampletag',
     );
     expect(
-      publicDisplayName(
-        displayName: 'David M.',
-        email: 'member+sampletag@example.com',
-      ),
+      publicDisplayName(displayName: 'David M.', email: 'member+sampletag@example.com'),
       'David M.',
     );
   });
 
   test('mention parser keeps the handle and drops the @', () {
-    expect(
-      extractMentionHandles('Quiet hello grokbot-mention-token @sampletag'),
-      {'sampletag'},
-    );
+    expect(extractMentionHandles('Quiet hello grokbot-mention-token @sampletag'), {'sampletag'});
     expect(extractMentionHandles('no mention here'), isEmpty);
   });
 

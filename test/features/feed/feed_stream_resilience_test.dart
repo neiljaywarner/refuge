@@ -20,47 +20,45 @@ void main() {
       expect(firstEmission.every((p) => p.spaceKey == 'prayer'), isTrue);
     });
 
-    test('watchPosts delivers cached reflections immediately to subsequent late listeners', () async {
-      final stream = repository.watchPosts(spaceKey: 'prayer');
-
-      // First listener subscribes and completes
-      final list1 = await stream.first;
-      expect(list1, isNotEmpty);
-
-      // Second listener subscribes later: must receive reflections immediately without hanging
-      final list2 = await stream.first.timeout(
-        const Duration(milliseconds: 500),
-        onTimeout: () => throw TimeoutException(
-          'Subsequent listener timed out waiting for initial yield',
-        ),
-      );
-      expect(list2, isNotEmpty);
-      expect(list2.length, equals(list1.length));
-    });
-
     test(
-      'watchSavedPosts delivers saved reflections to multiple late listeners',
+      'watchPosts delivers cached reflections immediately to subsequent late listeners',
       () async {
-        // Toggle save on a post
-        final posts = await repository.getPosts(spaceKey: 'prayer');
-        final target = posts.first;
-        await repository.toggleSavePost(postId: target.id);
+        final stream = repository.watchPosts(spaceKey: 'prayer');
 
-        final stream = repository.watchSavedPosts();
+        // First listener subscribes and completes
+        final list1 = await stream.first;
+        expect(list1, isNotEmpty);
 
-        // First listener
-        final saved1 = await stream.first;
-        expect(saved1.any((p) => p.id == target.id), isTrue);
-
-        // Second late listener
-        final saved2 = await stream.first.timeout(
+        // Second listener subscribes later: must receive reflections immediately without hanging
+        final list2 = await stream.first.timeout(
           const Duration(milliseconds: 500),
           onTimeout: () =>
-              throw TimeoutException('Second saved posts listener timed out'),
+              throw TimeoutException('Subsequent listener timed out waiting for initial yield'),
         );
-        expect(saved2.any((p) => p.id == target.id), isTrue);
+        expect(list2, isNotEmpty);
+        expect(list2.length, equals(list1.length));
       },
     );
+
+    test('watchSavedPosts delivers saved reflections to multiple late listeners', () async {
+      // Toggle save on a post
+      final posts = await repository.getPosts(spaceKey: 'prayer');
+      final target = posts.first;
+      await repository.toggleSavePost(postId: target.id);
+
+      final stream = repository.watchSavedPosts();
+
+      // First listener
+      final saved1 = await stream.first;
+      expect(saved1.any((p) => p.id == target.id), isTrue);
+
+      // Second late listener
+      final saved2 = await stream.first.timeout(
+        const Duration(milliseconds: 500),
+        onTimeout: () => throw TimeoutException('Second saved posts listener timed out'),
+      );
+      expect(saved2.any((p) => p.id == target.id), isTrue);
+    });
 
     test('watchPosts emits updated list when a new post is added', () async {
       final stream = repository.watchPosts(spaceKey: 'prayer');
@@ -88,9 +86,7 @@ void main() {
         ),
       );
 
-      final updatedPosts = await completer.future.timeout(
-        const Duration(seconds: 1),
-      );
+      final updatedPosts = await completer.future.timeout(const Duration(seconds: 1));
       expect(updatedPosts.any((p) => p.id == 'test-resilience-post'), isTrue);
       await sub.cancel();
     });

@@ -26,16 +26,10 @@ abstract interface class StorageRepository {
   });
 
   /// Uploads feedback attachment screenshot and returns the download URL.
-  Future<String> uploadFeedbackAttachment({
-    required Uint8List bytes,
-    required String filename,
-  });
+  Future<String> uploadFeedbackAttachment({required Uint8List bytes, required String filename});
 
   /// Uploads diagnostic session logs / replay dump and returns the download URL.
-  Future<String> uploadDiagnosticLogs({
-    required Uint8List bytes,
-    required String filename,
-  });
+  Future<String> uploadDiagnosticLogs({required Uint8List bytes, required String filename});
 
   /// Deletes a previously uploaded media asset.
   Future<void> deleteMedia(String downloadUrl);
@@ -84,10 +78,7 @@ class InMemoryStorageRepository implements StorageRepository {
   }
 
   @override
-  Future<String> uploadDiagnosticLogs({
-    required Uint8List bytes,
-    required String filename,
-  }) async {
+  Future<String> uploadDiagnosticLogs({required Uint8List bytes, required String filename}) async {
     final path = 'diagnostics/logs/$filename';
     _storage[path] = bytes;
     return 'https://storage.belongonthespectrum.com/$path';
@@ -114,32 +105,24 @@ class FirebaseStorageRepository implements StorageRepository {
     required String userId,
     required Uint8List bytes,
     required String filename,
-  }) async =>
-      _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
+  }) async => _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
 
   @override
   Future<String> uploadPostMedia({
     required String spaceSlug,
     required Uint8List bytes,
     required String filename,
-  }) async => _fallback.uploadPostMedia(
-    spaceSlug: spaceSlug,
-    bytes: bytes,
-    filename: filename,
-  );
+  }) async => _fallback.uploadPostMedia(spaceSlug: spaceSlug, bytes: bytes, filename: filename);
 
   @override
   Future<String> uploadFeedbackAttachment({
     required Uint8List bytes,
     required String filename,
-  }) async =>
-      _fallback.uploadFeedbackAttachment(bytes: bytes, filename: filename);
+  }) async => _fallback.uploadFeedbackAttachment(bytes: bytes, filename: filename);
 
   @override
-  Future<String> uploadDiagnosticLogs({
-    required Uint8List bytes,
-    required String filename,
-  }) async => _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
+  Future<String> uploadDiagnosticLogs({required Uint8List bytes, required String filename}) async =>
+      _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
 
   @override
   Future<void> deleteMedia(String downloadUrl) async {
@@ -147,9 +130,7 @@ class FirebaseStorageRepository implements StorageRepository {
   }
 }
 
-final storageBackendTargetProvider = Provider<BackendTarget>(
-  (ref) => BackendTarget.firebase,
-);
+final storageBackendTargetProvider = Provider<BackendTarget>((ref) => BackendTarget.firebase);
 
 final storageRepositoryProvider = Provider<StorageRepository>((ref) {
   final target = ref.watch(storageBackendTargetProvider);

@@ -17,44 +17,38 @@ void main() {
   });
 
   group('BelongFeedbackAndVotingSheet Draft Protection Tests (#525)', () {
-    patrolWidgetTest(
-      'empty feedback closes immediately without discard dialog',
-      ($) async {
-        $.tester.view.physicalSize = const Size(1000, 1600);
-        $.tester.view.devicePixelRatio = 1.0;
-        addTearDown($.tester.view.resetPhysicalSize);
+    patrolWidgetTest('empty feedback closes immediately without discard dialog', ($) async {
+      $.tester.view.physicalSize = const Size(1000, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown($.tester.view.resetPhysicalSize);
 
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: Builder(
-                  builder: (context) => ElevatedButton(
-                    key: const Key('open_sheet_button'),
-                    onPressed: () => BelongFeedbackAndVotingSheet.show(
-                      context,
-                      initialTabIndex: 1,
-                    ),
-                    child: const Text('Open'),
-                  ),
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  key: const Key('open_sheet_button'),
+                  onPressed: () => BelongFeedbackAndVotingSheet.show(context, initialTabIndex: 1),
+                  child: const Text('Open'),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await $(const Key('open_sheet_button')).tap();
-        expect($(const Key('close_feedback_sheet_button')), findsOneWidget);
+      await $(const Key('open_sheet_button')).tap();
+      expect($(const Key('close_feedback_sheet_button')), findsOneWidget);
 
-        // Tap close button when nothing is typed
-        await $(const Key('close_feedback_sheet_button')).tap();
+      // Tap close button when nothing is typed
+      await $(const Key('close_feedback_sheet_button')).tap();
 
-        // Discard dialog is NOT shown
-        expect($(const Key('confirm_discard_feedback_dialog')), findsNothing);
-        // Sheet is closed
-        expect($(const Key('close_feedback_sheet_button')), findsNothing);
-      },
-    );
+      // Discard dialog is NOT shown
+      expect($(const Key('confirm_discard_feedback_dialog')), findsNothing);
+      // Sheet is closed
+      expect($(const Key('close_feedback_sheet_button')), findsNothing);
+    });
 
     patrolWidgetTest(
       'typed feedback text prompts discard dialog on close, keep editing retains text',
@@ -70,10 +64,7 @@ void main() {
                 body: Builder(
                   builder: (context) => ElevatedButton(
                     key: const Key('open_sheet_button'),
-                    onPressed: () => BelongFeedbackAndVotingSheet.show(
-                      context,
-                      initialTabIndex: 1,
-                    ),
+                    onPressed: () => BelongFeedbackAndVotingSheet.show(context, initialTabIndex: 1),
                     child: const Text('Open'),
                   ),
                 ),
@@ -85,9 +76,8 @@ void main() {
         await $(const Key('open_sheet_button')).tap();
 
         // Enter feedback text
-        await $(const Key('feedback_message_input')).enterText(
-          'Draft message that should be protected from accidental dismissal',
-        );
+        await $(const Key('feedback_message_input'))
+            .enterText('Draft message that should be protected from accidental dismissal');
 
         // Attempt to close via header close button
         await $(const Key('close_feedback_sheet_button')).tap();
@@ -109,83 +99,75 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'typed feedback text prompts discard dialog, discard button closes sheet',
-      ($) async {
-        $.tester.view.physicalSize = const Size(1000, 1600);
-        $.tester.view.devicePixelRatio = 1.0;
-        addTearDown($.tester.view.resetPhysicalSize);
+    patrolWidgetTest('typed feedback text prompts discard dialog, discard button closes sheet', (
+      $,
+    ) async {
+      $.tester.view.physicalSize = const Size(1000, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown($.tester.view.resetPhysicalSize);
 
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: Builder(
-                  builder: (context) => ElevatedButton(
-                    key: const Key('open_sheet_button'),
-                    onPressed: () => BelongFeedbackAndVotingSheet.show(
-                      context,
-                      initialTabIndex: 1,
-                    ),
-                    child: const Text('Open'),
-                  ),
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  key: const Key('open_sheet_button'),
+                  onPressed: () => BelongFeedbackAndVotingSheet.show(context, initialTabIndex: 1),
+                  child: const Text('Open'),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await $(const Key('open_sheet_button')).tap();
+      await $(const Key('open_sheet_button')).tap();
 
-        // Enter text
-        await $(const Key('feedback_message_input'))
-            .enterText('Discard me please');
+      // Enter text
+      await $(const Key('feedback_message_input')).enterText('Discard me please');
 
-        // Tap close
-        await $(const Key('close_feedback_sheet_button')).tap();
+      // Tap close
+      await $(const Key('close_feedback_sheet_button')).tap();
 
-        expect($(const Key('confirm_discard_feedback_dialog')), findsOneWidget);
+      expect($(const Key('confirm_discard_feedback_dialog')), findsOneWidget);
 
-        // Tap Discard
-        await $(const Key('discard_feedback_confirm_button')).tap();
+      // Tap Discard
+      await $(const Key('discard_feedback_confirm_button')).tap();
 
-        // Both dialog and sheet are closed
-        expect($(const Key('confirm_discard_feedback_dialog')), findsNothing);
-        expect($(const Key('close_feedback_sheet_button')), findsNothing);
-      },
-    );
+      // Both dialog and sheet are closed
+      expect($(const Key('confirm_discard_feedback_dialog')), findsNothing);
+      expect($(const Key('close_feedback_sheet_button')), findsNothing);
+    });
 
-    patrolWidgetTest(
-      'drawing screenshot button renders cleanly on feedback tab',
-      ($) async {
-        $.tester.view.physicalSize = const Size(1000, 1600);
-        $.tester.view.devicePixelRatio = 1.0;
-        addTearDown($.tester.view.resetPhysicalSize);
+    patrolWidgetTest('drawing screenshot button renders cleanly on feedback tab', ($) async {
+      $.tester.view.physicalSize = const Size(1000, 1600);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown($.tester.view.resetPhysicalSize);
 
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: Builder(
-                  builder: (context) => ElevatedButton(
-                    key: const Key('open_sheet_button'),
-                    onPressed: () => BelongFeedbackAndVotingSheet.show(
-                      context,
-                      initialTabIndex: 1,
-                      screenshotBytes: Uint8List.fromList([1, 2, 3]),
-                    ),
-                    child: const Text('Open'),
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  key: const Key('open_sheet_button'),
+                  onPressed: () => BelongFeedbackAndVotingSheet.show(
+                    context,
+                    initialTabIndex: 1,
+                    screenshotBytes: Uint8List.fromList([1, 2, 3]),
                   ),
+                  child: const Text('Open'),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await $(const Key('open_sheet_button')).tap();
+      await $(const Key('open_sheet_button')).tap();
 
-        expect($(const Key('open_feedback_drawing_button')), findsOneWidget);
-      },
-    );
+      expect($(const Key('open_feedback_drawing_button')), findsOneWidget);
+    });
   });
 }

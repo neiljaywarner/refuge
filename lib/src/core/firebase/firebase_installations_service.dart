@@ -16,8 +16,7 @@ class FirebaseInstallationsService {
   final FirebaseInstallations? _installations;
   String? _cachedId;
 
-  FirebaseInstallations get _instance =>
-      _installations ?? FirebaseInstallations.instance;
+  FirebaseInstallations get _instance => _installations ?? FirebaseInstallations.instance;
 
   /// Retrieves the unique Firebase Installation ID.
   ///
@@ -29,9 +28,7 @@ class FirebaseInstallationsService {
 
     if (Firebase.apps.isEmpty) {
       _cachedId = 'fid_offline_mock_device';
-      talker.debug(
-        '🔥 [INSTALLATIONS] Firebase uninitialized. Using fallback ID: $_cachedId',
-      );
+      talker.debug('🔥 [INSTALLATIONS] Firebase uninitialized. Using fallback ID: $_cachedId');
       return _cachedId!;
     }
 
@@ -41,11 +38,7 @@ class FirebaseInstallationsService {
       talker.info('🔥 [INSTALLATIONS] Fetched Firebase Installation ID: $id');
       return id;
     } catch (e, st) {
-      talker.warning(
-        '⚠️ [INSTALLATIONS] Failed to retrieve Firebase Installation ID: $e',
-        e,
-        st,
-      );
+      talker.warning('⚠️ [INSTALLATIONS] Failed to retrieve Firebase Installation ID: $e', e, st);
       _cachedId = 'fid_fallback_${e.runtimeType.toString().toLowerCase()}';
       return _cachedId!;
     }
@@ -59,21 +52,16 @@ class FirebaseInstallationsService {
         await _instance.delete();
         talker.info('🔥 [INSTALLATIONS] Firebase Installation ID deleted.');
       } catch (e, st) {
-        talker.warning(
-          '⚠️ [INSTALLATIONS] Error deleting Firebase Installation ID: $e',
-          e,
-          st,
-        );
+        talker.warning('⚠️ [INSTALLATIONS] Error deleting Firebase Installation ID: $e', e, st);
       }
     }
   }
 }
 
 /// Global provider for [FirebaseInstallationsService].
-final firebaseInstallationsServiceProvider =
-    Provider<FirebaseInstallationsService>(
-      (ref) => FirebaseInstallationsService(),
-    );
+final firebaseInstallationsServiceProvider = Provider<FirebaseInstallationsService>(
+  (ref) => FirebaseInstallationsService(),
+);
 
 /// Reactive provider for the active Firebase Installation ID string.
 final firebaseInstallationsIdProvider = FutureProvider<String>((ref) async {

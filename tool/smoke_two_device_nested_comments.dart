@@ -11,11 +11,7 @@ class TestUser {
   String idToken = '';
   String localId = '';
 
-  TestUser({
-    required this.email,
-    required this.password,
-    required this.displayName,
-  });
+  TestUser({required this.email, required this.password, required this.displayName});
 }
 
 Future<void> main() async {
@@ -49,14 +45,13 @@ Future<void> main() async {
 
   // 3. User 1 posts top-level comment under Post 1
   final comment1Id = 'smoke_comment_1_$timestamp';
-  stdout.writeln(
-    '\n3. User 1 (${user1.displayName}) posting top-level comment to Firestore...',
-  );
+  stdout.writeln('\n3. User 1 (${user1.displayName}) posting top-level comment to Firestore...');
   final comment1Data = {
     'postId': {'stringValue': '1'},
     'authorName': {'stringValue': user1.displayName},
     'content': {
-      'stringValue': 'Grace and peace to everyone in Belong on the Spectrum. Remembering Psalm 139:14 today.',
+      'stringValue':
+          'Grace and peace to everyone in Belong on the Spectrum. Remembering Psalm 139:14 today.',
     },
     'toneTag': {'stringValue': '[Prayer]'},
     'timestamp': {'stringValue': DateTime.now().toUtc().toIso8601String()},
@@ -68,16 +63,8 @@ Future<void> main() async {
       },
     },
   };
-  await _writeFirestoreDoc(
-    client,
-    user1.idToken,
-    'comments',
-    comment1Id,
-    comment1Data,
-  );
-  stdout.writeln(
-    '   Top-level comment created in Firestore with ID: $comment1Id',
-  );
+  await _writeFirestoreDoc(client, user1.idToken, 'comments', comment1Id, comment1Data);
+  stdout.writeln('   Top-level comment created in Firestore with ID: $comment1Id');
 
   // 4. User 2 posts nested reply to User 1's comment
   final comment2Id = 'smoke_comment_2_reply_$timestamp';
@@ -101,13 +88,7 @@ Future<void> main() async {
       },
     },
   };
-  await _writeFirestoreDoc(
-    client,
-    user2.idToken,
-    'comments',
-    comment2Id,
-    comment2Data,
-  );
+  await _writeFirestoreDoc(client, user2.idToken, 'comments', comment2Id, comment2Data);
   stdout.writeln(
     '   Nested reply created in Firestore with ID: $comment2Id (parentCommentId: $comment1Id)',
   );
@@ -117,12 +98,8 @@ Future<void> main() async {
   final retrieved1 = await _readFirestoreDoc(client, 'comments', comment1Id);
   final retrieved2 = await _readFirestoreDoc(client, 'comments', comment2Id);
 
-  stdout.writeln(
-    '   Parent comment content: ${retrieved1['fields']?['content']?['stringValue']}',
-  );
-  stdout.writeln(
-    '   Reply comment content:  ${retrieved2['fields']?['content']?['stringValue']}',
-  );
+  stdout.writeln('   Parent comment content: ${retrieved1['fields']?['content']?['stringValue']}');
+  stdout.writeln('   Reply comment content:  ${retrieved2['fields']?['content']?['stringValue']}');
   stdout.writeln(
     '   Reply parentCommentId:  ${retrieved2['fields']?['parentCommentId']?['stringValue']}',
   );
@@ -133,9 +110,7 @@ Future<void> main() async {
     );
     stdout.writeln('   Parent ID: $comment1Id');
     stdout.writeln('   Nested Child ID: $comment2Id');
-    stdout.writeln(
-      '   Hierarchy: User 1 (${user1.displayName}) -> User 2 (${user2.displayName})',
-    );
+    stdout.writeln('   Hierarchy: User 1 (${user1.displayName}) -> User 2 (${user2.displayName})');
   } else {
     stderr.writeln('❌ Nested relationship mismatch!');
     exit(1);
@@ -145,17 +120,11 @@ Future<void> main() async {
 }
 
 Future<void> _signUpUser(HttpClient client, TestUser user) async {
-  final url = Uri.parse(
-    'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$_apiKey',
-  );
+  final url = Uri.parse('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$_apiKey');
   final request = await client.postUrl(url);
   request.headers.contentType = ContentType.json;
   request.write(
-    jsonEncode({
-      'email': user.email,
-      'password': user.password,
-      'returnSecureToken': true,
-    }),
+    jsonEncode({'email': user.email, 'password': user.password, 'returnSecureToken': true}),
   );
   final response = await request.close();
   final body = await response.transform(utf8.decoder).join();

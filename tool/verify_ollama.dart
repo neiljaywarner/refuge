@@ -34,9 +34,7 @@ Future<void> main(List<String> args) async {
       final memResult = await Process.run('sysctl', ['-n', 'hw.memsize']);
       final ramBytes = int.tryParse(memResult.stdout.toString().trim()) ?? 0;
       final ramGb = (ramBytes / (1024 * 1024 * 1024)).round();
-      stdout.writeln(
-        '   • Apple Silicon Unified RAM: \x1B[32m${ramGb} GB\x1B[0m',
-      );
+      stdout.writeln('   • Apple Silicon Unified RAM: \x1B[32m${ramGb} GB\x1B[0m');
 
       if (ramGb >= 48) {
         stdout.writeln(
@@ -68,13 +66,9 @@ Future<void> main(List<String> args) async {
     if (response.statusCode == 200) {
       final body = await response.transform(utf8.decoder).join();
       tagsData = jsonDecode(body) as Map<String, dynamic>;
-      stdout.writeln(
-        '   • Status: \x1B[32mActive & Responding (HTTP 200)\x1B[0m at $baseUrl',
-      );
+      stdout.writeln('   • Status: \x1B[32mActive & Responding (HTTP 200)\x1B[0m at $baseUrl');
     } else {
-      stdout.writeln(
-        '   • Status: \x1B[31mHTTP Error ${response.statusCode}\x1B[0m',
-      );
+      stdout.writeln('   • Status: \x1B[31mHTTP Error ${response.statusCode}\x1B[0m');
     }
   } catch (e) {
     stdout.writeln('   • Status: \x1B[31mNot Reachable\x1B[0m ($e)');
@@ -83,9 +77,7 @@ Future<void> main(List<String> args) async {
   }
 
   if (tagsData == null) {
-    stdout.writeln(
-      '\n\x1B[33m⚠️ Ollama daemon is currently not running or not installed.\x1B[0m',
-    );
+    stdout.writeln('\n\x1B[33m⚠️ Ollama daemon is currently not running or not installed.\x1B[0m');
     stdout.writeln('   \x1B[1mRecommended Next Steps to Start Ollama:\x1B[0m');
     stdout.writeln('   1. Install Ollama:');
     stdout.writeln(
@@ -111,9 +103,7 @@ Future<void> main(List<String> args) async {
   stdout.writeln('\n\x1B[1m3. Inspecting Downloaded Models:\x1B[0m');
   final models = (tagsData['models'] as List<dynamic>?) ?? [];
   if (models.isEmpty) {
-    stdout.writeln(
-      '   \x1B[33mNo models currently installed in local Ollama storage.\x1B[0m',
-    );
+    stdout.writeln('   \x1B[33mNo models currently installed in local Ollama storage.\x1B[0m');
     stdout.writeln('   Run: \x1B[36mollama pull qwen2.5-coder:14b\x1B[0m');
   } else {
     stdout.writeln('   Found \x1B[32m${models.length}\x1B[0m local model(s):');
@@ -140,21 +130,14 @@ Future<void> main(List<String> args) async {
 
     // 4. Sample Inference Benchmark
     if (!skipInfer && selectedTestModel != null) {
-      stdout.writeln(
-        '\n\x1B[1m4. Testing Inference on $selectedTestModel:\x1B[0m',
-      );
-      stdout.writeln(
-        '   Prompt: "Write a 1-line Dart function that reverses a string."',
-      );
+      stdout.writeln('\n\x1B[1m4. Testing Inference on $selectedTestModel:\x1B[0m');
+      stdout.writeln('   Prompt: "Write a 1-line Dart function that reverses a string."');
       stdout.write('   Waiting for Metal GPU response... ');
 
-      final inferClient = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 30);
+      final inferClient = HttpClient()..connectionTimeout = const Duration(seconds: 30);
       try {
         final stopwatch = Stopwatch()..start();
-        final req = await inferClient.postUrl(
-          Uri.parse('$baseUrl/api/generate'),
-        );
+        final req = await inferClient.postUrl(Uri.parse('$baseUrl/api/generate'));
         req.headers.contentType = ContentType.json;
         req.write(
           jsonEncode({
@@ -170,11 +153,9 @@ Future<void> main(List<String> args) async {
           final resBody = await res.transform(utf8.decoder).join();
           final genData = jsonDecode(resBody) as Map<String, dynamic>;
           final responseText = (genData['response'] as String?)?.trim() ?? '';
-          final totalDurationNs =
-              (genData['total_duration'] as num?)?.toDouble() ?? 0.0;
+          final totalDurationNs = (genData['total_duration'] as num?)?.toDouble() ?? 0.0;
           final evalCount = (genData['eval_count'] as num?)?.toInt() ?? 0;
-          final evalDurationNs =
-              (genData['eval_duration'] as num?)?.toDouble() ?? 0.0;
+          final evalDurationNs = (genData['eval_duration'] as num?)?.toDouble() ?? 0.0;
 
           final tokensPerSec = evalDurationNs > 0
               ? (evalCount / (evalDurationNs / 1e9)).toStringAsFixed(1)
@@ -200,9 +181,7 @@ Future<void> main(List<String> args) async {
   stdout.writeln(
     '\n\x1B[1m\x1B[32m=================================================================\x1B[0m',
   );
-  stdout.writeln(
-    '\x1B[1m\x1B[32m✓ Local LLM Health Check Completed Successfully!\x1B[0m',
-  );
+  stdout.writeln('\x1B[1m\x1B[32m✓ Local LLM Health Check Completed Successfully!\x1B[0m');
   stdout.writeln(
     '\x1B[1m\x1B[32m=================================================================\x1B[0m\n',
   );

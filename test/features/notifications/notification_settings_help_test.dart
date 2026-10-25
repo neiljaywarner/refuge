@@ -8,10 +8,7 @@ void main() {
       notificationSettingsHelp(TargetPlatform.android),
       contains('Apps, then Belong, then Notifications'),
     );
-    expect(
-      notificationSettingsHelp(TargetPlatform.android),
-      contains('Direct messages'),
-    );
+    expect(notificationSettingsHelp(TargetPlatform.android), contains('Direct messages'));
     expect(
       notificationSettingsHelp(TargetPlatform.iOS),
       contains('Settings, then Notifications, then Belong'),
@@ -20,9 +17,6 @@ void main() {
       notificationSettingsHelp(TargetPlatform.macOS),
       contains('System Settings, then Notifications, then Belong'),
     );
-    expect(
-      notificationSettingsHelp(TargetPlatform.linux),
-      contains('address bar'),
-    );
+    expect(notificationSettingsHelp(TargetPlatform.linux), contains('address bar'));
   });
 }

@@ -16,8 +16,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    builder: (context) =>
-        const SystemBottomInset(child: CalmNotificationPreferencesSheet()),
+    builder: (context) => const SystemBottomInset(child: CalmNotificationPreferencesSheet()),
   );
 
   @override
@@ -60,9 +59,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       'Calm Notification Ethics',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -71,9 +68,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               Text(
                 'Belong respects your attention and sensory peace. We never send loud chimes, urgency countdowns, or anxiety-inducing red dots.',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodySmall?.color?.withValues(
-                    alpha: 0.8,
-                  ),
+                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
                   height: 1.45,
                 ),
               ),
@@ -98,10 +93,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               ),
               Text(
                 'Sign in on this phone so the notification can find you. A sample member never gets one. Immediate Gentle Cards stays quiet.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  height: 1.4,
-                ),
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12, height: 1.4),
               ),
               const SizedBox(height: 8),
               Text(
@@ -114,11 +106,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Android blocked alerts. Allow notifications for Belong in system settings, then turn Message alerts on again.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.4,
-                    color: theme.colorScheme.error,
-                  ),
+                  style: TextStyle(fontSize: 12, height: 1.4, color: theme.colorScheme.error),
                 ),
               ],
 
@@ -129,9 +117,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Colors.amber.withValues(alpha: 0.4),
-                    ),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,11 +127,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           'Apple iOS Requirement: Mobile Safari requires adding Belong to your Home Screen (Share ⬆️ -> "Add to Home Screen") before web push notifications can be enabled.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            height: 1.4,
-                            color: Colors.amber.shade900,
-                          ),
+                          style: TextStyle(fontSize: 11, height: 1.4, color: Colors.amber.shade900),
                         ),
                       ),
                     ],
@@ -156,9 +138,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
               const Divider(height: 28),
               Text(
                 'Delivery Schedule',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
@@ -169,15 +149,9 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                   dense: true,
                   title: Text(
                     '${schedule.emoji} ${schedule.title}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
-                  subtitle: Text(
-                    schedule.description,
-                    style: const TextStyle(fontSize: 11),
-                  ),
+                  subtitle: Text(schedule.description, style: const TextStyle(fontSize: 11)),
                   value: schedule,
                   groupValue: prefs.schedule,
                   onChanged: (selected) {
@@ -196,9 +170,7 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                     identifier: 'preview-calm-shade-notification-button',
                     label: 'Preview shade notification debug',
                     child: OutlinedButton(
-                      key: const ValueKey(
-                        'preview-calm-shade-notification-button',
-                      ),
+                      key: const ValueKey('preview-calm-shade-notification-button'),
                       onPressed: () async {
                         await showCalmPreviewDirectMessage(
                           ref.read(calmLocalNotificationServiceProvider),

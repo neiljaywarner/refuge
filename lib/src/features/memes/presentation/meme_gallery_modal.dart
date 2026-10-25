@@ -13,10 +13,7 @@ import '../domain/calm_meme.dart';
 
 /// Opens the modal bottom sheet allowing members to select an unhurried, calm-tech meme,
 /// attach a custom GIF or image URL, or upload/capture a photo via camera or device gallery.
-void showMemeGalleryModal(
-  BuildContext context, {
-  required ValueChanged<CalmMeme> onSelectedMeme,
-}) {
+void showMemeGalleryModal(BuildContext context, {required ValueChanged<CalmMeme> onSelectedMeme}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -24,9 +21,8 @@ void showMemeGalleryModal(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
     ),
-    builder: (ctx) => SystemBottomInset(
-      child: _MemeGalleryModalContent(onSelectedMeme: onSelectedMeme),
-    ),
+    builder: (ctx) =>
+        SystemBottomInset(child: _MemeGalleryModalContent(onSelectedMeme: onSelectedMeme)),
   );
 }
 
@@ -36,17 +32,14 @@ class _MemeGalleryModalContent extends ConsumerStatefulWidget {
   const _MemeGalleryModalContent({required this.onSelectedMeme});
 
   @override
-  ConsumerState<_MemeGalleryModalContent> createState() =>
-      _MemeGalleryModalContentState();
+  ConsumerState<_MemeGalleryModalContent> createState() => _MemeGalleryModalContentState();
 }
 
-class _MemeGalleryModalContentState
-    extends ConsumerState<_MemeGalleryModalContent> {
+class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalContent> {
   int _activeTabIndex = 0;
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _captionController = TextEditingController();
-  final TextEditingController _uploadCaptionController =
-      TextEditingController();
+  final TextEditingController _uploadCaptionController = TextEditingController();
 
   Uint8List? _uploadedBytes;
   String? _uploadedDataUri;
@@ -150,11 +143,7 @@ class _MemeGalleryModalContentState
       }
 
       if (!mounted) return;
-      final framed = await BelongImageCropPage.show(
-        context,
-        bytes: bytes,
-        circular: false,
-      );
+      final framed = await BelongImageCropPage.show(context, bytes: bytes, circular: false);
       if (framed == null) {
         if (!mounted) return;
         setState(() => _isUploading = false);
@@ -232,10 +221,7 @@ class _MemeGalleryModalContentState
         ),
         Text(
           'Wholesome, unhurried, relatable neurodivergent Christian humor (Belong on the Spectrum).',
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).textTheme.bodySmall?.color,
-          ),
+          style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
         ),
         const SizedBox(height: 12),
         // Tab Switcher (Curated, Custom URL, Upload / Camera)
@@ -245,10 +231,7 @@ class _MemeGalleryModalContentState
           children: [
             ChoiceChip(
               key: const Key('tab_curated_memes'),
-              label: const Text(
-                'Curated Calm Memes',
-                style: TextStyle(fontSize: 12),
-              ),
+              label: const Text('Curated Calm Memes', style: TextStyle(fontSize: 12)),
               selected: _activeTabIndex == 0,
               onSelected: (selected) {
                 if (selected) setState(() => _activeTabIndex = 0);
@@ -256,10 +239,7 @@ class _MemeGalleryModalContentState
             ),
             ChoiceChip(
               key: const Key('tab_custom_meme'),
-              label: const Text(
-                'Attach Custom GIF / URL',
-                style: TextStyle(fontSize: 12),
-              ),
+              label: const Text('Attach Custom GIF / URL', style: TextStyle(fontSize: 12)),
               selected: _activeTabIndex == 1,
               onSelected: (selected) {
                 if (selected) setState(() => _activeTabIndex = 1);
@@ -267,10 +247,7 @@ class _MemeGalleryModalContentState
             ),
             ChoiceChip(
               key: const Key('tab_upload_photo'),
-              label: const Text(
-                'Upload Photo / Camera',
-                style: TextStyle(fontSize: 12),
-              ),
+              label: const Text('Upload Photo / Camera', style: TextStyle(fontSize: 12)),
               selected: _activeTabIndex == 2,
               onSelected: (selected) {
                 if (selected) setState(() => _activeTabIndex = 2);
@@ -305,9 +282,7 @@ class _MemeGalleryModalContentState
         child: Container(
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.amber.shade700.withValues(alpha: 0.4),
-            ),
+            border: Border.all(color: Colors.amber.shade700.withValues(alpha: 0.4)),
             borderRadius: BorderRadius.circular(12.0),
             color: Colors.amber.withValues(alpha: 0.08),
           ),
@@ -324,10 +299,7 @@ class _MemeGalleryModalContentState
                       imageUrl: m.imageUrl!,
                       fit: BoxFit.cover,
                       fallbackWidget: Center(
-                        child: Text(
-                          m.icon,
-                          style: const TextStyle(fontSize: 20),
-                        ),
+                        child: Text(m.icon, style: const TextStyle(fontSize: 20)),
                       ),
                     ),
                   ),
@@ -341,10 +313,7 @@ class _MemeGalleryModalContentState
                   children: [
                     Text(
                       m.title,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       m.subtitle,
@@ -355,10 +324,7 @@ class _MemeGalleryModalContentState
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      m.body,
-                      style: const TextStyle(fontSize: 11, height: 1.3),
-                    ),
+                    Text(m.body, style: const TextStyle(fontSize: 11, height: 1.3)),
                   ],
                 ),
               ),
@@ -387,19 +353,12 @@ class _MemeGalleryModalContentState
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.shield_outlined,
-                      size: 16,
-                      color: Colors.teal,
-                    ),
+                    const Icon(Icons.shield_outlined, size: 16, color: Colors.teal),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Belong Calm Policy: Wholesome, sensory-safe memes & GIFs. Avoid flashing strobe animations out of love for sensitive members.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.teal.shade900,
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.teal.shade900),
                       ),
                     ),
                   ],
@@ -416,9 +375,7 @@ class _MemeGalleryModalContentState
                   hintStyle: const TextStyle(fontSize: 11),
                   isDense: true,
                   prefixIcon: const Icon(Icons.link, size: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -433,9 +390,7 @@ class _MemeGalleryModalContentState
                   hintStyle: const TextStyle(fontSize: 11),
                   isDense: true,
                   prefixIcon: const Icon(Icons.title, size: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
               ),
               const SizedBox(height: 10),
@@ -451,10 +406,7 @@ class _MemeGalleryModalContentState
                 children: [
                   ActionChip(
                     key: const Key('preset_elijah'),
-                    label: const Text(
-                      '🍞 Elijah Rest & Nap',
-                      style: TextStyle(fontSize: 11),
-                    ),
+                    label: const Text('🍞 Elijah Rest & Nap', style: TextStyle(fontSize: 11)),
                     onPressed: () => _applyPreset(
                       title: 'Elijah Under the Broom Tree (Snack & Nap)',
                       subtitle: '1 Kings 19:5 — Divine Sensory Prescription',
@@ -505,10 +457,7 @@ class _MemeGalleryModalContentState
                     children: [
                       const Text(
                         'Preview Attached Meme / GIF:',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 6),
                       ClipRRect(
@@ -554,9 +503,7 @@ class _MemeGalleryModalContentState
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
           ),
           onPressed: _submitCustomMeme,
           icon: const Icon(Icons.check_circle_outline, size: 16),
@@ -587,19 +534,12 @@ class _MemeGalleryModalContentState
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.photo_camera_outlined,
-                      size: 16,
-                      color: Colors.blue,
-                    ),
+                    const Icon(Icons.photo_camera_outlined, size: 16, color: Colors.blue),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Select or take a peaceful photo to share with the Belong fellowship. Zero external storage permissions required.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.blue.shade900,
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.blue.shade900),
                       ),
                     ),
                   ],
@@ -622,11 +562,7 @@ class _MemeGalleryModalContentState
                     children: [
                       Row(
                         children: [
-                          const Icon(
-                            Icons.warning_amber_rounded,
-                            size: 16,
-                            color: Colors.orange,
-                          ),
+                          const Icon(Icons.warning_amber_rounded, size: 16, color: Colors.orange),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -647,15 +583,10 @@ class _MemeGalleryModalContentState
                           child: TextButton.icon(
                             key: const Key('meme_open_settings_button'),
                             onPressed: () {
-                              ref
-                                  .read(avatarUploadServiceProvider)
-                                  .openAppSettings();
+                              ref.read(avatarUploadServiceProvider).openAppSettings();
                             },
                             icon: const Icon(Icons.settings, size: 14),
-                            label: const Text(
-                              'Open Settings',
-                              style: TextStyle(fontSize: 11),
-                            ),
+                            label: const Text('Open Settings', style: TextStyle(fontSize: 11)),
                           ),
                         ),
                       ],
@@ -673,20 +604,13 @@ class _MemeGalleryModalContentState
                       key: const Key('meme_upload_camera_button'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                       ),
-                      onPressed: _isUploading
-                          ? null
-                          : () => _pickImage(AvatarImageSource.camera),
+                      onPressed: _isUploading ? null : () => _pickImage(AvatarImageSource.camera),
                       icon: const Icon(Icons.camera_alt_outlined, size: 18),
                       label: const Text(
                         'Use Camera',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -696,20 +620,13 @@ class _MemeGalleryModalContentState
                       key: const Key('meme_upload_gallery_button'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                       ),
-                      onPressed: _isUploading
-                          ? null
-                          : () => _pickImage(AvatarImageSource.gallery),
+                      onPressed: _isUploading ? null : () => _pickImage(AvatarImageSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined, size: 18),
                       label: const Text(
                         'Choose Photo',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -746,10 +663,7 @@ class _MemeGalleryModalContentState
                         children: [
                           const Text(
                             'Selected Photo Preview:',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                           InkWell(
                             key: const Key('remove_uploaded_photo_button'),
@@ -761,19 +675,9 @@ class _MemeGalleryModalContentState
                             },
                             child: const Row(
                               children: [
-                                Icon(
-                                  Icons.delete_outline,
-                                  size: 14,
-                                  color: Colors.red,
-                                ),
+                                Icon(Icons.delete_outline, size: 14, color: Colors.red),
                                 SizedBox(width: 4),
-                                Text(
-                                  'Remove',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.red,
-                                  ),
-                                ),
+                                Text('Remove', style: TextStyle(fontSize: 11, color: Colors.red)),
                               ],
                             ),
                           ),
@@ -785,10 +689,7 @@ class _MemeGalleryModalContentState
                         child: SizedBox(
                           height: 140,
                           width: double.infinity,
-                          child: CalmMediaImage(
-                            imageUrl: _uploadedDataUri!,
-                            fit: BoxFit.cover,
-                          ),
+                          child: CalmMediaImage(imageUrl: _uploadedDataUri!, fit: BoxFit.cover),
                         ),
                       ),
                     ],
@@ -805,9 +706,7 @@ class _MemeGalleryModalContentState
                     hintStyle: const TextStyle(fontSize: 11),
                     isDense: true,
                     prefixIcon: const Icon(Icons.title, size: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
                   ),
                 ),
               ],
@@ -823,9 +722,7 @@ class _MemeGalleryModalContentState
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
           ),
           onPressed: _uploadedDataUri != null ? _submitUploadedPhoto : null,
           icon: const Icon(Icons.check_circle_outline, size: 16),

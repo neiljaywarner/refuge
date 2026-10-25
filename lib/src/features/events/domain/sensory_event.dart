@@ -29,8 +29,7 @@ class SensoryEvent {
   final String lightingLevel; // e.g., "Soft / Dimmable", "Natural"
   final String soundLevel; // e.g., "Quiet / Ambient", "Low Volume"
   final bool quietRoomAvailable;
-  final String
-  maskingPolicy; // e.g., "Masking-free zone / Zero social pressure"
+  final String maskingPolicy; // e.g., "Masking-free zone / Zero social pressure"
 
   final int rsvpCount;
   final bool userRsvpd;

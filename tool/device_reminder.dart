@@ -29,8 +29,7 @@ class AndroidDevice {
   });
 
   @override
-  String toString() =>
-      '$model ($id) [${isPhysical ? "Physical Glass" : "Emulator"}]';
+  String toString() => '$model ($id) [${isPhysical ? "Physical Glass" : "Emulator"}]';
 }
 
 Future<List<AndroidDevice>> detectDevices() async {
@@ -59,14 +58,7 @@ Future<List<AndroidDevice>> detectDevices() async {
           }
         }
 
-        devices.add(
-          AndroidDevice(
-            id: id,
-            status: parts[1],
-            model: model,
-            isPhysical: !isEmulator,
-          ),
-        );
+        devices.add(AndroidDevice(id: id, status: parts[1], model: model, isPhysical: !isEmulator));
       }
     }
 
@@ -76,10 +68,7 @@ Future<List<AndroidDevice>> detectDevices() async {
   }
 }
 
-String formatReminderEmail({
-  required AndroidDevice device,
-  required String recipient,
-}) {
+String formatReminderEmail({required AndroidDevice device, required String recipient}) {
   final buffer = StringBuffer();
   buffer.writeln('To: $recipient');
   buffer.writeln(
@@ -89,12 +78,8 @@ String formatReminderEmail({
   buffer.writeln('Your physical test hardware has been detected over USB:');
   buffer.writeln('  • Device: ${device.model}');
   buffer.writeln('  • Hardware ID: ${device.id}');
-  buffer.writeln(
-    '  • Platform: Android (${device.isPhysical ? "Physical Glass" : "Emulator"})\n',
-  );
-  buffer.writeln(
-    'Whenever you are ready, run the single-command regression suite:',
-  );
+  buffer.writeln('  • Platform: Android (${device.isPhysical ? "Physical Glass" : "Emulator"})\n');
+  buffer.writeln('Whenever you are ready, run the single-command regression suite:');
   buffer.writeln(
     '  cd /Users/neil/belongonthespectrum/refuge && ./tool/run_physical_glass_regression.sh\n',
   );
@@ -104,9 +89,7 @@ String formatReminderEmail({
   buffer.writeln(
     '  3. Run the interactive Maestro user journey (.maestro/belong_full_journey.yaml)',
   );
-  buffer.writeln(
-    '  4. Auto-capture clean-frame 1080x2160 screenshots with zero status-bar PII',
-  );
+  buffer.writeln('  4. Auto-capture clean-frame 1080x2160 screenshots with zero status-bar PII');
   buffer.writeln(
     '  5. Generate a verified markdown report at docs/benchmarks/physical_glass_regression_report.md\n',
   );
@@ -126,33 +109,21 @@ void printBanner(List<AndroidDevice> devices) {
   );
 
   if (devices.isEmpty) {
-    stdout.writeln(
-      '\x1B[33m⚠️ No connected Android devices detected via ADB.\x1B[0m',
-    );
-    stdout.writeln(
-      '👉 Plug in your Google Pixel 9a / Pixel 8 via USB, or launch emulator-5554.',
-    );
+    stdout.writeln('\x1B[33m⚠️ No connected Android devices detected via ADB.\x1B[0m');
+    stdout.writeln('👉 Plug in your Google Pixel 9a / Pixel 8 via USB, or launch emulator-5554.');
     stdout.writeln('👉 Ensure Developer Options → USB Debugging is ON.');
     return;
   }
 
-  stdout.writeln(
-    '\x1B[1mConnected Devices Detected (${devices.length}):\x1B[0m',
-  );
+  stdout.writeln('\x1B[1mConnected Devices Detected (${devices.length}):\x1B[0m');
   for (final dev in devices) {
-    final badge = dev.isPhysical
-        ? '\x1B[32m[PHYSICAL GLASS]\x1B[0m'
-        : '\x1B[36m[EMULATOR]\x1B[0m';
-    stdout.writeln(
-      '   • \x1B[1m${dev.model}\x1B[0m (\x1B[33m${dev.id}\x1B[0m) $badge',
-    );
+    final badge = dev.isPhysical ? '\x1B[32m[PHYSICAL GLASS]\x1B[0m' : '\x1B[36m[EMULATOR]\x1B[0m';
+    stdout.writeln('   • \x1B[1m${dev.model}\x1B[0m (\x1B[33m${dev.id}\x1B[0m) $badge');
   }
 }
 
 Future<void> runRegressionSuite(String? deviceId) async {
-  stdout.writeln(
-    '\n\x1B[1m\x1B[32m🚀 Launching Physical Glass Regression Suite...\x1B[0m',
-  );
+  stdout.writeln('\n\x1B[1m\x1B[32m🚀 Launching Physical Glass Regression Suite...\x1B[0m');
   final args = <String>[];
   if (deviceId != null && deviceId.isNotEmpty) {
     args.addAll(['--device', deviceId]);
@@ -166,13 +137,9 @@ Future<void> runRegressionSuite(String? deviceId) async {
 
   final exitCode = await process.exitCode;
   if (exitCode == 0) {
-    stdout.writeln(
-      '\n\x1B[32m✅ Regression run finished successfully with exit code 0.\x1B[0m',
-    );
+    stdout.writeln('\n\x1B[32m✅ Regression run finished successfully with exit code 0.\x1B[0m');
   } else {
-    stdout.writeln(
-      '\n\x1B[31m❌ Regression run exited with code $exitCode.\x1B[0m',
-    );
+    stdout.writeln('\n\x1B[31m❌ Regression run exited with code $exitCode.\x1B[0m');
   }
 }
 
@@ -193,17 +160,12 @@ Future<void> main(List<String> args) async {
 
   if (primaryDevice != null && shouldPreviewEmail) {
     stdout.writeln('\n\x1B[1m📧 Formatted Reminder Email Body:\x1B[0m\n');
-    stdout.writeln(
-      formatReminderEmail(device: primaryDevice, recipient: recipient),
-    );
+    stdout.writeln(formatReminderEmail(device: primaryDevice, recipient: recipient));
     return;
   }
 
   if (primaryDevice != null && shouldMailto) {
-    final emailText = formatReminderEmail(
-      device: primaryDevice,
-      recipient: recipient,
-    );
+    final emailText = formatReminderEmail(device: primaryDevice, recipient: recipient);
     final subject = Uri.encodeComponent(
       '📱 ${primaryDevice.model} Plugged In — Run Glass Regression',
     );
@@ -229,16 +191,10 @@ Future<void> main(List<String> args) async {
       final currentDevices = await detectDevices();
       final currentIds = currentDevices.map((d) => d.id).toSet();
 
-      final newlyAdded = currentDevices
-          .where((d) => !lastDeviceIds.contains(d.id))
-          .toList();
+      final newlyAdded = currentDevices.where((d) => !lastDeviceIds.contains(d.id)).toList();
       for (final dev in newlyAdded) {
-        stdout.writeln(
-          '\n\x1B[1m\x1B[32m🔔 NEW DEVICE CONNECTED: ${dev.model} (${dev.id})\x1B[0m',
-        );
-        stdout.writeln(
-          '👉 Run: ./tool/run_physical_glass_regression.sh --device ${dev.id}',
-        );
+        stdout.writeln('\n\x1B[1m\x1B[32m🔔 NEW DEVICE CONNECTED: ${dev.model} (${dev.id})\x1B[0m');
+        stdout.writeln('👉 Run: ./tool/run_physical_glass_regression.sh --device ${dev.id}');
       }
 
       final removed = lastDeviceIds.difference(currentIds);

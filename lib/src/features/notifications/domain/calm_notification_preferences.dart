@@ -19,8 +19,7 @@ enum CalmDigestSchedule {
   /// Delivered as calm cards without loud chimes or urgent badges.
   immediateGentle(
     title: 'Immediate Gentle Cards',
-    description:
-        'Silent cards appear as reflections happen. Zero auditory startles.',
+    description: 'Silent cards appear as reflections happen. Zero auditory startles.',
     emoji: '🌱',
   ),
 
@@ -31,11 +30,7 @@ enum CalmDigestSchedule {
     emoji: '🔕',
   );
 
-  const CalmDigestSchedule({
-    required this.title,
-    required this.description,
-    required this.emoji,
-  });
+  const CalmDigestSchedule({required this.title, required this.description, required this.emoji});
 
   final String title;
   final String description;
@@ -86,8 +81,7 @@ class CalmNotificationPreferences extends Equatable {
     fcmToken: fcmToken ?? this.fcmToken,
     isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
     isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
-    isSystemPermissionDenied:
-        isSystemPermissionDenied ?? this.isSystemPermissionDenied,
+    isSystemPermissionDenied: isSystemPermissionDenied ?? this.isSystemPermissionDenied,
   );
 
   @override

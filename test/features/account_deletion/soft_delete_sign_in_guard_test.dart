@@ -3,16 +3,13 @@ import 'package:refuge4serverpod/src/features/account_deletion/domain/account_de
 import 'package:refuge4serverpod/src/features/account_deletion/domain/soft_delete_sign_in_guard.dart';
 
 void main() {
-  test(
-    'blocks sign-in when the tombstone says the account is deleted',
-    () async {
-      final message = await softDeleteSignInBlockMessage(
-        userId: 'member-1',
-        isBlocked: (_) async => true,
-      );
-      expect(message, AccountDeletionMessages.signInBlocked);
-    },
-  );
+  test('blocks sign-in when the tombstone says the account is deleted', () async {
+    final message = await softDeleteSignInBlockMessage(
+      userId: 'member-1',
+      isBlocked: (_) async => true,
+    );
+    expect(message, AccountDeletionMessages.signInBlocked);
+  });
 
   test('allows sign-in when the account is still active', () async {
     final message = await softDeleteSignInBlockMessage(

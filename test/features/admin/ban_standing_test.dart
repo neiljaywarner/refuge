@@ -127,9 +127,7 @@ void main() {
         '',
       );
       expect(AppFlavor.prod.isProduction, isTrue);
-      final config = OrganizerRemoteConfig.defaults(
-        const CommunityBrandConfig.belong(),
-      );
+      final config = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong());
       expect(config.isAdminEmail('organizer@belongonthespectrum.com'), isFalse);
     });
 
@@ -150,9 +148,8 @@ void main() {
         devEmails: 'organizer@belongonthespectrum.com',
         isProduction: false,
       );
-      final config = OrganizerRemoteConfig.defaults(
-        const CommunityBrandConfig.belong(),
-      ).copyWith(adminEmailsCsv: merged);
+      final config = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+          .copyWith(adminEmailsCsv: merged);
       expect(config.isAdminEmail('organizer@belongonthespectrum.com'), isTrue);
       expect(config.isAdminEmail('lead@belongonthespectrum.com'), isTrue);
       expect(AppFlavor.dev.isProduction, isFalse);

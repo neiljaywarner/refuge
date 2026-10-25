@@ -52,11 +52,7 @@ String formatUtcEpochMillis(int epochMs) {
 
 /// Values baked in with `--dart-define` at compile time.
 class BuildIdentity {
-  const BuildIdentity({
-    this.gitCommitSha = '',
-    this.buildTimeMs = '',
-    this.releaseTag = '',
-  });
+  const BuildIdentity({this.gitCommitSha = '', this.buildTimeMs = '', this.releaseTag = ''});
 
   /// Identity of this binary. Empty when the defines were not passed.
   static const fromEnvironment = BuildIdentity(
@@ -105,9 +101,7 @@ class BuildIdentity {
 
   /// True for a normal local `flutter run` that passed none of the defines.
   bool get isLocalDevBuild =>
-      gitCommitSha.trim().isEmpty &&
-      buildTimeMs.trim().isEmpty &&
-      releaseTag.trim().isEmpty;
+      gitCommitSha.trim().isEmpty && buildTimeMs.trim().isEmpty && releaseTag.trim().isEmpty;
 
   /// `dev` for an unstamped local binary. Null when any define was supplied.
   String? get sourceLabel => isLocalDevBuild ? 'dev' : null;

@@ -29,44 +29,41 @@ void main() {
       expect(p2.isIcocMember, isTrue);
     });
 
-    test(
-      'isIcocMember returns false for non-members, empty, or null affiliation',
-      () {
-        const nonMember = MemberProfile(
-          displayName: 'Jordan',
-          email: 'jordan@belong.org',
-          bio: 'Ally',
-          comfortBadges: ['Ally'],
-          isSignedIn: true,
-          icocChurchAffiliation: 'I am not a member of an ICOC church',
-        );
-        expect(nonMember.isIcocMember, isFalse);
+    test('isIcocMember returns false for non-members, empty, or null affiliation', () {
+      const nonMember = MemberProfile(
+        displayName: 'Jordan',
+        email: 'jordan@belong.org',
+        bio: 'Ally',
+        comfortBadges: ['Ally'],
+        isSignedIn: true,
+        icocChurchAffiliation: 'I am not a member of an ICOC church',
+      );
+      expect(nonMember.isIcocMember, isFalse);
 
-        const nonFellowship = MemberProfile(
-          displayName: 'Guest',
-          email: 'guest@belong.org',
-          bio: 'Visitor',
-          comfortBadges: [],
-          isSignedIn: true,
-          icocChurchAffiliation: 'I am not a member of this fellowship',
-        );
-        expect(nonFellowship.isIcocMember, isFalse);
+      const nonFellowship = MemberProfile(
+        displayName: 'Guest',
+        email: 'guest@belong.org',
+        bio: 'Visitor',
+        comfortBadges: [],
+        isSignedIn: true,
+        icocChurchAffiliation: 'I am not a member of this fellowship',
+      );
+      expect(nonFellowship.isIcocMember, isFalse);
 
-        const empty = MemberProfile(
-          displayName: 'Anonymous',
-          email: '',
-          bio: '',
-          comfortBadges: [],
-          isSignedIn: false,
-          icocChurchAffiliation: '   ',
-        );
-        expect(empty.isIcocMember, isFalse);
+      const empty = MemberProfile(
+        displayName: 'Anonymous',
+        email: '',
+        bio: '',
+        comfortBadges: [],
+        isSignedIn: false,
+        icocChurchAffiliation: '   ',
+      );
+      expect(empty.isIcocMember, isFalse);
 
-        const guest = MemberProfile.guest();
-        expect(guest.isIcocMember, isFalse);
-        expect(guest.icocChurchAffiliation, isNull);
-      },
-    );
+      const guest = MemberProfile.guest();
+      expect(guest.isIcocMember, isFalse);
+      expect(guest.icocChurchAffiliation, isNull);
+    });
 
     test('copyWith updates and preserves icocChurchAffiliation', () {
       const original = MemberProfile(
@@ -91,17 +88,12 @@ void main() {
 
     test('MemberProfileNotifier records affiliation during signIn', () {
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 
       expect(container.read(memberProfileProvider).isSignedIn, isFalse);
-      expect(
-        container.read(memberProfileProvider).icocChurchAffiliation,
-        isNull,
-      );
+      expect(container.read(memberProfileProvider).icocChurchAffiliation, isNull);
 
       container
           .read(memberProfileProvider.notifier)
@@ -122,22 +114,10 @@ void main() {
     test('CommunityBrandConfig default belong configuration has required ICOC options', () {
       const brand = CommunityBrandConfig.belong();
       expect(brand.enableFellowshipAffiliationField, isTrue);
-      expect(
-        brand.fellowshipAffiliationPrompt,
-        'Which ICOC church do you attend?',
-      );
-      expect(
-        brand.fellowshipAffiliationOptions,
-        contains('DFW Church (Partner)'),
-      );
-      expect(
-        brand.fellowshipAffiliationOptions,
-        contains('Austin Christian Church'),
-      );
-      expect(
-        brand.fellowshipNonMemberOption,
-        'I am not a member of an ICOC church',
-      );
+      expect(brand.fellowshipAffiliationPrompt, 'Which ICOC church do you attend?');
+      expect(brand.fellowshipAffiliationOptions, contains('DFW Church (Partner)'));
+      expect(brand.fellowshipAffiliationOptions, contains('Austin Christian Church'));
+      expect(brand.fellowshipNonMemberOption, 'I am not a member of an ICOC church');
     });
   });
 }

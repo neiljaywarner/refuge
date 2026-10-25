@@ -93,38 +93,36 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Entering text into compact input expands the composer automatically',
-      ($) async {
-        await $.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ReflectionComposer(
-                selectedSpace: 'general_chat',
-                primaryColor: Colors.teal,
-                isContrast: false,
-                isModal: false,
-                onSubmit: ({
-                  required String content,
-                  required String toneTag,
-                  String? specialInterestTag,
-                  String? imageUrl,
-                }) async {},
-              ),
+    patrolWidgetTest('Entering text into compact input expands the composer automatically', (
+      $,
+    ) async {
+      await $.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReflectionComposer(
+              selectedSpace: 'general_chat',
+              primaryColor: Colors.teal,
+              isContrast: false,
+              isModal: false,
+              onSubmit: ({
+                required String content,
+                required String toneTag,
+                String? specialInterestTag,
+                String? imageUrl,
+              }) async {},
             ),
           ),
-        );
-        await $.pumpAndSettle();
+        ),
+      );
+      await $.pumpAndSettle();
 
-        await $(Key('reflection_composer_input'))
-            .enterText('A quiet rest in God.');
-        await $.pumpAndSettle();
+      await $(Key('reflection_composer_input')).enterText('A quiet rest in God.');
+      await $.pumpAndSettle();
 
-        // Auto-expanded
-        expect($(Key('publish_reflection_button')), findsOneWidget);
-        expect($('Intent Tag: '), findsOneWidget);
-      },
-    );
+      // Auto-expanded
+      expect($(Key('publish_reflection_button')), findsOneWidget);
+      expect($('Intent Tag: '), findsOneWidget);
+    });
 
     patrolWidgetTest(
       'Publishing a reflection submits content and collapses composer back to compact state',
@@ -160,8 +158,7 @@ void main() {
         await $(Key('composer_expand_button')).tap();
         await $.pumpAndSettle();
 
-        await $(Key('reflection_composer_input'))
-            .enterText('Walking in gentle grace today.');
+        await $(Key('reflection_composer_input')).enterText('Walking in gentle grace today.');
         await $.pumpAndSettle();
 
         // Publish
@@ -175,52 +172,47 @@ void main() {
         expect($(Key('publish_reflection_button')), findsNothing);
         expect($(Key('composer_expand_button')), findsOneWidget);
         expect(
-          $(
-            find.textContaining(
-              'Share an unhurried thought in #Prayer Sanctuary',
-            ),
-          ),
+          $(find.textContaining('Share an unhurried thought in #Prayer Sanctuary')),
           findsOneWidget,
         );
       },
     );
 
-    patrolWidgetTest(
-      'expanded action row does not overflow on 360px phone width (#557)',
-      ($) async {
-        await $.tester.binding.setSurfaceSize(const Size(360, 800));
-        addTearDown(() => $.tester.binding.setSurfaceSize(null));
+    patrolWidgetTest('expanded action row does not overflow on 360px phone width (#557)', (
+      $,
+    ) async {
+      await $.tester.binding.setSurfaceSize(const Size(360, 800));
+      addTearDown(() => $.tester.binding.setSurfaceSize(null));
 
-        await $.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: ReflectionComposer(
-                  selectedSpace: 'memes',
-                  primaryColor: Colors.teal,
-                  isContrast: false,
-                  isModal: false,
-                  onSubmit: ({
-                    required String content,
-                    required String toneTag,
-                    String? specialInterestTag,
-                    String? imageUrl,
-                  }) async {},
-                ),
+      await $.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ReflectionComposer(
+                selectedSpace: 'memes',
+                primaryColor: Colors.teal,
+                isContrast: false,
+                isModal: false,
+                onSubmit: ({
+                  required String content,
+                  required String toneTag,
+                  String? specialInterestTag,
+                  String? imageUrl,
+                }) async {},
               ),
             ),
           ),
-        );
-        await $.pumpAndSettle();
+        ),
+      );
+      await $.pumpAndSettle();
 
-        await $(Key('composer_expand_button')).tap();
-        await $.pumpAndSettle();
+      await $(Key('composer_expand_button')).tap();
+      await $.pumpAndSettle();
 
-        expect($(Key('add_meme_gif_button')), findsOneWidget);
-        expect($(Key('publish_reflection_button')), findsOneWidget);
-        expect($.tester.takeException(), isNull);
-      },
-    );
+      expect($(Key('add_meme_gif_button')), findsOneWidget);
+      expect($(Key('publish_reflection_button')), findsOneWidget);
+      expect($.tester.takeException(), isNull);
+    });
 
     patrolWidgetTest(
       'Modal mode (isModal: true) renders in expanded state by default without collapse button',

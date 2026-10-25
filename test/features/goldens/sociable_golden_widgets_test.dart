@@ -13,100 +13,86 @@ import 'package:refuge4serverpod/src/features/search/presentation/community_sear
 
 void main() {
   group('Sociable Golden Widgets - BDD Patrol Verification', () {
-    patrolWidgetTest(
-      'BelongBottomNavBar: renders navigation tabs with active indicator',
-      ($) async {
-        BelongBottomTab selectedTab = BelongBottomTab.home;
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            child: MaterialApp(
-              theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF2E6B56),
-                ),
-              ),
-              home: Scaffold(
-                bottomNavigationBar: BelongBottomNavBar(
-                  currentTab: selectedTab,
-                  isContrast: false,
-                  onSelectTab: (tab) => selectedTab = tab,
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect($(BelongBottomNavBar), findsOneWidget);
-        expect($('Home'), findsOneWidget);
-        expect($('Notifications'), findsOneWidget);
-        expect($('Messages'), findsOneWidget);
-        expect($('Search'), findsOneWidget);
-      },
-    );
-
-    patrolWidgetTest(
-      'CommunityAnchorBanner: renders community anchor banner with theme styling',
-      ($) async {
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            child: MaterialApp(
-              theme: ThemeData.light(),
-              home: const Scaffold(
-                body: CommunityAnchorBanner(
-                  primaryColor: Color(0xFF2E6B56),
-                  isContrast: false,
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect($(CommunityAnchorBanner), findsOneWidget);
-      },
-    );
-
-    patrolWidgetTest(
-      'QuietDigestBanner: displays quiet digest aggregate when data available',
-      ($) async {
-        await $.pumpWidgetAndSettle(
-          const ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: QuietDigestBanner(
-                  primaryColor: Color(0xFF2E6B56),
-                  isContrast: false,
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect($(QuietDigestBanner), findsOneWidget);
-      },
-    );
-
-    patrolWidgetTest(
-      'ToneFilterRow: shows all 4 calm tone filters and handles selection',
-      ($) async {
-        String activeFilter = 'All';
-        await $.pumpWidgetAndSettle(
-          MaterialApp(
-            theme: ThemeData.light(),
+    patrolWidgetTest('BelongBottomNavBar: renders navigation tabs with active indicator', (
+      $,
+    ) async {
+      BelongBottomTab selectedTab = BelongBottomTab.home;
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E6B56))),
             home: Scaffold(
-              body: ToneFilterRow(
-                activeFilter: activeFilter,
-                onSelectFilter: (filter) => activeFilter = filter,
+              bottomNavigationBar: BelongBottomNavBar(
+                currentTab: selectedTab,
+                isContrast: false,
+                onSelectTab: (tab) => selectedTab = tab,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect($(ToneFilterRow), findsOneWidget);
-        expect($('All'), findsOneWidget);
-        expect($('[Prayer Request]'), findsOneWidget);
-        expect($('[Comfort Only]'), findsOneWidget);
-      },
-    );
+      expect($(BelongBottomNavBar), findsOneWidget);
+      expect($('Home'), findsOneWidget);
+      expect($('Notifications'), findsOneWidget);
+      expect($('Messages'), findsOneWidget);
+      expect($('Search'), findsOneWidget);
+    });
+
+    patrolWidgetTest('CommunityAnchorBanner: renders community anchor banner with theme styling', (
+      $,
+    ) async {
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData.light(),
+            home: const Scaffold(
+              body: CommunityAnchorBanner(primaryColor: Color(0xFF2E6B56), isContrast: false),
+            ),
+          ),
+        ),
+      );
+
+      expect($(CommunityAnchorBanner), findsOneWidget);
+    });
+
+    patrolWidgetTest('QuietDigestBanner: displays quiet digest aggregate when data available', (
+      $,
+    ) async {
+      await $.pumpWidgetAndSettle(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: QuietDigestBanner(primaryColor: Color(0xFF2E6B56), isContrast: false),
+            ),
+          ),
+        ),
+      );
+
+      expect($(QuietDigestBanner), findsOneWidget);
+    });
+
+    patrolWidgetTest('ToneFilterRow: shows all 4 calm tone filters and handles selection', (
+      $,
+    ) async {
+      String activeFilter = 'All';
+      await $.pumpWidgetAndSettle(
+        MaterialApp(
+          theme: ThemeData.light(),
+          home: Scaffold(
+            body: ToneFilterRow(
+              activeFilter: activeFilter,
+              onSelectFilter: (filter) => activeFilter = filter,
+            ),
+          ),
+        ),
+      );
+
+      expect($(ToneFilterRow), findsOneWidget);
+      expect($('All'), findsOneWidget);
+      expect($('[Prayer Request]'), findsOneWidget);
+      expect($('[Comfort Only]'), findsOneWidget);
+    });
 
     patrolWidgetTest(
       'ReflectionCard: renders sensory tags, clean typography, and reaction triggers',
@@ -126,11 +112,7 @@ void main() {
             child: MaterialApp(
               theme: ThemeData.light(),
               home: Scaffold(
-                body: ReflectionCard(
-                  post: post,
-                  isContrast: false,
-                  onAddReaction: (r) {},
-                ),
+                body: ReflectionCard(post: post, isContrast: false, onAddReaction: (r) {}),
               ),
             ),
           ),
@@ -139,9 +121,7 @@ void main() {
         expect($(ReflectionCard), findsOneWidget);
         expect($('Alex Autism Advocate'), findsOneWidget);
         expect(
-          $(
-            'Finding quiet in sensory overwhelm today at the botanical gardens.',
-          ),
+          $('Finding quiet in sensory overwhelm today at the botanical gardens.'),
           findsOneWidget,
         );
       },
@@ -154,9 +134,7 @@ void main() {
         await $.pumpWidgetAndSettle(
           ProviderScope(
             child: MaterialApp(
-              home: Scaffold(
-                body: CommunitySearchView(repository: repo, isContrast: false),
-              ),
+              home: Scaffold(body: CommunitySearchView(repository: repo, isContrast: false)),
             ),
           ),
         );

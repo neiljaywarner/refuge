@@ -27,9 +27,7 @@ void main() {
       expect(map['title'], equals('Elijah Snack & Nap'));
       expect(
         map['imageUrl'],
-        equals(
-          'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600',
-        ),
+        equals('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600'),
       );
 
       final restored = CalmMeme.fromMap(map);
@@ -52,9 +50,7 @@ void main() {
 
       expect(post1.imageUrl, isNull);
 
-      final postWithMeme = post1.copyWith(
-        imageUrl: 'https://example.com/calm_map.gif',
-      );
+      final postWithMeme = post1.copyWith(imageUrl: 'https://example.com/calm_map.gif');
 
       expect(postWithMeme.imageUrl, equals('https://example.com/calm_map.gif'));
       expect(postWithMeme.id, equals(post1.id));
@@ -85,8 +81,7 @@ void main() {
             body: Builder(
               builder: (ctx) => ElevatedButton(
                 key: const Key('open_gallery_button'),
-                onPressed: () =>
-                    showMemeGalleryModal(ctx, onSelectedMeme: onSelectedMeme),
+                onPressed: () => showMemeGalleryModal(ctx, onSelectedMeme: onSelectedMeme),
                 child: const Text('Open Gallery'),
               ),
             ),
@@ -97,10 +92,7 @@ void main() {
 
     setUp(() {
       final binding = TestWidgetsFlutterBinding.ensureInitialized();
-      binding.platformDispatcher.implicitView?.physicalSize = const Size(
-        1080,
-        2400,
-      );
+      binding.platformDispatcher.implicitView?.physicalSize = const Size(1080, 2400);
       binding.platformDispatcher.implicitView?.devicePixelRatio = 1.0;
     });
 
@@ -110,14 +102,10 @@ void main() {
       binding.platformDispatcher.implicitView?.resetDevicePixelRatio();
     });
 
-    patrolWidgetTest('renders curated memes list and selects a meme', (
-      $,
-    ) async {
+    patrolWidgetTest('renders curated memes list and selects a meme', ($) async {
       CalmMeme? selectedMeme;
 
-      await $.pumpWidget(
-        buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme),
-      );
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme));
       await $('Open Gallery').tap();
       expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
       expect($('Curated Calm Memes'), findsOneWidget);
@@ -132,39 +120,32 @@ void main() {
       expect(selectedMeme!.imageUrl, isNotNull);
     });
 
-    patrolWidgetTest(
-      'attaches custom meme via preset button with live preview',
-      ($) async {
-        CalmMeme? selectedMeme;
+    patrolWidgetTest('attaches custom meme via preset button with live preview', ($) async {
+      CalmMeme? selectedMeme;
 
-        await $.pumpWidget(
-          buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme),
-        );
-        await $('Open Gallery').tap();
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme));
+      await $('Open Gallery').tap();
 
-        // Switch to custom GIF / URL tab
-        await $(const Key('tab_custom_meme')).tap();
-        expect($('Image or GIF URL'), findsOneWidget);
-        expect($('Meme Title or Caption'), findsOneWidget);
+      // Switch to custom GIF / URL tab
+      await $(const Key('tab_custom_meme')).tap();
+      expect($('Image or GIF URL'), findsOneWidget);
+      expect($('Meme Title or Caption'), findsOneWidget);
 
-        // Tap Elijah preset
-        await $(const Key('preset_elijah')).tap();
+      // Tap Elijah preset
+      await $(const Key('preset_elijah')).tap();
 
-        // Verify input fields populated and preview shown
-        expect($(const Key('custom_meme_preview')), findsOneWidget);
+      // Verify input fields populated and preview shown
+      expect($(const Key('custom_meme_preview')), findsOneWidget);
 
-        // Attach meme
-        await $(const Key('attach_custom_meme_button')).tap();
+      // Attach meme
+      await $(const Key('attach_custom_meme_button')).tap();
 
-        expect(selectedMeme, isNotNull);
-        expect(selectedMeme!.title, contains('Elijah'));
-        expect(selectedMeme!.imageUrl, contains('images.unsplash.com'));
-      },
-    );
+      expect(selectedMeme, isNotNull);
+      expect(selectedMeme!.title, contains('Elijah'));
+      expect(selectedMeme!.imageUrl, contains('images.unsplash.com'));
+    });
 
-    patrolWidgetTest('captures photo with camera and attaches to reflection', (
-      $,
-    ) async {
+    patrolWidgetTest('captures photo with camera and attaches to reflection', ($) async {
       CalmMeme? selectedMeme;
       final fakeService = FakeAvatarUploadService();
 
@@ -190,8 +171,7 @@ void main() {
       expect($(const Key('meme_upload_caption_input')), findsOneWidget);
 
       // Change caption
-      await $(const Key('meme_upload_caption_input'))
-          .enterText('My Sanctuary Moment');
+      await $(const Key('meme_upload_caption_input')).enterText('My Sanctuary Moment');
 
       // Attach photo
       await $(const Key('attach_uploaded_photo_button')).tap();
@@ -202,136 +182,111 @@ void main() {
       expect(selectedMeme!.icon, equals('📷'));
     });
 
-    patrolWidgetTest(
-      'selects photo from gallery, previews, and allows removal',
-      ($) async {
-        CalmMeme? selectedMeme;
-        final fakeService = FakeAvatarUploadService();
+    patrolWidgetTest('selects photo from gallery, previews, and allows removal', ($) async {
+      CalmMeme? selectedMeme;
+      final fakeService = FakeAvatarUploadService();
 
-        await $.pumpWidget(
-          buildModalHarness(
-            onSelectedMeme: (meme) => selectedMeme = meme,
-            avatarService: fakeService,
-          ),
-        );
-        await $('Open Gallery').tap();
+      await $.pumpWidget(
+        buildModalHarness(
+          onSelectedMeme: (meme) => selectedMeme = meme,
+          avatarService: fakeService,
+        ),
+      );
+      await $('Open Gallery').tap();
 
-        // Switch to Upload Photo / Camera tab
-        await $(const Key('tab_upload_photo')).tap();
+      // Switch to Upload Photo / Camera tab
+      await $(const Key('tab_upload_photo')).tap();
 
-        // Tap gallery button
-        await $(const Key('meme_upload_gallery_button')).tap();
-        await $.pumpAndSettle();
+      // Tap gallery button
+      await $(const Key('meme_upload_gallery_button')).tap();
+      await $.pumpAndSettle();
 
-        // Verify preview
-        expect($(const Key('uploaded_photo_preview')), findsOneWidget);
+      // Verify preview
+      expect($(const Key('uploaded_photo_preview')), findsOneWidget);
 
-        // Remove photo
-        await $(const Key('remove_uploaded_photo_button')).tap();
-        await $.pumpAndSettle();
+      // Remove photo
+      await $(const Key('remove_uploaded_photo_button')).tap();
+      await $.pumpAndSettle();
 
-        // Verify preview is gone
-        expect($(const Key('uploaded_photo_preview')), findsNothing);
-      },
-    );
+      // Verify preview is gone
+      expect($(const Key('uploaded_photo_preview')), findsNothing);
+    });
 
-    patrolWidgetTest(
-      'handles camera permission denial gracefully without crash',
-      ($) async {
-        final fakeService = FakeAvatarUploadService(
-          cameraPermission: AvatarPermissionStatus.denied,
-        );
+    patrolWidgetTest('handles camera permission denial gracefully without crash', ($) async {
+      final fakeService = FakeAvatarUploadService(cameraPermission: AvatarPermissionStatus.denied);
 
-        await $.pumpWidget(
-          buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService),
-        );
-        await $('Open Gallery').tap();
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
+      await $('Open Gallery').tap();
 
-        await $(const Key('tab_upload_photo')).tap();
-        await $(const Key('meme_upload_camera_button')).tap();
-        await $.pumpAndSettle();
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
 
-        // Verify denial banner
-        expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
-        expect(
-          $(
-            'Camera permission was denied. Please allow access if you wish to use a photo.',
-          ),
-          findsOneWidget,
-        );
-        expect($(const Key('uploaded_photo_preview')), findsNothing);
-      },
-    );
+      // Verify denial banner
+      expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
+      expect(
+        $('Camera permission was denied. Please allow access if you wish to use a photo.'),
+        findsOneWidget,
+      );
+      expect($(const Key('uploaded_photo_preview')), findsNothing);
+    });
 
-    patrolWidgetTest(
-      'handles camera permanent denial and allows opening settings',
-      ($) async {
-        final fakeService = FakeAvatarUploadService(
-          cameraPermission: AvatarPermissionStatus.permanentlyDenied,
-        );
+    patrolWidgetTest('handles camera permanent denial and allows opening settings', ($) async {
+      final fakeService = FakeAvatarUploadService(
+        cameraPermission: AvatarPermissionStatus.permanentlyDenied,
+      );
 
-        await $.pumpWidget(
-          buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService),
-        );
-        await $('Open Gallery').tap();
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
+      await $('Open Gallery').tap();
 
-        await $(const Key('tab_upload_photo')).tap();
-        await $(const Key('meme_upload_camera_button')).tap();
-        await $.pumpAndSettle();
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
 
-        // Verify permanent denial banner and open settings button
-        expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
-        expect($(const Key('meme_open_settings_button')), findsOneWidget);
+      // Verify permanent denial banner and open settings button
+      expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
+      expect($(const Key('meme_open_settings_button')), findsOneWidget);
 
-        await $(const Key('meme_open_settings_button')).tap();
-        expect(fakeService.appSettingsOpened, isTrue);
-      },
-    );
+      await $(const Key('meme_open_settings_button')).tap();
+      expect(fakeService.appSettingsOpened, isTrue);
+    });
 
-    patrolWidgetTest(
-      'canceling photo picker without choosing leaves modal in clean state',
-      ($) async {
-        final fakeService = FakeAvatarUploadService(returnNullOnPick: true);
+    patrolWidgetTest('canceling photo picker without choosing leaves modal in clean state', (
+      $,
+    ) async {
+      final fakeService = FakeAvatarUploadService(returnNullOnPick: true);
 
-        await $.pumpWidget(
-          buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService),
-        );
-        await $('Open Gallery').tap();
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
+      await $('Open Gallery').tap();
 
-        await $(const Key('tab_upload_photo')).tap();
-        await $(const Key('meme_upload_camera_button')).tap();
-        await $.pumpAndSettle();
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
 
-        // No preview is displayed, remains in initial upload state
-        expect($(const Key('uploaded_photo_preview')), findsNothing);
-        expect($(const Key('meme_upload_camera_button')), findsOneWidget);
-      },
-    );
+      // No preview is displayed, remains in initial upload state
+      expect($(const Key('uploaded_photo_preview')), findsNothing);
+      expect($(const Key('meme_upload_camera_button')), findsOneWidget);
+    });
 
-    patrolWidgetTest(
-      'hardware exception during photo selection displays calm error banner',
-      ($) async {
-        final fakeService = FakeAvatarUploadService(throwOnPick: true);
+    patrolWidgetTest('hardware exception during photo selection displays calm error banner', (
+      $,
+    ) async {
+      final fakeService = FakeAvatarUploadService(throwOnPick: true);
 
-        await $.pumpWidget(
-          buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService),
-        );
-        await $('Open Gallery').tap();
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
+      await $('Open Gallery').tap();
 
-        await $(const Key('tab_upload_photo')).tap();
-        await $(const Key('meme_upload_camera_button')).tap();
-        await $.pumpAndSettle();
+      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
 
-        // Error banner is displayed
-        expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
-        expect(
-          $(
-            'Could not select photo: Exception: Simulated camera hardware disconnect',
-          ),
-          findsOneWidget,
-        );
-      },
-    );
+      // Error banner is displayed
+      expect($(const Key('meme_permission_denied_banner')), findsOneWidget);
+      expect(
+        $('Could not select photo: Exception: Simulated camera hardware disconnect'),
+        findsOneWidget,
+      );
+    });
 
     patrolWidgetTest('meme gallery close button dismisses modal', ($) async {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
@@ -344,38 +299,33 @@ void main() {
       expect($('🖼️ Autism & Faith Meme Gallery'), findsNothing);
     });
 
-    patrolWidgetTest(
-      'tab switching between custom presets and back to curated list',
-      ($) async {
-        await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
-        await $('Open Gallery').tap();
+    patrolWidgetTest('tab switching between custom presets and back to curated list', ($) async {
+      await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
+      await $('Open Gallery').tap();
 
-        // Switch to custom tab
-        await $(const Key('tab_custom_meme')).tap();
-        await $.pumpAndSettle();
+      // Switch to custom tab
+      await $(const Key('tab_custom_meme')).tap();
+      await $.pumpAndSettle();
 
-        // Tap special interest preset
-        await $(const Key('preset_special_interest')).tap();
-        await $.pumpAndSettle();
-        expect($(const Key('custom_meme_preview')), findsOneWidget);
+      // Tap special interest preset
+      await $(const Key('preset_special_interest')).tap();
+      await $.pumpAndSettle();
+      expect($(const Key('custom_meme_preview')), findsOneWidget);
 
-        // Tap quiet waters preset
-        await $(const Key('preset_quiet_waters')).tap();
-        await $.pumpAndSettle();
-        expect($(const Key('custom_meme_preview')), findsOneWidget);
+      // Tap quiet waters preset
+      await $(const Key('preset_quiet_waters')).tap();
+      await $.pumpAndSettle();
+      expect($(const Key('custom_meme_preview')), findsOneWidget);
 
-        // Switch back to curated memes tab
-        await $(const Key('tab_curated_memes')).tap();
-        await $.pumpAndSettle();
-        expect($('Elijah Under the Broom Tree'), findsOneWidget);
-      },
-    );
+      // Switch back to curated memes tab
+      await $(const Key('tab_curated_memes')).tap();
+      await $.pumpAndSettle();
+      expect($('Elijah Under the Broom Tree'), findsOneWidget);
+    });
   });
 
   group('ReflectionCard Media & Meme Rendering Tests', () {
-    patrolWidgetTest('renders meme image container when imageUrl is present', (
-      $,
-    ) async {
+    patrolWidgetTest('renders meme image container when imageUrl is present', ($) async {
       final postWithMeme = Post(
         id: 'post_meme_1',
         authorName: 'Hannah W.',
@@ -391,11 +341,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: ReflectionCard(
-                post: postWithMeme,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              body: ReflectionCard(post: postWithMeme, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
@@ -406,9 +352,7 @@ void main() {
       expect($(const Key('post_meme_image_post_meme_1')), findsOneWidget);
     });
 
-    patrolWidgetTest('renders data URI base64 images without network errors', (
-      $,
-    ) async {
+    patrolWidgetTest('renders data URI base64 images without network errors', ($) async {
       // 1x1 transparent PNG data URI
       const dataUri =
           'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -428,20 +372,13 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: ReflectionCard(
-                post: postWithDataUri,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              body: ReflectionCard(post: postWithDataUri, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
       );
 
-      expect(
-        $(const Key('post_meme_image_post_meme_data_uri')),
-        findsOneWidget,
-      );
+      expect($(const Key('post_meme_image_post_meme_data_uri')), findsOneWidget);
     });
 
     patrolWidgetTest('omits image container when imageUrl is null', ($) async {
@@ -459,11 +396,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: ReflectionCard(
-                post: postWithoutMeme,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              body: ReflectionCard(post: postWithoutMeme, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
@@ -474,9 +407,7 @@ void main() {
   });
 
   group('ReflectionComposer Meme Publishing Flow Tests', () {
-    patrolWidgetTest('attaches meme and submits imageUrl with reflection', (
-      $,
-    ) async {
+    patrolWidgetTest('attaches meme and submits imageUrl with reflection', ($) async {
       $.tester.view.devicePixelRatio = 1.0;
       $.tester.view.physicalSize = const Size(1080, 2400);
       addTearDown(() {
@@ -498,12 +429,7 @@ void main() {
                 isContrast: false,
                 isModal: true,
                 onSubmit:
-                    ({
-                      required content,
-                      required toneTag,
-                      specialInterestTag,
-                      imageUrl,
-                    }) async {
+                    ({required content, required toneTag, specialInterestTag, imageUrl}) async {
                       submittedContent = content;
                       submittedTone = toneTag;
                       submittedImage = imageUrl;
@@ -540,81 +466,69 @@ void main() {
       expect($(const Key('attached_meme_banner')), findsNothing);
     });
 
-    patrolWidgetTest(
-      'attaches uploaded photo and submits reflection with data URI',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1080, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('attaches uploaded photo and submits reflection with data URI', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        String? submittedContent;
-        String? submittedTone;
-        String? submittedImage;
+      String? submittedContent;
+      String? submittedTone;
+      String? submittedImage;
 
-        final fakeService = FakeAvatarUploadService();
+      final fakeService = FakeAvatarUploadService();
 
-        await $.pumpWidget(
-          ProviderScope(
-            overrides: [
-              avatarUploadServiceProvider.overrideWithValue(fakeService),
-            ],
-            child: MaterialApp(
-              home: Scaffold(
-                body: ReflectionComposer(
-                  selectedSpace: 'memes',
-                  primaryColor: Colors.teal,
-                  isContrast: false,
-                  isModal: true,
-                  onSubmit:
-                      ({
-                        required content,
-                        required toneTag,
-                        specialInterestTag,
-                        imageUrl,
-                      }) async {
-                        submittedContent = content;
-                        submittedTone = toneTag;
-                        submittedImage = imageUrl;
-                      },
-                ),
+      await $.pumpWidget(
+        ProviderScope(
+          overrides: [avatarUploadServiceProvider.overrideWithValue(fakeService)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ReflectionComposer(
+                selectedSpace: 'memes',
+                primaryColor: Colors.teal,
+                isContrast: false,
+                isModal: true,
+                onSubmit:
+                    ({required content, required toneTag, specialInterestTag, imageUrl}) async {
+                      submittedContent = content;
+                      submittedTone = toneTag;
+                      submittedImage = imageUrl;
+                    },
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        // Open meme gallery
-        await $(const Key('add_meme_gif_button')).tap();
+      // Open meme gallery
+      await $(const Key('add_meme_gif_button')).tap();
 
-        // Switch to Upload Photo tab
-        await $(const Key('tab_upload_photo')).tap();
+      // Switch to Upload Photo tab
+      await $(const Key('tab_upload_photo')).tap();
 
-        // Tap Use Camera
-        await $(const Key('meme_upload_camera_button')).tap();
-        await $.pumpAndSettle();
+      // Tap Use Camera
+      await $(const Key('meme_upload_camera_button')).tap();
+      await $.pumpAndSettle();
 
-        // Tap Attach Photo
-        await $(const Key('attach_uploaded_photo_button')).tap();
-        await $.pumpAndSettle();
+      // Tap Attach Photo
+      await $(const Key('attach_uploaded_photo_button')).tap();
+      await $.pumpAndSettle();
 
-        // Verify banner
-        expect($(const Key('attached_meme_banner')), findsOneWidget);
+      // Verify banner
+      expect($(const Key('attached_meme_banner')), findsOneWidget);
 
-        // Publish
-        await $(const Key('publish_reflection_button')).tap();
+      // Publish
+      await $(const Key('publish_reflection_button')).tap();
 
-        expect(submittedContent, isNotNull);
-        expect(submittedImage, startsWith('data:image/png;base64,'));
-      },
-    );
+      expect(submittedContent, isNotNull);
+      expect(submittedImage, startsWith('data:image/png;base64,'));
+    });
   });
 
   group('CalmMediaImage Widget Unit Tests', () {
-    testWidgets('renders fallback widget on empty or broken image', (
-      tester,
-    ) async {
+    testWidgets('renders fallback widget on empty or broken image', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(body: CalmMediaImage(imageUrl: 'broken_or_empty')),
@@ -628,10 +542,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: '',
-              fallbackWidget: Text('Custom Fallback Calm'),
-            ),
+            body: CalmMediaImage(imageUrl: '', fallbackWidget: Text('Custom Fallback Calm')),
           ),
         ),
       );
@@ -639,15 +550,11 @@ void main() {
       expect(find.text('Custom Fallback Calm'), findsOneWidget);
     });
 
-    testWidgets('renders fallback on malformed base64 data URI', (
-      tester,
-    ) async {
+    testWidgets('renders fallback on malformed base64 data URI', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: r'data:image/png;base64,invalid!@#$not_base64',
-            ),
+            body: CalmMediaImage(imageUrl: r'data:image/png;base64,invalid!@#$not_base64'),
           ),
         ),
       );
@@ -655,9 +562,7 @@ void main() {
       expect(find.byIcon(Icons.image_outlined), findsOneWidget);
     });
 
-    testWidgets('renders custom fallbackWidget on malformed base64', (
-      tester,
-    ) async {
+    testWidgets('renders custom fallbackWidget on malformed base64', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -672,9 +577,7 @@ void main() {
       expect(find.text('Safe Fallback Base64'), findsOneWidget);
     });
 
-    testWidgets('renders valid base64 image data URI using Image.memory', (
-      tester,
-    ) async {
+    testWidgets('renders valid base64 image data URI using Image.memory', (tester) async {
       const dataUri =
           'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
@@ -714,11 +617,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CalmMediaImage(
-              imageUrl: 'assets/images/belong_logo.png',
-              width: 50,
-              height: 50,
-            ),
+            body: CalmMediaImage(imageUrl: 'assets/images/belong_logo.png', width: 50, height: 50),
           ),
         ),
       );
@@ -726,29 +625,28 @@ void main() {
       expect(find.byType(Image), findsOneWidget);
     });
 
-    testWidgets(
-      'CalmMediaImage.buildLoadingProgress displays progress indicator when loading',
-      (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (ctx) => CalmMediaImage.buildLoadingProgress(
-                  context: ctx,
-                  child: const Text('Loaded Image Child'),
-                  loadingProgress: const ImageChunkEvent(
-                    cumulativeBytesLoaded: 50,
-                    expectedTotalBytes: 100,
-                  ),
+    testWidgets('CalmMediaImage.buildLoadingProgress displays progress indicator when loading', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => CalmMediaImage.buildLoadingProgress(
+                context: ctx,
+                child: const Text('Loaded Image Child'),
+                loadingProgress: const ImageChunkEvent(
+                  cumulativeBytesLoaded: 50,
+                  expectedTotalBytes: 100,
                 ),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      },
-    );
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
 
     testWidgets(
       'CalmMediaImage.buildLoadingProgress handles indeterminate loading and null progress',

@@ -5,9 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// Service responsible for updating the native app launcher icon badge
 /// on iOS and Android devices, keeping unread notification count synchronized.
 class AppLauncherBadgeService {
-  static const MethodChannel _channel = MethodChannel(
-    'com.belongonthespectrum.refuge/badge',
-  );
+  static const MethodChannel _channel = MethodChannel('com.belongonthespectrum.refuge/badge');
 
   int _currentBadgeCount = 0;
   int get currentBadgeCount => _currentBadgeCount;

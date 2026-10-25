@@ -6,11 +6,7 @@ import 'calm_local_notification_stub.dart'
 
 /// Shows silent calm notifications in the OS shade (Android / future iOS).
 abstract class CalmLocalNotificationService {
-  Future<void> showCalmDigest({
-    required String title,
-    required String body,
-    String? payload,
-  });
+  Future<void> showCalmDigest({required String title, required String body, String? payload});
 
   /// Displays an immediate silent notification in the OS notification shade (#530).
   Future<void> showSilentNotification({
@@ -31,18 +27,16 @@ abstract class CalmLocalNotificationService {
 }
 
 /// Debug / QA preview without sending FCM (#382).
-Future<void> showCalmPreviewDirectMessage(
-  CalmLocalNotificationService service,
-) => service.showCalmDigest(
-  title: 'Belong',
-  body: 'Fellow Member sent you a direct message',
-  payload: 'dm_preview',
-);
+Future<void> showCalmPreviewDirectMessage(CalmLocalNotificationService service) =>
+    service.showCalmDigest(
+      title: 'Belong',
+      body: 'Fellow Member sent you a direct message',
+      payload: 'dm_preview',
+    );
 
 CalmLocalNotificationService createCalmLocalNotificationService() =>
     impl.createCalmLocalNotificationService();
 
-final calmLocalNotificationServiceProvider =
-    Provider<CalmLocalNotificationService>(
-      (ref) => createCalmLocalNotificationService(),
-    );
+final calmLocalNotificationServiceProvider = Provider<CalmLocalNotificationService>(
+  (ref) => createCalmLocalNotificationService(),
+);

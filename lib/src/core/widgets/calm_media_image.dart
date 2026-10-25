@@ -54,8 +54,7 @@ class CalmMediaImage extends StatelessWidget {
         child: CircularProgressIndicator(
           strokeWidth: 2.0,
           value: loadingProgress.expectedTotalBytes != null
-              ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
+              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
               : null,
         ),
       ),
@@ -70,9 +69,7 @@ class CalmMediaImage extends StatelessWidget {
     if (trimmed.startsWith('data:image/')) {
       try {
         final commaIndex = trimmed.indexOf(',');
-        final base64String = commaIndex != -1
-            ? trimmed.substring(commaIndex + 1)
-            : trimmed;
+        final base64String = commaIndex != -1 ? trimmed.substring(commaIndex + 1) : trimmed;
         final bytes = base64Decode(base64String);
         return Image.memory(
           bytes,
@@ -95,14 +92,13 @@ class CalmMediaImage extends StatelessWidget {
         height: height,
         fit: fit,
         semanticLabel: semanticLabel,
-        loadingBuilder: (context, child, loadingProgress) =>
-            buildLoadingProgress(
-              context: context,
-              child: child,
-              loadingProgress: loadingProgress,
-              width: width,
-              height: height,
-            ),
+        loadingBuilder: (context, child, loadingProgress) => buildLoadingProgress(
+          context: context,
+          child: child,
+          loadingProgress: loadingProgress,
+          width: width,
+          height: height,
+        ),
         errorBuilder: (_, __, ___) => _buildFallback(context),
       );
     }

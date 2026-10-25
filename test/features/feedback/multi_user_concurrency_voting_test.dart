@@ -12,16 +12,11 @@ void main() {
   group('Multi-User Concurrency & Cross-Session Real-Time Sync (#302, #303, #309)', () {
     test('User A and User B concurrently update vote tallies and proposals in real time', () async {
       // Shared broadcast controller simulating a real-time WebSocket or Firestore stream
-      final sharedStreamController =
-          StreamController<List<VotableFeatureItem>>.broadcast();
+      final sharedStreamController = StreamController<List<VotableFeatureItem>>.broadcast();
       addTearDown(sharedStreamController.close);
 
-      final repoA = InMemoryFeatureVotingRepository(
-        customStreamController: sharedStreamController,
-      );
-      final repoB = InMemoryFeatureVotingRepository(
-        customStreamController: sharedStreamController,
-      );
+      final repoA = InMemoryFeatureVotingRepository(customStreamController: sharedStreamController);
+      final repoB = InMemoryFeatureVotingRepository(customStreamController: sharedStreamController);
 
       final containerA = ProviderContainer(
         overrides: [featureVotingRepositoryProvider.overrideWithValue(repoA)],
@@ -41,9 +36,7 @@ void main() {
       expect(initialB.first.userVoted, isFalse);
 
       // Step 1: User A votes for WIP Direct Messages
-      containerA
-          .read(featureVotingProvider.notifier)
-          .toggleVote('wip-direct-messages');
+      containerA.read(featureVotingProvider.notifier).toggleVote('wip-direct-messages');
 
       // User A's optimistic local state
       final userAAfterVote = containerA
@@ -63,9 +56,7 @@ void main() {
       expect(userBAfterSync.userVoted, isFalse);
 
       // Step 2: User B also votes for WIP Direct Messages (now 2 votes)
-      containerB
-          .read(featureVotingProvider.notifier)
-          .toggleVote('wip-direct-messages');
+      containerB.read(featureVotingProvider.notifier).toggleVote('wip-direct-messages');
 
       final userBAfterVote = containerB
           .read(featureVotingProvider)
@@ -83,9 +74,7 @@ void main() {
       expect(userAAfterSecondSync.userVoted, isTrue);
 
       // Step 3: User A unvotes (reverts to 1 vote)
-      containerA
-          .read(featureVotingProvider.notifier)
-          .toggleVote('wip-direct-messages');
+      containerA.read(featureVotingProvider.notifier).toggleVote('wip-direct-messages');
 
       final userAAfterUnvote = containerA
           .read(featureVotingProvider)
@@ -115,17 +104,13 @@ void main() {
       expect(userBFeatures.length, initialB.length + 1);
       expect(userBFeatures.last.title, 'Sensory Audio Calming Room');
       expect(userBFeatures.last.votes, 1);
-      expect(
-        userBFeatures.last.userVoted,
-        isFalse,
-      ); // User B hasn't voted on it
+      expect(userBFeatures.last.userVoted, isFalse); // User B hasn't voted on it
     });
 
     patrolWidgetTest(
       'Dual-client UI widget concurrency: User A vote immediately renders in User B UI without reload',
       ($) async {
-        final sharedStreamController =
-            StreamController<List<VotableFeatureItem>>.broadcast();
+        final sharedStreamController = StreamController<List<VotableFeatureItem>>.broadcast();
         addTearDown(sharedStreamController.close);
 
         final repoA = InMemoryFeatureVotingRepository(
@@ -143,11 +128,7 @@ void main() {
                 children: [
                   Expanded(
                     child: ProviderScope(
-                      overrides: [
-                        featureVotingRepositoryProvider.overrideWithValue(
-                          repoA,
-                        ),
-                      ],
+                      overrides: [featureVotingRepositoryProvider.overrideWithValue(repoA)],
                       child: const Column(
                         children: [
                           Text('Client A (User 1)'),
@@ -159,11 +140,7 @@ void main() {
                   const VerticalDivider(width: 1),
                   Expanded(
                     child: ProviderScope(
-                      overrides: [
-                        featureVotingRepositoryProvider.overrideWithValue(
-                          repoB,
-                        ),
-                      ],
+                      overrides: [featureVotingRepositoryProvider.overrideWithValue(repoB)],
                       child: const Column(
                         children: [
                           Text('Client B (User 2)'),
@@ -190,14 +167,8 @@ void main() {
         await $.pumpAndSettle();
 
         // Both Client A and Client B should now display '1'
-        final countOnA = find.descendant(
-          of: voteButtons.first,
-          matching: find.text('1'),
-        );
-        final countOnB = find.descendant(
-          of: voteButtons.last,
-          matching: find.text('1'),
-        );
+        final countOnA = find.descendant(of: voteButtons.first, matching: find.text('1'));
+        final countOnB = find.descendant(of: voteButtons.last, matching: find.text('1'));
         expect(countOnA, findsOneWidget);
         expect(countOnB, findsOneWidget);
 
@@ -205,14 +176,8 @@ void main() {
         await voteButtons.last.tap();
         await $.pumpAndSettle();
 
-        final countTwoOnA = find.descendant(
-          of: voteButtons.first,
-          matching: find.text('2'),
-        );
-        final countTwoOnB = find.descendant(
-          of: voteButtons.last,
-          matching: find.text('2'),
-        );
+        final countTwoOnA = find.descendant(of: voteButtons.first, matching: find.text('2'));
+        final countTwoOnB = find.descendant(of: voteButtons.last, matching: find.text('2'));
         expect(countTwoOnA, findsOneWidget);
         expect(countTwoOnB, findsOneWidget);
       },

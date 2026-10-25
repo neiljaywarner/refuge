@@ -59,7 +59,8 @@ const List<CalmMeme> kCuratedCalmMemes = [
     subtitle: 'Psalm 139:14 — Fearfully Made',
     tag: 'Special Interests',
     body: 'When someone asks a casual 5-second question about church history or train switching gears, and my autistic brain prepares a 45-minute PowerPoint with handouts.',
-    imageUrl: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&auto=format&fit=crop&q=80',
+    imageUrl:
+        'https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&auto=format&fit=crop&q=80',
   ),
   CalmMeme(
     title: 'Reading Greek Verbs at 2 AM',

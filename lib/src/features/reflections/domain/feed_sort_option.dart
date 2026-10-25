@@ -2,11 +2,7 @@
 enum FeedSortOption {
   latest('Latest', '🕒', 'Newest reflections first'),
   forYou('For you', '✨', 'Curated for your interests & unhurried care'),
-  newActivity(
-    'New Activity',
-    '💬',
-    'Recent discussion replies floating to top',
-  ),
+  newActivity('New Activity', '💬', 'Recent discussion replies floating to top'),
   oldest('Oldest', '📜', 'Chronological earliest reflections first'),
   popular('Popular', '🔥', 'Most engaged reflections & discussions'),
   likes('Likes', '❤️', 'Highest care affirmations & qualitative reactions'),

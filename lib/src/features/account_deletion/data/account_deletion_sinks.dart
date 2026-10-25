@@ -18,10 +18,7 @@ class InMemoryAccountDeletionSink implements AccountDeletionSink {
   }
 
   @override
-  Future<bool> isSoftDeleted({
-    required String userId,
-    required String flavor,
-  }) async {
+  Future<bool> isSoftDeleted({required String userId, required String flavor}) async {
     final record = records['${flavor}_$userId'];
     return record != null && record.softDeleted && record.flavor == flavor;
   }
@@ -74,9 +71,7 @@ class FirestoreAccountDeletionSink implements AccountDeletionSink {
   Future<void> softDelete(AccountDeletionRecord record) async {
     final fs = firestore;
     if (fs == null) {
-      throw const AccountDeletionSinkException(
-        'Cloud Firestore is not ready on this device.',
-      );
+      throw const AccountDeletionSinkException('Cloud Firestore is not ready on this device.');
     }
     try {
       await fs
@@ -89,28 +84,18 @@ class FirestoreAccountDeletionSink implements AccountDeletionSink {
           .set(record.profilePatch(), SetOptions(merge: true));
     } catch (error) {
       if (error is AccountDeletionSinkException) rethrow;
-      throw AccountDeletionSinkException(
-        'Firestore could not save the deletion.',
-      );
+      throw AccountDeletionSinkException('Firestore could not save the deletion.');
     }
   }
 
   @override
-  Future<bool> isSoftDeleted({
-    required String userId,
-    required String flavor,
-  }) async {
+  Future<bool> isSoftDeleted({required String userId, required String flavor}) async {
     final fs = firestore;
     if (fs == null) return false;
     try {
-      final snapshot = await fs
-          .collection(tombstoneCollection)
-          .doc('${flavor}_$userId')
-          .get();
+      final snapshot = await fs.collection(tombstoneCollection).doc('${flavor}_$userId').get();
       final data = snapshot.data();
-      return data != null &&
-          data['softDeleted'] == true &&
-          data['flavor'] == flavor;
+      return data != null && data['softDeleted'] == true && data['flavor'] == flavor;
     } catch (_) {
       return false;
     }
@@ -124,9 +109,7 @@ class FirestoreAccountDeletionSink implements AccountDeletionSink {
   }) async {
     final fs = firestore;
     if (fs == null) {
-      throw const AccountDeletionSinkException(
-        'Cloud Firestore is not ready on this device.',
-      );
+      throw const AccountDeletionSinkException('Cloud Firestore is not ready on this device.');
     }
     final patch = AccountDeletionRecord.directoryRestorePatch(restoredAt);
     try {
@@ -135,15 +118,10 @@ class FirestoreAccountDeletionSink implements AccountDeletionSink {
         'userId': userId,
         'flavor': flavor,
       }, SetOptions(merge: true));
-      await fs
-          .collection(usersCollection)
-          .doc(userId)
-          .set(patch, SetOptions(merge: true));
+      await fs.collection(usersCollection).doc(userId).set(patch, SetOptions(merge: true));
     } catch (error) {
       if (error is AccountDeletionSinkException) rethrow;
-      throw const AccountDeletionSinkException(
-        'Firestore could not restore the account.',
-      );
+      throw const AccountDeletionSinkException('Firestore could not restore the account.');
     }
   }
 }
@@ -163,8 +141,7 @@ abstract interface class AppwriteAccountDeletionRemote {
 
 /// Client-session prefs update. Blocking the user (`status: false`) is an
 /// admin action and is not available to the signed-in member SDK.
-class AppwritePrefsAccountDeletionRemote
-    implements AppwriteAccountDeletionRemote {
+class AppwritePrefsAccountDeletionRemote implements AppwriteAccountDeletionRemote {
   AppwritePrefsAccountDeletionRemote(this._account);
 
   final Account _account;
@@ -181,23 +158,16 @@ class AppwritePrefsAccountDeletionRemote
       // that same person also has an Appwrite session. A guest 401 must not
       // undo the Firestore tombstone or keep them signed in.
       if (_isMissingAppwriteSession(error)) return;
-      throw const AccountDeletionSinkException(
-        'Appwrite could not save the deletion.',
-      );
+      throw const AccountDeletionSinkException('Appwrite could not save the deletion.');
     }
   }
 
   @override
-  Future<bool> isSoftDeleted({
-    required String userId,
-    required String flavor,
-  }) async {
+  Future<bool> isSoftDeleted({required String userId, required String flavor}) async {
     try {
       final user = await _account.get();
       final prefs = user.prefs.data;
-      return prefs['softDeleted'] == true &&
-          prefs['flavor'] == flavor &&
-          prefs['userId'] == userId;
+      return prefs['softDeleted'] == true && prefs['flavor'] == flavor && prefs['userId'] == userId;
     } catch (error) {
       if (_isMissingAppwriteSession(error)) return true;
       return false;
@@ -223,9 +193,7 @@ class AppwritePrefsAccountDeletionRemote
       rethrow;
     } catch (error) {
       if (_isMissingAppwriteSession(error)) return;
-      throw const AccountDeletionSinkException(
-        'Appwrite could not restore the account.',
-      );
+      throw const AccountDeletionSinkException('Appwrite could not restore the account.');
     }
   }
 }
@@ -245,23 +213,16 @@ class AppwriteAccountDeletionSink implements AccountDeletionSink {
   String get name => 'appwrite';
 
   @override
-  Future<void> softDelete(AccountDeletionRecord record) =>
-      remote.markSoftDeleted(record);
+  Future<void> softDelete(AccountDeletionRecord record) => remote.markSoftDeleted(record);
 
   @override
-  Future<bool> isSoftDeleted({
-    required String userId,
-    required String flavor,
-  }) => remote.isSoftDeleted(userId: userId, flavor: flavor);
+  Future<bool> isSoftDeleted({required String userId, required String flavor}) =>
+      remote.isSoftDeleted(userId: userId, flavor: flavor);
 
   @override
   Future<void> restore({
     required String userId,
     required String flavor,
     required DateTime restoredAt,
-  }) => remote.clearSoftDeleted(
-    userId: userId,
-    flavor: flavor,
-    restoredAt: restoredAt,
-  );
+  }) => remote.clearSoftDeleted(userId: userId, flavor: flavor, restoredAt: restoredAt);
 }

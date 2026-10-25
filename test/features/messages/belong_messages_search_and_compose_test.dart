@@ -18,10 +18,7 @@ void main() {
         isSignedIn: true,
         tagline: 'Sensory-friendly contemplative prayer & botanical art',
       );
-      expect(
-        p1.effectiveTagline,
-        'Sensory-friendly contemplative prayer & botanical art',
-      );
+      expect(p1.effectiveTagline, 'Sensory-friendly contemplative prayer & botanical art');
 
       const p2 = MemberProfile(
         displayName: 'Guest',
@@ -43,10 +40,7 @@ void main() {
         isIcocMember: true,
         comfortBadges: ['Founder'],
       );
-      expect(
-        m1.effectiveTagline,
-        'Championing neurodiversity in faith communities',
-      );
+      expect(m1.effectiveTagline, 'Championing neurodiversity in faith communities');
 
       const m2 = DevFellowshipMember(
         name: 'Alex',
@@ -71,19 +65,13 @@ void main() {
       );
       expect(tJustNow.formattedDate(base), 'Just now');
 
-      final tMins = tJustNow.copyWith(
-        lastActivity: base.subtract(const Duration(minutes: 15)),
-      );
+      final tMins = tJustNow.copyWith(lastActivity: base.subtract(const Duration(minutes: 15)));
       expect(tMins.formattedDate(base), '15m ago');
 
-      final tHours = tJustNow.copyWith(
-        lastActivity: base.subtract(const Duration(hours: 2)),
-      );
+      final tHours = tJustNow.copyWith(lastActivity: base.subtract(const Duration(hours: 2)));
       expect(tHours.formattedDate(base), '2 hrs ago');
 
-      final tDays = tJustNow.copyWith(
-        lastActivity: base.subtract(const Duration(days: 3)),
-      );
+      final tDays = tJustNow.copyWith(lastActivity: base.subtract(const Duration(days: 3)));
       expect(tDays.formattedDate(base), '3 days ago');
 
       final tOld = tJustNow.copyWith(lastActivity: DateTime(2026, 9, 7, 10, 0));
@@ -96,84 +84,78 @@ void main() {
       child: MaterialApp(home: BelongMessagesView(initialThreads: threads)),
     );
 
-    patrolWidgetTest(
-      'Message threads render avatars, subjects, types, and timestamps',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1200, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Message threads render avatars, subjects, types, and timestamps', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        await $.pumpWidget(buildMessagesApp());
-        await $.pumpAndSettle();
+      await $.pumpWidget(buildMessagesApp());
+      await $.pumpAndSettle();
 
-        // Verify conversations are displayed with subjects and types
-        expect($('Marty & Community Team'), findsOneWidget);
-        expect($('Sensory Game Night Group'), findsOneWidget);
-        expect($('Silent Co-Presence Fellowship'), findsOneWidget);
-        expect(
-          $(
-            'Welcome to Belong Fellowship: Welcome to Belong on the Spectrum! Glad you are here with us.',
-          ),
-          findsOneWidget,
-        );
-        expect(
-          $(
-            'Wingspan & Cascadia Setup: Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
-          ),
-          findsOneWidget,
-        );
-        expect(
-          $(
-            'Tomorrow 2 PM Coworking: Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
-          ),
-          findsOneWidget,
-        );
+      // Verify conversations are displayed with subjects and types
+      expect($('Marty & Community Team'), findsOneWidget);
+      expect($('Sensory Game Night Group'), findsOneWidget);
+      expect($('Silent Co-Presence Fellowship'), findsOneWidget);
+      expect(
+        $(
+          'Welcome to Belong Fellowship: Welcome to Belong on the Spectrum! Glad you are here with us.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        $(
+          'Wingspan & Cascadia Setup: Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        $('Tomorrow 2 PM Coworking: Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.'),
+        findsOneWidget,
+      );
 
-        // Verify message types
-        expect($('Fellowship'), findsOneWidget);
-        expect($('Group'), findsWidgets);
-      },
-    );
+      // Verify message types
+      expect($('Fellowship'), findsOneWidget);
+      expect($('Group'), findsWidgets);
+    });
 
-    patrolWidgetTest(
-      'Real-time search filters conversations by sender, subject, or snippet',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(1200, 2400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Real-time search filters conversations by sender, subject, or snippet', (
+      $,
+    ) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        await $.pumpWidget(buildMessagesApp());
-        await $.pumpAndSettle();
+      await $.pumpWidget(buildMessagesApp());
+      await $.pumpAndSettle();
 
-        // 1. Search by participant name
-        await $(const Key('search_messages_input')).enterText('Marty');
-        await $.pumpAndSettle();
+      // 1. Search by participant name
+      await $(const Key('search_messages_input')).enterText('Marty');
+      await $.pumpAndSettle();
 
-        expect($('Marty & Community Team'), findsOneWidget);
-        expect($('Sensory Game Night Group'), findsNothing);
+      expect($('Marty & Community Team'), findsOneWidget);
+      expect($('Sensory Game Night Group'), findsNothing);
 
-        // 2. Search by subject
-        await $(const Key('search_messages_input')).enterText('Wingspan');
-        await $.pumpAndSettle();
+      // 2. Search by subject
+      await $(const Key('search_messages_input')).enterText('Wingspan');
+      await $.pumpAndSettle();
 
-        expect($('Sensory Game Night Group'), findsOneWidget);
-        expect($('Marty & Community Team'), findsNothing);
+      expect($('Sensory Game Night Group'), findsOneWidget);
+      expect($('Marty & Community Team'), findsNothing);
 
-        // 3. Clear search restores all threads
-        await $(const Key('clear_search_messages_button')).tap();
-        await $.pumpAndSettle();
+      // 3. Clear search restores all threads
+      await $(const Key('clear_search_messages_button')).tap();
+      await $.pumpAndSettle();
 
-        expect($('Marty & Community Team'), findsOneWidget);
-        expect($('Sensory Game Night Group'), findsOneWidget);
-        expect($('Silent Co-Presence Fellowship'), findsOneWidget);
-      },
-    );
+      expect($('Marty & Community Team'), findsOneWidget);
+      expect($('Sensory Game Night Group'), findsOneWidget);
+      expect($('Silent Co-Presence Fellowship'), findsOneWidget);
+    });
 
     patrolWidgetTest(
       'Tapping Add Msg icon opens modal with member autocomplete and profile taglines',
@@ -199,10 +181,7 @@ void main() {
 
         // Verify members are listed with their name as title and profile tagline as subtitle!
         expect($('Marty (Organizer)'), findsOneWidget);
-        expect(
-          $('Championing neurodiversity in faith communities'),
-          findsOneWidget,
-        );
+        expect($('Championing neurodiversity in faith communities'), findsOneWidget);
 
         expect($('Caleb Stone'), findsOneWidget);
         expect($('Soundscapes, calm lighting, and tech seams'), findsOneWidget);
@@ -213,21 +192,14 @@ void main() {
         // 1. Select two members who are in the current fellowship directory.
         await $(const Key('member_picker_item_Caleb Stone')).tap();
         await $.pumpAndSettle();
-        expect(
-          $(const Key('selected_recipient_chip_Caleb Stone')),
-          findsOneWidget,
-        );
+        expect($(const Key('selected_recipient_chip_Caleb Stone')), findsOneWidget);
 
         await $(const Key('member_picker_item_Sarah Chen')).tap();
         await $.pumpAndSettle();
-        expect(
-          $(const Key('selected_recipient_chip_Sarah Chen')),
-          findsOneWidget,
-        );
+        expect($(const Key('selected_recipient_chip_Sarah Chen')), findsOneWidget);
 
         // 2. Fill in subject and content
-        await $(const Key('new_message_subject_input'))
-            .enterText('Friday Fellowship');
+        await $(const Key('new_message_subject_input')).enterText('Friday Fellowship');
         await $.pumpAndSettle();
 
         await $(const Key('new_message_content_input'))
@@ -240,10 +212,7 @@ void main() {
 
         // 4. Modal closes and new conversation is active in thread detail
         expect($('Friday Fellowship'), findsOneWidget);
-        expect(
-          $('Looking forward to quiet conversation this week!'),
-          findsOneWidget,
-        );
+        expect($('Looking forward to quiet conversation this week!'), findsOneWidget);
 
         // 5. Test reply in thread
         await $(const Key('reply-message-field')).enterText('Will bring teas!');

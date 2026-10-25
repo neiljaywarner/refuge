@@ -23,62 +23,55 @@ void main() {
       commentRepo = LocalCommentRepository();
     });
 
-    patrolWidgetTest(
-      'regular non-admin user cannot see admin badge or ban button',
-      ($) async {
-        $.tester.view.physicalSize = const Size(1080, 2400);
-        $.tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('regular non-admin user cannot see admin badge or ban button', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        final container = ProviderContainer(
-          overrides: [
-            postRepositoryProvider.overrideWithValue(postRepo),
-            commentRepositoryProvider.overrideWithValue(commentRepo),
-            organizerRemoteConfigProvider.overrideWithValue(
-              OrganizerRemoteConfig.defaults(
-                const CommunityBrandConfig.belong(),
-              ),
-            ),
-            memberProfileProvider.overrideWith(
-              () => _StaticProfileNotifier(
-                const MemberProfile(
-                  displayName: 'Alice Visitor',
-                  email: 'alice@example.com',
-                  bio: 'Regular community member',
-                  comfortBadges: [],
-                  isSignedIn: true,
-                ),
-              ),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-
-        await $.pumpWidgetAndSettle(
-          UncontrolledProviderScope(
-            container: container,
-            child: const MaterialApp(
-              home: Scaffold(
-                body: OtherMemberProfileDialog(authorName: 'Caleb Stone'),
+      final container = ProviderContainer(
+        overrides: [
+          postRepositoryProvider.overrideWithValue(postRepo),
+          commentRepositoryProvider.overrideWithValue(commentRepo),
+          organizerRemoteConfigProvider.overrideWithValue(
+            OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong()),
+          ),
+          memberProfileProvider.overrideWith(
+            () => _StaticProfileNotifier(
+              const MemberProfile(
+                displayName: 'Alice Visitor',
+                email: 'alice@example.com',
+                bio: 'Regular community member',
+                comfortBadges: [],
+                isSignedIn: true,
               ),
             ),
           ),
-        );
+        ],
+      );
+      addTearDown(container.dispose);
 
-        // Verify name is present
-        expect($(const Key('other_member_profile_name')), findsOneWidget);
+      await $.pumpWidgetAndSettle(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: Scaffold(body: OtherMemberProfileDialog(authorName: 'Caleb Stone')),
+          ),
+        ),
+      );
 
-        // Verify admin controls are NOT visible to regular users
-        expect($(const Key('admin_mode_badge')), findsNothing);
-        expect($(const Key('admin_ban_member_button')), findsNothing);
-        expect($(const Key('admin_unban_member_button')), findsNothing);
-        expect($(const Key('banned_member_banner')), findsNothing);
-        expect($(const Key('profile_done_button')), findsOneWidget);
-      },
-    );
+      // Verify name is present
+      expect($(const Key('other_member_profile_name')), findsOneWidget);
+
+      // Verify admin controls are NOT visible to regular users
+      expect($(const Key('admin_mode_badge')), findsNothing);
+      expect($(const Key('admin_ban_member_button')), findsNothing);
+      expect($(const Key('admin_unban_member_button')), findsNothing);
+      expect($(const Key('banned_member_banner')), findsNothing);
+      expect($(const Key('profile_done_button')), findsOneWidget);
+    });
 
     patrolWidgetTest(
       'admin user sees admin badge, can ban member into soft-delete table and unban',
@@ -98,9 +91,8 @@ void main() {
             postRepositoryProvider.overrideWithValue(postRepo),
             commentRepositoryProvider.overrideWithValue(commentRepo),
             organizerRemoteConfigProvider.overrideWithValue(
-              OrganizerRemoteConfig.defaults(
-                const CommunityBrandConfig.belong(),
-              ).copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
+              OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+                  .copyWith(adminEmailsCsv: 'organizer@belongonthespectrum.com'),
             ),
             memberProfileProvider.overrideWith(
               () => _StaticProfileNotifier(
@@ -122,9 +114,7 @@ void main() {
           UncontrolledProviderScope(
             container: container,
             child: const MaterialApp(
-              home: Scaffold(
-                body: OtherMemberProfileDialog(authorName: 'Caleb Stone'),
-              ),
+              home: Scaffold(body: OtherMemberProfileDialog(authorName: 'Caleb Stone')),
             ),
           ),
         );
@@ -138,10 +128,7 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify confirmation dialog appeared
-        expect(
-          find.textContaining('does not block an IP address'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('does not block an IP address'), findsOneWidget);
         expect($(const Key('cancel_ban_button')), findsOneWidget);
         expect($(const Key('confirm_ban_button')), findsOneWidget);
 
@@ -187,9 +174,7 @@ void main() {
       expect($('Failed to ban member'), findsNothing);
     });
 
-    patrolWidgetTest('Scenario: A failed ban shows the error snackbar', (
-      $,
-    ) async {
+    patrolWidgetTest('Scenario: A failed ban shows the error snackbar', ($) async {
       $.tester.view.physicalSize = const Size(1080, 2400);
       $.tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

@@ -61,8 +61,7 @@ class SensorySoundscape extends Equatable {
     SensorySoundscape(
       id: 'brown_noise',
       title: 'Warm Brown Noise',
-      description:
-          'Deep, low-frequency soundscape masking unpredictable room noise.',
+      description: 'Deep, low-frequency soundscape masking unpredictable room noise.',
       iconEmoji: '☕',
       category: SoundscapeCategory.noise,
       defaultVolume: 0.35,
@@ -70,8 +69,7 @@ class SensorySoundscape extends Equatable {
     SensorySoundscape(
       id: 'gentle_rain',
       title: 'Gentle Rain on Leaves',
-      description:
-          'Soft, steady rainfall texture with low motion and no thunder.',
+      description: 'Soft, steady rainfall texture with low motion and no thunder.',
       iconEmoji: '🌧️',
       category: SoundscapeCategory.nature,
       defaultVolume: 0.30,

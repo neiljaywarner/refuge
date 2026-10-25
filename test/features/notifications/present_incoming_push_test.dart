@@ -3,8 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/calm_local_notification_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/present_incoming_push.dart';
 
-class MockCalmLocalNotificationService extends Mock
-    implements CalmLocalNotificationService {}
+class MockCalmLocalNotificationService extends Mock implements CalmLocalNotificationService {}
 
 void main() {
   late MockCalmLocalNotificationService notifications;

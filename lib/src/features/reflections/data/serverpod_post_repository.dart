@@ -58,8 +58,7 @@ class ServerpodPostRepository implements PostRepository {
              serverUrl ??
                  const String.fromEnvironment(
                    'SERVERPOD_URL',
-                   defaultValue:
-                       'https://refuge4serverpod.api.serverpod.space/',
+                   defaultValue: 'https://refuge4serverpod.api.serverpod.space/',
                  ),
            );
 
@@ -87,9 +86,7 @@ class ServerpodPostRepository implements PostRepository {
               toneTag: data['intentTag'] as String? ?? '[Support]',
               specialInterestTag: data['specialInterestTag'] as String?,
               content: data['content'] as String? ?? '',
-              timestamp:
-                  DateTime.tryParse(data['createdAt'] as String? ?? '') ??
-                  DateTime.now(),
+              timestamp: DateTime.tryParse(data['createdAt'] as String? ?? '') ?? DateTime.now(),
               reactions: {
                 'pray': (data['prayingCount'] as num?)?.toInt() ?? 0,
                 'standing': (data['standingWithCount'] as num?)?.toInt() ?? 0,
@@ -153,9 +150,7 @@ class ServerpodPostRepository implements PostRepository {
           .publishReflection(spReflection)
           .timeout(const Duration(milliseconds: 1200));
       _isLiveConnected = true;
-      talker.info(
-        '✅ [Serverpod RPC SUCCESS] Reflection published with id ${created.id}',
-      );
+      talker.info('✅ [Serverpod RPC SUCCESS] Reflection published with id ${created.id}');
       return post.copyWith(id: created.id?.toString());
     } catch (e, st) {
       talker.handle(
@@ -170,10 +165,7 @@ class ServerpodPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({
-    required String postId,
-    required String reactionType,
-  }) async {
+  Future<void> addReaction({required String postId, required String reactionType}) async {
     // 1. Immediately mirror to local fallback for sub-16ms latency
     _fallback.addReaction(postId: postId, reactionType: reactionType);
 
@@ -206,17 +198,11 @@ class ServerpodPostRepository implements PostRepository {
         await _client.reflection
             .affirmCare(parsedId, mappedKey)
             .timeout(const Duration(milliseconds: 4000));
-        talker.info(
-          '✅ [Serverpod RPC SUCCESS] Care affirmed for post $parsedId ($reactionType)',
-        );
+        talker.info('✅ [Serverpod RPC SUCCESS] Care affirmed for post $parsedId ($reactionType)');
         _isLiveConnected = true;
         return;
       } catch (e, st) {
-        talker.handle(
-          e,
-          st,
-          '🚨 [Serverpod RPC FAILED] affirmCare error, falling back to local',
-        );
+        talker.handle(e, st, '🚨 [Serverpod RPC FAILED] affirmCare error, falling back to local');
         _isLiveConnected = false;
       }
     }
@@ -235,12 +221,8 @@ class ServerpodPostRepository implements PostRepository {
     final remoteById = <String, Post>{};
 
     List<Post> merge(List<Post> local) {
-      final byId = <String, Post>{
-        for (final post in local) post.id: post,
-        ...remoteById,
-      };
-      final merged = byId.values.toList()
-        ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      final byId = <String, Post>{for (final post in local) post.id: post, ...remoteById};
+      final merged = byId.values.toList()..sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return merged;
     }
 
@@ -252,10 +234,7 @@ class ServerpodPostRepository implements PostRepository {
       onListen: () {
         localSub = _fallback
             .watchPosts(spaceKey: spaceKey)
-            .listen(
-              (local) => emit(merge(local)),
-              onError: controller.addError,
-            );
+            .listen((local) => emit(merge(local)), onError: controller.addError);
         try {
           final mappedSpace = _mapSpaceKey(spaceKey);
           remoteSub = _client.reflection
@@ -286,20 +265,12 @@ class ServerpodPostRepository implements PostRepository {
                 },
                 onError: (Object e, StackTrace st) {
                   _isLiveConnected = false;
-                  talker.handle(
-                    e,
-                    st,
-                    '🚨 [Serverpod WebSocket] watchPosts stream error',
-                  );
+                  talker.handle(e, st, '🚨 [Serverpod WebSocket] watchPosts stream error');
                 },
               );
         } catch (e, st) {
           _isLiveConnected = false;
-          talker.handle(
-            e,
-            st,
-            '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected',
-          );
+          talker.handle(e, st, '🚨 [Serverpod WebSocket CATCH] watchPosts stream disconnected');
         }
       },
       onCancel: () async {
@@ -356,8 +327,7 @@ class ServerpodPostRepository implements PostRepository {
       _fallback.watchPostsByAuthor(authorName: authorName);
 
   @override
-  Future<void> toggleSavePost({required String postId}) =>
-      _fallback.toggleSavePost(postId: postId);
+  Future<void> toggleSavePost({required String postId}) => _fallback.toggleSavePost(postId: postId);
 
   @override
   Future<List<Post>> getSavedPosts() => _fallback.getSavedPosts();

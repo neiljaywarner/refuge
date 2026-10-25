@@ -11,12 +11,7 @@ import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_back
 ///   dart run tool/review_telemetry.dart [--flavor dev|prod] [--simulate-error] [--simulate-event]
 void main(List<String> rawArgs) async {
   final parser = ArgParser()
-    ..addOption(
-      'flavor',
-      abbr: 'f',
-      defaultsTo: 'dev',
-      help: 'Target app flavor (dev or prod)',
-    )
+    ..addOption('flavor', abbr: 'f', defaultsTo: 'dev', help: 'Target app flavor (dev or prod)')
     ..addFlag(
       'simulate-error',
       abbr: 'e',
@@ -29,19 +24,12 @@ void main(List<String> rawArgs) async {
       defaultsTo: false,
       help: 'Simulate key community user journey analytics',
     )
-    ..addFlag(
-      'help',
-      abbr: 'h',
-      negatable: false,
-      help: 'Display usage instructions',
-    );
+    ..addFlag('help', abbr: 'h', negatable: false, help: 'Display usage instructions');
 
   final results = parser.parse(rawArgs);
 
   if (results['help'] as bool) {
-    stdout.writeln(
-      '📡 Belong on the Spectrum — Telemetry & Observability Review CLI',
-    );
+    stdout.writeln('📡 Belong on the Spectrum — Telemetry & Observability Review CLI');
     stdout.writeln(parser.usage);
     exit(0);
   }
@@ -50,41 +38,22 @@ void main(List<String> rawArgs) async {
   final flavor = flavorName == 'prod' ? AppFlavor.prod : AppFlavor.dev;
   final backup = ServerpodTelemetryBackup(flavor: flavor);
 
-  stdout.writeln(
-    '================================================================',
-  );
+  stdout.writeln('================================================================');
   stdout.writeln('📡 Belong on the Spectrum: Observability & Telemetry Audit');
   stdout.writeln('   Active Flavor: ${flavor.slug.toUpperCase()}');
   stdout.writeln('   Firebase Project: belongonthespectrum (US Central)');
-  stdout.writeln(
-    '   Serverpod Cluster: https://refuge4serverpod.api.serverpod.space/',
-  );
-  stdout.writeln(
-    '================================================================\n',
-  );
+  stdout.writeln('   Serverpod Cluster: https://refuge4serverpod.api.serverpod.space/');
+  stdout.writeln('================================================================\n');
 
   final shouldSimulateError = results['simulate-error'] as bool;
   final shouldSimulateEvent = results['simulate-event'] as bool;
 
   if (shouldSimulateEvent || (!shouldSimulateError && !shouldSimulateEvent)) {
-    stdout.writeln(
-      '1. Recording Simulated User Journeys (Conversion Funnels):',
-    );
-    await backup.recordAnalyticsEvent(
-      'space_viewed',
-      parameters: {'space_slug': 'memes'},
-    );
-    await backup.recordAnalyticsEvent(
-      'sensory_theme_changed',
-      parameters: {'mode': 'sage'},
-    );
-    await backup.recordAnalyticsEvent(
-      'vote_cast',
-      parameters: {'feature_id': 'soundscapes'},
-    );
-    stdout.writeln(
-      '   ✅ Successfully logged 3 sample analytics events into Serverpod buffer.\n',
-    );
+    stdout.writeln('1. Recording Simulated User Journeys (Conversion Funnels):');
+    await backup.recordAnalyticsEvent('space_viewed', parameters: {'space_slug': 'memes'});
+    await backup.recordAnalyticsEvent('sensory_theme_changed', parameters: {'mode': 'sage'});
+    await backup.recordAnalyticsEvent('vote_cast', parameters: {'feature_id': 'soundscapes'});
+    stdout.writeln('   ✅ Successfully logged 3 sample analytics events into Serverpod buffer.\n');
   }
 
   if (shouldSimulateError) {
@@ -108,9 +77,7 @@ void main(List<String> rawArgs) async {
 
   stdout.writeln('3. Current Serverpod Backup Ring Buffer:');
   for (final record in backup.recentRecords) {
-    final icon = record.kind == TelemetryKind.error
-        ? (record.isFatal ? '🚨' : '⚠️')
-        : '📊';
+    final icon = record.kind == TelemetryKind.error ? (record.isFatal ? '🚨' : '⚠️') : '📊';
     stdout.writeln(
       '   $icon [${record.timestamp.toIso8601String()}] ${record.name} (${record.kind.name})',
     );
@@ -120,9 +87,7 @@ void main(List<String> rawArgs) async {
     }
   }
 
-  stdout.writeln(
-    '\n================================================================',
-  );
+  stdout.writeln('\n================================================================');
   stdout.writeln('🔍 How to Review Production Telemetry Channels:');
   stdout.writeln('   • Firebase Analytics:');
   stdout.writeln(
@@ -138,7 +103,5 @@ void main(List<String> rawArgs) async {
   stdout.writeln(
     '     Rapidly tap the Belong logo 7 times in the header to trigger test crashes & NFEs!',
   );
-  stdout.writeln(
-    '================================================================',
-  );
+  stdout.writeln('================================================================');
 }

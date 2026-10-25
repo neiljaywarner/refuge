@@ -48,14 +48,11 @@ const _siteId = 'dev-belongonthespectrum';
 const _devUrl = 'https://dev-belongonthespectrum.web.app';
 const _defaultTesterGroups = 'pre-alpha-testers';
 
-String _bin(String name) =>
-    Platform.environment['${name.toUpperCase()}_BIN'] ?? name;
+String _bin(String name) => Platform.environment['${name.toUpperCase()}_BIN'] ?? name;
 
 Future<void> main(List<String> args) async {
   if (args.contains('--help') || args.contains('-h')) {
-    stdout.writeln(
-      'See the library doc at the top of tool/deploy_dev_web.dart.',
-    );
+    stdout.writeln('See the library doc at the top of tool/deploy_dev_web.dart.');
     return;
   }
   if (args.contains('--prod')) {
@@ -145,10 +142,7 @@ Future<void> main(List<String> args) async {
       dryRun: dryRun,
     );
     if (!dryRun) {
-      final apk = resolveExistingApk(
-        Directory.current.path,
-        devReleaseApkRelativePaths(),
-      );
+      final apk = resolveExistingApk(Directory.current.path, devReleaseApkRelativePaths());
       if (apk == null) {
         stderr.writeln('Dev APK build finished but no release APK was found.');
         exit(66);
@@ -193,10 +187,7 @@ Future<void> main(List<String> args) async {
       );
       exit(65);
     }
-    final apk = resolveExistingApk(
-      Directory.current.path,
-      devReleaseApkRelativePaths(),
-    );
+    final apk = resolveExistingApk(Directory.current.path, devReleaseApkRelativePaths());
     if (apk == null && !dryRun) {
       stderr.writeln('No dev release APK to upload.');
       exit(66);
@@ -210,9 +201,7 @@ Future<void> main(List<String> args) async {
         'Git: ${stamp.gitSha}\n',
       );
     }
-    stdout.writeln(
-      'Uploading dev APK to App Distribution (groups: $groups)...',
-    );
+    stdout.writeln('Uploading dev APK to App Distribution (groups: $groups)...');
     await _run(_bin('firebase'), [
       'appdistribution:distribute',
       apk?.path ?? devReleaseApkRelativePaths().first,
@@ -239,10 +228,7 @@ String? _arg(List<String> args, String flag) {
   return null;
 }
 
-Future<void> _writeWebVersionJson(
-  String version,
-  ReleaseBuildStamp stamp,
-) async {
+Future<void> _writeWebVersionJson(String version, ReleaseBuildStamp stamp) async {
   final pubspec = File('pubspec.yaml').readAsStringSync();
   final versionLine = RegExp(
     r'^version:\s*(.+)$',

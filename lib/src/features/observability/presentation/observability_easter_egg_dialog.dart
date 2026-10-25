@@ -23,18 +23,14 @@ import '../../../core/observability/error_reporter_service.dart';
 class ObservabilityEasterEggDialog extends ConsumerStatefulWidget {
   const ObservabilityEasterEggDialog({super.key});
 
-  static Future<void> show(BuildContext context) => showDialog(
-    context: context,
-    builder: (_) => const ObservabilityEasterEggDialog(),
-  );
+  static Future<void> show(BuildContext context) =>
+      showDialog(context: context, builder: (_) => const ObservabilityEasterEggDialog());
 
   @override
-  ConsumerState<ObservabilityEasterEggDialog> createState() =>
-      _ObservabilityEasterEggDialogState();
+  ConsumerState<ObservabilityEasterEggDialog> createState() => _ObservabilityEasterEggDialogState();
 }
 
-class _ObservabilityEasterEggDialogState
-    extends ConsumerState<ObservabilityEasterEggDialog> {
+class _ObservabilityEasterEggDialogState extends ConsumerState<ObservabilityEasterEggDialog> {
   bool _isUploadingLogs = false;
   String? _uploadedLogUrl;
 
@@ -77,23 +73,15 @@ class _ObservabilityEasterEggDialogState
             // -----------------------------------------------------------------
             Text(
               'Firebase Installation ID (Troubleshooting):',
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
-                ),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.5,
-                  ),
-                ),
+                border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
               ),
               child: installationsAsync.when(
                 data: (fid) => Row(
@@ -117,9 +105,7 @@ class _ObservabilityEasterEggDialogState
                         Clipboard.setData(ClipboardData(text: fid));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              '📋 Firebase Installation ID copied to clipboard',
-                            ),
+                            content: Text('📋 Firebase Installation ID copied to clipboard'),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -137,19 +123,13 @@ class _ObservabilityEasterEggDialogState
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                       SizedBox(width: 8),
-                      Text(
-                        'Fetching Installation ID...',
-                        style: TextStyle(fontSize: 11),
-                      ),
+                      Text('Fetching Installation ID...', style: TextStyle(fontSize: 11)),
                     ],
                   ),
                 ),
                 error: (err, _) => SelectableText(
                   'Error: $err',
-                  style: TextStyle(
-                    color: theme.colorScheme.error,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: theme.colorScheme.error, fontSize: 11),
                 ),
               ),
             ),
@@ -181,15 +161,11 @@ class _ObservabilityEasterEggDialogState
                 }
               },
               icon: Icon(
-                fiam.isSupported
-                    ? Icons.chat_bubble_outline
-                    : Icons.chat_bubble_outline_rounded,
+                fiam.isSupported ? Icons.chat_bubble_outline : Icons.chat_bubble_outline_rounded,
                 size: 18,
               ),
               label: Text(
-                fiam.isSupported
-                    ? 'Trigger In-App Message'
-                    : 'Trigger In-App Message (Web Stub)',
+                fiam.isSupported ? 'Trigger In-App Message' : 'Trigger In-App Message (Web Stub)',
               ),
             ),
             const SizedBox(height: 8),
@@ -204,8 +180,7 @@ class _ObservabilityEasterEggDialogState
                   : () async {
                       setState(() => _isUploadingLogs = true);
                       try {
-                        final url = await diagnosticLogService
-                            .sendLogsToCloudStorage();
+                        final url = await diagnosticLogService.sendLogsToCloudStorage();
                         if (mounted) {
                           setState(() {
                             _isUploadingLogs = false;
@@ -244,9 +219,7 @@ class _ObservabilityEasterEggDialogState
                     )
                   : const Icon(Icons.cloud_upload_outlined, size: 18),
               label: Text(
-                _isUploadingLogs
-                    ? 'Uploading Diagnostic Logs...'
-                    : 'Send Logs to Cloud Storage',
+                _isUploadingLogs ? 'Uploading Diagnostic Logs...' : 'Send Logs to Cloud Storage',
               ),
             ),
             if (_uploadedLogUrl != null) ...[
@@ -254,9 +227,7 @@ class _ObservabilityEasterEggDialogState
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(
-                    alpha: 0.4,
-                  ),
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -265,10 +236,7 @@ class _ObservabilityEasterEggDialogState
                       child: SelectableText(
                         _uploadedLogUrl!,
                         key: const Key('easter_egg_uploaded_log_url'),
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontFamily: 'monospace',
-                        ),
+                        style: const TextStyle(fontSize: 10, fontFamily: 'monospace'),
                       ),
                     ),
                     IconButton(
@@ -276,9 +244,7 @@ class _ObservabilityEasterEggDialogState
                       icon: const Icon(Icons.copy, size: 14),
                       tooltip: 'Copy Log URL',
                       onPressed: () {
-                        Clipboard.setData(
-                          ClipboardData(text: _uploadedLogUrl!),
-                        );
+                        Clipboard.setData(ClipboardData(text: _uploadedLogUrl!));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('📋 Log URL copied to clipboard'),
@@ -297,8 +263,7 @@ class _ObservabilityEasterEggDialogState
             OutlinedButton.icon(
               key: const Key('easter_egg_view_replay_button'),
               onPressed: () async {
-                final replay = await diagnosticLogService
-                    .generateReplayBundle();
+                final replay = await diagnosticLogService.generateReplayBundle();
                 if (context.mounted) {
                   _showSessionReplaySheet(context, replay);
                 }
@@ -328,9 +293,7 @@ class _ObservabilityEasterEggDialogState
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                      '✅ Handled NFE logged to Crashlytics, Analytics & Talker',
-                    ),
+                    content: Text('✅ Handled NFE logged to Crashlytics, Analytics & Talker'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -355,9 +318,7 @@ class _ObservabilityEasterEggDialogState
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                      '📊 Analytics event "easter_egg_test_event" dispatched',
-                    ),
+                    content: Text('📊 Analytics event "easter_egg_test_event" dispatched'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -380,9 +341,7 @@ class _ObservabilityEasterEggDialogState
                 if (Firebase.apps.isNotEmpty && !kIsWeb) {
                   FirebaseCrashlytics.instance.crash();
                 } else {
-                  throw StateError(
-                    'Simulated Fatal Crash from 7-Tap Easter Egg',
-                  );
+                  throw StateError('Simulated Fatal Crash from 7-Tap Easter Egg');
                 }
               },
               icon: const Icon(Icons.dangerous_outlined, size: 18),
@@ -395,17 +354,13 @@ class _ObservabilityEasterEggDialogState
             // ADB DebugView Help
             Text(
               'ADB Analytics DebugView Mode:',
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
-                ),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
@@ -440,9 +395,7 @@ class _ObservabilityEasterEggDialogState
             const SizedBox(height: 8),
             Text(
               'Recent In-Memory Errors (${errorReporter.recordedErrorsForTesting.length}):',
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
@@ -450,8 +403,7 @@ class _ObservabilityEasterEggDialogState
                   ? 'No errors recorded in this session.'
                   : errorReporter.recordedErrorsForTesting
                         .map(
-                          (e) =>
-                              '• [${e['fatal'] == true ? 'FATAL' : 'HANDLED'}] ${e['reason']}',
+                          (e) => '• [${e['fatal'] == true ? 'FATAL' : 'HANDLED'}] ${e['reason']}',
                         )
                         .join('\n'),
               style: const TextStyle(fontSize: 10, fontFamily: 'monospace'),
@@ -469,10 +421,7 @@ class _ObservabilityEasterEggDialogState
     );
   }
 
-  void _showSessionReplaySheet(
-    BuildContext context,
-    DiagnosticSessionReplay replay,
-  ) {
+  void _showSessionReplaySheet(BuildContext context, DiagnosticSessionReplay replay) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -490,18 +439,12 @@ class _ObservabilityEasterEggDialogState
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.replay_circle_filled_outlined,
-                      color: Colors.blueAccent,
-                    ),
+                    const Icon(Icons.replay_circle_filled_outlined, color: Colors.blueAccent),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
                         'Diagnostic Session Replay',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                     IconButton(
@@ -509,15 +452,9 @@ class _ObservabilityEasterEggDialogState
                       icon: const Icon(Icons.copy, size: 18),
                       tooltip: 'Copy Session Replay',
                       onPressed: () {
-                        Clipboard.setData(
-                          ClipboardData(text: replay.toFormattedText()),
-                        );
+                        Clipboard.setData(ClipboardData(text: replay.toFormattedText()));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              '📋 Session replay copied to clipboard',
-                            ),
-                          ),
+                          const SnackBar(content: Text('📋 Session replay copied to clipboard')),
                         );
                       },
                     ),
@@ -529,10 +466,7 @@ class _ObservabilityEasterEggDialogState
                     controller: scrollController,
                     child: SelectableText(
                       replay.toFormattedText(),
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 11,
-                      ),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
                     ),
                   ),
                 ),

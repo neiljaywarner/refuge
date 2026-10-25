@@ -77,9 +77,7 @@ class DeleteMyAccountDialog extends HookConsumerWidget {
       actions: [
         TextButton(
           key: const Key('delete_my_account_cancel_button'),
-          onPressed: submitting.value
-              ? null
-              : () => Navigator.of(context).pop(),
+          onPressed: submitting.value ? null : () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
         FilledButton(

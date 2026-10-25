@@ -22,9 +22,7 @@ void main() {
       'Preferred display name and ICOC church selection persist across notifier reloads and app restarts',
       ($) async {
         final container1 = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
         addTearDown(container1.dispose);
 
@@ -44,35 +42,24 @@ void main() {
         final profile1 = container1.read(memberProfileProvider);
         expect(profile1.isSignedIn, isTrue);
         expect(profile1.displayName, equals('Caleb Pioneer'));
-        expect(
-          profile1.icocChurchAffiliation,
-          equals('Austin Christian Church'),
-        );
+        expect(profile1.icocChurchAffiliation, equals('Austin Christian Church'));
 
         // 3. Verify local persistent storage saved the metadata
         final saved = ProfileStorageService.instance.load();
         expect(saved, isNotNull);
         expect(saved!['displayName'], equals('Caleb Pioneer'));
-        expect(
-          saved['icocChurchAffiliation'],
-          equals('Austin Christian Church'),
-        );
+        expect(saved['icocChurchAffiliation'], equals('Austin Christian Church'));
 
         // 4. Simulate a fresh app cold-start / browser page refresh
         final container2 = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
         addTearDown(container2.dispose);
 
         final restored = container2.read(memberProfileProvider);
         expect(restored.isSignedIn, isTrue);
         expect(restored.displayName, equals('Caleb Pioneer'));
-        expect(
-          restored.icocChurchAffiliation,
-          equals('Austin Christian Church'),
-        );
+        expect(restored.icocChurchAffiliation, equals('Austin Christian Church'));
         expect(restored.isIcocMember, isTrue);
       },
     );
@@ -81,26 +68,20 @@ void main() {
       'MemberProfileDialog selects ICOC church via dropdown and saves persisted session',
       ($) async {
         final container = ProviderContainer(
-          overrides: [
-            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-          ],
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
         addTearDown(container.dispose);
 
         await $.pumpWidgetAndSettle(
           UncontrolledProviderScope(
             container: container,
-            child: const MaterialApp(
-              home: Scaffold(body: MemberProfileDialog()),
-            ),
+            child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
           ),
         );
 
         // Enter display name and email
-        await $(const Key('profile_display_name_field'))
-            .enterText('Sarah Rest');
-        await $(const Key('profile_email_field'))
-            .enterText('sarah@belongonthespectrum.com');
+        await $(const Key('profile_display_name_field')).enterText('Sarah Rest');
+        await $(const Key('profile_email_field')).enterText('sarah@belongonthespectrum.com');
 
         // Tap dropdown and select Boston Church of Christ
         await $(const Key('profile_church_affiliation_dropdown')).tap();
@@ -116,28 +97,18 @@ void main() {
         final profile = container.read(memberProfileProvider);
         expect(profile.isSignedIn, isTrue);
         expect(profile.displayName, equals('Sarah Rest'));
-        expect(
-          profile.icocChurchAffiliation,
-          equals('Boston Church of Christ'),
-        );
+        expect(profile.icocChurchAffiliation, equals('Boston Church of Christ'));
 
         // Verify storage
         final saved = ProfileStorageService.instance.load();
         expect(saved!['displayName'], equals('Sarah Rest'));
-        expect(
-          saved['icocChurchAffiliation'],
-          equals('Boston Church of Christ'),
-        );
+        expect(saved['icocChurchAffiliation'], equals('Boston Church of Christ'));
       },
     );
 
-    patrolWidgetTest('Signing out clears persisted profile storage cleanly', (
-      $,
-    ) async {
+    patrolWidgetTest('Signing out clears persisted profile storage cleanly', ($) async {
       final container = ProviderContainer(
-        overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        ],
+        overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
       addTearDown(container.dispose);
 

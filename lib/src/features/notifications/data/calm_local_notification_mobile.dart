@@ -12,9 +12,7 @@ class CalmLocalNotificationMobile implements CalmLocalNotificationService {
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
 
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
     await _plugin.initialize(settings: initSettings);
 
@@ -38,9 +36,7 @@ class CalmLocalNotificationMobile implements CalmLocalNotificationService {
     );
 
     final androidPlugin = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(quietChannel);
     await androidPlugin?.createNotificationChannel(messageChannel);
 
@@ -136,5 +132,4 @@ class CalmLocalNotificationMobile implements CalmLocalNotificationService {
   }
 }
 
-CalmLocalNotificationService createCalmLocalNotificationService() =>
-    CalmLocalNotificationMobile();
+CalmLocalNotificationService createCalmLocalNotificationService() => CalmLocalNotificationMobile();

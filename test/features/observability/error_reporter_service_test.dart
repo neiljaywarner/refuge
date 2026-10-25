@@ -10,10 +10,7 @@ void main() {
 
     setUp(() {
       analytics = CommunityAnalyticsService(flavor: AppFlavor.dev);
-      errorReporter = ErrorReporterService(
-        flavor: AppFlavor.dev,
-        analyticsService: analytics,
-      );
+      errorReporter = ErrorReporterService(flavor: AppFlavor.dev, analyticsService: analytics);
     });
 
     test('records handled non-fatal error and logs to analytics and diagnostic buffer', () async {
@@ -43,47 +40,37 @@ void main() {
       expect(event['fatal'], 0);
     });
 
-    test(
-      'scrubs PII such as email addresses and secret tokens before recording',
-      () async {
-        final exception = StateError('Authentication failed');
+    test('scrubs PII such as email addresses and secret tokens before recording', () async {
+      final exception = StateError('Authentication failed');
 
-        await errorReporter.recordError(
-          exception,
-          StackTrace.empty,
-          reason: 'User sign in failed',
-          fatal: true,
-          context: {
-            'user_email': 'sensitive.member@example.org',
-            'access_token': 'secret-token-xyz-123',
-            'screen': 'profile_sheet',
-          },
-        );
+      await errorReporter.recordError(
+        exception,
+        StackTrace.empty,
+        reason: 'User sign in failed',
+        fatal: true,
+        context: {
+          'user_email': 'sensitive.member@example.org',
+          'access_token': 'secret-token-xyz-123',
+          'screen': 'profile_sheet',
+        },
+      );
 
-        expect(errorReporter.recordedErrorsForTesting.length, 1);
-        final recorded = errorReporter.recordedErrorsForTesting.first;
-        final context = recorded['context'] as Map<String, Object>;
+      expect(errorReporter.recordedErrorsForTesting.length, 1);
+      final recorded = errorReporter.recordedErrorsForTesting.first;
+      final context = recorded['context'] as Map<String, Object>;
 
-        expect(context['user_email'], '[SCRUBBED_EMAIL]');
-        expect(context['access_token'], '[SCRUBBED_SECRET]');
-        expect(context['screen'], 'profile_sheet');
-      },
-    );
+      expect(context['user_email'], '[SCRUBBED_EMAIL]');
+      expect(context['access_token'], '[SCRUBBED_SECRET]');
+      expect(context['screen'], 'profile_sheet');
+    });
 
-    test(
-      'handles unhandled fatal errors gracefully with reason default',
-      () async {
-        await errorReporter.recordError(
-          'Critical out of memory',
-          null,
-          fatal: true,
-        );
+    test('handles unhandled fatal errors gracefully with reason default', () async {
+      await errorReporter.recordError('Critical out of memory', null, fatal: true);
 
-        final recorded = errorReporter.recordedErrorsForTesting.first;
-        expect(recorded['fatal'], isTrue);
-        expect(recorded['reason'], 'unspecified');
-      },
-    );
+      final recorded = errorReporter.recordedErrorsForTesting.first;
+      expect(recorded['fatal'], isTrue);
+      expect(recorded['reason'], 'unspecified');
+    });
   });
 
   group('CommunityAnalyticsService v0.8.1 Event Suite Tests', () {
@@ -93,37 +80,26 @@ void main() {
       analytics = CommunityAnalyticsService(flavor: AppFlavor.prod);
     });
 
-    test(
-      'records domain-level screen views, voting, feedback, and RSVPs',
-      () async {
-        await analytics.logScreenView('actually_autistic_events');
-        await analytics.logVoteCast('direct_messages_v1');
-        await analytics.logFeedbackIntent('Works Great');
-        await analytics.logReflectionPublished(
-          tag: 'Prayer Request',
-          lengthBucket: 120,
-        );
-        await analytics.logEventRsvp(
-          eventId: 'dfw_meetup_01',
-          status: 'attending',
-        );
+    test('records domain-level screen views, voting, feedback, and RSVPs', () async {
+      await analytics.logScreenView('actually_autistic_events');
+      await analytics.logVoteCast('direct_messages_v1');
+      await analytics.logFeedbackIntent('Works Great');
+      await analytics.logReflectionPublished(tag: 'Prayer Request', lengthBucket: 120);
+      await analytics.logEventRsvp(eventId: 'dfw_meetup_01', status: 'attending');
 
-        expect(analytics.recordedEventsForTesting.length, 5);
+      expect(analytics.recordedEventsForTesting.length, 5);
 
-        final names = analytics.recordedEventsForTesting
-            .map((e) => e['name'])
-            .toList();
-        expect(
-          names,
-          containsAll([
-            'screen_view',
-            'vote_cast',
-            'feedback_intent_selected',
-            'reflection_published',
-            'event_rsvp',
-          ]),
-        );
-      },
-    );
+      final names = analytics.recordedEventsForTesting.map((e) => e['name']).toList();
+      expect(
+        names,
+        containsAll([
+          'screen_view',
+          'vote_cast',
+          'feedback_intent_selected',
+          'reflection_published',
+          'event_rsvp',
+        ]),
+      );
+    });
   });
 }

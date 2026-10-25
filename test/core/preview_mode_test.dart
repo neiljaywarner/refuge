@@ -19,14 +19,11 @@ void main() {
     });
 
     test('Reflects Remote Config when organizer enables preview mode', () {
-      final configWithPreview = OrganizerRemoteConfig.defaults(
-        const CommunityBrandConfig.belong(),
-      ).copyWith(previewModeEnabled: true);
+      final configWithPreview = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+          .copyWith(previewModeEnabled: true);
 
       final container = ProviderContainer(
-        overrides: [
-          organizerRemoteConfigProvider.overrideWithValue(configWithPreview),
-        ],
+        overrides: [organizerRemoteConfigProvider.overrideWithValue(configWithPreview)],
       );
 
       expect(container.read(previewFeaturesEnabledProvider), isTrue);
@@ -34,14 +31,11 @@ void main() {
 
     test('Local user override takes precedence over Remote Config default', () {
       // Remote config is true, but user explicitly opts out
-      final configWithPreview = OrganizerRemoteConfig.defaults(
-        const CommunityBrandConfig.belong(),
-      ).copyWith(previewModeEnabled: true);
+      final configWithPreview = OrganizerRemoteConfig.defaults(const CommunityBrandConfig.belong())
+          .copyWith(previewModeEnabled: true);
 
       final container = ProviderContainer(
-        overrides: [
-          organizerRemoteConfigProvider.overrideWithValue(configWithPreview),
-        ],
+        overrides: [organizerRemoteConfigProvider.overrideWithValue(configWithPreview)],
       );
 
       expect(container.read(previewFeaturesEnabledProvider), isTrue);

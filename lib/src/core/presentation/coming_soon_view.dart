@@ -50,31 +50,21 @@ class ComingSoonView extends StatelessWidget {
                   Text(emoji, style: const TextStyle(fontSize: 40)),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       'Coming Soon',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: primary,
-                      ),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primary),
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -83,12 +73,10 @@ class ComingSoonView extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.45,
-                      color: Theme.of(context).textTheme.bodyMedium?.color
-                          ?.withValues(alpha: 0.85),
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
                     ),
                   ),
-                  if (extraMarkdownOrNote != null &&
-                      extraMarkdownOrNote!.isNotEmpty) ...[
+                  if (extraMarkdownOrNote != null && extraMarkdownOrNote!.isNotEmpty) ...[
                     const SizedBox(height: 14),
                     Container(
                       width: double.infinity,
@@ -109,9 +97,7 @@ class ComingSoonView extends StatelessWidget {
                       key: const ValueKey('pwa_guide_button'),
                       onPressed: () => _showPwaGuideModal(context),
                       icon: const Icon(Icons.install_mobile_rounded, size: 18),
-                      label: const Text(
-                        '📱 How to Add to Home Screen (PWA Guide)',
-                      ),
+                      label: const Text('📱 How to Add to Home Screen (PWA Guide)'),
                     ),
                   ],
                   if (trackedIssueNumber != null) ...[
@@ -121,8 +107,7 @@ class ComingSoonView extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
-                        color: Theme.of(context).textTheme.bodySmall?.color
-                            ?.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -192,9 +177,7 @@ class ComingSoonView extends StatelessWidget {
                     Text(
                       'Belong is built as a lightweight Progressive Web App (PWA). You can install it on your phone in 10 seconds without an App Store account or large download.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.textTheme.bodyMedium?.color?.withValues(
-                          alpha: 0.85,
-                        ),
+                        color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
                         height: 1.45,
                       ),
                     ),
@@ -228,9 +211,7 @@ class ComingSoonView extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: primary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: primary.withValues(alpha: 0.2),
-                        ),
+                        border: Border.all(color: primary.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,9 +221,7 @@ class ComingSoonView extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'Why Web App? Under 5 MB (no storage bloat), sensory-friendly fullscreen mode, and updates deploy instantly with zero waiting on store review queues.',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                height: 1.4,
-                              ),
+                              style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
                             ),
                           ),
                         ],
@@ -288,10 +267,7 @@ class ComingSoonView extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: accentColor),
             const SizedBox(width: 8),
-            Text(
-              platformTitle,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
+            Text(platformTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           ],
         ),
         const SizedBox(height: 8),
@@ -303,9 +279,7 @@ class ComingSoonView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 height: 1.4,
-                color: theme.textTheme.bodyMedium?.color?.withValues(
-                  alpha: 0.9,
-                ),
+                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.9),
               ),
             ),
           ),

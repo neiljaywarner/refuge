@@ -30,9 +30,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
       state = [
         for (final remote in updatedList)
           remote.copyWith(
-            userVoted:
-                votedIds.contains(remote.id) ||
-                (currentMap[remote.id]?.userVoted ?? false),
+            userVoted: votedIds.contains(remote.id) || (currentMap[remote.id]?.userVoted ?? false),
           ),
       ];
     });
@@ -73,10 +71,9 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
 }
 
 /// Provider for the Belong Feature Voting Board.
-final featureVotingProvider =
-    NotifierProvider<FeatureVotingNotifier, List<VotableFeatureItem>>(
-      FeatureVotingNotifier.new,
-    );
+final featureVotingProvider = NotifierProvider<FeatureVotingNotifier, List<VotableFeatureItem>>(
+  FeatureVotingNotifier.new,
+);
 
 /// Clean, neurodivergent-affirming modal sheet combining:
 /// 1. **Feature Voting & WIP Roadmap** (so members testing the preview tonight
@@ -84,11 +81,7 @@ final featureVotingProvider =
 /// 2. **Literal 3-Intent Feedback Funnel ("Private Feedback, Public Praise")**
 ///    evaluated in ADR-0007 (`docs/adr/0007-neurodivergent-first-ux-and-feedback-evaluation.md`).
 class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
-  const BelongFeedbackAndVotingSheet({
-    super.key,
-    this.initialTabIndex = 0,
-    this.screenshotBytes,
-  });
+  const BelongFeedbackAndVotingSheet({super.key, this.initialTabIndex = 0, this.screenshotBytes});
 
   final int initialTabIndex;
   final Uint8List? screenshotBytes;
@@ -165,13 +158,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tabController = useTabController(
-      initialLength: 2,
-      initialIndex: initialTabIndex,
-    );
-    final selectedSentiment = useState<FeedbackSentiment>(
-      FeedbackSentiment.happy,
-    );
+    final tabController = useTabController(initialLength: 2, initialIndex: initialTabIndex);
+    final selectedSentiment = useState<FeedbackSentiment>(FeedbackSentiment.happy);
     final selectedStarRating = useState<int>(5);
     final feedbackController = useTextEditingController();
     useListenable(feedbackController);
@@ -188,8 +176,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final listPadding = EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset);
 
     final hasUnsavedDraft =
-        feedbackController.text.trim().isNotEmpty ||
-        drawingAttachment.value != null;
+        feedbackController.text.trim().isNotEmpty || drawingAttachment.value != null;
 
     return PopScope(
       canPop: !hasUnsavedDraft && !isSubmitting.value,
@@ -215,15 +202,11 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                     children: [
                       Text(
                         'Belong Roadmap & Feedback',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '1-tap feature voting + literal, low-pressure feedback',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -281,18 +264,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withValues(
-                          alpha: 0.45,
-                        ),
+                        color: colorScheme.primaryContainer.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.touch_app_outlined,
-                            color: colorScheme.primary,
-                            size: 20,
-                          ),
+                          Icon(Icons.touch_app_outlined, color: colorScheme.primary, size: 20),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -333,14 +310,9 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                         vertical: 3,
                                       ),
                                       decoration: BoxDecoration(
-                                        color:
-                                            item.stage ==
-                                                FeatureStage.workInProgress
-                                            ? colorScheme.primary.withValues(
-                                                alpha: 0.15,
-                                              )
-                                            : colorScheme
-                                                  .surfaceContainerHighest,
+                                        color: item.stage == FeatureStage.workInProgress
+                                            ? colorScheme.primary.withValues(alpha: 0.15)
+                                            : colorScheme.surfaceContainerHighest,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -349,9 +321,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                         overflow: TextOverflow.ellipsis,
                                         style: textTheme.labelSmall?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color:
-                                              item.stage ==
-                                                  FeatureStage.workInProgress
+                                          color: item.stage == FeatureStage.workInProgress
                                               ? colorScheme.primary
                                               : colorScheme.onSurfaceVariant,
                                         ),
@@ -366,9 +336,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     identifier: 'vote_${item.id}',
                                     onTap: () {
                                       HapticFeedback.selectionClick();
-                                      ref
-                                          .read(featureVotingProvider.notifier)
-                                          .toggleVote(item.id);
+                                      ref.read(featureVotingProvider.notifier).toggleVote(item.id);
                                     },
                                     child: Tooltip(
                                       message: item.userVoted
@@ -384,9 +352,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                         onPressed: () {
                                           HapticFeedback.selectionClick();
                                           ref
-                                              .read(
-                                                featureVotingProvider.notifier,
-                                              )
+                                              .read(featureVotingProvider.notifier)
                                               .toggleVote(item.id);
                                         },
                                         icon: Icon(
@@ -394,17 +360,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                               ? Icons.thumb_up
                                               : Icons.thumb_up_alt_outlined,
                                           size: 16,
-                                          color: item.userVoted
-                                              ? colorScheme.primary
-                                              : null,
+                                          color: item.userVoted ? colorScheme.primary : null,
                                         ),
                                         label: Text(
                                           '${item.votes}',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: item.userVoted
-                                                ? colorScheme.primary
-                                                : null,
+                                            color: item.userVoted ? colorScheme.primary : null,
                                           ),
                                         ),
                                       ),
@@ -415,9 +377,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                               const SizedBox(height: 8),
                               Text(
                                 item.title,
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -445,9 +405,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                         side: BorderSide(color: colorScheme.outlineVariant),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      color: colorScheme.surfaceContainerHighest.withValues(
-                        alpha: 0.45,
-                      ),
+                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
                       margin: const EdgeInsets.only(bottom: 12),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
@@ -456,11 +414,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Icon(
-                                  Icons.stars_rounded,
-                                  color: colorScheme.primary,
-                                  size: 20,
-                                ),
+                                Icon(Icons.stars_rounded, color: colorScheme.primary, size: 20),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -490,8 +444,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     onPressed: () {
                                       HapticFeedback.selectionClick();
                                       selectedStarRating.value = star;
-                                      selectedSentiment.value =
-                                          sentimentForStars(star);
+                                      selectedSentiment.value = sentimentForStars(star);
                                       submittedMessage.value = null;
                                     },
                                     iconSize: 32,
@@ -510,19 +463,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             Center(
                               child: Container(
                                 key: const Key('star_rating_literal_label'),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.primaryContainer
-                                      .withValues(alpha: 0.6),
+                                  color: colorScheme.primaryContainer.withValues(alpha: 0.6),
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
-                                  starLiteralDescription(
-                                    selectedStarRating.value,
-                                  ),
+                                  starLiteralDescription(selectedStarRating.value),
                                   style: textTheme.labelMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: colorScheme.onPrimaryContainer,
@@ -544,17 +491,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             color: selectedSentiment.value == sentiment
                                 ? colorScheme.primary
                                 : colorScheme.outlineVariant,
-                            width: selectedSentiment.value == sentiment
-                                ? 2.0
-                                : 1.0,
+                            width: selectedSentiment.value == sentiment ? 2.0 : 1.0,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         margin: const EdgeInsets.only(bottom: 10),
                         color: selectedSentiment.value == sentiment
-                            ? colorScheme.primaryContainer.withValues(
-                                alpha: 0.3,
-                              )
+                            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
                             : null,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
@@ -562,14 +505,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             selectedSentiment.value = sentiment;
                             selectedStarRating.value = switch (sentiment) {
                               FeedbackSentiment.happy =>
-                                selectedStarRating.value >= 4
-                                    ? selectedStarRating.value
-                                    : 5,
+                                selectedStarRating.value >= 4 ? selectedStarRating.value : 5,
                               FeedbackSentiment.neutral => 3,
                               FeedbackSentiment.sad =>
-                                selectedStarRating.value <= 2
-                                    ? selectedStarRating.value
-                                    : 1,
+                                selectedStarRating.value <= 2 ? selectedStarRating.value : 1,
                             };
                             feedbackController.clear();
                             submittedMessage.value = null;
@@ -578,15 +517,11 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
-                                Text(
-                                  sentiment.emoji,
-                                  style: const TextStyle(fontSize: 24),
-                                ),
+                                Text(sentiment.emoji, style: const TextStyle(fontSize: 24)),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         sentiment.label,
@@ -604,10 +539,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   ),
                                 ),
                                 if (selectedSentiment.value == sentiment)
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: colorScheme.primary,
-                                  ),
+                                  Icon(Icons.check_circle, color: colorScheme.primary),
                               ],
                             ),
                           ),
@@ -629,9 +561,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           children: [
                             Text(
                               selectedSentiment.value.promptTitle,
-                              style: textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 8),
                             TextField(
@@ -648,8 +578,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                               key: const Key('feedback_contact_input'),
                               controller: contactController,
                               onChanged: (value) {
-                                contactError.value =
-                                    OptionalFeedbackContact.errorText(value);
+                                contactError.value = OptionalFeedbackContact.errorText(value);
                               },
                               decoration: InputDecoration(
                                 labelText: 'Optional name or email (if you would like a reply)',
@@ -662,17 +591,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             // Scribble / Drawing Attachment affordance
                             if (drawingAttachment.value != null) ...[
                               Container(
-                                key: const Key(
-                                  'attached_scribble_preview_container',
-                                ),
+                                key: const Key('attached_scribble_preview_container'),
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.5),
+                                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: colorScheme.outlineVariant,
-                                  ),
+                                  border: Border.all(color: colorScheme.outlineVariant),
                                 ),
                                 child: Row(
                                   children: [
@@ -680,9 +604,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                       borderRadius: BorderRadius.circular(6),
                                       child: Image.memory(
                                         drawingAttachment.value!,
-                                        key: const Key(
-                                          'attached_scribble_thumbnail',
-                                        ),
+                                        key: const Key('attached_scribble_thumbnail'),
                                         width: 60,
                                         height: 40,
                                         fit: BoxFit.cover,
@@ -691,8 +613,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           const Text(
@@ -706,21 +627,17 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             '${drawingAttachment.value!.lengthInBytes ~/ 1024} KB kept with this note (not uploaded)',
                                             style: TextStyle(
                                               fontSize: 10,
-                                              color:
-                                                  colorScheme.onSurfaceVariant,
+                                              color: colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     IconButton(
-                                      key: const Key(
-                                        'remove_scribble_attachment_button',
-                                      ),
+                                      key: const Key('remove_scribble_attachment_button'),
                                       tooltip: 'Remove scribble',
                                       icon: const Icon(Icons.close, size: 18),
-                                      onPressed: () =>
-                                          drawingAttachment.value = null,
+                                      onPressed: () => drawingAttachment.value = null,
                                     ),
                                   ],
                                 ),
@@ -731,14 +648,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 key: const Key('open_feedback_drawing_button'),
                                 onPressed: () async {
                                   final screenshot =
-                                      screenshotBytes ??
-                                      await captureEnclosingScreenshot(context);
+                                      screenshotBytes ?? await captureEnclosingScreenshot(context);
                                   if (!context.mounted) return;
-                                  final result =
-                                      await FeedbackDrawingDialog.show(
-                                        context,
-                                        screenshotBytes: screenshot,
-                                      );
+                                  final result = await FeedbackDrawingDialog.show(
+                                    context,
+                                    screenshotBytes: screenshot,
+                                  );
                                   if (result != null && result.isNotEmpty) {
                                     drawingAttachment.value = result;
                                   }
@@ -782,14 +697,11 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   onPressed: isSubmitting.value
                                       ? null
                                       : () async {
-                                          final text = feedbackController.text
-                                              .trim();
-                                          final contact = contactController.text
-                                              .trim();
-                                          final contactProblem =
-                                              OptionalFeedbackContact.errorText(
-                                                contact,
-                                              );
+                                          final text = feedbackController.text.trim();
+                                          final contact = contactController.text.trim();
+                                          final contactProblem = OptionalFeedbackContact.errorText(
+                                            contact,
+                                          );
                                           contactError.value = contactProblem;
                                           if (text.isEmpty) {
                                             submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
@@ -801,11 +713,9 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                           }
                                           isSubmitting.value = true;
                                           try {
-                                            final sentiment =
-                                                selectedSentiment.value;
+                                            final sentiment = selectedSentiment.value;
                                             String? attachmentUrl;
-                                            final attachmentBytes =
-                                                drawingAttachment.value;
+                                            final attachmentBytes = drawingAttachment.value;
 
                                             if (attachmentBytes != null) {
                                               final storageRepo = ref.read(
@@ -820,28 +730,18 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             }
 
                                             final result = await ref
-                                                .read(
-                                                  featureVotingProvider
-                                                      .notifier,
-                                                )
+                                                .read(featureVotingProvider.notifier)
                                                 .submitFeedback(
                                                   sentiment: sentiment,
                                                   message: text,
-                                                  rating:
-                                                      selectedStarRating.value,
-                                                  contactEmail:
-                                                      contact.isNotEmpty
-                                                      ? contact
-                                                      : null,
+                                                  rating: selectedStarRating.value,
+                                                  contactEmail: contact.isNotEmpty ? contact : null,
                                                   attachmentUrl: attachmentUrl,
-                                                  screenshotAttachment:
-                                                      attachmentBytes,
+                                                  screenshotAttachment: attachmentBytes,
                                                 );
 
                                             final hostedUpload =
-                                                FeedbackAttachmentRef.isHostedUpload(
-                                                  attachmentUrl,
-                                                );
+                                                FeedbackAttachmentRef.isHostedUpload(attachmentUrl);
                                             final summary = StringBuffer()
                                               ..writeln(
                                                 '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] $text',
@@ -849,8 +749,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             if (contact.isNotEmpty) {
                                               summary.writeln('From: $contact');
                                             }
-                                            if (result.githubIssueNumber !=
-                                                null) {
+                                            if (result.githubIssueNumber != null) {
                                               summary.writeln(
                                                 'GitHub triage issue created: belong_feedback#${result.githubIssueNumber}',
                                               );
@@ -859,40 +758,28 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                                 'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
                                               );
                                             }
-                                            if (attachmentBytes != null &&
-                                                !hostedUpload) {
+                                            if (attachmentBytes != null && !hostedUpload) {
                                               summary.writeln(
                                                 'Drawing: kept with this note, not uploaded.',
                                               );
                                             } else if (hostedUpload) {
-                                              summary.writeln(
-                                                'Attachment: $attachmentUrl',
-                                              );
+                                              summary.writeln('Attachment: $attachmentUrl');
                                             }
                                             try {
                                               await Clipboard.setData(
-                                                ClipboardData(
-                                                  text: summary.toString(),
-                                                ),
-                                              ).timeout(
-                                                const Duration(
-                                                  milliseconds: 100,
-                                                ),
-                                              );
+                                                ClipboardData(text: summary.toString()),
+                                              ).timeout(const Duration(milliseconds: 100));
                                             } catch (_) {}
 
-                                            if (result.githubIssueNumber !=
-                                                null) {
+                                            if (result.githubIssueNumber != null) {
                                               submittedMessage.value =
                                                   'Thank you! Your feedback was routed to our private triage queue (belong_feedback#${result.githubIssueNumber}).';
                                             } else {
-                                              final saved =
-                                                  sentiment.isPrivateTriage
+                                              final saved = sentiment.isPrivateTriage
                                                   ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
                                                   : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
                                               submittedMessage.value =
-                                                  attachmentBytes != null &&
-                                                      !hostedUpload
+                                                  attachmentBytes != null && !hostedUpload
                                                   ? '$saved The drawing stayed with the note and was not uploaded.'
                                                   : saved;
                                             }
@@ -906,14 +793,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                           }
                                         },
                                   icon: isSubmitting.value
-                                      ? const Icon(
-                                          Icons.hourglass_empty_rounded,
-                                          size: 18,
-                                        )
-                                      : const Icon(
-                                          Icons.send_rounded,
-                                          size: 18,
-                                        ),
+                                      ? const Icon(Icons.hourglass_empty_rounded, size: 18)
+                                      : const Icon(Icons.send_rounded, size: 18),
                                   label: Text(
                                     selectedSentiment.value.isPrivateTriage
                                         ? 'Send Private Feedback'

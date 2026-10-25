@@ -8,14 +8,11 @@ import 'package:refuge4serverpod/src/features/account_deletion/domain/account_de
 
 class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
 
-class MockCollection extends Mock
-    implements CollectionReference<Map<String, dynamic>> {}
+class MockCollection extends Mock implements CollectionReference<Map<String, dynamic>> {}
 
-class MockDocument extends Mock
-    implements DocumentReference<Map<String, dynamic>> {}
+class MockDocument extends Mock implements DocumentReference<Map<String, dynamic>> {}
 
-class MockSnapshot extends Mock
-    implements DocumentSnapshot<Map<String, dynamic>> {}
+class MockSnapshot extends Mock implements DocumentSnapshot<Map<String, dynamic>> {}
 
 class MockAccount extends Mock implements Account {}
 
@@ -34,10 +31,7 @@ class _ThrowingSink implements AccountDeletionSink {
   }
 
   @override
-  Future<bool> isSoftDeleted({
-    required String userId,
-    required String flavor,
-  }) async => false;
+  Future<bool> isSoftDeleted({required String userId, required String flavor}) async => false;
 
   @override
   Future<void> restore({
@@ -70,15 +64,11 @@ void main() {
       final document = MockDocument();
       when(() => firestore.collection(any())).thenReturn(collection);
       when(() => collection.doc(any())).thenReturn(document);
-      when(() => document.set(any(), any()))
-          .thenThrow(Exception('permission-denied'));
+      when(() => document.set(any(), any())).thenThrow(Exception('permission-denied'));
 
       final sink = FirestoreAccountDeletionSink(injectedFirestore: firestore);
 
-      expect(
-        () => sink.softDelete(record),
-        throwsA(isA<AccountDeletionSinkException>()),
-      );
+      expect(() => sink.softDelete(record), throwsA(isA<AccountDeletionSinkException>()));
       verify(() => document.set(any(), any())).called(1);
     });
 
@@ -91,19 +81,13 @@ void main() {
       when(() => collection.doc(any())).thenReturn(document);
       when(() => document.set(any(), any())).thenAnswer((_) async {});
       when(() => document.get()).thenAnswer((_) async => snapshot);
-      when(() => snapshot.data()).thenReturn({
-        'softDeleted': true,
-        'flavor': 'dev',
-        'deletionKind': 'soft',
-      });
+      when(() => snapshot.data())
+          .thenReturn({'softDeleted': true, 'flavor': 'dev', 'deletionKind': 'soft'});
 
       final sink = FirestoreAccountDeletionSink(injectedFirestore: firestore);
       await sink.softDelete(record);
 
-      expect(
-        await sink.isSoftDeleted(userId: 'member-1', flavor: 'dev'),
-        isTrue,
-      );
+      expect(await sink.isSoftDeleted(userId: 'member-1', flavor: 'dev'), isTrue);
       verify(() => document.set(record.toMap(), any())).called(1);
       verify(() => document.set(record.profilePatch(), any())).called(1);
     });
@@ -116,10 +100,7 @@ void main() {
           .thenThrow(Exception('appwrite unavailable'));
       final remote = AppwritePrefsAccountDeletionRemote(account);
 
-      expect(
-        () => remote.markSoftDeleted(record),
-        throwsA(isA<AccountDeletionSinkException>()),
-      );
+      expect(() => remote.markSoftDeleted(record), throwsA(isA<AccountDeletionSinkException>()));
     });
 
     test('a mirror failure leaves the member able to retry', () async {
@@ -184,49 +165,39 @@ void main() {
           confirmed: true,
         ),
         throwsA(
-          isA<AccountDeletionException>().having(
-            (error) => error.backend,
-            'backend',
-            'firestore',
-          ),
+          isA<AccountDeletionException>().having((error) => error.backend, 'backend', 'firestore'),
         ),
       );
       expect(primary.calls, 1);
       expect(mirror.calls, 0);
     });
 
-    test(
-      'a missing Appwrite session still keeps the Firestore tombstone',
-      () async {
-        final account = MockAccount();
-        when(() => account.get()).thenThrow(
-          AppwriteException('User (role: guests) missing scope', 401),
-        );
-        final memory = InMemoryAccountDeletionSink();
-        final repo = AccountDeletionRepository(
-          sinks: [
-            memory,
-            AppwriteAccountDeletionSink(
-              remote: AppwritePrefsAccountDeletionRemote(account),
-            ),
-          ],
-          flavor: 'dev',
-          clock: () => deletedAt,
-        );
+    test('a missing Appwrite session still keeps the Firestore tombstone', () async {
+      final account = MockAccount();
+      when(() => account.get())
+          .thenThrow(AppwriteException('User (role: guests) missing scope', 401));
+      final memory = InMemoryAccountDeletionSink();
+      final repo = AccountDeletionRepository(
+        sinks: [
+          memory,
+          AppwriteAccountDeletionSink(remote: AppwritePrefsAccountDeletionRemote(account)),
+        ],
+        flavor: 'dev',
+        clock: () => deletedAt,
+      );
 
-        final saved = await repo.softDeleteSelf(
-          userId: 'member-1',
-          displayName: 'Fellow Member',
-          email: 'tester@example.com',
-          confirmed: true,
-        );
+      final saved = await repo.softDeleteSelf(
+        userId: 'member-1',
+        displayName: 'Fellow Member',
+        email: 'tester@example.com',
+        confirmed: true,
+      );
 
-        expect(saved.acknowledgedBackends, ['memory', 'appwrite']);
-        expect(memory.records['dev_member-1']?.softDeleted, isTrue);
-        expect(await repo.isSignInBlocked('member-1'), isTrue);
-        verifyNever(() => account.updatePrefs(prefs: any(named: 'prefs')));
-      },
-    );
+      expect(saved.acknowledgedBackends, ['memory', 'appwrite']);
+      expect(memory.records['dev_member-1']?.softDeleted, isTrue);
+      expect(await repo.isSignInBlocked('member-1'), isTrue);
+      verifyNever(() => account.updatePrefs(prefs: any(named: 'prefs')));
+    });
   });
 }
 
@@ -236,14 +207,11 @@ class _RemoteFromSink implements AppwriteAccountDeletionRemote {
   final AccountDeletionSink _sink;
 
   @override
-  Future<void> markSoftDeleted(AccountDeletionRecord record) =>
-      _sink.softDelete(record);
+  Future<void> markSoftDeleted(AccountDeletionRecord record) => _sink.softDelete(record);
 
   @override
-  Future<bool> isSoftDeleted({
-    required String userId,
-    required String flavor,
-  }) => _sink.isSoftDeleted(userId: userId, flavor: flavor);
+  Future<bool> isSoftDeleted({required String userId, required String flavor}) =>
+      _sink.isSoftDeleted(userId: userId, flavor: flavor);
 
   @override
   Future<void> clearSoftDeleted({

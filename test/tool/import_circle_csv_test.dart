@@ -10,22 +10,10 @@ void main() {
         CircleSpaceMapper.resolveSpaceSlug('Start Here & Introduce Yourself'),
         equals('start_here'),
       );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('Start Here'),
-        equals('start_here'),
-      );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('Announcements'),
-        equals('announcements'),
-      );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('General Chat'),
-        equals('general_chat'),
-      );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('general'),
-        equals('general_chat'),
-      );
+      expect(CircleSpaceMapper.resolveSpaceSlug('Start Here'), equals('start_here'));
+      expect(CircleSpaceMapper.resolveSpaceSlug('Announcements'), equals('announcements'));
+      expect(CircleSpaceMapper.resolveSpaceSlug('General Chat'), equals('general_chat'));
+      expect(CircleSpaceMapper.resolveSpaceSlug('general'), equals('general_chat'));
       expect(CircleSpaceMapper.resolveSpaceSlug('Memes'), equals('memes'));
       expect(
         CircleSpaceMapper.resolveSpaceSlug('Online Resources / Videos'),
@@ -35,55 +23,40 @@ void main() {
         CircleSpaceMapper.resolveSpaceSlug('Actually Autistic Chat'),
         equals('actually_autistic_chat'),
       );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('Friends Chat'),
-        equals('friends_chat'),
-      );
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('Family Chat'),
-        equals('family_chat'),
-      );
+      expect(CircleSpaceMapper.resolveSpaceSlug('Friends Chat'), equals('friends_chat'));
+      expect(CircleSpaceMapper.resolveSpaceSlug('Family Chat'), equals('family_chat'));
     });
 
     test('returns unmapped_space for unrecognized space names', () {
-      expect(
-        CircleSpaceMapper.resolveSpaceSlug('Random Offtopic Club'),
-        equals('unmapped_space'),
-      );
+      expect(CircleSpaceMapper.resolveSpaceSlug('Random Offtopic Club'), equals('unmapped_space'));
       expect(CircleSpaceMapper.resolveSpaceSlug(''), equals('unmapped_space'));
     });
 
     test('supports custom space overrides', () {
       final overrides = {'random offtopic club': 'general_chat'};
       expect(
-        CircleSpaceMapper.resolveSpaceSlug(
-          'Random Offtopic Club',
-          customOverrides: overrides,
-        ),
+        CircleSpaceMapper.resolveSpaceSlug('Random Offtopic Club', customOverrides: overrides),
         equals('general_chat'),
       );
     });
 
-    test(
-      'provides valid sections and display names for all canonical spaces',
-      () {
-        const canonicalSlugs = [
-          'start_here',
-          'announcements',
-          'general_chat',
-          'memes',
-          'resources_videos',
-          'actually_autistic_chat',
-          'friends_chat',
-          'family_chat',
-        ];
+    test('provides valid sections and display names for all canonical spaces', () {
+      const canonicalSlugs = [
+        'start_here',
+        'announcements',
+        'general_chat',
+        'memes',
+        'resources_videos',
+        'actually_autistic_chat',
+        'friends_chat',
+        'family_chat',
+      ];
 
-        for (final slug in canonicalSlugs) {
-          expect(CircleSpaceMapper.spaceSections.containsKey(slug), isTrue);
-          expect(CircleSpaceMapper.spaceDisplayNames.containsKey(slug), isTrue);
-        }
-      },
-    );
+      for (final slug in canonicalSlugs) {
+        expect(CircleSpaceMapper.spaceSections.containsKey(slug), isTrue);
+        expect(CircleSpaceMapper.spaceDisplayNames.containsKey(slug), isTrue);
+      }
+    });
   });
 
   group('CircleCsvParser Tests (#41)', () {

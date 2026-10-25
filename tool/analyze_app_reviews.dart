@@ -191,43 +191,31 @@ class ReviewSentimentReport {
     };
 
     for (final review in reviews) {
-      if (review.matches(
-        RegExp(r'notif|alert|badge|push|spam|email|ping|chime|buzz'),
-      )) {
+      if (review.matches(RegExp(r'notif|alert|badge|push|spam|email|ping|chime|buzz'))) {
         buckets['Notification Overload & Alerts']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'crash|freeze|slow|lag|battery|drain|stutter|memory|bug|webview',
-        ),
+        RegExp(r'crash|freeze|slow|lag|battery|drain|stutter|memory|bug|webview'),
       )) {
         buckets['Performance, Crashes & Battery']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'video|audio|player|play|buffer|sound|stream|podcast|lockscreen|lock screen',
-        ),
+        RegExp(r'video|audio|player|play|buffer|sound|stream|podcast|lockscreen|lock screen'),
       )) {
         buckets['Video & Media Playback']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'navigat|back|menu|confus|lost|stuck|ui|layout|tablet|gesture|exit',
-        ),
+        RegExp(r'navigat|back|menu|confus|lost|stuck|ui|layout|tablet|gesture|exit'),
       )) {
         buckets['Navigation & Layout Confusion']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'paywall|subscri|renew|login|logout|sign in|auth|password|magic link',
-        ),
+        RegExp(r'paywall|subscri|renew|login|logout|sign in|auth|password|magic link'),
       )) {
         buckets['Paywall, Subscription & Auth']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'space|communit|fellowship|cohort|discuss|chat|friend|member|church|study',
-        ),
+        RegExp(r'space|communit|fellowship|cohort|discuss|chat|friend|member|church|study'),
       )) {
         buckets['Spaces, Community & Fellowship']!.add(review);
       }
@@ -254,22 +242,16 @@ class ReviewSentimentReport {
       )) {
         buckets['Sensory Accommodations & Themes']!.add(review);
       }
-      if (review.matches(
-        RegExp(r'notif|calm|digest|quiet|hour|silent|bell|buzz|chime|ping'),
-      )) {
+      if (review.matches(RegExp(r'notif|calm|digest|quiet|hour|silent|bell|buzz|chime|ping'))) {
         buckets['Calm Notifications & Quiet Hours']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'navigat|tab|bottom|bar|space|breadcrumb|back|layout|tablet|screen',
-        ),
+        RegExp(r'navigat|tab|bottom|bar|space|breadcrumb|back|layout|tablet|screen'),
       )) {
         buckets['Navigation, Hierarchy & Breadcrumbs']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'perform|speed|fast|120fps|60fps|smooth|scroll|offline|cache|battery|impeller',
-        ),
+        RegExp(r'perform|speed|fast|120fps|60fps|smooth|scroll|offline|cache|battery|impeller'),
       )) {
         buckets['Performance, Offline & Battery']!.add(review);
       }
@@ -281,16 +263,12 @@ class ReviewSentimentReport {
         buckets['Scripture, Reflections & Fellowship']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'audio|sound|quiet room|rainfall|stream|music|relax|decompress',
-        ),
+        RegExp(r'audio|sound|quiet room|rainfall|stream|music|relax|decompress'),
       )) {
         buckets['Audio, Soundscapes & Quiet Room']!.add(review);
       }
       if (review.matches(
-        RegExp(
-          r'profile|avatar|monogram|tagline|vote|voting|canvas|draw|feedback|safety|admin',
-        ),
+        RegExp(r'profile|avatar|monogram|tagline|vote|voting|canvas|draw|feedback|safety|admin'),
       )) {
         buckets['Account, Profile & Safety']!.add(review);
       }
@@ -303,20 +281,14 @@ class ReviewSentimentReport {
     final buffer = StringBuffer();
     final isCompetitor = targetPreset.isCompetitor;
 
-    buffer.writeln(
-      '# 📈 Mobile App Review Sentiment Report: $appName ($appId)',
-    );
+    buffer.writeln('# 📈 Mobile App Review Sentiment Report: $appName ($appId)');
     buffer.writeln();
-    buffer.writeln(
-      '**Audit Date:** ${DateTime.now().toIso8601String().split('T').first}  ',
-    );
+    buffer.writeln('**Audit Date:** ${DateTime.now().toIso8601String().split('T').first}  ');
     buffer.writeln(
       '**Target Preset:** `${targetPreset.key}` (${isCompetitor ? 'Competitive Benchmark' : 'Belong First-Party Platform'})  ',
     );
     buffer.writeln('**Total Reviews Analyzed:** $totalCount  ');
-    buffer.writeln(
-      '**Calculated Average Rating:** ${averageRating.toStringAsFixed(2)} / 5.0 ⭐  ',
-    );
+    buffer.writeln('**Calculated Average Rating:** ${averageRating.toStringAsFixed(2)} / 5.0 ⭐  ');
 
     final storeDist = storeDistribution;
     if (storeDist.isNotEmpty) {
@@ -335,9 +307,7 @@ class ReviewSentimentReport {
       final count = countForRating(star);
       final pct = totalCount == 0 ? 0.0 : (count / totalCount) * 100;
       final bars = '█' * (pct / 5).round();
-      buffer.writeln(
-        '| $star ⭐ | $count | ${pct.toStringAsFixed(1)}% | `$bars` |',
-      );
+      buffer.writeln('| $star ⭐ | $count | ${pct.toStringAsFixed(1)}% | `$bars` |');
     }
     buffer.writeln();
 
@@ -412,9 +382,7 @@ class ReviewSentimentReport {
         buffer.writeln('> "${r.content}"');
         final storeLabel = r.store.displayName;
         final devLabel = r.device != null ? ' (${r.device})' : '';
-        buffer.writeln(
-          '— *Reviewer ${r.authorMasked} on $storeLabel v${r.version}$devLabel*',
-        );
+        buffer.writeln('— *Reviewer ${r.authorMasked} on $storeLabel v${r.version}$devLabel*');
         buffer.writeln();
       }
     }
@@ -438,17 +406,13 @@ class ReviewSentimentReport {
         buffer.writeln('> "${r.content}"');
         final storeLabel = r.store.displayName;
         final devLabel = r.device != null ? ' (${r.device})' : '';
-        buffer.writeln(
-          '— *Reviewer ${r.authorMasked} on $storeLabel v${r.version}$devLabel*',
-        );
+        buffer.writeln('— *Reviewer ${r.authorMasked} on $storeLabel v${r.version}$devLabel*');
         buffer.writeln();
       }
     }
 
     buffer.writeln('---');
-    buffer.writeln(
-      '_Report generated automatically by `tool/analyze_app_reviews.dart`._',
-    );
+    buffer.writeln('_Report generated automatically by `tool/analyze_app_reviews.dart`._');
     return buffer.toString();
   }
 }
@@ -470,26 +434,18 @@ List<AppReview> parseAppleCustomerReviewsJson(Map<String, dynamic> root) {
     if (!raw.containsKey('im:rating')) continue;
 
     try {
-      final ratingStr =
-          (raw['im:rating'] as Map<String, dynamic>?)?['label'] as String? ??
-          '0';
-      final title =
-          (raw['title'] as Map<String, dynamic>?)?['label'] as String? ?? '';
-      final content =
-          (raw['content'] as Map<String, dynamic>?)?['label'] as String? ?? '';
+      final ratingStr = (raw['im:rating'] as Map<String, dynamic>?)?['label'] as String? ?? '0';
+      final title = (raw['title'] as Map<String, dynamic>?)?['label'] as String? ?? '';
+      final content = (raw['content'] as Map<String, dynamic>?)?['label'] as String? ?? '';
       final author =
-          ((raw['author'] as Map<String, dynamic>?)?['name']
-                  as Map<String, dynamic>?)?['label']
+          ((raw['author'] as Map<String, dynamic>?)?['name'] as Map<String, dynamic>?)?['label']
               as String? ??
           'Anonymous';
       final version =
-          (raw['im:version'] as Map<String, dynamic>?)?['label'] as String? ??
-          'unknown';
-      final id =
-          (raw['id'] as Map<String, dynamic>?)?['label'] as String? ?? '';
+          (raw['im:version'] as Map<String, dynamic>?)?['label'] as String? ?? 'unknown';
+      final id = (raw['id'] as Map<String, dynamic>?)?['label'] as String? ?? '';
       final voteCountStr =
-          (raw['im:voteCount'] as Map<String, dynamic>?)?['label'] as String? ??
-          '0';
+          (raw['im:voteCount'] as Map<String, dynamic>?)?['label'] as String? ?? '0';
 
       reviews.add(
         AppReview(
@@ -526,31 +482,19 @@ List<AppReview> parseGooglePlayReviewsJson(dynamic root) {
   for (final raw in list) {
     if (raw is! Map<String, dynamic>) continue;
     try {
-      final id =
-          raw['reviewId'] as String? ??
-          raw['id'] as String? ??
-          'gp-${reviews.length + 1}';
-      final author =
-          raw['userName'] as String? ?? raw['author'] as String? ?? 'Anonymous';
+      final id = raw['reviewId'] as String? ?? raw['id'] as String? ?? 'gp-${reviews.length + 1}';
+      final author = raw['userName'] as String? ?? raw['author'] as String? ?? 'Anonymous';
       final ratingNum = raw['score'] ?? raw['rating'] ?? raw['starRating'] ?? 0;
-      final rating = ratingNum is int
-          ? ratingNum
-          : (int.tryParse(ratingNum.toString()) ?? 0);
+      final rating = ratingNum is int ? ratingNum : (int.tryParse(ratingNum.toString()) ?? 0);
       final content = raw['content'] as String? ?? raw['text'] as String? ?? '';
       var title = raw['title'] as String? ?? '';
       if (title.isEmpty && content.isNotEmpty) {
         // Derive short title from first sentence or words
         final firstSentence = content.split(RegExp(r'[.\n]')).first.trim();
-        title = firstSentence.length > 50
-            ? '${firstSentence.substring(0, 47)}...'
-            : firstSentence;
+        title = firstSentence.length > 50 ? '${firstSentence.substring(0, 47)}...' : firstSentence;
       }
-      final version =
-          raw['appVersionName'] as String? ??
-          raw['version'] as String? ??
-          'unknown';
-      final thumbsUp =
-          raw['thumbsUpCount'] ?? raw['thumbsUp'] ?? raw['voteCount'] ?? 0;
+      final version = raw['appVersionName'] as String? ?? raw['version'] as String? ?? 'unknown';
+      final thumbsUp = raw['thumbsUpCount'] ?? raw['thumbsUp'] ?? raw['voteCount'] ?? 0;
       final device = raw['device'] as String?;
       final at = raw['at'] as String? ?? raw['date'] as String?;
 
@@ -562,9 +506,7 @@ List<AppReview> parseGooglePlayReviewsJson(dynamic root) {
           title: title,
           content: content,
           version: version,
-          voteCount: thumbsUp is int
-              ? thumbsUp
-              : (int.tryParse(thumbsUp.toString()) ?? 0),
+          voteCount: thumbsUp is int ? thumbsUp : (int.tryParse(thumbsUp.toString()) ?? 0),
           store: ReviewStore.googlePlay,
           device: device,
           createdAt: at,
@@ -666,8 +608,7 @@ List<AppReview> parseBelongInAppFeedbackJson(dynamic root) {
     if (raw is! Map<String, dynamic>) continue;
     try {
       final id = raw['id'] as String? ?? 'belong-${reviews.length + 1}';
-      final author =
-          raw['author'] as String? ?? raw['userId'] as String? ?? 'Anonymous';
+      final author = raw['author'] as String? ?? raw['userId'] as String? ?? 'Anonymous';
 
       var rating = 0;
       if (raw.containsKey('rating')) {
@@ -678,31 +619,21 @@ List<AppReview> parseBelongInAppFeedbackJson(dynamic root) {
         rating = s is int ? s : (int.tryParse(s.toString()) ?? 0);
       } else if (raw.containsKey('sentiment')) {
         final sent = raw['sentiment'].toString().toLowerCase();
-        if (sent.contains('happy') ||
-            sent.contains('praise') ||
-            sent.contains('great')) {
+        if (sent.contains('happy') || sent.contains('praise') || sent.contains('great')) {
           rating = 5;
-        } else if (sent.contains('neutral') ||
-            sent.contains('tweak') ||
-            sent.contains('idea')) {
+        } else if (sent.contains('neutral') || sent.contains('tweak') || sent.contains('idea')) {
           rating = 3;
         } else {
           rating = 1;
         }
       }
 
-      final content =
-          raw['content'] as String? ?? raw['feedbackText'] as String? ?? '';
+      final content = raw['content'] as String? ?? raw['feedbackText'] as String? ?? '';
       var title =
-          raw['title'] as String? ??
-          raw['label'] as String? ??
-          raw['promptTitle'] as String? ??
-          '';
+          raw['title'] as String? ?? raw['label'] as String? ?? raw['promptTitle'] as String? ?? '';
       if (title.isEmpty && content.isNotEmpty) {
         final firstSentence = content.split(RegExp(r'[.\n]')).first.trim();
-        title = firstSentence.length > 50
-            ? '${firstSentence.substring(0, 47)}...'
-            : firstSentence;
+        title = firstSentence.length > 50 ? '${firstSentence.substring(0, 47)}...' : firstSentence;
       }
 
       final version = raw['appVersion'] as String? ?? '1.0.0';
@@ -745,8 +676,7 @@ List<AppReview> autoDetectAndParse(String content) {
       }
       if (decoded is List && decoded.isNotEmpty && decoded.first is Map) {
         final first = decoded.first as Map<String, dynamic>;
-        if (first.containsKey('sensoryTheme') ||
-            first.containsKey('feedbackText')) {
+        if (first.containsKey('sensoryTheme') || first.containsKey('feedbackText')) {
           return parseBelongInAppFeedbackJson(decoded);
         }
         if (first.containsKey('reviewId') ||
@@ -805,10 +735,7 @@ File _resolveFixture(String relativePath) {
 
 /// Scales reviews to a requested count by cycling the list with deterministic IDs,
 /// preserving topic taxonomy ratios and star score percentages.
-List<AppReview> scaleReviewsToCount(
-  List<AppReview> baseReviews,
-  int targetCount,
-) {
+List<AppReview> scaleReviewsToCount(List<AppReview> baseReviews, int targetCount) {
   if (baseReviews.isEmpty || baseReviews.length == targetCount) {
     return baseReviews;
   }
@@ -866,34 +793,22 @@ Future<void> main(List<String> rawArgs) async {
       stdout.writeln(
         '  --preset=<name>       Target app preset: "circle" or "belong" (default: circle)',
       );
-      stdout.writeln(
-        '  --app-id=<id>         Apple App Store App ID (Circle: 1506475653)',
-      );
+      stdout.writeln('  --app-id=<id>         Apple App Store App ID (Circle: 1506475653)');
       stdout.writeln(
         '  --package-name=<pkg>  Google Play Store package name (Belong: com.belongonthespectrum.sanctuary)',
       );
       stdout.writeln('  --app-name=<name>     Human-readable application name');
-      stdout.writeln(
-        '  --country=<code>      Storefront country code (default: us)',
-      );
+      stdout.writeln('  --country=<code>      Storefront country code (default: us)');
       stdout.writeln(
         '  --pages=<n>           Number of Apple RSS pages to fetch (default: 1, max: 10)',
       );
-      stdout.writeln(
-        '  --count=<n>, -n <n>   Target review count to analyze (e.g. 240 or 333)',
-      );
-      stdout.writeln(
-        '  --file=<path>, -f     Path to local JSON or CSV review fixture',
-      );
+      stdout.writeln('  --count=<n>, -n <n>   Target review count to analyze (e.g. 240 or 333)');
+      stdout.writeln('  --file=<path>, -f     Path to local JSON or CSV review fixture');
       stdout.writeln(
         '  --store=<name>        Filter or parser store: apple, google-play, in-app, auto',
       );
-      stdout.writeln(
-        '  --output=<path>, -o   Optional output Markdown report file path',
-      );
-      stdout.writeln(
-        '  --json                Output raw parsed JSON instead of Markdown',
-      );
+      stdout.writeln('  --output=<path>, -o   Optional output Markdown report file path');
+      stdout.writeln('  --json                Output raw parsed JSON instead of Markdown');
       stdout.writeln('  --help, -h            Display this help message');
       exitCode = 0;
       return;
@@ -961,9 +876,7 @@ Future<void> main(List<String> rawArgs) async {
       } else if (storeFilter == 'in-app') {
         reviews = parseBelongInAppFeedbackJson(jsonDecode(content));
       } else if (storeFilter == 'apple') {
-        reviews = parseAppleCustomerReviewsJson(
-          jsonDecode(content) as Map<String, dynamic>,
-        );
+        reviews = parseAppleCustomerReviewsJson(jsonDecode(content) as Map<String, dynamic>);
       } else {
         reviews = autoDetectAndParse(content);
       }
@@ -974,9 +887,7 @@ Future<void> main(List<String> rawArgs) async {
     }
   } else {
     // Attempt HTTP fetch or load multi-source fixtures
-    if (preset == ReviewTargetPreset.circle &&
-        appId.isNotEmpty &&
-        appId != 'pending') {
+    if (preset == ReviewTargetPreset.circle && appId.isNotEmpty && appId != 'pending') {
       stdout.writeln(
         '🌐 Fetching App Store customer reviews for App ID $appId ($country, $pageCount pages)...',
       );
@@ -995,9 +906,7 @@ Future<void> main(List<String> rawArgs) async {
             final decoded = jsonDecode(body) as Map<String, dynamic>;
             reviews.addAll(parseAppleCustomerReviewsJson(decoded));
           } else {
-            stderr.writeln(
-              'Warning: Received HTTP ${response.statusCode} from App Store RSS.',
-            );
+            stderr.writeln('Warning: Received HTTP ${response.statusCode} from App Store RSS.');
           }
           client.close();
         } catch (e) {
@@ -1012,54 +921,33 @@ Future<void> main(List<String> rawArgs) async {
     // If reviews is empty (offline or network blocked), load comprehensive multi-store benchmark fixtures
     if (reviews.isEmpty) {
       if (preset == ReviewTargetPreset.belong) {
-        final belongFixture = _resolveFixture(
-          'test/fixtures/belong_reviews_sample.json',
-        );
+        final belongFixture = _resolveFixture('test/fixtures/belong_reviews_sample.json');
         if (await belongFixture.exists()) {
-          stdout.writeln(
-            '   Using local Belong feedback fixture: ${belongFixture.path}',
-          );
+          stdout.writeln('   Using local Belong feedback fixture: ${belongFixture.path}');
           reviews.addAll(
-            parseBelongInAppFeedbackJson(
-              jsonDecode(await belongFixture.readAsString()),
-            ),
+            parseBelongInAppFeedbackJson(jsonDecode(await belongFixture.readAsString())),
           );
         } else {
-          stdout.writeln(
-            'ℹ️ Belong on the Spectrum is preparing for production launch!',
-          );
+          stdout.writeln('ℹ️ Belong on the Spectrum is preparing for production launch!');
           stdout.writeln(
             '   Once live in stores, audit with: dart tool/analyze_app_reviews.dart --preset=belong --app-id=<apple_id>',
           );
         }
       } else {
-        final appleFallback = _resolveFixture(
-          'test/fixtures/apple_reviews_sample.json',
-        );
-        final playFallback = _resolveFixture(
-          'test/fixtures/google_play_reviews_sample.json',
-        );
+        final appleFallback = _resolveFixture('test/fixtures/apple_reviews_sample.json');
+        final playFallback = _resolveFixture('test/fixtures/google_play_reviews_sample.json');
 
         if (await appleFallback.exists()) {
-          stdout.writeln(
-            '   Loaded Apple App Store fixture: ${appleFallback.path}',
-          );
+          stdout.writeln('   Loaded Apple App Store fixture: ${appleFallback.path}');
           reviews.addAll(
             parseAppleCustomerReviewsJson(
-              jsonDecode(await appleFallback.readAsString())
-                  as Map<String, dynamic>,
+              jsonDecode(await appleFallback.readAsString()) as Map<String, dynamic>,
             ),
           );
         }
         if (await playFallback.exists()) {
-          stdout.writeln(
-            '   Loaded Google Play Store fixture: ${playFallback.path}',
-          );
-          reviews.addAll(
-            parseGooglePlayReviewsJson(
-              jsonDecode(await playFallback.readAsString()),
-            ),
-          );
+          stdout.writeln('   Loaded Google Play Store fixture: ${playFallback.path}');
+          reviews.addAll(parseGooglePlayReviewsJson(jsonDecode(await playFallback.readAsString())));
         }
       }
     }

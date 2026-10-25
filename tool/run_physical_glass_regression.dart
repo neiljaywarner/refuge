@@ -50,14 +50,11 @@ class PhysicalGlassRegressionRunner {
   final IOSink outSink;
   final IOSink errSink;
 
-  PhysicalGlassRegressionRunner({
-    ProcessManager? processManager,
-    IOSink? outSink,
-    IOSink? errSink,
-  }) : processManager = processManager ?? const RealProcessManager(),
-       outSink = outSink ?? stdout,
-       errSink = errSink ?? stderr,
-       argParser = ArgParser() {
+  PhysicalGlassRegressionRunner({ProcessManager? processManager, IOSink? outSink, IOSink? errSink})
+    : processManager = processManager ?? const RealProcessManager(),
+      outSink = outSink ?? stdout,
+      errSink = errSink ?? stderr,
+      argParser = ArgParser() {
     argParser
       ..addOption(
         'device',
@@ -195,17 +192,13 @@ class PhysicalGlassRegressionRunner {
       final adbDevicesResult = await processManager.run(['adb', 'devices']);
       final devices = parseConnectedDevices(adbDevicesResult.stdout);
       if (devices.isEmpty) {
-        errSink.writeln(
-          '⚠️ No connected physical Android device or emulator detected.',
-        );
+        errSink.writeln('⚠️ No connected physical Android device or emulator detected.');
         errSink.writeln(
           '💡 Connect your Google Pixel via USB with USB Debugging enabled, or launch emulator-5554.',
         );
         return ExitCodes.software;
       }
-      final physical = devices
-          .where((d) => !d.startsWith('emulator-'))
-          .toList();
+      final physical = devices.where((d) => !d.startsWith('emulator-')).toList();
       if (physical.isNotEmpty) {
         targetDevice = physical.first;
         deviceType = 'Physical Hardware (Google Pixel)';
@@ -214,9 +207,7 @@ class PhysicalGlassRegressionRunner {
         deviceType = 'Android Emulator';
       }
     } else {
-      deviceType = targetDevice.startsWith('emulator-')
-          ? 'Android Emulator'
-          : 'Physical Hardware';
+      deviceType = targetDevice.startsWith('emulator-') ? 'Android Emulator' : 'Physical Hardware';
     }
 
     // 2. Hardware Diagnostics
@@ -228,9 +219,7 @@ class PhysicalGlassRegressionRunner {
       'getprop',
       'ro.product.model',
     ]);
-    final model = modelResult.stdout.trim().isEmpty
-        ? 'Android Device'
-        : modelResult.stdout.trim();
+    final model = modelResult.stdout.trim().isEmpty ? 'Android Device' : modelResult.stdout.trim();
 
     final osResult = await processManager.run([
       'adb',
@@ -240,9 +229,7 @@ class PhysicalGlassRegressionRunner {
       'getprop',
       'ro.build.version.release',
     ]);
-    final osVersion = osResult.stdout.trim().isEmpty
-        ? 'Unknown'
-        : osResult.stdout.trim();
+    final osVersion = osResult.stdout.trim().isEmpty ? 'Unknown' : osResult.stdout.trim();
 
     final batteryResult = await processManager.run([
       'adb',
@@ -273,9 +260,7 @@ class PhysicalGlassRegressionRunner {
       wakefulness: wakefulness,
     );
 
-    outSink.writeln(
-      '📍 Target Device: ${diagnostics.model} (${diagnostics.deviceId})',
-    );
+    outSink.writeln('📍 Target Device: ${diagnostics.model} (${diagnostics.deviceId})');
     outSink.writeln('   Type:         ${diagnostics.deviceType}');
     outSink.writeln('   OS Version:   Android ${diagnostics.osVersion}');
     outSink.writeln('   Battery:      ${diagnostics.batteryLevel}');
@@ -283,48 +268,21 @@ class PhysicalGlassRegressionRunner {
 
     // 3. Ensure Device is Awake
     if (!diagnostics.isAwake) {
-      outSink.writeln(
-        '🔆 Device is asleep ($wakefulness). Sending wake keyevent & unlocking...',
-      );
-      await processManager.run([
-        'adb',
-        '-s',
-        targetDevice,
-        'shell',
-        'input',
-        'keyevent',
-        '224',
-      ]);
-      await processManager.run([
-        'adb',
-        '-s',
-        targetDevice,
-        'shell',
-        'wm',
-        'dismiss-keyguard',
-      ]);
+      outSink.writeln('🔆 Device is asleep ($wakefulness). Sending wake keyevent & unlocking...');
+      await processManager.run(['adb', '-s', targetDevice, 'shell', 'input', 'keyevent', '224']);
+      await processManager.run(['adb', '-s', targetDevice, 'shell', 'wm', 'dismiss-keyguard']);
       outSink.writeln('   Screen unlocked.');
     } else {
       outSink.writeln('🔆 Device screen is awake.');
     }
 
     if (dryRun) {
-      outSink.writeln(
-        '\n🔍 [DRY RUN] Regression Verification Plan for $model ($targetDevice):',
-      );
-      outSink.writeln(
-        '   1. Execute Dart Unit & Sociable Patrol BDD Tests (186 tests)',
-      );
-      outSink.writeln(
-        '   2. Validate Maestro Flows (.maestro/belong_full_journey.yaml)',
-      );
-      outSink.writeln(
-        '   3. Capture Clean-Frame Screenshots via tool/capture_device.sh',
-      );
+      outSink.writeln('\n🔍 [DRY RUN] Regression Verification Plan for $model ($targetDevice):');
+      outSink.writeln('   1. Execute Dart Unit & Sociable Patrol BDD Tests (186 tests)');
+      outSink.writeln('   2. Validate Maestro Flows (.maestro/belong_full_journey.yaml)');
+      outSink.writeln('   3. Capture Clean-Frame Screenshots via tool/capture_device.sh');
       outSink.writeln('   4. Write Regression Audit Report to $outputPath');
-      outSink.writeln(
-        '✅ Dry run complete. Hardware connectivity and screen wake verified.',
-      );
+      outSink.writeln('✅ Dry run complete. Hardware connectivity and screen wake verified.');
       return ExitCodes.success;
     }
 
@@ -372,9 +330,7 @@ class PhysicalGlassRegressionRunner {
         }
         final calmFile = File('.maestro/calm_tech_walkthrough.yaml');
         if (await calmFile.exists()) {
-          outSink.writeln(
-            '   ▶️ Running .maestro/calm_tech_walkthrough.yaml...',
-          );
+          outSink.writeln('   ▶️ Running .maestro/calm_tech_walkthrough.yaml...');
           await processManager.run([
             'maestro',
             '--device',
@@ -386,19 +342,14 @@ class PhysicalGlassRegressionRunner {
           ]);
         }
       } else {
-        outSink.writeln(
-          'ℹ️ Maestro CLI not found in PATH. Skipping Maestro flows.',
-        );
+        outSink.writeln('ℹ️ Maestro CLI not found in PATH. Skipping Maestro flows.');
       }
     }
 
     // 6. Clean-Frame Screenshot Capture
-    final screenshotTarget =
-        'doc/screenshots/physical_glass_${targetDevice}_latest.png';
+    final screenshotTarget = 'doc/screenshots/physical_glass_${targetDevice}_latest.png';
     if (!skipScreenshot) {
-      outSink.writeln(
-        '\n📸 Capturing Clean-Frame Hardware Screenshot to $screenshotTarget...',
-      );
+      outSink.writeln('\n📸 Capturing Clean-Frame Hardware Screenshot to $screenshotTarget...');
       Directory('doc/screenshots').createSync(recursive: true);
       final captureScript = File('tool/capture_device.sh');
       if (await captureScript.exists()) {
@@ -460,9 +411,7 @@ dart run tool/run_physical_glass_regression.dart
     outSink.writeln(
       '\n================================================================================',
     );
-    outSink.writeln(
-      '✅ Physical Glass Regression Suite Completed in ${duration}s!',
-    );
+    outSink.writeln('✅ Physical Glass Regression Suite Completed in ${duration}s!');
     outSink.writeln('📄 Report generated at: $outputPath');
     outSink.writeln('📸 Visual capture:     $screenshotTarget');
     outSink.writeln(
@@ -487,11 +436,7 @@ class ProcessResultData {
   final String stdout;
   final String stderr;
 
-  const ProcessResultData({
-    required this.exitCode,
-    required this.stdout,
-    required this.stderr,
-  });
+  const ProcessResultData({required this.exitCode, required this.stdout, required this.stderr});
 }
 
 class RealProcessManager implements ProcessManager {
@@ -507,22 +452,14 @@ class RealProcessManager implements ProcessManager {
     final arguments = command.skip(1).toList();
     if (stdoutPath != null) {
       final file = File(stdoutPath);
-      final process = await Process.start(
-        executable,
-        arguments,
-        environment: environment,
-      );
+      final process = await Process.start(executable, arguments, environment: environment);
       await file.parent.create(recursive: true);
       final sink = file.openWrite();
       await process.stdout.pipe(sink);
       final code = await process.exitCode;
       return ProcessResultData(exitCode: code, stdout: '', stderr: '');
     }
-    final result = await Process.run(
-      executable,
-      arguments,
-      environment: environment,
-    );
+    final result = await Process.run(executable, arguments, environment: environment);
     return ProcessResultData(
       exitCode: result.exitCode,
       stdout: result.stdout.toString(),

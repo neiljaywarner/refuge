@@ -48,14 +48,11 @@ void main() {
       notifier.dispose();
     });
 
-    test(
-      'Initial state is not playing and has default soundscape selected',
-      () {
-        expect(notifier.state.isPlaying, isFalse);
-        expect(notifier.state.activeSoundscape, isNotNull);
-        expect(notifier.state.volume, greaterThan(0.0));
-      },
-    );
+    test('Initial state is not playing and has default soundscape selected', () {
+      expect(notifier.state.isPlaying, isFalse);
+      expect(notifier.state.activeSoundscape, isNotNull);
+      expect(notifier.state.volume, greaterThan(0.0));
+    });
 
     test('togglePlay plays and pauses audio', () async {
       await notifier.togglePlay();
@@ -68,9 +65,7 @@ void main() {
     });
 
     test('selectSoundscape switches active soundscape and plays', () async {
-      final rain = SensorySoundscape.curatedSoundscapes.firstWhere(
-        (s) => s.id == 'gentle_rain',
-      );
+      final rain = SensorySoundscape.curatedSoundscapes.firstWhere((s) => s.id == 'gentle_rain');
       await notifier.selectSoundscape(rain);
 
       expect(notifier.state.activeSoundscape, equals(rain));

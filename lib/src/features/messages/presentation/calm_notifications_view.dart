@@ -75,32 +75,23 @@ class CalmNotificationsView extends HookConsumerWidget {
                   checkColor: isContrast ? Colors.black : Colors.white,
                   onChanged: unreadCount == 0
                       ? null
-                      : (_) => ref
-                            .read(notificationSyncServiceProvider)
-                            .syncMarkAllAsRead(),
+                      : (_) => ref.read(notificationSyncServiceProvider).syncMarkAllAsRead(),
                 ),
                 InkWell(
                   key: const Key('mark_all_notifications_as_read_button'),
                   borderRadius: BorderRadius.circular(4),
                   onTap: unreadCount == 0
                       ? null
-                      : () => ref
-                            .read(notificationSyncServiceProvider)
-                            .syncMarkAllAsRead(),
+                      : () => ref.read(notificationSyncServiceProvider).syncMarkAllAsRead(),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4.0,
-                      vertical: 6.0,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
                     child: Text(
                       'Mark all read',
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                         color: unreadCount == 0
-                            ? (isContrast
-                                  ? Colors.white38
-                                  : theme.disabledColor)
+                            ? (isContrast ? Colors.white38 : theme.disabledColor)
                             : (isContrast ? Colors.yellow : primary),
                       ),
                     ),
@@ -132,9 +123,7 @@ class CalmNotificationsView extends HookConsumerWidget {
               decoration: BoxDecoration(
                 color: isContrast ? Colors.black : const Color(0xFFF3F7F5),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isContrast ? Colors.white : const Color(0xFFDCECE4),
-                ),
+                border: Border.all(color: isContrast ? Colors.white : const Color(0xFFDCECE4)),
               ),
               child: Row(
                 children: [
@@ -150,9 +139,7 @@ class CalmNotificationsView extends HookConsumerWidget {
                           ? 'All notifications are delivered gently without intrusive sound alerts.'
                           : 'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isContrast
-                            ? Colors.white
-                            : const Color(0xFF1E4638),
+                        color: isContrast ? Colors.white : const Color(0xFF1E4638),
                         fontSize: 11,
                       ),
                     ),
@@ -177,20 +164,13 @@ class CalmNotificationsView extends HookConsumerWidget {
                     label: Text(filter.label),
                     labelStyle: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: isSelected
-                          ? (isContrast ? Colors.black : Colors.white)
-                          : null,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? (isContrast ? Colors.black : Colors.white) : null,
                     ),
                     selectedColor: isContrast ? Colors.yellow : primary,
                     checkmarkColor: isContrast ? Colors.black : Colors.white,
                     onSelected: (_) {
-                      ref
-                              .read(notificationActiveFilterProvider.notifier)
-                              .state =
-                          filter;
+                      ref.read(notificationActiveFilterProvider.notifier).state = filter;
                     },
                   ),
                 );
@@ -210,18 +190,13 @@ class CalmNotificationsView extends HookConsumerWidget {
                         key: const Key('empty_notifications_placeholder'),
                         style: TextStyle(
                           fontSize: 12,
-                          color: theme.textTheme.bodySmall?.color?.withValues(
-                            alpha: 0.6,
-                          ),
+                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     itemCount: notifications.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 6),
                     itemBuilder: (context, index) {
@@ -232,20 +207,16 @@ class CalmNotificationsView extends HookConsumerWidget {
                         isContrast: isContrast,
                         onTap: () {
                           if (!item.isRead) {
-                            ref
-                                .read(belongNotificationsProvider.notifier)
-                                .markAsRead(item.id);
+                            ref.read(belongNotificationsProvider.notifier).markAsRead(item.id);
                           }
 
                           NotificationNavigationTarget? target;
-                          if (item.type ==
-                              BelongNotificationType.directMessage) {
+                          if (item.type == BelongNotificationType.directMessage) {
                             target = NotificationNavigationTarget(
                               tab: BelongBottomTab.msgs,
                               conversationId: item.conversationId,
                             );
-                          } else if (item.spaceKey != null ||
-                              item.postId != null) {
+                          } else if (item.spaceKey != null || item.postId != null) {
                             target = NotificationNavigationTarget(
                               tab: BelongBottomTab.home,
                               spaceKey: item.spaceKey ?? 'general_chat',
@@ -259,9 +230,7 @@ class CalmNotificationsView extends HookConsumerWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 key: Key('notification_archived_snackbar'),
-                                content: Text(
-                                  'This reflection was unhurriedly archived or moved',
-                                ),
+                                content: Text('This reflection was unhurriedly archived or moved'),
                                 duration: Duration(seconds: 3),
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -269,13 +238,7 @@ class CalmNotificationsView extends HookConsumerWidget {
                           }
 
                           if (target != null) {
-                            ref
-                                    .read(
-                                      notificationNavigationTargetProvider
-                                          .notifier,
-                                    )
-                                    .state =
-                                target;
+                            ref.read(notificationNavigationTargetProvider.notifier).state = target;
                             onNavigate?.call(target);
                           }
                         },
@@ -307,21 +270,9 @@ class _BelongNotificationCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     // Lower-right badge icon and background color
-    final (
-      IconData badgeIcon,
-      Color badgeBgColor,
-      Color badgeIconColor,
-    ) = switch (item.type) {
-      BelongNotificationType.like => (
-        Icons.favorite,
-        const Color(0xFFE91E63),
-        Colors.white,
-      ),
-      BelongNotificationType.reply => (
-        Icons.reply_rounded,
-        const Color(0xFF2196F3),
-        Colors.white,
-      ),
+    final (IconData badgeIcon, Color badgeBgColor, Color badgeIconColor) = switch (item.type) {
+      BelongNotificationType.like => (Icons.favorite, const Color(0xFFE91E63), Colors.white),
+      BelongNotificationType.reply => (Icons.reply_rounded, const Color(0xFF2196F3), Colors.white),
       BelongNotificationType.mention => (
         Icons.alternate_email_rounded,
         const Color(0xFF4CAF50),
@@ -344,9 +295,7 @@ class _BelongNotificationCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       color: item.isRead
           ? (isContrast ? Colors.black : theme.cardColor)
-          : (isContrast
-                ? const Color(0xFF1A1A00)
-                : primaryColor.withValues(alpha: 0.06)),
+          : (isContrast ? const Color(0xFF1A1A00) : primaryColor.withValues(alpha: 0.06)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
@@ -366,9 +315,7 @@ class _BelongNotificationCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 19,
-              backgroundColor: isContrast
-                  ? Colors.yellow
-                  : primaryColor.withValues(alpha: 0.15),
+              backgroundColor: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.15),
               child: Text(
                 item.authorInitials,
                 style: TextStyle(
@@ -387,10 +334,7 @@ class _BelongNotificationCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: badgeBgColor,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Theme.of(context).cardColor,
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: Theme.of(context).cardColor, width: 1.5),
                 ),
                 child: Icon(badgeIcon, size: 10, color: badgeIconColor),
               ),
@@ -416,9 +360,7 @@ class _BelongNotificationCard extends StatelessWidget {
                   fontSize: 11,
                   color: isContrast
                       ? Colors.white70
-                      : theme.textTheme.bodySmall?.color?.withValues(
-                          alpha: 0.7,
-                        ),
+                      : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 ),
               ),
               if (item.commentSnippet != null) ...[
@@ -435,9 +377,7 @@ class _BelongNotificationCard extends StatelessWidget {
                       fontStyle: FontStyle.italic,
                       color: isContrast
                           ? Colors.white70
-                          : theme.textTheme.bodySmall?.color?.withValues(
-                              alpha: 0.7,
-                            ),
+                          : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
                   ),
                 ),

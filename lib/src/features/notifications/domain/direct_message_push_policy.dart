@@ -18,10 +18,7 @@ bool shouldSendDirectMessagePush({
 bool directMessageIsQuiet(String schedule) => schedule == 'immediateGentle';
 
 /// Shade text. The snippet is short and never includes an email address.
-String directMessagePushBody({
-  required String senderName,
-  required String content,
-}) {
+String directMessagePushBody({required String senderName, required String content}) {
   final name = senderName.trim().isEmpty ? 'Fellow Member' : senderName.trim();
   final snippet = content.trim();
   if (snippet.isEmpty) return '$name sent you a direct message';

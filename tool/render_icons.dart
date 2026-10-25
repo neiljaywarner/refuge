@@ -41,19 +41,13 @@ Future<void> main() async {
     final isWebIcon = path.startsWith('web/icons') || path.contains('favicon');
 
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(
-      recorder,
-      Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()),
-    );
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()));
 
     // For master logo and web icons, draw background #F3EFE6
     // For Android ic_launcher_foreground, keep background transparent (adaptive icon background provides #F3EFE6)
     if (isMasterLogo || isWebIcon) {
       final bgPaint = Paint()..color = const Color(0xFFF3EFE6);
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()),
-        bgPaint,
-      );
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()), bgPaint);
     }
 
     // Safe zone scaling:
@@ -150,11 +144,7 @@ Future<void> main() async {
         final haloPaint = Paint()
           ..color = const Color(0xFFF3EFE6).withValues(alpha: 0.85)
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, 4.0 * scale);
-        canvas.drawCircle(
-          Offset(cx, startY + (i * letterSpacing)),
-          18.0 * scale,
-          haloPaint,
-        );
+        canvas.drawCircle(Offset(cx, startY + (i * letterSpacing)), 18.0 * scale, haloPaint);
       }
 
       textPainter.paint(canvas, Offset(lx, ly));

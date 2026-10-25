@@ -8,9 +8,7 @@ import 'package:refuge4serverpod/src/features/messages/domain/message_recipient.
 import 'package:refuge4serverpod/src/features/messages/presentation/belong_messages_view.dart';
 
 void main() {
-  patrolWidgetTest('searching grokbot2 shows Fellow Member and not Marty', (
-    $,
-  ) async {
+  patrolWidgetTest('searching grokbot2 shows Fellow Member and not Marty', ($) async {
     $.tester.view.devicePixelRatio = 1.0;
     $.tester.view.physicalSize = const Size(1200, 2400);
     addTearDown(() {

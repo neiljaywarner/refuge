@@ -51,10 +51,7 @@ class CircleSpaceMapper {
 
   /// Resolves a Circle.so space name to a canonical Belong space slug.
   /// Returns `'unmapped_space'` if the space is unrecognized.
-  static String resolveSpaceSlug(
-    String circleSpaceName, {
-    Map<String, String>? customOverrides,
-  }) {
+  static String resolveSpaceSlug(String circleSpaceName, {Map<String, String>? customOverrides}) {
     final normalized = circleSpaceName.trim().toLowerCase();
     if (customOverrides != null && customOverrides.containsKey(normalized)) {
       return customOverrides[normalized]!;
@@ -89,9 +86,7 @@ class CircleRecord {
 
   /// Returns true if this record has minimum viable content to import.
   bool get isValid =>
-      body.trim().isNotEmpty &&
-      belongSpaceSlug != 'unmapped_space' &&
-      authorName.trim().isNotEmpty;
+      body.trim().isNotEmpty && belongSpaceSlug != 'unmapped_space' && authorName.trim().isNotEmpty;
 
   Map<String, dynamic> toJson() => {
     'originalSpaceName': originalSpaceName,
@@ -138,15 +133,9 @@ class CircleImportReport {
   /// Formats an ASCII table suitable for terminal and CI logs.
   String toAsciiTable() {
     final buffer = StringBuffer();
-    buffer.writeln(
-      '===============================================================',
-    );
-    buffer.writeln(
-      ' 📦 Circle.so CSV Migration Report ${isDryRun ? "(DRY RUN)" : "(APPLIED)"}',
-    );
-    buffer.writeln(
-      '===============================================================',
-    );
+    buffer.writeln('===============================================================');
+    buffer.writeln(' 📦 Circle.so CSV Migration Report ${isDryRun ? "(DRY RUN)" : "(APPLIED)"}');
+    buffer.writeln('===============================================================');
     buffer.writeln('  Source File:        $filePath');
     buffer.writeln('  Total Rows Read:    $totalRowsRead');
     buffer.writeln('  Valid Records:      $validRecordsCount');
@@ -157,36 +146,23 @@ class CircleImportReport {
         '  Date Range:         ${earliestDate!.toIso8601String().substring(0, 10)} -> ${latestDate!.toIso8601String().substring(0, 10)}',
       );
     }
-    buffer.writeln(
-      '---------------------------------------------------------------',
-    );
+    buffer.writeln('---------------------------------------------------------------');
     buffer.writeln('  Space Slug               Section        Count');
-    buffer.writeln(
-      '---------------------------------------------------------------',
-    );
+    buffer.writeln('---------------------------------------------------------------');
     for (final entry in recordsPerSpace.entries) {
       final slug = entry.key.padRight(24);
-      final section = (CircleSpaceMapper.spaceSections[entry.key] ?? 'Other')
-          .padRight(14);
+      final section = (CircleSpaceMapper.spaceSections[entry.key] ?? 'Other').padRight(14);
       final count = entry.value.toString().padLeft(5);
       buffer.writeln('  $slug $section $count');
     }
-    buffer.writeln(
-      '===============================================================',
-    );
+    buffer.writeln('===============================================================');
     if (isDryRun) {
       buffer.writeln('  ℹ️  Dry run mode: 0 records written to database.');
-      buffer.writeln(
-        '  Run without --dry-run to commit records to target database.',
-      );
+      buffer.writeln('  Run without --dry-run to commit records to target database.');
     } else {
-      buffer.writeln(
-        '  ✅ Successfully imported $validRecordsCount records into database.',
-      );
+      buffer.writeln('  ✅ Successfully imported $validRecordsCount records into database.');
     }
-    buffer.writeln(
-      '===============================================================',
-    );
+    buffer.writeln('===============================================================');
     return buffer.toString();
   }
 
@@ -216,9 +192,7 @@ class CircleCsvParser {
     bool inQuotes = false;
 
     // Normalize Windows CRLF and classic Mac CR to standard LF
-    final normalized = csvContent
-        .replaceAll('\r\n', '\n')
-        .replaceAll('\r', '\n');
+    final normalized = csvContent.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
 
     for (int i = 0; i < normalized.length; i++) {
       final char = normalized[i];
@@ -292,38 +266,12 @@ class CircleCsvParser {
     final records = <CircleRecord>[];
 
     for (final row in parsedRows) {
-      final space = _findField(row, [
-        'space',
-        'space_name',
-        'spacename',
-        'topic',
-      ]);
+      final space = _findField(row, ['space', 'space_name', 'spacename', 'topic']);
       final title = _findField(row, ['title', 'subject', 'post_title', 'name']);
-      final body = _findField(row, [
-        'body',
-        'content',
-        'post_body',
-        'text',
-        'message',
-      ]);
-      final authorName = _findField(row, [
-        'author_name',
-        'author',
-        'user_name',
-        'creator',
-        'name',
-      ]);
-      final authorEmail = _findField(row, [
-        'author_email',
-        'email',
-        'user_email',
-      ]);
-      final dateStr = _findField(row, [
-        'created_at',
-        'timestamp',
-        'date',
-        'posted_at',
-      ]);
+      final body = _findField(row, ['body', 'content', 'post_body', 'text', 'message']);
+      final authorName = _findField(row, ['author_name', 'author', 'user_name', 'creator', 'name']);
+      final authorEmail = _findField(row, ['author_email', 'email', 'user_email']);
+      final dateStr = _findField(row, ['created_at', 'timestamp', 'date', 'posted_at']);
 
       final belongSlug = CircleSpaceMapper.resolveSpaceSlug(
         space,
@@ -355,10 +303,7 @@ class CircleCsvParser {
       .toLowerCase()
       .trim();
 
-  static String _findField(
-    Map<String, String> row,
-    List<String> candidateKeys,
-  ) {
+  static String _findField(Map<String, String> row, List<String> candidateKeys) {
     for (final key in candidateKeys) {
       if (row.containsKey(key) && row[key]!.isNotEmpty) {
         return row[key]!;
@@ -433,8 +378,7 @@ class CircleCsvImporter {
         unmappedCount++;
       } else {
         validCount++;
-        spaceCounts[record.belongSpaceSlug] =
-            (spaceCounts[record.belongSpaceSlug] ?? 0) + 1;
+        spaceCounts[record.belongSpaceSlug] = (spaceCounts[record.belongSpaceSlug] ?? 0) + 1;
       }
 
       if (record.authorName.isNotEmpty) {

@@ -53,13 +53,9 @@ void main() {
         await $.pumpWidget(
           ProviderScope(
             overrides: [
-              postRepositoryProvider.overrideWithValue(
-                LocalPostRepository(isDevMode: true),
-              ),
+              postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
               appLauncherBadgeServiceProvider.overrideWithValue(badgeService),
-              calmLocalNotificationServiceProvider.overrideWithValue(
-                localNotificationService,
-              ),
+              calmLocalNotificationServiceProvider.overrideWithValue(localNotificationService),
             ],
             child: Consumer(
               builder: (context, ref, _) {

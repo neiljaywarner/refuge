@@ -21,8 +21,7 @@ class DirectMessage {
 
   /// Same relative or calendar label as [MessageThread.formattedDate],
   /// using this message's [sentAt].
-  String formattedDate([DateTime? clockNow]) =>
-      formatRelativeDate(sentAt, clockNow);
+  String formattedDate([DateTime? clockNow]) => formatRelativeDate(sentAt, clockNow);
 }
 
 /// A conversation thread between members in the Belong community.
@@ -56,8 +55,7 @@ class MessageThread {
 
   /// Returns friendly relative date formatting:
   /// e.g. "Just now", "15m ago", "2 hrs ago", "3 days ago", "Sep 7".
-  String formattedDate([DateTime? clockNow]) =>
-      formatRelativeDate(lastActivity, clockNow);
+  String formattedDate([DateTime? clockNow]) => formatRelativeDate(lastActivity, clockNow);
 
   MessageThread copyWith({
     String? id,
@@ -96,8 +94,7 @@ class MessageThread {
         subject: 'Welcome to Belong Fellowship',
         messageType: 'Fellowship',
         recipientNames: const ['Marty (Organizer)'],
-        previewSnippet:
-            'Welcome to Belong on the Spectrum! Glad you are here with us.',
+        previewSnippet: 'Welcome to Belong on the Spectrum! Glad you are here with us.',
         lastActivity: now.subtract(const Duration(minutes: 15)),
         unreadCount: 0,
         isBatchedDigest: true,
@@ -118,8 +115,7 @@ class MessageThread {
         subject: 'Wingspan & Cascadia Setup',
         messageType: 'Group',
         recipientNames: const ['Alex K.', 'Hannah M.'],
-        previewSnippet:
-            'Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
+        previewSnippet: 'Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
         lastActivity: now.subtract(const Duration(hours: 2)),
         unreadCount: 0,
         isBatchedDigest: true,
@@ -140,8 +136,7 @@ class MessageThread {
         subject: 'Tomorrow 2 PM Coworking',
         messageType: 'Group',
         recipientNames: const ['Jordan P.'],
-        previewSnippet:
-            'Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
+        previewSnippet: 'Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
         lastActivity: now.subtract(const Duration(hours: 6)),
         unreadCount: 0,
         isBatchedDigest: true,

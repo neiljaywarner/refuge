@@ -73,17 +73,12 @@ class ApkBadging {
 }
 
 ApkBadging? parseAaptBadging(String aaptOutput) {
-  final packageMatch = RegExp(r"package: name='([^']+)'")
-      .firstMatch(aaptOutput);
-  final labelMatch = RegExp(r"application-label:'([^']+)'")
-      .firstMatch(aaptOutput);
+  final packageMatch = RegExp(r"package: name='([^']+)'").firstMatch(aaptOutput);
+  final labelMatch = RegExp(r"application-label:'([^']+)'").firstMatch(aaptOutput);
   if (packageMatch == null || labelMatch == null) {
     return null;
   }
-  return ApkBadging(
-    packageName: packageMatch.group(1)!,
-    applicationLabel: labelMatch.group(1)!,
-  );
+  return ApkBadging(packageName: packageMatch.group(1)!, applicationLabel: labelMatch.group(1)!);
 }
 
 /// Returns a human-readable refusal reason, or null when the APK is safe to upload.
@@ -159,11 +154,7 @@ String? resolveAaptExecutable({String? androidHome}) {
   if (!buildTools.existsSync()) {
     return null;
   }
-  final versions = buildTools
-      .listSync()
-      .whereType<Directory>()
-      .map((dir) => dir.path)
-      .toList();
+  final versions = buildTools.listSync().whereType<Directory>().map((dir) => dir.path).toList();
   versions.sort((a, b) => b.compareTo(a));
   for (final dir in versions) {
     final candidate = File('$dir/aapt');

@@ -57,10 +57,7 @@ class OtherSiteInfoButton extends StatelessWidget {
             title: const Text('Which site is this?'),
             content: SelectableText(notice.message),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
-              ),
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
             ],
           ),
         );

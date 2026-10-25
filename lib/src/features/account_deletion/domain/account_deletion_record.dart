@@ -63,19 +63,18 @@ class AccountDeletionRecord {
     'restoredAt': restoredAt.toIso8601String(),
   };
 
-  AccountDeletionRecord withBackends(List<String> backends) =>
-      AccountDeletionRecord(
-        userId: userId,
-        displayName: displayName,
-        email: email,
-        flavor: flavor,
-        deletedAt: deletedAt,
-        deletionKind: deletionKind,
-        softDeleted: softDeleted,
-        source: source,
-        accountStatus: accountStatus,
-        acknowledgedBackends: List.unmodifiable(backends),
-      );
+  AccountDeletionRecord withBackends(List<String> backends) => AccountDeletionRecord(
+    userId: userId,
+    displayName: displayName,
+    email: email,
+    flavor: flavor,
+    deletedAt: deletedAt,
+    deletionKind: deletionKind,
+    softDeleted: softDeleted,
+    source: source,
+    accountStatus: accountStatus,
+    acknowledgedBackends: List.unmodifiable(backends),
+  );
 }
 
 /// One place that can record a soft delete (memory, Firestore, or Appwrite).
@@ -176,10 +175,7 @@ class AccountDeletionRepository {
     if (sinks.isEmpty) return false;
     for (final sink in sinks) {
       try {
-        final deleted = await sink.isSoftDeleted(
-          userId: userId,
-          flavor: flavor,
-        );
+        final deleted = await sink.isSoftDeleted(userId: userId, flavor: flavor);
         if (!deleted) return false;
       } catch (_) {
         return false;
@@ -200,10 +196,7 @@ class AccountDeletionRepository {
 
   /// The same member comes back. [confirmed] is true only after they type
   /// [AccountDeletionMessages.restorePhrase]. An organizer ban is untouched.
-  Future<void> restoreSelf({
-    required String userId,
-    required bool confirmed,
-  }) async {
+  Future<void> restoreSelf({required String userId, required bool confirmed}) async {
     if (!confirmed) {
       throw const AccountDeletionException(
         code: 'confirmation-required',

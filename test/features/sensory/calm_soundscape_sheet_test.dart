@@ -8,16 +8,13 @@ import 'package:refuge4serverpod/src/features/sensory/presentation/calm_soundsca
 void main() {
   Widget buildTestWidget({SoundscapeAudioPlayer? audioPlayer}) => ProviderScope(
     overrides: [
-      if (audioPlayer != null)
-        soundscapeAudioPlayerProvider.overrideWithValue(audioPlayer),
+      if (audioPlayer != null) soundscapeAudioPlayerProvider.overrideWithValue(audioPlayer),
     ],
     child: const MaterialApp(home: Scaffold(body: CalmSoundscapeSheet())),
   );
 
   group('CalmSoundscapeSheet Widget Tests', () {
-    patrolWidgetTest('Renders all curated soundscape cards and title', (
-      $,
-    ) async {
+    patrolWidgetTest('Renders all curated soundscape cards and title', ($) async {
       await $.pumpWidgetAndSettle(buildTestWidget());
 
       expect($('Calm Sensory Soundscapes'), findsOneWidget);
@@ -30,9 +27,7 @@ void main() {
       expect($(const Key('toggle_soundscape_playback_button')), findsOneWidget);
     });
 
-    patrolWidgetTest('Tapping soundscape card selects it and starts playback', (
-      $,
-    ) async {
+    patrolWidgetTest('Tapping soundscape card selects it and starts playback', ($) async {
       final mockPlayer = InMemorySoundscapeAudioPlayer();
       await $.pumpWidgetAndSettle(buildTestWidget(audioPlayer: mockPlayer));
 
@@ -55,15 +50,11 @@ void main() {
       await chip15.scrollTo();
       await chip15.tap();
 
-      final chipChoice = $.tester.widget<ChoiceChip>(
-        find.byKey(const Key('timer_chip_15')),
-      );
+      final chipChoice = $.tester.widget<ChoiceChip>(find.byKey(const Key('timer_chip_15')));
       expect(chipChoice.selected, isTrue);
     });
 
-    patrolWidgetTest('Master play/pause button toggles playback state', (
-      $,
-    ) async {
+    patrolWidgetTest('Master play/pause button toggles playback state', ($) async {
       final mockPlayer = InMemorySoundscapeAudioPlayer();
       await $.pumpWidgetAndSettle(buildTestWidget(audioPlayer: mockPlayer));
 

@@ -105,15 +105,9 @@ class ScrubReport {
 
   String toAsciiSummary() {
     final buf = StringBuffer();
-    buf.writeln(
-      '===============================================================',
-    );
-    buf.writeln(
-      ' 🧹 Belong on the Spectrum — Reflection Scrubber Audit (#501, #611)',
-    );
-    buf.writeln(
-      '===============================================================',
-    );
+    buf.writeln('===============================================================');
+    buf.writeln(' 🧹 Belong on the Spectrum — Reflection Scrubber Audit (#501, #611)');
+    buf.writeln('===============================================================');
     buf.writeln('  • Total Reflections Scanned: $totalScanned');
     buf.writeln('  • Flagged Test Junk / Clutter: $junkCount');
     buf.writeln('  • Valid Community Reflections: $validCount');
@@ -123,9 +117,7 @@ class ScrubReport {
         buf.writeln('  ⚠️  $snippet');
       }
     }
-    buf.writeln(
-      '===============================================================',
-    );
+    buf.writeln('===============================================================');
     return buf.toString();
   }
 }
@@ -170,18 +162,13 @@ class ReflectionScrubber {
               id: raw['id']?.toString() ?? 'unknown',
               authorName: raw['authorName']?.toString() ?? 'Anonymous',
               spaceKey: raw['spaceKey']?.toString() ?? 'general_chat',
-              toneTag:
-                  raw['toneTag']?.toString() ??
-                  raw['intentTag']?.toString() ??
-                  '[Support]',
+              toneTag: raw['toneTag']?.toString() ?? raw['intentTag']?.toString() ?? '[Support]',
               specialInterestTag: raw['specialInterestTag']?.toString(),
               imageUrl: raw['imageUrl']?.toString(),
               content: raw['content']?.toString() ?? '',
               timestamp:
                   DateTime.tryParse(
-                    raw['timestamp']?.toString() ??
-                        raw['createdAt']?.toString() ??
-                        '',
+                    raw['timestamp']?.toString() ?? raw['createdAt']?.toString() ?? '',
                   ) ??
                   DateTime.now(),
               reactions: (raw['reactions'] is Map)
@@ -229,13 +216,10 @@ Future<void> main(List<String> args) async {
       final decoded = jsonDecode(content);
       if (decoded is List) {
         postsToAudit = scrubber.parseJsonPosts(decoded);
-      } else if (decoded is Map<String, dynamic> &&
-          decoded['reflections'] is List) {
+      } else if (decoded is Map<String, dynamic> && decoded['reflections'] is List) {
         postsToAudit = scrubber.parseJsonPosts(decoded['reflections'] as List);
       } else {
-        stderr.writeln(
-          '❌ Error: JSON file must contain a list of reflection objects.',
-        );
+        stderr.writeln('❌ Error: JSON file must contain a list of reflection objects.');
         exit(65); // EX_DATAERR
       }
     } catch (e) {

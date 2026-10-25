@@ -51,14 +51,10 @@ void main() {
         await $.pumpWidget(
           ProviderScope(
             overrides: [
-              postRepositoryProvider.overrideWithValue(
-                LocalPostRepository(isDevMode: true),
-              ),
+              postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
               appLauncherBadgeServiceProvider.overrideWithValue(_FakeBadge()),
               belongNotificationsProvider.overrideWith(
-                () => BelongNotificationsNotifier(
-                  initialList: [mention(), like()],
-                ),
+                () => BelongNotificationsNotifier(initialList: [mention(), like()]),
               ),
             ],
             child: const MaterialApp(home: RefugeHomeScreen()),
@@ -70,55 +66,40 @@ void main() {
         await $(const Key('bottom_nav_icon_notifications')).tap();
         await $.pumpAndSettle();
 
-        expect(
-          $('Sarah K. mentioned you in a comment on "Quiet Waters"'),
-          findsOneWidget,
-        );
+        expect($('Sarah K. mentioned you in a comment on "Quiet Waters"'), findsOneWidget);
         await $(const Key('notification_list_tile_notif-mention-1')).tap();
         await $.pumpAndSettle();
 
-        expect(
-          $(const Key('notification_unread_dot_notif-mention-1')),
-          findsNothing,
-        );
-        expect(
-          $(const Key('notification_unread_dot_notif-like-1')),
-          findsOneWidget,
-        );
+        expect($(const Key('notification_unread_dot_notif-mention-1')), findsNothing);
+        expect($(const Key('notification_unread_dot_notif-like-1')), findsOneWidget);
         expect($(const Key('bottom_nav_notifications_badge')), findsOneWidget);
         expect($('1'), findsWidgets);
       },
     );
 
-    patrolWidgetTest(
-      'Scenario: a filter with no items shows the empty placeholder',
-      ($) async {
-        $.tester.view.devicePixelRatio = 1.0;
-        $.tester.view.physicalSize = const Size(800, 1400);
-        addTearDown(() {
-          $.tester.view.resetPhysicalSize();
-          $.tester.view.resetDevicePixelRatio();
-        });
+    patrolWidgetTest('Scenario: a filter with no items shows the empty placeholder', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(800, 1400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
 
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            overrides: [
-              belongNotificationsProvider.overrideWith(
-                () => BelongNotificationsNotifier(
-                  initialList: [like()],
-                  badgeService: _FakeBadge(),
-                ),
-              ),
-            ],
-            child: const MaterialApp(home: CalmNotificationsView()),
-          ),
-        );
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          overrides: [
+            belongNotificationsProvider.overrideWith(
+              () => BelongNotificationsNotifier(initialList: [like()], badgeService: _FakeBadge()),
+            ),
+          ],
+          child: const MaterialApp(home: CalmNotificationsView()),
+        ),
+      );
 
-        await $(const Key('filter_chip_mentions')).tap();
-        await $.pumpAndSettle();
-        expect($(const Key('empty_notifications_placeholder')), findsOneWidget);
-        expect($('No notifications in mentions right now.'), findsOneWidget);
-      },
-    );
+      await $(const Key('filter_chip_mentions')).tap();
+      await $.pumpAndSettle();
+      expect($(const Key('empty_notifications_placeholder')), findsOneWidget);
+      expect($('No notifications in mentions right now.'), findsOneWidget);
+    });
   });
 }

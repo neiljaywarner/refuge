@@ -53,17 +53,9 @@ class ErrorReporterService {
 
     // 1. Diagnostics & structured logging via Talker
     if (fatal) {
-      talker.critical(
-        '🚨 [ErrorReporter FATAL] $exception (Reason: $reason)',
-        exception,
-        stack,
-      );
+      talker.critical('🚨 [ErrorReporter FATAL] $exception (Reason: $reason)', exception, stack);
     } else {
-      talker.error(
-        '⚠️ [ErrorReporter HANDLED] $exception (Reason: $reason)',
-        exception,
-        stack,
-      );
+      talker.error('⚠️ [ErrorReporter HANDLED] $exception (Reason: $reason)', exception, stack);
     }
 
     // 2. Firebase Analytics: log 'app_error' event with category and reason
@@ -88,9 +80,7 @@ class ErrorReporterService {
           stack,
           reason: reason,
           fatal: fatal,
-          information: sanitizedContext.entries
-              .map((e) => '${e.key}: ${e.value}')
-              .toList(),
+          information: sanitizedContext.entries.map((e) => '${e.key}: ${e.value}').toList(),
         );
       } catch (_) {
         // Crashlytics failure fallback is handled by in-memory diagnostic buffer.
@@ -115,9 +105,7 @@ class ErrorReporterService {
   Map<String, Object> _sanitizeMetadata(Map<String, Object>? raw) {
     if (raw == null) return {};
     final sanitized = <String, Object>{};
-    final emailRegex = RegExp(
-      r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+',
-    );
+    final emailRegex = RegExp(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+');
 
     for (final entry in raw.entries) {
       final valueStr = entry.value.toString();

@@ -77,56 +77,38 @@ void main() {
         postTitle: 'Markan Chiasms',
         timestamp: now,
       );
-      expect(
-        mention.displayMessage,
-        'John Doe mentioned you in a comment on "Markan Chiasms"',
-      );
+      expect(mention.displayMessage, 'John Doe mentioned you in a comment on "Markan Chiasms"');
 
       final reply = mention.copyWith(
         type: BelongNotificationType.reply,
         postTitle: 'Prayer & Healing',
       );
-      expect(
-        reply.displayMessage,
-        'John Doe replied to your comment on "Prayer & Healing"',
-      );
+      expect(reply.displayMessage, 'John Doe replied to your comment on "Prayer & Healing"');
 
       final like = mention.copyWith(
         type: BelongNotificationType.like,
         postTitle: 'Sensory Worship',
       );
-      expect(
-        like.displayMessage,
-        'John Doe liked your reflection on "Sensory Worship"',
-      );
+      expect(like.displayMessage, 'John Doe liked your reflection on "Sensory Worship"');
 
       final dm = mention.copyWith(
         type: BelongNotificationType.directMessage,
         postTitle: 'Direct Message',
         commentSnippet: 'Welcome to Belong!',
       );
-      expect(
-        dm.displayMessage,
-        'John Doe sent you a direct message: "Welcome to Belong!"',
-      );
+      expect(dm.displayMessage, 'John Doe sent you a direct message: "Welcome to Belong!"');
 
       final following = mention.copyWith(
         type: BelongNotificationType.following,
         postTitle: 'Quiet Waters',
       );
-      expect(
-        following.displayMessage,
-        'John Doe posted a new reflection in "Quiet Waters"',
-      );
+      expect(following.displayMessage, 'John Doe posted a new reflection in "Quiet Waters"');
 
       final directMessage = mention.copyWith(
         type: BelongNotificationType.directMessage,
         postTitle: 'Quiet hello',
       );
-      expect(
-        directMessage.displayMessage,
-        'John Doe sent you a direct message: "Quiet hello"',
-      );
+      expect(directMessage.displayMessage, 'John Doe sent you a direct message: "Quiet hello"');
     });
 
     test('formattedTimeAgo produces friendly relative strings', () {
@@ -143,26 +125,18 @@ void main() {
       expect(nJustNow.formattedTimeAgo(base), 'Just now');
 
       // Minutes
-      final nMin = nJustNow.copyWith(
-        timestamp: base.subtract(const Duration(minutes: 15)),
-      );
+      final nMin = nJustNow.copyWith(timestamp: base.subtract(const Duration(minutes: 15)));
       expect(nMin.formattedTimeAgo(base), '15 mins ago');
 
       // Hours
-      final nHour = nJustNow.copyWith(
-        timestamp: base.subtract(const Duration(hours: 1)),
-      );
+      final nHour = nJustNow.copyWith(timestamp: base.subtract(const Duration(hours: 1)));
       expect(nHour.formattedTimeAgo(base), '1 hr ago');
 
-      final nHours = nJustNow.copyWith(
-        timestamp: base.subtract(const Duration(hours: 4)),
-      );
+      final nHours = nJustNow.copyWith(timestamp: base.subtract(const Duration(hours: 4)));
       expect(nHours.formattedTimeAgo(base), '4 hrs ago');
 
       // Days
-      final nDays = nJustNow.copyWith(
-        timestamp: base.subtract(const Duration(days: 2)),
-      );
+      final nDays = nJustNow.copyWith(timestamp: base.subtract(const Duration(days: 2)));
       expect(nDays.formattedTimeAgo(base), '2 days ago');
 
       // Older date
@@ -186,23 +160,20 @@ void main() {
       expect(badgeService.recordedBadge, 4);
     });
 
-    test(
-      'addMentionNotification dynamically inserts item and increments badge',
-      () {
-        notifier.addMentionNotification(
-          authorName: 'Sarah Chen',
-          postTitle: 'Neurodivergent Study',
-          postId: 'post-study-1',
-          spaceKey: 'study',
-          commentSnippet: 'Check this out!',
-        );
-        final unread = notifier.state.where((n) => !n.isRead).length;
-        expect(unread, 5);
-        expect(badgeService.recordedBadge, 5);
-        expect(notifier.state.first.type, BelongNotificationType.mention);
-        expect(notifier.state.first.authorName, 'Sarah Chen');
-      },
-    );
+    test('addMentionNotification dynamically inserts item and increments badge', () {
+      notifier.addMentionNotification(
+        authorName: 'Sarah Chen',
+        postTitle: 'Neurodivergent Study',
+        postId: 'post-study-1',
+        spaceKey: 'study',
+        commentSnippet: 'Check this out!',
+      );
+      final unread = notifier.state.where((n) => !n.isRead).length;
+      expect(unread, 5);
+      expect(badgeService.recordedBadge, 5);
+      expect(notifier.state.first.type, BelongNotificationType.mention);
+      expect(notifier.state.first.authorName, 'Sarah Chen');
+    });
 
     test('addDirectMessageNotification dynamically inserts DM and increments badge', () {
       notifier.addDirectMessageNotification(
@@ -251,24 +222,17 @@ void main() {
                 ),
           ),
         ),
-        postRepositoryProvider.overrideWithValue(
-          LocalPostRepository(isDevMode: true),
-        ),
-        appLauncherBadgeServiceProvider.overrideWithValue(
-          FakeLauncherBadgeService(),
-        ),
+        postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
+        appLauncherBadgeServiceProvider.overrideWithValue(FakeLauncherBadgeService()),
         if (initialNotifications != null)
           belongNotificationsProvider.overrideWith(
-            () =>
-                BelongNotificationsNotifier(initialList: initialNotifications),
+            () => BelongNotificationsNotifier(initialList: initialNotifications),
           ),
       ],
       child: MaterialApp(home: home ?? const RefugeHomeScreen()),
     );
 
-    patrolWidgetTest('Bottom nav bar shows bell with unread badge counter', (
-      $,
-    ) async {
+    patrolWidgetTest('Bottom nav bar shows bell with unread badge counter', ($) async {
       $.tester.view.devicePixelRatio = 1.0;
       $.tester.view.physicalSize = const Size(1200, 2400);
       addTearDown(() {
@@ -304,9 +268,7 @@ void main() {
         // 1. Verify screen title and banner
         expect($('Notifications'), findsWidgets);
         expect(
-          $(
-            'All notifications are delivered gently without intrusive sound alerts.',
-          ),
+          $('All notifications are delivered gently without intrusive sound alerts.'),
           findsOneWidget,
         );
 
@@ -318,24 +280,15 @@ void main() {
         expect($(const Key('filter_chip_following')), findsOneWidget);
 
         // 3. Verify notification item title and author initials
-        expect(
-          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
-          findsOneWidget,
-        );
+        expect($('Sarah L. mentioned you in a comment on "Markan Chiasms"'), findsOneWidget);
         expect(
           $(
             'Marty sent you a direct message: "Welcome to Belong! Let me know if you need any sensory adjustments."',
           ),
           findsOneWidget,
         );
-        expect(
-          $('Elena R. replied to your comment on "Prayer & Healing"'),
-          findsOneWidget,
-        );
-        expect(
-          $('David M. liked your reflection on "Sensory Friendly Worship"'),
-          findsOneWidget,
-        );
+        expect($('Elena R. replied to your comment on "Prayer & Healing"'), findsOneWidget);
+        expect($('David M. liked your reflection on "Sensory Friendly Worship"'), findsOneWidget);
         expect(
           $('Pastor Thomas posted a new reflection in "Psalm 23 Meditations"'),
           findsOneWidget,
@@ -344,14 +297,8 @@ void main() {
         // 4. Test filtering by Mentions
         await $(const Key('filter_chip_mentions')).tap();
         await $.pumpAndSettle();
-        expect(
-          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
-          findsOneWidget,
-        );
-        expect(
-          $('Elena R. replied to your comment on "Prayer & Healing"'),
-          findsNothing,
-        );
+        expect($('Sarah L. mentioned you in a comment on "Markan Chiasms"'), findsOneWidget);
+        expect($('Elena R. replied to your comment on "Prayer & Healing"'), findsNothing);
 
         // 5. Test filtering by Direct Messages
         await $(const Key('filter_chip_directMessages')).tap();
@@ -362,22 +309,13 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(
-          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
-          findsNothing,
-        );
+        expect($('Sarah L. mentioned you in a comment on "Markan Chiasms"'), findsNothing);
 
         // 6. Test filtering by Threads
         await $(const Key('filter_chip_threads')).tap();
         await $.pumpAndSettle();
-        expect(
-          $('Elena R. replied to your comment on "Prayer & Healing"'),
-          findsOneWidget,
-        );
-        expect(
-          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
-          findsNothing,
-        );
+        expect($('Elena R. replied to your comment on "Prayer & Healing"'), findsOneWidget);
+        expect($('Sarah L. mentioned you in a comment on "Markan Chiasms"'), findsNothing);
 
         // 7. Test filtering by Following
         await $(const Key('filter_chip_following')).tap();
@@ -386,18 +324,12 @@ void main() {
           $('Pastor Thomas posted a new reflection in "Psalm 23 Meditations"'),
           findsOneWidget,
         );
-        expect(
-          $('David M. liked your reflection on "Sensory Friendly Worship"'),
-          findsOneWidget,
-        );
+        expect($('David M. liked your reflection on "Sensory Friendly Worship"'), findsOneWidget);
 
         // 8. Return to Inbox
         await $(const Key('filter_chip_inbox')).tap();
         await $.pumpAndSettle();
-        expect(
-          $('Sarah L. mentioned you in a comment on "Markan Chiasms"'),
-          findsOneWidget,
-        );
+        expect($('Sarah L. mentioned you in a comment on "Markan Chiasms"'), findsOneWidget);
 
         // 9. Test Mark All as Read button
         expect($(const Key('mark_all_read_checkbox')), findsOneWidget);
@@ -405,10 +337,7 @@ void main() {
         await $.pumpAndSettle();
 
         // Unread dots are gone
-        expect(
-          $(const Key('notification_unread_dot_notif-mention-1')),
-          findsNothing,
-        );
+        expect($(const Key('notification_unread_dot_notif-mention-1')), findsNothing);
 
         // Bottom nav badge counter is cleared
         expect($(const Key('bottom_nav_notifications_badge')), findsNothing);

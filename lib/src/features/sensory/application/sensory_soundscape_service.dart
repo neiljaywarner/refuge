@@ -42,12 +42,8 @@ class SoundscapeState extends Equatable {
     activeSoundscape: activeSoundscape ?? this.activeSoundscape,
     isPlaying: isPlaying ?? this.isPlaying,
     volume: volume ?? this.volume,
-    sleepTimerMinutes: clearSleepTimer
-        ? null
-        : (sleepTimerMinutes ?? this.sleepTimerMinutes),
-    remainingSeconds: clearRemainingSeconds
-        ? null
-        : (remainingSeconds ?? this.remainingSeconds),
+    sleepTimerMinutes: clearSleepTimer ? null : (sleepTimerMinutes ?? this.sleepTimerMinutes),
+    remainingSeconds: clearRemainingSeconds ? null : (remainingSeconds ?? this.remainingSeconds),
   );
 
   @override
@@ -120,11 +116,7 @@ class SensorySoundscapeNotifier extends StateNotifier<SoundscapeState> {
   Future<void> selectSoundscape(SensorySoundscape soundscape) async {
     final newVolume = soundscape.defaultVolume;
     await _audioPlayer.play(soundscape, newVolume);
-    state = state.copyWith(
-      activeSoundscape: soundscape,
-      isPlaying: true,
-      volume: newVolume,
-    );
+    state = state.copyWith(activeSoundscape: soundscape, isPlaying: true, volume: newVolume);
   }
 
   /// Toggle play and pause.
@@ -134,8 +126,7 @@ class SensorySoundscapeNotifier extends StateNotifier<SoundscapeState> {
       _countdownTimer?.cancel();
       state = state.copyWith(isPlaying: false, clearRemainingSeconds: true);
     } else {
-      final target =
-          state.activeSoundscape ?? SensorySoundscape.curatedSoundscapes.first;
+      final target = state.activeSoundscape ?? SensorySoundscape.curatedSoundscapes.first;
       await _audioPlayer.play(target, state.volume);
       state = state.copyWith(activeSoundscape: target, isPlaying: true);
       if (state.sleepTimerMinutes != null) {
@@ -155,17 +146,11 @@ class SensorySoundscapeNotifier extends StateNotifier<SoundscapeState> {
   void setSleepTimer(int? minutes) {
     _countdownTimer?.cancel();
     if (minutes == null || minutes <= 0) {
-      state = state.copyWith(
-        clearSleepTimer: true,
-        clearRemainingSeconds: true,
-      );
+      state = state.copyWith(clearSleepTimer: true, clearRemainingSeconds: true);
       return;
     }
 
-    state = state.copyWith(
-      sleepTimerMinutes: minutes,
-      remainingSeconds: minutes * 60,
-    );
+    state = state.copyWith(sleepTimerMinutes: minutes, remainingSeconds: minutes * 60);
 
     if (state.isPlaying) {
       _startTimer(minutes);

@@ -34,9 +34,7 @@ void main() {
           expect(signedIn.initials, 'HG');
           expect(signedIn.authMethod, '${target.name}_email');
 
-          container
-              .read(memberProfileProvider.notifier)
-              .signInWithOAuth('google');
+          container.read(memberProfileProvider.notifier).signInWithOAuth('google');
           final oauthSession = container.read(memberProfileProvider);
           expect(oauthSession.isSignedIn, isTrue);
           expect(oauthSession.authMethod, '${target.name}_google');
@@ -57,8 +55,7 @@ void main() {
         );
 
         expect($('Member Profile & Sign-In'), findsOneWidget);
-        await $(const Key('profile_display_name_field'))
-            .enterText('Caleb Stone');
+        await $(const Key('profile_display_name_field')).enterText('Caleb Stone');
         await $(const Key('profile_email_field')).enterText('caleb@belong.org');
         await $(const Key('profile_save_sign_in_button')).tap();
       },

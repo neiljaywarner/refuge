@@ -60,10 +60,7 @@ abstract class DirectMessageMailbox {
   });
 
   /// Permanently removes messages this sender wrote. Used by a Circle-style ban.
-  Future<int> deleteBySender({
-    required String senderId,
-    required String senderName,
-  });
+  Future<int> deleteBySender({required String senderId, required String senderName});
 }
 
 class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
@@ -102,9 +99,7 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
 
   @override
   Future<List<MessageThread>> loadThreads(String currentUserId) async {
-    final docs = _messages.values
-        .where((m) => m.participantIds.contains(currentUserId))
-        .toList();
+    final docs = _messages.values.where((m) => m.participantIds.contains(currentUserId)).toList();
     return _threadsFromMessages(docs, currentUserId);
   }
 
@@ -116,15 +111,9 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     required String content,
     String? subject,
   }) async {
-    final recipientIds = recipients
-        .where((r) => !r.isSample)
-        .map((r) => r.id)
-        .toList();
+    final recipientIds = recipients.where((r) => !r.isSample).map((r) => r.id).toList();
     final allSample = recipients.every((r) => r.isSample);
-    final participantIds = <String>{
-      if (!allSample) senderId,
-      ...recipientIds,
-    }.toList();
+    final participantIds = <String>{if (!allSample) senderId, ...recipientIds}.toList();
     final threadId = allSample
         ? 'thread-local-${DateTime.now().millisecondsSinceEpoch}'
         : StoredDirectMessage.computeThreadId(participantIds);
@@ -134,13 +123,9 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
       threadId: threadId,
       senderId: allSample ? 'local-sender' : senderId,
       senderName: senderName,
-      recipientIds: allSample
-          ? recipients.map((r) => r.id).toList()
-          : recipientIds,
+      recipientIds: allSample ? recipients.map((r) => r.id).toList() : recipientIds,
       recipientNames: recipients.map((r) => r.name).toList(),
-      participantIds: allSample
-          ? [senderId, ...recipients.map((r) => r.id)]
-          : participantIds,
+      participantIds: allSample ? [senderId, ...recipients.map((r) => r.id)] : participantIds,
       subject: subject,
       content: content,
       sentAt: DateTime.now(),
@@ -150,9 +135,7 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     }
     final thread = _threadForMessage(message, senderId, recipients);
     return DirectMessageSendResult(
-      outcome: allSample
-          ? DirectMessageSendOutcome.localOnly
-          : DirectMessageSendOutcome.delivered,
+      outcome: allSample ? DirectMessageSendOutcome.localOnly : DirectMessageSendOutcome.delivered,
       message: message,
       thread: thread,
     );
@@ -180,16 +163,12 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
         isRead: prior?.isRead ?? false,
       );
     }
-    final merged = byId.values.toList()
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final merged = byId.values.toList()..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return merged;
   }
 
   @override
-  Future<int> deleteBySender({
-    required String senderId,
-    required String senderName,
-  }) async {
+  Future<int> deleteBySender({required String senderId, required String senderName}) async {
     final id = senderId.trim();
     final name = senderName.trim().toLowerCase();
     final before = _messages.length;
@@ -203,10 +182,8 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
 }
 
 class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
-  FirestoreDirectMessageMailbox({
-    FirebaseFirestore? firestore,
-    this.isProduction = false,
-  }) : _firestore = firestore;
+  FirestoreDirectMessageMailbox({FirebaseFirestore? firestore, this.isProduction = false})
+    : _firestore = firestore;
 
   final FirebaseFirestore? _firestore;
   final bool isProduction;
@@ -231,10 +208,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     final db = _db;
     final user = _currentFirebaseUser();
     if (db == null || user == null) {
-      return _offline.loadDirectory(
-        includeSamples: includeSamples,
-        isProduction: isProduction,
-      );
+      return _offline.loadDirectory(includeSamples: includeSamples, isProduction: isProduction);
     }
     try {
       final snap = await db.collection('users').get();
@@ -248,10 +222,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
       if (isProduction || !includeSamples) return real;
       return kDevFellowshipMembers.map(MessageRecipient.fromDevMember).toList();
     } catch (_) {
-      return _offline.loadDirectory(
-        includeSamples: includeSamples,
-        isProduction: isProduction,
-      );
+      return _offline.loadDirectory(includeSamples: includeSamples, isProduction: isProduction);
     }
   }
 
@@ -266,9 +237,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
           .collection(collection)
           .where('participantIds', arrayContains: currentUserId)
           .get();
-      final messages = snap.docs
-          .map((d) => StoredDirectMessage.fromMap(d.id, d.data()))
-          .toList();
+      final messages = snap.docs.map((d) => StoredDirectMessage.fromMap(d.id, d.data())).toList();
       return _threadsFromMessages(messages, currentUserId);
     } catch (_) {
       return _offline.loadThreads(currentUserId);
@@ -322,17 +291,11 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     }
 
     try {
-      await db
-          .collection(collection)
-          .doc(id)
-          .set(message.toMap())
-          .timeout(sendTimeout);
+      await db.collection(collection).doc(id).set(message.toMap()).timeout(sendTimeout);
       // Keep the row on this device too. The recipient's bell can show it
       // in the same session when the Firestore read is not deployed yet.
       _offline.cacheMessage(message);
-      if (shouldRequestDirectMessagePush(
-        DirectMessageSendOutcome.delivered.name,
-      )) {
+      if (shouldRequestDirectMessagePush(DirectMessageSendOutcome.delivered.name)) {
         unawaited(requestDirectMessagePush(id));
       }
       return DirectMessageSendResult(
@@ -355,10 +318,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
   List<BelongNotification> notificationsForUser({
     required String currentUserId,
     required List<BelongNotification> existing,
-  }) => _offline.notificationsForUser(
-    currentUserId: currentUserId,
-    existing: existing,
-  );
+  }) => _offline.notificationsForUser(currentUserId: currentUserId, existing: existing);
 
   Future<void> hydrateFromFirestore(String currentUserId) async {
     final db = _db;
@@ -375,10 +335,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
   }
 
   @override
-  Future<int> deleteBySender({
-    required String senderId,
-    required String senderName,
-  }) async {
+  Future<int> deleteBySender({required String senderId, required String senderName}) async {
     final removedOffline = await _offline.deleteBySender(
       senderId: senderId,
       senderName: senderName,
@@ -389,16 +346,10 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     try {
       final byId = senderId.trim().isEmpty
           ? null
-          : await db
-                .collection(collection)
-                .where('senderId', isEqualTo: senderId)
-                .get();
+          : await db.collection(collection).where('senderId', isEqualTo: senderId).get();
       final byName = senderName.trim().isEmpty
           ? null
-          : await db
-                .collection(collection)
-                .where('senderName', isEqualTo: senderName)
-                .get();
+          : await db.collection(collection).where('senderName', isEqualTo: senderName).get();
       final docs = {...?byId?.docs, ...?byName?.docs};
       for (final doc in docs) {
         await doc.reference.delete();
@@ -409,34 +360,27 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
   }
 }
 
-List<MessageThread> _threadsFromMessages(
-  List<StoredDirectMessage> messages,
-  String currentUserId,
-) {
+List<MessageThread> _threadsFromMessages(List<StoredDirectMessage> messages, String currentUserId) {
   final byThread = <String, List<StoredDirectMessage>>{};
   for (final msg in messages) {
     byThread.putIfAbsent(msg.threadId, () => []).add(msg);
   }
   final threads = <MessageThread>[];
   for (final entry in byThread.entries) {
-    final sorted = [...entry.value]
-      ..sort((a, b) => a.sentAt.compareTo(b.sentAt));
+    final sorted = [...entry.value]..sort((a, b) => a.sentAt.compareTo(b.sentAt));
     final last = sorted.last;
-    final otherNames = last.participantIds
-        .where((id) => id != currentUserId)
-        .map((id) {
-          final match = sorted.reversed.firstWhere(
-            (m) => m.senderId == id || m.recipientIds.contains(id),
-            orElse: () => last,
-          );
-          if (match.senderId == id) return match.senderName;
-          final idx = match.recipientIds.indexOf(id);
-          if (idx >= 0 && idx < match.recipientNames.length) {
-            return match.recipientNames[idx];
-          }
-          return 'Fellow Member';
-        })
-        .toList();
+    final otherNames = last.participantIds.where((id) => id != currentUserId).map((id) {
+      final match = sorted.reversed.firstWhere(
+        (m) => m.senderId == id || m.recipientIds.contains(id),
+        orElse: () => last,
+      );
+      if (match.senderId == id) return match.senderName;
+      final idx = match.recipientIds.indexOf(id);
+      if (idx >= 0 && idx < match.recipientNames.length) {
+        return match.recipientNames[idx];
+      }
+      return 'Fellow Member';
+    }).toList();
     final participantName = otherNames.isEmpty
         ? 'Fellow Member'
         : otherNames.length == 1
@@ -502,6 +446,5 @@ MessageThread _threadForMessage(
   );
 }
 
-DirectMessageMailbox createDirectMessageMailbox({
-  AppFlavor flavor = AppFlavor.dev,
-}) => FirestoreDirectMessageMailbox(isProduction: flavor.isProduction);
+DirectMessageMailbox createDirectMessageMailbox({AppFlavor flavor = AppFlavor.dev}) =>
+    FirestoreDirectMessageMailbox(isProduction: flavor.isProduction);

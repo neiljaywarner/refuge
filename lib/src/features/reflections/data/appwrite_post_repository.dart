@@ -16,10 +16,7 @@ import 'post_repository.dart';
 /// Tests supply an in-memory implementation so they never open a socket.
 abstract class ReflectionMirror {
   Future<void> upsertPost(Post post);
-  Future<void> incrementReaction({
-    required String postId,
-    required String column,
-  });
+  Future<void> incrementReaction({required String postId, required String column});
   Future<List<Post>> listPosts({required String spaceKey});
   Stream<Post> watchPosts({required String spaceKey});
   Future<void> upsertDigest({
@@ -62,16 +59,14 @@ class AppwriteReflectionMirror implements ReflectionMirror {
   }
 
   @override
-  Future<void> incrementReaction({
-    required String postId,
-    required String column,
-  }) => _tables.incrementRowColumn(
-    databaseId: config.databaseId,
-    tableId: AppwriteConfig.reflectionTableId,
-    rowId: appwriteRowId(postId),
-    column: column,
-    value: 1,
-  );
+  Future<void> incrementReaction({required String postId, required String column}) =>
+      _tables.incrementRowColumn(
+        databaseId: config.databaseId,
+        tableId: AppwriteConfig.reflectionTableId,
+        rowId: appwriteRowId(postId),
+        column: column,
+        value: 1,
+      );
 
   @override
   Future<List<Post>> listPosts({required String spaceKey}) async {
@@ -141,8 +136,7 @@ class AppwriteReflectionMirror implements ReflectionMirror {
     }
   }
 
-  Post? _postFromRow(models.Row row) =>
-      postFromAppwritePayload({...row.data, r'$id': row.$id});
+  Post? _postFromRow(models.Row row) => postFromAppwritePayload({...row.data, r'$id': row.$id});
 }
 
 /// Reflection store that replaces Serverpod Cloud.
@@ -181,8 +175,7 @@ class AppwritePostRepository implements PostRepository {
   }
 
   static ReflectionMirror? _mirrorFrom(AppwriteServices? services) {
-    final resolved =
-        services ?? createAppwriteServices(AppwriteConfig.fromEnvironment);
+    final resolved = services ?? createAppwriteServices(AppwriteConfig.fromEnvironment);
     if (resolved == null) return null;
     return AppwriteReflectionMirror(resolved, AppwriteConfig.fromEnvironment);
   }
@@ -199,11 +192,7 @@ class AppwritePostRepository implements PostRepository {
             .where('spaceKey', isEqualTo: canonicalSpaceKey(spaceKey))
             .get()
             .timeout(const Duration(seconds: 2));
-        cloud.addAll(
-          snap.docs.map(
-            (doc) => postFromFirestore(doc.id, doc.data(), spaceKey),
-          ),
-        );
+        cloud.addAll(snap.docs.map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey)));
         _isLiveConnected = true;
       } catch (error, stack) {
         talker.handle(error, stack, 'Firestore reflection read failed');
@@ -213,9 +202,7 @@ class AppwritePostRepository implements PostRepository {
     if (mirror != null) {
       try {
         cloud.addAll(
-          await mirror
-              .listPosts(spaceKey: spaceKey)
-              .timeout(const Duration(seconds: 2)),
+          await mirror.listPosts(spaceKey: spaceKey).timeout(const Duration(seconds: 2)),
         );
         _isLiveConnected = true;
       } catch (error, stack) {
@@ -235,10 +222,7 @@ class AppwritePostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({
-    required String postId,
-    required String reactionType,
-  }) async {
+  Future<void> addReaction({required String postId, required String reactionType}) async {
     await _fallback.addReaction(postId: postId, reactionType: reactionType);
     final column = reactionColumn(reactionType);
     final fs = firestore;
@@ -304,20 +288,13 @@ class AppwritePostRepository implements PostRepository {
                     mergePosts(
                       latest,
                       snap.docs
-                          .map(
-                            (doc) =>
-                                postFromFirestore(doc.id, doc.data(), spaceKey),
-                          )
+                          .map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey))
                           .toList(),
                     ),
                   );
                 },
                 onError: (Object error, StackTrace stack) {
-                  talker.handle(
-                    error,
-                    stack,
-                    'Firestore reflection watch failed',
-                  );
+                  talker.handle(error, stack, 'Firestore reflection watch failed');
                 },
               ),
         );
@@ -344,11 +321,7 @@ class AppwritePostRepository implements PostRepository {
                   emit(mergePosts(latest, [post]));
                 },
                 onError: (Object error, StackTrace stack) {
-                  talker.handle(
-                    error,
-                    stack,
-                    'Appwrite reflection watch failed',
-                  );
+                  talker.handle(error, stack, 'Appwrite reflection watch failed');
                 },
               ),
         );
@@ -373,9 +346,7 @@ class AppwritePostRepository implements PostRepository {
     }
     final affirmations = posts.fold<int>(
       0,
-      (total, post) =>
-          total +
-          post.reactions.values.fold<int>(0, (inner, value) => inner + value),
+      (total, post) => total + post.reactions.values.fold<int>(0, (inner, value) => inner + value),
     );
     final summary =
         'Gathered in peace • ${posts.length} reflections shared with $affirmations care affirmations.';
@@ -403,8 +374,7 @@ class AppwritePostRepository implements PostRepository {
       _fallback.watchPostsByAuthor(authorName: authorName);
 
   @override
-  Future<void> toggleSavePost({required String postId}) =>
-      _fallback.toggleSavePost(postId: postId);
+  Future<void> toggleSavePost({required String postId}) => _fallback.toggleSavePost(postId: postId);
 
   @override
   Future<List<Post>> getSavedPosts() => _fallback.getSavedPosts();
@@ -461,9 +431,7 @@ class AppwritePostRepository implements PostRepository {
 String appwriteRowId(String raw) {
   final cleaned = raw.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
   if (cleaned.isEmpty) return 'row';
-  final body = RegExp(r'^[A-Za-z0-9]').hasMatch(cleaned)
-      ? cleaned
-      : 'r$cleaned';
+  final body = RegExp(r'^[A-Za-z0-9]').hasMatch(cleaned) ? cleaned : 'r$cleaned';
   return body.length <= 36 ? body : body.substring(0, 36);
 }
 
@@ -487,15 +455,13 @@ Map<String, dynamic> reflectionRowData(Post post) => {
   'intentTag': post.toneTag.isEmpty ? '[Support]' : post.toneTag,
   if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty)
     'specialInterestTag': post.specialInterestTag,
-  if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-    'imageUrl': post.imageUrl,
+  if (post.imageUrl != null && post.imageUrl!.isNotEmpty) 'imageUrl': post.imageUrl,
   'content': post.content,
   'createdAt': post.timestamp.toUtc().toIso8601String(),
   'prayingCount': post.reactions['pray'] ?? 0,
   'standingWithCount': post.reactions['standing'] ?? 0,
   'peaceCount': post.reactions['peace'] ?? 0,
-  'encouragedCount':
-      post.reactions['encouraged'] ?? post.reactions['relatable'] ?? 0,
+  'encouragedCount': post.reactions['encouraged'] ?? post.reactions['relatable'] ?? 0,
   'isDemo': post.isDemo,
 };
 
@@ -530,17 +496,12 @@ Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {
     id: id,
     authorName: data['authorName'] as String? ?? 'Fellowship Member',
     spaceKey: data['spaceKey'] as String? ?? canonicalSpaceKey(spaceKey),
-    toneTag:
-        data['toneTag'] as String? ??
-        data['intentTag'] as String? ??
-        '[Support]',
+    toneTag: data['toneTag'] as String? ?? data['intentTag'] as String? ?? '[Support]',
     specialInterestTag: data['specialInterestTag'] as String?,
     imageUrl: data['imageUrl'] as String?,
     content: data['content'] as String? ?? '',
     timestamp:
-        DateTime.tryParse(
-          data['createdAt'] as String? ?? data['timestamp'] as String? ?? '',
-        ) ??
+        DateTime.tryParse(data['createdAt'] as String? ?? data['timestamp'] as String? ?? '') ??
         DateTime.now(),
     reactions: reactions,
     isDemo: data['isDemo'] as bool? ?? false,
@@ -565,8 +526,7 @@ Post? postFromAppwritePayload(Map<String, dynamic> payload) {
     specialInterestTag: data['specialInterestTag'] as String?,
     imageUrl: data['imageUrl'] as String?,
     content: content,
-    timestamp:
-        DateTime.tryParse(data['createdAt'] as String? ?? '') ?? DateTime.now(),
+    timestamp: DateTime.tryParse(data['createdAt'] as String? ?? '') ?? DateTime.now(),
     reactions: {
       'pray': (data['prayingCount'] as num?)?.toInt() ?? 0,
       'standing': (data['standingWithCount'] as num?)?.toInt() ?? 0,
@@ -584,8 +544,7 @@ List<Post> mergePosts(List<Post> base, List<Post> overlay) {
     final existing = byId[post.id];
     byId[post.id] = existing == null ? post : preferPost(existing, post);
   }
-  final merged = byId.values.toList()
-    ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  final merged = byId.values.toList()..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   return merged;
 }
 
@@ -594,13 +553,7 @@ List<Post> mergePosts(List<Post> base, List<Post> overlay) {
 Post preferPost(Post current, Post incoming) {
   if (incoming.timestamp.isAfter(current.timestamp)) return incoming;
   if (current.timestamp.isAfter(incoming.timestamp)) return current;
-  final currentScore = current.reactions.values.fold<int>(
-    0,
-    (total, value) => total + value,
-  );
-  final incomingScore = incoming.reactions.values.fold<int>(
-    0,
-    (total, value) => total + value,
-  );
+  final currentScore = current.reactions.values.fold<int>(0, (total, value) => total + value);
+  final incomingScore = incoming.reactions.values.fold<int>(0, (total, value) => total + value);
   return incomingScore >= currentScore ? incoming : current;
 }

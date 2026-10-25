@@ -39,9 +39,7 @@ class CommunityBrandConfig {
     this.enableFellowshipAffiliationField = true,
   }) : sageAccentColor = sageAccentColor ?? const Color(0xFF68A67D),
        warmAmberAccentColor =
-           warmGoldAccentColor ??
-           warmAmberAccentColor ??
-           const Color(0xFFD49137);
+           warmGoldAccentColor ?? warmAmberAccentColor ?? const Color(0xFFD49137);
 
   /// Default flagship configuration for **Belong on the Spectrum**.
   const CommunityBrandConfig.belong()
@@ -79,9 +77,7 @@ class CommunityBrandConfig {
   /// in `dev`, `https://belongonthespectrum.web.app/` in `prod`). The marketing
   /// site at [AppFlavor.marketingWebsiteUrl] stays separate.
   factory CommunityBrandConfig.forFlavor(AppFlavor flavor) =>
-      const CommunityBrandConfig.belong().copyWith(
-        websiteUrl: flavor.websiteUrl,
-      );
+      const CommunityBrandConfig.belong().copyWith(websiteUrl: flavor.websiteUrl);
 
   /// Resolves the canonical web app URL for the given [flavor], preserving custom
   /// white-label tenant URLs while mapping the flagship Belong marketing or
@@ -159,27 +155,17 @@ class CommunityBrandConfig {
     creamBackgroundColor: creamBackgroundColor ?? this.creamBackgroundColor,
     deepNavyPrimaryColor: deepNavyPrimaryColor ?? this.deepNavyPrimaryColor,
     sageAccentColor: sageAccentColor ?? this.sageAccentColor,
-    warmAmberAccentColor:
-        warmGoldAccentColor ??
-        warmAmberAccentColor ??
-        this.warmAmberAccentColor,
-    defaultSubredditOrSpaceTag:
-        defaultSubredditOrSpaceTag ?? this.defaultSubredditOrSpaceTag,
+    warmAmberAccentColor: warmGoldAccentColor ?? warmAmberAccentColor ?? this.warmAmberAccentColor,
+    defaultSubredditOrSpaceTag: defaultSubredditOrSpaceTag ?? this.defaultSubredditOrSpaceTag,
     defaultCategoryLabel: defaultCategoryLabel ?? this.defaultCategoryLabel,
-    sensoryDisclaimerMarkdown:
-        sensoryDisclaimerMarkdown ?? this.sensoryDisclaimerMarkdown,
-    fellowshipAffiliationPrompt:
-        fellowshipAffiliationPrompt ?? this.fellowshipAffiliationPrompt,
-    fellowshipAffiliationOptions:
-        fellowshipAffiliationOptions ?? this.fellowshipAffiliationOptions,
-    fellowshipNonMemberOption:
-        fellowshipNonMemberOption ?? this.fellowshipNonMemberOption,
-    defaultOrganizerWelcomeTitle:
-        defaultOrganizerWelcomeTitle ?? this.defaultOrganizerWelcomeTitle,
+    sensoryDisclaimerMarkdown: sensoryDisclaimerMarkdown ?? this.sensoryDisclaimerMarkdown,
+    fellowshipAffiliationPrompt: fellowshipAffiliationPrompt ?? this.fellowshipAffiliationPrompt,
+    fellowshipAffiliationOptions: fellowshipAffiliationOptions ?? this.fellowshipAffiliationOptions,
+    fellowshipNonMemberOption: fellowshipNonMemberOption ?? this.fellowshipNonMemberOption,
+    defaultOrganizerWelcomeTitle: defaultOrganizerWelcomeTitle ?? this.defaultOrganizerWelcomeTitle,
     defaultOrganizerWelcomeMessage:
         defaultOrganizerWelcomeMessage ?? this.defaultOrganizerWelcomeMessage,
     enableFellowshipAffiliationField:
-        enableFellowshipAffiliationField ??
-        this.enableFellowshipAffiliationField,
+        enableFellowshipAffiliationField ?? this.enableFellowshipAffiliationField,
   );
 }

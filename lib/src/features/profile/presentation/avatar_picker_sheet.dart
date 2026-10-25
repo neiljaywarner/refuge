@@ -82,11 +82,7 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
       }
 
       if (!mounted) return;
-      final framed = await BelongImageCropPage.show(
-        context,
-        bytes: rawBytes,
-        circular: true,
-      );
+      final framed = await BelongImageCropPage.show(context, bytes: rawBytes, circular: true);
       if (framed == null) {
         if (!mounted) return;
         setState(() => _isLoading = false);
@@ -106,10 +102,7 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Avatar updated peacefully.'),
-          duration: Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text('Avatar updated peacefully.'), duration: Duration(seconds: 2)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -120,10 +113,7 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
     }
   }
 
-  void _showPermanentDenialDialog(
-    BuildContext context,
-    AvatarImageSource source,
-  ) {
+  void _showPermanentDenialDialog(BuildContext context, AvatarImageSource source) {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -176,18 +166,11 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.account_circle_outlined,
-                      color: primary,
-                      size: 22,
-                    ),
+                    Icon(Icons.account_circle_outlined, color: primary, size: 22),
                     const SizedBox(width: 8),
                     const Text(
                       'Profile Avatar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -204,30 +187,18 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
               Container(
                 key: const Key('avatar_permission_denied_banner'),
                 margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.amber.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.amber.withValues(alpha: 0.4),
-                  ),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      size: 18,
-                      color: Colors.amber,
-                    ),
+                    const Icon(Icons.info_outline, size: 18, color: Colors.amber),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        _permissionDeniedMessage!,
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      child: Text(_permissionDeniedMessage!, style: const TextStyle(fontSize: 12)),
                     ),
                   ],
                 ),
@@ -243,16 +214,9 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
                 key: const Key('avatar_source_camera'),
                 leading: CircleAvatar(
                   backgroundColor: primary.withValues(alpha: 0.12),
-                  child: Icon(
-                    Icons.camera_alt_outlined,
-                    color: primary,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.camera_alt_outlined, color: primary, size: 20),
                 ),
-                title: const Text(
-                  'Take Photo with Camera',
-                  style: TextStyle(fontSize: 14),
-                ),
+                title: const Text('Take Photo with Camera', style: TextStyle(fontSize: 14)),
                 subtitle: const Text(
                   'Square circular crop automatically applied',
                   style: TextStyle(fontSize: 11),
@@ -264,34 +228,22 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
                 key: const Key('avatar_source_gallery'),
                 leading: CircleAvatar(
                   backgroundColor: Colors.teal.withValues(alpha: 0.12),
-                  child: const Icon(
-                    Icons.photo_library_outlined,
-                    color: Colors.teal,
-                    size: 20,
-                  ),
+                  child: const Icon(Icons.photo_library_outlined, color: Colors.teal, size: 20),
                 ),
-                title: const Text(
-                  'Choose from Photos / Gallery',
-                  style: TextStyle(fontSize: 14),
-                ),
+                title: const Text('Choose from Photos / Gallery', style: TextStyle(fontSize: 14)),
                 subtitle: const Text(
                   'Select an existing photo from your device',
                   style: TextStyle(fontSize: 11),
                 ),
                 onTap: () => _handleImageSelection(AvatarImageSource.gallery),
               ),
-              if (profile.avatarUrl != null &&
-                  profile.avatarUrl!.isNotEmpty) ...[
+              if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) ...[
                 const Divider(height: 1),
                 ListTile(
                   key: const Key('avatar_remove_button'),
                   leading: CircleAvatar(
                     backgroundColor: Colors.red.withValues(alpha: 0.12),
-                    child: const Icon(
-                      Icons.delete_outline_rounded,
-                      color: Colors.red,
-                      size: 20,
-                    ),
+                    child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
                   ),
                   title: const Text(
                     'Remove Avatar Photo',

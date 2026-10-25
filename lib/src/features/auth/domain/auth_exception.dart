@@ -19,8 +19,7 @@ class AuthException implements Exception {
       return switch (error.code) {
         'invalid-email' => const AuthException(
           code: 'invalid-email',
-          message:
-              'Please enter a valid email address (e.g. member@example.com).',
+          message: 'Please enter a valid email address (e.g. member@example.com).',
         ),
         'user-disabled' => const AuthException(
           code: 'user-disabled',
@@ -28,7 +27,8 @@ class AuthException implements Exception {
         ),
         'user-not-found' => const AuthException(
           code: 'user-not-found',
-          message: 'No account was found with this email. Please check your email or create an account.',
+          message:
+              'No account was found with this email. Please check your email or create an account.',
         ),
         'wrong-password' || 'invalid-credential' => const AuthException(
           code: 'wrong-password',
@@ -36,7 +36,8 @@ class AuthException implements Exception {
         ),
         'email-already-in-use' => const AuthException(
           code: 'email-already-in-use',
-          message: 'An account with this email already exists. Please sign in or request a magic link.',
+          message:
+              'An account with this email already exists. Please sign in or request a magic link.',
         ),
         'weak-password' => const AuthException(
           code: 'weak-password',
@@ -48,8 +49,7 @@ class AuthException implements Exception {
         ),
         'expired-action-code' => const AuthException(
           code: 'expired-action-code',
-          message:
-              'This magic link has expired. Please request a new sign-in link.',
+          message: 'This magic link has expired. Please request a new sign-in link.',
         ),
         'invalid-action-code' => const AuthException(
           code: 'invalid-action-code',
@@ -57,9 +57,7 @@ class AuthException implements Exception {
         ),
         _ => AuthException(
           code: error.code,
-          message:
-              error.message ??
-              'An unexpected sign-in issue occurred. Please try again.',
+          message: error.message ?? 'An unexpected sign-in issue occurred. Please try again.',
         ),
       };
     }

@@ -16,10 +16,7 @@ abstract class CommentRepository {
   Future<int> deleteByAuthor({required String authorName});
 
   /// Increments a care reaction tally for a comment.
-  Future<void> addReaction({
-    required String commentId,
-    required String reactionType,
-  });
+  Future<void> addReaction({required String commentId, required String reactionType});
 
   /// Asynchronously watches live comment additions and reaction updates for a post.
   Stream<List<Comment>> watchComments({required String postId});

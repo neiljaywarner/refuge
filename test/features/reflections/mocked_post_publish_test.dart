@@ -24,8 +24,7 @@ class _ImageHttpClient extends Fake implements HttpClient {
   Future<HttpClientRequest> getUrl(Uri url) async => _ImageRequest();
 
   @override
-  Future<HttpClientRequest> openUrl(String method, Uri url) async =>
-      _ImageRequest();
+  Future<HttpClientRequest> openUrl(String method, Uri url) async => _ImageRequest();
 }
 
 class _ImageHeaders extends Fake implements HttpHeaders {
@@ -65,12 +64,9 @@ class _ImageResponse extends Fake implements HttpClientResponse {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
-  }) => Stream<List<int>>.value(bytes).listen(
-    onData,
-    onError: onError,
-    onDone: onDone,
-    cancelOnError: cancelOnError,
-  );
+  }) =>
+      Stream<List<int>>.value(bytes)
+          .listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 }
 
 /// 1x1 transparent PNG so image posts never dial the network.
@@ -190,18 +186,15 @@ void main() {
       HttpOverrides.global = _ImageHttpOverrides();
       local = LocalPostRepository(isDevMode: true);
       repo = MockPostRepository();
-      when(() => repo.watchPosts(spaceKey: any(named: 'spaceKey')))
-          .thenAnswer((invocation) {
-            final spaceKey = invocation.namedArguments[#spaceKey] as String;
-            return local.watchPosts(spaceKey: spaceKey);
-          });
-      when(() => repo.watchSavedPosts())
-          .thenAnswer((_) => local.watchSavedPosts());
-      when(() => repo.getQuietDigest(spaceKey: any(named: 'spaceKey')))
-          .thenAnswer((invocation) {
-            final spaceKey = invocation.namedArguments[#spaceKey] as String;
-            return local.getQuietDigest(spaceKey: spaceKey);
-          });
+      when(() => repo.watchPosts(spaceKey: any(named: 'spaceKey'))).thenAnswer((invocation) {
+        final spaceKey = invocation.namedArguments[#spaceKey] as String;
+        return local.watchPosts(spaceKey: spaceKey);
+      });
+      when(() => repo.watchSavedPosts()).thenAnswer((_) => local.watchSavedPosts());
+      when(() => repo.getQuietDigest(spaceKey: any(named: 'spaceKey'))).thenAnswer((invocation) {
+        final spaceKey = invocation.namedArguments[#spaceKey] as String;
+        return local.getQuietDigest(spaceKey: spaceKey);
+      });
       when(() => repo.createPost(any())).thenAnswer((invocation) async {
         final post = invocation.positionalArguments.single as Post;
         return local.createPost(post);
@@ -230,33 +223,29 @@ void main() {
         $.tester.view.resetPhysicalSize();
         $.tester.view.resetDevicePixelRatio();
       });
-      return $.pumpWidget(
-        RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()),
-      );
+      return $.pumpWidget(RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()));
     }
 
-    patrolWidgetTest(
-      'Scenario: publishing a text reflection calls the mocked repository',
-      ($) async {
-        await pumpHome($);
-        await $.pumpAndSettle();
+    patrolWidgetTest('Scenario: publishing a text reflection calls the mocked repository', (
+      $,
+    ) async {
+      await pumpHome($);
+      await $.pumpAndSettle();
 
-        await $(const Key('home_top_bar_create_post_button')).tap();
-        await $(const Key('menu_item_create_post')).tap();
-        await $(const Key('reflection_composer_input')).last
-            .enterText('Grateful for a quiet afternoon.');
-        await $(const Key('publish_reflection_button')).last.tap();
-        await $.pumpAndSettle();
+      await $(const Key('home_top_bar_create_post_button')).tap();
+      await $(const Key('menu_item_create_post')).tap();
+      await $(const Key('reflection_composer_input')).last
+          .enterText('Grateful for a quiet afternoon.');
+      await $(const Key('publish_reflection_button')).last.tap();
+      await $.pumpAndSettle();
 
-        expect($('Grateful for a quiet afternoon.'), findsOneWidget);
-        final published =
-            verify(() => repo.createPost(captureAny())).captured.single as Post;
-        expect(published.content, 'Grateful for a quiet afternoon.');
-        expect(published.toneTag, '[Prayer Request]');
-        expect(published.imageUrl, isNull);
-        expect(published.spaceKey, 'prayer');
-      },
-    );
+      expect($('Grateful for a quiet afternoon.'), findsOneWidget);
+      final published = verify(() => repo.createPost(captureAny())).captured.single as Post;
+      expect(published.content, 'Grateful for a quiet afternoon.');
+      expect(published.toneTag, '[Prayer Request]');
+      expect(published.imageUrl, isNull);
+      expect(published.spaceKey, 'prayer');
+    });
 
     patrolWidgetTest(
       'Scenario: an image post stores the URL, alt text, and topic without the network',
@@ -266,12 +255,9 @@ void main() {
 
         await $(const Key('home_top_bar_create_post_button')).tap();
         await $(const Key('menu_item_create_image_post')).tap();
-        await $(const Key('image_post_url_input'))
-            .enterText('https://example.com/calm.png');
-        await $(const Key('image_post_alt_text_input'))
-            .enterText('A still lake at dawn');
-        await $(const Key('special_interest_tag_input'))
-            .enterText('Scripture Art');
+        await $(const Key('image_post_url_input')).enterText('https://example.com/calm.png');
+        await $(const Key('image_post_alt_text_input')).enterText('A still lake at dawn');
+        await $(const Key('special_interest_tag_input')).enterText('Scripture Art');
         await $(const Key('reflection_composer_input')).last
             .enterText('He leads me beside quiet waters.');
         await $.pumpAndSettle();
@@ -280,14 +266,10 @@ void main() {
         await $(const Key('publish_reflection_button')).last.tap();
         await $.pumpAndSettle();
 
-        final published =
-            verify(() => repo.createPost(captureAny())).captured.single as Post;
+        final published = verify(() => repo.createPost(captureAny())).captured.single as Post;
         expect(published.imageUrl, 'https://example.com/calm.png');
         expect(published.content, contains('He leads me beside quiet waters.'));
-        expect(
-          published.content,
-          contains('[Image Description: A still lake at dawn]'),
-        );
+        expect(published.content, contains('[Image Description: A still lake at dawn]'));
         expect(published.specialInterestTag, 'Scripture Art');
         expect(published.toneTag, '[Special Interest]');
       },
@@ -301,20 +283,17 @@ void main() {
 
         await $(const Key('home_top_bar_create_post_button')).tap();
         await $(const Key('menu_item_create_image_post')).tap();
-        await $(const Key('image_post_url_input'))
-            .enterText('https://example.com/calm.png');
+        await $(const Key('image_post_url_input')).enterText('https://example.com/calm.png');
         await $.pumpAndSettle();
         await $(const Key('remove_image_button')).tap();
         await $.pumpAndSettle();
         expect($(const Key('image_post_preview_container')), findsNothing);
 
-        await $(const Key('image_post_url_input'))
-            .enterText('https://example.com/calm.png');
+        await $(const Key('image_post_url_input')).enterText('https://example.com/calm.png');
         await $(const Key('publish_reflection_button')).last.tap();
         await $.pumpAndSettle();
 
-        final published =
-            verify(() => repo.createPost(captureAny())).captured.single as Post;
+        final published = verify(() => repo.createPost(captureAny())).captured.single as Post;
         expect(published.content, contains('Shared an image reflection'));
         expect(published.imageUrl, 'https://example.com/calm.png');
       },
@@ -356,9 +335,7 @@ void main() {
     );
 
     test('publishReflection success stores the server id and marks the client live', () async {
-      when(() => endpoint.publishReflection(any())).thenAnswer((
-        invocation,
-      ) async {
+      when(() => endpoint.publishReflection(any())).thenAnswer((invocation) async {
         final sent = invocation.positionalArguments.single as sp.ReflectionPost;
         return samplePost(id: 42, content: sent.content);
       });
@@ -373,12 +350,7 @@ void main() {
           specialInterestTag: 'Mark',
           content: 'A quiet word.',
           timestamp: DateTime.utc(2026, 10, 1),
-          reactions: const {
-            'pray': 1,
-            'peace': 2,
-            'encouraged': 3,
-            'standing': 0,
-          },
+          reactions: const {'pray': 1, 'peace': 2, 'encouraged': 3, 'standing': 0},
         ),
       );
 
@@ -388,8 +360,7 @@ void main() {
     });
 
     test('publishReflection failure falls back to the local store', () async {
-      when(() => endpoint.publishReflection(any()))
-          .thenThrow(Exception('serverpod down'));
+      when(() => endpoint.publishReflection(any())).thenThrow(Exception('serverpod down'));
       final repo = buildRepo();
       final created = await repo.createPost(
         Post(
@@ -409,92 +380,66 @@ void main() {
       expect(stored.single.content, 'Praying for a calm week.');
     });
 
-    test(
-      'watchSpace maps live rows and quiet digest uses the mocked summary',
-      () async {
-        final updates = StreamController<sp.ReflectionPost>(sync: true);
-        when(() => endpoint.watchSpace('study'))
-            .thenAnswer((_) => updates.stream);
-        when(() => endpoint.getQuietDigest('memes')).thenAnswer(
-          (_) async => sp.QuietDigest(
-            spaceKey: 'prayer',
-            totalReflections: 3,
-            totalCareAffirmations: 8,
-            predominantIntent: '[Prayer Request]',
-            summaryMessage: 'Three reflections gathered in peace.',
-            generatedAt: DateTime.utc(2026, 10, 3),
-          ),
-        );
+    test('watchSpace maps live rows and quiet digest uses the mocked summary', () async {
+      final updates = StreamController<sp.ReflectionPost>(sync: true);
+      when(() => endpoint.watchSpace('study')).thenAnswer((_) => updates.stream);
+      when(() => endpoint.getQuietDigest('memes')).thenAnswer(
+        (_) async => sp.QuietDigest(
+          spaceKey: 'prayer',
+          totalReflections: 3,
+          totalCareAffirmations: 8,
+          predominantIntent: '[Prayer Request]',
+          summaryMessage: 'Three reflections gathered in peace.',
+          generatedAt: DateTime.utc(2026, 10, 3),
+        ),
+      );
 
-        final repo = buildRepo();
-        final seen = <List<Post>>[];
-        final subscription = repo
-            .watchPosts(spaceKey: 'study')
-            .listen(seen.add);
+      final repo = buildRepo();
+      final seen = <List<Post>>[];
+      final subscription = repo.watchPosts(spaceKey: 'study').listen(seen.add);
+      await Future<void>.value();
+
+      updates.add(
+        samplePost(id: 7, content: 'First reading.', createdAt: DateTime.utc(2026, 10, 1, 9)),
+      );
+      updates.add(
+        samplePost(id: 7, content: 'Revised reading.', createdAt: DateTime.utc(2026, 10, 1, 10)),
+      );
+      updates.add(
+        samplePost(id: 8, content: 'A second note.', createdAt: DateTime.utc(2026, 10, 1, 11)),
+      );
+      for (var i = 0; i < 8; i++) {
         await Future<void>.value();
+      }
 
-        updates.add(
-          samplePost(
-            id: 7,
-            content: 'First reading.',
-            createdAt: DateTime.utc(2026, 10, 1, 9),
-          ),
-        );
-        updates.add(
-          samplePost(
-            id: 7,
-            content: 'Revised reading.',
-            createdAt: DateTime.utc(2026, 10, 1, 10),
-          ),
-        );
-        updates.add(
-          samplePost(
-            id: 8,
-            content: 'A second note.',
-            createdAt: DateTime.utc(2026, 10, 1, 11),
-          ),
-        );
-        for (var i = 0; i < 8; i++) {
-          await Future<void>.value();
-        }
+      expect(seen.last.map((post) => post.content).toList(), [
+        'A second note.',
+        'Revised reading.',
+      ]);
+      expect(seen.last.first.id, '8');
+      expect(repo.isLiveConnected, isTrue);
 
-        expect(seen.last.map((post) => post.content).toList(), [
-          'A second note.',
-          'Revised reading.',
-        ]);
-        expect(seen.last.first.id, '8');
-        expect(repo.isLiveConnected, isTrue);
+      final digest = await repo.getQuietDigest(spaceKey: 'memes');
+      expect(digest, 'Three reflections gathered in peace.');
+      verify(() => endpoint.getQuietDigest('memes')).called(1);
+      subscription.cancel();
+    });
 
-        final digest = await repo.getQuietDigest(spaceKey: 'memes');
-        expect(digest, 'Three reflections gathered in peace.');
-        verify(() => endpoint.getQuietDigest('memes')).called(1);
-        subscription.cancel();
-      },
-    );
+    test('affirmCare is sent for numeric ids and skipped for local ids', () async {
+      when(() => endpoint.affirmCare(any(), any())).thenAnswer((_) async => samplePost(id: 15));
+      when(() => endpoint.getQuietDigest(any())).thenThrow(Exception('timeout'));
 
-    test(
-      'affirmCare is sent for numeric ids and skipped for local ids',
-      () async {
-        when(() => endpoint.affirmCare(any(), any()))
-            .thenAnswer((_) async => samplePost(id: 15));
-        when(() => endpoint.getQuietDigest(any()))
-            .thenThrow(Exception('timeout'));
+      final repo = buildRepo();
+      await repo.addReaction(postId: '15', reactionType: 'pray');
+      verify(() => endpoint.affirmCare(15, 'praying')).called(1);
+      expect(repo.isLiveConnected, isTrue);
 
-        final repo = buildRepo();
-        await repo.addReaction(postId: '15', reactionType: 'pray');
-        verify(() => endpoint.affirmCare(15, 'praying')).called(1);
-        expect(repo.isLiveConnected, isTrue);
+      await repo.addReaction(postId: 'local-9', reactionType: 'peace');
+      verifyNever(() => endpoint.affirmCare(any(), 'peace'));
 
-        await repo.addReaction(postId: 'local-9', reactionType: 'peace');
-        verifyNever(() => endpoint.affirmCare(any(), 'peace'));
-
-        final digest = await repo.getQuietDigest(spaceKey: 'special_interests');
-        expect(
-          digest,
-          'A quiet, unhurried space awaiting the first community reflection.',
-        );
-        expect(repo.isLiveConnected, isFalse);
-      },
-    );
+      final digest = await repo.getQuietDigest(spaceKey: 'special_interests');
+      expect(digest, 'A quiet, unhurried space awaiting the first community reflection.');
+      expect(repo.isLiveConnected, isFalse);
+    });
   });
 }

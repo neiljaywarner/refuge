@@ -47,19 +47,13 @@ class CommunityAnalyticsService {
   /// Default Aptabase App-Key read from build-time `--dart-define`.
   static const String kDefaultAptabaseKey = String.fromEnvironment(
     'APTABASE_KEY',
-    defaultValue: String.fromEnvironment(
-      'APTABASE_BELONG_KEY',
-      defaultValue: '',
-    ),
+    defaultValue: String.fromEnvironment('APTABASE_BELONG_KEY', defaultValue: ''),
   );
 
   /// Default PostHog API Key / Project Token read from `--dart-define`.
   static const String kDefaultPostHogKey = String.fromEnvironment(
     'POSTHOG_KEY',
-    defaultValue: String.fromEnvironment(
-      'POSTHOG_BELONG_PROJECT_TOKEN',
-      defaultValue: '',
-    ),
+    defaultValue: String.fromEnvironment('POSTHOG_BELONG_PROJECT_TOKEN', defaultValue: ''),
   );
 
   /// Default PostHog Ingestion Host (defaults to US Cloud).
@@ -75,17 +69,12 @@ class CommunityAnalyticsService {
   final List<Map<String, Object>> recordedEventsForTesting = [];
 
   /// In-memory testing hook alias for verifying dispatched analytics events.
-  List<Map<String, Object>> get dispatchedEventsForTesting =>
-      recordedEventsForTesting;
+  List<Map<String, Object>> get dispatchedEventsForTesting => recordedEventsForTesting;
 
   /// Dispatches a telemetry event across all configured analytics destinations.
   Future<void> logEvent(String name, {Map<String, Object>? parameters}) async {
-    const automationToolEnv = String.fromEnvironment(
-      'AUTOMATION_TOOL',
-      defaultValue: '',
-    );
-    final automationToolName = (automationToolOverride ?? automationToolEnv)
-        .trim();
+    const automationToolEnv = String.fromEnvironment('AUTOMATION_TOOL', defaultValue: '');
+    final automationToolName = (automationToolOverride ?? automationToolEnv).trim();
     final isAutomationTool = automationToolName.isNotEmpty;
 
     final enriched = <String, Object>{
@@ -106,9 +95,7 @@ class CommunityAnalyticsService {
     // 1. Dual-dispatch to Serverpod backup ring buffer (fire-and-forget)
     if (serverpodBackup != null) {
       unawaited(
-        serverpodBackup!
-            .recordAnalyticsEvent(name, parameters: enriched)
-            .catchError((_) {}),
+        serverpodBackup!.recordAnalyticsEvent(name, parameters: enriched).catchError((_) {}),
       );
     }
 
@@ -117,19 +104,12 @@ class CommunityAnalyticsService {
     if (Firebase.apps.isNotEmpty) {
       unawaited(
         FirebaseAnalytics.instance
-            .logEvent(
-              name: name,
-              parameters: _firebaseEventParameters(enriched),
-            )
+            .logEvent(name: name, parameters: _firebaseEventParameters(enriched))
             .then((_) {
-              talker.debug(
-                '🔥 [FIREBASE ANALYTICS] Event "$name" logged to Firebase.',
-              );
+              talker.debug('🔥 [FIREBASE ANALYTICS] Event "$name" logged to Firebase.');
             })
             .catchError((e) {
-              talker.warning(
-                '⚠️ [FIREBASE ANALYTICS] Failed to log event "$name": $e',
-              );
+              talker.warning('⚠️ [FIREBASE ANALYTICS] Failed to log event "$name": $e');
             }),
       );
     } else {
@@ -178,13 +158,9 @@ class CommunityAnalyticsService {
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        talker.info(
-          '📈 [APTABASE] Event "$name" sent successfully (HTTP ${response.statusCode})',
-        );
+        talker.info('📈 [APTABASE] Event "$name" sent successfully (HTTP ${response.statusCode})');
       } else {
-        talker.warning(
-          '⚠️ [APTABASE] Non-2xx response (${response.statusCode}): ${response.body}',
-        );
+        talker.warning('⚠️ [APTABASE] Non-2xx response (${response.statusCode}): ${response.body}');
       }
     } catch (e) {
       talker.warning('⚠️ [APTABASE] Network transport error: $e');
@@ -207,11 +183,7 @@ class CommunityAnalyticsService {
       final url = Uri.parse('$host/capture/');
 
       final payloads = <Map<String, Object>>[
-        {
-          'api_key': key,
-          'event': name,
-          'properties': _postHogProperties(props),
-        },
+        {'api_key': key, 'event': name, 'properties': _postHogProperties(props)},
       ];
       final pathname = _pageviewPathname(name, props);
       if (pathname != null) {
@@ -231,10 +203,7 @@ class CommunityAnalyticsService {
         final eventName = payload['event'] as String;
         final response = await _httpClient.post(
           url,
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'RefugeAnalytics/1.0.0',
-          },
+          headers: {'Content-Type': 'application/json', 'User-Agent': 'RefugeAnalytics/1.0.0'},
           body: jsonEncode(payload),
         );
 
@@ -256,9 +225,7 @@ class CommunityAnalyticsService {
   }
 
   /// Firebase Analytics event parameters accept only String or num.
-  static Map<String, Object> _firebaseEventParameters(
-    Map<String, Object> props,
-  ) => {
+  static Map<String, Object> _firebaseEventParameters(Map<String, Object> props) => {
     for (final entry in props.entries)
       entry.key: switch (entry.value) {
         final bool flag => flag.toString(),
@@ -272,10 +239,7 @@ class CommunityAnalyticsService {
     final isAutomationTool = props['automation_tool'] == true;
     return {
       'distinct_id': 'belong-anon-${flavor.slug}',
-      r'$set': <String, Object>{
-        'is_debug_mode': isDebugMode,
-        'automation_tool': isAutomationTool,
-      },
+      r'$set': <String, Object>{'is_debug_mode': isDebugMode, 'automation_tool': isAutomationTool},
       ...props,
     };
   }
@@ -327,35 +291,18 @@ class CommunityAnalyticsService {
   Future<void> logVoteCast(String featureId) =>
       logEvent('vote_cast', parameters: {'feature_id': featureId});
 
-  Future<void> logFeedbackIntent(String sentimentLabel) => logEvent(
-    'feedback_intent_selected',
-    parameters: {'sentiment': sentimentLabel},
-  );
+  Future<void> logFeedbackIntent(String sentimentLabel) =>
+      logEvent('feedback_intent_selected', parameters: {'sentiment': sentimentLabel});
 
-  Future<void> logReflectionPublished({
-    required String tag,
-    required int lengthBucket,
-  }) => logEvent(
-    'reflection_published',
-    parameters: {'tag': tag, 'length_bucket': lengthBucket},
-  );
+  Future<void> logReflectionPublished({required String tag, required int lengthBucket}) =>
+      logEvent('reflection_published', parameters: {'tag': tag, 'length_bucket': lengthBucket});
 
-  Future<void> logEventRsvp({
-    required String eventId,
-    required String status,
-  }) => logEvent(
-    'event_rsvp',
-    parameters: {'event_id': eventId, 'status': status},
-  );
+  Future<void> logEventRsvp({required String eventId, required String status}) =>
+      logEvent('event_rsvp', parameters: {'event_id': eventId, 'status': status});
 }
 
-final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((
-  ref,
-) {
+final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((ref) {
   final flavor = ref.watch(appFlavorProvider);
   final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
-  return CommunityAnalyticsService(
-    flavor: flavor,
-    serverpodBackup: serverpodBackup,
-  );
+  return CommunityAnalyticsService(flavor: flavor, serverpodBackup: serverpodBackup);
 });

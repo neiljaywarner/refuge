@@ -16,11 +16,7 @@ void main() {
 
     for (final entry in requiredAssets.entries) {
       final file = File(entry.key);
-      expect(
-        file.existsSync(),
-        isTrue,
-        reason: 'Expected ${entry.key} to exist',
-      );
+      expect(file.existsSync(), isTrue, reason: 'Expected ${entry.key} to exist');
       final bytes = file.readAsBytesSync();
       final codec = await ui.instantiateImageCodec(bytes);
       final frame = await codec.getNextFrame();
@@ -30,15 +26,13 @@ void main() {
   });
 
   test('Android launch splash references calm sanctuary colors', () {
-    final launchBg = File(
-      'android/app/src/main/res/drawable/launch_background.xml',
-    ).readAsStringSync();
+    final launchBg = File('android/app/src/main/res/drawable/launch_background.xml')
+        .readAsStringSync();
     expect(launchBg, contains('@color/launch_background'));
     expect(launchBg, contains('@drawable/launch_logo'));
 
-    final colors = File(
-      'android/app/src/main/res/values/ic_launcher_background.xml',
-    ).readAsStringSync();
+    final colors = File('android/app/src/main/res/values/ic_launcher_background.xml')
+        .readAsStringSync();
     expect(colors, contains('launch_background'));
     expect(colors, contains('#F2EEE2'));
   });

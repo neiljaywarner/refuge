@@ -58,9 +58,7 @@ void main() {
               ],
               child: MaterialApp(
                 home: Scaffold(
-                  body: CalmNotificationsView(
-                    onNavigate: (target) => capturedTarget = target,
-                  ),
+                  body: CalmNotificationsView(onNavigate: (target) => capturedTarget = target),
                 ),
               ),
             ),
@@ -68,9 +66,7 @@ void main() {
           await tester.pumpAndSettle();
 
           // Tap notification tile
-          await tester.tap(
-            find.byKey(const Key('notification_list_tile_test-dm-1')),
-          );
+          await tester.tap(find.byKey(const Key('notification_list_tile_test-dm-1')));
           await tester.pumpAndSettle();
 
           expect(capturedTarget, isNotNull);
@@ -109,9 +105,7 @@ void main() {
               ],
               child: MaterialApp(
                 home: Scaffold(
-                  body: CalmNotificationsView(
-                    onNavigate: (target) => capturedTarget = target,
-                  ),
+                  body: CalmNotificationsView(onNavigate: (target) => capturedTarget = target),
                 ),
               ),
             ),
@@ -119,9 +113,7 @@ void main() {
           await tester.pumpAndSettle();
 
           // Tap notification tile
-          await tester.tap(
-            find.byKey(const Key('notification_list_tile_test-mention-1')),
-          );
+          await tester.tap(find.byKey(const Key('notification_list_tile_test-mention-1')));
           await tester.pumpAndSettle();
 
           expect(capturedTarget, isNotNull);
@@ -159,9 +151,7 @@ void main() {
               ],
               child: MaterialApp(
                 home: Scaffold(
-                  body: CalmNotificationsView(
-                    onNavigate: (target) => capturedTarget = target,
-                  ),
+                  body: CalmNotificationsView(onNavigate: (target) => capturedTarget = target),
                 ),
               ),
             ),
@@ -169,104 +159,85 @@ void main() {
           await tester.pumpAndSettle();
 
           // Tap notification tile
-          await tester.tap(
-            find.byKey(const Key('notification_list_tile_test-archived-1')),
-          );
+          await tester.tap(find.byKey(const Key('notification_list_tile_test-archived-1')));
           await tester.pumpAndSettle();
 
           expect(capturedTarget, isNull);
-          expect(
-            find.byKey(const Key('notification_archived_snackbar')),
-            findsOneWidget,
-          );
-          expect(
-            find.text('This reflection was unhurriedly archived or moved'),
-            findsOneWidget,
-          );
+          expect(find.byKey(const Key('notification_archived_snackbar')), findsOneWidget);
+          expect(find.text('This reflection was unhurriedly archived or moved'), findsOneWidget);
         },
       );
     });
 
-    group(
-      'Sociable Widget Tests (End-to-End Navigation inside RefugeHomeScreen)',
-      () {
-        patrolWidgetTest(
-          'Tapping DM notification in CalmNotificationsView navigates to Msgs tab and opens active conversation thread',
-          ($) async {
-            $.tester.view.devicePixelRatio = 1.0;
-            $.tester.view.physicalSize = const Size(1080, 2400);
-            addTearDown(() {
-              $.tester.view.resetPhysicalSize();
-              $.tester.view.resetDevicePixelRatio();
-            });
+    group('Sociable Widget Tests (End-to-End Navigation inside RefugeHomeScreen)', () {
+      patrolWidgetTest(
+        'Tapping DM notification in CalmNotificationsView navigates to Msgs tab and opens active conversation thread',
+        ($) async {
+          $.tester.view.devicePixelRatio = 1.0;
+          $.tester.view.physicalSize = const Size(1080, 2400);
+          addTearDown(() {
+            $.tester.view.resetPhysicalSize();
+            $.tester.view.resetDevicePixelRatio();
+          });
 
-            await $.pumpWidget(
-              ProviderScope(
-                overrides: [
-                  postRepositoryProvider.overrideWithValue(
-                    LocalPostRepository(isDevMode: true),
-                  ),
-                  appLauncherBadgeServiceProvider.overrideWithValue(
-                    badgeService,
-                  ),
-                ],
-                child: const MaterialApp(home: RefugeHomeScreen()),
-              ),
-            );
-            await $.pumpAndSettle();
+          await $.pumpWidget(
+            ProviderScope(
+              overrides: [
+                postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
+                appLauncherBadgeServiceProvider.overrideWithValue(badgeService),
+              ],
+              child: const MaterialApp(home: RefugeHomeScreen()),
+            ),
+          );
+          await $.pumpAndSettle();
 
-            // 1. Switch to Notifications tab
-            await $(const Key('bottom_nav_icon_notifications')).tap();
-            await $.pumpAndSettle();
+          // 1. Switch to Notifications tab
+          await $(const Key('bottom_nav_icon_notifications')).tap();
+          await $.pumpAndSettle();
 
-            // 2. Tap the DM notification tile
-            await $(const Key('notification_list_tile_notif-dm-1')).tap();
-            await $.pumpAndSettle();
+          // 2. Tap the DM notification tile
+          await $(const Key('notification_list_tile_notif-dm-1')).tap();
+          await $.pumpAndSettle();
 
-            // 3. Sociable verification: Msgs tab is active and conversation thread is displayed
-            expect($('Welcome to Belong!'), findsWidgets);
-            expect($('Type a calm reply...'), findsOneWidget);
-          },
-        );
+          // 3. Sociable verification: Msgs tab is active and conversation thread is displayed
+          expect($('Welcome to Belong!'), findsWidgets);
+          expect($('Type a calm reply...'), findsOneWidget);
+        },
+      );
 
-        patrolWidgetTest(
-          'Tapping mention notification navigates to Home tab and highlights post or opens discussion',
-          ($) async {
-            $.tester.view.devicePixelRatio = 1.0;
-            $.tester.view.physicalSize = const Size(1080, 2400);
-            addTearDown(() {
-              $.tester.view.resetPhysicalSize();
-              $.tester.view.resetDevicePixelRatio();
-            });
+      patrolWidgetTest(
+        'Tapping mention notification navigates to Home tab and highlights post or opens discussion',
+        ($) async {
+          $.tester.view.devicePixelRatio = 1.0;
+          $.tester.view.physicalSize = const Size(1080, 2400);
+          addTearDown(() {
+            $.tester.view.resetPhysicalSize();
+            $.tester.view.resetDevicePixelRatio();
+          });
 
-            await $.pumpWidget(
-              ProviderScope(
-                overrides: [
-                  postRepositoryProvider.overrideWithValue(
-                    LocalPostRepository(isDevMode: true),
-                  ),
-                  appLauncherBadgeServiceProvider.overrideWithValue(
-                    badgeService,
-                  ),
-                ],
-                child: const MaterialApp(home: RefugeHomeScreen()),
-              ),
-            );
-            await $.pumpAndSettle();
+          await $.pumpWidget(
+            ProviderScope(
+              overrides: [
+                postRepositoryProvider.overrideWithValue(LocalPostRepository(isDevMode: true)),
+                appLauncherBadgeServiceProvider.overrideWithValue(badgeService),
+              ],
+              child: const MaterialApp(home: RefugeHomeScreen()),
+            ),
+          );
+          await $.pumpAndSettle();
 
-            // 1. Switch to Notifications tab
-            await $(const Key('bottom_nav_icon_notifications')).tap();
-            await $.pumpAndSettle();
+          // 1. Switch to Notifications tab
+          await $(const Key('bottom_nav_icon_notifications')).tap();
+          await $.pumpAndSettle();
 
-            // 2. Tap the Mention notification tile
-            await $(const Key('notification_list_tile_notif-mention-1')).tap();
-            await $.pumpAndSettle();
+          // 2. Tap the Mention notification tile
+          await $(const Key('notification_list_tile_notif-mention-1')).tap();
+          await $.pumpAndSettle();
 
-            // 3. Sociable verification: Bottom nav is on Home tab
-            expect($(const Key('belong_bottom_nav_bar')), findsOneWidget);
-          },
-        );
-      },
-    );
+          // 3. Sociable verification: Bottom nav is on Home tab
+          expect($(const Key('belong_bottom_nav_bar')), findsOneWidget);
+        },
+      );
+    });
   });
 }

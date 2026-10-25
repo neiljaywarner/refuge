@@ -9,8 +9,7 @@ import 'in_app_messaging_stub.dart';
 /// Native mobile (Android & iOS) implementation of [InAppMessagingService]
 /// backed by official [FirebaseInAppMessaging].
 class MobileInAppMessagingService implements InAppMessagingService {
-  MobileInAppMessagingService({FirebaseInAppMessaging? instance})
-    : _fiam = instance;
+  MobileInAppMessagingService({FirebaseInAppMessaging? instance}) : _fiam = instance;
 
   FirebaseInAppMessaging? _fiam;
 
@@ -30,16 +29,12 @@ class MobileInAppMessagingService implements InAppMessagingService {
       return;
     }
     if (Firebase.apps.isEmpty) {
-      talker.debug(
-        '📱 [FIAM Mobile] Firebase uninitialized. Skipping FIAM activation.',
-      );
+      talker.debug('📱 [FIAM Mobile] Firebase uninitialized. Skipping FIAM activation.');
       return;
     }
     try {
       await fiam.setAutomaticDataCollectionEnabled(true);
-      talker.info(
-        '🔥 [FIAM Mobile] Firebase In-App Messaging enabled successfully.',
-      );
+      talker.info('🔥 [FIAM Mobile] Firebase In-App Messaging enabled successfully.');
     } catch (e, st) {
       talker.warning('⚠️ [FIAM Mobile] Failed to initialize FIAM: $e', e, st);
     }
@@ -55,15 +50,9 @@ class MobileInAppMessagingService implements InAppMessagingService {
     }
     try {
       await fiam.triggerEvent(eventName);
-      talker.info(
-        '🔥 [FIAM Mobile] Triggered in-app message event: "$eventName"',
-      );
+      talker.info('🔥 [FIAM Mobile] Triggered in-app message event: "$eventName"');
     } catch (e, st) {
-      talker.warning(
-        '⚠️ [FIAM Mobile] Error triggering FIAM event "$eventName": $e',
-        e,
-        st,
-      );
+      talker.warning('⚠️ [FIAM Mobile] Error triggering FIAM event "$eventName": $e', e, st);
     }
   }
 
@@ -74,11 +63,7 @@ class MobileInAppMessagingService implements InAppMessagingService {
       await fiam.setMessagesSuppressed(suppress);
       talker.info('🔥 [FIAM Mobile] Messages suppressed: $suppress');
     } catch (e, st) {
-      talker.warning(
-        '⚠️ [FIAM Mobile] Error setting messages suppressed: $e',
-        e,
-        st,
-      );
+      talker.warning('⚠️ [FIAM Mobile] Error setting messages suppressed: $e', e, st);
     }
   }
 
@@ -89,11 +74,7 @@ class MobileInAppMessagingService implements InAppMessagingService {
       await fiam.setAutomaticDataCollectionEnabled(enabled);
       talker.info('🔥 [FIAM Mobile] Automatic data collection: $enabled');
     } catch (e, st) {
-      talker.warning(
-        '⚠️ [FIAM Mobile] Error setting data collection: $e',
-        e,
-        st,
-      );
+      talker.warning('⚠️ [FIAM Mobile] Error setting data collection: $e', e, st);
     }
   }
 }

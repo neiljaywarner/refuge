@@ -10,11 +10,7 @@ import '../../reflections/presentation/reflection_card.dart';
 /// Instant keyword, author, and special-interest search view for the `Search`
 /// bottom navigation tab (#18, #22), built as a [HookConsumerWidget].
 class CommunitySearchView extends HookConsumerWidget {
-  const CommunitySearchView({
-    super.key,
-    required this.repository,
-    required this.isContrast,
-  });
+  const CommunitySearchView({super.key, required this.repository, required this.isContrast});
 
   final PostRepository repository;
   final bool isContrast;
@@ -52,9 +48,7 @@ class CommunitySearchView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final queryController = useTextEditingController();
     final query = useValueListenable(queryController).text.trim().toLowerCase();
-    final allPostsSnapshot = useFuture(
-      useMemoized(_loadAllPosts, [repository]),
-    );
+    final allPostsSnapshot = useFuture(useMemoized(_loadAllPosts, [repository]));
 
     final posts = (allPostsSnapshot.data ?? const <Post>[]).where((p) {
       if (query.isEmpty) return true;
@@ -80,9 +74,7 @@ class CommunitySearchView extends HookConsumerWidget {
                       onPressed: queryController.clear,
                     )
                   : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               isDense: true,
             ),
           ),
@@ -102,10 +94,8 @@ class CommunitySearchView extends HookConsumerWidget {
                       return ReflectionCard(
                         post: p,
                         isContrast: isContrast,
-                        onAddReaction: (reactionType) => repository.addReaction(
-                          postId: p.id,
-                          reactionType: reactionType,
-                        ),
+                        onAddReaction: (reactionType) =>
+                            repository.addReaction(postId: p.id, reactionType: reactionType),
                       );
                     },
                   ),

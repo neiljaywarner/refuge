@@ -3,12 +3,7 @@ import 'calm_local_notification_service.dart';
 class CalmLocalNotificationStub implements CalmLocalNotificationService {
   CalmLocalNotificationStub({this.onShow});
 
-  final void Function({
-    required String title,
-    required String body,
-    String? payload,
-  })?
-  onShow;
+  final void Function({required String title, required String body, String? payload})? onShow;
 
   int showCount = 0;
   String? lastTitle;
@@ -54,5 +49,4 @@ class CalmLocalNotificationStub implements CalmLocalNotificationService {
   }
 }
 
-CalmLocalNotificationService createCalmLocalNotificationService() =>
-    CalmLocalNotificationStub();
+CalmLocalNotificationService createCalmLocalNotificationService() => CalmLocalNotificationStub();

@@ -39,13 +39,10 @@ void main() {
       expect(profile.initials, 'CS');
     });
 
-    test(
-      'falls back to "B" (Belong community member monogram) when name is empty',
-      () {
-        final profile = _createProfile('');
-        expect(profile.initials, 'B');
-      },
-    );
+    test('falls back to "B" (Belong community member monogram) when name is empty', () {
+      final profile = _createProfile('');
+      expect(profile.initials, 'B');
+    });
 
     test('falls back to "B" when name contains only whitespace', () {
       final profile = _createProfile('    ');
@@ -59,12 +56,9 @@ void main() {
   });
 
   group('ReflectionCard.getInitials monogram parsing', () {
-    test(
-      'extracts clean initials from author with country/region parenthetical',
-      () {
-        expect(ReflectionCard.getInitials('David M. (UK)'), 'DM');
-      },
-    );
+    test('extracts clean initials from author with country/region parenthetical', () {
+      expect(ReflectionCard.getInitials('David M. (UK)'), 'DM');
+    });
 
     test('extracts clean initials from author with role parenthetical', () {
       expect(ReflectionCard.getInitials('Marty (Organizer)'), 'MO');
@@ -127,10 +121,7 @@ void main() {
         postTitle: 'Markan Chiasms',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'Marty mentioned you in a comment on "Markan Chiasms"',
-      );
+      expect(notification.displayMessage, 'Marty mentioned you in a comment on "Markan Chiasms"');
     });
 
     test('generates reply message', () {
@@ -141,10 +132,7 @@ void main() {
         postTitle: 'Quiet Rooms',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'Caleb replied to your comment on "Quiet Rooms"',
-      );
+      expect(notification.displayMessage, 'Caleb replied to your comment on "Quiet Rooms"');
     });
 
     test('generates like message', () {
@@ -155,10 +143,7 @@ void main() {
         postTitle: 'Sensory Safety',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'Sarah liked your reflection on "Sensory Safety"',
-      );
+      expect(notification.displayMessage, 'Sarah liked your reflection on "Sensory Safety"');
     });
 
     test('generates following space message', () {
@@ -169,10 +154,7 @@ void main() {
         postTitle: 'Fellowship Hall',
         timestamp: DateTime(2026, 10, 22),
       );
-      expect(
-        notification.displayMessage,
-        'David posted a new reflection in "Fellowship Hall"',
-      );
+      expect(notification.displayMessage, 'David posted a new reflection in "Fellowship Hall"');
     });
   });
 }

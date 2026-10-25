@@ -28,28 +28,18 @@ void main(List<String> args) {
 
   // 1. Firebase Spark (Free Tier) Limits
   stdout.writeln('\x1B[1m1. Firebase Spark (Free Tier) Hard Ceilings:\x1B[0m');
-  stdout.writeln(
-    '   • Daily Document Reads:   \x1B[32m50,000 reads / day\x1B[0m',
-  );
-  stdout.writeln(
-    '   • Daily Document Writes:  \x1B[32m20,000 writes / day\x1B[0m',
-  );
-  stdout.writeln(
-    '   • Daily Document Deletes: \x1B[32m20,000 deletes / day\x1B[0m',
-  );
+  stdout.writeln('   • Daily Document Reads:   \x1B[32m50,000 reads / day\x1B[0m');
+  stdout.writeln('   • Daily Document Writes:  \x1B[32m20,000 writes / day\x1B[0m');
+  stdout.writeln('   • Daily Document Deletes: \x1B[32m20,000 deletes / day\x1B[0m');
   stdout.writeln('   • Total Stored Data:      \x1B[32m1.0 GiB\x1B[0m');
-  stdout.writeln(
-    '   • Free Network Egress:    \x1B[32m10.0 GiB / month\x1B[0m',
-  );
+  stdout.writeln('   • Free Network Egress:    \x1B[32m10.0 GiB / month\x1B[0m');
   stdout.writeln(
     '   • Quota Reset Window:     \x1B[36mMidnight Pacific Time (00:00 PST / 02:00 CDT)\x1B[0m',
   );
 
   // 2. Zero-Billing Safety Guarantee
   stdout.writeln('\n\x1B[1m2. Zero-Billing Financial Safety Guarantee:\x1B[0m');
-  stdout.writeln(
-    '   • Billing Account Linked: \x1B[32mNONE (Spark Plan Only)\x1B[0m',
-  );
+  stdout.writeln('   • Billing Account Linked: \x1B[32mNONE (Spark Plan Only)\x1B[0m');
   stdout.writeln(
     '   • Max Financial Risk:     \x1B[32m\$0.00 Guaranteed\x1B[0m (Zero credit card on file)',
   );
@@ -64,9 +54,7 @@ void main(List<String> args) {
   );
 
   // 3. Scale Projection Model
-  stdout.writeln(
-    '\n\x1B[1m3. Daily Usage Projection for $members Active Members:\x1B[0m',
-  );
+  stdout.writeln('\n\x1B[1m3. Daily Usage Projection for $members Active Members:\x1B[0m');
   // Average user loads 5 spaces, 15 reflections, 10 comments = ~30 reads per session, 2 sessions/day = 60 reads/day
   final projectedReads = members * 60;
   final projectedWrites = members * 8;
@@ -95,9 +83,7 @@ void main(List<String> args) {
   }
 
   // 4. Serverpod & PostgreSQL Scale Comparison
-  stdout.writeln(
-    '\n\x1B[1m4. Serverpod + PostgreSQL Architecture (Scale Sovereignty):\x1B[0m',
-  );
+  stdout.writeln('\n\x1B[1m4. Serverpod + PostgreSQL Architecture (Scale Sovereignty):\x1B[0m');
   stdout.writeln(
     '   • Query Quota Limits:     \x1B[32mZERO / UNLIMITED\x1B[0m (PostgreSQL relational engine)',
   );
@@ -112,18 +98,14 @@ void main(List<String> args) {
   );
 
   // 5. Where to Inspect Real-Time Cloud Metrics
-  stdout.writeln(
-    '\n\x1B[1m5. Real-Time Cloud Console Inspection Links:\x1B[0m',
-  );
+  stdout.writeln('\n\x1B[1m5. Real-Time Cloud Console Inspection Links:\x1B[0m');
   stdout.writeln(
     '   • Firestore Usage:        https://console.firebase.google.com/project/belongonthespectrum/firestore/usage',
   );
   stdout.writeln(
     '   • Google Cloud Quotas:    https://console.cloud.google.com/iam-admin/quotas?project=belongonthespectrum',
   );
-  stdout.writeln(
-    '   • Firebase Project:       belongonthespectrum (Project #207506875171)',
-  );
+  stdout.writeln('   • Firebase Project:       belongonthespectrum (Project #207506875171)');
 
   stdout.writeln(
     '\n\x1B[1m\x1B[32m=================================================================\x1B[0m',

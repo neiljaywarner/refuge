@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'in_app_messaging_stub.dart'
-    if (dart.library.io) 'in_app_messaging_mobile.dart'
-    as impl;
+import 'in_app_messaging_stub.dart' if (dart.library.io) 'in_app_messaging_mobile.dart' as impl;
 
 /// Contract for Firebase In-App Messaging (FIAM) operations.
 ///
@@ -28,8 +26,7 @@ abstract class InAppMessagingService {
 }
 
 /// Creates a platform-appropriate [InAppMessagingService] instance.
-InAppMessagingService createInAppMessagingService() =>
-    impl.createPlatformInAppMessagingService();
+InAppMessagingService createInAppMessagingService() => impl.createPlatformInAppMessagingService();
 
 /// Global Riverpod provider for [InAppMessagingService].
 final inAppMessagingServiceProvider = Provider<InAppMessagingService>(

@@ -31,21 +31,14 @@ class ToneFilterRow extends ConsumerWidget {
   final String activeFilter;
   final ValueChanged<String> onSelectFilter;
 
-  const ToneFilterRow({
-    super.key,
-    required this.activeFilter,
-    required this.onSelectFilter,
-  });
+  const ToneFilterRow({super.key, required this.activeFilter, required this.onSelectFilter});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 2.0),
     child: Row(
       children: [
-        const Text(
-          'Filter: ',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-        ),
+        const Text('Filter: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
         const Gap(6),
         Expanded(
           child: SingleChildScrollView(

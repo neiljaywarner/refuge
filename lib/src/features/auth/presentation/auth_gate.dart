@@ -16,11 +16,7 @@ import 'simple_auth.dart';
 /// Blocks the main app until the auth session is signed in and, in production,
 /// email-verified. Reads [authRepositoryProvider], not [memberProfileProvider].
 class AuthGate extends ConsumerStatefulWidget {
-  const AuthGate({
-    super.key,
-    required this.repository,
-    required this.themeNotifier,
-  });
+  const AuthGate({super.key, required this.repository, required this.themeNotifier});
 
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
@@ -34,16 +30,14 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   String? _devExampleError;
   bool _devExampleLoading = false;
 
-  AuthSession _effectiveSession(AuthSession streamSession) =>
-      _reloadedSession ?? streamSession;
+  AuthSession _effectiveSession(AuthSession streamSession) => _reloadedSession ?? streamSession;
 
   @override
   Widget build(BuildContext context) {
     final flavor = ref.watch(appFlavorProvider);
     final streamValue = ref.watch(authSessionStreamProvider);
     final repo = ref.read(authRepositoryProvider);
-    final streamSession =
-        streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
+    final streamSession = streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
 
     ref.listen<AsyncValue<AuthSession>>(authSessionStreamProvider, (_, next) {
       if (next.hasValue) {
@@ -77,10 +71,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       );
     }
 
-    return RefugeHomeScreen(
-      repository: widget.repository,
-      themeNotifier: widget.themeNotifier,
-    );
+    return RefugeHomeScreen(repository: widget.repository, themeNotifier: widget.themeNotifier);
   }
 
   Future<void> _reloadVerified() async {
@@ -107,10 +98,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     try {
       final notifier = ref.read(memberProfileProvider.notifier);
       try {
-        await notifier.signInWithPassword(
-          email: account.email,
-          password: devExamplePassword,
-        );
+        await notifier.signInWithPassword(email: account.email, password: devExamplePassword);
       } on AuthException catch (e) {
         if (e.code == 'user-not-found') {
           await notifier.registerWithPassword(
@@ -170,12 +158,7 @@ class _SignInWall extends StatelessWidget {
 
     return Column(
       children: [
-        Expanded(
-          child: SimpleAuthScreen(
-            popOnSuccess: false,
-            allowOfflineTestSignIn: false,
-          ),
-        ),
+        Expanded(child: SimpleAuthScreen(popOnSuccess: false, allowOfflineTestSignIn: false)),
         if (showExamples) ...[
           const Divider(height: 1),
           Padding(
@@ -205,10 +188,7 @@ class _SignInWall extends StatelessWidget {
                     devExampleError!,
                     key: const Key('dev_example_sign_in_error'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
                   ),
                 ],
               ],

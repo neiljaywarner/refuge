@@ -20,10 +20,9 @@ final previewModeUserOverrideProvider = StateProvider<bool?>((ref) => null);
 
 /// Single master provider for checking whether experimental preview features
 /// should be displayed across the app.
-final previewFeaturesEnabledProvider =
-    StateNotifierProvider<PreviewModeNotifier, bool>((ref) {
-      final remoteConfig = ref.watch(organizerRemoteConfigProvider);
-      final userOverride = ref.watch(previewModeUserOverrideProvider);
-      final effective = userOverride ?? remoteConfig.previewModeEnabled;
-      return PreviewModeNotifier(effective);
-    });
+final previewFeaturesEnabledProvider = StateNotifierProvider<PreviewModeNotifier, bool>((ref) {
+  final remoteConfig = ref.watch(organizerRemoteConfigProvider);
+  final userOverride = ref.watch(previewModeUserOverrideProvider);
+  final effective = userOverride ?? remoteConfig.previewModeEnabled;
+  return PreviewModeNotifier(effective);
+});

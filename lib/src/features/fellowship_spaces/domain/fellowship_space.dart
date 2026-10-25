@@ -84,15 +84,13 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'saved_for_later',
         title: 'Saved for Later',
         emoji: '🔖',
-        subtitle:
-            'Private bookmarks — unhurried reflections saved for quiet reading',
+        subtitle: 'Private bookmarks — unhurried reflections saved for quiet reading',
       ),
       BelongSpaceItem(
         slug: 'members_directory',
         title: 'Members Section & Directory',
         emoji: '👥',
-        subtitle:
-            'Community profiles, church affiliations & fellowship connections',
+        subtitle: 'Community profiles, church affiliations & fellowship connections',
       ),
       BelongSpaceItem(
         slug: 'memes',
@@ -161,8 +159,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'link_android_app',
         title: 'Download the Android App',
         emoji: '🤖',
-        subtitle:
-            'Pending — Install via PWA now; Google Play Store coming soon',
+        subtitle: 'Pending — Install via PWA now; Google Play Store coming soon',
         isComingSoon: true,
         trackedIssueNumber: 30,
       ),
@@ -170,8 +167,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'link_ios_app',
         title: 'Download the iOS App',
         emoji: '🍎',
-        subtitle:
-            'Pending — Add to iPhone Home Screen now; App Store coming soon',
+        subtitle: 'Pending — Add to iPhone Home Screen now; App Store coming soon',
         isComingSoon: true,
         trackedIssueNumber: 31,
       ),

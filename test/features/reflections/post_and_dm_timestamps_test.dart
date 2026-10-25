@@ -12,48 +12,43 @@ import 'package:refuge4serverpod/src/features/reflections/presentation/reflectio
 final DateTime _knownSentAt = DateTime(2020, 10, 20, 15, 30);
 
 void main() {
-  patrolWidgetTest(
-    'A post created on 20 Oct shows Oct 20 beside the author, not inside the post',
-    ($) async {
-      const body = 'The quiet room is reserved for anyone who needs a break.';
-      final post = Post(
-        id: 'post-timestamp',
-        authorName: 'David M.',
-        spaceKey: 'prayer',
-        toneTag: 'Gentle',
-        content: body,
-        timestamp: _knownSentAt,
-        reactions: const {},
-      );
+  patrolWidgetTest('A post created on 20 Oct shows Oct 20 beside the author, not inside the post', (
+    $,
+  ) async {
+    const body = 'The quiet room is reserved for anyone who needs a break.';
+    final post = Post(
+      id: 'post-timestamp',
+      authorName: 'David M.',
+      spaceKey: 'prayer',
+      toneTag: 'Gentle',
+      content: body,
+      timestamp: _knownSentAt,
+      reactions: const {},
+    );
 
-      // Given a post by David M. created on 20 Oct
-      // And the post body does not contain that date
-      expect(body.contains('Oct 20'), isFalse);
-      expect(post.formattedDate(DateTime(2026, 10, 23, 12)), 'Oct 20');
+    // Given a post by David M. created on 20 Oct
+    // And the post body does not contain that date
+    expect(body.contains('Oct 20'), isFalse);
+    expect(post.formattedDate(DateTime(2026, 10, 23, 12)), 'Oct 20');
 
-      // When the post card is shown
-      await $.pumpWidgetAndSettle(
-        ProviderScope(
-          child: MaterialApp(
-            theme: ThemeData.light(),
-            home: Scaffold(
-              body: ReflectionCard(
-                post: post,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
-            ),
+    // When the post card is shown
+    await $.pumpWidgetAndSettle(
+      ProviderScope(
+        child: MaterialApp(
+          theme: ThemeData.light(),
+          home: Scaffold(
+            body: ReflectionCard(post: post, isContrast: false, onAddReaction: (_) {}),
           ),
         ),
-      );
+      ),
+    );
 
-      // Then the card shows "Oct 20" beside the author, not inside the post body
-      expect($('David M.'), findsOneWidget);
-      expect($(body), findsOneWidget);
-      expect($('Oct 20'), findsOneWidget);
-      expect($(const Key('post_timestamp_post-timestamp')), findsOneWidget);
-    },
-  );
+    // Then the card shows "Oct 20" beside the author, not inside the post body
+    expect($('David M.'), findsOneWidget);
+    expect($(body), findsOneWidget);
+    expect($('Oct 20'), findsOneWidget);
+    expect($(const Key('post_timestamp_post-timestamp')), findsOneWidget);
+  });
 
   patrolWidgetTest(
     'A direct message sent on 20 Oct shows Oct 20 beside the message, not inside the text',

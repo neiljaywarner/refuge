@@ -9,8 +9,7 @@ class LocalPostRepository implements PostRepository {
   final bool isDevMode;
   final List<Post> _store = [];
   final Set<String> _savedPostIds = {};
-  final StreamController<List<Post>> _controller =
-      StreamController<List<Post>>.broadcast();
+  final StreamController<List<Post>> _controller = StreamController<List<Post>>.broadcast();
 
   LocalPostRepository({this.isDevMode = true, List<Post>? initialPosts}) {
     if (initialPosts != null) {
@@ -159,10 +158,7 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({
-    required String postId,
-    required String reactionType,
-  }) async {
+  Future<void> addReaction({required String postId, required String reactionType}) async {
     final index = _store.indexWhere((p) => p.id == postId);
     if (index != -1) {
       final post = _store[index];

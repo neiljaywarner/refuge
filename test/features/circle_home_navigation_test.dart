@@ -20,9 +20,7 @@ void main() {
       expect(dmItem.votes, 0);
       expect(dmItem.userVoted, isFalse);
 
-      container
-          .read(featureVotingProvider.notifier)
-          .toggleVote('wip-direct-messages');
+      container.read(featureVotingProvider.notifier).toggleVote('wip-direct-messages');
       final afterUpvote = container
           .read(featureVotingProvider)
           .firstWhere((e) => e.id == 'wip-direct-messages');
@@ -83,54 +81,48 @@ void main() {
     },
   );
 
-  patrolWidgetTest(
-    'BDD: Member opens Directory from Spaces and browses fellowship members',
-    ($) async {
-      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
+  patrolWidgetTest('BDD: Member opens Directory from Spaces and browses fellowship members', (
+    $,
+  ) async {
+    await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
-      await $(const Key('subnav_spaces_tab')).tap();
-      await $.pumpAndSettle();
+    await $(const Key('subnav_spaces_tab')).tap();
+    await $.pumpAndSettle();
 
-      expect($('Members Section & Directory'), findsOneWidget);
-      await $('Members Section & Directory').tap();
-      await $.pumpAndSettle();
+    expect($('Members Section & Directory'), findsOneWidget);
+    await $('Members Section & Directory').tap();
+    await $.pumpAndSettle();
 
-      expect($('Fellowship disciples & leaders'), findsOneWidget);
-      expect($('Marty (Organizer)'), findsOneWidget);
-    },
-  );
+    expect($('Fellowship disciples & leaders'), findsOneWidget);
+    expect($('Marty (Organizer)'), findsOneWidget);
+  });
 
-  patrolWidgetTest(
-    'BDD: AppBar shows Sign In when signed out, and Avatar when signed in (#238)',
-    ($) async {
-      // 1. Signed-out state: verify Sign In button is present, avatar is absent
-      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
+  patrolWidgetTest('BDD: AppBar shows Sign In when signed out, and Avatar when signed in (#238)', (
+    $,
+  ) async {
+    // 1. Signed-out state: verify Sign In button is present, avatar is absent
+    await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
-      expect($(const Key('home_top_bar_sign_in_button')), findsOneWidget);
-      expect($(const Key('belong_profile_avatar_button')), findsNothing);
+    expect($(const Key('home_top_bar_sign_in_button')), findsOneWidget);
+    expect($(const Key('belong_profile_avatar_button')), findsNothing);
 
-      // 2. Signed-in state: override memberProfileProvider with signed-in profile
-      final signedInContainer = ProviderContainer(
-        overrides: [
-          memberProfileProvider.overrideWith(
-            () => _FakeSignedInProfileNotifier(),
-          ),
-        ],
-      );
-      addTearDown(signedInContainer.dispose);
+    // 2. Signed-in state: override memberProfileProvider with signed-in profile
+    final signedInContainer = ProviderContainer(
+      overrides: [memberProfileProvider.overrideWith(() => _FakeSignedInProfileNotifier())],
+    );
+    addTearDown(signedInContainer.dispose);
 
-      await $.pumpWidgetAndSettle(
-        UncontrolledProviderScope(
-          container: signedInContainer,
-          child: RefugeApp(repository: LocalPostRepository()),
-        ),
-      );
+    await $.pumpWidgetAndSettle(
+      UncontrolledProviderScope(
+        container: signedInContainer,
+        child: RefugeApp(repository: LocalPostRepository()),
+      ),
+    );
 
-      expect($(const Key('home_top_bar_sign_in_button')), findsNothing);
-      expect($(const Key('belong_profile_avatar_button')), findsOneWidget);
-      expect($('JD'), findsOneWidget);
-    },
-  );
+    expect($(const Key('home_top_bar_sign_in_button')), findsNothing);
+    expect($(const Key('belong_profile_avatar_button')), findsOneWidget);
+    expect($('JD'), findsOneWidget);
+  });
 }
 
 class _FakeSignedInProfileNotifier extends MemberProfileNotifier {

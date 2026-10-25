@@ -13,29 +13,23 @@ import '../domain/direct_message_push_policy.dart';
 const directMessagePushFunctionId = 'dm-push';
 
 /// A delivered Firestore message is the only one that may ask for a card.
-bool shouldRequestDirectMessagePush(String outcomeName) =>
-    outcomeName == 'delivered';
+bool shouldRequestDirectMessagePush(String outcomeName) => outcomeName == 'delivered';
 
 /// Tells the Appwrite function about this phone, then returns.
 /// Failures stay on the device. The message itself is already stored.
-Future<void> registerDirectMessagePush(
-  CalmNotificationPreferences prefs,
-) async {
+Future<void> registerDirectMessagePush(CalmNotificationPreferences prefs) async {
   final token = prefs.fcmToken;
   final acceptable = shouldSendDirectMessagePush(
     enabled: prefs.enabled,
     schedule: prefs.schedule.name,
     fcmToken: token,
   );
-  await _execute(
-    {
-      'action': 'register',
-      'enabled': prefs.enabled && prefs.schedule.name != 'muted',
-      'schedule': prefs.schedule.name,
-      'fcmToken': acceptable ? token : '',
-    },
-    waitForResponse: true,
-  );
+  await _execute({
+    'action': 'register',
+    'enabled': prefs.enabled && prefs.schedule.name != 'muted',
+    'schedule': prefs.schedule.name,
+    'fcmToken': acceptable ? token : '',
+  }, waitForResponse: true);
 }
 
 /// Asks the function to fan out a card for a message that Firestore accepted.
@@ -44,10 +38,7 @@ Future<void> requestDirectMessagePush(String messageId) async {
   await _execute({'action': 'send', 'messageId': messageId});
 }
 
-Future<void> _execute(
-  Map<String, Object?> body, {
-  bool waitForResponse = false,
-}) async {
+Future<void> _execute(Map<String, Object?> body, {bool waitForResponse = false}) async {
   try {
     if (Firebase.apps.isEmpty) return;
     final user = FirebaseAuth.instance.currentUser;
@@ -63,10 +54,7 @@ Future<void> _execute(
     );
     final response = await http.post(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Appwrite-Project': config.projectId.trim(),
-      },
+      headers: {'Content-Type': 'application/json', 'X-Appwrite-Project': config.projectId.trim()},
       body: jsonEncode({
         'body': jsonEncode({...body, 'idToken': idToken}),
         'async': !waitForResponse,
@@ -91,10 +79,7 @@ Future<void> _execute(
     }
   } catch (error) {
     // The message remains in Firestore. A later send can try the card again.
-    final raw = error.toString().replaceAll(
-      RegExp(r'eyJ[A-Za-z0-9_\-.]+'),
-      '[token]',
-    );
+    final raw = error.toString().replaceAll(RegExp(r'eyJ[A-Za-z0-9_\-.]+'), '[token]');
     final brief = raw.length > 160 ? raw.substring(0, 160) : raw;
     debugPrint('dm-push request failed: ${error.runtimeType} $brief');
   }

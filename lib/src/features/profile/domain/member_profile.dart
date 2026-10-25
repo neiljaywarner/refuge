@@ -87,10 +87,8 @@ class MemberProfile {
   }
 
   /// Skips title tokens like `Dr.` when forming fellowship monograms.
-  static bool isHonorificToken(String token) => RegExp(
-    r'^(dr|mr|mrs|ms|miss|prof)\.?$',
-    caseSensitive: false,
-  ).hasMatch(token);
+  static bool isHonorificToken(String token) =>
+      RegExp(r'^(dr|mr|mrs|ms|miss|prof)\.?$', caseSensitive: false).hasMatch(token);
 
   MemberProfile copyWith({
     String? userId,
@@ -133,32 +131,23 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     final persisted = _persistedProfile;
     return MemberProfile(
       userId: session.userId,
-      displayName:
-          session.displayName.isNotEmpty &&
-              session.displayName != 'Fellowship Member'
+      displayName: session.displayName.isNotEmpty && session.displayName != 'Fellowship Member'
           ? session.displayName
           : (persisted?.displayName ?? session.displayName),
-      email: session.email.isNotEmpty
-          ? session.email
-          : (persisted?.email ?? session.email),
-      bio: session.bio.isNotEmpty
-          ? session.bio
-          : (persisted?.bio ?? session.bio),
+      email: session.email.isNotEmpty ? session.email : (persisted?.email ?? session.email),
+      bio: session.bio.isNotEmpty ? session.bio : (persisted?.bio ?? session.bio),
       comfortBadges: session.comfortBadges.isNotEmpty
           ? session.comfortBadges
           : (persisted?.comfortBadges ?? session.comfortBadges),
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
-      icocChurchAffiliation:
-          session.icocChurchAffiliation ?? persisted?.icocChurchAffiliation,
+      icocChurchAffiliation: session.icocChurchAffiliation ?? persisted?.icocChurchAffiliation,
       avatarUrl: session.photoUrl ?? persisted?.avatarUrl,
     );
   }
 
   void _publishDirectory(MemberProfile profile) {
-    if (!profile.isSignedIn ||
-        profile.userId.isEmpty ||
-        profile.userId == 'guest') {
+    if (!profile.isSignedIn || profile.userId.isEmpty || profile.userId == 'guest') {
       return;
     }
     final flight = () async {
@@ -245,9 +234,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       return effective;
     }
 
-    if (!_explicitlySignedOut &&
-        _persistedProfile != null &&
-        _persistedProfile!.isSignedIn) {
+    if (!_explicitlySignedOut && _persistedProfile != null && _persistedProfile!.isSignedIn) {
       return _persistedProfile!;
     }
     return const MemberProfile.guest();
@@ -266,21 +253,14 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       email: email,
       bio: bio ?? state.bio,
       comfortBadges: comfortBadges ?? state.comfortBadges,
-      icocChurchAffiliation:
-          icocChurchAffiliation ?? state.icocChurchAffiliation,
+      icocChurchAffiliation: icocChurchAffiliation ?? state.icocChurchAffiliation,
     );
     _applySession(session);
   }
 
-  Future<void> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signInWithPassword({required String email, required String password}) async {
     final repo = ref.read(authRepositoryProvider);
-    final session = await repo.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    final session = await repo.signInWithPassword(email: email, password: password);
     _applySession(session);
   }
 
@@ -304,10 +284,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     _applySession(session);
   }
 
-  Future<void> sendMagicLink({
-    required String email,
-    String? redirectUrl,
-  }) async {
+  Future<void> sendMagicLink({required String email, String? redirectUrl}) async {
     final repo = ref.read(authRepositoryProvider);
     await repo.sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
@@ -317,15 +294,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     await repo.sendPasswordResetEmail(email: email);
   }
 
-  Future<void> signInWithMagicLink({
-    required String email,
-    required String emailLink,
-  }) async {
+  Future<void> signInWithMagicLink({required String email, required String emailLink}) async {
     final repo = ref.read(authRepositoryProvider);
-    final session = await repo.signInWithMagicLink(
-      email: email,
-      emailLink: emailLink,
-    );
+    final session = await repo.signInWithMagicLink(email: email, emailLink: emailLink);
     _applySession(session);
   }
 
@@ -438,10 +409,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   }
 }
 
-final memberProfileProvider =
-    NotifierProvider<MemberProfileNotifier, MemberProfile>(
-      MemberProfileNotifier.new,
-    );
+final memberProfileProvider = NotifierProvider<MemberProfileNotifier, MemberProfile>(
+  MemberProfileNotifier.new,
+);
 
 /// Alias provider for backwards compatibility and clean semantic naming.
 final currentUserProfileProvider = memberProfileProvider;

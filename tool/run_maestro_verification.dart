@@ -16,9 +16,7 @@ const maestroDefaultSuiteExcludedTag = 'known-gap';
 /// True when the Maestro flow header asks the default/CI suite to skip it.
 bool excludesFromDefaultSuite(String yamlContents) {
   final divider = yamlContents.indexOf('\n---');
-  final header = divider < 0
-      ? yamlContents
-      : yamlContents.substring(0, divider);
+  final header = divider < 0 ? yamlContents : yamlContents.substring(0, divider);
   return RegExp(
     '^\\s*-\\s+$maestroDefaultSuiteExcludedTag\\s*\$',
     multiLine: true,
@@ -31,20 +29,13 @@ class MaestroVerificationRunner {
   final IOSink outSink;
   final IOSink errSink;
 
-  MaestroVerificationRunner({
-    ProcessExecutor? executor,
-    IOSink? outSink,
-    IOSink? errSink,
-  }) : executor = executor ?? const RealProcessExecutor(),
-       outSink = outSink ?? stdout,
-       errSink = errSink ?? stderr,
-       argParser = ArgParser() {
+  MaestroVerificationRunner({ProcessExecutor? executor, IOSink? outSink, IOSink? errSink})
+    : executor = executor ?? const RealProcessExecutor(),
+      outSink = outSink ?? stdout,
+      errSink = errSink ?? stderr,
+      argParser = ArgParser() {
     argParser
-      ..addOption(
-        'device',
-        abbr: 'd',
-        help: 'Target Android device or emulator ID for Maestro.',
-      )
+      ..addOption('device', abbr: 'd', help: 'Target Android device or emulator ID for Maestro.')
       ..addOption(
         'flow',
         abbr: 'f',
@@ -96,9 +87,7 @@ class MaestroVerificationRunner {
     }
 
     if (results['help'] == true) {
-      outSink.writeln(
-        '=== Belong on the Spectrum — Maestro End-to-End Test Suite ===',
-      );
+      outSink.writeln('=== Belong on the Spectrum — Maestro End-to-End Test Suite ===');
       outSink.writeln(argParser.usage);
       return ExitCodes.success;
     }
@@ -128,17 +117,13 @@ class MaestroVerificationRunner {
       return ExitCodes.success;
     }
 
-    outSink.writeln(
-      '=== Belong on the Spectrum — Maestro End-to-End Test Suite ===',
-    );
+    outSink.writeln('=== Belong on the Spectrum — Maestro End-to-End Test Suite ===');
 
     // Check Maestro binary
     final maestroCheck = await executor.run(['which', 'maestro']);
     if (maestroCheck.exitCode != 0) {
       outSink.writeln('⚠️ Maestro CLI is not currently in PATH.');
-      outSink.writeln(
-        '👉 Install with: curl -fsSL https://get.maestro.mobile.dev | bash',
-      );
+      outSink.writeln('👉 Install with: curl -fsSL https://get.maestro.mobile.dev | bash');
       outSink.writeln('👉 Then run: export PATH="\$PATH:\$HOME/.maestro/bin"');
       return ExitCodes.success;
     }
@@ -153,16 +138,12 @@ class MaestroVerificationRunner {
       try {
         adbOutput = await executor.run(['adb', 'devices']);
       } on ProcessException {
-        outSink.writeln(
-          '⚠️ No connected Android device or emulator detected for Maestro.',
-        );
+        outSink.writeln('⚠️ No connected Android device or emulator detected for Maestro.');
         return ExitCodes.success;
       }
       final devices = parseConnectedDevices(adbOutput.stdout);
       if (devices.isEmpty) {
-        outSink.writeln(
-          '⚠️ No connected Android device or emulator detected for Maestro.',
-        );
+        outSink.writeln('⚠️ No connected Android device or emulator detected for Maestro.');
         return ExitCodes.success;
       }
       device = devices.first;
@@ -196,9 +177,7 @@ class MaestroVerificationRunner {
     }
 
     if (results['dry-run'] == true) {
-      outSink.writeln(
-        '🔍 [DRY RUN] Would execute the following flows on $device:',
-      );
+      outSink.writeln('🔍 [DRY RUN] Would execute the following flows on $device:');
       for (final flow in flowsToRun) {
         outSink.writeln('   ▶️ $flow');
       }
@@ -215,14 +194,7 @@ class MaestroVerificationRunner {
     var anyFailures = false;
 
     for (final flow in flowsToRun) {
-      final command = [
-        'maestro',
-        '--device',
-        device,
-        'test',
-        '--env',
-        'AUTOMATION_TOOL=maestro',
-      ];
+      final command = ['maestro', '--device', device, 'test', '--env', 'AUTOMATION_TOOL=maestro'];
       if (requestedFlow == null || requestedFlow.isEmpty) {
         command.addAll(['--exclude-tags', maestroDefaultSuiteExcludedTag]);
       } else if (await _flowExcludedFromDefaultSuite(flow)) {
@@ -238,9 +210,7 @@ class MaestroVerificationRunner {
       }
       if (result.exitCode != 0) {
         anyFailures = true;
-        errSink.writeln(
-          '⚠️ Flow $flow failed with exit code ${result.exitCode}',
-        );
+        errSink.writeln('⚠️ Flow $flow failed with exit code ${result.exitCode}');
         if (result.stderr.trim().isNotEmpty) {
           errSink.writeln(result.stderr.trim());
         }
@@ -249,17 +219,13 @@ class MaestroVerificationRunner {
       }
     }
 
-    outSink.writeln(
-      '\n===============================================================',
-    );
+    outSink.writeln('\n===============================================================');
     if (anyFailures) {
       outSink.writeln('⚠️ One or more Maestro flows encountered issues.');
     } else {
       outSink.writeln('✅ All Maestro flows executed cleanly!');
     }
-    outSink.writeln(
-      '===============================================================',
-    );
+    outSink.writeln('===============================================================');
 
     return anyFailures ? ExitCodes.software : ExitCodes.success;
   }

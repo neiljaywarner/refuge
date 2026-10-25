@@ -19,20 +19,14 @@ void main() {
       expect(threads.first.messages.isNotEmpty, isTrue);
     });
 
-    test(
-      'MessageThread copyWith preserves unmodified fields and updates new ones',
-      () {
-        final thread = MessageThread.sampleThreads().first;
-        final updated = thread.copyWith(
-          unreadCount: 0,
-          previewSnippet: 'Updated preview',
-        );
-        expect(updated.unreadCount, 0);
-        expect(updated.previewSnippet, 'Updated preview');
-        expect(updated.id, thread.id);
-        expect(updated.participantName, thread.participantName);
-      },
-    );
+    test('MessageThread copyWith preserves unmodified fields and updates new ones', () {
+      final thread = MessageThread.sampleThreads().first;
+      final updated = thread.copyWith(unreadCount: 0, previewSnippet: 'Updated preview');
+      expect(updated.unreadCount, 0);
+      expect(updated.previewSnippet, 'Updated preview');
+      expect(updated.id, thread.id);
+      expect(updated.participantName, thread.participantName);
+    });
   });
 
   group('Pragmatic Unit TDD: SensoryEvent', () {
@@ -48,10 +42,7 @@ void main() {
 
     test('SensoryEvent copyWith updates RSVP and count cleanly', () {
       final event = SensoryEvent.sampleEvents().first;
-      final rsvpd = event.copyWith(
-        userRsvpd: true,
-        rsvpCount: event.rsvpCount + 1,
-      );
+      final rsvpd = event.copyWith(userRsvpd: true, rsvpCount: event.rsvpCount + 1);
       expect(rsvpd.userRsvpd, isTrue);
       expect(rsvpd.rsvpCount, event.rsvpCount + 1);
     });
@@ -68,18 +59,12 @@ void main() {
 
       // 1. Verify thread list & Calm Batched Digest toggle
       expect($('Direct Messages'), findsOneWidget);
-      expect(
-        $('Calm Batched Digest is Active (quiet daily summary)'),
-        findsOneWidget,
-      );
+      expect($('Calm Batched Digest is Active (quiet daily summary)'), findsOneWidget);
       expect($(Switch), findsOneWidget);
 
       // 2. Toggle Calm Batched Digest
       await $(Switch).tap();
-      expect(
-        $('Calm Batched Digest is Disabled (realtime alerts)'),
-        findsOneWidget,
-      );
+      expect($('Calm Batched Digest is Disabled (realtime alerts)'), findsOneWidget);
 
       // 3. Tap on a conversation thread
       await $(const Key('thread-thread-welcome')).tap();
@@ -116,9 +101,7 @@ void main() {
   patrolWidgetTest(
     'BDD (patrol_finders): Actually Autistic Events calendar displays sensory badges and 1-tap RSVP',
     ($) async {
-      await $.pumpWidgetAndSettle(
-        const MaterialApp(home: ActuallyAutisticEventsView()),
-      );
+      await $.pumpWidgetAndSettle(const MaterialApp(home: ActuallyAutisticEventsView()));
 
       // 1. Verify header and sensory commitment banner
       expect($('Actually Autistic Events'), findsOneWidget);
@@ -144,18 +127,14 @@ void main() {
     },
   );
 
-  patrolWidgetTest(
-    'BDD (patrol_finders): Full App navigation switches into Msgs tab smoothly',
-    ($) async {
-      await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
+  patrolWidgetTest('BDD (patrol_finders): Full App navigation switches into Msgs tab smoothly', (
+    $,
+  ) async {
+    await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
-      // Tap bottom tab Msgs via unselected icon
-      await $(Icons.chat_bubble_outline_rounded).tap();
-      expect($('Direct Messages'), findsOneWidget);
-      expect(
-        $('Calm Batched Digest is Active (quiet daily summary)'),
-        findsOneWidget,
-      );
-    },
-  );
+    // Tap bottom tab Msgs via unselected icon
+    await $(Icons.chat_bubble_outline_rounded).tap();
+    expect($('Direct Messages'), findsOneWidget);
+    expect($('Calm Batched Digest is Active (quiet daily summary)'), findsOneWidget);
+  });
 }

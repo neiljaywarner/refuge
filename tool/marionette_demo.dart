@@ -25,22 +25,16 @@ void main(List<String> rawArgs) async {
   final deviceId = args.deviceId ?? await _detectDefaultDevice();
   stdout.writeln('📱 Target Device: \x1B[1;36m$deviceId\x1B[0m');
 
-  if (args.grantPermissions &&
-      deviceId.isNotEmpty &&
-      !deviceId.startsWith('chrome')) {
+  if (args.grantPermissions && deviceId.isNotEmpty && !deviceId.startsWith('chrome')) {
     await _grantAdbPermissions(deviceId);
   }
 
   // 2. Discover or Connect to VM Service / App
   final wsUri = args.vmServiceUri ?? await _discoverVmServiceUri(deviceId);
   if (wsUri == null) {
-    stderr.writeln(
-      '\x1B[31m❌ Could not resolve VM Service WebSocket URI.\x1B[0m',
-    );
+    stderr.writeln('\x1B[31m❌ Could not resolve VM Service WebSocket URI.\x1B[0m');
     stderr.writeln('   Ensure Belong is running via: flutter run -d $deviceId');
-    stderr.writeln(
-      '   Or pass explicit URI: --uri ws://127.0.0.1:<PORT>/<TOKEN>/ws',
-    );
+    stderr.writeln('   Or pass explicit URI: --uri ws://127.0.0.1:<PORT>/<TOKEN>/ws');
     exit(1);
   }
 
@@ -65,9 +59,7 @@ void main(List<String> rawArgs) async {
 
   try {
     await driver.runFullShowcase();
-    stdout.writeln(
-      '\n\x1B[1;32m🎉 Live Belong Feature Showcase completed successfully!\x1B[0m\n',
-    );
+    stdout.writeln('\n\x1B[1;32m🎉 Live Belong Feature Showcase completed successfully!\x1B[0m\n');
   } catch (e, st) {
     stderr.writeln('\n\x1B[31m❌ Demo encountered an error: $e\x1B[0m');
     stderr.writeln(st);
@@ -216,12 +208,7 @@ Future<String?> _discoverVmServiceUri(String deviceId) async {
 
   // Check ADB forward ports for VM Service
   try {
-    final forwards = await Process.run('adb', [
-      '-s',
-      deviceId,
-      'forward',
-      '--list',
-    ]);
+    final forwards = await Process.run('adb', ['-s', deviceId, 'forward', '--list']);
     final lines = LineSplitter.split(forwards.stdout as String);
     for (final line in lines) {
       if (line.contains('tcp:')) {
@@ -272,10 +259,7 @@ class _MarionetteDriver {
     _ => const Duration(milliseconds: 1500),
   };
 
-  Future<Map<String, dynamic>> callRpc(
-    String method, [
-    Map<String, dynamic>? params,
-  ]) {
+  Future<Map<String, dynamic>> callRpc(String method, [Map<String, dynamic>? params]) {
     final id = _rpcId++;
     final completer = Completer<Map<String, dynamic>>();
     _completers[id] = completer;
@@ -306,34 +290,30 @@ class _MarionetteDriver {
     final file = '/tmp/belong_showcase_${name}_$deviceId.png';
     try {
       if (deviceId.startsWith('5') || deviceId.startsWith('emulator')) {
-        await Process.run(
-          'adb',
-          ['-s', deviceId, 'exec-out', 'screencap', '-p'],
-          stdoutEncoding: null,
-        ).then((res) => File(file).writeAsBytes(res.stdout as List<int>));
+        await Process.run('adb', [
+          '-s',
+          deviceId,
+          'exec-out',
+          'screencap',
+          '-p',
+        ], stdoutEncoding: null).then((res) => File(file).writeAsBytes(res.stdout as List<int>));
         stdout.writeln('   📸 Captured milestone: $file');
       }
     } catch (_) {}
   }
 
   Future<void> runFullShowcase() async {
-    stdout.writeln(
-      '🎬 \x1B[1;34mStarting Belong on the Spectrum Feature Showcase...\x1B[0m',
-    );
+    stdout.writeln('🎬 \x1B[1;34mStarting Belong on the Spectrum Feature Showcase...\x1B[0m');
 
     // Step 1: Initial State & Brand Header
     stdout.writeln('\n1️⃣  \x1B[1mHeader & Calm Monogram Navigation\x1B[0m');
-    stdout.writeln(
-      '   Inspecting active sanctuary feed & Belong infinity logo...',
-    );
+    stdout.writeln('   Inspecting active sanctuary feed & Belong infinity logo...');
     await capture('01_home_feed');
     await pause('Home Feed & Scripture Anchor');
 
     // Step 2: Sensory Themes Showcase
     stdout.writeln('\n2️⃣  \x1B[1mSensory Themes & Contrast Mode\x1B[0m');
-    stdout.writeln(
-      '   Toggling High Contrast Mode for neurodivergent sensory comfort...',
-    );
+    stdout.writeln('   Toggling High Contrast Mode for neurodivergent sensory comfort...');
     await callRpc('ext.flutter.driver', {
       'command': 'tap',
       'key': 'home_high_contrast_toggle_button',
@@ -351,37 +331,24 @@ class _MarionetteDriver {
     // Step 3: Fellowship Spaces Navigation
     stdout.writeln('\n3️⃣  \x1B[1mFellowship Spaces Directory\x1B[0m');
     stdout.writeln('   Navigating from Feed to Fellowship Spaces...');
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'key': 'subnav_spaces_tab',
-    });
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'subnav_spaces_tab'});
     await capture('03_spaces_directory');
     await pause('Fellowship Spaces Overview');
 
     // Step 4: Member Profiles & Monograms
     stdout.writeln('\n4️⃣  \x1B[1mMember Profiles & Directory\x1B[0m');
-    stdout.writeln(
-      '   Browsing fellowship disciples, comfort badges, and church affiliations...',
-    );
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'key': 'space_tile_members_directory',
-    });
+    stdout.writeln('   Browsing fellowship disciples, comfort badges, and church affiliations...');
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'space_tile_members_directory'});
     await capture('04_members_directory');
     await pause('Member Directory & Comfort Badges');
 
     // Return to Spaces
     stdout.writeln('   Returning to Fellowship Spaces...');
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'tooltip': 'Back to Spaces',
-    });
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'tooltip': 'Back to Spaces'});
     await pause('Returned to Spaces');
 
     // Step 5: Feature Voting & Feedback
-    stdout.writeln(
-      '\n5️⃣  \x1B[1mFeature Voting & Neurodivergent Feedback\x1B[0m',
-    );
+    stdout.writeln('\n5️⃣  \x1B[1mFeature Voting & Neurodivergent Feedback\x1B[0m');
     stdout.writeln('   Opening community voting sheet...');
     await callRpc('ext.flutter.driver', {
       'command': 'tap',
@@ -391,34 +358,20 @@ class _MarionetteDriver {
     await pause('Feature Voting & Upvoting');
 
     // Close voting sheet
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'key': 'close_voting_sheet_button',
-    });
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'close_voting_sheet_button'});
     await pause('Closed Voting Sheet');
 
     // Step 6: Calm Notifications Inbox
-    stdout.writeln(
-      '\n6️⃣  \x1B[1mCalm Notifications & Unhurried Digest\x1B[0m',
-    );
+    stdout.writeln('\n6️⃣  \x1B[1mCalm Notifications & Unhurried Digest\x1B[0m');
     stdout.writeln('   Switching to Calm Notifications tab...');
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'key': 'bottom_nav_tab_notifications',
-    });
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'bottom_nav_tab_notifications'});
     await capture('06_calm_notifications');
     await pause('Calm Notifications & Filters');
 
     // Step 7: Return to Home Feed
     stdout.writeln('\n7️⃣  \x1B[1mReturning to Feed\x1B[0m');
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'key': 'bottom_nav_tab_home',
-    });
-    await callRpc('ext.flutter.driver', {
-      'command': 'tap',
-      'key': 'subnav_feed_tab',
-    });
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'bottom_nav_tab_home'});
+    await callRpc('ext.flutter.driver', {'command': 'tap', 'key': 'subnav_feed_tab'});
     await capture('07_final_feed');
   }
 }

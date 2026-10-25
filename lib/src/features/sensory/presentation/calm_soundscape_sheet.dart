@@ -71,9 +71,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                     children: [
                       Text(
                         'Calm Sensory Soundscapes',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Gentle auditory masking for focus and regulation.',
@@ -96,8 +94,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
 
             // Soundscape Cards
             ...SensorySoundscape.curatedSoundscapes.map((soundscape) {
-              final isSelected =
-                  soundscapeState.activeSoundscape?.id == soundscape.id;
+              final isSelected = soundscapeState.activeSoundscape?.id == soundscape.id;
               final isPlayingThis = isSelected && soundscapeState.isPlaying;
 
               return Padding(
@@ -107,30 +104,20 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   onTap: () => notifier.selectSoundscape(soundscape),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFF2E6B56).withAlpha(25)
-                          : theme.colorScheme.surfaceContainerHighest.withAlpha(
-                              128,
-                            ),
+                          : theme.colorScheme.surfaceContainerHighest.withAlpha(128),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFF2E6B56)
-                            : Colors.transparent,
+                        color: isSelected ? const Color(0xFF2E6B56) : Colors.transparent,
                         width: 1.5,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Text(
-                          soundscape.iconEmoji,
-                          style: const TextStyle(fontSize: 24),
-                        ),
+                        Text(soundscape.iconEmoji, style: const TextStyle(fontSize: 24)),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
@@ -140,9 +127,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                                 soundscape.title,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: isSelected
-                                      ? const Color(0xFF2E6B56)
-                                      : null,
+                                  color: isSelected ? const Color(0xFF2E6B56) : null,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -203,9 +188,7 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                 ),
                 Text(
                   '${(soundscapeState.volume * 100).toInt()}%',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -268,15 +251,11 @@ class CalmSoundscapeSheet extends HookConsumerWidget {
                 key: const Key('toggle_soundscape_playback_button'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF2E6B56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 onPressed: () => notifier.togglePlay(),
                 icon: Icon(
-                  soundscapeState.isPlaying
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
+                  soundscapeState.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 ),
                 label: Text(
                   soundscapeState.isPlaying

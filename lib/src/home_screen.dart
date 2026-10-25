@@ -52,13 +52,7 @@ import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
 /// Sub-navigation mode below the Belong logo inside the `Home` bottom tab.
-enum BelongHomeSubView {
-  feed,
-  spaces,
-  comingSoonItem,
-  membersDirectory,
-  events,
-}
+enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory, events }
 
 /// Main screen of **Belong on the Spectrum** (powered by Refuge),
 /// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
@@ -94,35 +88,29 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final easterEggLastTap = useState<DateTime?>(null);
 
     // Deep-link navigation handler for in-app or push notifications (#330)
-    ref.listen<NotificationNavigationTarget?>(
-      notificationNavigationTargetProvider,
-      (_, target) {
-        if (target != null) {
-          activeBottomTab.value = target.tab;
-          if (target.spaceKey != null) {
-            selectedSpace.value = target.spaceKey!;
-            homeSubView.value = BelongHomeSubView.feed;
-          }
-          if (target.conversationId != null) {
-            activeDirectMessageThreadId.value = target.conversationId;
-          }
-          if (target.postId != null) {
-            highlightedPostId.value = target.postId;
-          }
-          ref.read(notificationNavigationTargetProvider.notifier).state = null;
+    ref.listen<NotificationNavigationTarget?>(notificationNavigationTargetProvider, (_, target) {
+      if (target != null) {
+        activeBottomTab.value = target.tab;
+        if (target.spaceKey != null) {
+          selectedSpace.value = target.spaceKey!;
+          homeSubView.value = BelongHomeSubView.feed;
         }
-      },
-    );
+        if (target.conversationId != null) {
+          activeDirectMessageThreadId.value = target.conversationId;
+        }
+        if (target.postId != null) {
+          highlightedPostId.value = target.postId;
+        }
+        ref.read(notificationNavigationTargetProvider.notifier).state = null;
+      }
+    });
 
-    final PostRepository activeRepository =
-        repository ?? ref.watch(postRepositoryProvider);
+    final PostRepository activeRepository = repository ?? ref.watch(postRepositoryProvider);
 
     final postStream = useMemoized(
       () => selectedSpace.value == 'saved_for_later'
           ? activeRepository.watchSavedPosts().asBroadcastStream()
-          : activeRepository
-                .watchPosts(spaceKey: selectedSpace.value)
-                .asBroadcastStream(),
+          : activeRepository.watchPosts(spaceKey: selectedSpace.value).asBroadcastStream(),
       [activeRepository, selectedSpace.value],
     );
     // Subscribe at the screen level (not inside the feed sub-view) so the
@@ -137,8 +125,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     );
     final quietDigestSnapshot = useFuture(quietDigestFuture);
 
-    final SensoryMode currentMode =
-        themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
+    final SensoryMode currentMode = themeNotifier?.mode ?? ref.watch(sensoryThemeModeProvider);
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isLiveFeed = switch (activeRepository) {
@@ -198,20 +185,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
           : content.length <= 280
           ? 2
           : 3;
-      analytics.logReflectionPublished(
-        tag: toneTag,
-        lengthBucket: lengthBucket,
-      );
+      analytics.logReflectionPublished(tag: toneTag, lengthBucket: lengthBucket);
       try {
         await ref
             .read(memberNotificationStoreProvider)
             .notifyMentionsInContent(
               content: content,
               authorUid: profile.userId,
-              authorName: publicDisplayName(
-                displayName: profile.displayName,
-                email: profile.email,
-              ),
+              authorName: publicDisplayName(displayName: profile.displayName, email: profile.email),
               spaceKey: targetSpace,
             )
             .timeout(const Duration(seconds: 8));
@@ -272,10 +253,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
           return Column(
             children: [
-              SpaceNavigationBar(
-                selectedSpace: selectedSpace.value,
-                onSelectSpace: selectSpace,
-              ),
+              SpaceNavigationBar(selectedSpace: selectedSpace.value, onSelectSpace: selectSpace),
               ToneFilterRow(
                 activeFilter: activeFilter.value,
                 onSelectFilter: (tone) {
@@ -291,23 +269,13 @@ class RefugeHomeScreen extends HookConsumerWidget {
               ),
               if (selectedSpace.value == 'saved_for_later')
                 Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 14.0,
-                    vertical: 4.0,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 8.0,
-                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                   decoration: BoxDecoration(
-                    color: isContrast
-                        ? Colors.black
-                        : primaryColor.withValues(alpha: 0.08),
+                    color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
-                      color: isContrast
-                          ? Colors.yellow
-                          : primaryColor.withValues(alpha: 0.3),
+                      color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -337,9 +305,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   builder: (context) {
                     if (postsSnapshot.hasError) {
                       return Center(
-                        child: Text(
-                          'Error loading reflections: ${postsSnapshot.error}',
-                        ),
+                        child: Text('Error loading reflections: ${postsSnapshot.error}'),
                       );
                     }
                     if (!postsSnapshot.hasData) {
@@ -350,14 +316,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
                     // Apply Tone Filter
                     if (activeFilter.value != 'All') {
-                      posts = posts
-                          .where((p) => p.toneTag == activeFilter.value)
-                          .toList();
+                      posts = posts.where((p) => p.toneTag == activeFilter.value).toList();
                     }
 
                     // Apply Feed Sort
-                    final activityTimestamps =
-                        activityTimestampsAsync.value ?? {};
+                    final activityTimestamps = activityTimestampsAsync.value ?? {};
                     final commentCounts = commentCountsAsync.value ?? {};
                     posts = FeedSortService.sortPosts(
                       posts,
@@ -425,8 +388,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                         Icon(
                                           Icons.bookmark_border_rounded,
                                           size: 40,
-                                          color: Theme.of(context)
-                                              .disabledColor,
+                                          color: Theme.of(context).disabledColor,
                                         ),
                                         const SizedBox(height: 12),
                                         Text(
@@ -434,10 +396,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontSize: 12.5,
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.color
+                                            color: Theme.of(context).textTheme.bodySmall?.color
                                                 ?.withValues(alpha: 0.7),
                                           ),
                                         ),
@@ -450,16 +409,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                     profile.isSignedIn
                                         ? 'No community reflections yet in this space.'
                                         : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                                    key: const Key(
-                                      'empty_reflections_placeholder',
-                                    ),
+                                    key: const Key('empty_reflections_placeholder'),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.color
+                                      color: Theme.of(context).textTheme.bodySmall?.color
                                           ?.withValues(alpha: 0.6),
                                     ),
                                   ),
@@ -476,20 +430,16 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             bottom: 48.0,
                           ),
                           sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
+                            delegate: SliverChildBuilderDelegate((context, index) {
                               final p = posts[index];
                               return ReflectionCard(
                                 post: p,
                                 isContrast: isContrast,
                                 isHighlighted: highlightedPostId.value == p.id,
-                                onAddReaction: (reactionType) =>
-                                    activeRepository.addReaction(
-                                      postId: p.id,
-                                      reactionType: reactionType,
-                                    ),
+                                onAddReaction: (reactionType) => activeRepository.addReaction(
+                                  postId: p.id,
+                                  reactionType: reactionType,
+                                ),
                               );
                             }, childCount: posts.length),
                           ),
@@ -515,8 +465,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
               _BelongSubHeaderBar(
                 activeSubView: homeSubView.value,
                 onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
-                onSelectSpaces: () =>
-                    homeSubView.value = BelongHomeSubView.spaces,
+                onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
                 primaryColor: primaryColor,
                 isContrast: isContrast,
               ),
@@ -533,14 +482,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
               }
               if (target.postId != null && target.openDiscussion) {
                 final posts = await activeRepository
-                    .watchPosts(
-                      spaceKey: target.spaceKey ?? selectedSpace.value,
-                    )
+                    .watchPosts(spaceKey: target.spaceKey ?? selectedSpace.value)
                     .first
-                    .timeout(
-                      const Duration(milliseconds: 600),
-                      onTimeout: () => [],
-                    );
+                    .timeout(const Duration(milliseconds: 600), onTimeout: () => []);
                 final post = posts.cast<Post?>().firstWhere(
                   (p) => p?.id == target.postId,
                   orElse: () => null,
@@ -552,14 +496,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
             },
           );
         case BelongBottomTab.msgs:
-          return BelongMessagesView(
-            initialActiveThreadId: activeDirectMessageThreadId.value,
-          );
+          return BelongMessagesView(initialActiveThreadId: activeDirectMessageThreadId.value);
         case BelongBottomTab.search:
-          return CommunitySearchView(
-            repository: activeRepository,
-            isContrast: isContrast,
-          );
+          return CommunitySearchView(repository: activeRepository, isContrast: isContrast);
       }
     }
 
@@ -602,8 +541,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     key: const Key('belong_header_logo'),
                     width: 28,
                     height: 28,
-                    errorBuilder: (_, _, _) =>
-                        const Text('♾️', style: TextStyle(fontSize: 18)),
+                    errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 18)),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -623,8 +561,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 brand.shortName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: BelongTextStyles.of(context).emphasis
-                                    .copyWith(fontSize: 15),
+                                style: BelongTextStyles.of(context).emphasis.copyWith(fontSize: 15),
                               ),
                             ),
                             const SizedBox(width: 5),
@@ -633,10 +570,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: BelongTextStyles.of(context).emphasis
-                                  .copyWith(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -649,18 +583,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isLiveFeed
-                                  ? const Color(0xFF4CAF50)
-                                  : const Color(0xFF68A67D),
+                              color: isLiveFeed ? const Color(0xFF4CAF50) : const Color(0xFF68A67D),
                             ),
                           ),
                           const SizedBox(width: 5),
                           Flexible(
                             child: Semantics(
-                              identifier:
-                                  'active_sensory_theme_${currentMode.name}',
-                              label:
-                                  'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
+                              identifier: 'active_sensory_theme_${currentMode.name}',
+                              label: 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
                               container: true,
                               explicitChildNodes: true,
                               child: Text(
@@ -668,10 +598,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color
+                                  color: Theme.of(context).textTheme.bodySmall?.color
                                       ?.withValues(alpha: 0.7),
                                 ),
                               ),
@@ -690,9 +617,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
           Semantics(
             // The name stays here without a tooltip. A tooltip hit region was
             // remaining over Vote & Feedback after the pointer passed this icon.
-            label: isContrast
-                ? 'Switch to Sage Theme'
-                : 'Switch to High Contrast',
+            label: isContrast ? 'Switch to Sage Theme' : 'Switch to High Contrast',
             excludeSemantics: true,
             child: IconButton(
               key: const Key('home_high_contrast_toggle_button'),
@@ -705,9 +630,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 if (themeNotifier != null) {
                   themeNotifier!.toggleHighContrast();
                 } else {
-                  ref
-                      .read(sensoryThemeModeProvider.notifier)
-                      .toggleHighContrast();
+                  ref.read(sensoryThemeModeProvider.notifier).toggleHighContrast();
                 }
               },
             ),
@@ -719,26 +642,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
               icon: const Icon(Icons.brightness_6_rounded, size: 20),
               onSelected: setSensoryMode,
               itemBuilder: (context) => [
-                _sensoryThemeMenuItem(
-                  mode: SensoryMode.clean,
-                  emoji: '☀️',
-                  label: 'Clean',
-                ),
-                _sensoryThemeMenuItem(
-                  mode: SensoryMode.sage,
-                  emoji: '🌿',
-                  label: 'Sage',
-                ),
-                _sensoryThemeMenuItem(
-                  mode: SensoryMode.charcoal,
-                  emoji: '🌙',
-                  label: 'Dark',
-                ),
-                _sensoryThemeMenuItem(
-                  mode: SensoryMode.contrast,
-                  emoji: '👁️',
-                  label: 'Contrast',
-                ),
+                _sensoryThemeMenuItem(mode: SensoryMode.clean, emoji: '☀️', label: 'Clean'),
+                _sensoryThemeMenuItem(mode: SensoryMode.sage, emoji: '🌿', label: 'Sage'),
+                _sensoryThemeMenuItem(mode: SensoryMode.charcoal, emoji: '🌙', label: 'Dark'),
+                _sensoryThemeMenuItem(mode: SensoryMode.contrast, emoji: '👁️', label: 'Contrast'),
               ],
             ),
           ),
@@ -765,11 +672,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
               offset: const Offset(0, 40),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: BorderSide(
-                  color: isContrast
-                      ? Colors.white
-                      : Theme.of(context).dividerColor,
-                ),
+                side: BorderSide(color: isContrast ? Colors.white : Theme.of(context).dividerColor),
               ),
               onSelected: (action) {
                 if (ref.read(isCurrentMemberBannedProvider)) return;
@@ -809,11 +712,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           color: primaryColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          Icons.edit_note_rounded,
-                          color: primaryColor,
-                          size: 18,
-                        ),
+                        child: Icon(Icons.edit_note_rounded, color: primaryColor, size: 18),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -823,10 +722,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           children: [
                             const Text(
                               'Create Post',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             Text(
                               'Share an unhurried thought or prayer',
@@ -834,10 +730,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
                               ),
                             ),
                           ],
@@ -858,11 +751,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           color: Colors.amber.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          color: Colors.amber,
-                          size: 18,
-                        ),
+                        child: const Icon(Icons.image_outlined, color: Colors.amber, size: 18),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -872,10 +761,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           children: [
                             const Text(
                               'Create Image Post',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             Text(
                               'Share a meme, photo, or scripture art',
@@ -883,10 +769,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
                               ),
                             ),
                           ],
@@ -916,10 +799,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
               child: FilledButton.tonalIcon(
                 key: const Key('home_top_bar_sign_in_button'),
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 0,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                   visualDensity: VisualDensity.compact,
                 ),
                 onPressed: () => SimpleAuthScreen.show(context),
@@ -944,19 +824,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     backgroundColor: isContrast
                         ? Colors.yellow
                         : primaryColor.withValues(alpha: 0.2),
-                    backgroundImage:
-                        (profile.avatarUrl != null &&
-                            profile.avatarUrl!.isNotEmpty)
+                    backgroundImage: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
                         ? NetworkImage(profile.avatarUrl!)
                         : null,
                     onBackgroundImageError:
-                        (profile.avatarUrl != null &&
-                            profile.avatarUrl!.isNotEmpty)
+                        (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
                         ? (_, __) {}
                         : null,
-                    child:
-                        (profile.avatarUrl == null ||
-                            profile.avatarUrl!.isEmpty)
+                    child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
                         ? Text(
                             profile.initials,
                             style: TextStyle(
@@ -1050,9 +925,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
     final isSpaces = activeSubView == BelongHomeSubView.spaces;
 
     Future<void> openVoteAndFeedback() async {
-      final bytes = await captureRepaintBoundary(
-        rootFeedbackRepaintBoundaryKey,
-      );
+      final bytes = await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
       if (context.mounted) {
         BelongFeedbackAndVotingSheet.show(context, screenshotBytes: bytes);
       }
@@ -1103,13 +976,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
           // ignores the overflow. Wide layouts keep the chip on the right.
           if (constraints.maxWidth >= 520) {
             return Row(
-              children: [
-                feedChip,
-                const SizedBox(width: 8),
-                spacesChip,
-                const Spacer(),
-                voteChip,
-              ],
+              children: [feedChip, const SizedBox(width: 8), spacesChip, const Spacer(), voteChip],
             );
           }
           return Wrap(
@@ -1161,21 +1028,14 @@ void _showCreatePostModal({
                     Row(
                       children: [
                         Icon(
-                          isImagePost
-                              ? Icons.image_outlined
-                              : Icons.post_add_rounded,
+                          isImagePost ? Icons.image_outlined : Icons.post_add_rounded,
                           size: 20,
                           color: primaryColor,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isImagePost
-                              ? 'Create Image Post'
-                              : 'Create Reflection Post',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          isImagePost ? 'Create Image Post' : 'Create Reflection Post',
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1270,9 +1130,7 @@ PopupMenuItem<SensoryMode> _sensoryThemeMenuItem({
     button: true,
     child: Row(
       children: [
-        ExcludeSemantics(
-          child: Text(emoji, style: const TextStyle(fontSize: 14)),
-        ),
+        ExcludeSemantics(child: Text(emoji, style: const TextStyle(fontSize: 14))),
         const SizedBox(width: 8),
         Text(label),
       ],
@@ -1285,8 +1143,7 @@ class _BannedSessionLockout extends ConsumerStatefulWidget {
   const _BannedSessionLockout();
 
   @override
-  ConsumerState<_BannedSessionLockout> createState() =>
-      _BannedSessionLockoutState();
+  ConsumerState<_BannedSessionLockout> createState() => _BannedSessionLockoutState();
 }
 
 class _BannedSessionLockoutState extends ConsumerState<_BannedSessionLockout> {

@@ -8,36 +8,35 @@ import 'package:refuge4serverpod/src/features/notifications/domain/calm_notifica
 
 void main() {
   group('Spaces Directory - Muted Notifications Toggle (Issue #267)', () {
-    patrolWidgetTest(
-      'Hides muted notifications tile when system permission is not denied',
-      ($) async {
-        await $.pumpWidget(
-          ProviderScope(
-            overrides: [
-              calmNotificationPreferencesProvider.overrideWith(
-                (ref) => NotificationPermissionsService(
-                  initialPreferences: const CalmNotificationPreferences(
-                    isSystemPermissionDenied: false,
-                  ),
-                ),
-              ),
-            ],
-            child: MaterialApp(
-              home: Scaffold(
-                body: BelongSpacesDirectoryView(
-                  selectedSpaceSlug: 'general_chat',
-                  onSelectSpaceItem: (_) {},
+    patrolWidgetTest('Hides muted notifications tile when system permission is not denied', (
+      $,
+    ) async {
+      await $.pumpWidget(
+        ProviderScope(
+          overrides: [
+            calmNotificationPreferencesProvider.overrideWith(
+              (ref) => NotificationPermissionsService(
+                initialPreferences: const CalmNotificationPreferences(
+                  isSystemPermissionDenied: false,
                 ),
               ),
             ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: BelongSpacesDirectoryView(
+                selectedSpaceSlug: 'general_chat',
+                onSelectSpaceItem: (_) {},
+              ),
+            ),
           ),
-        );
-        await $.pumpAndSettle();
+        ),
+      );
+      await $.pumpAndSettle();
 
-        expect($(const Key('notifications_muted_spaces_tile')), findsNothing);
-        expect($('Notifications muted in system settings'), findsNothing);
-      },
-    );
+      expect($(const Key('notifications_muted_spaces_tile')), findsNothing);
+      expect($('Notifications muted in system settings'), findsNothing);
+    });
 
     patrolWidgetTest(
       'Displays gentle toggle in Spaces directory when Android 13+ permission is denied ("Don\'t allow")',
@@ -75,10 +74,7 @@ void main() {
 
         expect($(const Key('notifications_muted_spaces_tile')), findsOneWidget);
         expect($('Notifications muted in system settings'), findsOneWidget);
-        expect(
-          $('Tap to adjust calm digest schedules or re-enable later'),
-          findsOneWidget,
-        );
+        expect($('Tap to adjust calm digest schedules or re-enable later'), findsOneWidget);
       },
     );
   });

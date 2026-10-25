@@ -11,9 +11,7 @@ import 'package:http/http.dart' as http;
 class GitHubFeedbackClient {
   GitHubFeedbackClient({http.Client? httpClient, String? token})
     : _client = httpClient ?? http.Client(),
-      _token =
-          token ??
-          const String.fromEnvironment('FEEDBACK_GITHUB_PAT', defaultValue: '');
+      _token = token ?? const String.fromEnvironment('FEEDBACK_GITHUB_PAT', defaultValue: '');
 
   final http.Client _client;
   final String _token;

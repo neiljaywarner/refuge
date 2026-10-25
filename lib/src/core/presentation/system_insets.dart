@@ -57,18 +57,9 @@ class SystemInsets {
         ? 0.0
         : math.max(mediaQuery.padding.bottom, mediaQuery.viewPadding.bottom);
     return EdgeInsets.fromLTRB(
-      math.max(
-        40,
-        math.max(mediaQuery.padding.left, mediaQuery.viewPadding.left),
-      ),
-      math.max(
-        24,
-        math.max(mediaQuery.padding.top, mediaQuery.viewPadding.top),
-      ),
-      math.max(
-        40,
-        math.max(mediaQuery.padding.right, mediaQuery.viewPadding.right),
-      ),
+      math.max(40, math.max(mediaQuery.padding.left, mediaQuery.viewPadding.left)),
+      math.max(24, math.max(mediaQuery.padding.top, mediaQuery.viewPadding.top)),
+      math.max(40, math.max(mediaQuery.padding.right, mediaQuery.viewPadding.right)),
       math.max(24, nav),
     );
   }

@@ -2,11 +2,7 @@ import 'package:equatable/equatable.dart';
 
 /// User-visible text for a calm push or local shade notification.
 class CalmPushDisplay extends Equatable {
-  const CalmPushDisplay({
-    required this.title,
-    required this.body,
-    this.category,
-  });
+  const CalmPushDisplay({required this.title, required this.body, this.category});
 
   final String title;
   final String body;
@@ -24,11 +20,7 @@ CalmPushDisplay calmPushDisplayFromParts({
 }) {
   final map = data ?? const <String, dynamic>{};
   final title =
-      _firstNonEmpty([
-        notificationTitle,
-        map['title']?.toString(),
-        map['subject']?.toString(),
-      ]) ??
+      _firstNonEmpty([notificationTitle, map['title']?.toString(), map['subject']?.toString()]) ??
       'Belong';
 
   final body =

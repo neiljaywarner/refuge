@@ -88,11 +88,7 @@ Future<void> main(List<String> args) async {
   for (final entry in androidAdaptiveSizes.entries) {
     final dir = 'android/app/src/main/res/${entry.key}';
     Directory(dir).createSync(recursive: true);
-    await _scale(
-      safeZoneMaster,
-      '$dir/ic_launcher_foreground.png',
-      entry.value,
-    );
+    await _scale(safeZoneMaster, '$dir/ic_launcher_foreground.png', entry.value);
   }
 
   // 4b. Android Native Splash Screen Logo (pre-API 31 & API 31+ SplashScreen API)

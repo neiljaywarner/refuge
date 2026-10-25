@@ -65,13 +65,8 @@ class BelongNotification extends Equatable {
   /// Author initials for the Avatar widget fallback, stripping parentheses,
   /// punctuation, and bracketed qualifiers (e.g. "Pastor Thomas (Melbourne)" -> "PT").
   String get authorInitials {
-    final cleanName = authorName
-        .replaceAll(RegExp(r'[\(\[\{].*?[\)\]\}]'), '')
-        .trim();
-    final parts = cleanName
-        .split(RegExp(r'[\s_.-]+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
+    final cleanName = authorName.replaceAll(RegExp(r'[\(\[\{].*?[\)\]\}]'), '').trim();
+    final parts = cleanName.split(RegExp(r'[\s_.-]+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) {
       final fallbackParts = authorName
           .trim()
@@ -79,10 +74,7 @@ class BelongNotification extends Equatable {
           .where((p) => p.isNotEmpty)
           .toList();
       if (fallbackParts.isEmpty) return '?';
-      final firstChar = fallbackParts[0].replaceAll(
-        RegExp(r'[^a-zA-Z0-9]'),
-        '',
-      );
+      final firstChar = fallbackParts[0].replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
       return firstChar.isNotEmpty ? firstChar[0].toUpperCase() : '?';
     }
 
@@ -100,16 +92,12 @@ class BelongNotification extends Equatable {
   /// Human-readable title message following the user's specification:
   /// e.g. "Sarah L. mentioned you in a comment on 'Markan Chiasms'"
   String get displayMessage => switch (type) {
-    BelongNotificationType.mention =>
-      '$authorName mentioned you in a comment on "$postTitle"',
+    BelongNotificationType.mention => '$authorName mentioned you in a comment on "$postTitle"',
     BelongNotificationType.directMessage =>
       '$authorName sent you a direct message: "${commentSnippet ?? postTitle}"',
-    BelongNotificationType.reply =>
-      '$authorName replied to your comment on "$postTitle"',
-    BelongNotificationType.like =>
-      '$authorName liked your reflection on "$postTitle"',
-    BelongNotificationType.following =>
-      '$authorName posted a new reflection in "$postTitle"',
+    BelongNotificationType.reply => '$authorName replied to your comment on "$postTitle"',
+    BelongNotificationType.like => '$authorName liked your reflection on "$postTitle"',
+    BelongNotificationType.following => '$authorName posted a new reflection in "$postTitle"',
   };
 
   /// Relative human-readable timestamp:
@@ -216,23 +204,22 @@ class BelongNotification extends Equatable {
   };
 
   /// Creates a [BelongNotification] from JSON map.
-  factory BelongNotification.fromJson(Map<String, dynamic> json) =>
-      BelongNotification(
-        id: json['id'] as String,
-        type: BelongNotificationType.values.firstWhere(
-          (t) => t.name == json['type'],
-          orElse: () => BelongNotificationType.mention,
-        ),
-        authorName: json['authorName'] as String? ?? 'Community Member',
-        postTitle: json['postTitle'] as String? ?? 'Reflection',
-        timestamp: json['timestamp'] != null
-            ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
-            : DateTime.now(),
-        authorAvatarUrl: json['authorAvatarUrl'] as String?,
-        isRead: json['isRead'] as bool? ?? false,
-        spaceKey: json['spaceKey'] as String?,
-        postId: json['postId'] as String?,
-        commentSnippet: json['commentSnippet'] as String?,
-        conversationId: json['conversationId'] as String?,
-      );
+  factory BelongNotification.fromJson(Map<String, dynamic> json) => BelongNotification(
+    id: json['id'] as String,
+    type: BelongNotificationType.values.firstWhere(
+      (t) => t.name == json['type'],
+      orElse: () => BelongNotificationType.mention,
+    ),
+    authorName: json['authorName'] as String? ?? 'Community Member',
+    postTitle: json['postTitle'] as String? ?? 'Reflection',
+    timestamp: json['timestamp'] != null
+        ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
+        : DateTime.now(),
+    authorAvatarUrl: json['authorAvatarUrl'] as String?,
+    isRead: json['isRead'] as bool? ?? false,
+    spaceKey: json['spaceKey'] as String?,
+    postId: json['postId'] as String?,
+    commentSnippet: json['commentSnippet'] as String?,
+    conversationId: json['conversationId'] as String?,
+  );
 }

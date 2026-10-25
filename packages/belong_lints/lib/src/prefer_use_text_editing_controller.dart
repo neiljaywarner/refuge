@@ -40,10 +40,7 @@ class PreferUseTextEditingController extends AnalysisRule {
   LintCode get diagnosticCode => code;
 
   @override
-  void registerNodeProcessors(
-    RuleVisitorRegistry registry,
-    RuleContext context,
-  ) {
+  void registerNodeProcessors(RuleVisitorRegistry registry, RuleContext context) {
     registry.addInstanceCreationExpression(this, _Visitor(this, context));
   }
 }

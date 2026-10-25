@@ -16,27 +16,19 @@ final softDeleteSignInNoticeProvider = StateProvider<String?>((ref) => null);
 /// Firebase and Appwrite targets write Cloud Firestore. An Appwrite project
 /// configured at build time also stores prefs on the current account.
 /// Memory is used for tests and the offline auth adapters.
-final accountDeletionRepositoryProvider = Provider<AccountDeletionRepository>((
-  ref,
-) {
+final accountDeletionRepositoryProvider = Provider<AccountDeletionRepository>((ref) {
   final flavor = ref.watch(appFlavorProvider).slug;
   final target = ref.watch(authBackendTargetProvider);
-  final useFirestore =
-      target == BackendTarget.firebase || target == BackendTarget.appwrite;
+  final useFirestore = target == BackendTarget.firebase || target == BackendTarget.appwrite;
   final sinks = <AccountDeletionSink>[
-    if (useFirestore)
-      FirestoreAccountDeletionSink()
-    else
-      InMemoryAccountDeletionSink(),
+    if (useFirestore) FirestoreAccountDeletionSink() else InMemoryAccountDeletionSink(),
   ];
 
   if (useFirestore) {
     final appwrite = createAppwriteServices(AppwriteConfig.fromEnvironment);
     if (appwrite != null) {
       sinks.add(
-        AppwriteAccountDeletionSink(
-          remote: AppwritePrefsAccountDeletionRemote(appwrite.account),
-        ),
+        AppwriteAccountDeletionSink(remote: AppwritePrefsAccountDeletionRemote(appwrite.account)),
       );
     }
   }

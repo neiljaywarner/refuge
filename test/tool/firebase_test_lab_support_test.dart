@@ -33,10 +33,7 @@ application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic
   group('devApkUploadRefusal', () {
     test('refuses production package id', () {
       final reason = devApkUploadRefusal(
-        ApkBadging(
-          packageName: prodAndroidPackageId,
-          applicationLabel: 'Belong',
-        ),
+        ApkBadging(packageName: prodAndroidPackageId, applicationLabel: 'Belong'),
       );
       expect(reason, contains('production'));
     });
