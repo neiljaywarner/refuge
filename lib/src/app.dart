@@ -86,43 +86,43 @@ class _RefugeAppContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final flavor = ref.watch(appFlavorProvider);
     return MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: flavor.launcherTitle,
-    theme: SensoryThemeData.getTheme(themeNotifier.mode),
-    builder: (context, child) {
-      final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
-      final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
-          ? themeNotifier.fontScale
-          : riverpodFontScale;
-      final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
-          .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
-      final theme = Theme.of(context);
-      return MediaQuery(
-        data: repaired,
-        child: Theme(
-          data: theme.copyWith(
-            dialogTheme: theme.dialogTheme.copyWith(
-              insetPadding: SystemInsets.dialogInsetPadding(repaired),
+      debugShowCheckedModeBanner: false,
+      title: flavor.launcherTitle,
+      theme: SensoryThemeData.getTheme(themeNotifier.mode),
+      builder: (context, child) {
+        final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
+        final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
+            ? themeNotifier.fontScale
+            : riverpodFontScale;
+        final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
+            .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
+        final theme = Theme.of(context);
+        return MediaQuery(
+          data: repaired,
+          child: Theme(
+            data: theme.copyWith(
+              dialogTheme: theme.dialogTheme.copyWith(
+                insetPadding: SystemInsets.dialogInsetPadding(repaired),
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
-        ),
-      );
-    },
-    localizationsDelegates: [
-      FirebaseUILocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    home:
-        homeOverride ??
-        (enforceSignIn
-            ? AuthGate(repository: repository, themeNotifier: themeNotifier)
-            : RefugeHomeScreen(
-                repository: repository,
-                themeNotifier: themeNotifier,
-              )),
-  );
+        );
+      },
+      localizationsDelegates: [
+        FirebaseUILocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home:
+          homeOverride ??
+          (enforceSignIn
+              ? AuthGate(repository: repository, themeNotifier: themeNotifier)
+              : RefugeHomeScreen(
+                  repository: repository,
+                  themeNotifier: themeNotifier,
+                )),
+    );
   }
 }
