@@ -1,27 +1,36 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
-# Spaces Navigation & Member Directory Monogram Flow
+# Spaces directory. Live headings include PINNED, WELCOME, and COMMUNITY.
+# Member row: "Members Section & Directory". Back control tooltip: "Back to Spaces".
+
 - launchApp:
     clearState: false
 
-# 1. Verify Home feed is loaded
-- assertVisible: "Feed"
-- assertVisible: "Spaces"
+- extendedWaitUntil:
+    visible: ".*Feed.*"
+    timeout: 45000
+- assertVisible: ".*Feed.*"
+- assertVisible: ".*Spaces.*"
 
-# 2. Tap on Spaces tab
-- tapOn: "Spaces"
-- assertVisible: "COMMUNITY"
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*COMMUNITY.*"
+    timeout: 15000
+- assertVisible: ".*COMMUNITY.*"
 
-# 3. Tap on Members Section & Directory
+- scrollUntilVisible:
+    element: ".*Members Section & Directory.*"
+    direction: DOWN
+    timeout: 15000
 - tapOn: ".*Members Section & Directory.*"
-- assertVisible: "Members Section & Directory"
-
-# 4. Verify Monogram Initials and Member Cards
+- extendedWaitUntil:
+    visible: ".*Member Directory.*"
+    timeout: 15000
+- assertVisible: ".*Member Directory.*"
 - assertVisible: ".*Marty.*"
 - assertVisible: ".*Community Organizer.*"
 
-# 5. Return to Spaces & Feed
-- tapOn:
-    point: "10%,18%" # Back button in AppBar
-- tapOn: "Feed"
-- assertVisible: "Feed"
+- tapOn: ".*Back to Spaces.*"
+- tapOn: ".*Feed.*"
+- assertVisible: ".*Feed.*"

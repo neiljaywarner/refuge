@@ -1,4 +1,5 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Notification Deep Link Flow (Issue #330)"
 tags:
   - notifications
@@ -7,31 +8,37 @@ tags:
   - navigation
   - regression
 ---
-# 1. Launch app
+# Seeded rows are visible text, not notification_list_tile_* resource ids.
+# DM copy includes "sent you a direct message" and "Welcome to Belong".
+# Mention copy includes "mentioned you".
+
 - launchApp:
     clearState: false
 
-# 2. Switch to Notifications tab
-- tapOn:
-    id: "bottom_nav_icon_notifications"
-- assertVisible: "Notifications"
+- extendedWaitUntil:
+    visible: ".*Notifications tab.*"
+    timeout: 45000
 
-# 3. Tap on the DM notification tile
-- tapOn:
-    id: "notification_list_tile_notif-dm-1"
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*sent you a direct message.*"
+    timeout: 15000
+- assertVisible: "Notifications.*"
 
-# 4. Assert direct message conversation view opens
-- assertVisible: "Marty & Community Team"
-- assertVisible: "Welcome to Belong!"
+- tapOn: ".*sent you a direct message.*"
+- extendedWaitUntil:
+    visible: ".*Welcome to Belong.*"
+    timeout: 15000
+- assertVisible: ".*Marty.*"
+- assertVisible: ".*Welcome to Belong.*"
 
-# 5. Return to Notifications and tap a Mention
-- tapOn:
-    id: "bottom_nav_icon_notifications"
-- assertVisible: "Notifications"
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*mentioned you.*"
+    timeout: 15000
 
-- tapOn:
-    id: "notification_list_tile_notif-mention-1"
-
-# 6. Assert feed view is visible with reflection
-- assertVisible:
-    id: "belong_bottom_nav_bar"
+- tapOn: ".*mentioned you.*"
+- extendedWaitUntil:
+    visible: ".*(Home tab|Vote & Feedback).*"
+    timeout: 15000
+- assertVisible: ".*(Home tab|Vote & Feedback).*"

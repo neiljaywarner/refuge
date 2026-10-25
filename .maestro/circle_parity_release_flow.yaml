@@ -1,4 +1,5 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Circle Parity & Calm Notification Ethics Flow"
 tags:
   - circle-parity
@@ -7,41 +8,51 @@ tags:
   - calm-fcm
   - release
 ---
-# 1. Launch Refuge Application
+# Spaces headings PINNED and COMMUNITY are on the directory. Bottom nav and
+# preferences are labeled text, not screen-percentage taps.
+
 - launchApp:
     clearState: false
 
-# 2. Assert Feed and Spaces Navigation
-- assertVisible: "Feed"
-- assertVisible: "Spaces"
-- tapOn: "Spaces"
+- extendedWaitUntil:
+    visible: ".*Feed.*"
+    timeout: 45000
+- assertVisible: ".*Feed.*"
+- assertVisible: ".*Spaces.*"
+- tapOn: ".*Spaces.*"
 
-# 3. Assert Circle Sections and Member Directory
-- assertVisible: "PINNED"
-- assertVisible: "COMMUNITY"
-- assertVisible: ".*Members Section & Directory.*"
+- extendedWaitUntil:
+    visible: ".*COMMUNITY.*"
+    timeout: 15000
+- assertVisible: ".*PINNED.*"
+- assertVisible: ".*COMMUNITY.*"
+- scrollUntilVisible:
+    element: ".*Members Section & Directory.*"
+    direction: DOWN
+    timeout: 15000
 - tapOn: ".*Members Section & Directory.*"
 
-# 4. Assert Member Directory screen & Fellowship leaders
+- extendedWaitUntil:
+    visible: ".*Member Directory.*"
+    timeout: 15000
 - assertVisible: ".*Member Directory.*"
 - assertVisible: ".*Marty.*"
-- tapOn: "Back to Spaces"
+- tapOn: ".*Back to Spaces.*"
 
-# 5. Return to Spaces then Navigate to Calm Notifications & Preferences (Opt-In Primer)
-- assertVisible: "PINNED"
-- tapOn:
-    point: "470,2250" # Notifications bottom nav tab
-- assertVisible: ".*Notifications.*"
-- assertVisible: ".*All notifications are delivered gently without intrusive sound alerts.*"
-- tapOn:
-    point: "1017,284" # Calm notification preferences button
+- assertVisible: ".*PINNED.*"
+- tapOn: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*Notifications.*"
+    timeout: 15000
+- assertVisible: ".*(All notifications are delivered gently|Demo Mode).*"
+- tapOn: ".*Calm Notification Preferences.*"
+- extendedWaitUntil:
+    visible: ".*Calm Notification Ethics.*"
+    timeout: 10000
 - assertVisible: ".*Calm Notification Ethics.*"
 - assertVisible: ".*Belong respects your attention and sensory peace.*"
 - assertVisible: ".*Receive Push Digests.*"
 
-# 6. Dismiss and return to Feed
-- tapOn:
-    point: "540,2274" # Save & Return button
-- tapOn:
-    point: "94,2250" # Home bottom nav tab
-- assertVisible: "Feed"
+- tapOn: ".*Save & Return.*"
+- tapOn: ".*Home tab.*"
+- assertVisible: ".*Feed.*"

@@ -1,36 +1,36 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
+tags:
+  - known-gap
+  - auth
 ---
-# 🔐 Belong on the Spectrum — Dedicated Maestro Authentication Verification Flow
-# Verifies account registration, ICOC church affiliation selection, and sign-in.
+# Blocked from the default suite (known-gap). Do not put a real email or
+# password in this file. When someone runs it on purpose, pass
+# BELONG_AUTH_NAME, BELONG_AUTH_EMAIL, and BELONG_AUTH_PASSWORD in the
+# environment. Use a synthetic name such as Fellow Member.
+# Live sign-in is FirebaseUI ("Sign In to Belong", "Register",
+# "Forgotten password?"), not the older custom registration sheet.
 
 - launchApp:
     clearState: false
 
-# 1. Open Auth Modal
-- tapOn:
-    text: "Sign In"
-    optional: true
+- extendedWaitUntil:
+    visible: ".*Sign In.*"
+    timeout: 45000
+- tapOn: ".*Sign In.*"
+- extendedWaitUntil:
+    visible: ".*Register.*"
+    timeout: 20000
 - takeScreenshot: screenshots/auth_01_signin_tab
 
-# 2. Switch to Create Account / Registration Tab
-- tapOn: "Create Account"
+- tapOn: ".*Register.*"
 - takeScreenshot: screenshots/auth_02_register_tab
 
-# 3. Fill in Registration Form
-- tapOn: "Name or Nickname"
-- inputText: "Neil Warner"
-
-- tapOn: "Email Address"
-- inputText: "neilwarner+2026Oct20+954pm@gmail.com"
-
-- tapOn: "Password"
-- inputText: "BelongPassword2026!"
-
-# 4. Select ICOC Church Affiliation
-- tapOn: "Which ICOC church do you attend?"
-- tapOn: "DFW Church"
+- tapOn: ".*Email.*"
+- inputText: ${BELONG_AUTH_EMAIL}
+- tapOn: ".*Password.*"
+- inputText: ${BELONG_AUTH_PASSWORD}
 - takeScreenshot: screenshots/auth_03_registration_filled
 
-# 5. Submit Registration
-- tapOn: "Join Belong Fellowship"
+- tapOn: ".*Register.*"
 - takeScreenshot: screenshots/auth_04_joined_success

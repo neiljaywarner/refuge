@@ -4,10 +4,10 @@ name: Belong web calm-tech walkthrough
 # Read-only. Does not publish a reflection.
 - launchApp
 - extendedWaitUntil:
-    visible: "Belong"
+    visible: ".*Belong.*"
     timeout: 45000
-- assertVisible: "Refuge"
-- assertVisible: "Calm Tech.*"
+- assertVisible: ".*Refuge.*"
+- assertVisible: ".*Calm Tech.*"
 - assertVisible:
     id: "active_sensory_theme_sage"
 

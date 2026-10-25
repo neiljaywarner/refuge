@@ -1,29 +1,34 @@
-appId: com.belongonthespectrum.sanctuary
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Direct Messages and Calm Private Fellowship Flow"
 tags:
   - messages
   - fellowship
   - regression
 ---
-# 1. Launch Refuge Application
+# Bottom nav label is "Messages" (semantics: "Messages tab"), not a bare "Msgs" id.
+# Thread list includes Marty. Reply field hint: "Type a calm reply...".
+
 - launchApp:
     clearState: false
 
-# 2. Navigate to Direct Messages tab
-- tapOn: "Msgs"
-- assertVisible: "Direct Messages"
+- extendedWaitUntil:
+    visible: ".*Messages tab.*"
+    timeout: 45000
 
-# 3. Open conversation thread with Marty & Community Team
+- tapOn: ".*Messages tab.*"
+- extendedWaitUntil:
+    visible: ".*Direct Messages.*"
+    timeout: 15000
+- assertVisible: ".*Direct Messages.*"
+
 - tapOn: ".*Marty.*"
+- extendedWaitUntil:
+    visible: ".*Welcome to Belong.*"
+    timeout: 15000
 - assertVisible: ".*Welcome to Belong.*"
 
-# 4. Compose calm reply
-- tapOn:
-    point: "500,2051"
+- tapOn: ".*Type a calm reply.*"
 - inputText: "Thank you Marty! Glad to be here."
-- hideKeyboard
-- tapOn:
-    point: "991,2051"
-
-# 5. Assert message appeared in chat history
+- pressKey: Enter
 - assertVisible: ".*Thank you Marty.*"

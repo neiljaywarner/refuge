@@ -1,61 +1,88 @@
 appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. Production release applicationId is
+# com.belongonthespectrum.refuge (no .dev suffix). See .maestro/config.yaml.
 ---
 # Every feed sort option on a debug dev build (#485).
-# Release/prod applicationId is com.belongonthespectrum.refuge (no .dev suffix).
+# Clickable chip text is emoji plus the name ("✨ For you", "💬 New Activity").
+# A semantics id such as feed_sort_chip_forYou is not always exposed.
+# Intent filters ([Comfort Only], All) stay on the same row.
+
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Demo Mode.*"
+    visible: ".*Vote & Feedback.*"
     timeout: 45000
 
-- tapOn:
-    id: "feed_sort_chip_latest"
-- tapOn:
-    id: "feed_sort_chip_forYou"
-- tapOn:
-    id: "feed_sort_chip_newActivity"
-- tapOn:
-    id: "feed_sort_chip_oldest"
-
 - scrollUntilVisible:
-    element:
-      id: "feed_sort_chip_alphabetical"
+    element: ".*Latest.*"
+    direction: RIGHT
+    timeout: 15000
+- tapOn:
+    text: ".*Latest.*"
+    index: 0
+- tapOn:
+    text: ".*For you.*"
+    index: 0
+- scrollUntilVisible:
+    element: ".*New Activity.*"
     direction: LEFT
     timeout: 15000
-    visibilityPercentage: 50
-    centerElement: true
+- tapOn:
+    text: ".*New Activity.*"
+    index: 0
+- tapOn:
+    text: ".*Oldest.*"
+    index: 0
 
-- tapOn:
-    id: "feed_sort_chip_popular"
-- tapOn:
-    id: "feed_sort_chip_likes"
-- tapOn:
-    id: "feed_sort_chip_alphabetical"
-- tapOn:
-    id: "feed_sort_chip_latest"
-
-- tapOn:
-    id: "feed_sort_popup_button"
+# Popular, Likes, and Alphabetical sit on the horizontal sort row, to the
+# right of Oldest. Screen-level scrollUntilVisible does not move that row.
+# Chip row is about 55% down the 1080x2400 emulator frame.
+- swipe:
+    start: "90%, 55%"
+    end: "15%, 55%"
+    duration: 400
 - extendedWaitUntil:
-    visible:
-      id: "feed_sort_menu_item_forYou"
+    visible: ".*Popular.*"
+    timeout: 8000
+- tapOn:
+    text: ".*Popular.*"
+    index: 0
+- tapOn:
+    text: ".*Likes.*"
+    index: 0
+- tapOn:
+    text: ".*Alphabetical.*"
+    index: 0
+
+# Latest may be scrolled off the chip row. The sort menu still lists it.
+- tapOn: ".*Sort feed.*"
+- extendedWaitUntil:
+    visible: ".*Latest.*"
     timeout: 10000
 - tapOn:
-    id: "feed_sort_menu_item_forYou"
-- assertVisible:
-    id: "feed_sort_chip_forYou"
+    text: ".*Latest.*"
+    index: 0
 
-- scrollUntilVisible:
-    element:
-      id: "tone_filter_chip_comfort_only"
-    direction: LEFT
-    timeout: 15000
-    visibilityPercentage: 50
+- tapOn: ".*Sort feed.*"
+- extendedWaitUntil:
+    visible: ".*For you.*"
+    timeout: 10000
 - tapOn:
-    id: "tone_filter_chip_comfort_only"
+    text: ".*For you.*"
+    index: 0
+
+- tapOn:
+    text: ".*\\[Comfort Only\\].*"
+    index: 0
 - extendedWaitUntil:
     visible: ".*sensory fatigue.*"
     timeout: 10000
 - tapOn:
-    id: "tone_filter_chip_all"
+    text: "^All$"
+    index: 0
+- scrollUntilVisible:
+    element: ".*peace of mind.*"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 20
 - assertVisible: ".*peace of mind.*"
