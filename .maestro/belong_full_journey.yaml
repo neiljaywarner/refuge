@@ -4,10 +4,13 @@ appId: com.belongonthespectrum.refuge.dev
 # Belong on the Spectrum — end-to-end journey against the live accessibility tree.
 # Header nodes may be separate ("Belong", "Refuge", "Calm Tech • Live|Resilient")
 # or one combined label. Welcome copy is "Welcome to Belong on the Spectrum".
-# Sensory menu labels are Clean, Sage, Dark, and Contrast.
+# Sensory menu ids: sensory_theme_charcoal (Dark), sensory_theme_sage,
+# sensory_theme_contrast. The row name is "Dark\nDark", not "Dark".
 
+# clearState drops a persisted debug sign-in. Signed in, the header
+# shows a profile avatar and "Sign In" is absent from the tree.
 - launchApp:
-    clearState: false
+    clearState: true
 
 - extendedWaitUntil:
     visible: ".*Welcome to Belong on the Spectrum.*"
@@ -15,12 +18,16 @@ appId: com.belongonthespectrum.refuge.dev
 - assertVisible: ".*Welcome to Belong on the Spectrum.*"
 - assertVisible: ".*Belong.*"
 
-- tapOn: ".*Sensory Themes.*"
-- tapOn: "Dark.*"
+- tapOn:
+    id: "sensory_theme_toggle_button"
+- tapOn:
+    id: "sensory_theme_charcoal"
 - assertVisible: ".*Welcome to Belong on the Spectrum.*"
 
-- tapOn: ".*Sensory Themes.*"
-- tapOn: "Sage.*"
+- tapOn:
+    id: "sensory_theme_toggle_button"
+- tapOn:
+    id: "sensory_theme_sage"
 - assertVisible: ".*Welcome to Belong on the Spectrum.*"
 
 - tapOn: ".*Spaces.*"

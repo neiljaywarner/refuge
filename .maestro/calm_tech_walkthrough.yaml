@@ -36,16 +36,24 @@ appId: com.belongonthespectrum.refuge.dev
     timeout: 15000
 - tapOn: ".*Online Resources.*"
 
-- tapOn: ".*Sensory Themes.*"
-- tapOn: "Dark.*"
+# Menu rows expose sensory_theme_${mode.name}. The accessible name is
+# "Dark\nDark" (label repeated), so a prefix regex "Dark.*" does not match.
+- tapOn:
+    id: "sensory_theme_toggle_button"
+- tapOn:
+    id: "sensory_theme_charcoal"
 - assertVisible: ".*Refuge.*"
 
-- tapOn: ".*Sensory Themes.*"
-- tapOn: "Contrast.*"
+- tapOn:
+    id: "sensory_theme_toggle_button"
+- tapOn:
+    id: "sensory_theme_contrast"
 - assertVisible: ".*Refuge.*"
 
-- tapOn: ".*Sensory Themes.*"
-- tapOn: "Sage.*"
+- tapOn:
+    id: "sensory_theme_toggle_button"
+- tapOn:
+    id: "sensory_theme_sage"
 - assertVisible: ".*Refuge.*"
 
 # Read-only. Do not type a reflection or tap Publish Reflection.
