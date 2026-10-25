@@ -55,6 +55,12 @@ To make this repository a joy for non-technical organizers and student mentees t
 - **Android (Pixel 9a / Emulator)**: `patrol` MCP `screenshot` tool + `adb shell screenrecord`.
 - **iOS Simulator**: `xcrun simctl io booted screenshot` + `xcrun simctl io booted recordVideo`.
 
+Guest demo recorded on 24 Oct 2026 for [#528](https://github.com/neiljaywarner/refuge/issues/528). The clip is cropped past the status bar, has no audio, and stays on the dev app while signed out. Sample members already in the demo are the only names visible.
+
+![Home, spaces, and notifications](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/528-home-directory-notifications.gif)
+
+[Video file](https://raw.githubusercontent.com/wiki/neiljaywarner/refuge/assets/screenshots/528-home-directory-notifications.mp4) · longer notes on [Flows we checked](Flows-We-Checked).
+
 ---
 
 ## 🤖 4. CodeRabbit Automated AI Review & PR Wait Protocol
