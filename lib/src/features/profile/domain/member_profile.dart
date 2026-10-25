@@ -32,6 +32,7 @@ class MemberProfile {
       bio = 'Exploring Belong on the Spectrum',
       comfortBadges = const ['Literal communication appreciated'],
       isSignedIn = false,
+      userId = 'guest',
       authMethod = 'guest',
       icocChurchAffiliation = null,
       tagline = 'Exploring Belong on the Spectrum',
@@ -44,6 +45,9 @@ class MemberProfile {
   final String bio;
   final List<String> comfortBadges;
   final bool isSignedIn;
+
+  /// Auth session id. Empty until a session is applied. Guests use `guest`.
+  final String userId;
   final String authMethod;
   final String? icocChurchAffiliation;
   final String? tagline;
@@ -96,6 +100,7 @@ class MemberProfile {
     String? bio,
     List<String>? comfortBadges,
     bool? isSignedIn,
+    String? userId,
     String? authMethod,
     String? icocChurchAffiliation,
     String? tagline,
@@ -108,6 +113,7 @@ class MemberProfile {
       bio: bio ?? this.bio,
       comfortBadges: comfortBadges ?? this.comfortBadges,
       isSignedIn: isSignedIn ?? this.isSignedIn,
+      userId: userId ?? this.userId,
       authMethod: authMethod ?? this.authMethod,
       icocChurchAffiliation:
           icocChurchAffiliation ?? this.icocChurchAffiliation,
@@ -199,7 +205,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         isSignedIn: true,
         authMethod: 'persisted_storage',
         icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
-        userId: _persistedProfile?.userId ?? '',
+        userId: local['userId'] as String? ?? _persistedProfile?.userId ?? '',
         avatarUrl: _persistedProfile?.avatarUrl,
         tagline: _persistedProfile?.tagline,
       );
@@ -335,6 +341,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       bio: session.bio,
       comfortBadges: session.comfortBadges,
       isSignedIn: session.isSignedIn,
+      userId: session.userId,
       authMethod: session.authMethod,
       icocChurchAffiliation: session.icocChurchAffiliation,
       avatarUrl: session.photoUrl,
@@ -344,6 +351,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       ProfileStorageService.instance.save(
         displayName: state.displayName,
         email: state.email,
+        userId: state.userId,
         bio: state.bio,
         icocChurchAffiliation: state.icocChurchAffiliation,
         comfortBadges: state.comfortBadges,

@@ -8,6 +8,9 @@ import 'core/theme/belong_text_styles.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
 import 'core/presentation/system_insets.dart';
+import 'features/admin/data/admin_banning_repository.dart';
+import 'features/admin/domain/ban_standing.dart';
+import 'features/admin/presentation/account_paused_banner.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
@@ -168,19 +171,25 @@ class RefugeHomeScreen extends HookConsumerWidget {
         return;
       }
       final targetSpace = selectedSpace.value;
-      await activeRepository.createPost(
-        Post(
-          id: 'post-${DateTime.now().millisecondsSinceEpoch}',
-          authorName: profile.displayName,
-          content: content,
-          timestamp: DateTime.now(),
-          spaceKey: targetSpace,
-          reactions: {},
-          toneTag: toneTag,
-          specialInterestTag: specialInterestTag,
-          imageUrl: imageUrl,
-        ),
+      final created = await createContributionUnlessBanned(
+        isBanned: ref.read(isCurrentMemberBannedProvider),
+        create: () async {
+          await activeRepository.createPost(
+            Post(
+              id: 'post-${DateTime.now().millisecondsSinceEpoch}',
+              authorName: profile.displayName,
+              content: content,
+              timestamp: DateTime.now(),
+              spaceKey: targetSpace,
+              reactions: {},
+              toneTag: toneTag,
+              specialInterestTag: specialInterestTag,
+              imageUrl: imageUrl,
+            ),
+          );
+        },
       );
+      if (!created) return;
       final lengthBucket = content.length <= 140
           ? 1
           : content.length <= 280
@@ -333,11 +342,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   legacyMessage: quietDigestSnapshot.data,
                   isContrast: isContrast,
                 ),
+              if (ref.watch(isCurrentMemberBannedProvider))
+                const AccountPausedBanner(),
               // Wide native layouts use the create-post menu. Web keeps the
               // composer on the feed so a desktop browser can publish without
               // opening that menu.
               if ((kIsWeb || !isDesktop) &&
-                  selectedSpace.value != 'saved_for_later')
+                  selectedSpace.value != 'saved_for_later' &&
+                  !ref.watch(isCurrentMemberBannedProvider))
                 ReflectionComposer(
                   selectedSpace: selectedSpace.value,
                   primaryColor: primaryColor,
@@ -728,6 +740,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 ),
               ),
               onSelected: (action) {
+                if (ref.read(isCurrentMemberBannedProvider)) return;
                 if (action == 'create_post') {
                   _showCreatePostModal(
                     context: context,

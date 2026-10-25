@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/logging/app_logger.dart';
+import '../../profile/domain/member_profile.dart';
+import '../domain/ban_standing.dart';
 import '../domain/soft_deleted_user.dart';
 
 /// Pluggable interface for community administrators to manage moderation and
@@ -167,14 +169,26 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   Future<bool> isUserBanned(String userIdOrName) async {
     final fs = firestore;
     if (fs != null) {
-      final doc = await fs.collection(collectionName).doc(userIdOrName).get();
-      if (doc.exists) {
-        final data = doc.data();
-        if (data != null && data['softDeleted'] == true) {
-          return true;
-        }
+      final key = userIdOrName.trim();
+      if (key.isEmpty) return false;
+      final doc = await fs.collection(collectionName).doc(key).get();
+      if (doc.exists && doc.data()?['softDeleted'] == true) {
+        return true;
       }
-      return false;
+      final byName = await fs
+          .collection(collectionName)
+          .where('displayName', isEqualTo: key)
+          .limit(8)
+          .get();
+      if (byName.docs.any((d) => d.data()['softDeleted'] == true)) {
+        return true;
+      }
+      final byEmail = await fs
+          .collection(collectionName)
+          .where('email', isEqualTo: key)
+          .limit(8)
+          .get();
+      return byEmail.docs.any((d) => d.data()['softDeleted'] == true);
     }
     return _fallback.isUserBanned(userIdOrName);
   }
@@ -188,10 +202,10 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
           .where('softDeleted', isEqualTo: true)
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs.map((doc) {
-          return SoftDeletedUser.fromMap(doc.data(), id: doc.id);
-        }).toList();
-      });
+            return snapshot.docs.map((doc) {
+              return SoftDeletedUser.fromMap(doc.data(), id: doc.id);
+            }).toList();
+          });
     }
     return _fallback.watchBannedUsers();
   }
@@ -200,10 +214,25 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   Future<void> unbanUser(String userId) async {
     final fs = firestore;
     if (fs != null) {
-      await fs.collection(collectionName).doc(userId).update({
+      final key = userId.trim();
+      final updates = {
         'softDeleted': false,
         'unbannedAt': FieldValue.serverTimestamp(),
-      });
+      };
+      final direct = fs.collection(collectionName).doc(key);
+      final directSnap = await direct.get();
+      if (directSnap.exists) {
+        await direct.update(updates);
+      }
+      final byName = await fs
+          .collection(collectionName)
+          .where('displayName', isEqualTo: key)
+          .get();
+      for (final doc in byName.docs) {
+        if (doc.data()['softDeleted'] == true) {
+          await doc.reference.update(updates);
+        }
+      }
       return;
     }
     await _fallback.unbanUser(userId);
@@ -224,13 +253,31 @@ final bannedUsersStreamProvider = StreamProvider<List<SoftDeletedUser>>((ref) {
   return repo.watchBannedUsers();
 });
 
-/// Evaluates if a given member display name or user ID is soft-deleted.
-final isMemberBannedProvider =
-    Provider.family<bool, String>((ref, memberNameOrId) {
+/// Evaluates if a given member display name, email, or user ID is soft-deleted.
+final isMemberBannedProvider = Provider.family<bool, String>((
+  ref,
+  memberNameOrId,
+) {
   final listAsync = ref.watch(bannedUsersStreamProvider);
   final list = listAsync.value ?? const <SoftDeletedUser>[];
-  final query = memberNameOrId.trim().toLowerCase();
-  return list.any((u) =>
-      u.userId.trim().toLowerCase() == query ||
-      u.displayName.trim().toLowerCase() == query);
+  return isIdentityBanned(
+    bans: list,
+    userId: memberNameOrId,
+    email: memberNameOrId,
+    displayName: memberNameOrId,
+  );
+});
+
+/// True when the signed-in member matches a standing ban.
+final isCurrentMemberBannedProvider = Provider<bool>((ref) {
+  final profile = ref.watch(memberProfileProvider);
+  if (!profile.isSignedIn) return false;
+  final list =
+      ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
+  return isIdentityBanned(
+    bans: list,
+    userId: profile.userId,
+    email: profile.email,
+    displayName: profile.displayName,
+  );
 });
