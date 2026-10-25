@@ -38,11 +38,12 @@ fun suffixForFlavor(flavor: String): String = when (flavor) {
     else -> ""
 }
 
+// Keep in sync with AppFlavor.launcherTitle in lib/src/core/config/app_flavor.dart
 fun appLabelForFlavor(flavor: String): String = when (flavor) {
-    "dev" -> "Belong (Dev)"
-    "stg" -> "Belong (Stg)"
-    "qa" -> "Belong (QA)"
-    else -> "Belong"
+    "dev" -> "[DEV] Belong on the Spectrum"
+    "stg" -> "[STG] Belong on the Spectrum"
+    "qa" -> "[QA] Belong on the Spectrum"
+    else -> "Belong on the Spectrum"
 }
 
 android {
@@ -62,7 +63,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["appName"] = "Belong"
+        manifestPlaceholders["appName"] = "Belong on the Spectrum"
     }
 
     buildTypes {

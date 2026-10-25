@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'core/config/app_flavor.dart';
 import 'core/firebase/community_analytics_service.dart';
+import 'core/presentation/flavor_environment_chip.dart';
 import 'core/theme/belong_text_styles.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
 import 'core/presentation/coming_soon_view.dart';
@@ -73,6 +75,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
       useListenable(themeNotifier!);
     }
     final brand = ref.watch(communityBrandConfigProvider);
+    final flavor = ref.watch(appFlavorProvider);
     final profile = ref.watch(memberProfileProvider);
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
     final analytics = ref.watch(communityAnalyticsServiceProvider);
@@ -588,6 +591,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (flavor.environmentTag != null) ...[
+                  FlavorEnvironmentChip(tag: flavor.environmentTag!),
+                  const SizedBox(width: 6),
+                ],
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: Image.asset(

@@ -160,6 +160,24 @@ void main() {
       );
     });
 
+    patrolWidgetTest('sign-in and register password fields expose visibility toggles (#593)', ($) async {
+      await $.pumpWidgetAndSettle(buildTestWidget());
+
+      expect($(const Key('auth_sign_in_password_visibility_toggle')), findsOneWidget);
+      expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+
+      await $(const Key('auth_tab_register')).tap();
+      await $.pumpAndSettle();
+
+      expect($(const Key('auth_register_password_visibility_toggle')), findsOneWidget);
+      expect(find.byIcon(Icons.visibility_outlined), findsWidgets);
+
+      await $(const Key('auth_register_password_visibility_toggle')).tap();
+      await $.pump();
+
+      expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+    });
+
     patrolWidgetTest('hides Google Sign-In button by default when preview mode is disabled (#163)', ($) async {
       await $.pumpWidgetAndSettle(buildTestWidget());
 

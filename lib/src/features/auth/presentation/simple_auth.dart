@@ -11,6 +11,7 @@ import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
 import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../account_deletion/presentation/soft_delete_sign_in_notice.dart';
+import '../../profile/domain/member_profile.dart';
 
 /// Minimal, plain-vanilla wrapper around the official [firebase_ui_auth] example.
 ///
@@ -201,6 +202,7 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
       body: SignInScreen(
         auth: auth,
         providers: providers,
+        showPasswordVisibilityToggle: true,
         headerMaxExtent: 148,
         headerBuilder: (context, constraints, shrinkOffset) {
           return Padding(
@@ -381,6 +383,9 @@ class _SoftDeleteSessionGate extends HookConsumerWidget {
                     .restoreSelf(userId: userId, confirmed: true);
                 if (!context.mounted) return;
                 ref.read(softDeleteSignInNoticeProvider.notifier).state = null;
+                ref
+                    .read(memberProfileProvider.notifier)
+                    .publishDirectoryAfterRestore();
                 offerReturn.value = false;
                 allowed.value = true;
               },

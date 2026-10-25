@@ -465,6 +465,9 @@ class BelongAuthSheet extends HookConsumerWidget {
                     await ref
                         .read(accountDeletionRepositoryProvider)
                         .restoreSelf(userId: userId, confirmed: true);
+                    ref
+                        .read(memberProfileProvider.notifier)
+                        .publishDirectoryAfterRestore();
                     pendingReturnUserId.value = null;
                     errorMessage.value = null;
                     final email = emailController.text.trim();
@@ -508,6 +511,7 @@ class BelongAuthSheet extends HookConsumerWidget {
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.key_rounded, size: 18),
                     suffixIcon: IconButton(
+                      key: const Key('auth_sign_in_password_visibility_toggle'),
                       icon: Icon(
                         obscurePassword.value
                             ? Icons.visibility_outlined
@@ -593,6 +597,9 @@ class BelongAuthSheet extends HookConsumerWidget {
                       size: 18,
                     ),
                     suffixIcon: IconButton(
+                      key: const Key(
+                        'auth_register_password_visibility_toggle',
+                      ),
                       icon: Icon(
                         obscurePassword.value
                             ? Icons.visibility_outlined

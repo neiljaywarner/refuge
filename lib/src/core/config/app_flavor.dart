@@ -16,16 +16,15 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// The marketing / Circle site (`https://www.belongonthespectrum.com/`) is
 /// separate from the Flutter web app hosting origin.
 enum AppFlavor {
-  dev('dev', 'Belong (Dev)', isProduction: false),
-  stg('stg', 'Belong (Staging)', isProduction: false),
-  qa('qa', 'Belong (QA)', isProduction: false),
-  prod('prod', 'Belong on the Spectrum', isProduction: true);
+  dev('dev', isProduction: false),
+  stg('stg', isProduction: false),
+  qa('qa', isProduction: false),
+  prod('prod', isProduction: true);
 
-  const AppFlavor(
-    this.slug,
-    this.displayName, {
-    required this.isProduction,
-  });
+  const AppFlavor(this.slug, {required this.isProduction});
+
+  /// Canonical production marketing name (launcher title when [isProduction]).
+  static const String productionMarketingName = 'Belong on the Spectrum';
 
   /// Canonical base application / bundle identifier across Android, iOS, and macOS.
   static const String baseApplicationId = 'com.belongonthespectrum.refuge';
@@ -41,8 +40,19 @@ enum AppFlavor {
   static const String baseDomain = marketingDomain;
 
   final String slug;
-  final String displayName;
   final bool isProduction;
+
+  /// Home-screen / launcher title. Non-production flavors use a VGV-style
+  /// `[ENV]` prefix so dev and prod installs are easy to tell apart.
+  String get launcherTitle => isProduction
+      ? productionMarketingName
+      : '[${slug.toUpperCase()}] $productionMarketingName';
+
+  /// Human-readable name (same as [launcherTitle]).
+  String get displayName => launcherTitle;
+
+  /// Short uppercase tag for in-app chrome when not production (`DEV`, `STG`, …).
+  String? get environmentTag => isProduction ? null : slug.toUpperCase();
 
   /// Environment suffix appended to [baseApplicationId] for non-production builds
   /// (e.g., `.dev`, `.stg`, `.qa`, or `''` for production).
