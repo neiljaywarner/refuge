@@ -7,20 +7,15 @@ import '../../tool/firebase_test_lab_support.dart';
 void main() {
   group('patrolBuildAndroidArgs', () {
     test('pins dev defines and target file', () {
-      expect(
-        patrolBuildAndroidArgs(
-          target: 'integration_test/patrol_ftl_home_shell_test.dart',
-        ),
-        [
-          'build',
-          'android',
-          '-t',
-          'integration_test/patrol_ftl_home_shell_test.dart',
-          '--dart-define=FLAVOR=dev',
-          '--dart-define=ENABLE_SERVERPOD=false',
-          '--no-uninstall',
-        ],
-      );
+      expect(patrolBuildAndroidArgs(target: 'integration_test/patrol_ftl_home_shell_test.dart'), [
+        'build',
+        'android',
+        '-t',
+        'integration_test/patrol_ftl_home_shell_test.dart',
+        '--dart-define=FLAVOR=dev',
+        '--dart-define=ENABLE_SERVERPOD=false',
+        '--no-uninstall',
+      ]);
     });
   });
 
@@ -78,10 +73,7 @@ application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic
       if (!File(homebrew).existsSync()) {
         return;
       }
-      expect(
-        resolveGcloudExecutable(),
-        homebrew,
-      );
+      expect(resolveGcloudExecutable(), homebrew);
     });
 
     test('gcloudCandidatePaths includes Homebrew locations', () {
