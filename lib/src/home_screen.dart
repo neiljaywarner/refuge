@@ -178,14 +178,16 @@ class RefugeHomeScreen extends HookConsumerWidget {
           : content.length <= 280
           ? 2
           : 3;
-      analytics.logReflectionPublished(tag: toneTag, lengthBucket: lengthBucket);
+      analytics.logReflectionPublished(
+        tag: toneTag,
+        lengthBucket: lengthBucket,
+      );
     }
 
     Widget buildHomeBody() {
       if (homeSubView.value == BelongHomeSubView.membersDirectory) {
         return BelongMembersDirectoryView(
-          onBackToSpaces: () =>
-              homeSubView.value = BelongHomeSubView.spaces,
+          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
         );
       }
 
