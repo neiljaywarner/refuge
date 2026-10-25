@@ -115,9 +115,7 @@ Future<void> main(List<String> args) async {
         '-Ptarget=${integrationTestGradleTarget(target)}',
       ], workingDirectory: androidDir.path);
       if (gradleProcess.exitCode != 0) {
-        stderr.writeln(
-          'Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).',
-        );
+        stderr.writeln('Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).');
         stderr.write(gradleProcess.stderr);
         stdout.write(gradleProcess.stdout);
         exit(gradleProcess.exitCode);
@@ -185,9 +183,7 @@ Future<void> main(List<String> args) async {
   }
 
   if (gcloud == null) {
-    stderr.writeln(
-      'gcloud CLI not found (checked PATH, ~/google-cloud-sdk, and Homebrew).',
-    );
+    stderr.writeln('gcloud CLI not found (checked PATH, ~/google-cloud-sdk, and Homebrew).');
     stderr.writeln('Install: https://cloud.google.com/sdk/docs/install');
     stderr.writeln('Then authenticate: gcloud auth login');
     stderr.writeln('Dry-run the command above after install.');
