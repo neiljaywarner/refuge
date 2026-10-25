@@ -31,7 +31,7 @@ We are gently moving from Circle into Belong. Both places stay open through **Oc
 | **[Plan through October 31](Non-Technical-Roadmap-to-Oct-31)** | Organizers and leaders | Why we are moving, the calm overlap week, and what is ready when |
 | **[Why we are not in the app stores yet](Why-No-App-Store-App)** | Members and leaders | Plain answers about stores, passwords, and using Belong from the web |
 | **[Update the welcome message](Organizer-Remote-Config-Guide)** | Organizers | Change the message at the top of Belong from a web page |
-| **[Pause and restore a member](Admin-Pause-and-Restore)** | Organizers | How a paused member can still read, and how to welcome them back |
+| **[Pause and restore a member](Admin-Pause-and-Restore)** | Organizers | A paused member cannot read or post until you welcome them back |
 | **[Bring past posts over](Circle-CSV-Migration-Guide)** | Organizers and helpers | How introductions and history move from Circle into Belong |
 | **[Our community spaces](Belong-Community-Guide)** | Everyone | The rooms you will see, and how we treat one another |
 | **[Calm design and sensory comfort](Calm-Tech-and-Accessibility)** | Members and designers | Why Belong stays quiet: no autoplay, no surprise pop-ups, clear labels |

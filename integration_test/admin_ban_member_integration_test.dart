@@ -110,11 +110,13 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: _PauseProbe())),
       ),
     );
-    expect($(const Key('account_paused_banner')), findsOneWidget);
+    expect($(const Key('account_paused_lockout')), findsOneWidget);
+    expect($('A quiet note from the feed'), findsNothing);
 
     await banningRepo.unbanUser('caleb-123');
     await $.pumpAndSettle();
-    expect($(const Key('account_paused_banner')), findsNothing);
+    expect($(const Key('account_paused_lockout')), findsNothing);
+    expect($('A quiet note from the feed'), findsOneWidget);
   });
 }
 
@@ -124,8 +126,8 @@ class _PauseProbe extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final paused = ref.watch(isCurrentMemberBannedProvider);
-    if (!paused) return const SizedBox.shrink();
-    return const AccountPausedBanner();
+    if (!paused) return const Text('A quiet note from the feed');
+    return const AccountPausedLockout();
   }
 }
 

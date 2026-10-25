@@ -89,7 +89,9 @@ void main() {
         ),
       );
 
-      expect($(const Key('account_paused_banner')), findsOneWidget);
+      expect($(const Key('account_paused_lockout')), findsOneWidget);
+      expect($('A quiet note from the feed'), findsNothing);
+      expect($('You can still read'), findsNothing);
       expect(await postRepo.getPosts(spaceKey: 'prayer'), isEmpty);
 
       await $(const Key('try_post_button')).tap();
@@ -167,7 +169,8 @@ void main() {
         child: const MaterialApp(home: Scaffold(body: _PausedPostHost())),
       ),
     );
-    expect($(const Key('account_paused_banner')), findsNothing);
+    expect($(const Key('account_paused_lockout')), findsNothing);
+    expect($('A quiet note from the feed'), findsOneWidget);
     await $(const Key('try_post_button')).tap();
     await $.pumpAndSettle();
     final posts = await postRepo.getPosts(spaceKey: 'prayer');
@@ -204,7 +207,10 @@ class _PausedPostHost extends ConsumerWidget {
     final paused = ref.watch(isCurrentMemberBannedProvider);
     return Column(
       children: [
-        if (paused) const AccountPausedBanner(),
+        if (paused)
+          const AccountPausedLockout()
+        else
+          const Text('A quiet note from the feed'),
         TextButton(
           key: const Key('try_post_button'),
           onPressed: () async {

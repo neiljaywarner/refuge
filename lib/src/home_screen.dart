@@ -342,8 +342,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   legacyMessage: quietDigestSnapshot.data,
                   isContrast: isContrast,
                 ),
-              if (ref.watch(isCurrentMemberBannedProvider))
-                const AccountPausedBanner(),
               // Wide native layouts use the create-post menu. Web keeps the
               // composer on the feed so a desktop browser can publish without
               // opening that menu.
@@ -971,12 +969,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
             bottom: true,
             left: true,
             right: true,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 820),
-                child: buildActiveBottomTabBody(),
-              ),
-            ),
+            child: ref.watch(isCurrentMemberBannedProvider)
+                ? const Center(child: AccountPausedLockout())
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 820),
+                      child: buildActiveBottomTabBody(),
+                    ),
+                  ),
           ),
         ),
       ),

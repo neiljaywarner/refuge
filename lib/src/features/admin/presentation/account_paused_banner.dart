@@ -1,41 +1,38 @@
 import 'package:flutter/material.dart';
 
-/// Calm notice for a signed-in member whose account is paused.
+/// Full-screen lockout for a signed-in member whose account is paused.
 ///
-/// The banner does not include the ban reason.
-class AccountPausedBanner extends StatelessWidget {
-  const AccountPausedBanner({super.key});
+/// Reading and posting are both paused. The screen does not include a reason.
+class AccountPausedLockout extends StatelessWidget {
+  const AccountPausedLockout({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      key: const Key('account_paused_banner'),
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Icon(
-                Icons.pause_circle_outline_rounded,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'This account is paused. You can still read. Posting is paused for now.',
-                  style: TextStyle(fontSize: 13, height: 1.35),
-                ),
-              ),
-            ],
+      key: const Key('account_paused_lockout'),
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.pause_circle_outline_rounded,
+            size: 40,
+            color: theme.colorScheme.primary,
           ),
-        ),
+          const SizedBox(height: 16),
+          Text(
+            'This account is paused.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Reading and posting are paused for now.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 15, height: 1.4),
+          ),
+        ],
       ),
     );
   }

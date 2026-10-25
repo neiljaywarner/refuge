@@ -51,6 +51,10 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    if (isPaused) {
+      return const Material(child: Center(child: AccountPausedLockout()));
+    }
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.90,
@@ -357,7 +361,6 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                       ),
                     ),
 
-                    if (isPaused) const AccountPausedBanner(),
                     // Input Field and Submit Button
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),

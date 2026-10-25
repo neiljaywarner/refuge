@@ -1,8 +1,8 @@
 # Pause and restore a member
 
-Organizers can pause a member who is hurting the calm of the room, and they can welcome that member back. A paused member can still read. They cannot post or comment. The app does not show a reason.
+Organizers can pause a member who is hurting the calm of the room, and they can welcome that member back. For now a pause is a complete ban: the member cannot read the feed, discussions, directory, messages, or search, and they cannot post or comment. The app does not show a reason.
 
-This is the guide for the November walkthrough with Marty ([#566](https://github.com/neiljaywarner/refuge/issues/566)). The control itself landed in [#356](https://github.com/neiljaywarner/refuge/issues/356). Quarantine (the directory hide, the paused banner, and the posting stop) is [#562](https://github.com/neiljaywarner/refuge/issues/562) and pull request [#565](https://github.com/neiljaywarner/refuge/pull/565).
+This is the guide for the November walkthrough with Marty ([#566](https://github.com/neiljaywarner/refuge/issues/566)). The control itself landed in [#356](https://github.com/neiljaywarner/refuge/issues/356). Quarantine is [#562](https://github.com/neiljaywarner/refuge/issues/562). The complete ban, where a paused member cannot read, is [#578](https://github.com/neiljaywarner/refuge/issues/578). Both are on pull request [#565](https://github.com/neiljaywarner/refuge/pull/565).
 
 ---
 
@@ -23,12 +23,13 @@ To change the list later, open [Firebase Remote Config](https://console.firebase
 ## What a pause does
 
 - The member's display name disappears from the directory.
-- Their existing posts stay on the feed.
+- Their existing posts stay stored, and other members can still read them.
+- The paused member does not see the feed, discussions, directory, messages, or search.
 - The composer is hidden.
 - Choosing **Create Post** does not open a composer.
 - Comments do not send.
-- A calm banner says: "This account is paused. You can still read. Posting is paused for now."
-- **Restore Member** turns posting back on and returns the name to the directory.
+- A calm lockout says: "This account is paused. Reading and posting are paused for now."
+- **Restore Member** turns reading and posting back on and returns the name to the directory.
 
 **Cancel** on the confirm step writes nothing. If the save fails, a short error snackbar appears and the member is not paused.
 
@@ -46,26 +47,25 @@ To change the list later, open [Firebase Remote Config](https://console.firebase
 
 1. Sign out.
 2. Sign in as that member.
-3. Reading the feed still works.
-4. The paused banner is where the composer was.
-5. **Create Post** does not open a composer.
+3. The feed is replaced by the paused lockout. Posts, discussions, the directory, messages, and search are not on screen.
+4. **Create Post** does not open a composer.
 
 ## How to restore
 
 1. Sign back in as the organizer.
 2. Tap the author's name.
 3. Tap **Restore Member**.
-4. Sign in as the member again. The composer is back, and a new post appears on the feed.
+4. Sign in as the member again. The feed is back, the composer is back, and a new post appears on the feed.
 
 ---
 
 ## What we already checked
 
-On the emulator, an organizer paused a test member and then restored them. While paused, the banner was visible and **Create Post** did nothing. After restore, that member posted again.
+On the emulator, an organizer paused a test member and then restored them. While paused, posting did nothing. After restore, that member posted again. A later change hides reading as well, so a paused member now sees the lockout instead of the feed.
 
 Automated checks on the same emulator:
 
-- Unit, widget, and sociable tests for cancel, a failed ban, hiding the directory card, the paused banner, and restore.
+- Unit, widget, and sociable tests for cancel, a failed ban, hiding the directory card, the paused lockout, and restore.
 - An integration test with two scenarios: pause hides the card and blocks a post, and restore brings the card back.
 
 The committed Maestro flow only checks that a guest does not see **Ban Member**. It does not contain organizer addresses.

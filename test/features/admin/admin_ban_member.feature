@@ -16,7 +16,7 @@ Feature: Admin ban quarantine
   Scenario: Ban hides the directory card and pauses posting
     Given an admin bans Caleb Stone from the directory
     Then the directory no longer lists Caleb Stone
-    And a session named Caleb Stone sees the paused banner
+    And a session named Caleb Stone sees the paused lockout and cannot read the feed
     And that session cannot create a post
 
   Scenario: Restore brings the card back and posting works
