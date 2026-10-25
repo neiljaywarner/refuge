@@ -106,18 +106,17 @@ Future<void> main(List<String> args) async {
     // Dev and prod share one Firebase project and one Serverpod host.
     // The public dev site must stay on the local post repository so a
     // visitor cannot publish into the live community.
-    await _run(
-      _bin('flutter'),
-      [
-        ...stamp.flutterArgs(
-          'web',
-          targetFile: 'lib/main_dev.dart',
-          flavor: 'dev',
-        ),
-        '--dart-define=ENABLE_SERVERPOD=false',
-      ],
-      dryRun: dryRun,
-    );
+    final analyticsDefines = analyticsDartDefines(Platform.environment);
+    stdout.writeln(analyticsDartDefinesLogLine(Platform.environment));
+    await _run(_bin('flutter'), [
+      ...stamp.flutterArgs(
+        'web',
+        targetFile: 'lib/main_dev.dart',
+        flavor: 'dev',
+        extraDefines: analyticsDefines,
+      ),
+      '--dart-define=ENABLE_SERVERPOD=false',
+    ], dryRun: dryRun);
     if (!dryRun) {
       await _writeWebVersionJson(version, stamp);
     }
@@ -170,9 +169,8 @@ Future<void> _writeWebVersionJson(
 }
 
 Future<void> _run(String bin, List<String> args, {required bool dryRun}) async {
-  stdout.writeln(
-    dryRun ? '[dry-run] $bin ${args.join(' ')}' : '\$ $bin ${args.join(' ')}',
-  );
+  final printable = '$bin ${joinArgsRedactingAnalyticsDefines(args)}';
+  stdout.writeln(dryRun ? '[dry-run] $printable' : '\$ $printable');
   if (dryRun) return;
   final r = await Process.start(bin, args, mode: ProcessStartMode.inheritStdio);
   final code = await r.exitCode;

@@ -79,8 +79,40 @@ void main() {
         expect(properties['distinct_id'], 'belong-anon-dev');
         expect(properties['tab'], 'Home');
         expect(properties['flavor'], 'dev');
+        expect(properties[r'$process_person_profile'], isFalse);
         expect(properties.containsKey('email'), isFalse);
       },
     );
+
+    test('space_viewed also sends an anonymous \$pageview companion', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        return http.Response('{"status":1}', 200);
+      });
+      final service = CommunityAnalyticsService(
+        flavor: AppFlavor.dev,
+        httpClient: client,
+        aptabaseKeyOverride: '',
+        postHogKeyOverride: _fakeCaptureKey,
+        postHogHostOverride: 'https://example.test',
+      );
+
+      await service.logSpaceViewed('quiet-gardens');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(requests, hasLength(2));
+      final events = requests
+          .map((request) => jsonDecode(request.body) as Map<String, dynamic>)
+          .toList();
+      expect(events[0]['event'], 'space_viewed');
+      expect(events[1]['event'], r'$pageview');
+      final page = events[1]['properties'] as Map<String, dynamic>;
+      expect(page['distinct_id'], 'belong-anon-dev');
+      expect(page[r'$pathname'], '/spaces/quiet-gardens');
+      expect(page[r'$current_url'], contains('/spaces/quiet-gardens'));
+      expect(page.containsKey('email'), isFalse);
+      expect(service.dispatchedEventsForTesting, hasLength(1));
+    });
   });
 }

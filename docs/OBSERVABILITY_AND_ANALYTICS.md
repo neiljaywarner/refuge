@@ -83,7 +83,7 @@ Observability logic is strictly verified with unit tests in `test/features/obser
 
 **The TL;DR Answer**:
 - **Keep Firebase Crashlytics** for all mobile fatal crashes, native NDK exceptions, and ANRs. It is free, maintenance-free, and irreplaceable for native mobile symbolication.
-- **PostHog is not live product analytics yet.** A smoke event was ingested. The app does not send product events unless `POSTHOG_KEY` or `POSTHOG_BELONG_PROJECT_TOKEN` is passed at build time ([#410](https://github.com/neiljaywarner/refuge/issues/410)). Product conversion analytics are not live.
+- **PostHog and Aptabase keys stay out of git.** Debug, release, and web builds forward `POSTHOG_KEY` and `APTABASE_KEY` from the environment or GitHub Actions secrets ([#410](https://github.com/neiljaywarner/refuge/issues/410)). Empty keys stay in mock mode. Session replay stays off until [#367](https://github.com/neiljaywarner/refuge/issues/367).
 - **Use Appwrite Functions for Backend Automation, NOT Crash Logging**. Appwrite Functions are serverless compute workers (like AWS Lambda); they cannot capture low-level native OS crashes and introduce an unnecessary self-hosting failure risk if used for telemetry ingestion.
 
 ---
