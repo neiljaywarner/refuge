@@ -112,11 +112,15 @@ class CommunityAnalyticsService {
       );
     }
 
-    // 2. Dispatch to Firebase Analytics (fire-and-forget)
+    // 2. Dispatch to Firebase Analytics (fire-and-forget).
+    // FA event params must be String or num; PostHog keeps native booleans.
     if (Firebase.apps.isNotEmpty) {
       unawaited(
         FirebaseAnalytics.instance
-            .logEvent(name: name, parameters: enriched)
+            .logEvent(
+              name: name,
+              parameters: _firebaseEventParameters(enriched),
+            )
             .then((_) {
               talker.debug(
                 '🔥 [FIREBASE ANALYTICS] Event "$name" logged to Firebase.',
@@ -249,6 +253,19 @@ class CommunityAnalyticsService {
     } catch (e) {
       talker.warning('⚠️ [POSTHOG] Network transport error: $e');
     }
+  }
+
+  /// Firebase Analytics event parameters accept only String or num.
+  static Map<String, Object> _firebaseEventParameters(
+    Map<String, Object> props,
+  ) {
+    return {
+      for (final entry in props.entries)
+        entry.key: switch (entry.value) {
+          final bool flag => flag.toString(),
+          final value => value,
+        },
+    };
   }
 
   /// Anonymous distinct id plus `$set` user properties. No emails or names.
