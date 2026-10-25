@@ -1,4 +1,6 @@
-# `maestro test .maestro/web` skips flows tagged known-gap.
+# `maestro test .maestro/web` skips flows tagged known-gap or live-dev.
 # Those flows stay in this directory. Passing a flow file path still runs it.
+# live-dev hits https://dev-belongonthespectrum.web.app and is not a localhost flow.
 excludeTags:
   - known-gap
+  - live-dev

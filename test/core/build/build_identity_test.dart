@@ -101,6 +101,22 @@ void main() {
           ...stamp.dartDefines,
         ]);
         expect(stamp.flutterArgs('apk').take(3), ['build', 'apk', '--release']);
+        expect(
+          stamp.flutterArgs(
+            'web',
+            targetFile: 'lib/main_prod.dart',
+            flavor: 'prod',
+          ),
+          [
+            'build',
+            'web',
+            '--release',
+            '-t',
+            'lib/main_prod.dart',
+            '--dart-define=FLAVOR=prod',
+            ...stamp.dartDefines,
+          ],
+        );
       },
     );
 
@@ -202,8 +218,23 @@ void main() {
       'deploy_release passes the stamp into web, apk, version.json, and notes',
       () {
         final source = File('tool/deploy_release.dart').readAsStringSync();
-        expect(source, contains("stamp.flutterArgs('web')"));
-        expect(source, contains("stamp.flutterArgs('apk')"));
+        expect(source, contains("stamp.flutterArgs("));
+        expect(source, contains("targetFile: 'lib/main_prod.dart'"));
+        expect(source, contains("flavor: 'prod'"));
+        expect(source, isNot(contains("'--config'")));
+        final devDeploy = File('tool/deploy_dev_web.dart').readAsStringSync();
+        expect(devDeploy, contains('https://dev-belongonthespectrum.web.app'));
+        expect(devDeploy, contains("targetFile: 'lib/main_dev.dart'"));
+        expect(devDeploy, contains("flavor: 'dev'"));
+        expect(devDeploy, contains('firebase.dev.json'));
+        expect(
+          File('firebase.dev.json').readAsStringSync(),
+          contains('"site": "dev-belongonthespectrum"'),
+        );
+        expect(
+          File('firebase.json').readAsStringSync(),
+          contains('"site": "belongonthespectrum"'),
+        );
         expect(source, contains('webVersionPayload'));
         expect(source, contains('buildIdentityNotes'));
         expect(source, contains('tryFromGitHead'));

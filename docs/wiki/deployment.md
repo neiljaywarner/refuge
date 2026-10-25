@@ -56,6 +56,20 @@ To ensure development, automated test suites, and CI/CD runs **never pollute pro
 
 `stg` / `qa` remain enum hooks only ([#40](https://github.com/neiljaywarner/refuge/issues/40)); they are not deployed yet. The marketing site `https://www.belongonthespectrum.com/` is separate from the Flutter web app origin.
 
+### Where `dev` fits (and where it does not)
+
+One Firebase project (`belongonthespectrum`) hosts two sites. Auth and Firestore are shared. The app sends dev posts to `reflections_dev` and prod posts to `reflections`. A second Firebase project is the later step if dev must not share Auth users with prod.
+
+| Destination | Command | Build | URL |
+| :--- | :--- | :--- | :--- |
+| Stable **dev** site | `dart run tool/deploy_dev_web.dart` | `lib/main_dev.dart`, `FLAVOR=dev` | `https://dev-belongonthespectrum.web.app/` |
+| Release **preview channel** | `dart run tool/deploy_release.dart --version vX.Y.Z` | `lib/main_prod.dart`, `FLAVOR=prod` | `https://belongonthespectrum--<channel>.web.app` (expires) |
+| **Production** | same command with `--prod` | same prod build | `https://belongonthespectrum.web.app/` |
+
+Preview channels are short-lived release candidates on the prod site. They are not the dev site. `--prod` deploys `firebase.json` only. `tool/deploy_dev_web.dart` deploys `firebase.dev.json` and refuses `--prod`. The configs stay split so a missing dev site cannot break `firebase deploy --only hosting`.
+
+The dev site id does not exist until someone who is logged into Firebase runs `dart run tool/deploy_dev_web.dart --create-site` once. Until then the URL is Firebase's "Site Not Found" page.
+
 ### Running with Explicit Flavors
 ```bash
 # Run in development mode (isolated dev collection)
@@ -127,7 +141,7 @@ flutter build web --release \
 | :--- | :--- | :--- |
 | `--version` | **Required** | Release tag / version string (e.g. `v0.8.0-alpha`) |
 | `--channel` | `version` (dots→dashes) | Firebase Hosting preview channel name (e.g. `v0-8-0-alpha`) |
-| `--prod` | `false` | Deploys directly to live production (`https://belongonthespectrum.web.app`) |
+| `--prod` | `false` | Deploys `firebase.json` to live production (`https://belongonthespectrum.web.app`). Does not read `firebase.dev.json`. |
 | `--github-release` | `false` | Automatically creates/updates the official GitHub Release with changelog |
 | `--distribute-android` | `false` | Builds release APK and uploads to Firebase App Distribution |
 | `--android-app-id` | Auto-detected | Firebase Android App ID (`$FIREBASE_ANDROID_APP_ID`) |

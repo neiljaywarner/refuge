@@ -45,10 +45,21 @@ class ReleaseBuildStamp {
   ];
 
   /// Arguments after the `flutter` executable for `flutter build <target>`.
-  List<String> flutterArgs(String target) => [
+  ///
+  /// [targetFile] is the Flutter `-t` entrypoint (`lib/main_prod.dart` or
+  /// `lib/main_dev.dart`). [flavor] is passed as `--dart-define=FLAVOR=`.
+  /// Omit both only for callers that intentionally keep the default `main.dart`
+  /// entrypoint (which resolves to `dev` unless `FLAVOR` is set).
+  List<String> flutterArgs(
+    String target, {
+    String? targetFile,
+    String? flavor,
+  }) => [
     'build',
     target,
     '--release',
+    if (targetFile != null) ...['-t', targetFile],
+    if (flavor != null) '--dart-define=FLAVOR=$flavor',
     ...dartDefines,
   ];
 }
