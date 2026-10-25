@@ -1,0 +1,48 @@
+# Daily dev-only Firebase Test Lab smoke (hello-world Patrol instrumentation).
+# Requires FIREBASE_SERVICE_ACCOUNT JSON in repo secrets (see issue #493 / #573).
+name: Firebase Test Lab (daily, dev APK)
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ftl-daily-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  test-lab-dev-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Resolve packages
+        run: flutter pub get
+
+      - name: Unit tests (FTL helpers)
+        run: flutter test test/tool/firebase_test_lab_support_test.dart
+
+      - name: Build dev APK pair and verify badging
+        run: dart run tool/run_firebase_test_lab.dart --build-only
+
+      - name: Upload to Firebase Test Lab
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "${FIREBASE_SERVICE_ACCOUNT}" ]; then
+            echo "FIREBASE_SERVICE_ACCOUNT is not set. Build-only gate passed; skipping upload."
+            echo "Add the secret to enable daily cloud upload (issue #573)."
+            exit 0
+          fi
+          echo "${FIREBASE_SERVICE_ACCOUNT}" > "${RUNNER_TEMP}/gcp-sa.json"
+          gcloud auth activate-service-account --key-file="${RUNNER_TEMP}/gcp-sa.json"
+          gcloud config set project belongonthespectrum
+          dart run tool/run_firebase_test_lab.dart
