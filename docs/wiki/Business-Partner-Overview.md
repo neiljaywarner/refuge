@@ -57,7 +57,7 @@ Just as Basecamp began inside a small consulting shop solving its own project-co
 | **Recovery, Grief & Caregiver Communities, Running clubs, whatever** *(Celebrate Recovery, GriefShare, parent & family circles)* | People hesitate to share vulnerable life updates on ad-tracked social media, while Circle/Mighty charge \$1,200–\$3,000/year. | \$1,200 – \$3,000 / year | Private, members-only rooms with gentle pacing, zero ads, and dignified privacy. |
 
 ### Four Straightforward Revenue Paths
-1. **Hosted Community Plans (\$49–\$99/month per organization)**: Simple, predictable monthly pricing for churches, ministries, and non-profits wanting their own private, branded Belong community—roughly half the cost of Circle with very high margins.
+1. **Hosted Community Plans (\$19–\$77/month per organization)**: Simple, predictable monthly pricing for churches, ministries, and non-profits wanting their own private, branded Belong community—roughly half the cost of Circle with very high margins.
 2. **White-Glove Setup & Migration (\$1,500–\$5,000 one-time)**: Done-for-you onboarding for organizations moving off Circle, Facebook Groups, or Discord—setting up their spaces, bringing past posts over, and orienting their leaders. *(A natural fit for consulting and client-service strengths.)*
 3. **Regional & Network Partnerships**: Group plans for church families, dioceses, or national non-profit chapters that want shared resources alongside local community rooms.
 4. **Faith, Disability & Accessibility Grants**: Foundations investing in mental health, disability inclusion, and congregation vitality actively fund calm, accessible community initiatives—helping under-resourced groups join while paying the business sustainably.
