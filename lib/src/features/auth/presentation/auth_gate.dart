@@ -11,7 +11,7 @@ import '../data/auth_repository.dart';
 import '../domain/auth_access_policy.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
-import 'simple_auth.dart';
+import 'simple_sign_in_screen.dart';
 
 /// Blocks the main app until the auth session is signed in and, in production,
 /// email-verified. Reads [authRepositoryProvider], not [memberProfileProvider].
@@ -158,7 +158,8 @@ class _SignInWall extends StatelessWidget {
 
     return Column(
       children: [
-        Expanded(child: SimpleAuthScreen(popOnSuccess: false, allowOfflineTestSignIn: false)),
+        // TODO: troubleshoot later - old SimpleAuthScreen kept in simple_auth.dart.
+        const Expanded(child: SimpleSignInScreen()),
         if (showExamples) ...[
           const Divider(height: 1),
           Padding(
