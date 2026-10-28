@@ -74,7 +74,7 @@ These are the products whose job is "put it back," and what they cost before any
 | :--- | :--- | :--- | :--- |
 | **Firestore Spark** | About the last hour of document versions, with point-in-time recovery left off. Full 7-day recovery and 14-week scheduled backups need Blaze. | No for Spark. Yes for Blaze. | Already our database. The hour is a small undo. The real Firestore backup waits until a card is ok. |
 | **Appwrite Free** | No restore button for us. Appwrite keeps its own platform copies. Pro ($25/month) adds a daily backup kept 7 days. | No for Free. Yes for Pro. | Good spare copy. Not a backup plan. |
-| **Cloudflare D1, Workers Free** | [Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/) is always on: any minute in the last **7 days**. History and restore have no extra fee. The free database cap is 500 MB. | No for Workers Free. | The strongest $0 backup product. It is a new database and a Worker in front of it, so it is a move, not a switch we flip this week. |
+| **Cloudflare D1, Workers Free** | [Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/) is always on: any minute in the last **7 days**. History and restore have no extra fee. The free database cap is 500 MB. | No for Workers Free. | The strongest $0 backup product. It is a new database and a Worker in front of it. Tracked as [not-too-urgent #551](https://github.com/neiljaywarner/refuge/issues/551) for a dev or January experiment, on the someday/maybe milestone. The Cloudflare Cursor plugin is already installed; sign it in before that session. |
 | **Neon Free** | Any moment in the last **6 hours**, plus one manual snapshot. | No. | Real, and the window is short. Another new database. |
 | **Supabase Free** | No daily backups and no point-in-time restore. Their docs say to dump the database yourself. Free projects pause after a week of inactivity. | No for Free. Pro is $25 and then includes 7 daily backups. | Skip. We would be building the dump ourselves anyway. |
 | **Private GitHub JSON files** | Whatever weeks of files we keep. Restore by reading an older file back into Firestore. | No. Private repos and the included Action minutes are free. | The backup that fits the stack we already run. |
@@ -85,7 +85,7 @@ These are the products whose job is "put it back," and what they cost before any
 2. Appwrite becomes a one-way mirror through a free Function, after the tables are enabled for that function only. The phone does not write Appwrite directly.
 3. Once a week, a Dart script writes `reflections-YYYY-MM-DD.json` into a **private** GitHub repo and keeps several weeks. That file is the backup. It does not go in the public `refuge` repo, because the notes can contain personal stories.
 4. The on-device list stays so the screen works offline. It is not the community backup.
-5. Later, if a card is acceptable, turn on Firestore's 7-day point-in-time recovery and a daily scheduled backup. Until then, Cloudflare D1 is the free product to look at if we want a vendor to hold the history for us.
+5. Later, if a card is acceptable, turn on Firestore's 7-day point-in-time recovery and a daily scheduled backup. Until then, Cloudflare D1 is the free product to look at if we want a vendor to hold the history for us. That experiment is [#551](https://github.com/neiljaywarner/refuge/issues/551): a dev-only database, in January or whenever a dev session has room, using the Cloudflare Cursor plugin that is already installed.
 
 ## Paid backup features, for later
 
