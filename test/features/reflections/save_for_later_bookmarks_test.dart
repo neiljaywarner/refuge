@@ -64,27 +64,30 @@ void main() {
       expect(roundTrip.specialInterestTag, 'Sacred Music');
     });
 
-    test('SavedPostsStore & LocalPostRepository persist bookmarks across restarts (#669)', () async {
-      SharedPreferences.setMockInitialValues({});
-      final repo1 = LocalPostRepository(isDevMode: true);
-      await repo1.toggleSavePost(postId: '1');
+    test(
+      'SavedPostsStore & LocalPostRepository persist bookmarks across restarts (#669)',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final repo1 = LocalPostRepository(isDevMode: true);
+        await repo1.toggleSavePost(postId: '1');
 
-      final saved1 = await repo1.getSavedPosts();
-      expect(saved1.map((p) => p.id), contains('1'));
+        final saved1 = await repo1.getSavedPosts();
+        expect(saved1.map((p) => p.id), contains('1'));
 
-      final digest1 = await repo1.getQuietDigest(spaceKey: 'saved_for_later');
-      expect(
-        digest1,
-        'Private sanctuary • 1 saved reflection kept for quiet, unhurried reading.',
-      );
+        final digest1 = await repo1.getQuietDigest(spaceKey: 'saved_for_later');
+        expect(
+          digest1,
+          'Private sanctuary • 1 saved reflection kept for quiet, unhurried reading.',
+        );
 
-      // Simulate app restart with a fresh LocalPostRepository instance reading SharedPreferences
-      final repo2 = LocalPostRepository(isDevMode: true);
-      final savedAfterRestart = await repo2.getSavedPosts();
-      expect(savedAfterRestart.length, 1);
-      expect(savedAfterRestart.first.id, '1');
-      expect(savedAfterRestart.first.isSaved, isTrue);
-    });
+        // Simulate app restart with a fresh LocalPostRepository instance reading SharedPreferences
+        final repo2 = LocalPostRepository(isDevMode: true);
+        final savedAfterRestart = await repo2.getSavedPosts();
+        expect(savedAfterRestart.length, 1);
+        expect(savedAfterRestart.first.id, '1');
+        expect(savedAfterRestart.first.isSaved, isTrue);
+      },
+    );
 
     test(
       'AppwritePostRepository & preferPost preserve isSaved across cloud merges and bookmark cloud-only posts (#669)',

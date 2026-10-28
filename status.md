@@ -1,7 +1,8 @@
 # 🔖 Save for Later (`#669`) — Plan, Mini-Milestones, Results, Troubleshooting & FAQ (`status.md`)
 
-> **Last Updated**: `2026-10-28T00:13:00-05:00`  
+> **Last Updated**: `2026-10-28T00:23:00-05:00`  
 > **GitHub Issue**: [`neiljaywarner/refuge#669`](https://github.com/neiljaywarner/refuge/issues/669)  
+> **GitHub Pull Request**: [`neiljaywarner/refuge#670`](https://github.com/neiljaywarner/refuge/pull/670)  
 > **Isolated Worktree**: `<workspace>/.worktrees/issue-669-save-for-later-ux`  
 > **Branch**: `feat/#669-save-for-later-ux`  
 > **Target Files Owned (Zero Conflict with `home_screen.dart`)**:
@@ -53,7 +54,7 @@
 | **M3: Repository Persistence & Cloud Merge Fix** | Wire `SavedPostsStore` into `LocalPostRepository`; add `isPostSaved`, `cacheExternalPosts`, and `saved_for_later` Quiet Digest; fix `AppwritePostRepository` & `preferPost` to preserve `isSaved` across cloud merges and bookmark cloud-only posts. | `2026-10-28 00:05:00` | `2026-10-28 00:06:00` | `COMPLETE` | `local_post_repository.dart`, `appwrite_post_repository.dart` |
 | **M4: Calm UX Polish in `ReflectionCard`** | Add calm floating `SnackBar` with `Undo` action on bookmark toggle and origin space badge (`saved_post_origin_space_<id>`) on saved reflections. | `2026-10-28 00:06:00` | `2026-10-28 00:07:00` | `COMPLETE` | `reflection_card.dart` |
 | **M5: BDD Spec, Automated Tests & Maestro Hardware Flow** | Create `test/features/reflections/save_for_later_feature.txt`, expand `test/features/reflections/save_for_later_bookmarks_test.dart`, verify `12/12` green tests & `0` analyzer warnings, and drive physical Pixel via Maestro MCP (`7/7` steps green). | `2026-10-28 00:07:00` | `2026-10-28 00:13:00` | `COMPLETE` | `12/12` tests green, `analyze_files` `No errors`, Maestro flow `success: true` |
-| **M6: GitHub MCP Push, PR, CodeRabbit & Visual Proof** | Push atomic commit via GitHub MCP `push_files`, open PR closing `#669`, trigger `@coderabbitai review`, poll CodeRabbit, and post full verification audit on `#669` and the PR. | `2026-10-28 00:13:00` | `IN-PROGRESS` | `IN-PROGRESS` | PR & Issue `#669` audit comment |
+| **M6: GitHub MCP Push, PR, CodeRabbit & Visual Proof** | Push atomic commit via GitHub MCP `push_files`, open PR `#670` closing `#669`, trigger `@coderabbitai review`, and post full verification audit on `#669` and PR `#670`. | `2026-10-28 00:13:00` | `2026-10-28 00:23:00` | `COMPLETE` | PR [`#670`](https://github.com/neiljaywarner/refuge/pull/670) & Issue [`#669`](https://github.com/neiljaywarner/refuge/issues/669#issuecomment-6461344917) audit comment |
 
 ---
 
@@ -95,6 +96,7 @@
 | `MissingPluginException(No implementation found for method getAll on channel plugins.flutter.io/shared_preferences)` in `FakeAsync` widget tests | In `package:shared_preferences` (`shared_preferences_legacy.dart` line 88), `SharedPreferences.getInstance()` calls `completer.completeError(e, s)` and sets `_completer = null` before anyone awaits `completer.future`, leaking an uncaught error to `FakeAsync` when a widget test doesn't call `SharedPreferences.setMockInitialValues({})`. | Run `flutter test` on a widget test that constructs `LocalPostRepository` without `SharedPreferences.setMockInitialValues({})`. | Use `SavedPostsStore._safePrefs()` which wraps `SharedPreferences.getInstance()` inside `runZonedGuarded`, trapping the internal `Completer.completeError` inside the child zone and resolving cleanly to `null`. |
 | `Finder "Found 0 widgets with key [<'reflection_composer_card'>]"` in widget tests | In `home_screen.dart` line 251 & 336, `isDesktop = constraints.maxWidth >= 768` and `showInlineComposer = (kIsWeb \|\| !isDesktop) && selectedSpace.value != 'saved_for_later'`. On non-web desktop viewports (`width >= 768`), the inline composer is hidden in favor of the top-bar `(+)` button. | Check `$.tester.view.physicalSize` in the widget test (`devicePixelRatio = 1.0`). | Set `$.tester.view.physicalSize = const Size(600, 1600)` (width `< 768`) when testing mobile inline composer visibility. |
 | `flutter pub get` fails in sandbox with `update_engine_version.sh: engine.stamp.tmp: Operation not permitted` | Homebrew Flutter tries to write `engine.stamp` inside `/opt/homebrew/share/flutter/bin/cache/` which is outside the workspace sandbox. | Check tool output for `update_engine_version.sh`. | Use the Dart MCP tool `call_mcp_tool(ServerName: 'dart', ToolName: 'pub', Arguments: {command: 'get', roots: [{root: 'file:///...'}]})` which runs with zero terminal prompts! |
+| GitHub Actions `analyze-and-test` fails on `dart format --output=none --set-exit-if-changed -l 100` | CI enforces `-l 100` (`--line-length 100`), whereas default `dart format` uses `80` or editor line width. | Run `/opt/homebrew/share/flutter/bin/cache/dart-sdk/bin/dart --suppress-analytics format --output=none --set-exit-if-changed -l 100 lib test`. | Format inside the sandbox with `/opt/homebrew/share/flutter/bin/cache/dart-sdk/bin/dart --suppress-analytics format -l 100 lib/src/features/reflections test/features/reflections`. |
 
 ---
 

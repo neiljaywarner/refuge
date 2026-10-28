@@ -15,10 +15,7 @@ const savedPostsCachePrefsKey = 'belong_saved_posts_cache_v1';
 /// and mirrors them to the signed-in member's private Firestore subcollection
 /// (`users/{uid}/saved_posts/{postId}`).
 class SavedPostsStore {
-  SavedPostsStore({
-    this.customFirestore,
-    this.customUserId,
-  });
+  SavedPostsStore({this.customFirestore, this.customUserId});
 
   final FirebaseFirestore? customFirestore;
   final String? customUserId;
@@ -108,9 +105,7 @@ class SavedPostsStore {
           for (final entry in decoded.entries) {
             final value = entry.value;
             if (value is Map) {
-              final post = Post.fromJson(
-                Map<String, dynamic>.from(value),
-              ).copyWith(isSaved: true);
+              final post = Post.fromJson(Map<String, dynamic>.from(value)).copyWith(isSaved: true);
               if (post.id.isNotEmpty) {
                 result[post.id] = post;
               }
@@ -132,10 +127,7 @@ class SavedPostsStore {
             .timeout(const Duration(seconds: 2));
         for (final doc in snap.docs) {
           final data = doc.data();
-          final post = Post.fromJson({
-            ...data,
-            'id': data['id'] ?? doc.id,
-          }).copyWith(isSaved: true);
+          final post = Post.fromJson({...data, 'id': data['id'] ?? doc.id}).copyWith(isSaved: true);
           if (post.id.isNotEmpty) {
             result[post.id] = post;
           }
@@ -160,8 +152,7 @@ class SavedPostsStore {
         await prefs.setStringList(savedPostIdsPrefsKey, allSavedIds.toList());
         final cacheMap = <String, Map<String, dynamic>>{
           for (final post in savedPosts)
-            if (allSavedIds.contains(post.id))
-              post.id: post.copyWith(isSaved: true).toJson(),
+            if (allSavedIds.contains(post.id)) post.id: post.copyWith(isSaved: true).toJson(),
         };
         if (isSaved && toggledPost != null) {
           cacheMap[postId] = toggledPost.copyWith(isSaved: true).toJson();
