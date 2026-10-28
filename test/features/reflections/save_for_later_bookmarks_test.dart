@@ -89,45 +89,42 @@ void main() {
       },
     );
 
-    test(
-      'AppwritePostRepository & preferPost preserve isSaved across cloud merges and bookmark cloud-only posts (#669)',
-      () async {
-        SharedPreferences.setMockInitialValues({});
-        final cloudPost = Post(
-          id: 'cloud_77',
-          authorName: 'Miriam K. (Toronto)',
-          spaceKey: 'prayer',
-          toneTag: '[Prayer Request]',
-          content: 'Cloud-origin reflection for quiet bookmarking.',
-          timestamp: DateTime.utc(2026, 10, 27, 18, 0),
-          reactions: {'pray': 3},
-          isSaved: false,
-        );
+    test('AppwritePostRepository & preferPost preserve isSaved across cloud merges and bookmark cloud-only posts (#669)', () async {
+      SharedPreferences.setMockInitialValues({});
+      final cloudPost = Post(
+        id: 'cloud_77',
+        authorName: 'Miriam K. (Toronto)',
+        spaceKey: 'prayer',
+        toneTag: '[Prayer Request]',
+        content: 'Cloud-origin reflection for quiet bookmarking.',
+        timestamp: DateTime.utc(2026, 10, 27, 18, 0),
+        reactions: {'pray': 3},
+        isSaved: false,
+      );
 
-        final fallback = LocalPostRepository(isDevMode: true);
-        final appwriteRepo = AppwritePostRepository(
-          fallback: fallback,
-          mirror: _FakeReflectionMirror([cloudPost]),
-          isDevMode: true,
-        );
+      final fallback = LocalPostRepository(isDevMode: true);
+      final appwriteRepo = AppwritePostRepository(
+        fallback: fallback,
+        mirror: _FakeReflectionMirror([cloudPost]),
+        isDevMode: true,
+      );
 
-        // Fetch posts so cloud_77 is discovered and cached
-        final initialFeed = await appwriteRepo.getPosts(spaceKey: 'prayer');
-        expect(initialFeed.any((p) => p.id == 'cloud_77'), isTrue);
+      // Fetch posts so cloud_77 is discovered and cached
+      final initialFeed = await appwriteRepo.getPosts(spaceKey: 'prayer');
+      expect(initialFeed.any((p) => p.id == 'cloud_77'), isTrue);
 
-        // Bookmark the cloud-origin post
-        await appwriteRepo.toggleSavePost(postId: 'cloud_77');
+      // Bookmark the cloud-origin post
+      await appwriteRepo.toggleSavePost(postId: 'cloud_77');
 
-        // Verify getSavedPosts includes cloud_77 with isSaved: true
-        final saved = await appwriteRepo.getSavedPosts();
-        expect(saved.any((p) => p.id == 'cloud_77' && p.isSaved), isTrue);
+      // Verify getSavedPosts includes cloud_77 with isSaved: true
+      final saved = await appwriteRepo.getSavedPosts();
+      expect(saved.any((p) => p.id == 'cloud_77' && p.isSaved), isTrue);
 
-        // Verify subsequent cloud fetch does NOT overwrite isSaved: true with false
-        final refreshedFeed = await appwriteRepo.getPosts(spaceKey: 'prayer');
-        final refreshedCloudPost = refreshedFeed.firstWhere((p) => p.id == 'cloud_77');
-        expect(refreshedCloudPost.isSaved, isTrue);
-      },
-    );
+      // Verify subsequent cloud fetch does NOT overwrite isSaved: true with false
+      final refreshedFeed = await appwriteRepo.getPosts(spaceKey: 'prayer');
+      final refreshedCloudPost = refreshedFeed.firstWhere((p) => p.id == 'cloud_77');
+      expect(refreshedCloudPost.isSaved, isTrue);
+    });
 
     test('LocalPostRepository toggles saved post and streams saved posts correctly', () async {
       final repo = LocalPostRepository(isDevMode: true);
