@@ -32,7 +32,24 @@ class SimpleSignInScreen extends ConsumerWidget {
     );
 
     if (!firebaseReady) {
-      return Scaffold(body: Center(child: titleText));
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                titleText,
+                const Text(
+                  'Sign-in requires a connection to our authentication service.',
+                  key: Key('sign_in_unavailable'),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return SignInScreen(
