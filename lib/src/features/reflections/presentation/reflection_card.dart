@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/belong_text_styles.dart';
 
+import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../../profile/domain/member_profile.dart';
 import '../../profile/presentation/other_member_profile_dialog.dart';
 import '../data/post_repository.dart';
@@ -140,8 +141,33 @@ class ReflectionCard extends ConsumerWidget {
                     padding: .zero,
                     constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                     tooltip: post.isSaved ? 'Remove from Saved' : 'Save for Later (Private)',
-                    onPressed: () =>
-                        ref.read(postRepositoryProvider).toggleSavePost(postId: post.id),
+                    onPressed: () async {
+                      final wasSaved = post.isSaved;
+                      final repo = ref.read(postRepositoryProvider);
+                      await repo.toggleSavePost(postId: post.id);
+                      if (!context.mounted) return;
+                      final messenger = ScaffoldMessenger.maybeOf(context);
+                      if (messenger == null) return;
+                      messenger.hideCurrentSnackBar();
+                      messenger.showSnackBar(
+                        SnackBar(
+                          key: Key('save_for_later_snackbar_${post.id}'),
+                          duration: const Duration(seconds: 4),
+                          behavior: SnackBarBehavior.floating,
+                          content: Text(
+                            wasSaved
+                                ? 'Removed from Saved for Later.'
+                                : '🔖 Saved to your private Saved for Later space.',
+                          ),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            onPressed: () {
+                              repo.toggleSavePost(postId: post.id);
+                            },
+                          ),
+                        ),
+                      );
+                    },
                     icon: Icon(
                       post.isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                       size: 18,
@@ -154,6 +180,32 @@ class ReflectionCard extends ConsumerWidget {
               ),
             ],
           ),
+          if (post.isSaved && post.spaceKey != 'saved_for_later') ...[
+            const SizedBox(height: 6),
+            Builder(
+              builder: (context) {
+                final spaceInfo = getBelongSpaceInfo(post.spaceKey);
+                return Container(
+                  key: Key('saved_post_origin_space_${post.id}'),
+                  padding: const .symmetric(horizontal: 8.0, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: isContrast
+                        ? Colors.yellow.withValues(alpha: 0.18)
+                        : Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                    borderRadius: .circular(6.0),
+                  ),
+                  child: Text(
+                    '🔖 Saved from ${spaceInfo.emoji} ${spaceInfo.title}',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      color: isContrast ? Colors.yellow : Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
           if (post.specialInterestTag != null && post.specialInterestTag!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Container(

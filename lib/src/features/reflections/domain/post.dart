@@ -57,6 +57,46 @@ class Post {
     isSaved: isSaved ?? this.isSaved,
   );
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'authorName': authorName,
+    'spaceKey': spaceKey,
+    'toneTag': toneTag,
+    if (specialInterestTag != null) 'specialInterestTag': specialInterestTag,
+    if (imageUrl != null) 'imageUrl': imageUrl,
+    'content': content,
+    'timestamp': timestamp.toUtc().toIso8601String(),
+    'reactions': reactions,
+    'isDemo': isDemo,
+    'isSaved': isSaved,
+  };
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    final rawReactions = json['reactions'];
+    final parsedReactions = <String, int>{};
+    if (rawReactions is Map) {
+      for (final entry in rawReactions.entries) {
+        final value = entry.value;
+        if (value is num) {
+          parsedReactions[entry.key.toString()] = value.toInt();
+        }
+      }
+    }
+    return Post(
+      id: json['id']?.toString() ?? '',
+      authorName: json['authorName'] as String? ?? 'Fellowship Member',
+      spaceKey: json['spaceKey'] as String? ?? 'general_chat',
+      toneTag: json['toneTag'] as String? ?? '[Support]',
+      specialInterestTag: json['specialInterestTag'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      content: json['content'] as String? ?? '',
+      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
+      reactions: parsedReactions,
+      isDemo: json['isDemo'] as bool? ?? false,
+      isSaved: json['isSaved'] as bool? ?? true,
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

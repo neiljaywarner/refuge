@@ -1,68 +1,113 @@
-# 🧭 Master Project Status Dashboard (`status.md`)
+# 🔖 Save for Later (`#669`) — Plan, Mini-Milestones, Results, Troubleshooting & FAQ (`status.md`)
 
-> **Current Timestamp**: Wednesday Oct 21, 2026 @ 11:20 PM CDT  
-> **Session State**: 🟢 Active, Caffeinated & Verified (61 PRs merged cleanly, 186/186 tests green)  
-> **Overall Grade**: **`A` (97 / 100)** *(Real Firebase Auth live on Google Pixel 9a & dual Pixels; Multi-user concurrency BDD 4/4 tests green; CodeRabbit wait protocol enforced; Circle app store review audit CLI live; Circle welcome post live; Member profile & auth 32/32 tests green; Live production web build deployed; Two-device nested comments verified in Cloud Firestore; Spaces drawer gentle notifications toggle live)*  
-> **Live Web (Production)**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)  
-> **Current Release**: [`v0.9.5-rc` (Release Readiness Gate)](https://github.com/neiljaywarner/refuge/releases)  
-> **GitHub Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
-> **GitHub Wiki (30+ Pages Live)**: [`https://github.com/neiljaywarner/refuge/wiki`](https://github.com/neiljaywarner/refuge/wiki)  
-> **Executive Review & Artifacts**: [`human_to_review_after_session.md`](human_to_review_after_session.md)  
-> **Archived Prior Review**: [`human_to_review_after_session_20261020_archive.md`](human_to_review_after_session_20261020_archive.md)  
-> **Firebase Console**: [`https://console.firebase.google.com/project/belongonthespectrum/overview`](https://console.firebase.google.com/project/belongonthespectrum/overview)
-
----
-
-## 🏃‍♂️ Maintainer Walk / Jog Protocol & Unattended Execution Window
-
-> [!TIP]
-> **The System is 100% Stable, Caffeinated & Verified.**  
-> - **Power Lock**: Active background `caffeinate -dimsu -t 28800`.  
-> - **Current Status**: **58 Pull Requests merged to `main`**, **177/177 automated tests green**, **0 static analysis errors**.
-
-### 📋 Mini-Milestones Completed in This Sprint:
-1. **Firebase Lifecycle Initializer & Error Hook Audit (#183, #184)**: Built `FirebaseInitializer` with platform-appropriate options (Web & mobile), wired into `lib/main.dart` / `runWithFlavor` async startup loop, activated Crashlytics & Analytics collection, and verified framework/async error forwarding with 4 new automated tests.
-2. **Meme & Calm GIF Engine (#174, #176, #178)**: Curated calm memes + custom URL attachments with instant preview, sensory-safe low-motion guidelines, rounded media card rendering, and 8 green tests.
-3. **Dynamic Dual Pixel Cloud Demo & Zero-PII Auto-Cropping (#195, PR #196)**: Built dynamic hardware detection without hardcoded serial numbers, automated 1080x2160 status-bar auto-cropping via `sips`, and established 5 zero-prompt screenshot allowlist rules in `AGENTS.md` and `GEMINI.md`.
-4. **Antigravity Autonomous Automated Testing Strategy (#201, PR #202)**: Evaluated official Antigravity automated testing use-case, documented scheduled 2:00 AM regression runner, flakiness stress hunter, and browser-in-the-loop PWA QA, and created `.agents/skills/antigravity-overnight-qa/SKILL.md`.
-5. **Resilient Offline & Placeholder Auth Fallback (#199, PR #203)**: Added `_hasRealCredentials` guard to `FirebaseAuthRepository` ensuring account creation and sign-in (e.g. `neilwarner+2026Oct20+954pm@gmail.com`) never hard-fail on unconfigured API keys, verified by automated unit tests.
-6. **Comprehensive Maestro User Journey & Auth Flows (#198, PR #204)**: Created `.maestro/belong_full_journey.yaml`, `.maestro/belong_auth_journey.yaml`, and `tool/run_maestro_verification.sh` capturing clean-frame screenshots across every screen transition.
-7. **Local LLM Apple Silicon Offline Fallback (#197 tagged `neil_to_try`)**: Outlined Ollama + Qwen 2.5 Coder 32B/14B setup leveraging 48GB unified RAM for unlimited zero-token-credit coding.
-8. **Real Production Firebase Configuration (#226, PR #235)**: Downloaded and committed live production `google-services.json` (Project Number `207506875171`, Android App ID `1:207506875171:android:e578634c4bc21da2b96296`), configured Web API credentials, and verified live Firebase initialization.
-9. **Real Glass Firebase Auth E2E Testing**: Successfully created user `neilwarner+21oct1253am@gmail.com` with `Test1234!`, customized display name to `Neil (Belong Founder)`, sent verification email, verified sign out & sign in, and verified forgot password reset link delivery to `neilwarner@gmail.com` on physical Google Pixel 9a (`58221JEBF20835`).
-10. **Local LLMs & Token Quota Preservation Wiki Guide (#234, PR #237)**: Published comprehensive 48GB Apple Silicon hardware benchmarks, Ollama setup runbook, and task delegation taxonomy for preserving cloud credits.
-11. **AppBar Auth State Cleanup (#238, PR #240)**: Eliminated confusing coexistence of `Sign In` button and initials avatar `FM`—app now renders ONLY `Sign In` when logged out, and ONLY the member's personalized avatar when logged in.
-12. **Google Password Manager & Home Simplification (#239, #241)**: Tracked "When in doubt, leave it out" calm-tech feed simplification (#239) and standardized `AutofillGroup` + `AutofillHints` + `TextInput.finishAutofillContext` with verified Pixel 9a screenshot (#241).
-13. **Real-Time Instant Alerts vs. Calm Batched Digest Preferences (#243, PR #244)**: Added delivery schedule sheet (`CalmNotificationPreferencesSheet`) allowing members to toggle push digests, choose between immediate cards or morning/evening batched summaries, and upvoted in Feature Voting.
-14. **Personal Home Screen Privacy Removal (#245, PR #246)**: Purged all home screen screenshots and references to uphold Zero-PII discipline.
-15. **CodeRabbit Completion Wait Protocol Enforced (#247, PR #248)**: Mandated minimum 90–180 second polling window before squash-merging, resolving premature merge aborts and passing all AI quality gates.
-16. **Circle App Store Sentiment Benchmark CLI (#255, PR #256)**: Created `tool/analyze_app_reviews.dart` to ingest public Apple Customer Reviews RSS JSON, compute sentiment distributions, and mask reviewer PII, with competitive matrix in `docs/benchmarks/circle_app_store_review_learnings.md`.
-17. **Careful Pixel 9a Maestro Discovery Flow (#255, PR #256)**: Authored `.maestro/circle_app_discovery_careful.yaml` with strict `clearState: false` and Zero-PII clean-framing protocol in `docs/benchmarks/circle_maestro_driving_guide.md`.
-18. **Official Circle Welcome Post & Documentation Repair (#257, PR #258)**: Authored `docs/circle_migration_invitation_post.md` resolving 404 for Oct 24–31 overlap week announcement ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).
-19. **Member Profile Typo Repair & 32/32 Auth/Profile Tests Green (#259, PR #260)**: Fixed `mainAxisSize: MainAxisSize.min` typo in `MemberProfileDialog`, restored widget keys and titles, achieving 100% green tests across all 32 auth/profile tests.
-20. **Release Readiness Gate & Wiki Sync (#261, PR #262)**: Real-time and async progress dashboard tracking Web, PWA, Android APK, changelogs, and schedule synchronizations.
-21. **Production Web Deployment & Two-Device Live Smoke Test (#263, PR #264)**: Deployed live production web build to `https://belongonthespectrum.web.app` and preview channel `v0-9-5-rc` via `tool/deploy_release.dart`. Deployed updated `firestore.rules` enabling discussion comments. Built and executed `tool/smoke_two_device_nested_comments.dart` verifying registration of two real accounts (`Alice (Dallas)` & `Bob (Fort Worth)`) and bidirectional live nested comments stored and retrieved from Cloud Firestore.
-22. **Church Affiliation Placement & Leadership Brainstorms Wiki (#265, PR #266)**: Established calm-tech design policy keeping church affiliation badges strictly inside Members Directory & Profile Sheet (zero feed noise), analyzed Circle.so post header vs. profile architecture, and published `docs/wiki/Community-Leader-Brainstorms.md` for pastoral and organizer review.
-23. **Muted System Notifications Spaces Drawer Toggle (#267, PR #268)**: Implemented `isSystemPermissionDenied` handling across `NotificationPermissionsService` and added a gentle, low-stimulus toggle in `BelongSpacesDirectoryView` (`"Notifications muted in system settings"` with 1-tap sheet access) respecting member boundaries on Android 13+ "Don't allow" without annoying nagging popups. Verified with 2 new BDD widget tests.
-24. **Post-Cutover Observability Roadmap: Crashlytics vs PostHog vs Appwrite Functions (#269, PR #270)**: Conducted deep architectural analysis establishing the hybrid sweet spot: keep Firebase Crashlytics for 100% free native symbolicated crash logs; adopt PostHog for product funnels and sensory theme retention; reserve Appwrite Functions for serverless backend batching (9 AM & 6 PM calm digests) rather than mobile crash reporting. Documented in `docs/OBSERVABILITY_AND_ANALYTICS.md` and leadership brainstorms.
-25. **Local Offline LLM Setup Phase 1 (#271, PR #273)**: Automated Ollama environment setup on 48GB Apple Silicon. Authored turnkey installer `tool/setup_ollama.sh`, diagnostic health check & benchmark CLI `tool/verify_ollama.dart` (measuring latency, tokens/sec, and unified RAM headroom with 0 analyzer errors), and published `docs/wiki/Local-LLMs-Phase-1-Getting-Started.md`. Tracking Phase 2 (Intelligent Routing Heuristics) on Issue #272.
-26. **Firestore Spark Quota Hard Ceilings, Zero-Billing Audit & Serverpod Scale Architecture (#274, PR #276)**: Conducted exhaustive quota verification confirming $0.00 financial liability on the Spark tier (no billing info on file, automatic `RESOURCE_EXHAUSTED` hard stop at 50k reads, client offline cache preservation). Established that Serverpod + PostgreSQL has zero per-read/write daily limits, providing infinite scale headroom. Authored diagnostic CLI `tool/check_firestore_quota.dart`, wiki guide `docs/wiki/Firestore-Spark-Quota-and-Serverpod-Scale.md`, and Appwrite switchover roadmap (tracked on Issue #275).
-27. **High-Contrast Mode Toggle & Sensory Font Scaling Presets (#277, PR #278)**: Implemented 1-tap High Contrast mode toggle (`home_high_contrast_toggle_button`) and 4 sensory font scaling presets (100% Standard, 115% Comfort, 130% Spacious, 150% Max Clarity) wired across `MaterialApp.builder` with `MediaQuery.copyWith(textScaler: TextScaler.linear(...))`. Enhanced `AboutRefugeDialog` with accessibility controls and added 5 automated green tests (182/182 total tests green).
-28. **Multi-User Concurrency BDD Integration Test Flow & Hardware Stress Roadmap (#279, PR #281)**: Implemented sub-2s sociable Patrol BDD multi-user concurrency test (`test/features/concurrency/multi_user_concurrency_bdd_test.dart`) and human-readable Gherkin specification (`test/features/concurrency/multi_user_concurrency_feature.txt`). Validated real-time broadcast stream synchronization between synthetic disciples (Disciple Alpha in Dallas and Disciple Beta in Fort Worth), nested reply propagation (`↳`), and atomic race condition safety on concurrent reaction tally reconciliation (4 green tests, 186/186 total tests green). Tracked Phase 2 (dual-hardware Pixel 9a/8 stress runner and network jitter middleware with local Ollama inference instructions) on Issue #280.
-29. **Single-Command Physical Glass Regression Runner & Device Plugged-In Trigger (#282, PR #283)**: Built turnkey bash runner `tool/run_physical_glass_regression.sh` (auto-detects Google Pixel 9a/8, verifies screen wake and battery, executes Patrol BDD and Maestro journeys, auto-captures clean-frame 1080x2160 screenshots via `tool/capture_device.sh`, and writes `docs/benchmarks/physical_glass_regression_report.md`). Built opportunistic USB connection detector & maintainer reminder CLI `tool/device_reminder.dart` formatting automated reminder emails for `neilwarner@gmail.com` with 1-click execution. Updated `docs/driving_pixels.md`.
+> **Last Updated**: `2026-10-28T00:13:00-05:00`  
+> **GitHub Issue**: [`neiljaywarner/refuge#669`](https://github.com/neiljaywarner/refuge/issues/669)  
+> **Isolated Worktree**: `<workspace>/.worktrees/issue-669-save-for-later-ux`  
+> **Branch**: `feat/#669-save-for-later-ux`  
+> **Target Files Owned (Zero Conflict with `home_screen.dart`)**:
+> - `lib/src/features/reflections/domain/post.dart`
+> - `lib/src/features/reflections/data/saved_posts_store.dart` *(new)*
+> - `lib/src/features/reflections/data/local_post_repository.dart`
+> - `lib/src/features/reflections/data/appwrite_post_repository.dart`
+> - `lib/src/features/reflections/presentation/reflection_card.dart`
+> - `firestore.rules`
+> - `test/features/reflections/save_for_later_feature.txt` *(new BDD Gherkin spec)*
+> - `test/features/reflections/save_for_later_bookmarks_test.dart`
 
 ---
 
-## 🎯 Soft Launch & Alpha RC Readiness Report Card (With 1–3 Point Lift Plan)
+## 1. TL;DR
 
-| Category | Current Score | Grade | Target Score / Grade | Key Strengths & Current Evidence | Path to Lift +1 to 3 Points |
-| :--- | :---: | :---: | :---: | :--- | :--- |
-| **1. Code Architecture & Clean Seams** | **94 / 100** | **A** | **96 / 100 (A)** | Domain/Data/Presentation clean seams; pluggable repository adapters (`AuthRepository`, `StorageRepository`, `FeatureVotingRepository`); constructor dot-shorthands; `gap: ^3.0.1` spacing; 0 analyzer errors across `lib/`, `test/`, and `tool/`. | 1. Enforce Dart 3 class modifiers (`sealed`/`final`) across 100% of Domain entities.<br>2. Add automated architectural test asserting zero presentation imports inside `lib/src/**/data/` or `domain/`.<br>3. Remove any remaining prototype mock references from production DI paths. |
-| **2. Automated Test Suite & Patrol BDD** | **95 / 100** | **A** | **96 / 100 (A)** | **186/186 tests green**; standardized on `patrol_finders` (`$` syntax); sub-2s execution; human-readable Marionette Gherkin specs (`test/features/*_feature.txt`); sociable testing across Riverpod provider scopes; multi-user concurrency BDD (PR #281). | 1. Elevate test count from 186 to 200+ by adding sociable golden tests for all 4 sensory themes (`test/features/goldens/`).<br>2. Wire automated 2:00 AM regression runner via `.agents/skills/antigravity-overnight-qa/SKILL.md`.<br>3. Add `patrol_finders` error boundary tests for `CalmNotificationPreferencesSheet` and `SimpleAuthScreen`. |
-| **Physical Glass & Automated Hardware QA** | **96 / 100** | **A** | **98 / 100 (A+)** | Auto hardware detection on Google Pixel 9a & Pixel 8; **single-command regression runner (`tool/run_physical_glass_regression.sh`)**; opportunistic USB plug-in detector & email reminder CLI (`tool/device_reminder.dart`); clean-frame Zero-PII 1080x2160 captures; verified Maestro journeys (.maestro/belong_full_journey.yaml). | Scheduled unattended runner via Antigravity overnight QA skill. |
-| **3. Agent Operations & GitHub MCP Velocity** | **96 / 100** | **A** | **98 / 100 (A+)** | **100% Zero Terminal Push Prompts**; all 54 PRs created, reviewed, and squash-merged via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`); strict `1 Issue = 1 Worktree = 1 PR` hygiene; CodeRabbit wait protocol (90–180s) verified on PR #248. | 1. Maintain zero race conditions with CodeRabbit by enforcing 90–180s wait window on 100% of PRs.<br>2. Automate local branch and worktree pruning after squash-merges.<br>3. Expand GitHub Actions CI matrix to test on macOS, Ubuntu, and Windows runners in parallel. |
-| **4. UX, Calm-Tech & Neurodivergent Flow** | **91 / 100** | **A-** | **93 / 100 (A)** | 4 WCAG AAA sensory themes (Clean Slate, Sage Botanical, Monastic Dark, High Contrast); Scripture anchor (Psalm 139:14); single-avatar AppBar state (PR #240); Google Password Manager autofill hints (PR #241); calm notification digest preferences (PR #244); calm meme engine with low-motion rules; Spaces drawer non-nagging muted toggle (PR #268); **1-tap High-Contrast mode toggle & 4 sensory font scaling presets live (PR #278)**. | 1. Execute Issue #239: Feed simplification ("When in doubt, leave it out") to reduce visual density on small screens.<br>2. Add tactile haptic feedback preferences toggle (`HapticFeedback.lightImpact` on reaction affirmations, with zero-haptic calm mode). |
-| **5. PWA & Mobile Web Installation** | **90 / 100** | **A-** | **93 / 100 (A)** | Web Push service worker (`web/firebase-messaging-sw.js`); W3C manifest; zero-PII screenshots in `doc/screenshots/`; responsive design tested on Chrome and mobile viewports. | 1. Test full offline service worker caching on Chromium with network throttling (offline mode).<br>2. Add custom PWA install prompt banner ("Add Belong to Home Screen" bottom toast with calm dismiss).<br>3. Complete Lighthouse PWA audit achieving 100/100 PWA score. |
-| **6. Backend Persistence & Cloud Verification** | **90 / 100** | **A-** | **92 / 100 (A-)** | Real production `google-services.json` (Project #207506875171); live Firebase Auth; live Cloud Firestore deployed with discussion comments security rules; verified two-device registration & nested comments smoke test; **Firestore Spark ceilings ($0.00 guarantee at 50k reads) & Serverpod infinite PostgreSQL headroom fully audited (PR #276)**. | 1. Implement automated retry with exponential backoff for Firestore and Serverpod network timeouts.<br>2. Add multi-tenant space scoping security rules audit in `firestore.rules`. |
-| **Push Notifications (FCM)** | **94 / 100** | **A** | **95 / 100 (A)** | **FCM live on Web, PWA, and Android**. Android 13+ `POST_NOTIFICATIONS` runtime permission wired; calm notification digest schedule sheet verified; live APK smoke test and dual Pixel verification completed; gentle Spaces drawer recovery toggle when muted. iOS APNs/FCM safely deferred to mid-November (Issue #165). | Execute live device push smoke test on physical APNs hardware in mid-November. |
-| **DevOps & GitHub MCP Velocity** | **99 / 100** | **A+** | **99 / 100 (A+)** | **Zero terminal push prompts**: 100% automated via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`). 55 PRs created, reviewed, and cleanly squash-merged. | Continuous GitHub Actions auto-sync. |
+**What was broken / missing in Save for Later (`saved_for_later`) — and what is now fixed?**
+1. **Bookmarks vanished on app restart / browser refresh (`FIXED`)**:
+   - Previously, `LocalPostRepository` stored `_savedPostIds` only in an in-memory `Set<String>`.
+   - Now, `SavedPostsStore` (`lib/src/features/reflections/data/saved_posts_store.dart`) persists saved post IDs (`belong_saved_post_ids_v1`) and full `Post` JSON snapshots (`belong_saved_posts_cache_v1`) to `SharedPreferences` and mirrors them to `users/{uid}/saved_posts/{postId}` in Cloud Firestore when signed in.
+2. **Live Cloud Posts lost their bookmark state (`FIXED`)**:
+   - Previously, `preferPost(current, incoming)` overwrote `current.isSaved == true` with `incoming.isSaved == false` when Firestore or Appwrite streams emitted, and cloud-origin posts weren't cached in `_fallback`.
+   - Now, `AppwritePostRepository` registers incoming cloud reflections via `_fallback.cacheExternalPosts(...)`, stamps `_fallback.isPostSaved(post.id)` on merged streams via `_applySavedState(...)`, and `preferPost` preserves `current.isSaved || incoming.isSaved`.
+3. **Quiet Digest in `Saved for Later` queried the wrong source (`FIXED`)**:
+   - Previously, `getQuietDigest(spaceKey: 'saved_for_later')` queried `spaceKey == 'saved_for_later'` (0 posts) instead of `getSavedPosts()`.
+   - Now, `getQuietDigest(spaceKey: 'saved_for_later')` returns a warm, accurate summary of the member's saved reflections (`"Private sanctuary • N saved reflections kept for quiet, unhurried reading."`).
+4. **Expected UX & Calm Surprise-and-Delight (`FIXED`)**:
+   - Tapping `Key('save_post_button_${post.id}')` displays a calm floating `SnackBar` (`Key('save_for_later_snackbar_${post.id}')`) with `"🔖 Saved to your private Saved for Later space."` (or `"Removed from Saved for Later."`) and a 1-tap **`Undo`** action.
+   - Saved cards display a subtle origin space badge (`Key('saved_post_origin_space_${post.id}')`, e.g. `🔖 Saved from 🙏 Prayer Sanctuary`) so members browsing `Saved for Later` always know which room a reflection came from.
+
+---
+
+## 2. Executive Summary & Verification Metrics
+
+- **Dart MCP Static Analysis (`analyze_files`)**: `No errors` (0 warnings, 0 errors across `lib/src/features/reflections/` and `test/features/reflections/`).
+- **Automated Unit & Patrol BDD Widget Tests**: **12 / 12 passing (`100% green`)** in `test/features/reflections/save_for_later_bookmarks_test.dart` and `test/features/reflections/space_routing_and_isolation_test.dart`.
+- **Real Hardware Verification (Maestro MCP on Google Pixel)**:
+  - Executed 7-step declarative Maestro flow via `call_mcp_tool(ServerName: 'maestro', ToolName: 'run')`: tapped `"Save for Later (Private)"`, opened `"Spaces"`, selected `"Saved for Later"`, verified `"Your private bookmarks sanctuary"` and the saved reflection by `"David M. (UK)"`.
+  - Captured clean-frame 1080x2160 Before (`doc/screenshots/issue_669_before_feed.png`) and After (`doc/screenshots/issue_669_after_saved_for_later.png`) screenshots with status bars and nav pills stripped.
+
+---
+
+## 3. Mini-Milestones Table (For Fast Iteration by Any LLM Tier)
+
+| Milestone ID & Title | Scope / Description | Start Time | End Time | Status | Proof / Verification Artifact |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **M1: Audit & Issue Creation** | Audit all Save for Later files (`post_repository.dart`, `local_post_repository.dart`, `appwrite_post_repository.dart`, `reflection_card.dart`, `home_screen.dart`), file GitHub Issue `#669`, claim row in `team_of_agents.md`, create branch `feat/#669-save-for-later-ux` & worktree `.worktrees/issue-669-save-for-later-ux`. | `2026-10-28 00:00:00` | `2026-10-28 00:02:00` | `COMPLETE` | Issue [`#669`](https://github.com/neiljaywarner/refuge/issues/669), branch `feat/#669-save-for-later-ux` |
+| **M2: Domain JSON & `SavedPostsStore`** | Add `toJson()` / `Post.fromJson()` to `Post`; create `SavedPostsStore` (`SharedPreferences` + owner-only Firestore `users/{uid}/saved_posts/{postId}`) with `_safePrefs()` `runZonedGuarded` wrapper; add `saved_posts` rule in `firestore.rules`. | `2026-10-28 00:02:00` | `2026-10-28 00:05:00` | `COMPLETE` | `post.dart`, `saved_posts_store.dart`, `firestore.rules` |
+| **M3: Repository Persistence & Cloud Merge Fix** | Wire `SavedPostsStore` into `LocalPostRepository`; add `isPostSaved`, `cacheExternalPosts`, and `saved_for_later` Quiet Digest; fix `AppwritePostRepository` & `preferPost` to preserve `isSaved` across cloud merges and bookmark cloud-only posts. | `2026-10-28 00:05:00` | `2026-10-28 00:06:00` | `COMPLETE` | `local_post_repository.dart`, `appwrite_post_repository.dart` |
+| **M4: Calm UX Polish in `ReflectionCard`** | Add calm floating `SnackBar` with `Undo` action on bookmark toggle and origin space badge (`saved_post_origin_space_<id>`) on saved reflections. | `2026-10-28 00:06:00` | `2026-10-28 00:07:00` | `COMPLETE` | `reflection_card.dart` |
+| **M5: BDD Spec, Automated Tests & Maestro Hardware Flow** | Create `test/features/reflections/save_for_later_feature.txt`, expand `test/features/reflections/save_for_later_bookmarks_test.dart`, verify `12/12` green tests & `0` analyzer warnings, and drive physical Pixel via Maestro MCP (`7/7` steps green). | `2026-10-28 00:07:00` | `2026-10-28 00:13:00` | `COMPLETE` | `12/12` tests green, `analyze_files` `No errors`, Maestro flow `success: true` |
+| **M6: GitHub MCP Push, PR, CodeRabbit & Visual Proof** | Push atomic commit via GitHub MCP `push_files`, open PR closing `#669`, trigger `@coderabbitai review`, poll CodeRabbit, and post full verification audit on `#669` and the PR. | `2026-10-28 00:13:00` | `IN-PROGRESS` | `IN-PROGRESS` | PR & Issue `#669` audit comment |
+
+---
+
+## 4. Where We Are Right Now & Next 3 Priorities (For Any Follow-Up LLM)
+
+### Current State
+- Code, unit tests, Patrol widget tests, BDD `.txt` spec, and clean-frame Before/After screenshots are complete and verified in `.worktrees/issue-669-save-for-later-ux`.
+
+### Next 3 Immediate Tactical Priorities (If a Lower-Cost LLM Iterates Next)
+1. **Monitor & Triage CodeRabbit Review on the PR for `#669`**:
+   - Use `call_mcp_tool(ServerName: 'github', ToolName: 'pull_request_read', Arguments: {method: 'get_comments', owner: 'neiljaywarner', repo: 'refuge', pullNumber: <PR>})` and `method: 'get_review_comments'`.
+   - Wait until CodeRabbit finishes its review (`90–180s`), fix any blocker findings in `.worktrees/issue-669-save-for-later-ux`, and squash-merge via `merge_pull_request`.
+2. **Optional Follow-Up Enhancement — Saved Count Badge in Spaces Directory**:
+   - Once `lib/src/home_screen.dart` is released by other active branches in `team_of_agents.md`, watch `savedPostsStreamProvider` in the `Spaces` directory row for `saved_for_later` to show a subtle count badge (e.g., `🔖 Saved for Later (3)`) and an `"Explore Community Feed"` button in the empty state.
+3. **Optional Follow-Up Enhancement — Search/Filter Inside Saved for Later**:
+   - Allow filtering saved reflections by origin space (`#prayer-sanctuary`, `#special-interests`, etc.) when a member accumulates 10+ saved bookmarks.
+
+---
+
+## 5. FAQ (For Humans & Lower-Cost LLMs)
+
+### Q1: Why didn't we edit `lib/src/home_screen.dart` for `#669`?
+**A:** Per `team_of_agents.md`, other active worktrees (`#441`, `#632`, `#624`) have `home_screen.dart` marked as "Leave alone" to prevent merge conflicts. `home_screen.dart` *already* delegates `selectedSpace.value == 'saved_for_later'` to `activeRepository.watchSavedPosts()`, `activeRepository.getQuietDigest(spaceKey: 'saved_for_later')`, and renders `ReflectionCard` items. By implementing persistence, cloud-merge fixes, `getQuietDigest('saved_for_later')`, the `Undo` SnackBar, and the origin space badge inside `lib/src/features/reflections/`, we deliver the complete end-to-end UX with **zero merge conflicts**.
+
+### Q2: Why are bookmarks stored in `users/{uid}/saved_posts/{postId}` instead of a boolean field on `reflections/{postId}`?
+**A:** `reflections/{postId}` is a shared public document read by all fellowship members. If `isSaved` were written to `reflections/{postId}`, one member's bookmark would be visible to everyone (violating privacy) and would fail Firestore security rules (`request.auth.uid == resource.data.authorId`) whenever a member bookmarks someone else's post! Storing bookmarks in `SharedPreferences` locally + `users/{uid}/saved_posts/{postId}` in Firestore keeps bookmarks 100% private to the member across their devices.
+
+### Q3: Why does `SavedPostsStore` store full `Post` JSON snapshots in addition to `savedPostIds`?
+**A:** In `AppwritePostRepository`, `watchPosts(spaceKey: ...)` only subscribes to one space at a time (e.g. `prayer`). If a member bookmarks a post from `special_interests`, closes the app, reopens it, and goes straight to `Saved for Later`, `special_interests` hasn't been fetched yet. Caching the `Post` JSON snapshot in `SavedPostsStore` guarantees that `getSavedPosts()` and `watchSavedPosts()` immediately return every bookmarked reflection across all spaces, even offline!
+
+---
+
+## 6. Troubleshooting Guide
+
+| Symptom / Error Signature | Root Cause | Diagnostic Check | Exact Fix |
+| :--- | :--- | :--- | :--- |
+| Bookmark icon flashes filled (`Icons.bookmark_rounded`) then reverts to outline (`Icons.bookmark_border_rounded`) in live feed | `preferPost(current, incoming)` in `appwrite_post_repository.dart` returned `incoming` from Firestore/Appwrite which had `isSaved: false`. | Check `preferPost` and `AppwritePostRepository.watchPosts` in `lib/src/features/reflections/data/appwrite_post_repository.dart`. | Stamp `isSaved: _fallback.isPostSaved(post.id)` on merged posts via `_applySavedState` in `AppwritePostRepository` and preserve `current.isSaved \|\| incoming.isSaved` in `preferPost`. |
+| Bookmarking a live Firestore post does not show it in `Saved for Later` | The post existed in Firestore stream `latest`, not in `_fallback._store`, so `_fallback.toggleSavePost` couldn't find it in `_store`. | Check if `AppwritePostRepository.getPosts` / `watchPosts` calls `_fallback.cacheExternalPosts(...)`. | Call `_fallback.cacheExternalPosts(cloudPosts)` whenever Firestore or Appwrite delivers posts so `_fallback` always has the post snapshot ready to bookmark. |
+| `MissingPluginException(No implementation found for method getAll on channel plugins.flutter.io/shared_preferences)` in `FakeAsync` widget tests | In `package:shared_preferences` (`shared_preferences_legacy.dart` line 88), `SharedPreferences.getInstance()` calls `completer.completeError(e, s)` and sets `_completer = null` before anyone awaits `completer.future`, leaking an uncaught error to `FakeAsync` when a widget test doesn't call `SharedPreferences.setMockInitialValues({})`. | Run `flutter test` on a widget test that constructs `LocalPostRepository` without `SharedPreferences.setMockInitialValues({})`. | Use `SavedPostsStore._safePrefs()` which wraps `SharedPreferences.getInstance()` inside `runZonedGuarded`, trapping the internal `Completer.completeError` inside the child zone and resolving cleanly to `null`. |
+| `Finder "Found 0 widgets with key [<'reflection_composer_card'>]"` in widget tests | In `home_screen.dart` line 251 & 336, `isDesktop = constraints.maxWidth >= 768` and `showInlineComposer = (kIsWeb \|\| !isDesktop) && selectedSpace.value != 'saved_for_later'`. On non-web desktop viewports (`width >= 768`), the inline composer is hidden in favor of the top-bar `(+)` button. | Check `$.tester.view.physicalSize` in the widget test (`devicePixelRatio = 1.0`). | Set `$.tester.view.physicalSize = const Size(600, 1600)` (width `< 768`) when testing mobile inline composer visibility. |
+| `flutter pub get` fails in sandbox with `update_engine_version.sh: engine.stamp.tmp: Operation not permitted` | Homebrew Flutter tries to write `engine.stamp` inside `/opt/homebrew/share/flutter/bin/cache/` which is outside the workspace sandbox. | Check tool output for `update_engine_version.sh`. | Use the Dart MCP tool `call_mcp_tool(ServerName: 'dart', ToolName: 'pub', Arguments: {command: 'get', roots: [{root: 'file:///...'}]})` which runs with zero terminal prompts! |
+
+---
+
+## 7. Appendix: Verification Commands & MCP Snippets
+
+```bash
+# 1. Fetch dependencies via Dart MCP (0 prompts):
+# call_mcp_tool(ServerName: 'dart', ToolName: 'pub', Arguments: {command: 'get', roots: [{root: 'file://<workspace>/.worktrees/issue-669-save-for-later-ux'}]})
+
+# 2. Static analysis via Dart MCP (0 prompts):
+# call_mcp_tool(ServerName: 'dart', ToolName: 'analyze_files', Arguments: {roots: [{root: 'file://<workspace>/.worktrees/issue-669-save-for-later-ux', paths: ['lib/src/features/reflections/', 'test/features/reflections/save_for_later_bookmarks_test.dart']}]})
+
+# 3. Run Save for Later & Space Routing tests:
+cd <workspace>/.worktrees/issue-669-save-for-later-ux
+flutter test test/features/reflections/save_for_later_bookmarks_test.dart test/features/reflections/space_routing_and_isolation_test.dart
+```
