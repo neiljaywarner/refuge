@@ -1,22 +1,36 @@
-import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
+import '../../account_deletion/data/account_deletion_provider.dart';
+import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../profile/domain/member_profile.dart';
 import '../../reflections/data/post_repository.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 import '../../../home_screen.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_access_policy.dart';
-import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
-import 'simple_auth.dart';
+import 'simple_sign_in_screen.dart';
 
-/// Blocks the main app until the auth session is signed in and, in production,
-/// email-verified. Reads [authRepositoryProvider], not [memberProfileProvider].
+// TODO: troubleshoot later - the old SimpleAuthScreen (simple_auth.dart) and
+// dev example account buttons were removed from this gate for #667. The old
+// screen is kept in the repo; this gate now uses the plain firebase_ui_auth
+// SignInScreen only.
+
+/// Blocks the main app until the member is:
+/// 1. signed in (plain [SimpleSignInScreen]),
+/// 2. not soft-deleted (else [ReturnAfterDeletePanel]), and
+/// 3. in production only, email-verified.
+///
+/// Reads [authRepositoryProvider], not [memberProfileProvider].
 class AuthGate extends ConsumerStatefulWidget {
-  const AuthGate({super.key, required this.repository, required this.themeNotifier});
+  const AuthGate({
+    super.key,
+    required this.repository,
+    required this.themeNotifier,
+  });
 
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
@@ -27,17 +41,35 @@ class AuthGate extends ConsumerStatefulWidget {
 
 class _AuthGateState extends ConsumerState<AuthGate> {
   AuthSession? _reloadedSession;
-  String? _devExampleError;
-  bool _devExampleLoading = false;
 
-  AuthSession _effectiveSession(AuthSession streamSession) => _reloadedSession ?? streamSession;
+  /// Soft-delete lookup, cached per user id so rebuilds do not re-query.
+  String? _deleteCheckUserId;
+  Future<bool>? _deleteCheck;
+
+  /// Firebase UI registration does not send a verification email, so the
+  /// gate sends one the first time a prod member lands on the verify wall.
+  String? _verificationSentFor;
+
+  AuthSession _effectiveSession(AuthSession streamSession) =>
+      _reloadedSession ?? streamSession;
+
+  Future<bool> _isSoftDeleted(String userId) {
+    if (_deleteCheckUserId != userId || _deleteCheck == null) {
+      _deleteCheckUserId = userId;
+      _deleteCheck = ref
+          .read(accountDeletionRepositoryProvider)
+          .isSignInBlocked(userId);
+    }
+    return _deleteCheck!;
+  }
 
   @override
   Widget build(BuildContext context) {
     final flavor = ref.watch(appFlavorProvider);
     final streamValue = ref.watch(authSessionStreamProvider);
     final repo = ref.read(authRepositoryProvider);
-    final streamSession = streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
+    final streamSession =
+        streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
 
     ref.listen<AsyncValue<AuthSession>>(authSessionStreamProvider, (_, next) {
       if (next.hasValue) {
@@ -50,28 +82,73 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     if (!sessionMayEnterCommunity(session)) {
       return KeyedSubtree(
         key: const Key('auth_gate_sign_in_wall'),
-        child: _SignInWall(
-          devExampleError: _devExampleError,
-          devExampleLoading: _devExampleLoading,
-          flavor: flavor,
-          onDevExampleTap: _signInWithDevExample,
-        ),
+        child: SimpleSignInScreen(firebaseReady: Firebase.apps.isNotEmpty),
       );
     }
 
-    if (mustVerifyEmail(flavor) && !session.emailVerified) {
-      return KeyedSubtree(
-        key: const Key('auth_gate_verify_email_wall'),
-        child: _VerifyEmailWall(
-          email: session.email,
-          onReload: _reloadVerified,
-          onResend: _resendVerification,
-          onSignOut: _signOut,
-        ),
-      );
-    }
+    return FutureBuilder<bool>(
+      future: _isSoftDeleted(session.userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            key: Key('auth_gate_checking_account'),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    return RefugeHomeScreen(repository: widget.repository, themeNotifier: widget.themeNotifier);
+        if (snapshot.data ?? false) {
+          return Scaffold(
+            key: const Key('auth_gate_soft_deleted_wall'),
+            appBar: AppBar(title: const Text('Come back?'), centerTitle: true),
+            body: SafeArea(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ReturnAfterDeletePanel(
+                  onStayDeleted: _signOut,
+                  onRestore: () => _restore(session.userId),
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (mustVerifyEmail(flavor) && !session.emailVerified) {
+          _sendVerificationOnce(session.userId);
+          return KeyedSubtree(
+            key: const Key('auth_gate_verify_email_wall'),
+            child: _VerifyEmailWall(
+              email: session.email,
+              onReload: _reloadVerified,
+              onResend: _resendVerification,
+              onSignOut: _signOut,
+            ),
+          );
+        }
+
+        return RefugeHomeScreen(
+          repository: widget.repository,
+          themeNotifier: widget.themeNotifier,
+        );
+      },
+    );
+  }
+
+  void _sendVerificationOnce(String userId) {
+    if (_verificationSentFor == userId) return;
+    _verificationSentFor = userId;
+    _resendVerification().catchError((_) {});
+  }
+
+  Future<void> _restore(String userId) async {
+    await ref
+        .read(accountDeletionRepositoryProvider)
+        .restoreSelf(userId: userId, confirmed: true);
+    if (!mounted) return;
+    ref.read(memberProfileProvider.notifier).publishDirectoryAfterRestore();
+    setState(() {
+      _deleteCheckUserId = userId;
+      _deleteCheck = Future.value(false);
+    });
   }
 
   Future<void> _reloadVerified() async {
@@ -85,118 +162,12 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   }
 
   Future<void> _signOut() async {
-    setState(() => _reloadedSession = null);
-    await ref.read(memberProfileProvider.notifier).signOut();
-  }
-
-  Future<void> _signInWithDevExample(DevExampleAccount account) async {
-    if (devExamplePassword.isEmpty) return;
     setState(() {
-      _devExampleLoading = true;
-      _devExampleError = null;
+      _reloadedSession = null;
+      _deleteCheck = null;
+      _deleteCheckUserId = null;
     });
-    try {
-      final notifier = ref.read(memberProfileProvider.notifier);
-      try {
-        await notifier.signInWithPassword(email: account.email, password: devExamplePassword);
-      } on AuthException catch (e) {
-        if (e.code == 'user-not-found') {
-          await notifier.registerWithPassword(
-            email: account.email,
-            password: devExamplePassword,
-            displayName: account.displayName,
-            bio: account.bio,
-            comfortBadges: account.comfortBadges,
-            icocChurchAffiliation: account.icocChurchAffiliation,
-          );
-        } else {
-          rethrow;
-        }
-      }
-      notifier.signIn(
-        displayName: account.displayName,
-        email: account.email,
-        bio: account.bio,
-        comfortBadges: account.comfortBadges,
-        icocChurchAffiliation: account.icocChurchAffiliation,
-      );
-    } on AuthException catch (e) {
-      setState(() => _devExampleError = e.message);
-    } catch (e) {
-      setState(() {
-        _devExampleError = AuthException.fromFirebase(e).message;
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _devExampleLoading = false);
-      }
-    }
-  }
-}
-
-class _SignInWall extends StatelessWidget {
-  const _SignInWall({
-    required this.flavor,
-    required this.onDevExampleTap,
-    required this.devExampleError,
-    required this.devExampleLoading,
-  });
-
-  final AppFlavor flavor;
-  final Future<void> Function(DevExampleAccount account) onDevExampleTap;
-  final String? devExampleError;
-  final bool devExampleLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final showExamples = showDevExampleAccounts(
-      flavor: flavor,
-      isWeb: kIsWeb,
-      platform: defaultTargetPlatform,
-    );
-    final passwordReady = devExamplePassword.isNotEmpty;
-
-    return Column(
-      children: [
-        Expanded(child: SimpleAuthScreen(popOnSuccess: false, allowOfflineTestSignIn: false)),
-        if (showExamples) ...[
-          const Divider(height: 1),
-          Padding(
-            padding: const .fromLTRB(16, 12, 16, 24),
-            child: Column(
-              crossAxisAlignment: .stretch,
-              children: [
-                if (!passwordReady)
-                  Text(
-                    devExamplePasswordMissingMessage,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                for (final account in devExampleAccounts) ...[
-                  const SizedBox(height: 8),
-                  FilledButton.tonal(
-                    key: Key(account.semanticsKey),
-                    onPressed: passwordReady && !devExampleLoading
-                        ? () => onDevExampleTap(account)
-                        : null,
-                    child: Text(account.shortcutLabel),
-                  ),
-                ],
-                if (devExampleError != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    devExampleError!,
-                    key: const Key('dev_example_sign_in_error'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
+    await ref.read(memberProfileProvider.notifier).signOut();
   }
 }
 
