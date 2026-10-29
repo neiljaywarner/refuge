@@ -94,6 +94,7 @@ test/features/reflections/appwrite_post_repository_test.dart
 test/features/reflections/comment_repository_test.dart
 test/features/reflections/feed_sort_controls_test.dart
 test/features/reflections/feed_sort_service_test.dart
+test/features/reflections/firestore_comment_sync_test.dart
 test/features/reflections/post_and_dm_timestamps_test.dart
 test/features/reflections/post_creation_menu_test.dart
 test/features/reflections/post_repository_factory_test.dart
