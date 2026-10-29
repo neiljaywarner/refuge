@@ -4,7 +4,35 @@ All notable changes, accomplishments, and planned release milestones leading up 
 
 ---
 
-## [Current Release — `v0.9.5-rc` / Release Readiness Gate & Cutover Sync (Oct 21–22, 2026)]
+## [v0.9.2 — Members-Only Alpha for Real Testers (Oct 28, 2026)]
+
+Production: https://belongonthespectrum.web.app · Highlights: [`docs/release_highlights/v0.9.2.md`](docs/release_highlights/v0.9.2.md)
+
+### Added
+- Cross-member Firestore comments (read/watch + `comments_dev` split) and care reactions for any member, with reaction-only security rules (#662 / PR #677).
+- Save for Later persistence (SharedPreferences + `users/{uid}/saved_posts`), Undo SnackBar, origin space badge (#669 / PR #670).
+- Verify-email wall status messages and busy guard (#661 / PR #678).
+- Compact home header: welcome banner on top, Space/Filter/Sort pop-ups (#671 / PR #675).
+- Clean Member Profile with first/last name, avatar, and full account delete (#672 / PR #676).
+- Direct messages with real recipients, closed-app push via Appwrite `dm-push` (#441, #625, #624 / PR #630).
+- Member self-delete and return, Circle-style admin ban (#550, #592, #585).
+- Photo crop/zoom, password show/hide, sticky space room title and breadcrumb (#587, #593, #618).
+
+### Changed
+- Sign-in is required. Firestore has no guest or anonymous access. Production requires email verification (#575, #605, #668).
+- Serverpod Cloud is off. Firebase Auth and Firestore are the backend (#546).
+- Main deploys the dev site only. Production deploys only on a release (#586).
+- Feedback Firestore write is bounded by a 6 s timeout. Appwrite MCP config added (#655 / PR #658).
+
+### Fixed
+- Monastic Dark contrast, narrow-web Vote & Feedback hit target, browser Back navigation, composer overflow (#617, #619, #499, #557, #568).
+
+### Known follow-ups
+- #681 order-dependent flakes in the CI manifest. #679 commit `pubspec.lock`. #659 Appwrite bridge from feedback to GitHub issues. #664 starter posts for empty spaces.
+
+---
+
+## [Earlier milestone — `v0.9.5-rc` / Release Readiness Gate & Cutover Sync (Oct 21–22, 2026)]
 
 ### 🚀 Major Accomplishments & Cutover Enhancements (Oct 21–22, 2026)
 
