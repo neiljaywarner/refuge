@@ -67,13 +67,10 @@ class PrivateIssuePayload {
 /// `neiljaywarner/belong_feedback` by an organizer. This class does not call
 /// the GitHub API and does not store an API token.
 class PrivateFeedbackRouter {
-  const PrivateFeedbackRouter({
-    this.privateRepository = defaultPrivateRepository,
-  });
+  const PrivateFeedbackRouter({this.privateRepository = defaultPrivateRepository});
 
   /// Default private sibling repository for confidential triage.
-  static const String defaultPrivateRepository =
-      'neiljaywarner/belong_feedback';
+  static const String defaultPrivateRepository = 'neiljaywarner/belong_feedback';
 
   /// GitHub REST API enforces a 65,536-character maximum on issue bodies.
   static const int maxGitHubIssueBodyLength = 65536;
@@ -102,9 +99,7 @@ class PrivateFeedbackRouter {
     final now = timestamp ?? DateTime.now();
     final cleanMessage = message.trim();
     final firstLine = cleanMessage.split('\n').first;
-    final truncatedTitle = firstLine.length > 60
-        ? '${firstLine.substring(0, 57)}...'
-        : firstLine;
+    final truncatedTitle = firstLine.length > 60 ? '${firstLine.substring(0, 57)}...' : firstLine;
 
     final title = '[${sentiment.label}] $truncatedTitle';
 
@@ -117,9 +112,7 @@ class PrivateFeedbackRouter {
     final buffer = StringBuffer()
       ..writeln('## Community Feedback Submission')
       ..writeln()
-      ..writeln(
-        '- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})',
-      )
+      ..writeln('- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})')
       ..writeln('- **Submitted At**: `${now.toIso8601String()}`')
       ..writeln('- **Target Triage Repo**: `$privateRepository`');
 
