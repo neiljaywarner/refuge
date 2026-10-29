@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
 import 'package:refuge4serverpod/src/app.dart';
+import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
+import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.dart';
 import 'package:refuge4serverpod/src/features/auth/presentation/simple_auth.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/appwrite_post_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -206,18 +208,37 @@ void main() {
         });
 
         final repo = LocalPostRepository(isDevMode: true);
+        final fakeAnalytics = CommunityAnalyticsService(flavor: AppFlavor.dev);
 
-        await $.pumpWidget(RefugeApp(repository: repo, homeOverride: const RefugeHomeScreen()));
+        await $.pumpWidget(
+          RefugeApp(
+            repository: repo,
+            homeOverride: const RefugeHomeScreen(),
+            overrides: [communityAnalyticsServiceProvider.overrideWithValue(fakeAnalytics)],
+          ),
+        );
         await $.pumpAndSettle();
 
         await $(Key('save_post_button_1')).tap();
         await $.pumpAndSettle();
         expect((await repo.getSavedPosts()).any((p) => p.id == '1'), isTrue);
+        expect(
+          fakeAnalytics.dispatchedEventsForTesting.any(
+            (e) => e['name'] == 'post_saved' && e['post_id'] == '1',
+          ),
+          isTrue,
+        );
 
         // Tap Undo on the SnackBar
         await $('Undo').tap();
         await $.pumpAndSettle();
         expect(await repo.getSavedPosts(), isEmpty);
+        expect(
+          fakeAnalytics.dispatchedEventsForTesting.any(
+            (e) => e['name'] == 'post_unsaved' && e['post_id'] == '1' && e['is_undo'] == true,
+          ),
+          isTrue,
+        );
       },
     );
 

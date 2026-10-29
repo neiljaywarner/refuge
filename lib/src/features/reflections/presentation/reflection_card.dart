@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/firebase/community_analytics_service.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
 import '../../fellowship_spaces/domain/fellowship_space.dart';
@@ -144,7 +147,15 @@ class ReflectionCard extends ConsumerWidget {
                     onPressed: () async {
                       final wasSaved = post.isSaved;
                       final repo = ref.read(postRepositoryProvider);
+                      final analytics = ref.read(communityAnalyticsServiceProvider);
                       await repo.toggleSavePost(postId: post.id);
+                      unawaited(
+                        analytics.logPostSaved(
+                          postId: post.id,
+                          isSaved: !wasSaved,
+                          spaceKey: post.spaceKey,
+                        ),
+                      );
                       if (!context.mounted) return;
                       final messenger = ScaffoldMessenger.maybeOf(context);
                       if (messenger == null) return;
@@ -163,6 +174,14 @@ class ReflectionCard extends ConsumerWidget {
                             label: 'Undo',
                             onPressed: () {
                               repo.toggleSavePost(postId: post.id);
+                              unawaited(
+                                analytics.logPostSaved(
+                                  postId: post.id,
+                                  isSaved: wasSaved,
+                                  spaceKey: post.spaceKey,
+                                  isUndo: true,
+                                ),
+                              );
                             },
                           ),
                         ),

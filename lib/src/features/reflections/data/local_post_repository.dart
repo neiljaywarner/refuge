@@ -96,8 +96,7 @@ class LocalPostRepository implements PostRepository {
         authorName: 'David M. (UK)',
         spaceKey: 'prayer',
         toneTag: '[Prayer Request]',
-        content:
-            'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
+        content: 'Please pray for peace of mind this week. Transitioning to a new routine has been disorienting. Reminding myself that rest is spiritual.',
         timestamp: now.subtract(const Duration(minutes: 35)),
         reactions: {'pray': 6, 'peace': 4},
         isDemo: true,
@@ -107,8 +106,7 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Elena R. (Colorado)',
         spaceKey: 'prayer',
         toneTag: '[Comfort Only]',
-        content:
-            'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
+        content: 'Heavy sensory fatigue after errands today with fluorescent glare. Just needed to share in a safe room. No advice needed, just glad this quiet space exists.',
         timestamp: now.subtract(const Duration(hours: 2)),
         reactions: {'pray': 11, 'peace': 14},
         isDemo: true,
@@ -118,8 +116,7 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Pastor Thomas (Melbourne)',
         spaceKey: 'study',
         toneTag: '[Question]',
-        content:
-            'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
+        content: 'In Psalm 23, David reflects on "quiet waters." How does that specific imagery ground your mental peace during hectic workdays?',
         timestamp: now.subtract(const Duration(hours: 5)),
         reactions: {'pray': 5, 'peace': 8},
         isDemo: true,
@@ -130,8 +127,7 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'special_interests',
         toneTag: '[Autism & Faith Meme]',
         specialInterestTag: 'Church Acoustics',
-        content:
-            'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
+        content: 'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
         timestamp: now.subtract(const Duration(minutes: 15)),
         reactions: {'pray': 4, 'peace': 8, 'relatable': 18},
         isDemo: true,
@@ -142,8 +138,7 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'study',
         toneTag: '[Bible Deep-Dive]',
         specialInterestTag: 'Markan Chiasms',
-        content:
-            'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
+        content: 'My special interest is literary chiasms in Mark. Did you know Mark 2:27 ("The Sabbath was made for man, not man for the Sabbath") is a perfect inverted parallel structure ABBA? Jesus loved systematic clarity!',
         timestamp: now.subtract(const Duration(hours: 1)),
         reactions: {'pray': 7, 'peace': 9, 'relatable': 14},
         isDemo: true,
@@ -154,8 +149,7 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'start_here',
         toneTag: '[Welcome]',
         specialInterestTag: 'Neurodivergent Fellowship',
-        content:
-            'Welcome to Belong on the Spectrum! Feel free to introduce yourself here at your own pace, share a favorite hobby or special interest, or simply read quietly.',
+        content: 'Welcome to Belong on the Spectrum! Feel free to introduce yourself here at your own pace, share a favorite hobby or special interest, or simply read quietly.',
         timestamp: now.subtract(const Duration(minutes: 10)),
         reactions: {'pray': 9, 'peace': 12, 'encouraged': 15},
         isDemo: true,
@@ -165,8 +159,7 @@ class LocalPostRepository implements PostRepository {
         authorName: 'Hannah W. (Dallas)',
         spaceKey: 'general_chat',
         toneTag: '[Fellowship]',
-        content:
-            'So grateful for a calm community space without flashing popups or algorithmic timelines. Wishing everyone a peaceful evening!',
+        content: 'So grateful for a calm community space without flashing popups or algorithmic timelines. Wishing everyone a peaceful evening!',
         timestamp: now.subtract(const Duration(minutes: 25)),
         reactions: {'pray': 5, 'peace': 10},
         isDemo: true,
@@ -177,10 +170,8 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'memes',
         toneTag: '[Autism & Faith Meme]',
         specialInterestTag: 'BiblicalMaps',
-        imageUrl:
-            'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop&q=80',
-        content:
-            'Me opening the back of my Bible to stare at Paul\'s 3rd Missionary Journey map for 45 minutes straight instead of making small talk in the lobby. 🗺️♾️',
+        imageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop&q=80',
+        content: 'Me opening the back of my Bible to stare at Paul\'s 3rd Missionary Journey map for 45 minutes straight instead of making small talk in the lobby. 🗺️♾️',
         timestamp: now.subtract(const Duration(minutes: 40)),
         reactions: {'pray': 3, 'peace': 7, 'relatable': 22},
         isDemo: true,
@@ -191,8 +182,7 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'resources_videos',
         toneTag: '[Resource]',
         specialInterestTag: 'Sensory Friendly Worship',
-        content:
-            'Shared a calm 10-minute video guide on creating sensory-friendly church welcome bags and quiet rooms (caption transcript included, zero autoplay).',
+        content: 'Shared a calm 10-minute video guide on creating sensory-friendly church welcome bags and quiet rooms (caption transcript included, zero autoplay).',
         timestamp: now.subtract(const Duration(hours: 3)),
         reactions: {'pray': 4, 'peace': 9, 'encouraged': 11},
         isDemo: true,
@@ -203,8 +193,7 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'announcements',
         toneTag: '[Announcement]',
         specialInterestTag: 'Community Update',
-        content:
-            'Welcome to the soft launch of Belong on the Spectrum! Our transition from Circle.so is underway. Feel free to explore spaces at your own pace.',
+        content: 'Welcome to the soft launch of Belong on the Spectrum! Our transition from Circle.so is underway. Feel free to explore spaces at your own pace.',
         timestamp: now.subtract(const Duration(hours: 1)),
         reactions: {'peace': 15, 'encouraged': 18},
         isDemo: true,

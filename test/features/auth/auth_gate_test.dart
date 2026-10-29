@@ -11,10 +11,7 @@ import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/auth/domain/auth_session.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 
-AuthSession _signedInSession({
-  required String email,
-  bool emailVerified = false,
-}) => AuthSession(
+AuthSession _signedInSession({required String email, bool emailVerified = false}) => AuthSession(
   userId: 'uid-${email.hashCode}',
   displayName: 'Fellowship Member',
   email: email,
@@ -56,9 +53,7 @@ Future<void> runWithPlatform(
 void main() {
   group('AuthGate', () {
     for (final flavor in [AppFlavor.dev, AppFlavor.prod]) {
-      testWidgets('soft-deleted member is blocked from home (${flavor.slug})', (
-        tester,
-      ) async {
+      testWidgets('soft-deleted member is blocked from home (${flavor.slug})', (tester) async {
         final session = _signedInSession(
           email: 'gone@belongonthespectrum.com',
           emailVerified: true,
@@ -78,51 +73,31 @@ void main() {
           _gateApp(
             authRepo: InMemoryAuthRepository(initialSession: session),
             flavor: flavor,
-            extra: [
-              accountDeletionRepositoryProvider.overrideWithValue(deletion),
-            ],
+            extra: [accountDeletionRepositoryProvider.overrideWithValue(deletion)],
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(
-          find.byKey(const Key('auth_gate_soft_deleted_wall')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const Key('belong_profile_avatar_button')),
-          findsNothing,
-        );
+        expect(find.byKey(const Key('auth_gate_soft_deleted_wall')), findsOneWidget);
+        expect(find.byKey(const Key('belong_profile_avatar_button')), findsNothing);
       });
     }
 
-    testWidgets('guest on dev shows sign-in wall, not home bar sign-in', (
-      tester,
-    ) async {
+    testWidgets('guest on dev shows sign-in wall, not home bar sign-in', (tester) async {
       await runWithPlatform(tester, TargetPlatform.android, () async {
         final authRepo = InMemoryAuthRepository();
-        await tester.pumpWidget(
-          _gateApp(authRepo: authRepo, flavor: AppFlavor.dev),
-        );
+        await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.dev));
         await tester.pumpAndSettle();
 
         expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
-        expect(
-          find.text('[DEV] Sign in to Belong on the Spectrum PREVIEW'),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const Key('home_top_bar_sign_in_button')),
-          findsNothing,
-        );
+        expect(find.text('[DEV] Sign in to Belong on the Spectrum PREVIEW'), findsOneWidget);
+        expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
       });
     });
 
     testWidgets('prod sign-in wall has no DEV prefix', (tester) async {
       final authRepo = InMemoryAuthRepository();
-      await tester.pumpWidget(
-        _gateApp(authRepo: authRepo, flavor: AppFlavor.prod),
-      );
+      await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.prod));
       await tester.pumpAndSettle();
 
       expect(find.text('Sign in to Belong on the Spectrum'), findsOneWidget);
@@ -135,19 +110,11 @@ void main() {
           emailVerified: false,
         ),
       );
-      await tester.pumpWidget(
-        _gateApp(authRepo: authRepo, flavor: AppFlavor.prod),
-      );
+      await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.prod));
       await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const Key('auth_gate_verify_email_wall')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const Key('home_top_bar_sign_in_button')),
-        findsNothing,
-      );
+      expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsOneWidget);
+      expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
     });
 
     testWidgets('dev unverified reaches home with avatar', (tester) async {
@@ -157,19 +124,11 @@ void main() {
           emailVerified: false,
         ),
       );
-      await tester.pumpWidget(
-        _gateApp(authRepo: authRepo, flavor: AppFlavor.dev),
-      );
+      await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.dev));
       await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const Key('auth_gate_verify_email_wall')),
-        findsNothing,
-      );
-      expect(
-        find.byKey(const Key('belong_profile_avatar_button')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsNothing);
+      expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);
     });
 
     testWidgets('prod verified reaches home', (tester) async {
@@ -179,19 +138,11 @@ void main() {
           emailVerified: true,
         ),
       );
-      await tester.pumpWidget(
-        _gateApp(authRepo: authRepo, flavor: AppFlavor.prod),
-      );
+      await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.prod));
       await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const Key('auth_gate_verify_email_wall')),
-        findsNothing,
-      );
-      expect(
-        find.byKey(const Key('belong_profile_avatar_button')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsNothing);
+      expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);
     });
 
     testWidgets('prod unverified reload opens home', (tester) async {
@@ -201,22 +152,14 @@ void main() {
           emailVerified: false,
         ),
       );
-      await tester.pumpWidget(
-        _gateApp(authRepo: authRepo, flavor: AppFlavor.prod),
-      );
+      await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.prod));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('auth_gate_i_verified')));
       await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const Key('auth_gate_verify_email_wall')),
-        findsNothing,
-      );
-      expect(
-        find.byKey(const Key('belong_profile_avatar_button')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsNothing);
+      expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);
     });
 
     testWidgets('anonymous session stays on the sign-in wall', (tester) async {
@@ -232,20 +175,12 @@ void main() {
             authMethod: 'anonymous',
           ),
         );
-        await tester.pumpWidget(
-          _gateApp(authRepo: authRepo, flavor: AppFlavor.dev),
-        );
+        await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.dev));
         await tester.pumpAndSettle();
 
         expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
-        expect(
-          find.byKey(const Key('home_top_bar_sign_in_button')),
-          findsNothing,
-        );
-        expect(
-          find.byKey(const Key('belong_profile_avatar_button')),
-          findsNothing,
-        );
+        expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
+        expect(find.byKey(const Key('belong_profile_avatar_button')), findsNothing);
       });
     });
   });
