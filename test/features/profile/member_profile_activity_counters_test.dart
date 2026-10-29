@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/belong_members_directory_view.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_comment_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('Member Profile Activity Counters & Drill-Down Unit TDD', () {
     late LocalPostRepository postRepo;
     late LocalCommentRepository commentRepo;
 
-    setUp(() {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      ProfileStorageService.instance.clear();
       postRepo = LocalPostRepository(isDevMode: true);
       commentRepo = LocalCommentRepository(isDevMode: true);
+    });
+
+    tearDown(() async {
+      ProfileStorageService.instance.clear();
     });
 
     test('getPostsByAuthor returns posts filtered by member name', () async {
@@ -41,6 +49,15 @@ void main() {
   });
 
   group('Member Profile Activity Counters BDD Widget Tests', () {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      ProfileStorageService.instance.clear();
+    });
+
+    tearDown(() async {
+      ProfileStorageService.instance.clear();
+    });
+
     Widget buildHarness({Widget? home, LocalPostRepository? customPostRepo}) {
       final repo = customPostRepo ?? LocalPostRepository(isDevMode: true);
       return RefugeApp(repository: repo, homeOverride: home);

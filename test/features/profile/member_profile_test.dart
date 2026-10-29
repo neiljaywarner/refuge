@@ -3,10 +3,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/branding/domain/community_brand_config.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('MemberProfile & ICOC Church Affiliation Domain Logic (#93)', () {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      ProfileStorageService.instance.clear();
+    });
+
+    tearDown(() async {
+      ProfileStorageService.instance.clear();
+    });
     test('isIcocMember returns true for active ICOC congregations', () {
       const p1 = MemberProfile(
         displayName: 'Marty',
@@ -86,7 +96,7 @@ void main() {
       expect(nonMember.isIcocMember, isFalse);
     });
 
-    test('MemberProfileNotifier records affiliation during signIn', () {
+    test('MemberProfileNotifier records affiliation during signIn', () async {
       final container = ProviderContainer(
         overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
@@ -109,6 +119,9 @@ void main() {
       expect(state.displayName, 'Marty Organizer');
       expect(state.icocChurchAffiliation, 'DFW Church (Partner)');
       expect(state.isIcocMember, isTrue);
+
+      await container.read(memberProfileProvider.notifier).signOut();
+      ProfileStorageService.instance.clear();
     });
 
     test('CommunityBrandConfig default belong configuration has required ICOC options', () {

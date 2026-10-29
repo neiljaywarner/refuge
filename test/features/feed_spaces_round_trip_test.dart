@@ -2,16 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Regression for #402: tester went Feed → Spaces → Feed and saw a grey
 /// screen instead of the reflections feed.
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    ProfileStorageService.instance.clear();
+  });
+
+  tearDown(() async {
+    ProfileStorageService.instance.clear();
+  });
+
   patrolWidgetTest('BDD #402: Feed → Spaces → Feed re-renders reflections (no grey screen)', (
     $,
   ) async {
-    $.tester.view.physicalSize = const Size(800, 1400);
+    $.tester.view.physicalSize = const Size(1200, 2400);
     $.tester.view.devicePixelRatio = 1.0;
-    addTearDown($.tester.view.reset);
+    addTearDown(() {
+      $.tester.view.resetPhysicalSize();
+      $.tester.view.resetDevicePixelRatio();
+    });
     await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
     expect(find.byType(ReflectionCard), findsWidgets);
@@ -36,9 +50,12 @@ void main() {
   });
 
   patrolWidgetTest('BDD #402: Spaces → pick a space → Feed renders that space', ($) async {
-    $.tester.view.physicalSize = const Size(800, 1400);
+    $.tester.view.physicalSize = const Size(1200, 2400);
     $.tester.view.devicePixelRatio = 1.0;
-    addTearDown($.tester.view.reset);
+    addTearDown(() {
+      $.tester.view.resetPhysicalSize();
+      $.tester.view.resetDevicePixelRatio();
+    });
     await $.pumpWidgetAndSettle(RefugeApp(repository: LocalPostRepository()));
 
     await $(const Key('subnav_spaces_tab')).tap();
