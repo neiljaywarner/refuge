@@ -111,3 +111,4 @@ test/tool/check_line_coverage_test.dart
 test/tool/cli_tools_test.dart
 test/tool/generate_belong_icons_test.dart
 test/tool/import_circle_csv_test.dart
+test/features/notifications/prod_notifications_start_empty_test.dart
