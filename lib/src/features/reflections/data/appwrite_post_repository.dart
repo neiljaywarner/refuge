@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:cloud_firestore/cloud_firestore.dart' hide Query;
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_core/firebase_core.dart';
 
 import '../../../core/appwrite/appwrite_client_factory.dart';
@@ -174,6 +175,17 @@ class AppwritePostRepository implements PostRepository {
     }
   }
 
+  /// Firebase uid of the signed-in member, or `null` when Firebase is absent
+  /// (widget tests) or nobody is signed in.
+  String? get _authorUid {
+    try {
+      if (Firebase.apps.isEmpty) return null;
+      return FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static ReflectionMirror? _mirrorFrom(AppwriteServices? services) {
     final resolved = services ?? createAppwriteServices(AppwriteConfig.fromEnvironment);
     if (resolved == null) return null;
@@ -239,7 +251,7 @@ class AppwritePostRepository implements PostRepository {
         await fs
             .collection(collectionName)
             .doc(postId)
-            .set({column: FieldValue.increment(1)}, SetOptions(merge: true))
+            .set(firestoreReactionIncrement(reactionType, column), SetOptions(merge: true))
             .timeout(const Duration(seconds: 2));
         _isLiveConnected = true;
       } catch (error, stack) {
@@ -399,7 +411,7 @@ class AppwritePostRepository implements PostRepository {
       await fs
           .collection(collectionName)
           .doc(post.id)
-          .set(firestoreReflectionData(post))
+          .set(firestoreReflectionData(post, authorId: _authorUid))
           .timeout(const Duration(seconds: 2));
       _isLiveConnected = true;
     } catch (error, stack) {
@@ -475,11 +487,20 @@ Map<String, dynamic> reflectionRowData(Post post) => {
   'isDemo': post.isDemo,
 };
 
-Map<String, dynamic> firestoreReflectionData(Post post) => {
+Map<String, dynamic> firestoreReflectionData(Post post, {String? authorId}) => {
   ...reflectionRowData(post),
+  if (authorId != null && authorId.isNotEmpty) 'authorId': authorId,
   'toneTag': post.toneTag,
   'timestamp': post.timestamp.toIso8601String(),
   'reactions': post.reactions,
+};
+
+/// Firestore merge payload for one care reaction. Bumps both the summary
+/// column (for Appwrite parity) and the `reactions` map that
+/// [postFromFirestore] prefers, so every member sees the new count (#662).
+Map<String, dynamic> firestoreReactionIncrement(String reactionType, String column) => {
+  column: FieldValue.increment(1),
+  'reactions': {reactionType: FieldValue.increment(1)},
 };
 
 Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {

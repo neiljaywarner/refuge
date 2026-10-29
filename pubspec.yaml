@@ -64,6 +64,7 @@ dev_dependencies:
   args: ^2.5.0
   rps: ^0.10.1
   patrol: ^4.10.0
+  fake_cloud_firestore: ^4.5.0
 
 scripts:
   test:

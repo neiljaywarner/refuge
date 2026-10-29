@@ -10,6 +10,24 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
+    // Care reactions (#662): any member may bump reaction counters on someone
+    // else's post or comment. Content, author, and timestamps stay author-only.
+    function isReactionOnlyUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['prayingCount', 'standingWithCount', 'peaceCount', 'encouragedCount', 'reactions'])
+        && request.resource.data.get('prayingCount', 0) >= resource.data.get('prayingCount', 0)
+        && request.resource.data.get('standingWithCount', 0) >= resource.data.get('standingWithCount', 0)
+        && request.resource.data.get('peaceCount', 0) >= resource.data.get('peaceCount', 0)
+        && request.resource.data.get('encouragedCount', 0) >= resource.data.get('encouragedCount', 0)
+        && request.resource.data.get('reactions', {}) is map;
+    }
+
+    function isAuthorOf(data) {
+      return request.auth.uid == data.get('authorId', null)
+        || request.auth.uid == data.get('authorUid', null)
+        || request.auth.uid == data.get('userId', null);
+    }
+
     // 1. Feature Voting
     match /feature_votes/{featureId} {
       allow read, write: if isSignedInMember();
@@ -26,8 +44,10 @@ service cloud.firestore {
     // 3. Fellowship Reflections & Posts
     match /posts/{postId} {
       allow read, create: if isSignedInMember();
-      allow update, delete: if isSignedInMember()
-        && request.auth.uid == resource.data.authorId;
+      allow update: if isSignedInMember()
+        && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
+      allow delete: if isSignedInMember()
+        && request.auth.uid == resource.data.get('authorId', null);
     }
 
     // 4. Member Profiles
@@ -51,10 +71,16 @@ service cloud.firestore {
     // 5. Discussion Comments & Nested Replies
     match /comments/{commentId} {
       allow read, create: if isSignedInMember();
-      allow update, delete: if isSignedInMember()
-        && (request.auth.uid == resource.data.authorId
-          || request.auth.uid == resource.data.authorUid
-          || request.auth.uid == resource.data.userId);
+      allow update: if isSignedInMember()
+        && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
+      allow delete: if isSignedInMember() && isAuthorOf(resource.data);
+    }
+    // Dev builds share this Firebase project; keep their threads separate.
+    match /comments_dev/{commentId} {
+      allow read, create: if isSignedInMember();
+      allow update: if isSignedInMember()
+        && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
+      allow delete: if isSignedInMember() && isAuthorOf(resource.data);
     }
 
     // 6. Admin Soft-Deleted Users Table (#356)
@@ -66,13 +92,17 @@ service cloud.firestore {
     // 7. Reflection mirror kept while Serverpod Cloud is turned off (#212).
     match /reflections/{postId} {
       allow read, create: if isSignedInMember();
-      allow update, delete: if isSignedInMember()
-        && request.auth.uid == resource.data.authorId;
+      allow update: if isSignedInMember()
+        && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
+      allow delete: if isSignedInMember()
+        && request.auth.uid == resource.data.get('authorId', null);
     }
     match /reflections_dev/{postId} {
       allow read, create: if isSignedInMember();
-      allow update, delete: if isSignedInMember()
-        && request.auth.uid == resource.data.authorId;
+      allow update: if isSignedInMember()
+        && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
+      allow delete: if isSignedInMember()
+        && request.auth.uid == resource.data.get('authorId', null);
     }
 
     // 8. Direct messages (#441)
