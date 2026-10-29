@@ -49,6 +49,7 @@ test/features/admin/admin_remote_config_and_soft_delete_test.dart
 test/features/auth/belong_auth_sheet_widget_test.dart
 test/features/auth/firebase_auth_repository_test.dart
 test/features/auth/simple_auth_test.dart
+test/features/auth/auth_gate_verify_email_feedback_test.dart
 test/features/circle_parity_release_readiness_bdd_test.dart
 test/features/concurrency/multi_user_concurrency_bdd_test.dart
 test/features/direct_messages_and_events_test.dart

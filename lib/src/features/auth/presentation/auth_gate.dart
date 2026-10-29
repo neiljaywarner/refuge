@@ -11,6 +11,7 @@ import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 import '../../../home_screen.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_access_policy.dart';
+import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
 import 'simple_sign_in_screen.dart';
 
@@ -138,10 +139,11 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     });
   }
 
-  Future<void> _reloadVerified() async {
+  Future<AuthSession> _reloadVerified() async {
     final repo = ref.read(authRepositoryProvider);
     final updated = await repo.reloadCurrentUser();
     setState(() => _reloadedSession = updated);
+    return updated;
   }
 
   Future<void> _resendVerification() async {
@@ -158,7 +160,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   }
 }
 
-class _VerifyEmailWall extends StatelessWidget {
+class _VerifyEmailWall extends StatefulWidget {
   const _VerifyEmailWall({
     required this.email,
     required this.onReload,
@@ -167,42 +169,104 @@ class _VerifyEmailWall extends StatelessWidget {
   });
 
   final String email;
-  final Future<void> Function() onReload;
+  final Future<AuthSession?> Function() onReload;
   final Future<void> Function() onResend;
   final Future<void> Function() onSignOut;
+
+  @override
+  State<_VerifyEmailWall> createState() => _VerifyEmailWallState();
+}
+
+class _VerifyEmailWallState extends State<_VerifyEmailWall> {
+  bool _busy = false;
+  String? _status;
+
+  Future<void> _handleReload() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final updated = await widget.onReload();
+      if (!mounted) return;
+      if (updated != null && !updated.emailVerified) {
+        setState(() {
+          _status =
+              'Not verified yet. Open the link in your email first, then tap I verified my email.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _status = _friendlyErrorMessage(e);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _handleResend() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await widget.onResend();
+      if (!mounted) return;
+      setState(() {
+        _status = 'Sent a fresh verification link. Please check your inbox and spam folder.';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _status = _friendlyErrorMessage(e);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Check your email'), centerTitle: true),
     body: Center(
       child: SingleChildScrollView(
-        padding: const .all(24),
+        padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
-            mainAxisSize: .min,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'We sent a verification link to $email. Open it, then come back.',
+                'We sent a verification link to ${widget.email}. Open it, then come back.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
+              if (_status != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  _status!,
+                  key: const Key('auth_gate_verify_status'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
               const SizedBox(height: 24),
               FilledButton(
                 key: const Key('auth_gate_i_verified'),
-                onPressed: onReload,
+                onPressed: _busy ? null : _handleReload,
                 child: const Text('I verified my email'),
               ),
               const SizedBox(height: 8),
               OutlinedButton(
                 key: const Key('auth_gate_resend_verification'),
-                onPressed: onResend,
+                onPressed: _busy ? null : _handleResend,
                 child: const Text('Resend email'),
               ),
               const SizedBox(height: 8),
               TextButton(
                 key: const Key('auth_gate_sign_out'),
-                onPressed: onSignOut,
+                onPressed: _busy ? null : widget.onSignOut,
                 child: const Text('Sign out'),
               ),
             ],
@@ -211,4 +275,29 @@ class _VerifyEmailWall extends StatelessWidget {
       ),
     ),
   );
+}
+
+String _friendlyErrorMessage(Object error) {
+  if (error is AuthException) {
+    return error.message;
+  }
+  try {
+    final authEx = AuthException.fromFirebase(error);
+    const mappedCodes = {
+      'invalid-email',
+      'user-disabled',
+      'user-not-found',
+      'wrong-password',
+      'invalid-credential',
+      'email-already-in-use',
+      'weak-password',
+      'network-request-failed',
+      'expired-action-code',
+      'invalid-action-code',
+    };
+    if (mappedCodes.contains(authEx.code)) {
+      return authEx.message;
+    }
+  } catch (_) {}
+  return 'Could not send right now. Please wait a minute and try again.';
 }
