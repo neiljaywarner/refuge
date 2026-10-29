@@ -13,7 +13,8 @@ final GlobalKey rootFeedbackRepaintBoundaryKey = GlobalKey(
 /// Captures a [GlobalKey]'s repaint boundary as PNG bytes.
 Future<Uint8List?> captureRepaintBoundary(GlobalKey key) async {
   try {
-    final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary =
+        key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null || !boundary.hasSize) {
       return null;
     }
@@ -22,7 +23,10 @@ Future<Uint8List?> captureRepaintBoundary(GlobalKey key) async {
       return null;
     }
     binding.scheduleFrame();
-    await binding.endOfFrame.timeout(const Duration(milliseconds: 500), onTimeout: () {});
+    await binding.endOfFrame.timeout(
+      const Duration(milliseconds: 500),
+      onTimeout: () {},
+    );
     final image = await boundary.toImage(pixelRatio: 1);
     try {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -42,7 +46,8 @@ Future<Uint8List?> captureRepaintBoundary(GlobalKey key) async {
 /// dialog stays usable without a background.
 Future<Uint8List?> captureEnclosingScreenshot(BuildContext context) async {
   try {
-    final boundary = context.findAncestorRenderObjectOfType<RenderRepaintBoundary>();
+    final boundary = context
+        .findAncestorRenderObjectOfType<RenderRepaintBoundary>();
     if (boundary == null || !boundary.hasSize) {
       return null;
     }
@@ -53,7 +58,10 @@ Future<Uint8List?> captureEnclosingScreenshot(BuildContext context) async {
       return null;
     }
     binding.scheduleFrame();
-    await binding.endOfFrame.timeout(const Duration(milliseconds: 500), onTimeout: () {});
+    await binding.endOfFrame.timeout(
+      const Duration(milliseconds: 500),
+      onTimeout: () {},
+    );
     final image = await boundary.toImage(pixelRatio: 1);
     try {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -69,13 +77,21 @@ Future<Uint8List?> captureEnclosingScreenshot(BuildContext context) async {
 /// Single stroke drawn by a member on the feedback canvas.
 @immutable
 class DrawnStroke {
-  const DrawnStroke({required this.points, required this.color, required this.strokeWidth});
+  const DrawnStroke({
+    required this.points,
+    required this.color,
+    required this.strokeWidth,
+  });
 
   final List<Offset> points;
   final Color color;
   final double strokeWidth;
 
-  DrawnStroke copyWith({List<Offset>? points, Color? color, double? strokeWidth}) => DrawnStroke(
+  DrawnStroke copyWith({
+    List<Offset>? points,
+    Color? color,
+    double? strokeWidth,
+  }) => DrawnStroke(
     points: points ?? this.points,
     color: color ?? this.color,
     strokeWidth: strokeWidth ?? this.strokeWidth,
@@ -125,7 +141,8 @@ class FeedbackDrawingPainter extends CustomPainter {
           paint..style = PaintingStyle.fill,
         );
       } else {
-        final path = Path()..moveTo(stroke.points.first.dx, stroke.points.first.dy);
+        final path = Path()
+          ..moveTo(stroke.points.first.dx, stroke.points.first.dy);
         for (int i = 1; i < stroke.points.length; i++) {
           path.lineTo(stroke.points[i].dx, stroke.points[i].dy);
         }
@@ -231,7 +248,9 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
 
       final picture = recorder.endRecording();
       // If running under AutomatedTestWidgetsFlutterBinding without rasterizer, use fallback sample png
-      if (WidgetsBinding.instance.runtimeType.toString().contains('TestWidgetsFlutterBinding')) {
+      if (WidgetsBinding.instance.runtimeType.toString().contains(
+        'TestWidgetsFlutterBinding',
+      )) {
         return _fallbackSamplePng();
       }
 
@@ -328,75 +347,110 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
       children: [
         // Controls Toolbar
         Container(
-          padding: const .symmetric(horizontal: 10, vertical: 6),
+          padding: const .symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.5),
             borderRadius: const .vertical(top: .circular(12)),
           ),
-          child: Row(
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 4,
             children: [
               // Palette colors
-              for (final color in palette)
-                InkWell(
-                  key: Key('color_choice_${color.toARGB32()}'),
-                  onTap: () => setState(() => _selectedColor = color),
-                  borderRadius: .circular(999),
-                  child: Container(
-                    margin: const .symmetric(horizontal: 3),
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _selectedColor == color
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey.withValues(alpha: 0.4),
-                        width: _selectedColor == color ? 2.5 : 1.0,
+              Row(
+                mainAxisSize: .min,
+                children: [
+                  for (final color in palette)
+                    InkWell(
+                      key: Key('color_choice_${color.toARGB32()}'),
+                      onTap: () => setState(() => _selectedColor = color),
+                      borderRadius: .circular(999),
+                      child: Container(
+                        margin: const .symmetric(horizontal: 2.5),
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _selectedColor == color
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.withValues(alpha: 0.4),
+                            width: _selectedColor == color ? 2.5 : 1.0,
+                          ),
+                        ),
                       ),
                     ),
+                ],
+              ),
+              // Stroke width, undo, and clear controls
+              Row(
+                mainAxisSize: .min,
+                children: [
+                  IconButton(
+                    key: const Key('drawing_pen_fine'),
+                    tooltip: 'Fine stroke',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 34,
+                      height: 34,
+                    ),
+                    icon: Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: _selectedWidth == 2.0
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
+                    ),
+                    onPressed: () => setState(() => _selectedWidth = 2.0),
                   ),
-                ),
-              const Spacer(),
-              // Stroke width selector
-              IconButton(
-                key: const Key('drawing_pen_fine'),
-                tooltip: 'Fine stroke',
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.edit,
-                  size: 16,
-                  color: _selectedWidth == 2.0 ? Theme.of(context).colorScheme.primary : null,
-                ),
-                onPressed: () => setState(() => _selectedWidth = 2.0),
-              ),
-              IconButton(
-                key: const Key('drawing_pen_bold'),
-                tooltip: 'Bold stroke',
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.brush,
-                  size: 20,
-                  color: _selectedWidth == 6.0 ? Theme.of(context).colorScheme.primary : null,
-                ),
-                onPressed: () => setState(() => _selectedWidth = 6.0),
-              ),
-              const SizedBox(width: 4),
-              // Undo
-              IconButton(
-                key: const Key('drawing_undo_button'),
-                tooltip: 'Undo stroke',
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.undo, size: 18),
-                onPressed: _strokes.isEmpty ? null : undo,
-              ),
-              // Clear
-              IconButton(
-                key: const Key('drawing_clear_button'),
-                tooltip: 'Clear canvas',
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.delete_outline, size: 18),
-                onPressed: _strokes.isEmpty ? null : clear,
+                  IconButton(
+                    key: const Key('drawing_pen_bold'),
+                    tooltip: 'Bold stroke',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 34,
+                      height: 34,
+                    ),
+                    icon: Icon(
+                      Icons.brush,
+                      size: 20,
+                      color: _selectedWidth == 6.0
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
+                    ),
+                    onPressed: () => setState(() => _selectedWidth = 6.0),
+                  ),
+                  IconButton(
+                    key: const Key('drawing_undo_button'),
+                    tooltip: 'Undo stroke',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 34,
+                      height: 34,
+                    ),
+                    icon: const Icon(Icons.undo, size: 18),
+                    onPressed: _strokes.isEmpty ? null : undo,
+                  ),
+                  IconButton(
+                    key: const Key('drawing_clear_button'),
+                    tooltip: 'Clear canvas',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 34,
+                      height: 34,
+                    ),
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    onPressed: _strokes.isEmpty ? null : clear,
+                  ),
+                ],
               ),
             ],
           ),
@@ -406,7 +460,10 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
           child: Text(
             canvasSemanticsLabel,
             key: const Key('feedback_drawing_stroke_count'),
-            style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
         ),
         // Interactive Drawing Canvas
@@ -461,32 +518,41 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
 
 /// Modal dialog allowing members to draw/annotate feedback before attaching.
 class FeedbackDrawingDialog extends StatefulWidget {
-  const FeedbackDrawingDialog({super.key, this.initialStrokes = const [], this.screenshotBytes});
+  const FeedbackDrawingDialog({
+    super.key,
+    this.initialStrokes = const [],
+    this.screenshotBytes,
+  });
 
   final List<DrawnStroke> initialStrokes;
 
   /// PNG of the screen behind this dialog. Null when capture is unavailable.
   final Uint8List? screenshotBytes;
 
-  static Future<Uint8List?> show(BuildContext context, {Uint8List? screenshotBytes}) =>
-      showDialog<Uint8List>(
-        context: context,
-        builder: (_) => Dialog(
-          insetPadding: const .all(16),
-          child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),
-        ),
-      );
+  static Future<Uint8List?> show(
+    BuildContext context, {
+    Uint8List? screenshotBytes,
+  }) => showDialog<Uint8List>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => Dialog(
+      insetPadding: const .all(16),
+      child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),
+    ),
+  );
 
   @override
   State<FeedbackDrawingDialog> createState() => _FeedbackDrawingDialogState();
 }
 
 class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
-  final GlobalKey<FeedbackDrawingCanvasState> _canvasKey = GlobalKey<FeedbackDrawingCanvasState>();
+  final GlobalKey<FeedbackDrawingCanvasState> _canvasKey =
+      GlobalKey<FeedbackDrawingCanvasState>();
   bool _hasStrokes = true;
   ui.Image? _screenshot;
 
-  bool get _hasScreenshot => widget.screenshotBytes != null && widget.screenshotBytes!.isNotEmpty;
+  bool get _hasScreenshot =>
+      widget.screenshotBytes != null && widget.screenshotBytes!.isNotEmpty;
 
   @override
   void initState() {
@@ -532,7 +598,11 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
         children: [
           Row(
             children: [
-              Icon(Icons.draw_rounded, color: theme.colorScheme.primary, size: 20),
+              Icon(
+                Icons.draw_rounded,
+                color: theme.colorScheme.primary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -586,7 +656,8 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
                 key: const Key('drawing_dialog_attach_button'),
                 onPressed: _hasStrokes
                     ? () async {
-                        final bytes = await _canvasKey.currentState?.exportPngBytes();
+                        final bytes = await _canvasKey.currentState
+                            ?.exportPngBytes();
                         if (context.mounted) {
                           Navigator.of(context).pop(bytes);
                         }

@@ -67,10 +67,18 @@ class PrivateIssuePayload {
 /// `neiljaywarner/belong_feedback` by an organizer. This class does not call
 /// the GitHub API and does not store an API token.
 class PrivateFeedbackRouter {
-  const PrivateFeedbackRouter({this.privateRepository = defaultPrivateRepository});
+  const PrivateFeedbackRouter({
+    this.privateRepository = defaultPrivateRepository,
+  });
 
   /// Default private sibling repository for confidential triage.
-  static const String defaultPrivateRepository = 'neiljaywarner/belong_feedback';
+  static const String defaultPrivateRepository =
+      'neiljaywarner/belong_feedback';
+
+  /// GitHub REST API enforces a 65,536-character maximum on issue bodies.
+  static const int maxGitHubIssueBodyLength = 65536;
+  static const int _maxDuplicateBase64Length = 28000;
+  static const int _maxSingleInlineBase64Length = 60000;
 
   final String privateRepository;
 
@@ -94,7 +102,9 @@ class PrivateFeedbackRouter {
     final now = timestamp ?? DateTime.now();
     final cleanMessage = message.trim();
     final firstLine = cleanMessage.split('\n').first;
-    final truncatedTitle = firstLine.length > 60 ? '${firstLine.substring(0, 57)}...' : firstLine;
+    final truncatedTitle = firstLine.length > 60
+        ? '${firstLine.substring(0, 57)}...'
+        : firstLine;
 
     final title = '[${sentiment.label}] $truncatedTitle';
 
@@ -107,7 +117,9 @@ class PrivateFeedbackRouter {
     final buffer = StringBuffer()
       ..writeln('## Community Feedback Submission')
       ..writeln()
-      ..writeln('- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})')
+      ..writeln(
+        '- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})',
+      )
       ..writeln('- **Submitted At**: `${now.toIso8601String()}`')
       ..writeln('- **Target Triage Repo**: `$privateRepository`');
 
@@ -119,17 +131,30 @@ class PrivateFeedbackRouter {
       final base64Image = base64Encode(attachmentBytes);
       buffer
         ..writeln()
-        ..writeln('### Annotated Screenshot / Scribble Attachment')
-        ..writeln(
+        ..writeln('### Annotated Screenshot / Scribble Attachment');
+      if (base64Image.length <= _maxDuplicateBase64Length) {
+        buffer
+          ..writeln(
+            '<img src="data:image/png;base64,$base64Image" alt="Annotated Screenshot" width="400" />',
+          )
+          ..writeln()
+          ..writeln('<details><summary>Raw Base64 PNG</summary>')
+          ..writeln()
+          ..writeln('```')
+          ..writeln(base64Image)
+          ..writeln('```')
+          ..writeln('</details>');
+      } else if (base64Image.length <= _maxSingleInlineBase64Length) {
+        buffer.writeln(
           '<img src="data:image/png;base64,$base64Image" alt="Annotated Screenshot" width="400" />',
-        )
-        ..writeln()
-        ..writeln('<details><summary>Raw Base64 PNG</summary>')
-        ..writeln()
-        ..writeln('```')
-        ..writeln(base64Image)
-        ..writeln('```')
-        ..writeln('</details>');
+        );
+      } else {
+        final kb = (attachmentBytes.lengthInBytes / 1024).toStringAsFixed(1);
+        buffer.writeln(
+          'Annotated screenshot (${kb} KB PNG) exceeded GitHub inline 65 KB issue body limit '
+          'and is stored in Firestore `member_feedback`.',
+        );
+      }
     } else if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty) {
       buffer
         ..writeln()
