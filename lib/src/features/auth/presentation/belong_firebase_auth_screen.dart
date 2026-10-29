@@ -3,6 +3,7 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/config/other_site_info_button.dart';
+import '../../profile/presentation/member_profile_sheet.dart';
 
 /// Pre-built, Google/Firebase team official authentication screens
 /// powered by [firebase_ui_auth].
@@ -87,9 +88,16 @@ class BelongFirebaseProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ProfileScreen(
     providers: [EmailAuthProvider()],
+    avatar: const Center(child: BelongEditableAvatar(radius: 36)),
+    showDeleteConfirmationDialog: true,
     actions: [
+      AccountDeletedAction((context, _) {
+        if (context.mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      }),
       SignedOutAction((context) {
-        if (context.mounted) {
+        if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
       }),
