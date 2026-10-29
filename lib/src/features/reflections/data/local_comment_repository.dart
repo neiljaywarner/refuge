@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_core/firebase_core.dart';
 
 import '../domain/comment.dart';
@@ -11,12 +12,38 @@ import 'comment_repository.dart';
 ///
 /// In production (`AppFlavor.prod`), starts with an empty store so only real
 /// community discussions appear. Hardcoded sample threads are gated to dev mode.
+///
+/// When Firestore is available, [getComments] and [watchComments] also read
+/// other members' comments from the `comments` (prod) or `comments_dev` (dev)
+/// collection and merge them into the local store by id (#662).
 class LocalCommentRepository implements CommentRepository {
   static final LocalCommentRepository instance = LocalCommentRepository();
 
   final List<Comment> _store = [];
   final StreamController<List<Comment>> _controller = StreamController<List<Comment>>.broadcast();
   final FirebaseFirestore? customFirestore;
+
+  /// Whether this repository uses dev seed data and the `comments_dev` collection.
+  final bool isDevMode;
+
+  /// Optional override for the signed-in member's uid (used by tests).
+  final String? Function()? currentUid;
+
+  /// Firestore collection for comments. Dev builds never touch prod threads.
+  String get collectionName => isDevMode ? 'comments_dev' : 'comments';
+
+  static const Duration _firestoreTimeout = Duration(seconds: 2);
+
+  String? get _authorUid {
+    final override = currentUid;
+    if (override != null) return override();
+    try {
+      if (Firebase.apps.isEmpty) return null;
+      return FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
+  }
 
   FirebaseFirestore? get firestore {
     if (customFirestore != null) return customFirestore;
@@ -32,8 +59,9 @@ class LocalCommentRepository implements CommentRepository {
 
   LocalCommentRepository({
     List<Comment>? initialComments,
-    bool isDevMode = true,
+    this.isDevMode = true,
     this.customFirestore,
+    this.currentUid,
   }) {
     if (initialComments != null) {
       _store.addAll(initialComments);
@@ -111,7 +139,51 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
-  Future<List<Comment>> getComments({required String postId}) async => _getOrderedThread(postId);
+  Future<List<Comment>> getComments({required String postId}) async {
+    final fs = firestore;
+    if (fs != null) {
+      try {
+        final snap = await _threadQuery(fs, postId).get().timeout(_firestoreTimeout);
+        _mergeRemote(snap.docs.map((doc) => commentFromFirestore(doc.id, doc.data())));
+      } catch (_) {
+        // Offline, timed out, or denied: show the local thread only.
+      }
+    }
+    return _getOrderedThread(postId);
+  }
+
+  Query<Map<String, dynamic>> _threadQuery(FirebaseFirestore fs, String postId) =>
+      fs.collection(collectionName).where('postId', isEqualTo: postId);
+
+  /// Merges remote comments into [_store] by id and notifies listeners when
+  /// anything changed. Remote copies replace local ones so other members'
+  /// reactions show up.
+  void _mergeRemote(Iterable<Comment?> remote) {
+    var changed = false;
+    for (final comment in remote) {
+      if (comment == null) continue;
+      final index = _store.indexWhere((c) => c.id == comment.id);
+      if (index == -1) {
+        _store.add(comment);
+        changed = true;
+      } else if (!_sameComment(_store[index], comment)) {
+        _store[index] = comment;
+        changed = true;
+      }
+    }
+    if (changed && !_controller.isClosed) {
+      _controller.add(List.unmodifiable(_store));
+    }
+  }
+
+  static bool _sameComment(Comment a, Comment b) {
+    if (a != b) return false;
+    if (a.reactions.length != b.reactions.length) return false;
+    for (final entry in a.reactions.entries) {
+      if (b.reactions[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
 
   @override
   Future<Comment> addComment(Comment comment) async {
@@ -122,15 +194,11 @@ class LocalCommentRepository implements CommentRepository {
     final fs = firestore;
     if (fs != null) {
       try {
-        await fs.collection('comments').doc(comment.id).set({
-          'postId': comment.postId,
-          if (comment.parentCommentId != null) 'parentCommentId': comment.parentCommentId,
-          'authorName': comment.authorName,
-          'content': comment.content,
-          'toneTag': comment.toneTag,
-          'timestamp': comment.timestamp.toIso8601String(),
-          'reactions': comment.reactions,
-        });
+        await fs
+            .collection(collectionName)
+            .doc(comment.id)
+            .set(firestoreCommentData(comment, authorId: _authorUid))
+            .timeout(_firestoreTimeout);
       } catch (_) {
         // Silent edge fallback ensures local UX never blocks
       }
@@ -157,14 +225,14 @@ class LocalCommentRepository implements CommentRepository {
     if (fs != null) {
       try {
         final snap = await fs
-            .collection('comments')
+            .collection(collectionName)
             .where('authorName', isEqualTo: authorName)
             .get();
         for (final doc in snap.docs) {
           await doc.reference.delete();
         }
         for (final id in removedIds) {
-          await fs.collection('comments').doc(id).delete();
+          await fs.collection(collectionName).doc(id).delete();
         }
       } catch (_) {}
     }
@@ -184,9 +252,11 @@ class LocalCommentRepository implements CommentRepository {
       final fs = firestore;
       if (fs != null) {
         try {
-          await fs.collection('comments').doc(commentId).update({
-            'reactions.$reactionType': FieldValue.increment(1),
-          });
+          await fs
+              .collection(collectionName)
+              .doc(commentId)
+              .update({'reactions.$reactionType': FieldValue.increment(1)})
+              .timeout(_firestoreTimeout);
         } catch (_) {
           // Silent edge fallback
         }
@@ -195,9 +265,37 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
-  Stream<List<Comment>> watchComments({required String postId}) async* {
-    yield _getOrderedThread(postId);
-    yield* _controller.stream.map((_) => _getOrderedThread(postId));
+  Stream<List<Comment>> watchComments({required String postId}) {
+    StreamSubscription<List<Comment>>? localSub;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? remoteSub;
+    late final StreamController<List<Comment>> out;
+    out = StreamController<List<Comment>>(
+      onListen: () {
+        out.add(_getOrderedThread(postId));
+        localSub = _controller.stream.listen((_) {
+          if (!out.isClosed) out.add(_getOrderedThread(postId));
+        });
+        final fs = firestore;
+        if (fs != null) {
+          try {
+            remoteSub = _threadQuery(fs, postId).snapshots().listen(
+              (snap) =>
+                  _mergeRemote(snap.docs.map((doc) => commentFromFirestore(doc.id, doc.data()))),
+              onError: (Object _) {
+                // Offline or denied: keep the local thread.
+              },
+            );
+          } catch (_) {
+            // Firestore unavailable: keep the local thread.
+          }
+        }
+      },
+      onCancel: () async {
+        await localSub?.cancel();
+        await remoteSub?.cancel();
+      },
+    );
+    return out.stream;
   }
 
   @override
@@ -278,4 +376,55 @@ class LocalCommentRepository implements CommentRepository {
     }
     return map;
   }
+}
+
+/// Firestore document body for [comment]. [authorId] is the Firebase uid of
+/// the member who wrote it, so security rules can limit edits and deletes to
+/// the author (#662).
+Map<String, dynamic> firestoreCommentData(Comment comment, {String? authorId}) => {
+  'postId': comment.postId,
+  if (comment.parentCommentId != null) 'parentCommentId': comment.parentCommentId,
+  'authorName': comment.authorName,
+  if (authorId != null && authorId.isNotEmpty) 'authorId': authorId,
+  'content': comment.content,
+  'toneTag': comment.toneTag,
+  'timestamp': comment.timestamp.toIso8601String(),
+  'reactions': comment.reactions,
+};
+
+/// Parses a Firestore comment document. Returns `null` when the document has
+/// no `postId` or `content`, so malformed rows never reach the thread.
+Comment? commentFromFirestore(String id, Map<String, dynamic> data) {
+  final postId = data['postId'];
+  final content = data['content'];
+  if (postId is! String || postId.isEmpty || content is! String) return null;
+
+  final rawTimestamp = data['timestamp'];
+  final DateTime timestamp = switch (rawTimestamp) {
+    Timestamp ts => ts.toDate(),
+    String s => DateTime.tryParse(s) ?? DateTime.fromMillisecondsSinceEpoch(0),
+    int ms => DateTime.fromMillisecondsSinceEpoch(ms),
+    _ => DateTime.fromMillisecondsSinceEpoch(0),
+  };
+
+  final reactions = <String, int>{};
+  final stored = data['reactions'];
+  if (stored is Map) {
+    for (final entry in stored.entries) {
+      final count = entry.value;
+      if (count is num) reactions[entry.key.toString()] = count.toInt();
+    }
+  }
+
+  final parent = data['parentCommentId'];
+  return Comment(
+    id: id,
+    postId: postId,
+    parentCommentId: parent is String && parent.isNotEmpty ? parent : null,
+    authorName: data['authorName'] as String? ?? 'Fellowship Member',
+    content: content,
+    toneTag: data['toneTag'] as String?,
+    timestamp: timestamp,
+    reactions: reactions,
+  );
 }
