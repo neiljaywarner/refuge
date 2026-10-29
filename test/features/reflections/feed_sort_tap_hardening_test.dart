@@ -10,6 +10,13 @@ import 'package:refuge4serverpod/main.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/comment_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_comment_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/feed_sort_option.dart';
+import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
+import 'package:refuge4serverpod/src/features/reflections/presentation/tone_filter_row.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
+import 'package:refuge4serverpod/src/features/sensory_themes/domain/sensory_mode.dart';
+import 'package:refuge4serverpod/src/home_screen.dart';
+
+import '../../support/test_font_loader.dart';
 
 /// Comment metadata that fails the way a permission error does in production.
 class _ThrowingCommentRepository extends LocalCommentRepository {
@@ -89,6 +96,7 @@ void main() {
     bool guestProfile = true,
     List<Override> overrides = const [],
   }) async {
+    await TestFontLoader.loadAppFonts();
     $.tester.view.devicePixelRatio = 1.0;
     $.tester.view.physicalSize = size;
     addTearDown(() {
@@ -98,8 +106,6 @@ void main() {
     final previousOnError = FlutterError.onError;
     FlutterError.onError = (details) {
       final text = details.exceptionAsString();
-      // Phone-width yellow stripes on the app bar, welcome banner, and
-      // author row predate this ticket. They are not the sort-tap crash.
       if (text.contains('A RenderFlex overflowed')) return;
       previousOnError?.call(details);
     };
@@ -123,20 +129,30 @@ void main() {
   }
 
   Future<void> tapSort(PatrolTester $, FeedSortOption option) async {
-    final key = Key('feed_sort_chip_${option.name}');
+    await $.tester.tap(find.byKey(const Key('feed_sort_popup_button')));
+    await $.pumpAndSettle();
+    final itemKey = Key('feed_sort_menu_item_${option.name}');
+    await $.tester.ensureVisible(find.byKey(itemKey));
+    await $.tester.tap(find.byKey(itemKey));
+    await $.pumpAndSettle();
+    expect($.tester.takeException(), isNull);
+  }
+
+  Future<void> tapToneFilter(PatrolTester $, String filter) async {
+    await $.tester.tap(find.byKey(const Key('tone_filter_popup_button')));
+    await $.pumpAndSettle();
+    final key = Key(toneFilterSemanticsId(filter));
     await $.tester.ensureVisible(find.byKey(key));
     await $.tester.tap(find.byKey(key));
     await $.pumpAndSettle();
     expect($.tester.takeException(), isNull);
-    final chip = $.tester.widget<ChoiceChip>(find.byKey(key));
-    expect(chip.selected, isTrue);
   }
 
-  group('Sort and filter taps stay up (#485)', () {
-    patrolWidgetTest('every sort chip, rapid retap, and popup on the demo feed', ($) async {
+  group('Sort and filter popups stay up (#485, #671)', () {
+    patrolWidgetTest('every sort option, rapid retap, and popup on the demo feed', ($) async {
       await pumpFeed($, repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()));
 
-      expect(find.textContaining('Demo Mode'), findsOneWidget);
+      expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsOneWidget);
       expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
 
       for (final option in FeedSortOption.values) {
@@ -152,10 +168,7 @@ void main() {
       }
       await $.tester.tap(find.byKey(const Key('feed_sort_menu_item_forYou')));
       await $.pumpAndSettle();
-      expect(
-        $.tester.widget<ChoiceChip>(find.byKey(const Key('feed_sort_chip_forYou'))).selected,
-        isTrue,
-      );
+      expect(find.textContaining('For you'), findsOneWidget);
       expect($.tester.takeException(), isNull);
     });
 
@@ -168,18 +181,13 @@ void main() {
       );
 
       for (final filter in kToneFilters) {
-        final key = Key(toneFilterSemanticsId(filter));
-        await $.tester.ensureVisible(find.byKey(key));
-        await $.tester.tap(find.byKey(key));
-        await $.pumpAndSettle();
-        expect($.tester.takeException(), isNull);
-        expect($.tester.widget<ChoiceChip>(find.byKey(key)).selected, isTrue);
+        await tapToneFilter($, filter);
         for (final option in FeedSortOption.values) {
           await tapSort($, option);
         }
       }
 
-      expect(find.byKey(const Key('feed_sort_chip_latest')), findsOneWidget);
+      expect(find.byKey(const Key('feed_sort_popup_button')), findsOneWidget);
     });
 
     patrolWidgetTest('light theme empty feed survives every sort and filter', ($) async {
@@ -196,11 +204,7 @@ void main() {
         expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       }
       for (final filter in kToneFilters) {
-        final key = Key(toneFilterSemanticsId(filter));
-        await $.tester.ensureVisible(find.byKey(key));
-        await $.tester.tap(find.byKey(key));
-        await $.pumpAndSettle();
-        expect($.tester.takeException(), isNull);
+        await tapToneFilter($, filter);
         expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       }
     });
@@ -254,12 +258,12 @@ void main() {
     });
 
     patrolWidgetTest('captures dark and light sort-strip frames', ($) async {
-      Future<void> save(String name) async {
+      Future<void> save(String name, {double pixelRatio = 2.0}) async {
         final boundary = $.tester.renderObject<RenderRepaintBoundary>(
           find.byKey(const Key('feed_sort_shot')),
         );
         await $.tester.runAsync(() async {
-          final image = await boundary.toImage(pixelRatio: 1);
+          final image = await boundary.toImage(pixelRatio: pixelRatio);
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
           await File('/tmp/$name.png').writeAsBytes(bytes!.buffer.asUint8List());
         });
@@ -271,6 +275,7 @@ void main() {
         size: const Size(390, 844),
         theme: SensoryMode.charcoal,
       );
+      await save('issue_671_after_dark');
       await tapSort($, FeedSortOption.forYou);
       await save('issue_485_after_dark_for_you');
 
@@ -280,10 +285,8 @@ void main() {
         size: const Size(390, 844),
         theme: SensoryMode.sage,
       );
-      final comfort = Key(toneFilterSemanticsId('[Comfort Only]'));
-      await $.tester.ensureVisible(find.byKey(comfort));
-      await $.tester.tap(find.byKey(comfort));
-      await $.pumpAndSettle();
+      await save('issue_671_after_light');
+      await tapToneFilter($, '[Comfort Only]');
       await save('issue_485_after_light_comfort');
       expect($.tester.takeException(), isNull);
     });

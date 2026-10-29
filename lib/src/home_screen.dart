@@ -38,14 +38,12 @@ import 'features/reflections/domain/feed_sort_option.dart';
 import 'features/reflections/domain/feed_sort_service.dart';
 import 'features/reflections/domain/post.dart';
 import 'features/reflections/presentation/community_anchor_banner.dart';
-import 'features/reflections/presentation/feed_sort_row.dart';
 import 'features/reflections/presentation/quiet_digest_banner.dart';
 import 'features/reflections/presentation/reflection_card.dart';
 import 'features/reflections/presentation/reflection_composer.dart';
 import 'features/reflections/presentation/reflections_providers.dart';
 import 'features/reflections/presentation/space_navigation_bar.dart';
 import 'features/reflections/presentation/threaded_discussion_sheet.dart';
-import 'features/reflections/presentation/tone_filter_row.dart';
 import 'features/search/presentation/community_search_view.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
@@ -256,14 +254,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 selectedSpace: selectedSpace.value,
                 onSelectSpace: selectSpace,
                 onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-              ),
-              ToneFilterRow(
                 activeFilter: activeFilter.value,
                 onSelectFilter: (tone) {
                   activeFilter.value = tone;
                 },
-              ),
-              FeedSortRow(
                 activeSort: activeSort.value,
                 onSelectSort: (sort) {
                   activeSort.value = sort;
@@ -315,21 +309,19 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    var posts = postsSnapshot.data!;
-
-                    // Apply Tone Filter
-                    if (activeFilter.value != 'All') {
-                      posts = posts.where((p) => p.toneTag == activeFilter.value).toList();
-                    }
-
-                    // Apply Feed Sort
-                    final activityTimestamps = activityTimestampsAsync.value ?? {};
-                    final commentCounts = commentCountsAsync.value ?? {};
-                    posts = FeedSortService.sortPosts(
-                      posts,
-                      sortOption: activeSort.value,
-                      latestActivityByPost: activityTimestamps,
-                      commentCounts: commentCounts,
+                    final allPosts = postsSnapshot.data!;
+                    final posts = FeedQuery.apply(
+                      posts: allPosts,
+                      toneFilter: activeFilter.value,
+                      sort: activeSort.value,
+                      signedIn: profile.isSignedIn,
+                      latestActivityByPost: activityTimestampsAsync.valueOrNull,
+                      commentCounts: commentCountsAsync.valueOrNull,
+                      userInterests: FeedQuery.interestsFrom(
+                        comfortBadges: profile.comfortBadges,
+                        bio: profile.bio,
+                        tagline: profile.tagline,
+                      ),
                     );
 
                     final showInlineComposer =
@@ -338,13 +330,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         !ref.watch(isCurrentMemberBannedProvider);
 
                     final feedSlivers = <Widget>[
-                      if (remoteConfig.bannerEnabled)
-                        SliverToBoxAdapter(
-                          child: CommunityAnchorBanner(
-                            primaryColor: primaryColor,
-                            isContrast: isContrast,
-                          ),
-                        ),
                       if (quietDigestSnapshot.hasData &&
                           quietDigestSnapshot.data != null &&
                           quietDigestSnapshot.data!.isNotEmpty)
@@ -465,6 +450,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
         case BelongBottomTab.home:
           return Column(
             children: [
+              if (remoteConfig.bannerEnabled)
+                CommunityAnchorBanner(primaryColor: primaryColor, isContrast: isContrast),
               _BelongSubHeaderBar(
                 activeSubView: homeSubView.value,
                 onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
@@ -556,26 +543,23 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       Semantics(
                         container: true,
                         explicitChildNodes: true,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                brand.shortName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: brand.shortName,
                                 style: BelongTextStyles.of(context).emphasis.copyWith(fontSize: 15),
                               ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Refuge',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: BelongTextStyles.of(context).emphasis
-                                  .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
-                            ),
-                          ],
+                              const TextSpan(text: ' '),
+                              TextSpan(
+                                text: 'Refuge',
+                                style: BelongTextStyles.of(context).emphasis
+                                    .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Row(
