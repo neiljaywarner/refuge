@@ -62,7 +62,9 @@ The sheet also says where the system controls live. On Android that is Settings,
 
 Sign in on that phone. A signed-out phone can remember the switch, and it has no account for the notification to reach. Practice names in the New Message list never receive a push.
 
-The phone half of the switch was checked on Pixel Left and Pixel Right on October 24, 2026. The send function is deployed. How it is built and tested is on [Direct message push](Direct-Message-Push-Function). A real notification still needs two different signed-in members, both with Message alerts on. Details are on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+On October 25, 2026 two synthetic members used the dev app with Message alerts on. The sender's button read **OK, it worked** for three sends. With the other app in front, the banner showed the sentence and the system shade did not. With the app on the home screen, and again after the app was swiped away, the system shade showed the sentence. Opening the app afterward showed the banner and the conversation. Pictures and the exact sentences are on [Direct message push](Direct-Message-Push-Function). The decision is on [Direct message alerts](ADR-0012-Direct-Message-Alerts). Email for the same moment is [issue #570](https://github.com/neiljaywarner/refuge/issues/570) and is not in this version.
+
+![Banner and the new conversation](images/dm-receiver-banner.png)
 
 ## 5. If a message does not show up
 
@@ -84,4 +86,4 @@ Check these before assuming the send failed:
 3. On Android, sound and banners are under Settings, then Apps, then Belong, then Notifications, then Direct messages. On iPhone they are under Settings, then Notifications, then Belong.
 4. The three practice conversations (Marty & Community Team, Sensory Game Night Group, Silent Co-Presence Fellowship) stay listed until a real conversation exists. They are not a delivery.
 
-A signed-in send on October 24, 2026 did not store a message, and the other phone still showed those practice conversations. That pass is not a successful delivery.
+A first signed-in send on October 24, 2026 did not store a message, because the person chip was not selected, and the other phone still showed those practice conversations. A later send stored the message, the open app showed the banner, and on October 25 the home-screen phone showed the system notification.

@@ -10,7 +10,7 @@
  * Environment, set by Appwrite unless noted:
  * - APPWRITE_FUNCTION_API_ENDPOINT
  * - APPWRITE_FUNCTION_PROJECT_ID
- * - APPWRITE_API_KEY
+ * - APPWRITE_FUNCTION_API_KEY (dynamic key; scopes rows.read and rows.write)
  * - FCM_SERVICE_ACCOUNT_JSON (secret; the Firebase Admin SDK JSON).
  *   Absent or unreadable means the function reports that push is not
  *   configured and does not pretend a notification was sent.
@@ -74,7 +74,8 @@ function appwriteHeaders() {
   return {
     'Content-Type': 'application/json',
     'X-Appwrite-Project': process.env.APPWRITE_FUNCTION_PROJECT_ID,
-    'X-Appwrite-Key': process.env.APPWRITE_API_KEY,
+    'X-Appwrite-Key':
+      process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY,
   };
 }
 

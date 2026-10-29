@@ -59,11 +59,13 @@ Appwrite injects these:
 
 - `APPWRITE_FUNCTION_API_ENDPOINT`
 - `APPWRITE_FUNCTION_PROJECT_ID`
-- `APPWRITE_API_KEY`
+- `APPWRITE_FUNCTION_API_KEY` (created for each run from the function scopes `rows.read` and `rows.write`)
+
+`src/main.js` sends that dynamic key as `X-Appwrite-Key`. If it is empty, the function uses the optional secret variable `APPWRITE_API_KEY`. That name is not injected by Appwrite. Create it only as a fallback, and give it only `rows.read` and `rows.write`. Never commit the value. Never paste it into an issue, a pull request, or the wiki.
 
 Set this one yourself, as a secret variable. Do not commit it and do not print it.
 
-- `FCM_SERVICE_ACCOUNT_JSON` — the Firebase Admin SDK JSON for project `belongonthespectrum`. The function uses it only to obtain a Firebase Cloud Messaging access token.
+- `FCM_SERVICE_ACCOUNT_JSON` — the Firebase Admin SDK JSON for project `belongonthespectrum`. The function uses it only to obtain a Firebase Cloud Messaging access token. Do not create a second key.
 
 ## Tests
 
@@ -78,7 +80,9 @@ That runs `node --test test/decide.test.js test/handle.test.js`.
 ## Troubleshooting
 
 **Phone log shows `dm-push register 500 {"error":"push failed"}` and Appwrite execution errors say `could not store push device (401)`.**  
-The function's `APPWRITE_API_KEY` must be allowed to create and update rows in `belong_community_db` / `push_devices`. Regenerate or extend the key scopes in the Appwrite console, then update the function variable. Until that succeeds, `push_devices` stays empty and closed-app notifications are skipped.
+The row write was sent with an empty API key. `X-Appwrite-Key` must be `APPWRITE_FUNCTION_API_KEY`. The function scopes must include `rows.read` and `rows.write`, or the dynamic key cannot write `push_devices`. An optional secret named `APPWRITE_API_KEY` is only a fallback. Until a write succeeds, the table stays empty and a closed-app send is skipped.
+
+After a fix, prove it without printing secrets. A `register` execution for a signed-in member returns `{"ok":true}`. The `push_devices` row shows `enabled`, `schedule`, and a token that is non-empty and does not start with `fcm_token_calm`. Report those three facts and the token length. Do not report the token, the Firebase uid, or the member's address. Then home the recipient app, send a new message, and confirm the system notification on the Direct messages channel.
 
 **Phone log showed `general_unknown_origin` for `com.belongonthespectrum.refuge.dev`.**  
 The Dart caller uses a direct HTTP POST to `/functions/dm-push/executions` with `X-Appwrite-Project` only. It does not use the Appwrite SDK for execute, so the dev application id does not need its own Android platform entry for push register/send.
