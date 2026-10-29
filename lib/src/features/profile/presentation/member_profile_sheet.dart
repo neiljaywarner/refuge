@@ -459,8 +459,7 @@ class MemberProfileDialog extends HookConsumerWidget {
           onPressed: () {
             final affiliation = churchAffiliationController.text.trim();
             if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
-              validationError.value =
-                  'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
+              validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
               return;
             }
 
