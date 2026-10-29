@@ -2,20 +2,89 @@ import 'dart:async';
 
 import '../domain/post.dart';
 import 'post_repository.dart';
+import 'saved_posts_store.dart';
 
 /// Resilient local-first in-memory implementation with asynchronous broadcast streams.
 /// Seeds both the original Sanctuary spaces and the Circle.so-style Belong spaces.
 class LocalPostRepository implements PostRepository {
   final bool isDevMode;
+  final SavedPostsStore _savedPostsStore;
   final List<Post> _store = [];
   final Set<String> _savedPostIds = {};
   final StreamController<List<Post>> _controller = StreamController<List<Post>>.broadcast();
+  late final Future<void> _hydrationFuture;
 
-  LocalPostRepository({this.isDevMode = true, List<Post>? initialPosts}) {
+  LocalPostRepository({
+    this.isDevMode = true,
+    List<Post>? initialPosts,
+    SavedPostsStore? savedPostsStore,
+  }) : _savedPostsStore = savedPostsStore ?? SavedPostsStore() {
     if (initialPosts != null) {
       _store.addAll(initialPosts);
     } else if (isDevMode) {
       _seedInitialData();
+    }
+    for (final post in _store) {
+      if (post.isSaved) {
+        _savedPostIds.add(post.id);
+      }
+    }
+    _hydrationFuture = _hydrateSavedPosts();
+  }
+
+  Future<void> _hydrateSavedPosts() async {
+    final storedIds = await _savedPostsStore.readSavedIds();
+    final snapshots = await _savedPostsStore.readSavedPostSnapshots();
+    if (storedIds.isEmpty && snapshots.isEmpty) return;
+
+    _savedPostIds.addAll(storedIds);
+    _savedPostIds.addAll(snapshots.keys);
+
+    var changed = false;
+    for (var i = 0; i < _store.length; i++) {
+      final post = _store[i];
+      if (_savedPostIds.contains(post.id) && !post.isSaved) {
+        _store[i] = post.copyWith(isSaved: true);
+        changed = true;
+      }
+    }
+    for (final entry in snapshots.entries) {
+      if (_store.every((p) => p.id != entry.key)) {
+        _store.add(entry.value.copyWith(isSaved: true));
+        changed = true;
+      }
+    }
+    if (changed) {
+      _notify();
+    }
+  }
+
+  /// Whether [postId] is currently marked as saved by the member.
+  bool isPostSaved(String postId) => _savedPostIds.contains(postId);
+
+  /// Registers cloud reflections in the local store so bookmarking a live
+  /// Firestore/Appwrite post works and streams into `Saved for Later`.
+  void cacheExternalPosts(Iterable<Post> posts) {
+    var changed = false;
+    for (final incoming in posts) {
+      final saved = _savedPostIds.contains(incoming.id) || incoming.isSaved;
+      if (saved) {
+        _savedPostIds.add(incoming.id);
+      }
+      final index = _store.indexWhere((p) => p.id == incoming.id);
+      if (index == -1) {
+        _store.add(incoming.copyWith(isSaved: saved));
+        changed = true;
+      } else {
+        final existing = _store[index];
+        if (existing.isSaved != saved) {
+          _store[index] = existing.copyWith(isSaved: saved);
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      _notify();
     }
   }
 
@@ -184,6 +253,7 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Future<void> toggleSavePost({required String postId}) async {
+    await _hydrationFuture;
     final isCurrentlySaved = _savedPostIds.contains(postId);
     if (isCurrentlySaved) {
       _savedPostIds.remove(postId);
@@ -191,35 +261,61 @@ class LocalPostRepository implements PostRepository {
       _savedPostIds.add(postId);
     }
 
+    Post? toggledPost;
     final index = _store.indexWhere((p) => p.id == postId);
     if (index != -1) {
-      _store[index] = _store[index].copyWith(isSaved: !isCurrentlySaved);
+      final updated = _store[index].copyWith(isSaved: !isCurrentlySaved);
+      _store[index] = updated;
+      toggledPost = updated;
     }
     _notify();
+
+    final currentSaved = _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
+    await _savedPostsStore.persistToggle(
+      postId: postId,
+      isSaved: !isCurrentlySaved,
+      allSavedIds: Set<String>.from(_savedPostIds),
+      savedPosts: currentSaved,
+      toggledPost: toggledPost,
+    );
   }
 
   @override
-  Future<List<Post>> getSavedPosts() async =>
-      _store.where((p) => _savedPostIds.contains(p.id) || p.isSaved).toList();
+  Future<List<Post>> getSavedPosts() async {
+    await _hydrationFuture;
+    return _store
+        .where((p) => _savedPostIds.contains(p.id) || p.isSaved)
+        .map((p) => p.isSaved ? p : p.copyWith(isSaved: true))
+        .toList();
+  }
 
   @override
-  Stream<List<Post>> watchSavedPosts() =>
-      _watchWhere((post) => _savedPostIds.contains(post.id) || post.isSaved);
+  Stream<List<Post>> watchSavedPosts() => _watchWhere(
+    (post) => _savedPostIds.contains(post.id) || post.isSaved,
+    transform: (post) => post.isSaved ? post : post.copyWith(isSaved: true),
+  );
 
   /// Each listener gets the current rows immediately, then later edits.
   ///
   /// A single-subscription generator wrapped in [Stream.asBroadcastStream]
   /// drops that first snapshot for anyone who subscribes after the first
   /// listener has already canceled.
-  Stream<List<Post>> _watchWhere(bool Function(Post post) include) =>
-      Stream<List<Post>>.multi((controller) {
-        controller.add(_store.where(include).toList());
-        final subscription = _controller.stream.listen((posts) {
-          if (!controller.hasListener) return;
-          controller.add(posts.where(include).toList());
-        });
-        controller.onCancel = subscription.cancel;
-      });
+  Stream<List<Post>> _watchWhere(
+    bool Function(Post post) include, {
+    Post Function(Post post)? transform,
+  }) => Stream<List<Post>>.multi((controller) {
+    List<Post> mapPosts(Iterable<Post> source) {
+      final filtered = source.where(include);
+      return transform == null ? filtered.toList() : filtered.map(transform).toList();
+    }
+
+    controller.add(mapPosts(_store));
+    final subscription = _controller.stream.listen((posts) {
+      if (!controller.hasListener) return;
+      controller.add(mapPosts(posts));
+    });
+    controller.onCancel = subscription.cancel;
+  });
 
   static bool _matchesAuthor(String postAuthor, String targetAuthor) {
     final a = postAuthor.trim().toLowerCase();
@@ -233,6 +329,14 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Future<String?> getQuietDigest({required String spaceKey}) async {
+    if (spaceKey.trim().toLowerCase() == 'saved_for_later') {
+      final saved = await getSavedPosts();
+      if (saved.isEmpty) {
+        return 'Your private reading room • Tap the bookmark icon on any reflection to save it here for quiet contemplation.';
+      }
+      final noun = saved.length == 1 ? 'reflection' : 'reflections';
+      return 'Private sanctuary • ${saved.length} saved $noun kept for quiet, unhurried reading.';
+    }
     final posts = _store.where((p) => p.spaceKey == spaceKey).toList();
     if (posts.isEmpty) {
       return 'A quiet, unhurried space awaiting the first community reflection.';

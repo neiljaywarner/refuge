@@ -41,6 +41,11 @@ service cloud.firestore {
       match /notification_settings/{docId} {
         allow read, write: if isSignedInMember() && request.auth.uid == userId;
       }
+
+      // Private "Save for Later" bookmarks (#669). Strictly owner-only.
+      match /saved_posts/{postId} {
+        allow read, write: if isSignedInMember() && request.auth.uid == userId;
+      }
     }
 
     // 5. Discussion Comments & Nested Replies

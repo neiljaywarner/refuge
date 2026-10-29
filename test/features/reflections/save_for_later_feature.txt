@@ -1,0 +1,18 @@
+Feature: Private Save for Later Bookmarking, Persistence & Calm Undo UX (#669)
+  As a neurodivergent fellowship member
+  I want to bookmark reflections privately so they persist across restarts, retain their origin room context, and provide a calm Undo action
+  So that I can read at my own unhurried pace without losing saved reflections or accidentally removing one
+
+  Scenario: Bookmarking a reflection shows a calm confirmation SnackBar, origin room badge, and Undo reversal
+    Given I am viewing the Prayer Sanctuary feed
+    When I tap the bookmark icon on post "1" ("save_post_button_1")
+    Then I see the confirmation toast "🔖 Saved to your private Saved for Later space."
+    And I see the origin room badge "🔖 Saved from 🙏 Prayer Sanctuary" ("saved_post_origin_space_1")
+    When I tap "Undo" on the SnackBar
+    Then post "1" is no longer in my Saved for Later bookmarks
+
+  Scenario: Bookmarked reflections persist across app restarts and cloud feed merges
+    Given I have bookmarked post "1" and a live cloud reflection "cloud_99"
+    When the app restarts with a fresh repository instance backed by SharedPreferences
+    Then "getSavedPosts" returns both post "1" and "cloud_99" with "isSaved: true"
+    And the Saved for Later Quiet Digest reads "Private sanctuary • 2 saved reflections kept for quiet, unhurried reading."

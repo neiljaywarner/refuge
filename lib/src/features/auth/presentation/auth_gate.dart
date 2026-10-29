@@ -26,11 +26,7 @@ import 'simple_sign_in_screen.dart';
 ///
 /// Reads [authRepositoryProvider], not [memberProfileProvider].
 class AuthGate extends ConsumerStatefulWidget {
-  const AuthGate({
-    super.key,
-    required this.repository,
-    required this.themeNotifier,
-  });
+  const AuthGate({super.key, required this.repository, required this.themeNotifier});
 
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
@@ -50,15 +46,12 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   /// gate sends one the first time a prod member lands on the verify wall.
   String? _verificationSentFor;
 
-  AuthSession _effectiveSession(AuthSession streamSession) =>
-      _reloadedSession ?? streamSession;
+  AuthSession _effectiveSession(AuthSession streamSession) => _reloadedSession ?? streamSession;
 
   Future<bool> _isSoftDeleted(String userId) {
     if (_deleteCheckUserId != userId || _deleteCheck == null) {
       _deleteCheckUserId = userId;
-      _deleteCheck = ref
-          .read(accountDeletionRepositoryProvider)
-          .isSignInBlocked(userId);
+      _deleteCheck = ref.read(accountDeletionRepositoryProvider).isSignInBlocked(userId);
     }
     return _deleteCheck!;
   }
@@ -68,8 +61,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     final flavor = ref.watch(appFlavorProvider);
     final streamValue = ref.watch(authSessionStreamProvider);
     final repo = ref.read(authRepositoryProvider);
-    final streamSession =
-        streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
+    final streamSession = streamValue.value ?? streamValue.asData?.value ?? repo.currentSession();
 
     ref.listen<AsyncValue<AuthSession>>(authSessionStreamProvider, (_, next) {
       if (next.hasValue) {
@@ -125,10 +117,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
           );
         }
 
-        return RefugeHomeScreen(
-          repository: widget.repository,
-          themeNotifier: widget.themeNotifier,
-        );
+        return RefugeHomeScreen(repository: widget.repository, themeNotifier: widget.themeNotifier);
       },
     );
   }
@@ -140,9 +129,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   }
 
   Future<void> _restore(String userId) async {
-    await ref
-        .read(accountDeletionRepositoryProvider)
-        .restoreSelf(userId: userId, confirmed: true);
+    await ref.read(accountDeletionRepositoryProvider).restoreSelf(userId: userId, confirmed: true);
     if (!mounted) return;
     ref.read(memberProfileProvider.notifier).publishDirectoryAfterRestore();
     setState(() {

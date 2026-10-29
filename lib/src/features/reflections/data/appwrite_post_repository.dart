@@ -209,9 +209,17 @@ class AppwritePostRepository implements PostRepository {
         talker.handle(error, stack, 'Appwrite reflection read failed');
       }
     }
-    if (cloud.isEmpty) return local;
-    return mergePosts(local, cloud);
+    if (cloud.isEmpty) return _applySavedState(local);
+    _fallback.cacheExternalPosts(cloud);
+    return _applySavedState(mergePosts(local, cloud));
   }
+
+  List<Post> _applySavedState(List<Post> posts) => [
+    for (final post in posts)
+      post.isSaved == _fallback.isPostSaved(post.id)
+          ? post
+          : post.copyWith(isSaved: _fallback.isPostSaved(post.id)),
+  ];
 
   @override
   Future<Post> createPost(Post post) async {
@@ -259,7 +267,7 @@ class AppwritePostRepository implements PostRepository {
     var disposed = false;
 
     Future<void> emit(List<Post> next) async {
-      latest = next;
+      latest = _applySavedState(next);
       if (!controller.isClosed) controller.add(latest);
     }
 
@@ -284,14 +292,11 @@ class AppwritePostRepository implements PostRepository {
               .listen(
                 (snap) {
                   _isLiveConnected = true;
-                  emit(
-                    mergePosts(
-                      latest,
-                      snap.docs
-                          .map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey))
-                          .toList(),
-                    ),
-                  );
+                  final cloudRows = snap.docs
+                      .map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey))
+                      .toList();
+                  _fallback.cacheExternalPosts(cloudRows);
+                  emit(mergePosts(latest, cloudRows));
                 },
                 onError: (Object error, StackTrace stack) {
                   talker.handle(error, stack, 'Firestore reflection watch failed');
@@ -306,6 +311,7 @@ class AppwritePostRepository implements PostRepository {
           final rows = await mirror.listPosts(spaceKey: spaceKey);
           if (!disposed) {
             _isLiveConnected = true;
+            _fallback.cacheExternalPosts(rows);
             await emit(mergePosts(latest, rows));
           }
         } catch (error, stack) {
@@ -318,6 +324,7 @@ class AppwritePostRepository implements PostRepository {
               .listen(
                 (post) {
                   _isLiveConnected = true;
+                  _fallback.cacheExternalPosts([post]);
                   emit(mergePosts(latest, [post]));
                 },
                 onError: (Object error, StackTrace stack) {
@@ -340,6 +347,9 @@ class AppwritePostRepository implements PostRepository {
 
   @override
   Future<String?> getQuietDigest({required String spaceKey}) async {
+    if (canonicalSpaceKey(spaceKey) == 'saved_for_later') {
+      return _fallback.getQuietDigest(spaceKey: 'saved_for_later');
+    }
     final posts = await getPosts(spaceKey: spaceKey);
     if (posts.isEmpty) {
       return 'A quiet, unhurried space awaiting the first community reflection.';
@@ -550,10 +560,17 @@ List<Post> mergePosts(List<Post> base, List<Post> overlay) {
 
 /// Keeps the newer reflection. Equal timestamps keep the copy with more care
 /// affirmations, so a local tap is not overwritten by a stale cloud row.
+/// Also preserves `isSaved` if either copy is marked saved.
 Post preferPost(Post current, Post incoming) {
-  if (incoming.timestamp.isAfter(current.timestamp)) return incoming;
-  if (current.timestamp.isAfter(incoming.timestamp)) return current;
+  final saved = current.isSaved || incoming.isSaved;
+  if (incoming.timestamp.isAfter(current.timestamp)) {
+    return incoming.isSaved == saved ? incoming : incoming.copyWith(isSaved: saved);
+  }
+  if (current.timestamp.isAfter(incoming.timestamp)) {
+    return current.isSaved == saved ? current : current.copyWith(isSaved: saved);
+  }
   final currentScore = current.reactions.values.fold<int>(0, (total, value) => total + value);
   final incomingScore = incoming.reactions.values.fold<int>(0, (total, value) => total + value);
-  return incomingScore >= currentScore ? incoming : current;
+  final winner = incomingScore >= currentScore ? incoming : current;
+  return winner.isSaved == saved ? winner : winner.copyWith(isSaved: saved);
 }

@@ -299,6 +299,17 @@ class CommunityAnalyticsService {
 
   Future<void> logEventRsvp({required String eventId, required String status}) =>
       logEvent('event_rsvp', parameters: {'event_id': eventId, 'status': status});
+
+  /// Logs when a reflection is saved for later (bookmarked) or un-saved.
+  Future<void> logPostSaved({
+    required String postId,
+    required bool isSaved,
+    required String spaceKey,
+    bool isUndo = false,
+  }) => logEvent(
+    isSaved ? 'post_saved' : 'post_unsaved',
+    parameters: {'post_id': postId, 'space_key': spaceKey, 'is_undo': isUndo},
+  );
 }
 
 final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((ref) {

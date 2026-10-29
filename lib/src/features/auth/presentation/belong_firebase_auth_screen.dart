@@ -26,8 +26,7 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
         ForgotPasswordAction((context, email) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) =>
-                  ForgotPasswordScreen(email: email, headerMaxExtent: 160),
+              builder: (context) => ForgotPasswordScreen(email: email, headerMaxExtent: 160),
             ),
           );
         }),
@@ -47,11 +46,7 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: .center,
           children: [
-            Icon(
-              Icons.diversity_3_rounded,
-              size: 36,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            Icon(Icons.diversity_3_rounded, size: 36, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 12),
             Flexible(
               child: Text(
@@ -69,8 +64,7 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
   }
 
   static void _ensureProvidersConfigured() {
-    if (Firebase.apps.isNotEmpty &&
-        !FirebaseUIAuth.isAppConfigured(Firebase.app())) {
+    if (Firebase.apps.isNotEmpty && !FirebaseUIAuth.isAppConfigured(Firebase.app())) {
       try {
         FirebaseUIAuth.configureProviders([EmailAuthProvider()]);
       } catch (_) {
