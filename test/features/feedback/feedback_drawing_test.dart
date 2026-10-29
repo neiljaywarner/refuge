@@ -47,6 +47,36 @@ void main() {
 
       expect(payload.body, contains('![Annotated Screenshot]($hosted)'));
     });
+
+    test('formatPrivateIssue stays under GitHub 65536-char limit for 34 KB and 60 KB screenshots (#680)', () {
+      const router = PrivateFeedbackRouter();
+      final screenshot34Kb = Uint8List(34 * 1024);
+      final payload34Kb = router.formatPrivateIssue(
+        sentiment: FeedbackSentiment.sad,
+        message: 'Toolbar overflowed on 411dp phone screen.',
+        attachmentBytes: screenshot34Kb,
+      );
+
+      expect(
+        payload34Kb.body.length,
+        lessThanOrEqualTo(PrivateFeedbackRouter.maxGitHubIssueBodyLength),
+      );
+      expect(payload34Kb.body, contains('<img src="data:image/png;base64,'));
+      expect(payload34Kb.body, isNot(contains('<details><summary>Raw Base64 PNG</summary>')));
+
+      final screenshot60Kb = Uint8List(60 * 1024);
+      final payload60Kb = router.formatPrivateIssue(
+        sentiment: FeedbackSentiment.sad,
+        message: 'High-res tablet screenshot attachment.',
+        attachmentBytes: screenshot60Kb,
+      );
+
+      expect(
+        payload60Kb.body.length,
+        lessThanOrEqualTo(PrivateFeedbackRouter.maxGitHubIssueBodyLength),
+      );
+      expect(payload60Kb.body, contains('exceeded GitHub inline 65 KB issue body limit'));
+    });
   });
 
   group('FeedbackDrawingCanvas Unit & Interaction Tests', () {
@@ -211,6 +241,50 @@ void main() {
       expect(find.byTooltip('Close drawing'), findsOneWidget);
       expect(find.text('Feedback drawing canvas, 0 strokes'), findsOneWidget);
     });
+
+    testWidgets(
+      'FeedbackDrawingDialog renders without overflow on 360dp and 411dp phones and resists barrier taps (#680)',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => FeedbackDrawingDialog.show(context),
+                  child: const Text('Open drawing'),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open drawing'));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Draw / Annotate Feedback'), findsOneWidget);
+
+        // Draw a stroke on the canvas
+        await tester.drag(
+          find.byKey(const Key('feedback_drawing_touch_area')),
+          const Offset(30, 30),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Feedback drawing canvas, 1 stroke'), findsOneWidget);
+
+        // Tap on the outer modal barrier (top-left corner outside dialog inset)
+        await tester.tapAt(const Offset(4, 4));
+        await tester.pumpAndSettle();
+
+        // Dialog must remain open and preserve the drawn stroke
+        expect(find.text('Draw / Annotate Feedback'), findsOneWidget);
+        expect(find.text('Feedback drawing canvas, 1 stroke'), findsOneWidget);
+      },
+    );
   });
 
   group('BelongFeedbackAndVotingSheet Scribble Attachment Flow', () {

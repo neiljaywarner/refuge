@@ -328,75 +328,93 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
       children: [
         // Controls Toolbar
         Container(
-          padding: const .symmetric(horizontal: 10, vertical: 6),
+          padding: const .symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: const .vertical(top: .circular(12)),
           ),
-          child: Row(
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 4,
             children: [
               // Palette colors
-              for (final color in palette)
-                InkWell(
-                  key: Key('color_choice_${color.toARGB32()}'),
-                  onTap: () => setState(() => _selectedColor = color),
-                  borderRadius: .circular(999),
-                  child: Container(
-                    margin: const .symmetric(horizontal: 3),
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _selectedColor == color
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey.withValues(alpha: 0.4),
-                        width: _selectedColor == color ? 2.5 : 1.0,
+              Row(
+                mainAxisSize: .min,
+                children: [
+                  for (final color in palette)
+                    InkWell(
+                      key: Key('color_choice_${color.toARGB32()}'),
+                      onTap: () => setState(() => _selectedColor = color),
+                      borderRadius: .circular(999),
+                      child: Container(
+                        margin: const .symmetric(horizontal: 2.5),
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _selectedColor == color
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.withValues(alpha: 0.4),
+                            width: _selectedColor == color ? 2.5 : 1.0,
+                          ),
+                        ),
                       ),
                     ),
+                ],
+              ),
+              // Stroke width, undo, and clear controls
+              Row(
+                mainAxisSize: .min,
+                children: [
+                  IconButton(
+                    key: const Key('drawing_pen_fine'),
+                    tooltip: 'Fine stroke',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+                    icon: Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: _selectedWidth == 2.0 ? Theme.of(context).colorScheme.primary : null,
+                    ),
+                    onPressed: () => setState(() => _selectedWidth = 2.0),
                   ),
-                ),
-              const Spacer(),
-              // Stroke width selector
-              IconButton(
-                key: const Key('drawing_pen_fine'),
-                tooltip: 'Fine stroke',
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.edit,
-                  size: 16,
-                  color: _selectedWidth == 2.0 ? Theme.of(context).colorScheme.primary : null,
-                ),
-                onPressed: () => setState(() => _selectedWidth = 2.0),
-              ),
-              IconButton(
-                key: const Key('drawing_pen_bold'),
-                tooltip: 'Bold stroke',
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.brush,
-                  size: 20,
-                  color: _selectedWidth == 6.0 ? Theme.of(context).colorScheme.primary : null,
-                ),
-                onPressed: () => setState(() => _selectedWidth = 6.0),
-              ),
-              const SizedBox(width: 4),
-              // Undo
-              IconButton(
-                key: const Key('drawing_undo_button'),
-                tooltip: 'Undo stroke',
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.undo, size: 18),
-                onPressed: _strokes.isEmpty ? null : undo,
-              ),
-              // Clear
-              IconButton(
-                key: const Key('drawing_clear_button'),
-                tooltip: 'Clear canvas',
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.delete_outline, size: 18),
-                onPressed: _strokes.isEmpty ? null : clear,
+                  IconButton(
+                    key: const Key('drawing_pen_bold'),
+                    tooltip: 'Bold stroke',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+                    icon: Icon(
+                      Icons.brush,
+                      size: 20,
+                      color: _selectedWidth == 6.0 ? Theme.of(context).colorScheme.primary : null,
+                    ),
+                    onPressed: () => setState(() => _selectedWidth = 6.0),
+                  ),
+                  IconButton(
+                    key: const Key('drawing_undo_button'),
+                    tooltip: 'Undo stroke',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+                    icon: const Icon(Icons.undo, size: 18),
+                    onPressed: _strokes.isEmpty ? null : undo,
+                  ),
+                  IconButton(
+                    key: const Key('drawing_clear_button'),
+                    tooltip: 'Clear canvas',
+                    visualDensity: VisualDensity.compact,
+                    padding: .zero,
+                    constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    onPressed: _strokes.isEmpty ? null : clear,
+                  ),
+                ],
               ),
             ],
           ),
@@ -471,6 +489,7 @@ class FeedbackDrawingDialog extends StatefulWidget {
   static Future<Uint8List?> show(BuildContext context, {Uint8List? screenshotBytes}) =>
       showDialog<Uint8List>(
         context: context,
+        barrierDismissible: false,
         builder: (_) => Dialog(
           insetPadding: const .all(16),
           child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),

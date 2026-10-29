@@ -72,6 +72,11 @@ class PrivateFeedbackRouter {
   /// Default private sibling repository for confidential triage.
   static const String defaultPrivateRepository = 'neiljaywarner/belong_feedback';
 
+  /// GitHub REST API enforces a 65,536-character maximum on issue bodies.
+  static const int maxGitHubIssueBodyLength = 65536;
+  static const int _maxDuplicateBase64Length = 28000;
+  static const int _maxSingleInlineBase64Length = 60000;
+
   final String privateRepository;
 
   /// Resolves the intended routing destination based on sentiment privacy.
@@ -119,17 +124,30 @@ class PrivateFeedbackRouter {
       final base64Image = base64Encode(attachmentBytes);
       buffer
         ..writeln()
-        ..writeln('### Annotated Screenshot / Scribble Attachment')
-        ..writeln(
+        ..writeln('### Annotated Screenshot / Scribble Attachment');
+      if (base64Image.length <= _maxDuplicateBase64Length) {
+        buffer
+          ..writeln(
+            '<img src="data:image/png;base64,$base64Image" alt="Annotated Screenshot" width="400" />',
+          )
+          ..writeln()
+          ..writeln('<details><summary>Raw Base64 PNG</summary>')
+          ..writeln()
+          ..writeln('```')
+          ..writeln(base64Image)
+          ..writeln('```')
+          ..writeln('</details>');
+      } else if (base64Image.length <= _maxSingleInlineBase64Length) {
+        buffer.writeln(
           '<img src="data:image/png;base64,$base64Image" alt="Annotated Screenshot" width="400" />',
-        )
-        ..writeln()
-        ..writeln('<details><summary>Raw Base64 PNG</summary>')
-        ..writeln()
-        ..writeln('```')
-        ..writeln(base64Image)
-        ..writeln('```')
-        ..writeln('</details>');
+        );
+      } else {
+        final kb = (attachmentBytes.lengthInBytes / 1024).toStringAsFixed(1);
+        buffer.writeln(
+          'Annotated screenshot (${kb} KB PNG) exceeded GitHub inline 65 KB issue body limit '
+          'and is stored in Firestore `member_feedback`.',
+        );
+      }
     } else if (attachmentUrl != null && attachmentUrl.trim().isNotEmpty) {
       buffer
         ..writeln()
