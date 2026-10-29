@@ -5,6 +5,42 @@
 
 ---
 
+## Production release runbook (copy and paste)
+
+Last used for **v0.9.2** on 2026-10-28. You need to be logged in to the Firebase CLI (`firebase login`) and the GitHub CLI (`gh auth login`). No keys or passwords belong in this page or in the repo.
+
+```bash
+cd refuge                                   # your clone of neiljaywarner/refuge
+git checkout main && git pull --ff-only origin main
+flutter pub get
+
+# 1. Only when firestore.rules changed
+firebase deploy --only firestore:rules --project belongonthespectrum
+
+# 2. Build prod web and deploy a PREVIEW channel. It prints a *.web.app URL.
+dart run tool/deploy_release.dart --version vX.Y.Z
+
+# 3. Smoke test the preview URL (register, verify email, sign in, post, react, Save for Later).
+
+# 4. Promote the same build to LIVE production and publish the GitHub Release
+dart run tool/deploy_release.dart --version vX.Y.Z --prod --skip-build --github-release \
+  --highlights-file docs/release_highlights/vX.Y.Z.md
+
+# 5. Confirm. Expect the new version, "flavor":"prod", and the new git_sha.
+curl -s https://belongonthespectrum.web.app/version.json
+
+# Optional: send the Android APK to the pre-alpha tester group
+dart run tool/deploy_release.dart --version vX.Y.Z --distribute-android
+```
+
+**Before step 4:** add the entry to `CHANGELOG.md` and write `docs/release_highlights/vX.Y.Z.md` in plain language.
+
+**Rollback:** Firebase console → Hosting → Release history → pick the previous release → Rollback.
+
+**Dev site only (not production):** `dart run tool/deploy_dev_web.dart`. Pushes to `main` also deploy it automatically.
+
+---
+
 ## Soft-launch status (22 October 2026)
 
 Checked against `origin/main` for the overlap week. This section does not record a new production deploy. The existing site remains [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app).

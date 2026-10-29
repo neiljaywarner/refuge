@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../messages/data/direct_message_mailbox.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/app_launcher_badge_service.dart';
@@ -132,32 +133,43 @@ class BelongNotificationsNotifier extends Notifier<List<BelongNotification>> {
     badge?.setBadgeCount(unread);
   }
 
+  /// Sample notices are for dev and tests only. A real member in production
+  /// starts with an empty bell and no badge (#685).
+  bool get _isProduction {
+    try {
+      return ref.read(appFlavorProvider).isProduction;
+    } catch (_) {
+      return false;
+    }
+  }
+
   List<BelongNotification> _seededItems() {
     final now = DateTime.now();
-    return _explicitInitialList ??
-        initialList ??
-        [
-          kInitialNotifications[0].copyWith(
-            id: 'notif-mention-1',
-            timestamp: now.subtract(const Duration(minutes: 5)),
-          ),
-          kInitialNotifications[1].copyWith(
-            id: 'notif-dm-1',
-            timestamp: now.subtract(const Duration(minutes: 30)),
-          ),
-          kInitialNotifications[2].copyWith(
-            id: 'notif-reply-1',
-            timestamp: now.subtract(const Duration(hours: 1)),
-          ),
-          kInitialNotifications[3].copyWith(
-            id: 'notif-like-1',
-            timestamp: now.subtract(const Duration(hours: 3)),
-          ),
-          kInitialNotifications[4].copyWith(
-            id: 'notif-following-1',
-            timestamp: now.subtract(const Duration(days: 2)),
-          ),
-        ];
+    final explicit = _explicitInitialList ?? initialList;
+    if (explicit != null) return explicit;
+    if (_isProduction) return const [];
+    return [
+      kInitialNotifications[0].copyWith(
+        id: 'notif-mention-1',
+        timestamp: now.subtract(const Duration(minutes: 5)),
+      ),
+      kInitialNotifications[1].copyWith(
+        id: 'notif-dm-1',
+        timestamp: now.subtract(const Duration(minutes: 30)),
+      ),
+      kInitialNotifications[2].copyWith(
+        id: 'notif-reply-1',
+        timestamp: now.subtract(const Duration(hours: 1)),
+      ),
+      kInitialNotifications[3].copyWith(
+        id: 'notif-like-1',
+        timestamp: now.subtract(const Duration(hours: 3)),
+      ),
+      kInitialNotifications[4].copyWith(
+        id: 'notif-following-1',
+        timestamp: now.subtract(const Duration(days: 2)),
+      ),
+    ];
   }
 
   /// Prepends Firestore bell items for the signed-in account.

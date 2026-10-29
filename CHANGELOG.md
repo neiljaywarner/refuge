@@ -4,6 +4,18 @@ All notable changes, accomplishments, and planned release milestones leading up 
 
 ---
 
+## [v0.9.3 — Clean Notification Bell (Oct 29, 2026)]
+
+Highlights: [`docs/release_highlights/v0.9.3.md`](docs/release_highlights/v0.9.3.md)
+
+### Fixed
+- Production no longer seeds five sample notifications. New accounts start with an empty bell and no badge. Dev and tests keep the samples (#685).
+
+### Docs
+- `docs/wiki/deployment.md` has a copy-paste production release runbook (preview, smoke test, promote, verify, rollback).
+
+---
+
 ## [v0.9.2 — Members-Only Alpha for Real Testers (Oct 28, 2026)]
 
 Production: https://belongonthespectrum.web.app · Highlights: [`docs/release_highlights/v0.9.2.md`](docs/release_highlights/v0.9.2.md)
