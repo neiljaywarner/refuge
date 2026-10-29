@@ -29,8 +29,8 @@ class CommunityAnchorBanner extends HookConsumerWidget {
 
     return Container(
       key: const Key('organizer_message_banner'),
-      margin: const .fromLTRB(12, 8, 12, 4),
-      padding: const .symmetric(horizontal: 12, vertical: 8),
+      margin: const .fromLTRB(12, 6, 12, 2),
+      padding: const .symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
         borderRadius: .circular(10),
@@ -38,92 +38,102 @@ class CommunityAnchorBanner extends HookConsumerWidget {
           color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const .all(5),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isContrast
-                  ? Colors.yellow.withValues(alpha: 0.2)
-                  : primaryColor.withValues(alpha: 0.15),
-            ),
-            child: const Text('♾️', style: TextStyle(fontSize: 14)),
-          ),
-          const Gap(8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: .start,
-              mainAxisSize: .min,
-              children: [
-                Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final showDomainInline = constraints.maxWidth >= 460;
+          return Row(
+            children: [
+              Container(
+                padding: const .all(5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isContrast
+                      ? Colors.yellow.withValues(alpha: 0.2)
+                      : primaryColor.withValues(alpha: 0.15),
+                ),
+                child: const Text('♾️', style: TextStyle(fontSize: 14)),
+              ),
+              const Gap(8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: .start,
+                  mainAxisSize: .min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        remoteConfig.welcomeTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isContrast ? Colors.yellow : primaryColor,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            remoteConfig.welcomeTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: isContrast ? Colors.yellow : primaryColor,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (showDomainInline) ...[
+                          const Gap(4),
+                          Text(
+                            '• ${flavor.shortDomainLabel}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isContrast
+                                  ? Colors.white70
+                                  : Theme.of(context).textTheme.bodySmall?.color
+                                        ?.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    const Gap(4),
+                    const Gap(1),
                     Text(
-                      '• ${flavor.shortDomainLabel}',
-                      maxLines: 1,
+                      remoteConfig.welcomeMessage,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 11.5,
+                        height: 1.25,
                         color: isContrast
-                            ? Colors.white70
-                            : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                            ? Colors.white
+                            : Theme.of(context).textTheme.bodySmall?.color,
                       ),
                     ),
                   ],
                 ),
-                const Gap(1),
-                Text(
-                  remoteConfig.welcomeMessage,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    height: 1.25,
-                    color: isContrast ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
+              ),
+              const Gap(6),
+              Semantics(
+                identifier: 'banner_learn_more_button',
+                label: 'Learn more about Belong community principles',
+                button: true,
+                child: TextButton(
+                  onPressed: () => showAboutRefugeDialog(
+                    context,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                  ),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const .symmetric(horizontal: 6, vertical: 2),
+                  ),
+                  child: Text(
+                    'About',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.yellow : primaryColor,
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const Gap(6),
-          Semantics(
-            identifier: 'banner_learn_more_button',
-            label: 'Learn more about Belong community principles',
-            button: true,
-            child: TextButton(
-              onPressed: () => showAboutRefugeDialog(
-                context,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
               ),
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const .symmetric(horizontal: 6, vertical: 2),
-              ),
-              child: Text(
-                'About',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                  color: isContrast ? Colors.yellow : primaryColor,
-                ),
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

@@ -85,7 +85,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(backTapped, isTrue);
 
-      // Tap another chip to verify onSelectSpace
+      // Open space switcher popup menu and select another space
+      await tester.tap(find.byKey(const Key('space_switcher_popup_button')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('space_chip_start_here')));
       await tester.pumpAndSettle();
       expect(selected, equals('start_here'));
