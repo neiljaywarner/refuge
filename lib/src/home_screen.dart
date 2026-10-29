@@ -540,27 +540,32 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Semantics(
-                        container: true,
-                        explicitChildNodes: true,
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: brand.shortName,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Semantics(
+                              container: true,
+                              explicitChildNodes: true,
+                              child: Text(
+                                brand.shortName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: BelongTextStyles.of(context).emphasis.copyWith(fontSize: 15),
                               ),
-                              const TextSpan(text: ' '),
-                              TextSpan(
-                                text: 'Refuge',
-                                style: BelongTextStyles.of(context).emphasis
-                                    .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
-                              ),
-                            ],
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Refuge',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: BelongTextStyles.of(context).emphasis
+                                  .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
