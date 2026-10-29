@@ -68,6 +68,12 @@
         "POSTHOG_API_KEY": "${POSTHOG_BELONG_PROJECT_TOKEN}",
         "POSTHOG_HOST": "https://us.i.posthog.com"
       }
+    },
+    "appwrite": {
+      "command": "/opt/homebrew/bin/mcp-remote",
+      "args": [
+        "https://mcp.appwrite.io/"
+      ]
     }
   }
 }
