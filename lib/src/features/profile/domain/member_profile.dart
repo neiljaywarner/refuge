@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -63,6 +64,24 @@ class MemberProfile {
       icocChurchAffiliation!.trim().isNotEmpty &&
       icocChurchAffiliation != 'I am not a member of an ICOC church' &&
       icocChurchAffiliation != 'I am not a member of this fellowship';
+
+  /// Returns true when [displayName] is still the generic placeholder rather than a custom name.
+  bool get hasDefaultDisplayName =>
+      displayName.trim().isEmpty || displayName.trim() == 'Fellowship Member';
+
+  /// Member's first name extracted from [displayName], or empty if still on the default placeholder.
+  String get firstName {
+    if (hasDefaultDisplayName) return '';
+    final parts = displayName.trim().split(RegExp(r'\s+'));
+    return parts.isEmpty ? '' : parts.first;
+  }
+
+  /// Member's last name (remaining tokens after [firstName]), or empty if single-word/default.
+  String get lastName {
+    if (hasDefaultDisplayName) return '';
+    final parts = displayName.trim().split(RegExp(r'\s+'));
+    return parts.length <= 1 ? '' : parts.skip(1).join(' ');
+  }
 
   /// Extracts a 1- or 2-letter uppercase monogram initial string for avatars.
   ///
@@ -197,7 +216,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
           authMethod: 'persisted_storage',
           icocChurchAffiliation: local['icocChurchAffiliation'] as String?,
           userId: local['userId'] as String? ?? _persistedProfile?.userId ?? '',
-          avatarUrl: _persistedProfile?.avatarUrl,
+          avatarUrl: local['avatarUrl'] as String? ?? _persistedProfile?.avatarUrl,
           tagline: _persistedProfile?.tagline,
         );
       } else {
@@ -322,6 +341,8 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       avatarUrl: session.photoUrl,
     );
     if (session.isSignedIn) {
+      final preservedAvatar = session.photoUrl ?? state.avatarUrl ?? _persistedProfile?.avatarUrl;
+      state = state.copyWith(avatarUrl: preservedAvatar);
       _persistedProfile = state;
       ProfileStorageService.instance.save(
         displayName: state.displayName,
@@ -330,6 +351,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         bio: state.bio,
         icocChurchAffiliation: state.icocChurchAffiliation,
         comfortBadges: state.comfortBadges,
+        avatarUrl: state.avatarUrl,
       );
       _publishDirectory(state);
     } else {
@@ -339,8 +361,34 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   }
 
   void setAvatarUrl(String? url) {
-    state = state.copyWith(avatarUrl: url);
+    state = MemberProfile(
+      userId: state.userId,
+      displayName: state.displayName,
+      email: state.email,
+      bio: state.bio,
+      comfortBadges: state.comfortBadges,
+      isSignedIn: state.isSignedIn,
+      authMethod: state.authMethod,
+      icocChurchAffiliation: state.icocChurchAffiliation,
+      tagline: state.tagline,
+      avatarUrl: url,
+    );
     _persistedProfile = state;
+    if (state.isSignedIn) {
+      ProfileStorageService.instance.save(
+        displayName: state.displayName,
+        email: state.email,
+        userId: state.userId,
+        bio: state.bio,
+        icocChurchAffiliation: state.icocChurchAffiliation,
+        comfortBadges: state.comfortBadges,
+        avatarUrl: url ?? '',
+      );
+    } else {
+      try {
+        fb_auth.FirebaseAuth.instance.currentUser?.updatePhotoURL(url);
+      } catch (_) {}
+    }
   }
 
   Future<void> signOut() async {
@@ -391,7 +439,8 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     _publishDirectory(state);
   }
 
-  /// Soft-deletes the signed-in account, then signs out on this device.
+  /// Deletes the signed-in account (including full Firebase Auth deletion when
+  /// backed by a live Firebase user), then signs out on this device.
   ///
   /// Throws [AccountDeletionException] when confirmation, auth, or a backend
   /// write fails. The caller should stay on the confirm dialog in that case.
@@ -405,6 +454,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
           email: session.email.isNotEmpty ? session.email : state.email,
           confirmed: true,
         );
+    try {
+      await fb_auth.FirebaseAuth.instance.currentUser?.delete();
+    } catch (_) {}
     await signOut();
   }
 }

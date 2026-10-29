@@ -12,6 +12,7 @@ import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
 import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../account_deletion/presentation/soft_delete_sign_in_notice.dart';
 import '../../profile/domain/member_profile.dart';
+import '../../profile/presentation/member_profile_sheet.dart';
 
 /// Minimal, plain-vanilla wrapper around the official [firebase_ui_auth] example.
 ///
@@ -139,10 +140,18 @@ class SimpleAuthScreen extends StatelessWidget {
           child: ProfileScreen(
             auth: effectiveAuth,
             providers: providers,
+            avatar: const Center(child: BelongEditableAvatar(radius: 36)),
+            showDeleteConfirmationDialog: true,
             actions: [
+              AccountDeletedAction((context, _) {
+                onSignedOut?.call();
+                if (context.mounted && Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              }),
               SignedOutAction((context) {
                 onSignedOut?.call();
-                if (context.mounted) {
+                if (context.mounted && Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();
                 }
               }),

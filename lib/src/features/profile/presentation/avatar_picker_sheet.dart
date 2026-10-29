@@ -153,7 +153,7 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
     final profile = ref.watch(memberProfileProvider);
 
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const .fromLTRB(16, 16, 16, 24),
         child: Column(
           mainAxisSize: .min,

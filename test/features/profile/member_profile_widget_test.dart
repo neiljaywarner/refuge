@@ -4,11 +4,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
 
 void main() {
   group('MemberProfileDialog BDD Widget Tests (#93)', () {
+    setUp(() {
+      ProfileStorageService.instance.clear();
+    });
+
+    tearDown(() {
+      ProfileStorageService.instance.clear();
+    });
     patrolWidgetTest('displays validation error if saved without selecting church affiliation', (
       $,
     ) async {
@@ -191,5 +199,59 @@ void main() {
 
       expect($(const Key('profile_sheet_close_button')), findsOneWidget);
     });
+
+    patrolWidgetTest(
+      'combines First Name and Last Name cleanly and removes secondary auth launcher clutter (#672)',
+      ($) async {
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
+        final container = ProviderContainer(
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+        );
+        addTearDown(container.dispose);
+
+        // Sign in initially with default 'Fellowship Member'
+        container
+            .read(memberProfileProvider.notifier)
+            .signIn(
+              displayName: 'Fellowship Member',
+              email: 'member@belongonthespectrum.org',
+              icocChurchAffiliation: 'DFW Church (Partner)',
+            );
+
+        await $.pumpWidgetAndSettle(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
+          ),
+        );
+
+        // Verify messy secondary launchers and jargon are gone
+        expect($(const Key('profile_open_firebase_auth_button')), findsNothing);
+        expect($('Open Firebase Account Profile & Security'), findsNothing);
+        expect($('1-Tap Sign-In (Appwrite OAuth2 Ready · ADR-0009)'), findsNothing);
+        expect($(find.textContaining('firebase_auth')), findsNothing);
+
+        // Verify clean email subtitle and 'Save Profile' button label when signed in
+        expect($('member@belongonthespectrum.org'), findsOneWidget);
+        expect($('Save Profile'), findsOneWidget);
+
+        // Enter First Name and Last Name
+        await $(const Key('profile_display_name_field')).enterText('Grace');
+        await $(const Key('profile_last_name_field')).enterText('Hopper');
+        await $(const Key('profile_save_sign_in_button')).tap();
+        await $.pumpAndSettle();
+
+        final updated = container.read(memberProfileProvider);
+        expect(updated.displayName, 'Grace Hopper');
+        expect(updated.firstName, 'Grace');
+        expect(updated.lastName, 'Hopper');
+      },
+    );
   });
 }

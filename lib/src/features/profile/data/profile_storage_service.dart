@@ -28,6 +28,7 @@ class ProfileStorageService {
     String? bio,
     String? icocChurchAffiliation,
     List<String>? comfortBadges,
+    String? avatarUrl,
   }) {
     final data = <String, dynamic>{
       'displayName': displayName,
@@ -36,22 +37,26 @@ class ProfileStorageService {
       if (bio != null) 'bio': bio,
       if (icocChurchAffiliation != null) 'icocChurchAffiliation': icocChurchAffiliation,
       if (comfortBadges != null) 'comfortBadges': comfortBadges,
+      if (avatarUrl != null && avatarUrl.isNotEmpty) 'avatarUrl': avatarUrl,
       'savedAt': DateTime.now().toIso8601String(),
     };
     _memoryCache = data;
     _platformStorage.save(data);
 
-    // Sync to Firestore if authenticated with real Firebase credentials
+    // Sync to Firebase Auth & Firestore if authenticated with real Firebase credentials
     try {
       final user = fb_auth.FirebaseAuth.instance.currentUser;
       if (user != null) {
         user.updateDisplayName(displayName);
+        if (avatarUrl != null) {
+          user.updatePhotoURL(avatarUrl.isEmpty ? null : avatarUrl);
+        }
         FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'displayName': displayName,
-          'email': email,
           if (bio != null) 'bio': bio,
           if (icocChurchAffiliation != null) 'icocChurchAffiliation': icocChurchAffiliation,
           if (comfortBadges != null) 'comfortBadges': comfortBadges,
+          if (avatarUrl != null) 'avatarUrl': avatarUrl,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       }
