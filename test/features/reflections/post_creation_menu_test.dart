@@ -103,6 +103,7 @@ void main() {
         expect($('Create Image Post'), findsOneWidget);
         expect($(Key('image_post_url_input')), findsOneWidget);
         expect($(Key('image_post_alt_text_input')), findsOneWidget);
+        expect($(Key('image_post_web_helper_text')), findsNothing);
         expect($(Key('special_interest_tag_input')), findsOneWidget);
 
         // Enter image details
