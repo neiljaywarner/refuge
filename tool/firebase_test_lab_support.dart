@@ -128,31 +128,241 @@ Future<String?> devApkUploadRefusalForFile(File apk) async {
   return devApkUploadRefusal(badging);
 }
 
+/// Repository secret that holds the Firebase CI service-account JSON.
+///
+/// Daily Test Lab (`.github/workflows/firebase-test-lab-daily.yml`) and Hosting
+/// deploy both pass this secret to `google-github-actions/auth`.
+const firebaseCiServiceAccountSecretName = 'FIREBASE_SERVICE_ACCOUNT';
+
+/// Placeholder for `client_email` in printed gcloud commands.
+///
+/// The real address lives only in the [firebaseCiServiceAccountSecretName]
+/// JSON. Do not commit it.
+const firebaseCiServiceAccountMemberPlaceholder = 'CLIENT_EMAIL';
+
+/// Google Cloud IAM page for [project].
+String googleCloudIamConsoleUrl(String project) =>
+    'https://console.cloud.google.com/iam-admin/iam?project=$project';
+
+/// `gcloud projects add-iam-policy-binding` for [role] on [project].
+///
+/// The member is [firebaseCiServiceAccountMemberPlaceholder], not a real address.
+String gcloudProjectIamBinding({required String project, required String role}) =>
+    'gcloud projects add-iam-policy-binding $project \\\n'
+    '  --member="serviceAccount:$firebaseCiServiceAccountMemberPlaceholder" \\\n'
+    '  --role="$role"';
+
+/// `gcloud storage buckets add-iam-policy-binding` for [role] on [bucketUrl].
+///
+/// [bucketUrl] may be `gs://name` or a bare bucket name. The member is
+/// [firebaseCiServiceAccountMemberPlaceholder], not a real address.
+String gcloudBucketIamBinding({required String bucketUrl, required String role}) {
+  final bucket = bucketUrl.startsWith('gs://') ? bucketUrl : 'gs://$bucketUrl';
+  return 'gcloud storage buckets add-iam-policy-binding $bucket \\\n'
+      '  --member="serviceAccount:$firebaseCiServiceAccountMemberPlaceholder" \\\n'
+      '  --role="$role"';
+}
+
+final _copyDestinationBucket = RegExp(r'to \[gs://([A-Za-z0-9._-]+)');
+
+/// Bucket name from a gcloud "Could not copy … to [gs://…] " line, without `gs://`.
+String? storageBucketFromStderr(String stderrText) =>
+    _copyDestinationBucket.firstMatch(stderrText)?.group(1);
+
+/// Whether [bucketName] is the Firebase-owned default Test Lab bucket.
+bool isDefaultTestLabBucket(String? bucketName) =>
+    bucketName == null || bucketName.startsWith('test-lab-');
+
+/// Whether [stderrText] is a Test Lab authorization or Storage denial.
+bool firebaseTestLabAuthFailure(String stderrText) =>
+    stderrText.contains('storage.objects.create') ||
+    stderrText.contains('Not authorized for project') ||
+    stderrText.contains('ResponseError 403') ||
+    stderrText.contains('PERMISSION_DENIED');
+
+/// Builds the IAM guidance for a failed `gcloud firebase test android run`.
+///
+/// Returns `null` when [stderrText] is not an authorization failure.
+/// A denial on the default `gs://test-lab-*` bucket names `roles/editor`.
+/// When [resultsBucket] is set, or the denied bucket is not `test-lab-*`, the
+/// text names object admin on that bucket and does not grant project Editor.
+/// Other 403s name Firebase Test Lab Admin and the Testing APIs.
+String? firebaseTestLabIamDiagnostic({
+  required String stderrText,
+  required String project,
+  String? resultsBucket,
+}) {
+  if (!firebaseTestLabAuthFailure(stderrText)) {
+    return null;
+  }
+
+  final buffer = StringBuffer()
+    ..writeln()
+    ..writeln('============================================================')
+    ..writeln('IAM check for repository secret $firebaseCiServiceAccountSecretName')
+    ..writeln(
+      'Service account: client_email inside $firebaseCiServiceAccountSecretName. '
+      'That address is not stored in git.',
+    )
+    ..writeln('Project: $project')
+    ..writeln('IAM console: ${googleCloudIamConsoleUrl(project)}')
+    ..writeln();
+
+  if (stderrText.contains('storage.objects.create')) {
+    final selected = normalizeResultsBucket(resultsBucket);
+    final denied = storageBucketFromStderr(stderrText);
+    final bucketName = selected ?? denied;
+    final customBucket = selected != null || !isDefaultTestLabBucket(denied);
+    final bucketUrl = bucketName == null ? null : 'gs://$bucketName';
+    buffer
+      ..writeln(
+        'Cloud Storage denied storage.objects.create while uploading the dev APK '
+        'to ${bucketUrl ?? 'the default Firebase Test Lab bucket'}.',
+      )
+      ..writeln(
+        'roles/cloudtestservice.editor and roles/toolresults.editor are not Cloud '
+        'IAM role IDs, and they do not grant this upload.',
+      )
+      ..writeln();
+    if (customBucket && bucketUrl != null) {
+      buffer
+        ..writeln(
+          'This run used a project-owned results bucket. Do not grant project '
+          'Editor for this denial. Grant object admin on $bucketUrl, plus Firebase '
+          'Test Lab Admin and Firebase Analytics Viewer:',
+        )
+        ..writeln('https://firebase.google.com/docs/test-lab/android/iam-permissions-reference')
+        ..writeln()
+        ..writeln(gcloudBucketIamBinding(bucketUrl: bucketUrl, role: 'roles/storage.objectAdmin'))
+        ..writeln()
+        ..writeln(
+          gcloudProjectIamBinding(project: project, role: 'roles/cloudtestservice.testAdmin'),
+        )
+        ..writeln()
+        ..writeln(
+          gcloudProjectIamBinding(project: project, role: 'roles/firebase.analyticsViewer'),
+        );
+    } else {
+      buffer
+        ..writeln(
+          'The default gs://test-lab-* bucket requires project Editor on this '
+          'principal:',
+        )
+        ..writeln('https://firebase.google.com/docs/test-lab/android/analyzing-results')
+        ..writeln()
+        ..writeln(gcloudProjectIamBinding(project: project, role: 'roles/editor'))
+        ..writeln()
+        ..writeln(
+          'That is the documented grant. A bucket-level roles/storage.objectAdmin '
+          'binding is only a workaround if Editor is already present and the bucket '
+          'policy still denies storage.objects.create.',
+        )
+        ..writeln()
+        ..writeln(
+          'Also grant Firebase Test Lab Admin. That role lists storage.objects.create, '
+          'but the default bucket still requires Editor:',
+        )
+        ..writeln()
+        ..writeln(
+          gcloudProjectIamBinding(project: project, role: 'roles/cloudtestservice.testAdmin'),
+        )
+        ..writeln()
+        ..writeln(
+          'Narrower path (skip project Editor): create a bucket this project owns, '
+          'grant roles/storage.objectAdmin on it, grant roles/cloudtestservice.testAdmin '
+          'and roles/firebase.analyticsViewer, set repository variable FTL_RESULTS_BUCKET, '
+          'and rerun. The runner passes that name as --results-bucket.',
+        )
+        ..writeln('https://firebase.google.com/docs/test-lab/android/iam-permissions-reference');
+    }
+  } else {
+    buffer
+      ..writeln('gcloud is not authorized for Cloud Test Lab on $project.')
+      ..writeln()
+      ..writeln('Grant Firebase Test Lab Admin (this role includes Tool Results):')
+      ..writeln()
+      ..writeln(gcloudProjectIamBinding(project: project, role: 'roles/cloudtestservice.testAdmin'))
+      ..writeln()
+      ..writeln('When using a custom results bucket, also grant Firebase Analytics Viewer:')
+      ..writeln()
+      ..writeln(gcloudProjectIamBinding(project: project, role: 'roles/firebase.analyticsViewer'))
+      ..writeln()
+      ..writeln(
+        'The default gs://test-lab-* bucket additionally requires roles/editor. '
+        'See docs/wiki/Firebase-Test-Lab-and-Patrol-Guide.md.',
+      )
+      ..writeln('Issue #649.');
+  }
+
+  buffer
+    ..writeln()
+    ..writeln('Enable APIs if they are still off:')
+    ..writeln(
+      'gcloud services enable testing.googleapis.com '
+      'toolresults.googleapis.com --project=$project',
+    )
+    ..writeln('============================================================');
+  return buffer.toString();
+}
+
+/// Returns a Cloud Storage bucket name suitable for `--results-bucket`.
+///
+/// Strips a `gs://` prefix, a trailing slash, and surrounding whitespace.
+/// Returns `null` when [raw] is null or empty.
+String? normalizeResultsBucket(String? raw) {
+  if (raw == null) {
+    return null;
+  }
+  var value = raw.trim();
+  if (value.isEmpty) {
+    return null;
+  }
+  if (value.startsWith('gs://')) {
+    value = value.substring('gs://'.length);
+  }
+  while (value.endsWith('/')) {
+    value = value.substring(0, value.length - 1);
+  }
+  if (value.isEmpty) {
+    return null;
+  }
+  return value;
+}
+
 /// Builds the `gcloud firebase test android run` argument list (no shell quoting).
+///
+/// [resultsBucket] is optional. A `gs://` prefix is stripped. When omitted, gcloud
+/// uploads to the Firebase-owned `gs://test-lab-*` bucket, which requires
+/// `roles/editor` on the service account in [firebaseCiServiceAccountSecretName].
 List<String> gcloudFirebaseTestAndroidRunArgs({
   required String appApkPath,
   required String testApkPath,
   required String device,
   required String project,
   required String timeout,
-}) => [
-  'firebase',
-  'test',
-  'android',
-  'run',
-  '--type',
-  'instrumentation',
-  '--app',
-  appApkPath,
-  '--test',
-  testApkPath,
-  '--device',
-  device,
-  '--project',
-  project,
-  '--timeout',
-  timeout,
-];
+  String? resultsBucket,
+}) {
+  final bucket = normalizeResultsBucket(resultsBucket);
+  return [
+    'firebase',
+    'test',
+    'android',
+    'run',
+    '--type',
+    'instrumentation',
+    '--app',
+    appApkPath,
+    '--test',
+    testApkPath,
+    '--device',
+    device,
+    '--project',
+    project,
+    '--timeout',
+    timeout,
+    if (bucket != null) ...['--results-bucket', bucket],
+  ];
+}
 
 /// Resolves `aapt` from [androidHome] build-tools (newest version first).
 String? resolveAaptExecutable({String? androidHome}) {

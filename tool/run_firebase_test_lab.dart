@@ -7,6 +7,11 @@
 /// `ENABLE_SERVERPOD=false`. Upload is refused unless `aapt dump badging`
 /// reports `com.belongonthespectrum.refuge.dev` and label `[DEV] Belong on the Spectrum`.
 ///
+/// CI authenticates with repository secret `FIREBASE_SERVICE_ACCOUNT`. The JSON
+/// `client_email` stays in that secret. Do not commit the address.
+/// A 403 `storage.objects.create` on the default `gs://test-lab-*` bucket needs
+/// project `roles/editor` on that account (or `FTL_RESULTS_BUCKET` / `--results-bucket`).
+///
 /// ## Usage
 /// ```bash
 /// dart run tool/run_firebase_test_lab.dart --dry-run
@@ -36,6 +41,9 @@ Future<void> main(List<String> args) async {
       _getArg(args, '--project') ?? Platform.environment['FIREBASE_PROJECT_ID'] ?? _defaultProject;
   final device = _getArg(args, '--device') ?? _defaultDevice;
   final timeout = _getArg(args, '--timeout') ?? '10m';
+  final resultsBucket = normalizeResultsBucket(
+    _getArg(args, '--results-bucket') ?? Platform.environment['FTL_RESULTS_BUCKET'],
+  );
 
   if (project != _defaultProject) {
     stderr.writeln('Refusing run: --project must be $_defaultProject for Test Lab safety.');
@@ -51,6 +59,7 @@ Future<void> main(List<String> args) async {
   _log('Dry Run     : $dryRun');
   _log('Build Only  : $buildOnly');
   _log('Timeout     : $timeout');
+  _log('Results bucket: ${resultsBucket ?? '(default gs://test-lab-*)'}');
   _log('------------------------------------------------------------');
 
   final testFile = File(target);
@@ -169,6 +178,7 @@ Future<void> main(List<String> args) async {
     device: device,
     project: project,
     timeout: timeout,
+    resultsBucket: resultsBucket,
   );
 
   final gcloud = resolveGcloudExecutable();
@@ -200,21 +210,13 @@ Future<void> main(List<String> args) async {
   if (testProcess.exitCode != 0) {
     stderr.writeln('Test Lab run failed (${testProcess.exitCode}):');
     stderr.write(testProcess.stderr);
-    final err = testProcess.stderr.toString();
-    if (err.contains('Not authorized for project') ||
-        err.contains('ResponseError 403') ||
-        err.contains('PERMISSION_DENIED')) {
-      stderr.writeln('\n============================================================');
-      stderr.writeln('IAM Role Check for FIREBASE_SERVICE_ACCOUNT:');
-      stderr.writeln('The service account is missing Cloud Test Service permissions.');
-      stderr.writeln('Grant the following roles in Google Cloud IAM on $project:');
-      stderr.writeln('  - Cloud Test Service Editor (roles/cloudtestservice.editor)');
-      stderr.writeln('  - Cloud Tool Results Editor (roles/toolresults.editor)');
-      stderr.writeln('And enable APIs:');
-      stderr.writeln('  - cloudtesting.googleapis.com');
-      stderr.writeln('  - toolresults.googleapis.com');
-      stderr.writeln('See issue #649 for details.');
-      stderr.writeln('============================================================\n');
+    final diagnostic = firebaseTestLabIamDiagnostic(
+      stderrText: testProcess.stderr.toString(),
+      project: project,
+      resultsBucket: resultsBucket,
+    );
+    if (diagnostic != null) {
+      stderr.write(diagnostic);
     }
     exit(testProcess.exitCode);
   }
@@ -309,7 +311,13 @@ Flags:
   --project <id>        Must be $_defaultProject.
   --device <spec>       Device matrix. Default: $_defaultDevice
   --timeout <duration>  Test Lab timeout. Default: 10m
+  --results-bucket <b>  Project-owned Cloud Storage bucket. Avoids the default
+                        gs://test-lab-* bucket, which requires roles/editor.
+                        Falls back to env FTL_RESULTS_BUCKET. gs:// is stripped.
   --help, -h            Show this help.
+
+CI secret: $firebaseCiServiceAccountSecretName
+The service account address is client_email in that secret. Do not commit it.
 
 Examples:
   dart run tool/run_firebase_test_lab.dart --dry-run
