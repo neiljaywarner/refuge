@@ -12,6 +12,7 @@ import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
 import '../data/vote_storage_service.dart';
 import '../domain/feedback_and_voting_models.dart';
+import '../domain/feedback_source_stamp.dart';
 import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
 
@@ -745,9 +746,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
                                             final hostedUpload =
                                                 FeedbackAttachmentRef.isHostedUpload(attachmentUrl);
+                                            final stamp = FeedbackSourceStamp.current();
                                             final summary = StringBuffer()
                                               ..writeln(
                                                 '[Belong ${selectedStarRating.value}★ · ${sentiment.label} (${sentiment.subtitle})] $text',
+                                              )
+                                              ..writeln(
+                                                'Source environment: ${stamp.sourceEnvironment} (${stamp.sourceHost})',
                                               );
                                             if (contact.isNotEmpty) {
                                               summary.writeln('From: $contact');

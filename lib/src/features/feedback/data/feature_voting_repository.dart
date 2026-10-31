@@ -8,7 +8,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
+import '../domain/feedback_source_stamp.dart';
 import 'github_feedback_client.dart';
+import 'member_feedback_bridge.dart';
 import 'vote_storage_service.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
@@ -65,6 +67,9 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
   StreamController<List<VotableFeatureItem>>? _streamController;
 
   GitHubFeedbackClient? get gitHubClient => null;
+
+  /// Host stamp written onto every note. Firebase and in-memory adapters can override it.
+  FeedbackSourceStamp get feedbackSource => FeedbackSourceStamp.current();
 
   /// Resolves an explicit 1–5 star rating or falls back to the default rating for [sentiment].
   static int resolveStarRating(FeedbackSentiment sentiment, int? rating) {
@@ -180,6 +185,8 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     }
     final resolvedRating = resolveStarRating(sentiment, rating);
     final destination = privateRouter.resolveDestination(sentiment);
+    final stamp = feedbackSource;
+    final submittedAt = DateTime.now().toUtc().toIso8601String();
 
     int? githubIssueNumber;
     String? githubIssueUrl;
@@ -191,6 +198,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
         contactEmail: contactEmail,
         attachmentUrl: attachmentUrl,
         attachmentBytes: screenshotAttachment,
+        source: stamp,
       );
       final issueResult = await gitHubClient!.createIssue(
         repository: payload.repository,
@@ -222,6 +230,10 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
       'githubIssueCreated': '${githubIssueNumber != null}',
       if (githubIssueNumber != null) 'githubIssueNumber': '$githubIssueNumber',
       'githubIssueUrl': ?githubIssueUrl,
+      'sourceEnvironment': stamp.sourceEnvironment,
+      'sourceHost': stamp.sourceHost,
+      'sourceUrl': stamp.sourceUrl,
+      'submittedAt': submittedAt,
       'storedIn': 'member_feedback',
     });
 
@@ -241,6 +253,7 @@ class InMemoryFeatureVotingRepository
   InMemoryFeatureVotingRepository({
     StreamController<List<VotableFeatureItem>>? customStreamController,
     this.gitHubClient,
+    this.sourceStamp,
   }) {
     if (customStreamController != null) {
       _streamController = customStreamController;
@@ -249,6 +262,11 @@ class InMemoryFeatureVotingRepository
 
   @override
   final GitHubFeedbackClient? gitHubClient;
+
+  final FeedbackSourceStamp? sourceStamp;
+
+  @override
+  FeedbackSourceStamp get feedbackSource => sourceStamp ?? super.feedbackSource;
 
   @override
   BackendTarget get target => BackendTarget.inMemory;
@@ -298,14 +316,27 @@ class FirebaseFeatureVotingRepository
     this.feedbackCollectionPath = 'member_feedback',
     this.customFirestore,
     this.gitHubClient,
+    this.sourceStamp,
+    this.feedbackForward,
+    this.memberId,
+    this.persistFeedbackDocument,
   });
 
   final String featuresCollectionPath;
   final String feedbackCollectionPath;
   final FirebaseFirestore? customFirestore;
+  final FeedbackSourceStamp? sourceStamp;
+  final MemberFeedbackForward? feedbackForward;
+  final String? Function()? memberId;
+
+  /// Test hook that stores the note and returns its id. Production uses Firestore.
+  final Future<String?> Function(Map<String, dynamic> data)? persistFeedbackDocument;
 
   @override
   final GitHubFeedbackClient? gitHubClient;
+
+  @override
+  FeedbackSourceStamp get feedbackSource => sourceStamp ?? super.feedbackSource;
 
   FirebaseFirestore? get firestore {
     if (customFirestore != null) return customFirestore;
@@ -393,13 +424,26 @@ class FirebaseFeatureVotingRepository
     );
 
     final fs = firestore;
-    if (fs != null) {
+    final writer = persistFeedbackDocument;
+    String? createdId;
+    if (writer != null || fs != null) {
       try {
         final resolvedRating = FeatureVotingStateTransformMixin.resolveStarRating(
           sentiment,
           rating,
         );
         final destination = privateRouter.resolveDestination(sentiment);
+        final stamp = feedbackSource;
+        final loggedAt = submittedFeedbackLog.isEmpty
+            ? null
+            : submittedFeedbackLog.last['submittedAt'];
+        String? uid;
+        try {
+          final rawUid = (memberId ?? readCurrentMemberId)()?.trim();
+          uid = rawUid == null || rawUid.isEmpty ? null : rawUid;
+        } catch (_) {
+          uid = null;
+        }
         final docData = <String, dynamic>{
           'sentiment': sentiment.name,
           'rating': resolvedRating,
@@ -417,18 +461,63 @@ class FirebaseFeatureVotingRepository
           'githubIssueCreated': result.githubIssueNumber != null,
           if (result.githubIssueNumber != null) 'githubIssueNumber': result.githubIssueNumber,
           if (result.githubIssueUrl != null) 'githubIssueUrl': result.githubIssueUrl,
+          'sourceEnvironment': stamp.sourceEnvironment,
+          'sourceHost': stamp.sourceHost,
+          'sourceUrl': stamp.sourceUrl,
+          'submittedAt': loggedAt ?? DateTime.now().toUtc().toIso8601String(),
+          'userId': ?uid,
+          'authorId': ?uid,
           'storedIn': feedbackCollectionPath,
           'createdAt': FieldValue.serverTimestamp(),
         };
-        await fs
-            .collection(feedbackCollectionPath)
-            .add(docData)
-            .timeout(const Duration(seconds: 6));
+        if (writer != null) {
+          createdId = await writer(docData);
+        } else {
+          final created = await fs!
+              .collection(feedbackCollectionPath)
+              .add(docData)
+              .timeout(const Duration(seconds: 6));
+          createdId = created.id;
+        }
       } catch (_) {
-        // Resilient offline fallback
+        // Resilient offline fallback. A missing document id skips the forward.
+        createdId = null;
       }
     }
-    return result;
+
+    if (!sentiment.isPrivateTriage || result.githubIssueNumber != null) {
+      return result;
+    }
+    final forwarded = await _forwardStored(createdId);
+    if (forwarded == null) return result;
+    _recordForwardedIssue(forwarded);
+    return FeedbackSubmissionResult(
+      isPrivateTriage: true,
+      githubIssueNumber: forwarded.number,
+      githubIssueUrl: forwarded.htmlUrl,
+      savedLocally: result.savedLocally,
+    );
+  }
+
+  Future<({int number, String htmlUrl})?> _forwardStored(String? feedbackId) async {
+    final id = feedbackId?.trim() ?? '';
+    if (id.isEmpty) return null;
+    try {
+      final forward = feedbackForward ?? forwardMemberFeedback;
+      return await forward(id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _recordForwardedIssue(({int number, String htmlUrl}) forwarded) {
+    if (submittedFeedbackLog.isEmpty) return;
+    final last = submittedFeedbackLog.last;
+    last['githubIssueCreated'] = 'true';
+    last['githubIssueNumber'] = '${forwarded.number}';
+    if (forwarded.htmlUrl.isNotEmpty) {
+      last['githubIssueUrl'] = forwarded.htmlUrl;
+    }
   }
 }
 
