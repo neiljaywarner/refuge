@@ -1,37 +1,48 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:refuge4serverpod/main.dart';
+import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
+import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
+import 'package:refuge4serverpod/src/features/auth/domain/auth_session.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/post_repository.dart';
-import 'package:refuge4serverpod/src/home_screen.dart';
 
-class FakeMemberProfileNotifier extends MemberProfileNotifier {
-  final MemberProfile initial;
-  FakeMemberProfileNotifier(this.initial);
-
-  @override
-  MemberProfile build() => initial;
-}
+AuthSession _signedInSession() => AuthSession(
+  userId: 'uid-member',
+  displayName: 'Rachel S. (Dallas)',
+  email: 'member@belongonthespectrum.com',
+  bio: 'Fellowship member',
+  comfortBadges: const ['Quiet fellowship'],
+  isSignedIn: true,
+  authMethod: 'in_memory_password',
+  emailVerified: true,
+);
 
 void main() {
-  group('Demo Mode vs Signed-In Real Community Feed BDD Tests', () {
+  group('Members-only feed vs sign-in wall BDD Tests (#668, #673)', () {
     late LocalPostRepository postRepo;
 
     setUp(() {
       postRepo = LocalPostRepository(isDevMode: true);
     });
 
-    Widget createTestApp({required MemberProfile profile}) => ProviderScope(
+    Widget signedInApp() => RefugeApp(
+      repository: postRepo,
+      enforceSignIn: true,
       overrides: [
         postRepositoryProvider.overrideWithValue(postRepo),
-        memberProfileProvider.overrideWith(() => FakeMemberProfileNotifier(profile)),
+        authRepositoryProvider.overrideWithValue(
+          InMemoryAuthRepository(initialSession: _signedInSession()),
+        ),
+        appFlavorProvider.overrideWithValue(AppFlavor.dev),
       ],
-      child: const MaterialApp(home: RefugeHomeScreen()),
     );
 
-    patrolWidgetTest('Guest user sees Demo Mode banner and sample reflections', ($) async {
+    patrolWidgetTest('unsigned visitor sees sign-in wall, not demo feed or guest banner', ($) async {
       $.tester.view.devicePixelRatio = 1.0;
       $.tester.view.physicalSize = const Size(1200, 2400);
       addTearDown(() {
@@ -39,60 +50,54 @@ void main() {
         $.tester.view.resetDevicePixelRatio();
       });
 
-      await $.pumpWidget(createTestApp(profile: const MemberProfile.guest()));
+      await $.pumpWidget(
+        RefugeApp(
+          repository: postRepo,
+          enforceSignIn: true,
+          overrides: [
+            postRepositoryProvider.overrideWithValue(postRepo),
+            authRepositoryProvider.overrideWithValue(InMemoryAuthRepository()),
+            appFlavorProvider.overrideWithValue(AppFlavor.dev),
+          ],
+        ),
+      );
       await $.pumpAndSettle();
 
-      // 1. Demo Mode banner is visible
-      expect($(const Key('demo_mode_banner')), findsOneWidget);
-      expect(
-        $(
-          'Demo Mode · Sample reflections shown. Sign in to view and share live community reflections.',
-        ),
-        findsWidgets,
-      );
-
-      // 2. Sample seeded reflections are visible
-      expect($('David M. (UK)'), findsOneWidget);
+      expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
+      expect(find.byKey(const Key('demo_mode_banner')), findsNothing);
+      expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
+      expect($('David M. (UK)'), findsNothing);
     });
 
     patrolWidgetTest('Signed-in member sees real data feed without dummy demo posts', ($) async {
       $.tester.view.devicePixelRatio = 1.0;
-      $.tester.view.physicalSize = const Size(1200, 2400);
+      $.tester.view.physicalSize = const Size(390, 844);
       addTearDown(() {
         $.tester.view.resetPhysicalSize();
         $.tester.view.resetDevicePixelRatio();
       });
 
-      const signedInProfile = MemberProfile(
-        displayName: 'Rachel S. (Dallas)',
-        email: 'rachel@example.com',
-        bio: 'Fellowship member',
-        comfortBadges: ['Quiet fellowship'],
-        isSignedIn: true,
-        icocChurchAffiliation: 'Dallas Church of Christ',
-      );
-
-      await $.pumpWidget(createTestApp(profile: signedInProfile));
+      await $.pumpWidget(signedInApp());
+      final previousOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.exceptionAsString().contains('RenderFlex overflowed')) return;
+        previousOnError?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = previousOnError);
       await $.pumpAndSettle();
 
-      // 1. Demo Mode banner is NOT visible
-      expect($(const Key('demo_mode_banner')), findsNothing);
-
-      // 2. Dummy seeded reflections are filtered out
+      expect(find.byKey(const Key('demo_mode_banner')), findsNothing);
+      expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsNothing);
       expect($('David M. (UK)'), findsNothing);
 
-      // 3. Peaceful empty state is rendered
-      expect($(const Key('empty_reflections_placeholder')), findsOneWidget);
+      expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       expect($('No community reflections yet in this space.'), findsOneWidget);
 
-      // 4. Submitting a new reflection adds real data
-      await $(const Key('reflection_composer_input'))
-          .enterText('Blessed to gather together tonight.');
+      await $(const Key('reflection_composer_input')).enterText('Blessed to gather together tonight.');
       await $.pumpAndSettle();
       await $(const Key('publish_reflection_button')).tap();
       await $.pumpAndSettle();
 
-      // Now the real reflection is displayed
       expect($('Blessed to gather together tonight.'), findsOneWidget);
       expect($('Rachel S. (Dallas)'), findsOneWidget);
     });

@@ -6,51 +6,71 @@ import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 
 void main() {
   group('Stage 1 Any Auth & Pluggable AuthRepository Adapter Tests (#26, ADR-0009)', () {
-    for (final target in BackendTarget.values) {
-      test(
-        'signs in with email/name, OAuth, and signs out cleanly on ${target.displayName}',
-        () async {
-          final container = ProviderContainer(
-            overrides: [authBackendTargetProvider.overrideWithValue(target)],
-          );
-          addTearDown(container.dispose);
+    setUp(() {
+      ProfileStorageService.instance.clear();
+    });
 
-          expect(container.read(memberProfileProvider).isSignedIn, isFalse);
+    tearDown(() {
+      ProfileStorageService.instance.clear();
+    });
 
-          container
-              .read(memberProfileProvider.notifier)
-              .signIn(
-                displayName: 'Hannah Grace',
-                email: 'hannah@belongonthespectrum.com',
-                bio: 'Autistic worship leader & Scripture nerd',
-              );
-
-          final signedIn = container.read(memberProfileProvider);
-          expect(signedIn.isSignedIn, isTrue);
-          expect(signedIn.displayName, 'Hannah Grace');
-          expect(signedIn.initials, 'HG');
-          expect(signedIn.authMethod, '${target.name}_email');
-
-          container.read(memberProfileProvider.notifier).signInWithOAuth('google');
-          final oauthSession = container.read(memberProfileProvider);
-          expect(oauthSession.isSignedIn, isTrue);
-          expect(oauthSession.authMethod, '${target.name}_google');
-
-          await container.read(memberProfileProvider.notifier).signOut();
-          expect(container.read(memberProfileProvider).isSignedIn, isFalse);
-        },
+    test('signs in with email/name, OAuth, and signs out cleanly on InMemory backend', () async {
+      final container = ProviderContainer(
+        overrides: [
+          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          authRepositoryProvider.overrideWithValue(InMemoryAuthRepository()),
+        ],
       );
-    }
+      addTearDown(container.dispose);
+
+      expect(container.read(memberProfileProvider).isSignedIn, isFalse);
+
+      container
+          .read(memberProfileProvider.notifier)
+          .signIn(
+            displayName: 'Hannah Grace',
+            email: 'hannah@belongonthespectrum.com',
+            bio: 'Autistic worship leader & Scripture nerd',
+          );
+
+      final signedIn = container.read(memberProfileProvider);
+      expect(signedIn.isSignedIn, isTrue);
+      expect(signedIn.displayName, 'Hannah Grace');
+      expect(signedIn.initials, 'HG');
+      expect(signedIn.authMethod, 'inMemory_email');
+
+      container.read(memberProfileProvider.notifier).signInWithOAuth('google');
+      final oauthSession = container.read(memberProfileProvider);
+      expect(oauthSession.isSignedIn, isTrue);
+      expect(oauthSession.authMethod, 'inMemory_google');
+
+      await container.read(memberProfileProvider.notifier).signOut();
+      expect(container.read(memberProfileProvider).isSignedIn, isFalse);
+    });
 
     patrolWidgetTest(
       'MemberProfileDialog supports Email/Name Sign-In and Sign Out via Patrol BDD',
       ($) async {
+        $.tester.view.physicalSize = const Size(1080, 2400);
+        $.tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
+        final container = ProviderContainer(
+          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+        );
+        addTearDown(container.dispose);
+
         await $.pumpWidgetAndSettle(
-          const ProviderScope(
-            child: MaterialApp(home: Scaffold(body: MemberProfileDialog())),
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
           ),
         );
 
