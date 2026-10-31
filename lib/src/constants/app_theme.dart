@@ -3,6 +3,17 @@ import 'package:flutter/material.dart';
 import '../core/theme/belong_text_styles.dart';
 import '../features/sensory_themes/domain/sensory_mode.dart';
 
+/// Calm Monastic Dark colors for feed filter, sort, and bottom-nav chrome.
+///
+/// Control borders clear WCAG 1.4.11 (3:1) against both the scaffold and the
+/// control fill. Labels stay soft slate (`#E2E8F0`) rather than pure white.
+abstract final class MonasticChrome {
+  static const Color controlFill = Color(0xFF2C333A);
+  static const Color controlBorder = Color(0xFF738394);
+  static const Color selectedFill = Color(0xFF27382E);
+  static const Color label = Color(0xFFE2E8F0);
+}
+
 class SensoryThemeData {
   static ThemeData getTheme(SensoryMode mode) {
     final theme = switch (mode) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../constants/app_theme.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../notifications/presentation/notifications_controller.dart';
 import '../../profile/domain/member_profile.dart';
@@ -46,7 +47,7 @@ class BelongBottomNavBar extends HookConsumerWidget {
     final topBorderColor = isContrast
         ? Colors.yellow
         : (theme.brightness == Brightness.dark
-              ? const Color(0xFF3E4752)
+              ? MonasticChrome.controlBorder
               : primary.withValues(alpha: 0.18));
     final bottomInset = SystemInsets.navigationBar(MediaQuery.of(context));
 
@@ -116,7 +117,7 @@ class _BottomNavItem extends StatelessWidget {
     final Color inactiveColor = isContrast
         ? Colors.white
         : (theme.brightness == Brightness.dark
-              ? const Color(0xFFB0BEC5)
+              ? MonasticChrome.label
               : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) ??
                     Colors.grey.shade600));
 
@@ -132,7 +133,7 @@ class _BottomNavItem extends StatelessWidget {
             border: isContrast
                 ? Border.all(color: Colors.yellow, width: 2)
                 : (theme.brightness == Brightness.dark
-                      ? Border.all(color: const Color(0xFF4E7A5A), width: 1)
+                      ? Border.all(color: primaryColor, width: 1)
                       : null),
             borderRadius: BorderRadius.circular(16),
           )
@@ -143,7 +144,11 @@ class _BottomNavItem extends StatelessWidget {
             key: const Key('bottom_nav_notifications_badge'),
             count: unreadCount,
             backgroundColor: isContrast ? Colors.yellow : primaryColor,
-            textColor: isContrast ? Colors.black : Colors.white,
+            textColor: isContrast
+                ? Colors.black
+                : (theme.brightness == Brightness.dark
+                      ? theme.colorScheme.onPrimary
+                      : Colors.white),
             child: Icon(
               tab.icon,
               key: Key('bottom_nav_icon_${tab.name}'),
@@ -186,8 +191,8 @@ class _BottomNavItem extends StatelessWidget {
                       key: Key('bottom_nav_label_${tab.name}'),
                       maxLines: 1,
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                         color: currentColor,
                         letterSpacing: 0.1,
                       ),
