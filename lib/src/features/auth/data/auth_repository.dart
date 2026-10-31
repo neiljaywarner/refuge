@@ -466,12 +466,10 @@ class FirebaseAuthRepository implements AuthRepository {
         final user = credential.user;
         if (user != null) {
           await user.updateDisplayName(displayName.trim());
-          if (flavor.isProduction) {
-            try {
-              await user.sendEmailVerification();
-            } catch (e) {
-              talker.warning('⚠️ [FirebaseAuthRepository] sendEmailVerification failed: $e');
-            }
+          try {
+            await user.sendEmailVerification();
+          } catch (e) {
+            talker.warning('⚠️ [FirebaseAuthRepository] sendEmailVerification failed: $e');
           }
           final session = AuthSession(
             userId: user.uid,

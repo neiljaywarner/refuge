@@ -105,8 +105,13 @@ class _AuthGateState extends ConsumerState<AuthGate> {
           );
         }
 
-        if (mustVerifyEmail(flavor) && !session.emailVerified) {
+        if (!session.emailVerified) {
+          // Dev does not block, but still sends one message so a yopmail
+          // inbox can confirm the account (#749). The wall stays prod-only.
           _sendVerificationOnce(session.userId);
+        }
+
+        if (mustVerifyEmail(flavor) && !session.emailVerified) {
           return KeyedSubtree(
             key: const Key('auth_gate_verify_email_wall'),
             child: _VerifyEmailWall(

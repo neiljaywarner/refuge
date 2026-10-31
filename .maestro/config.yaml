@@ -16,6 +16,9 @@
 # with `maestro test .maestro/web`. Tag a flow `known-gap` to skip it there.
 # belong_auth_journey.yaml is tagged known-gap so the default suite does not
 # submit registration. It reads credentials from the environment only.
+# dev_e2e_*.yaml is also known-gap. Run it with:
+#   MAESTRO_TEST_PASSWORD=... dart run tool/dev_yopmail_e2e.dart
+# The password is a GitHub secret named MAESTRO_TEST_PASSWORD. Never commit it.
 # Feed-sort flows that assumed Demo Mode / guest browse are tagged known-gap
 # after #601 (members-only wall). sign_in_wall_unsigned.yaml covers unsigned
 # launch. Re-enable sort flows after an Example User 1 session.
