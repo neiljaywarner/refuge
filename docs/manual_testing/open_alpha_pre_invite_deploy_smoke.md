@@ -87,7 +87,7 @@ A calm, low-stress smoke checklist designed for an organizer to verify **members
 | **4** | **Verified member reaches home** | Sign in with a **verified** production test account (see internal test roster). | Home feed or calm empty state loads; profile avatar visible; no `auth_gate_sign_in_wall`. |
 | **5** | **Unverified prod gate** | Sign in with an **unverified** prod test account (if available). | Verify-email wall appears until the inbox link is confirmed (prod-only policy). |
 | **6** | **Browser Back Button** | From a space room or modal sheet, press the browser Back button. | App navigates back cleanly within the client rather than exiting or reloading into a blank screen. |
-| **7** | **Zero test-junk scrub** | Scroll the signed-in feed (or empty state). | No test artifacts (`test 123`, `asdf`, debug gibberish). *Empty-space starter seed is tracked separately in #664.* |
+| **7** | **Zero test-junk scrub** | Scroll the signed-in feed (or empty state). | No test artifacts (`test 123`, `asdf`, debug gibberish). Empty prod spaces show read-only organizer starter posts from `canonical_organizer_starter_posts.dart` (#664). |
 | **8** | **Members-only actions** | While signed out, attempt to react or post via deep links or stale tabs. | User remains on sign-in or verify-email wall; no silent guest posting. |
 | **9** | **PWA Installability** | On Chrome (desktop or Android), verify install icon; on iOS Safari, check “Add to Home Screen”. | Web App Manifest resolves with Belong icon and calm theme color. |
 | **10** | **Feedback Sheet Access** | Signed in, tap **Vote & Feedback** and confirm feedback options appear. | In-app feedback form displays clearly; primary channel during open alpha. |

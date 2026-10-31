@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../domain/post.dart';
+import 'canonical_organizer_starter_posts.dart';
 import 'post_repository.dart';
 import 'saved_posts_store.dart';
 
@@ -205,9 +206,23 @@ class LocalPostRepository implements PostRepository {
 
   void _notify() => _controller.add(List.unmodifiable(_store));
 
+  /// In prod (`isDevMode: false`), inject read-only organizer anchors when a space is empty (#664).
+  void _ensureOrganizerStartersForSpace(String spaceKey) {
+    if (isDevMode) return;
+    final wanted = normalizeReflectionSpaceKey(spaceKey);
+    final hasPosts = _store.any((p) => normalizeReflectionSpaceKey(p.spaceKey) == wanted);
+    if (hasPosts) return;
+    final starters = organizerStarterPostsForSpace(spaceKey);
+    if (starters.isEmpty) return;
+    _store.addAll(starters);
+    _notify();
+  }
+
   @override
-  Future<List<Post>> getPosts({required String spaceKey}) async =>
-      _store.where((p) => p.spaceKey == spaceKey).toList();
+  Future<List<Post>> getPosts({required String spaceKey}) async {
+    _ensureOrganizerStartersForSpace(spaceKey);
+    return _store.where((p) => p.spaceKey == spaceKey).toList();
+  }
 
   @override
   Future<Post> createPost(Post post) async {
@@ -242,7 +257,7 @@ class LocalPostRepository implements PostRepository {
 
   @override
   Stream<List<Post>> watchPosts({required String spaceKey}) =>
-      _watchWhere((post) => post.spaceKey == spaceKey);
+      _watchWhere((post) => post.spaceKey == spaceKey, ensureStarterSpaceKey: spaceKey);
 
   @override
   Future<List<Post>> getPostsByAuthor({required String authorName}) async =>
@@ -304,7 +319,11 @@ class LocalPostRepository implements PostRepository {
   Stream<List<Post>> _watchWhere(
     bool Function(Post post) include, {
     Post Function(Post post)? transform,
+    String? ensureStarterSpaceKey,
   }) => Stream<List<Post>>.multi((controller) {
+    if (ensureStarterSpaceKey != null) {
+      _ensureOrganizerStartersForSpace(ensureStarterSpaceKey);
+    }
     List<Post> mapPosts(Iterable<Post> source) {
       final filtered = source.where(include);
       return transform == null ? filtered.toList() : filtered.map(transform).toList();
