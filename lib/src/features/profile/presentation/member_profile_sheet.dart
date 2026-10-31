@@ -404,16 +404,22 @@ class MemberProfileDialog extends HookConsumerWidget {
                     ],
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: DeleteAccountButton(
-                        key: const Key('delete_my_account_button'),
-                        auth: liveAuth,
-                        variant: ButtonVariant.text,
-                        showDeleteConfirmationDialog: true,
-                        onSignInRequired: () => showReauthenticateDialog(
-                          context: context,
-                          providers: [EmailAuthProvider()],
+                      child: Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: Theme.of(context).colorScheme
+                              .copyWith(onError: Theme.of(context).colorScheme.error),
+                        ),
+                        child: DeleteAccountButton(
+                          key: const Key('delete_my_account_button'),
                           auth: liveAuth,
-                          onSignedIn: () => Navigator.of(context).pop(true),
+                          variant: ButtonVariant.text,
+                          showDeleteConfirmationDialog: true,
+                          onSignInRequired: () => showReauthenticateDialog(
+                            context: context,
+                            providers: [EmailAuthProvider()],
+                            auth: liveAuth,
+                            onSignedIn: () => Navigator.of(context).pop(true),
+                          ),
                         ),
                       ),
                     ),

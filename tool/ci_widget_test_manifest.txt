@@ -87,6 +87,7 @@ test/features/observability/in_app_messaging_service_test.dart
 test/features/observability/observability_easter_egg_widget_test.dart
 test/features/patrol_hello_world_widget_test.dart
 test/features/profile/belong_members_directory_view_test.dart
+test/features/profile/delete_account_contrast_test.dart
 test/features/profile/member_directory_test.dart
 test/features/profile/member_profile_activity_counters_test.dart
 test/features/profile/member_profile_test.dart

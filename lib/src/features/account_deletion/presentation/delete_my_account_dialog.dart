@@ -82,6 +82,10 @@ class DeleteMyAccountDialog extends HookConsumerWidget {
         ),
         FilledButton(
           key: const Key('delete_my_account_submit_button'),
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.error,
+            foregroundColor: Theme.of(context).colorScheme.onError,
+          ),
           onPressed: submitting.value ? null : submit,
           child: const Text('Delete account'),
         ),
