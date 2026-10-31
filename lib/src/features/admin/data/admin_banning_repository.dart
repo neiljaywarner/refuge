@@ -96,6 +96,32 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
   }
 }
 
+/// Cloud ban row for `soft_deleted_users`.
+///
+/// Every signed-in member can read that collection, so the document must not
+/// carry an email address. The in-memory repository may still keep one on
+/// this device. Rules reject `email` and `bannedByAdminEmail` on create.
+Map<String, dynamic> firestoreBanDocument({
+  required String userId,
+  required String displayName,
+  required String reason,
+  Map<String, dynamic>? additionalData,
+}) {
+  final original = Map<String, dynamic>.from(additionalData ?? const {});
+  const stripped = ['email', 'bannedByAdminEmail', 'contactEmail', 'phone', 'phoneNumber'];
+  for (final key in stripped) {
+    original.remove(key);
+  }
+  return {
+    'userId': userId,
+    'displayName': displayName,
+    'bannedAt': FieldValue.serverTimestamp(),
+    'reason': reason,
+    'softDeleted': true,
+    'originalData': original,
+  };
+}
+
 /// Production implementation storing soft-deleted records in Cloud Firestore
 /// collection `soft_deleted_users`.
 class FirestoreAdminBanningRepository implements AdminBanningRepository {
@@ -130,22 +156,16 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   }) async {
     final fs = firestore;
     final sanitizedReason = reason ?? 'Violating calm community guidelines';
-    final payload = {
-      'userId': userId,
-      'displayName': displayName,
-      'email': email,
-      'bannedAt': FieldValue.serverTimestamp(),
-      'bannedByAdminEmail': bannedByAdminEmail,
-      'reason': sanitizedReason,
-      'softDeleted': true,
-      'originalData': additionalData ?? {},
-    };
+    final payload = firestoreBanDocument(
+      userId: userId,
+      displayName: displayName,
+      reason: sanitizedReason,
+      additionalData: additionalData,
+    );
 
     if (fs != null) {
       await fs.collection(collectionName).doc(userId).set(payload);
-      AppLogger.info(
-        'Moved user "$displayName" ($userId) into remote soft-delete collection by $bannedByAdminEmail',
-      );
+      AppLogger.info('Moved user "$displayName" ($userId) into remote soft-delete collection');
       return;
     }
 

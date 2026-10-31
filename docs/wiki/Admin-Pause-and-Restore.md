@@ -45,6 +45,12 @@ A signed-out person sees only the sign-in wall. They cannot browse the feed, dir
 
 ---
 
+## Rules before Ban Member can save
+
+The in-app button is still limited to the Remote Config list. Firestore is stricter. A ban write succeeds only when an empty document already exists at `rules_admins/{uid}` for that organizer's Firebase Auth uid. Create the document in the Firebase console, or with the Admin SDK, before deploying `firestore.rules`. The app cannot create it.
+
+Do not put an email address on the ban row. New writes leave `email` and `bannedByAdminEmail` off the document, because every signed-in member can read `soft_deleted_users` (the app uses that list to close a paused session). If an older row still has an address, remove it in the console. A member who is not in `rules_admins` cannot ban or restore anyone.
+
 ## How to ban someone
 
 1. Sign in with an organizer mailbox from the allowlist.

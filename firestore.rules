@@ -30,7 +30,7 @@ service cloud.firestore {
 
     // A Circle-style ban writes `soft_deleted_users/{displayName}` before
     // erase. Author-only delete cannot remove another member's posts, so a
-    // standing ban also allows that delete.
+    // standing ban also allows that delete (#758).
     function standingBan(docId) {
       return docId is string
         && docId.size() > 0
@@ -45,22 +45,85 @@ service cloud.firestore {
         || standingBan(resource.data.get('senderId', ''));
     }
 
+    // Create must name the signed-in member. A missing authorId does not match.
+    function createsAsSelf() {
+      return request.resource.data.get('authorId', '') == request.auth.uid;
+    }
+
+    // Organizer ban writes. Seed an empty doc at rules_admins/{uid} from the
+    // console or Admin SDK. Clients cannot create that doc. This is not a
+    // custom-claim change: Remote Config still decides who sees Ban Member.
+    function isRulesAdmin() {
+      return isSignedInMember()
+        && exists(/databases/$(database)/documents/rules_admins/$(request.auth.uid));
+    }
+
+    // users/{uid} is readable by every member (directory and message picker).
+    // These keys must not be added there. Push tokens belong in
+    // users/{uid}/notification_settings, which is owner-only.
+    function profileCreateOmitsSecrets() {
+      return request.resource.data.get('email', null) == null
+        && request.resource.data.get('contactEmail', null) == null
+        && request.resource.data.get('phone', null) == null
+        && request.resource.data.get('phoneNumber', null) == null
+        && request.resource.data.get('fcmToken', null) == null
+        && request.resource.data.get('pushToken', null) == null
+        && request.resource.data.get('notificationToken', null) == null;
+    }
+
+    function profileSecretsUnchanged() {
+      return request.resource.data.get('email', null) == resource.data.get('email', null)
+        && request.resource.data.get('contactEmail', null) == resource.data.get('contactEmail', null)
+        && request.resource.data.get('phone', null) == resource.data.get('phone', null)
+        && request.resource.data.get('phoneNumber', null) == resource.data.get('phoneNumber', null)
+        && request.resource.data.get('fcmToken', null) == resource.data.get('fcmToken', null)
+        && request.resource.data.get('pushToken', null) == resource.data.get('pushToken', null)
+        && request.resource.data.get('notificationToken', null) == resource.data.get('notificationToken', null);
+    }
+
+    // New ban rows must not copy an email. Existing rows may still have one
+    // until the console removes it; updates have to leave those fields as they are.
+    function banCreateOmitsEmail() {
+      return request.resource.data.get('email', null) == null
+        && request.resource.data.get('bannedByAdminEmail', null) == null;
+    }
+
+    function banEmailUnchanged() {
+      return request.resource.data.get('email', null) == resource.data.get('email', null)
+        && request.resource.data.get('bannedByAdminEmail', null) == resource.data.get('bannedByAdminEmail', null);
+    }
+
+    // Console-only organizer allowlist. exists() above does not grant client reads.
+    match /rules_admins/{adminId} {
+      allow read, write: if false;
+    }
+
     // 1. Feature Voting
+    // Members share one tally per feature. Guests never read or write it.
+    // Delete stays closed so a member cannot wipe the board.
     match /feature_votes/{featureId} {
-      allow read, write: if isSignedInMember();
+      allow read, create, update: if isSignedInMember();
+      allow delete: if false;
     }
 
     // 2. Member Feedback (Literal 3-intent cards)
+    // Read is author-only. Create must be that same member, so one account
+    // cannot file a note another member is then allowed to read.
     match /member_feedback/{feedbackId} {
-      allow create: if isSignedInMember();
+      allow create: if isSignedInMember()
+        && request.resource.data.get('authorId', '') == request.auth.uid
+        && request.resource.data.get('userId', '') == request.auth.uid;
       allow read: if isSignedInMember()
         && (resource.data.authorId == request.auth.uid || resource.data.userId == request.auth.uid);
       allow update, delete: if false;
     }
 
     // 3. Fellowship Reflections & Posts
+    // Member read is intentional for the signed-in feed. Guests use on-device
+    // Demo Mode and are not granted a public read here.
     match /posts/{postId} {
-      allow read, create: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember() && createsAsSelf();
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
@@ -69,10 +132,16 @@ service cloud.firestore {
 
     // 4. Member Profiles
     // Directory fields (displayName, handle, tagline, listedInDirectory)
-    // live here. Never store an email address on this document.
+    // live here. Never store an email address or a push token on this document.
     match /users/{userId} {
       allow read: if isSignedInMember();
-      allow write: if isSignedInMember() && request.auth.uid == userId;
+      allow create: if isSignedInMember()
+        && request.auth.uid == userId
+        && profileCreateOmitsSecrets();
+      allow update: if isSignedInMember()
+        && request.auth.uid == userId
+        && profileSecretsUnchanged();
+      allow delete: if isSignedInMember() && request.auth.uid == userId;
 
       // Push token stays private. The message function reads it with the admin SDK.
       match /notification_settings/{docId} {
@@ -87,7 +156,8 @@ service cloud.firestore {
 
     // 5. Discussion Comments & Nested Replies
     match /comments/{commentId} {
-      allow read, create: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember() && createsAsSelf();
       allow update: if isSignedInMember()
         && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
@@ -95,42 +165,51 @@ service cloud.firestore {
     }
     // Dev builds share this Firebase project; keep their threads separate.
     match /comments_dev/{commentId} {
-      allow read, create: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember() && createsAsSelf();
       allow update: if isSignedInMember()
         && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
         && (isAuthorOf(resource.data) || namedAuthorIsBanned());
     }
 
-    // 6. Admin Soft-Deleted Users Table (#356)
+    // 6. Admin soft-deleted users (#356).
+    // Every member may read so the client can close a paused session.
+    // Only a rules_admins uid may write. Any signed-in email used to be enough.
     match /soft_deleted_users/{userId} {
       allow read: if isSignedInMember();
-      allow write: if isSignedInMember() && request.auth.token.email != null;
+      allow create: if isRulesAdmin() && banCreateOmitsEmail();
+      allow update: if isRulesAdmin() && banEmailUnchanged();
+      allow delete: if false;
     }
 
     // 7. Reflection mirror kept while Serverpod Cloud is turned off (#212).
     match /reflections/{postId} {
-      allow read, create: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember() && createsAsSelf();
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
     }
     match /reflections_dev/{postId} {
-      allow read, create: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember() && createsAsSelf();
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
     }
 
-    // 8. Direct messages (#441)
+    // 8. Direct messages (#441). Participants only. Clients cannot update a
+    // message. A standing ban allows delete so that member's messages can be erased.
     match /direct_messages/{messageId} {
       allow read: if isSignedInMember()
         && request.auth.uid in resource.data.participantIds;
       allow create: if isSignedInMember()
         && request.resource.data.senderId == request.auth.uid
         && request.auth.uid in request.resource.data.participantIds;
+      allow update: if false;
       allow delete: if isSignedInMember() && namedAuthorIsBanned();
     }
 
@@ -138,8 +217,13 @@ service cloud.firestore {
     // Documents store a public name and plus-tag handle, never an email.
     match /directory_members/{userId} {
       allow read: if isSignedInMember();
-      allow create, update, delete: if isSignedInMember()
-          && request.auth.uid == userId;
+      allow create: if isSignedInMember()
+          && request.auth.uid == userId
+          && profileCreateOmitsSecrets();
+      allow update: if isSignedInMember()
+          && request.auth.uid == userId
+          && profileSecretsUnchanged();
+      allow delete: if isSignedInMember() && request.auth.uid == userId;
     }
 
     // 10. Cross-account bell items (direct messages and @-mentions).
