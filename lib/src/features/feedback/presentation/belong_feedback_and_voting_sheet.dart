@@ -239,10 +239,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
               Tab(
                 key: const Key('tab_feature_voting'),
                 child: _webLabeledButton(
-                  label: 'Vote on Features (WIP)',
+                  label: 'Vote on Features',
                   identifier: 'tab_vote_on_features',
                   onTap: () => tabController.animateTo(0),
-                  child: const Text('Vote on Features (WIP)'),
+                  child: const Text('Vote on Features'),
                 ),
               ),
               Tab(
@@ -386,6 +386,16 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
+                              if (formatTrackedGitHubIssues(item).isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  formatTrackedGitHubIssues(item),
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -826,15 +836,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
   }
 }
 
-/// Web Maestro drops some button labels. This node keeps [label] as the
-/// accessible name and [identifier] as the resource id. Mobile is unchanged.
+/// Keeps a stable [label] and [identifier] for Maestro on web and Android.
 Widget _webLabeledButton({
   required String label,
   required String identifier,
   required VoidCallback onTap,
   required Widget child,
 }) {
-  if (!kIsWeb) return child;
   return Semantics(
     label: label,
     identifier: identifier,

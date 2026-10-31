@@ -124,11 +124,11 @@ Stores calm-tech fellowship reflections, prayers, and study insights.
 ### 3.3. Collection: `features` (Roadmap & Feature Voting)
 Public roadmap features that community members can vote on.
 
-*Document ID*: Feature slug/id (e.g., `wip-direct-messages`).
+*Document ID*: Feature slug/id (e.g., `planned-native-store-apps`).
 
 ```json
 {
-  "id": "wip-direct-messages",
+  "id": "planned-native-store-apps",
   "title": "Direct Messages (Msgs Tab)",
   "description": "Private, low-pressure 1-on-1 messaging with unhurried response expectations.",
   "stage": "inProgress",

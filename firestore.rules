@@ -28,9 +28,32 @@ service cloud.firestore {
         || request.auth.uid == data.get('userId', null);
     }
 
-    // 1. Feature Voting
+    function featureVoteVoterIds(data) {
+      return data.get('voterIds', []) is list ? data.get('voterIds', []) : [];
+    }
+
+    function featureVoteUpvote() {
+      return request.resource.data.votes == resource.data.get('votes', 0) + 1
+        && !(request.auth.uid in featureVoteVoterIds(resource.data))
+        && request.auth.uid in featureVoteVoterIds(request.resource.data);
+    }
+
+    function featureVoteUnvote() {
+      return request.resource.data.votes == resource.data.get('votes', 0) - 1
+        && request.auth.uid in featureVoteVoterIds(resource.data)
+        && !(request.auth.uid in featureVoteVoterIds(request.resource.data));
+    }
+
+    // 1. Feature Voting (#733: per-member voterIds, no blind overwrites)
     match /feature_votes/{featureId} {
-      allow read, write: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember()
+        && request.resource.data.votes == 1
+        && featureVoteVoterIds(request.resource.data).size() == 1
+        && request.resource.data.voterIds[0] == request.auth.uid;
+      allow update: if isSignedInMember()
+        && (featureVoteUpvote() || featureVoteUnvote());
+      allow delete: if false;
     }
 
     // 2. Member Feedback (Literal 3-intent cards)

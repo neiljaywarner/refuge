@@ -73,6 +73,7 @@ class VotableFeatureItem {
     this.votes = 0,
     this.userVoted = false,
     this.githubIssueNumber,
+    this.alsoTrackedIn = const [],
   });
 
   final String id;
@@ -82,6 +83,7 @@ class VotableFeatureItem {
   final int votes;
   final bool userVoted;
   final int? githubIssueNumber;
+  final List<int> alsoTrackedIn;
 
   VotableFeatureItem copyWith({int? votes, bool? userVoted}) => VotableFeatureItem(
     id: id,
@@ -91,84 +93,50 @@ class VotableFeatureItem {
     votes: votes ?? this.votes,
     userVoted: userVoted ?? this.userVoted,
     githubIssueNumber: githubIssueNumber,
+    alsoTrackedIn: alsoTrackedIn,
   );
 }
 
-/// Sane default features + active WIP items for the Oct 24–31 Circle cutover preview.
-/// Initialized with 0 votes so community sentiment drives real roadmap prioritization (#304).
+/// Plain-language GitHub tracking line for a voting card.
+String formatTrackedGitHubIssues(VotableFeatureItem item) {
+  final issues = [
+    if (item.githubIssueNumber != null) item.githubIssueNumber!,
+    ...item.alsoTrackedIn,
+  ];
+  if (issues.isEmpty) return '';
+  if (issues.length == 1) return 'Tracked in GitHub #${issues.first}';
+  final prefix = issues.sublist(0, issues.length - 1).map((n) => '#$n').join(', ');
+  return 'Tracked in GitHub $prefix and #${issues.last}';
+}
+
+/// Curated roadmap samples — only unfinished, organizer-approved priorities (#733).
 const List<VotableFeatureItem> kDefaultBelongVotableFeatures = [
   VotableFeatureItem(
-    id: 'wip-direct-messages',
-    title: 'Direct Messages (Msgs Tab)',
-    description:
-        'Calm 1-on-1 member messaging with opt-in boundaries and zero read-receipt pressure.',
-    stage: FeatureStage.workInProgress,
-    votes: 0,
-    githubIssueNumber: 27,
-  ),
-  VotableFeatureItem(
-    id: 'wip-notifications-bell',
-    title: 'Calm Notification Bell',
-    description:
-        'Bundled, predictable updates when someone replies to your post or prayer request.',
-    stage: FeatureStage.workInProgress,
-    votes: 0,
-    githubIssueNumber: 27,
-  ),
-  VotableFeatureItem(
-    id: 'wip-autistic-events',
+    id: 'planned-autistic-events',
     title: 'Actually Autistic Events Calendar',
-    description: 'Sensory-friendly DFW & online meetups, clear expectations, and 1-tap RSVP.',
-    stage: FeatureStage.workInProgress,
+    description:
+        'Sensory-friendly DFW and online meetups with clear expectations and RSVP. Spaces opens Coming Soon until the live calendar ships.',
+    stage: FeatureStage.planned,
     votes: 0,
-    githubIssueNumber: 28,
   ),
   VotableFeatureItem(
-    id: 'wip-google-apple-auth',
-    title: '1-Tap Google & Apple Sign-In',
-    description: 'Frictionless single-tap sign-in alongside Stage 1 email/password accounts.',
-    stage: FeatureStage.workInProgress,
+    id: 'planned-google-sign-in',
+    title: 'Google Sign-In (Good Auth)',
+    description:
+        'Real Sign in with Google beside email and magic link. The preview-only button today uses a local sample session, not Firebase OAuth.',
+    stage: FeatureStage.planned,
     votes: 0,
     githubIssueNumber: 33,
   ),
   VotableFeatureItem(
     id: 'planned-native-store-apps',
-    title: 'Native iOS App Store & Google Play Apps',
-    description: 'Installable store apps alongside our instant Web & Add-to-Home-Screen PWA.',
+    title: 'Native iOS App Store and Google Play Apps',
+    description:
+        'Installable store apps alongside the website and Add to Home Screen PWA. Play release #45; App Store release #46.',
     stage: FeatureStage.planned,
     votes: 0,
     githubIssueNumber: 45,
-  ),
-  VotableFeatureItem(
-    id: 'idea-realtime-vs-calm-notifications',
-    title: 'Real-Time Instant Alerts vs. Calm Batched Digest Toggle',
-    description: 'Let members choose: receive immediate chimes/banners for DMs and replies, or batch everything into a calm quiet digest.',
-    stage: FeatureStage.communityIdea,
-    votes: 0,
-    githubIssueNumber: 243,
-  ),
-  VotableFeatureItem(
-    id: 'idea-sensory-audio-rooms',
-    title: 'Camera-Off Voice & Text Hangout Rooms',
-    description:
-        'Low-pressure voice or text-only fellowship rooms where cameras are never required.',
-    stage: FeatureStage.communityIdea,
-    votes: 0,
-  ),
-  VotableFeatureItem(
-    id: 'idea-special-interest-galleries',
-    title: 'Special Interest Showcase Galleries',
-    description:
-        'Dedicated photo & project albums inside Geek Out! for trains, coding, music, and art.',
-    stage: FeatureStage.communityIdea,
-    votes: 0,
-  ),
-  VotableFeatureItem(
-    id: 'idea-weekly-calm-digest',
-    title: 'Single Weekly Calm Digest Email',
-    description: 'Catch up on community highlights once a week without daily notification clutter.',
-    stage: FeatureStage.communityIdea,
-    votes: 0,
+    alsoTrackedIn: [46],
   ),
 ];
 

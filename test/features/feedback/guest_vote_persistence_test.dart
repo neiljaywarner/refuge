@@ -16,34 +16,34 @@ void main() {
     VoteStorageService.instance.clear();
   });
 
-  group('Guest Feature Vote Persistence Across Reloads (#487, #500)', () {
+  group('Signed-in thumb memory across reloads', () {
     test('VoteStorageService correctly records, toggles, and clears voted feature IDs', () {
       final storage = VoteStorageService.instance;
       expect(storage.getVotedFeatureIds(), isEmpty);
-      expect(storage.isFeatureVoted('wip-autistic-events'), isFalse);
+      expect(storage.isFeatureVoted('planned-autistic-events'), isFalse);
 
-      storage.setFeatureVoted('wip-autistic-events', true);
-      expect(storage.isFeatureVoted('wip-autistic-events'), isTrue);
-      expect(storage.getVotedFeatureIds(), contains('wip-autistic-events'));
+      storage.setFeatureVoted('planned-autistic-events', true);
+      expect(storage.isFeatureVoted('planned-autistic-events'), isTrue);
+      expect(storage.getVotedFeatureIds(), contains('planned-autistic-events'));
 
-      storage.toggleFeatureVoted('wip-autistic-events');
-      expect(storage.isFeatureVoted('wip-autistic-events'), isFalse);
+      storage.toggleFeatureVoted('planned-autistic-events');
+      expect(storage.isFeatureVoted('planned-autistic-events'), isFalse);
 
-      storage.toggleFeatureVoted('wip-google-apple-auth');
-      expect(storage.isFeatureVoted('wip-google-apple-auth'), isTrue);
+      storage.toggleFeatureVoted('planned-google-sign-in');
+      expect(storage.isFeatureVoted('planned-google-sign-in'), isTrue);
 
       storage.clear();
       expect(storage.getVotedFeatureIds(), isEmpty);
     });
 
-    test('Simulated page reload restores guest vote and prevents vote inflation', () {
-      // Session 1: Guest opens the app and upvotes a feature
+    test('Reload keeps the thumb pressed and does not invent a private count', () {
+      // Session 1: a member upvotes. The live session shows the optimistic +1.
       final container1 = ProviderContainer(
         overrides: [featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
 
       final features1 = container1.read(featureVotingProvider);
-      final target = features1.firstWhere((f) => f.id == 'wip-autistic-events');
+      final target = features1.firstWhere((f) => f.id == 'planned-autistic-events');
       final baselineVotes = target.votes;
       expect(target.userVoted, isFalse);
 
@@ -51,7 +51,7 @@ void main() {
       container1.read(featureVotingProvider.notifier).toggleVote(target.id);
       final voted1 = container1
           .read(featureVotingProvider)
-          .firstWhere((f) => f.id == 'wip-autistic-events');
+          .firstWhere((f) => f.id == 'planned-autistic-events');
       expect(voted1.userVoted, isTrue);
       expect(voted1.votes, baselineVotes + 1);
 
@@ -65,66 +65,83 @@ void main() {
       addTearDown(container2.dispose);
 
       final features2 = container2.read(featureVotingProvider);
-      final restored = features2.firstWhere((f) => f.id == 'wip-autistic-events');
+      final restored = features2.firstWhere((f) => f.id == 'planned-autistic-events');
 
-      // Crucial assertion for #487 and #500: userVoted MUST remain true after reload!
-      expect(restored.userVoted, isTrue, reason: 'Guest vote state must survive page reload');
-      expect(restored.votes, baselineVotes + 1);
+      // The thumb stays down so the next tap removes the vote.
+      // The community total is not a device-local +1; Firestore supplies that.
+      expect(restored.userVoted, isTrue);
+      expect(restored.votes, baselineVotes);
 
       // Tapping again removes vote instead of inflating count
       container2.read(featureVotingProvider.notifier).toggleVote(target.id);
       final unvoted2 = container2
           .read(featureVotingProvider)
-          .firstWhere((f) => f.id == 'wip-autistic-events');
+          .firstWhere((f) => f.id == 'planned-autistic-events');
       expect(unvoted2.userVoted, isFalse);
       expect(unvoted2.votes, baselineVotes);
     });
 
     test('FirebaseFeatureVotingRepository restores userVoted from VoteStorageService', () async {
-      VoteStorageService.instance.setFeatureVoted('wip-autistic-events', true);
+      VoteStorageService.instance.setFeatureVoted('planned-autistic-events', true);
       final repo = FirebaseFeatureVotingRepository();
 
       final initial = repo.loadInitialFeatures();
-      final item = initial.firstWhere((f) => f.id == 'wip-autistic-events');
+      final item = initial.firstWhere((f) => f.id == 'planned-autistic-events');
       expect(item.userVoted, isTrue);
     });
 
     patrolWidgetTest(
-      'BDD: Guest votes in feedback sheet, sheet reloads, button shows voted state and unvotes cleanly',
+      'BDD: a vote survives reload as a pressed thumb, then unvotes cleanly',
       ($) async {
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            overrides: [
-              featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-            ],
-            child: const MaterialApp(home: Scaffold(body: BelongFeedbackAndVotingSheet())),
+        var container = ProviderContainer(
+          overrides: [
+            featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        Future<void> pumpBoard() => $.pumpWidgetAndSettle(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(
+              home: Scaffold(body: BelongFeedbackAndVotingSheet(initialTabIndex: 0)),
+            ),
           ),
         );
 
+        await pumpBoard();
+
         Finder countInsideVoteButton(String count) => find.descendant(
-          of: find.byKey(const Key('vote_button_wip-autistic-events')),
+          of: find.byKey(const Key('vote_button_planned-autistic-events')),
           matching: find.text(count),
         );
 
         expect(countInsideVoteButton('0'), findsOneWidget);
 
-        await $(find.byKey(const Key('vote_button_wip-autistic-events'))).tap();
+        await $(const Key('vote_button_planned-autistic-events')).tap();
         await $.pumpAndSettle();
         expect(countInsideVoteButton('1'), findsOneWidget);
 
-        // Simulate page reload by pumping a brand new ProviderScope
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            overrides: [
-              featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-            ],
-            child: const MaterialApp(home: Scaffold(body: BelongFeedbackAndVotingSheet())),
+        // Simulate reload: new Riverpod container, same persisted thumb memory.
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await pumpBoard();
+        expect(countInsideVoteButton('0'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('vote_button_planned-autistic-events')),
+            matching: find.byIcon(Icons.thumb_up),
           ),
+          findsOneWidget,
         );
 
-        expect(countInsideVoteButton('1'), findsOneWidget);
-
-        await $(find.byKey(const Key('vote_button_wip-autistic-events'))).tap();
+        await $(const Key('vote_button_planned-autistic-events')).tap();
         await $.pumpAndSettle();
         expect(countInsideVoteButton('0'), findsOneWidget);
       },
