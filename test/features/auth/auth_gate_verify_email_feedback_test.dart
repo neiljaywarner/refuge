@@ -7,7 +7,10 @@ import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/auth/domain/auth_exception.dart';
 import 'package:refuge4serverpod/src/features/auth/domain/auth_session.dart';
+import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
+
+import 'auth_gate_test_helpers.dart';
 
 AuthSession _signedInSession({required String email, bool emailVerified = false}) => AuthSession(
   userId: 'uid-${email.hashCode}',
@@ -66,6 +69,14 @@ class FakeAuthRepository extends InMemoryAuthRepository {
 }
 
 void main() {
+  setUp(() {
+    ProfileStorageService.instance.clear();
+  });
+
+  tearDown(() {
+    ProfileStorageService.instance.clear();
+  });
+
   group('AuthGate VerifyEmailWall Feedback & Busy Guard (#661)', () {
     testWidgets('status message is initially absent on wall visit', (tester) async {
       final repo = FakeAuthRepository(
@@ -199,6 +210,7 @@ void main() {
 
       await tester.tap(find.byKey(const Key('auth_gate_i_verified')));
       await tester.pumpAndSettle();
+      await dismissFirstVisitWelcomeIfShown(tester);
 
       expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsNothing);
       expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);

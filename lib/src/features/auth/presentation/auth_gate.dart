@@ -5,7 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/config/app_flavor.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/presentation/return_after_delete_panel.dart';
+import '../../profile/data/profile_storage_service.dart';
 import '../../profile/domain/member_profile.dart';
+import '../../profile/presentation/first_visit_welcome_card.dart';
 import '../../reflections/data/post_repository.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 import '../../../home_screen.dart';
@@ -46,6 +48,9 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   /// Firebase UI registration does not send a verification email, so the
   /// gate sends one the first time a prod member lands on the verify wall.
   String? _verificationSentFor;
+
+  /// Session-local skip so the first-visit card does not flash again before storage reloads.
+  bool _skippedFirstVisit = false;
 
   AuthSession _effectiveSession(AuthSession streamSession) => _reloadedSession ?? streamSession;
 
@@ -116,6 +121,13 @@ class _AuthGateState extends ConsumerState<AuthGate> {
               onSignOut: _signOut,
             ),
           );
+        }
+
+        final profile = ref.watch(memberProfileProvider);
+        final skipped =
+            _skippedFirstVisit || ProfileStorageService.instance.skippedFirstVisitWelcome;
+        if (profile.hasDefaultDisplayName && !skipped) {
+          return FirstVisitWelcomeCard(onFinished: () => setState(() => _skippedFirstVisit = true));
         }
 
         return RefugeHomeScreen(repository: widget.repository, themeNotifier: widget.themeNotifier);

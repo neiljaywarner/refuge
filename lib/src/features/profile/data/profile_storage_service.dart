@@ -15,6 +15,18 @@ class ProfileStorageService {
   final BaseProfileStorage _platformStorage = getPlatformProfileStorage();
   Map<String, dynamic>? _memoryCache;
 
+  static const skippedFirstVisitWelcomeKey = 'skippedFirstVisitWelcome';
+
+  /// True after the member taps Skip on the first-visit name card (#663).
+  bool get skippedFirstVisitWelcome => load()?[skippedFirstVisitWelcomeKey] == true;
+
+  void markFirstVisitSkipped() {
+    final data = Map<String, dynamic>.from(load() ?? <String, dynamic>{});
+    data[skippedFirstVisitWelcomeKey] = true;
+    _memoryCache = data;
+    _platformStorage.save(data);
+  }
+
   Map<String, dynamic>? load() {
     if (_memoryCache != null) return _memoryCache;
     _memoryCache = _platformStorage.load();
@@ -30,9 +42,11 @@ class ProfileStorageService {
     List<String>? comfortBadges,
     String? avatarUrl,
   }) {
+    final keepSkip = load()?[skippedFirstVisitWelcomeKey] == true;
     final data = <String, dynamic>{
       'displayName': displayName,
       'email': email,
+      if (keepSkip) skippedFirstVisitWelcomeKey: true,
       if (userId != null && userId.isNotEmpty) 'userId': userId,
       if (bio != null) 'bio': bio,
       if (icocChurchAffiliation != null) 'icocChurchAffiliation': icocChurchAffiliation,
