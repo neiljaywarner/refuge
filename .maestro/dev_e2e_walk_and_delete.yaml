@@ -1,0 +1,44 @@
+appId: com.belongonthespectrum.refuge.dev
+# Continues the signed-in dev session from dev_e2e_register.yaml.
+# Walks Home, Spaces, Notifications, and Messages, then deletes the account.
+tags:
+  - known-gap
+  - e2e
+  - dev-only
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Feed.*"
+    timeout: 45000
+- assertVisible: ".*Spaces.*"
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*COMMUNITY.*"
+    timeout: 20000
+- tapOn:
+    text: ".*Notifications tab.*"
+- extendedWaitUntil:
+    visible: ".*Notifications.*"
+    timeout: 15000
+- tapOn:
+    text: ".*Messages tab.*"
+- extendedWaitUntil:
+    visible: ".*Messages.*"
+    timeout: 15000
+- tapOn:
+    text: ".*Home tab.*"
+- tapOn: ".*Member Profile.*"
+- scrollUntilVisible:
+    element: "Delete account"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Delete account"
+- tapOn: "Type DELETE to confirm"
+- inputText: "DELETE"
+- tapOn:
+    text: "Delete account"
+    index: 1
+- extendedWaitUntil:
+    visible: ".*Sign in to Belong on the Spectrum.*"
+    timeout: 45000
