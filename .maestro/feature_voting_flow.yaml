@@ -16,7 +16,7 @@ tags:
 - extendedWaitUntil:
     visible: ".*Belong Roadmap & Feedback.*"
     timeout: 15000
-- assertVisible: ".*Direct Messages \\(Msgs Tab\\).*"
+- assertVisible: ".*Native iOS App Store and Google Play Apps.*"
 # Read-only. Do not tap a vote count. Guest votes are stored for this
 # install and must not be cast from the default suite.
 - tapOn: ".*Share Feedback.*"

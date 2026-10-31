@@ -42,7 +42,7 @@ void main() {
       expect($('24'), findsOneWidget);
 
       // 2. Tap upvote on Direct Messages
-      await $(const Key('vote_button_wip-direct-messages')).tap();
+      await $(const Key('vote_button_planned-native-store-apps')).tap();
       expect($('25'), findsOneWidget);
     },
   );

@@ -242,7 +242,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   label: 'Vote on Features (WIP)',
                   identifier: 'tab_vote_on_features',
                   onTap: () => tabController.animateTo(0),
-                  child: const Text('Vote on Features (WIP)'),
+                  child: const Text('Vote on Features'),
                 ),
               ),
               Tab(
@@ -283,6 +283,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'A signed-in vote counts for everyone. A guest thumb stays on this device.',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -386,6 +394,16 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
+                              if (formatTrackedGitHubIssues(item).isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  formatTrackedGitHubIssues(item),
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

@@ -10,6 +10,7 @@ import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/optional_feedback_contact.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 class MockFeatureVotingRepository extends Mock implements FeatureVotingRepository {}
@@ -262,10 +263,10 @@ void main() {
         expect($('What felt broken, confusing, or overwhelming?'), findsOneWidget);
 
         await $(const Key('tab_feature_voting')).tap();
-        await $(const Key('vote_button_wip-direct-messages')).tap();
+        await $(const Key('vote_button_planned-native-store-apps')).tap();
         expect(
           find.descendant(
-            of: find.byKey(const Key('vote_button_wip-direct-messages')),
+            of: find.byKey(const Key('vote_button_planned-native-store-apps')),
             matching: find.text('1'),
           ),
           findsOneWidget,
@@ -273,20 +274,20 @@ void main() {
 
         updates.add([
           for (final item in kDefaultBelongVotableFeatures)
-            item.id == 'wip-direct-messages' ? item.copyWith(votes: 6) : item,
+            item.id == 'planned-native-store-apps' ? item.copyWith(votes: 6) : item,
         ]);
         await $.pumpAndSettle();
 
         expect(
           find.descendant(
-            of: find.byKey(const Key('vote_button_wip-direct-messages')),
+            of: find.byKey(const Key('vote_button_planned-native-store-apps')),
             matching: find.text('6'),
           ),
           findsOneWidget,
         );
         expect(
           find.descendant(
-            of: find.byKey(const Key('vote_button_wip-direct-messages')),
+            of: find.byKey(const Key('vote_button_planned-native-store-apps')),
             matching: find.byIcon(Icons.thumb_up),
           ),
           findsOneWidget,
@@ -305,18 +306,19 @@ void main() {
       when(() => firestore.collection('feature_votes')).thenReturn(collection);
       when(() => collection.snapshots()).thenAnswer((_) => Stream.value(snapshot));
       when(() => snapshot.docs).thenReturn([document]);
-      when(() => document.id).thenReturn('wip-notifications-bell');
-      when(() => document.data()).thenReturn({'votes': 4});
+      when(() => document.id).thenReturn('planned-native-store-apps');
+      when(() => document.data()).thenReturn({'votes': 4, 'voterIds': <String>[]});
 
       final repo = FirebaseFeatureVotingRepository(customFirestore: firestore);
       final features = await repo.watchFeatures().first;
 
-      final bell = features.firstWhere((item) => item.id == 'wip-notifications-bell');
-      expect(bell.votes, 4);
-      expect(features.firstWhere((item) => item.id == 'wip-direct-messages').votes, 0);
+      final store = features.firstWhere((item) => item.id == 'planned-native-store-apps');
+      expect(store.votes, 4);
+      expect(features.firstWhere((item) => item.id == 'planned-google-sign-in').votes, 0);
     });
 
     test('toggleVote and submitFeedback survive a mocked Firestore write', () async {
+      VoteStorageService.instance.clear();
       final firestore = MockFirebaseFirestore();
       final collection = MockVoteCollection();
       final document = _MockDocumentReference();
@@ -326,10 +328,14 @@ void main() {
       when(() => collection.add(any())).thenAnswer((_) async => document);
       when(() => document.set(any(), any())).thenAnswer((_) async {});
 
-      final repo = FirebaseFeatureVotingRepository(customFirestore: firestore);
-      final next = repo.toggleVote(repo.loadInitialFeatures(), 'wip-direct-messages');
-      expect(next.first.userVoted, isTrue);
-      expect(next.first.votes, 1);
+      final repo = FirebaseFeatureVotingRepository(
+        customFirestore: firestore,
+        memberId: () => null,
+      );
+      final next = repo.toggleVote(repo.loadInitialFeatures(), 'planned-native-store-apps');
+      final voted = next.firstWhere((item) => item.id == 'planned-native-store-apps');
+      expect(voted.userVoted, isTrue);
+      expect(voted.votes, 1);
 
       await repo.submitFeedback(
         sentiment: FeedbackSentiment.neutral,

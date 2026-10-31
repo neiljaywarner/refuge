@@ -1,29 +1,20 @@
 Feature: Neurodivergent-First 1-Tap Feature Voting & Literal 3-Intent Feedback (ADR-0007)
-  As a Belong on the Spectrum community member testing the October 24-31 Circle cutover preview
-  I want to upvote upcoming WIP features with 1 tap and send literal, low-pressure feedback
-  So that I can help shape our new home without typing long forms or guessing 1-5 star ratings
+  As a Belong on the Spectrum community member
+  I want to upvote unfinished planned roadmap items with 1 tap and send literal feedback
+  So that the voting board reflects real priorities (#733)
 
-  # Driven interactively via Marionette MCP / CLI (`marionette_mcp`) and verified via `patrol_finders` (`patrolWidgetTest`)
-  Scenario: Member upvotes a Work-In-Progress feature in 1 tap
+  Scenario: Member upvotes a planned store-apps feature in 1 tap
     Given the Belong on the Spectrum app is running on the Home tab
     When I tap the "Vote & Feedback" action chip (#open_feedback_and_voting_button)
     Then I see the "Belong Roadmap & Feedback" modal sheet
-    And I see the "Vote on Features (WIP)" tab (#tab_feature_voting) active by default
-    And I see "Direct Messages (Msgs Tab)" with badge "In Progress" and "0" votes
-    And I see "Calm Notification Bell" with badge "In Progress"
-    And I see "Actually Autistic Events Calendar" with badge "In Progress"
-    And I see "1-Tap Google & Apple Sign-In" with badge "In Progress"
-    When I tap the upvote button (#vote_button_wip-direct-messages)
-    Then the vote count for "Direct Messages (Msgs Tab)" increments to "1"
+    And I see the "Vote on Features" tab (#tab_feature_voting) active by default
+    And I see exactly three planned cards including "Native iOS App Store and Google Play Apps"
+    When I tap the upvote button (#vote_button_planned-native-store-apps)
+    Then the vote count increments to "1"
 
   Scenario: Member switches to Share Feedback and selects a literal feedback intent
     Given the "Belong Roadmap & Feedback" modal sheet is open
     When I tap the "Share Feedback" tab (#tab_private_feedback)
-    Then I see the literal 3-intent choice chips:
-      | Emoji | Label           | Subtitle           | Routing        |
-      | 💚    | Works Great     | Public Praise      | Public Praise  |
-      | 💡    | Idea / Tweak    | Private Suggestion | Private Triage |
-      | 🛠️    | Bug / Confusing | Private Triage     | Private Triage |
+    Then I see the literal 3-intent choice chips Works Great, Idea / Tweak, and Bug / Confusing
     When I tap the "Bug / Confusing" chip (#sentiment_sad)
     Then I see the private triage prompt "What felt broken, confusing, or overwhelming?"
-    And I see the "Send Private Feedback" button (#submit_feedback_button)

@@ -9,6 +9,7 @@ import '../application/feedback_attachment_ref.dart';
 import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
 import '../domain/feedback_source_stamp.dart';
+import '../domain/vote_tally.dart';
 import 'github_feedback_client.dart';
 import 'member_feedback_bridge.dart';
 import 'vote_storage_service.dart';
@@ -350,6 +351,20 @@ class FirebaseFeatureVotingRepository
   @override
   BackendTarget get target => BackendTarget.firebase;
 
+  static final Set<String> _seedFeatureIds = {
+    for (final item in kDefaultBelongVotableFeatures) item.id,
+  };
+
+  String? _signedInMemberUid() {
+    try {
+      final rawUid = (memberId ?? readCurrentMemberId)()?.trim();
+      if (rawUid == null || rawUid.isEmpty) return null;
+      return rawUid;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Stream<List<VotableFeatureItem>> watchFeatures() {
     final fs = firestore;
@@ -358,21 +373,32 @@ class FirebaseFeatureVotingRepository
     }
     try {
       return fs.collection(featuresCollectionPath).snapshots().map((snapshot) {
-        final remoteVotes = <String, int>{};
+        final remoteById = <String, ({int votes, List<String> voterIds})>{};
         for (final doc in snapshot.docs) {
+          if (!_seedFeatureIds.contains(doc.id)) continue;
           final data = doc.data();
-          if (data.containsKey('votes')) {
-            remoteVotes[doc.id] = (data['votes'] as num).toInt();
-          }
+          final votes = (data['votes'] as num?)?.toInt() ?? 0;
+          final voterIds = (data['voterIds'] as List?)
+                  ?.map((entry) => entry.toString())
+                  .toList(growable: false) ??
+              const <String>[];
+          remoteById[doc.id] = (votes: votes, voterIds: voterIds);
         }
         final base = loadInitialFeatures();
         final votedIds = VoteStorageService.instance.getVotedFeatureIds();
+        final uid = _signedInMemberUid();
         return [
           for (final item in base)
-            if (remoteVotes.containsKey(item.id))
-              item.copyWith(votes: remoteVotes[item.id]!, userVoted: votedIds.contains(item.id))
-            else
-              item.copyWith(userVoted: votedIds.contains(item.id)),
+            () {
+              final remote = remoteById[item.id];
+              if (remote == null) {
+                return item.copyWith(userVoted: votedIds.contains(item.id));
+              }
+              final userVoted = uid != null
+                  ? remote.voterIds.contains(uid) || votedIds.contains(item.id)
+                  : votedIds.contains(item.id);
+              return item.copyWith(votes: remote.votes, userVoted: userVoted);
+            }(),
         ];
       });
     } catch (_) {
@@ -389,20 +415,67 @@ class FirebaseFeatureVotingRepository
     );
 
     final fs = firestore;
-    if (fs != null) {
-      try {
-        fs.collection(featuresCollectionPath).doc(featureId).set({
+    final uid = _signedInMemberUid();
+    if (fs == null || uid == null) {
+      return next;
+    }
+
+    unawaited(
+      _persistSignedInVote(
+        fs: fs,
+        featureId: featureId,
+        targetItem: targetItem,
+        uid: uid,
+        wantVoted: targetItem.userVoted,
+        optimisticNext: next,
+      ),
+    );
+    return next;
+  }
+
+  Future<void> _persistSignedInVote({
+    required FirebaseFirestore fs,
+    required String featureId,
+    required VotableFeatureItem targetItem,
+    required String uid,
+    required bool wantVoted,
+    required List<VotableFeatureItem> optimisticNext,
+  }) async {
+    try {
+      await fs.runTransaction((transaction) async {
+        final ref = fs.collection(featuresCollectionPath).doc(featureId);
+        final snap = await transaction.get(ref);
+        final data = snap.data() ?? <String, dynamic>{};
+        final votes = (data['votes'] as num?)?.toInt() ?? 0;
+        final voterIds = (data['voterIds'] as List?)
+                ?.map((entry) => entry.toString())
+                .toList() ??
+            <String>[];
+        final tally = applyMemberVote(
+          votes: votes,
+          voterIds: voterIds,
+          uid: uid,
+          wantVoted: wantVoted,
+        );
+        if (!tally.changed) return;
+        transaction.set(ref, {
           'id': featureId,
           'title': targetItem.title,
           'description': targetItem.description,
-          'votes': targetItem.votes,
+          'stage': targetItem.stage.name,
+          'votes': tally.votes,
+          'voterIds': tally.voterIds,
           'lastVotedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-      } catch (_) {
-        // Resilient offline fallback
+      });
+    } catch (_) {
+      VoteStorageService.instance.setFeatureVoted(featureId, !wantVoted);
+      final reverted = super.toggleVote(optimisticNext, featureId);
+      if (_streamController != null && !_streamController!.isClosed) {
+        final remotePayload = [for (final item in reverted) item.copyWith(userVoted: false)];
+        _streamController!.add(remotePayload);
       }
     }
-    return next;
   }
 
   @override

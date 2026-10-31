@@ -15,16 +15,16 @@ name: Belong web feature voting
     id: "tab_vote_on_features"
 - scrollUntilVisible:
     element:
-      id: "vote_wip-direct-messages"
+      id: "vote_planned-native-store-apps"
     direction: DOWN
     timeout: 20000
     visibilityPercentage: 40
 - takeScreenshot: web_voting_before
 - tapOn:
-    id: "vote_wip-direct-messages"
+    id: "vote_planned-native-store-apps"
 - extendedWaitUntil:
-    visible: "Remove vote for Direct Messages \\(Msgs Tab\\)"
+    visible: "Remove vote for Native iOS App Store and Google Play Apps"
     timeout: 20000
-- assertVisible: "Remove vote for Direct Messages \\(Msgs Tab\\)"
+- assertVisible: "Remove vote for Native iOS App Store and Google Play Apps"
 - takeScreenshot: web_voting_after
 - tapOn: "Close"
