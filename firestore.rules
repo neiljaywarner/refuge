@@ -28,6 +28,23 @@ service cloud.firestore {
         || request.auth.uid == data.get('userId', null);
     }
 
+    // A Circle-style ban writes `soft_deleted_users/{displayName}` before
+    // erase. Author-only delete cannot remove another member's posts, so a
+    // standing ban also allows that delete.
+    function standingBan(docId) {
+      return docId is string
+        && docId.size() > 0
+        && exists(/databases/$(database)/documents/soft_deleted_users/$(docId))
+        && get(/databases/$(database)/documents/soft_deleted_users/$(docId)).data.get('softDeleted', false) == true;
+    }
+
+    function namedAuthorIsBanned() {
+      return standingBan(resource.data.get('authorName', ''))
+        || standingBan(resource.data.get('senderName', ''))
+        || standingBan(resource.data.get('authorId', ''))
+        || standingBan(resource.data.get('senderId', ''));
+    }
+
     // 1. Feature Voting
     match /feature_votes/{featureId} {
       allow read, write: if isSignedInMember();
@@ -47,7 +64,7 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && request.auth.uid == resource.data.get('authorId', null);
+        && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
     }
 
     // 4. Member Profiles
@@ -73,14 +90,16 @@ service cloud.firestore {
       allow read, create: if isSignedInMember();
       allow update: if isSignedInMember()
         && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
-      allow delete: if isSignedInMember() && isAuthorOf(resource.data);
+      allow delete: if isSignedInMember()
+        && (isAuthorOf(resource.data) || namedAuthorIsBanned());
     }
     // Dev builds share this Firebase project; keep their threads separate.
     match /comments_dev/{commentId} {
       allow read, create: if isSignedInMember();
       allow update: if isSignedInMember()
         && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
-      allow delete: if isSignedInMember() && isAuthorOf(resource.data);
+      allow delete: if isSignedInMember()
+        && (isAuthorOf(resource.data) || namedAuthorIsBanned());
     }
 
     // 6. Admin Soft-Deleted Users Table (#356)
@@ -95,14 +114,14 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && request.auth.uid == resource.data.get('authorId', null);
+        && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
     }
     match /reflections_dev/{postId} {
       allow read, create: if isSignedInMember();
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && request.auth.uid == resource.data.get('authorId', null);
+        && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
     }
 
     // 8. Direct messages (#441)
@@ -112,6 +131,7 @@ service cloud.firestore {
       allow create: if isSignedInMember()
         && request.resource.data.senderId == request.auth.uid
         && request.auth.uid in request.resource.data.participantIds;
+      allow delete: if isSignedInMember() && namedAuthorIsBanned();
     }
 
     // 9. Member directory used by the direct-message picker.

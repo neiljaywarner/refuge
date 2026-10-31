@@ -7,6 +7,7 @@ import 'package:refuge4serverpod/src/features/account_deletion/data/account_dele
 import 'package:refuge4serverpod/src/features/account_deletion/data/account_deletion_sinks.dart';
 import 'package:refuge4serverpod/src/features/account_deletion/domain/account_deletion_record.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
+import 'package:refuge4serverpod/src/features/admin/data/admin_banning_repository.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/auth/domain/auth_session.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
@@ -131,6 +132,35 @@ void main() {
       expect(find.byKey(const Key('home_verify_email_banner')), findsNothing);
       expect(find.text('Send the verification email again'), findsOneWidget);
       expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
+    });
+
+    testWidgets('banned member sees the lockout copy and not the feed', (tester) async {
+      final session = _signedInSession(
+        email: 'qa-ban-member-591@example.com',
+        emailVerified: true,
+      ).copyWith(displayName: 'Caleb Stone');
+      final bans = InMemoryAdminBanningRepository();
+      await bans.banUser(
+        userId: 'Caleb Stone',
+        displayName: 'Caleb Stone',
+        email: session.email,
+        bannedByAdminEmail: 'qa-ban-admin-591@example.com',
+      );
+
+      await tester.pumpWidget(
+        _gateApp(
+          authRepo: InMemoryAuthRepository(initialSession: session),
+          flavor: AppFlavor.dev,
+          extra: [adminBanningRepositoryProvider.overrideWithValue(bans)],
+        ),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('auth_gate_ban_refusal')), findsOneWidget);
+      expect(find.text("This account can't sign in."), findsOneWidget);
+      expect(find.byKey(const Key('reflection_composer')), findsNothing);
+      expect(find.byKey(const Key('belong_profile_avatar_button')), findsNothing);
     });
 
     testWidgets('dev unverified reaches home with avatar', (tester) async {

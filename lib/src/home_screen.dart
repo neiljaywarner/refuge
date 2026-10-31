@@ -1163,6 +1163,9 @@ class _BannedSessionLockoutState extends ConsumerState<_BannedSessionLockout> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // Keep the lockout copy up after this session ends. Signing out first
+      // swaps AuthGate back to the sign-in form and the message never stays.
+      ref.read(banRefusalVisibleProvider.notifier).state = true;
       ref.read(memberProfileProvider.notifier).signOut();
     });
   }

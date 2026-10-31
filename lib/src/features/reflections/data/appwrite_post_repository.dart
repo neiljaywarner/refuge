@@ -432,7 +432,10 @@ class AppwritePostRepository implements PostRepository {
         for (final doc in snap.docs) {
           await doc.reference.delete();
         }
-      } catch (_) {}
+      } catch (error, stack) {
+        talker.handle(error, stack, 'Firestore ban erase failed');
+        rethrow;
+      }
     }
     return removed;
   }
