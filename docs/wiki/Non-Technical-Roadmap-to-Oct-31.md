@@ -58,5 +58,5 @@ Members will find their favorite rooms organized in the exact same structure und
 | 📅 **Actually Autistic** | **Actually Autistic Events** | 🗓️ Friendly *"Coming Soon"* screen (`v1.1.0`) | Ready when the community schedules live events (**Issue #28**) |
 | 🔗 **Links** | **Community Guidelines** | 📜 Live by `v0.9.0-rc` | Editable via Firebase Remote Config (**Issue #29**) |
 | 🔗 **Links** | **DFW Church** | ✅ **Live Now** | Opens `https://dfwchurch.org` |
-| 🔗 **Links** | **Download the Android App** | 📱 PWA Guide now → Play Store in `v1.0.1` | Tracked in **Issues #30, #44, #45** |
-| 🔗 **Links** | **Download the iOS App** | 🍏 PWA Guide now → App Store in `v1.0.1` | Tracked in **Issues #31, #44, #46** |
+| 🔗 **Links** | **Download the Android App** | Android open beta now. Play Store still pending. Guide: [Get Belong on your phone](Get-Belong-on-Your-Phone) | **#737**, **#30**, **#45** |
+| 🔗 **Links** | **Download the iOS App** | App Store and TestFlight pending. iPhone uses the website. | **#737**, **#31**, **#44**, **#46** |

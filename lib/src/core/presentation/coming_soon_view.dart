@@ -6,8 +6,8 @@ import 'system_insets.dart';
 /// - `Notifications` bottom navigation tab (Issue #27)
 /// - `Msgs` (Direct Messages) bottom navigation tab (Issue #27)
 /// - `Actually Autistic Events` space item (Issue #28)
-/// - Pending `Links` (`Community Guidelines` #29, `Download the Android App` #30,
-///   `Download the iOS App` #31).
+/// - Pending `Links` (`Community Guidelines` #29).
+/// Phone download links open the install guide instead (#737).
 class ComingSoonView extends StatelessWidget {
   const ComingSoonView({
     super.key,
