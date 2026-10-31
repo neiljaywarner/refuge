@@ -28,7 +28,10 @@ In **Belong on the Spectrum**, we connected the **"Message from the Organizer"**
 | **`android_app_download_url`** | URL for `Download the Android App` under `Links` (leave empty for *"Pending / PWA Guide"*) | `""` *(Pending until Play Store launch)* |
 | **`ios_app_download_url`** | URL for `Download the iOS App` under `Links` (leave empty for *"Pending / PWA Guide"*) | `""` *(Pending until App Store launch)* |
 | **`admin_emails_csv`** | Comma-separated emails that may pause and restore a member. Empty means nobody. | `""` *(published in Remote Config, not in git)* |
-| **`giphy_api_key`** | Giphy **beta** key for **Search GIFs** (PWA HTTP API + native SDK). Stored **only** in this Remote Config screen — never in git, the wiki, or GitHub. Free tier: **~100 API requests/hour** total for that key (all members and platforms share the pool). No charge when the cap is hit; search pauses until the next hour. Dashboard keys may be labeled Android or iOS; one published value serves every app today. See **[Giphy GIF search](Giphy-GIF-Search)** and issue **#741** if you need more keys later. | *(published in prod Remote Config)* |
+| **`giphy_api_key_android`** | Android **beta** key for the official Giphy SDK (GIFs, stickers, emoji, Clips). About **100 requests/hour** for this key only. Never copy the value into git, chat, or this wiki. | *(published in prod Remote Config)* |
+| **`giphy_api_key_ios`** | iOS **beta** key for the official SDK. Separate ~100/hour pool. Clips on iPhone are not verified until a physical device exists. | *(published in prod Remote Config)* |
+| **`giphy_api_key_web`** | Web, PWA, and installed WebAPK **beta** key. HTTP GIF search only — the Android SDK does not run inside a home-screen web install. Separate ~100/hour pool. | *(published in prod Remote Config)* |
+| **`giphy_api_key`** | Legacy Android fallback for older builds. The website and iOS do not read this. | *(published in prod Remote Config)* |
 | **`giphy_content_rating`** | Highest GIF rating to request: `g`, `pg`, or `pg-13`. `pg` includes G and mild clips such as superheroes. Anything else, including `r`, is treated as `pg`. | `pg` |
 
 The ban steps are in **[Ban a member](Admin-Pause-and-Restore)**. Production uses only this published list. Do not copy the addresses into the wiki, an issue, or a screenshot.

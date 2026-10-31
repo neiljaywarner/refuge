@@ -47,8 +47,9 @@ abstract class GiphySearch {
 
 /// Giphy public API client.
 ///
-/// The key comes from Remote Config `giphy_api_key`, with
-/// `--dart-define=GIPHY_API_KEY` as a fallback. A missing key is not an
+/// The key comes from the platform Remote Config parameter
+/// (`giphy_api_key_web` on the PWA), with `--dart-define=GIPHY_API_KEY` as a
+/// fallback. A missing key is not an
 /// error: [search] returns an empty list and never calls the network.
 /// The rating comes from Remote Config `giphy_content_rating` and defaults
 /// to PG.

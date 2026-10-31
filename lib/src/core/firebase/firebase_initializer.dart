@@ -151,6 +151,9 @@ class FirebaseInitializer {
       await rc.setDefaults(const {
         'admin_emails_csv': '',
         'giphy_api_key': '',
+        'giphy_api_key_android': '',
+        'giphy_api_key_ios': '',
+        'giphy_api_key_web': '',
         'giphy_content_rating': 'pg',
       });
       await rc.fetchAndActivate().timeout(const Duration(seconds: 8));

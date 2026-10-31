@@ -124,19 +124,84 @@ void main() {
   });
 
   group('readGiphyRemoteSettings', () {
-    test('a published key wins and a blank rating stays PG', () {
+    test('a published Android key wins and a blank rating stays PG', () {
       final settings = readGiphyRemoteSettings(
         firebaseReady: true,
+        client: GiphyClient.android,
         readString: (key) => switch (key) {
-          kGiphyApiKeyParameter => 'beta-key',
+          kGiphyApiKeyAndroidParameter => 'android-key',
           kGiphyContentRatingParameter => '  ',
           _ => '',
         },
         dartDefineKey: 'local-key',
       );
 
-      expect(settings.apiKey, 'beta-key');
+      expect(settings.apiKey, 'android-key');
       expect(settings.rating, 'pg');
+    });
+
+    test('web and iOS never use the Android or legacy key', () {
+      String read(String key) => switch (key) {
+        kGiphyApiKeyParameter => 'legacy-android',
+        kGiphyApiKeyAndroidParameter => 'android-key',
+        kGiphyApiKeyIosParameter => 'ios-key',
+        kGiphyApiKeyWebParameter => 'web-key',
+        _ => '',
+      };
+
+      expect(
+        readGiphyRemoteSettings(
+          firebaseReady: true,
+          client: GiphyClient.web,
+          readString: read,
+        ).apiKey,
+        'web-key',
+      );
+      expect(
+        readGiphyRemoteSettings(
+          firebaseReady: true,
+          client: GiphyClient.ios,
+          readString: read,
+        ).apiKey,
+        'ios-key',
+      );
+      expect(
+        readGiphyRemoteSettings(
+          firebaseReady: true,
+          client: GiphyClient.web,
+          readString: (key) =>
+              key == kGiphyApiKeyParameter ? 'legacy-android' : '',
+          dartDefineKey: 'local-key',
+        ).apiKey,
+        'local-key',
+      );
+    });
+
+    test('Android falls back to the legacy key only', () {
+      final settings = readGiphyRemoteSettings(
+        firebaseReady: true,
+        client: GiphyClient.android,
+        readString: (key) =>
+            key == kGiphyApiKeyParameter ? 'legacy-android' : '',
+        dartDefineKey: 'local-key',
+      );
+
+      expect(settings.apiKey, 'legacy-android');
+    });
+
+    test('installed web and desktop stay on the web key slot', () {
+      expect(
+        giphyClientFor(isWeb: true, platform: TargetPlatform.android),
+        GiphyClient.web,
+      );
+      expect(
+        giphyClientFor(isWeb: false, platform: TargetPlatform.iOS),
+        GiphyClient.ios,
+      );
+      expect(
+        giphyClientFor(isWeb: false, platform: TargetPlatform.android),
+        GiphyClient.android,
+      );
     });
 
     test('keeps the dart-define key when Remote Config is blank', () {

@@ -103,7 +103,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       children: [
         Text(
           key: const Key('giphy_platform_note'),
-          'This website searches GIFs. The Android and iOS apps also include stickers, emoji, clips, and animated text.',
+          'This website searches GIFs, including when it is installed on a phone home screen. The Android and iOS apps also include stickers, emoji, clips, and animated text.',
           style: TextStyle(
             fontSize: 11,
             height: 1.35,

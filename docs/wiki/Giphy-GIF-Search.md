@@ -12,24 +12,27 @@ As of 31 Oct 2026, pub.dev listed that package at **130 / 160 pub points** and a
 
 | Parameter | Purpose | Default |
 | --- | --- | --- |
-| `giphy_api_key` | Giphy **beta** API key from the [developer dashboard](https://developers.giphy.com/dashboard/). Belong’s production value lives only in **Firebase Remote Config** (`belongonthespectrum` project) — **never in git**, issues, or the wiki. | *(published in console)* |
+| `giphy_api_key_android` | Android beta key for the official SDK (GIFs, stickers, emoji, Clips). About **100 requests/hour** for this key alone. | *(console only)* |
+| `giphy_api_key_ios` | iOS beta key for the official SDK. Same hourly cap, separate pool. Device check is tracked separately; no iPhone in the current test setup. | *(console only)* |
+| `giphy_api_key_web` | Web, PWA, and installed WebAPK beta key. HTTP GIF search only. Separate ~100/hour pool. | *(console only)* |
+| `giphy_api_key` | **Legacy Android fallback** for builds that predate the split. Web and iOS never read this parameter. | *(console only)* |
 | `giphy_content_rating` | Highest rating to request: `g`, `pg`, or `pg-13`. **`pg`** includes mild superhero-style content and excludes PG-13 and R. Invalid values, including `r`, are treated as `pg`. | `pg` |
 
-The app also accepts `--dart-define=GIPHY_API_KEY=...` as a **local developer fallback** when Remote Config is empty or on a flavor that has not fetched yet.
+Each dashboard key is labeled for one platform (Android, iOS, or Web SDK). The app sends **only that platform's key**. An installed PWA or WebAPK is still the website: `kIsWeb` is true, so it uses `giphy_api_key_web` and the HTTP GIF picker. It does **not** load the Android SDK, Clips, stickers, or emoji.
+
+The app also accepts `--dart-define=GIPHY_API_KEY=...` as a **local developer fallback** when that platform's Remote Config value is empty.
 
 ### Beta key limits (what “100 per hour” means)
 
-Giphy’s **free beta** tier caps **about 100 API requests per hour** for a single key. That limit is **shared**:
+Giphy’s **free beta** tier caps **about 100 API requests per hour per key**. The three keys do **not** share one pool:
 
-- Every member search and trending load on the **PWA** (HTTP API).
-- Every **Android / iOS** session that calls `GiphyFlutterSDK.configure` with the same key.
-- Any other PG refuge app that reuses the key while you experiment.
+- **Web / PWA / WebAPK** — `giphy_api_key_web` (HTTP search and trending).
+- **Android** — `giphy_api_key_android` (official SDK, including Clips).
+- **iOS** — `giphy_api_key_ios` (official SDK, including Clips, when an iPhone build exists).
 
-There is **no credit card charge** if the cap is hit — search simply stops returning new results until the hour rolls over. Members can still **paste a GIF URL** manually.
+There is **no credit card charge** if a cap is hit — that platform's search pauses until the hour rolls over. Members can still **paste a GIF URL**.
 
-In the Giphy dashboard, keys are often labeled by platform (for example an **Android** app entry). Remote Config still ships **one** key string to all clients today. That is enough for early community use. If traffic grows, split keys or upgrade the Giphy plan — tracked in GitHub **#741** (record keeping, not urgent).
-
-Putting the key in Remote Config is normal for Giphy: it is **not** a payment or Firebase secret. The app downloads it at runtime, so a determined user could copy it. The practical risk is **quota exhaustion**, not billing fraud. Do not paste keys into chat, screenshots, or commits.
+Putting keys in Remote Config is normal for Giphy: they are **not** payment secrets. The app downloads the key for the current platform at runtime. Do not paste keys into chat, screenshots, commits, or the wiki. If traffic on one platform grows, add another key or upgrade that Giphy app — tracked in GitHub **#741**.
 
 ## Website: a real GIF picker
 
@@ -81,5 +84,5 @@ See also **[Organizer Remote Config Guide](Organizer-Remote-Config-Guide)** for 
 
 ## Related work
 
-- GitHub: [#666](https://github.com/neiljaywarner/refuge/issues/666) (Giphy integration), PR [#715](https://github.com/neiljaywarner/refuge/pull/715), [#741](https://github.com/neiljaywarner/refuge/issues/741) (extra Giphy keys / quota if traffic grows).
+- GitHub: [#666](https://github.com/neiljaywarner/refuge/issues/666) (Giphy integration), PR [#715](https://github.com/neiljaywarner/refuge/pull/715), [#738](https://github.com/neiljaywarner/refuge/issues/738) (Clips), [#741](https://github.com/neiljaywarner/refuge/issues/741) (more keys later), [#743](https://github.com/neiljaywarner/refuge/issues/743) (iPhone SDK and Clips check — no device yet).
 - Store beta path: [#44](https://github.com/neiljaywarner/refuge/issues/44) (TestFlight and Play internal/closed beta before [#45](https://github.com/neiljaywarner/refuge/issues/45) / [#46](https://github.com/neiljaywarner/refuge/issues/46)).

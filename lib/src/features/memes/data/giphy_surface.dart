@@ -7,6 +7,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// other target, uses the Giphy HTTP API. See `docs/wiki/Giphy-GIF-Search.md`.
 enum GiphySurface { nativeSdk, webApi }
 
+/// Which Giphy beta key Remote Config should supply.
+///
+/// Android, iOS, and web each have their own key and their own ~100
+/// requests/hour pool. Web and iOS must not fall back to the Android key.
+enum GiphyClient { android, ios, web }
+
+/// Official SDK on Android and iOS. Web, PWA, WebAPK, and desktop stay on
+/// the HTTP API even when the site is installed to a phone home screen.
+GiphyClient giphyClientFor({
+  required bool isWeb,
+  required TargetPlatform platform,
+}) {
+  if (isWeb) return GiphyClient.web;
+  return switch (platform) {
+    TargetPlatform.iOS => GiphyClient.ios,
+    TargetPlatform.android => GiphyClient.android,
+    _ => GiphyClient.web,
+  };
+}
+
 /// Official SDK tabs. The package default already includes these. Belong sets
 /// them explicitly so the phone picker does not drift if the package default
 /// changes.
