@@ -16,7 +16,6 @@ import 'features/admin/presentation/account_paused_banner.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/simple_auth.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
-import 'features/events/presentation/actually_autistic_events_view.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 import 'features/feedback/presentation/feedback_drawing_canvas.dart';
 import 'features/fellowship_spaces/domain/fellowship_space.dart';
@@ -49,7 +48,7 @@ import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 
 /// Sub-navigation mode below the Belong logo inside the `Home` bottom tab.
-enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory, events }
+enum BelongHomeSubView { feed, spaces, comingSoonItem, membersDirectory }
 
 /// Main screen of **Belong on the Spectrum** (powered by Refuge),
 /// built as a [HookConsumerWidget] following CodeWithAndrea's feature-first
@@ -197,12 +196,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
     }
 
     Widget buildHomeBody() {
-      if (homeSubView.value == BelongHomeSubView.events) {
-        return ActuallyAutisticEventsView(
-          onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-        );
-      }
-
       if (homeSubView.value == BelongHomeSubView.membersDirectory) {
         return BelongMembersDirectoryView(
           onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
@@ -213,10 +206,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
         return BelongSpacesDirectoryView(
           selectedSpaceSlug: selectedSpace.value,
           onSelectSpaceItem: (item) {
-            if (item.slug == 'actually_autistic_events') {
-              homeSubView.value = BelongHomeSubView.events;
-              return;
-            }
             if (item.isComingSoon) {
               activeComingSoonItem.value = item;
               homeSubView.value = BelongHomeSubView.comingSoonItem;

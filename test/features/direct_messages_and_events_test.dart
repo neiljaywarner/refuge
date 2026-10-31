@@ -99,31 +99,16 @@ void main() {
   );
 
   patrolWidgetTest(
-    'BDD (patrol_finders): Actually Autistic Events calendar displays sensory badges and 1-tap RSVP',
+    'BDD (patrol_finders): Actually Autistic Events shows Coming Soon placeholder (#689)',
     ($) async {
       await $.pumpWidgetAndSettle(const MaterialApp(home: ActuallyAutisticEventsView()));
 
-      // 1. Verify header and sensory commitment banner
-      expect($('Actually Autistic Events'), findsOneWidget);
-      expect($('Sensory-Friendly & Masking-Free'), findsOneWidget);
-
-      // 2. Verify event cards and sensory badges
-      expect($('Actually Autistic Weekly Online Fellowship'), findsOneWidget);
-      expect($('Quiet Room Available'), findsWidgets);
-
-      // 3. Tap 1-tap RSVP button on first visible event
-      final rsvpKey = const Key('rsvp-button-event-weekly-online');
-      expect($('14 members attending'), findsOneWidget);
-      await $(rsvpKey).tap();
-
-      // 4. Verify RSVP confirmed state
-      expect($('✅ RSVP Confirmed'), findsWidgets);
-      expect($('Attending (Quiet RSVP)'), findsWidgets);
-      expect($('15 members attending'), findsOneWidget);
-
-      // 5. Tap again to cancel RSVP
-      await $(rsvpKey).tap();
-      expect($('14 members attending'), findsOneWidget);
+      expect($('Actually Autistic Events'), findsWidgets);
+      expect($('Coming Soon'), findsOneWidget);
+      expect($('Upcoming sensory-friendly meetups & gatherings'), findsOneWidget);
+      expect($('Tracked on GitHub Roadmap • Issue #28'), findsOneWidget);
+      expect($('Actually Autistic Weekly Online Fellowship'), findsNothing);
+      expect($(const Key('rsvp-button-event-weekly-online')), findsNothing);
     },
   );
 
