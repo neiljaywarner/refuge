@@ -13,9 +13,10 @@ A longer schedule for leaders is on **[Plan through October 31](Non-Technical-Ro
 ## Start here (about 10 minutes, or just one part)
 
 1. Open [belongonthespectrum.web.app](https://belongonthespectrum.web.app) on your phone or computer.
-2. Look around. Tap **Spaces** and open a room you already know, such as **General Chat** or **Start Here**.
-3. Tap **Vote & Feedback** (it sits near **Feed** and **Spaces**).
-4. If you want, say hello in **Start Here & Introduce Yourself**.
+2. **Sign in or register.** Belong is **members-only**: tap **Sign In** or **Register**, then complete **email verification** when the app asks (check your inbox for the link). You need a verified member account before **Spaces**, posting, or messages open.
+3. Look around. Tap **Spaces** and open a room you already know, such as **General Chat** or **Start Here**.
+4. Tap **Vote & Feedback** (it sits near **Feed** and **Spaces**).
+5. If you want, say hello in **Start Here & Introduce Yourself**.
 
 Then use **[What to look for](#what-to-look-for)** below. You can do one section and stop. That is enough.
 

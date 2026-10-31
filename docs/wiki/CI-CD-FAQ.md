@@ -10,9 +10,9 @@ Parent epic: [#513](https://github.com/neiljaywarner/refuge/issues/513).
 | --- | --- | --- | --- |
 | `dart format -l 100` on staged Dart | pre-commit | `lib`, `test`, `tool`, `packages/belong_lints` at 100 columns | |
 | `dart analyze` for Belong lint rules | pre-commit | fails on `no_print_use_app_logger`, `prefer_use_text_editing_controller`, and `dispose_controllers` | |
-| Unit and widget tests | optional, see below | 77-file manifest (`tool/ci_widget_test_manifest.txt`), 40% floor on `lcov.info` from that run | |
+| Unit and widget tests | optional, see below | manifest in `tool/ci_widget_test_manifest.txt` (81 files on `main` as of Oct 2026), 40% floor on `lcov.info` from that run | |
 | Privacy scan | pre-push | | |
-| Firebase Hosting preview, then production | | | deploy workflow |
+| Firebase Hosting (dev site on `main`; production on release) | | | deploy workflow |
 | Patrol, Maestro, Firebase Test Lab | | | manual or a later workflow |
 | GitHub Release and App Distribution | | | manual, or a deploy `workflow_dispatch` input for Android |
 
@@ -36,7 +36,7 @@ REFUGE_PRE_PUSH_TESTS=1 git push
 
 The floor is 40% line coverage. Very Good Ventures workflows default to 100% and a spell checker. We do not. The goal is to stop large untested drops, not to chase a perfect number.
 
-CI runs the largest passing subset of `flutter test` (77 `*_test.dart` files listed in `tool/ci_widget_test_manifest.txt`). The full tree compiles on `main`, but 36 cases in 23 other files fail (Patrol/BDD/UI drift). The old four-file slice was about 75% on the small number of lines its tests loaded. The widened manifest run is about 77% on the lines recorded in `coverage/lcov.info` from those tests (for example 6851/8936 hit/found in Oct 2026). That is not whole-repository line coverage. Integration tests, Patrol, and Maestro stay outside this floor. Shrink or grow the manifest in a reviewed pull request when failures are fixed or new ones appear.
+CI runs the largest passing subset of `flutter test` (81 `*_test.dart` files listed in `tool/ci_widget_test_manifest.txt`). The full tree compiles on `main`, but some cases in other files still fail (Patrol/BDD/UI drift). The widened manifest run records line coverage in `coverage/lcov.info` from those tests. Integration tests, Patrol, and Maestro stay outside this floor. Shrink or grow the manifest in a reviewed pull request when failures are fixed or new ones appear.
 
 `tool/check_line_coverage.dart` reads `coverage/lcov.info` and exits non-zero under the floor.
 
@@ -99,11 +99,16 @@ GitHub Actions → Deploy → Run workflow → dry run enabled.
 
 ### What does a merge to `main` deploy?
 
-The deploy workflow checks out the commit, then runs `tool/deploy_release.dart`. That script builds Flutter web with `GIT_COMMIT_SHA`, `BUILD_TIME_MS`, and `RELEASE_TAG`, writes `build/web/version.json`, deploys a Hosting preview channel kept for 14 days, and then deploys production Hosting (`https://belongonthespectrum.web.app`).
+Since [#586](https://github.com/neiljaywarner/refuge/issues/586), a **push to `main`** runs `tool/deploy_dev_web.dart`. That builds Flutter web for the **dev** site and deploys **`https://dev-belongonthespectrum.web.app`**. The workflow also uploads a **`refuge-dev-release-apk`** artifact (and may distribute a dev APK when `FIREBASE_ANDROID_DEV_APP_ID` is set). It does **not** update production Hosting.
 
-It does not create a GitHub Release on every commit. Releases stay on `dart run tool/deploy_release.dart --version <tag> --github-release` from a trusted machine, or a later change. App Distribution runs only when someone starts the workflow by hand with "distribute Android" enabled.
+**Production** (`https://belongonthespectrum.web.app`) deploys only when:
 
-The version string for an automatic deploy is `ci-` plus the first seven characters of the commit SHA. The About screen still shows the full 40-character SHA from the dart-define.
+- someone pushes a **`v*` tag** (the workflow runs `tool/deploy_release.dart --prod`), or
+- someone starts **Deploy → Run workflow** with **Publish production Hosting** enabled (`workflow_dispatch` with `production: true`).
+
+Preview channels from `tool/deploy_release.dart` are short-lived release candidates, not the dev site. GitHub Releases and App Distribution still follow DEPLOYMENT.md or the manual workflow inputs.
+
+The version string for an automatic **dev** deploy is `ci-` plus the first seven characters of the commit SHA. The About screen still shows the full 40-character SHA from the dart-define when the binary was built with one.
 
 ### Hosting is up, but About still shows `unknown` or an old SHA
 
@@ -131,6 +136,6 @@ Prefer `BelongTextStyles.of(context)` (`title`, `body`, `caption`, `emphasis`) o
 | Plugin diagnostics never appear in the IDE | Restart the Dart analysis server after `flutter pub get`. |
 | `flutter analyze` warns that a plugin failed to load | Run `flutter pub get` at the repo root so `packages/belong_lints` is fetched. |
 | Deploy log stops at "Missing Firebase credentials" | Add `FIREBASE_SERVICE_ACCOUNT` or `FIREBASE_TOKEN` in repository secrets. |
-| Preview channel deploy returns 403 | The service account needs Hosting admin on project `belongonthespectrum`. |
+| Preview channel or Hosting deploy returns 403 | The service account needs Firebase Hosting admin on project `belongonthespectrum`, plus **`roles/serviceusage.serviceUsageConsumer`** so the Firebase CLI can call Google APIs ([#627](https://github.com/neiljaywarner/refuge/issues/627)). |
 | Coverage job fails around the floor | Look at the printed `hit/found` line. Add tests or, if the suite shrank for a good reason, change `--min` in `.github/workflows/ci.yml` in a reviewed PR. |
 | Format CI and your editor disagree | Both should use `dart format -l 100` (or `formatter.line_length: 100` in analysis_options). |

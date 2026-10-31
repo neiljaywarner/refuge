@@ -124,7 +124,7 @@ That's it! The **Belong** app icon now lives right on your iPhone Home Screen. T
 It is a **Progressive Web App (PWA)**, which is an industry standard supported by Apple, Google, and Microsoft. On Android, your phone actually builds a native **WebAPK package** behind the scenes, integrating Belong directly into Android's application manager, app drawer, and system settings!
 
 ### *"Will we ever be in the official Apple & Google Stores?"*
-**Yes!** We already have an official compiled **Android APK** (`com.belongonthespectrum.sanctuary`) that we test on physical Google Pixels, and an official **iOS native build** is scheduled for release in **Mid-November 2026 (`v1.1.0`)**. 
+**Yes!** We already have an official compiled **Android APK** (`com.belongonthespectrum.refuge`) that we test on physical Google Pixels, and an official **iOS native build** is scheduled for release in **Mid-November 2026 (`v1.1.0`)**. 
 
 However, during our current community transition and initial soft launch, the web app provides **100% of the fellowship, reflections, spaces, and sensory comfort** with **0% of the app store friction**.
 
