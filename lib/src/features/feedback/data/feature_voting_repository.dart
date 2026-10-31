@@ -12,6 +12,7 @@ import '../domain/feedback_source_stamp.dart';
 import '../domain/vote_tally.dart';
 import 'github_feedback_client.dart';
 import 'member_feedback_bridge.dart';
+import '../../../core/logging/app_logger.dart';
 import 'resilient_feature_voting_repository.dart';
 import 'vote_storage_service.dart';
 
@@ -464,7 +465,8 @@ class FirebaseFeatureVotingRepository
           'lastVotedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       });
-    } catch (_) {
+    } catch (error, stack) {
+      AppLogger.warning('feature_votes persist failed for $featureId', error, stack);
       // Keep optimistic UI when Firestore is unreachable; thumb memory stays local.
     }
   }

@@ -1,0 +1,60 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Feature voting — signed-in Firestore E2E (#733)"
+tags:
+  - belong
+  - feature-voting
+  - firestore
+---
+# Synthetic dev account only. Password is not stored in git; use the same
+# value as the registration step in QA docs or pass via Maestro env override.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Sign in"
+    timeout: 60000
+- tapOn:
+    text: "Email"
+- inputText: "voting-e2e-733@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "TestPass733E2e"
+- tapOn:
+    text: "Sign in"
+- extendedWaitUntil:
+    visible: "Welcome to Belong on the Spectrum"
+    timeout: 90000
+- tapOn:
+    text: ".*Vote & Feedback.*"
+- extendedWaitUntil:
+    visible: "Belong Roadmap & Feedback"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "vote_planned-native-store-apps"
+    direction: DOWN
+    timeout: 25000
+- tapOn:
+    id: "vote_planned-native-store-apps"
+- extendedWaitUntil:
+    visible: "Remove vote for Native iOS App Store and Google Play Apps"
+    timeout: 30000
+- takeScreenshot: voting_e2e_voted
+- tapOn:
+    text: "Close"
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Welcome to Belong on the Spectrum"
+    timeout: 60000
+- tapOn:
+    text: ".*Vote & Feedback.*"
+- scrollUntilVisible:
+    element:
+      id: "vote_planned-native-store-apps"
+    direction: DOWN
+    timeout: 25000
+- extendedWaitUntil:
+    visible: "Remove vote for Native iOS App Store and Google Play Apps"
+    timeout: 20000
+- takeScreenshot: voting_e2e_persisted_after_restart

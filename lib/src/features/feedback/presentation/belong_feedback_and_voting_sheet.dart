@@ -836,15 +836,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
   }
 }
 
-/// Web Maestro drops some button labels. This node keeps [label] as the
-/// accessible name and [identifier] as the resource id. Mobile is unchanged.
+/// Keeps a stable [label] and [identifier] for Maestro on web and Android.
 Widget _webLabeledButton({
   required String label,
   required String identifier,
   required VoidCallback onTap,
   required Widget child,
 }) {
-  if (!kIsWeb) return child;
   return Semantics(
     label: label,
     identifier: identifier,
