@@ -21,6 +21,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Feedback forward function tests
+        run: node --test appwrite/functions/feedback-forward/test/format.test.js appwrite/functions/feedback-forward/test/handle.test.js
+
       - name: Resolve packages
         run: flutter pub get
 

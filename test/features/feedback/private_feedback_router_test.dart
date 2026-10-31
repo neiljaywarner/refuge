@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/feedback/application/private_feedback_router.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
+import 'package:refuge4serverpod/src/features/feedback/domain/feedback_source_stamp.dart';
 
 void main() {
   group('PrivateFeedbackRouter & Sibling Repo Decoupling (#124)', () {
@@ -34,6 +35,7 @@ void main() {
         message: 'The font size in the quiet digest banner is slightly small on mobile.\nPlease consider adding a larger text option.',
         contactEmail: 'alex@belong.org',
         timestamp: DateTime.parse('2026-10-19T20:30:00Z'),
+        source: FeedbackSourceStamp.production,
       );
 
       expect(payload.repository, 'neiljaywarner/belong_feedback');
@@ -45,6 +47,45 @@ void main() {
       expect(payload.body, contains('## Community Feedback Submission'));
       expect(payload.body, contains('alex@belong.org'));
       expect(payload.body, contains('neiljaywarner/belong_feedback'));
+      expect(payload.body, contains('**Source environment**: `production`'));
+      expect(payload.labels, isNot(contains('preview')));
+    });
+
+    test('prefixes a preview note and adds the preview label', () {
+      const preview = FeedbackSourceStamp(
+        sourceEnvironment: 'preview',
+        sourceHost: 'belongonthespectrum--feedback-659-abc.web.app',
+        sourceUrl: 'https://belongonthespectrum--feedback-659-abc.web.app',
+      );
+      final payload = router.formatPrivateIssue(
+        sentiment: FeedbackSentiment.neutral,
+        message: 'Please keep the digest quiet.',
+        source: preview,
+      );
+
+      expect(payload.title, startsWith('[preview] [Idea / Tweak]'));
+      expect(payload.labels, contains('preview'));
+      expect(payload.body, contains('**Source environment**: `preview` (`${preview.sourceHost}`)'));
+      expect(payload.body, contains('**Source URL**: `${preview.sourceUrl}`'));
+    });
+
+    test('records the source environment on the submission log', () async {
+      const preview = FeedbackSourceStamp(
+        sourceEnvironment: 'preview',
+        sourceHost: 'belongonthespectrum--feedback-659-abc.web.app',
+        sourceUrl: 'https://belongonthespectrum--feedback-659-abc.web.app',
+      );
+      final repo = InMemoryFeatureVotingRepository(sourceStamp: preview);
+      await repo.submitFeedback(
+        sentiment: FeedbackSentiment.neutral,
+        message: 'A quieter digest please.',
+      );
+
+      final logged = repo.submittedFeedbackLog.single;
+      expect(logged['sourceEnvironment'], 'preview');
+      expect(logged['sourceHost'], preview.sourceHost);
+      expect(logged['sourceUrl'], preview.sourceUrl);
+      expect(logged['submittedAt'], isNotEmpty);
     });
 
     test('records destination in FeatureVotingRepository submittedFeedbackLog', () async {

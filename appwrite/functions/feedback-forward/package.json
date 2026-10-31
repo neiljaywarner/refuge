@@ -1,0 +1,11 @@
+{
+  "name": "refuge-feedback-forward",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node --test test/format.test.js test/handle.test.js"
+  }
+}

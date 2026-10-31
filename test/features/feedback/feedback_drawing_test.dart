@@ -11,6 +11,7 @@ import 'package:refuge4serverpod/src/features/feedback/application/private_feedb
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/github_feedback_client.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
+import 'package:refuge4serverpod/src/features/feedback/domain/feedback_source_stamp.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/feedback_drawing_canvas.dart';
 import 'package:refuge4serverpod/src/features/storage/data/storage_repository.dart';
@@ -25,6 +26,7 @@ void main() {
         message: 'hi, feedback from 20-octoberpm',
         contactEmail: 'tester@belongonthespectrum.com',
         attachmentUrl: stub,
+        source: FeedbackSourceStamp.production,
       );
 
       expect(payload.repository, 'neiljaywarner/belong_feedback');

@@ -97,6 +97,30 @@ void main() {
       expect(result, isNull);
     });
 
+    test('createIssue bounds the HTTP call and returns null on timeout', () async {
+      final client = GitHubFeedbackClient(token: 'pat_timeout');
+      expect(client.timeout, const Duration(seconds: 6));
+
+      final mockHttp = MockClient((request) async {
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        return http.Response('{}', 201);
+      });
+      final slow = GitHubFeedbackClient(
+        httpClient: mockHttp,
+        token: 'pat_timeout',
+        timeout: const Duration(milliseconds: 15),
+      );
+      final result = await slow.createIssue(
+        repository: 'neiljaywarner/belong_feedback',
+        title: '[Bug] Slow link',
+        body: 'Link fails',
+        labels: ['user-feedback'],
+      );
+
+      expect(result, isNull);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+
     test('createIssue survives socket / client exceptions without throwing', () async {
       final mockHttp = MockClient((request) async {
         throw http.ClientException('Network unreachable');

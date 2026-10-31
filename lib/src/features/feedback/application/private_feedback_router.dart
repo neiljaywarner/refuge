@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../domain/feedback_and_voting_models.dart';
+import '../domain/feedback_source_stamp.dart';
 import 'feedback_attachment_ref.dart';
 
 /// Destination target for user-submitted feedback.
@@ -60,12 +61,12 @@ class PrivateIssuePayload {
   final Uint8List? attachmentBytes;
 }
 
-/// Formats member feedback for an organizer handoff.
+/// Formats member feedback for the private triage issue.
 ///
 /// Public praise stays on the community board. Private notes are saved in
-/// Firestore `member_feedback` and can be pasted into
-/// `neiljaywarner/belong_feedback` by an organizer. This class does not call
-/// the GitHub API and does not store an API token.
+/// Firestore `member_feedback`. The Appwrite function `feedback-forward`
+/// files the GitHub issue with `FEEDBACK_GITHUB_PAT`. This class does not
+/// call GitHub and does not store an API token.
 class PrivateFeedbackRouter {
   const PrivateFeedbackRouter({this.privateRepository = defaultPrivateRepository});
 
@@ -95,13 +96,17 @@ class PrivateFeedbackRouter {
     String? attachmentUrl,
     Uint8List? attachmentBytes,
     DateTime? timestamp,
+    FeedbackSourceStamp? source,
   }) {
     final now = timestamp ?? DateTime.now();
+    final stamp = source ?? FeedbackSourceStamp.current();
     final cleanMessage = message.trim();
     final firstLine = cleanMessage.split('\n').first;
     final truncatedTitle = firstLine.length > 60 ? '${firstLine.substring(0, 57)}...' : firstLine;
+    final host = stamp.sourceHost.trim().isEmpty ? 'unknown host' : stamp.sourceHost.trim();
+    final sourceUrl = stamp.sourceUrl.trim().isEmpty ? 'unknown' : stamp.sourceUrl.trim();
 
-    final title = '[${sentiment.label}] $truncatedTitle';
+    final title = '${stamp.titlePrefix}[${sentiment.label}] $truncatedTitle';
 
     final label = switch (sentiment) {
       FeedbackSentiment.sad => 'bug-report',
@@ -114,7 +119,9 @@ class PrivateFeedbackRouter {
       ..writeln()
       ..writeln('- **Intent**: ${sentiment.emoji} **${sentiment.label}** (${sentiment.subtitle})')
       ..writeln('- **Submitted At**: `${now.toIso8601String()}`')
-      ..writeln('- **Target Triage Repo**: `$privateRepository`');
+      ..writeln('- **Target Triage Repo**: `$privateRepository`')
+      ..writeln('- **Source environment**: `${stamp.sourceEnvironment}` (`$host`)')
+      ..writeln('- **Source URL**: `$sourceUrl`');
 
     if (contactEmail != null && contactEmail.trim().isNotEmpty) {
       buffer.writeln('- **Contact Info**: `${contactEmail.trim()}`');
@@ -171,7 +178,7 @@ class PrivateFeedbackRouter {
       repository: privateRepository,
       title: title,
       body: buffer.toString(),
-      labels: ['user-feedback', label],
+      labels: ['user-feedback', label, ...stamp.issueLabels],
       attachmentUrl: attachmentUrl,
       attachmentBytes: attachmentBytes,
     );

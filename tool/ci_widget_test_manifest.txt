@@ -59,8 +59,10 @@ test/features/feedback/belong_feedback_draft_protection_test.dart
 test/features/feedback/feature_voting_unit_test.dart
 test/features/feedback/feature_voting_widget_test.dart
 test/features/feedback/feedback_drawing_test.dart
+test/features/feedback/feedback_source_stamp_test.dart
 test/features/feedback/feedback_sheet_safe_area_test.dart
 test/features/feedback/github_feedback_client_test.dart
+test/features/feedback/member_feedback_bridge_test.dart
 test/features/feedback/guest_vote_persistence_test.dart
 test/features/feedback/optional_feedback_contact_test.dart
 test/features/feedback/private_feedback_router_test.dart
