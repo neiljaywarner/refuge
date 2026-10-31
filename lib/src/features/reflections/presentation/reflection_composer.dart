@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../../core/widgets/calm_media_image.dart';
@@ -206,7 +207,9 @@ class ReflectionComposer extends HookWidget {
       );
     }
 
-    return Container(
+    return _wrapModalEscape(
+      context,
+      Container(
       key: const Key('reflection_composer_card'),
       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
       padding: const EdgeInsets.all(10.0),
@@ -366,11 +369,22 @@ class ReflectionComposer extends HookWidget {
             child: Tooltip(
               message: 'Share an unhurried thought',
               triggerMode: TooltipTriggerMode.manual,
-              child: TextField(
-                key: const Key('reflection_composer_input'),
-                controller: contentController,
-                autofocus: true,
-                maxLines: isImagePost || attachedMeme.value != null ? 2 : 3,
+              child: Focus(
+                onKeyEvent: isModal
+                    ? (node, event) {
+                        if (event is KeyDownEvent &&
+                            event.logicalKey == LogicalKeyboardKey.escape) {
+                          Navigator.of(context).maybePop();
+                          return KeyEventResult.handled;
+                        }
+                        return KeyEventResult.ignored;
+                      }
+                    : null,
+                child: TextField(
+                  key: const Key('reflection_composer_input'),
+                  controller: contentController,
+                  autofocus: true,
+                  maxLines: isImagePost || attachedMeme.value != null ? 2 : 3,
                 decoration: InputDecoration(
                   hintText: isImagePost
                       ? 'Add an optional caption, thought, or context for this image...'
@@ -383,6 +397,7 @@ class ReflectionComposer extends HookWidget {
                   contentPadding: const EdgeInsets.all(12.0),
                 ),
               ),
+            ),
             ),
           ),
           if (attachedMeme.value != null && !isImagePost) ...[
@@ -493,6 +508,23 @@ class ReflectionComposer extends HookWidget {
           ),
         ],
       ),
+    ),
+    );
+  }
+
+  /// When opened from the Create Post sheet, Escape should dismiss like New Message.
+  Widget _wrapModalEscape(BuildContext context, Widget child) {
+    if (!isModal) return child;
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+          Navigator.of(context).maybePop();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: child,
     );
   }
 }
