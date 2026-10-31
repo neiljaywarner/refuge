@@ -99,12 +99,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     final votedIds = VoteStorageService.instance.getVotedFeatureIds();
     return [
       for (final item in kDefaultBelongVotableFeatures)
-        item.copyWith(
-          userVoted: votedIds.contains(item.id),
-          // Seed tallies do not include this device's guest vote. Add it
-          // back so a reload keeps the count and a second tap removes it.
-          votes: item.votes + (votedIds.contains(item.id) ? 1 : 0),
-        ),
+        item.copyWith(userVoted: votedIds.contains(item.id)),
     ];
   }
 

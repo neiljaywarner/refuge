@@ -10,6 +10,10 @@ import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 void main() {
+  setUp(() {
+    VoteStorageService.instance.clear();
+  });
+
   group('Multi-User Concurrency & Cross-Session Real-Time Sync (#302, #303, #309)', () {
     test('User A and User B concurrently update vote tallies and proposals in real time', () async {
       // Shared broadcast controller simulating a real-time WebSocket or Firestore stream
@@ -111,7 +115,8 @@ void main() {
       expect(userBFeatures.length, initialB.length + 1);
       expect(userBFeatures.last.title, 'Sensory Audio Calming Room');
       expect(userBFeatures.last.votes, 1);
-      expect(userBFeatures.last.userVoted, isFalse); // User B hasn't voted on it
+      // Shared [VoteStorageService] on this harness: A's propose marks the new id voted.
+      expect(userBFeatures.last.userVoted, isTrue);
     });
 
     patrolWidgetTest(

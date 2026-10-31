@@ -285,14 +285,6 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'A signed-in vote counts for everyone. A guest thumb stays on this device.',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
                     const SizedBox(height: 12),
                     for (final item in features)
                       Card(

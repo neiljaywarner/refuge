@@ -17,8 +17,7 @@ tags:
     visible: ".*Belong Roadmap & Feedback.*"
     timeout: 15000
 - assertVisible: ".*Native iOS App Store and Google Play Apps.*"
-# Read-only. Do not tap a vote count. Guest votes are stored for this
-# install and must not be cast from the default suite.
+# Read-only. Do not tap a vote count from the default suite.
 - tapOn: ".*Share Feedback.*"
 - assertVisible: ".*Works Great.*"
 - assertVisible: ".*Idea / Tweak.*"

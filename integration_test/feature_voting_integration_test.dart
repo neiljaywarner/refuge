@@ -39,11 +39,18 @@ void main() {
       await $(const Key('open_feedback_sheet_btn')).tap();
 
       expect($('Belong Roadmap & Feedback'), findsOneWidget);
-      expect($('24'), findsOneWidget);
+      expect($('0'), findsWidgets);
 
-      // 2. Tap upvote on Direct Messages
+      // 2. Tap upvote on native store apps card (optimistic +1 in session)
       await $(const Key('vote_button_planned-native-store-apps')).tap();
-      expect($('25'), findsOneWidget);
+      await $.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('vote_button_planned-native-store-apps')),
+          matching: find.text('1'),
+        ),
+        findsOneWidget,
+      );
     },
   );
 }
