@@ -30,6 +30,7 @@
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
 * **[💬 Direct Message Alerts (ADR-0012)](ADR-0012-Direct-Message-Alerts)**
 * **[💬 Direct Message Push Function](Direct-Message-Push-Function)**
+* **[📝 Feedback Forward Function](Feedback-Forward-Function)**
 * **[🔔 Notifications Technical Architecture & State](Notifications-Technical-Architecture)**
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
 * **[📡 Dual Observability, Analytics & Crash Reporting](Observability-Crashlytics-Analytics-and-Diagnostics)**
