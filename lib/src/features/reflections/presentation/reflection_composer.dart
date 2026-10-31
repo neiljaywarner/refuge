@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -301,6 +302,15 @@ class ReflectionComposer extends HookWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 ),
               ),
+              if (kIsWeb) ...[
+                const SizedBox(height: 4),
+                Text(
+                  key: const Key('image_post_web_helper_text'),
+                  'On web, use an image URL or Add Meme / GIF. Device upload is not available yet.',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+              ],
               const SizedBox(height: 6),
               TextField(
                 key: const Key('image_post_alt_text_input'),
