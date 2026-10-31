@@ -35,7 +35,7 @@ Why this move helps the community:
 | **Fri, Oct 23 – Sat, Oct 24** | **`v1.0.0` Community Launch (Start of 7-Day Overlap!)** | 🚀 **Milestone Target**: Production app launched at [`belongonthespectrum.com`](https://belongonthespectrum.com) / [`belongonthespectrum.web.app`](https://belongonthespectrum.web.app)! Both Circle and Belong remain open side-by-side. | **Organizers**: Post the *"Welcome to Our New Belong Home (Take Your Time — 7 Days of Overlap)"* announcement in Circle.so ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)). |
 | **Sun, Oct 25 – Fri, Oct 30** | **7-Day Calm Overlap & Onboarding Week** | 🌿 Members explore at their own unhurried pace, sign in with email/password or magic link, and chat in `General Chat` & `Memes`. Final delta sync on Oct 30. | **Members & Welcomers**: Say hello to newcomers in `Start Here & Introduce Yourself`! |
 | **Sat, Oct 31, 2026** | **Circle.so Subscription Ends Cleanly** | 🎉 Circle billing stops permanently. Everyone is happily settled in Belong on the Spectrum. | Celebrate! 🥳 |
-| **Nov 1 – Nov 10, 2026** | **`v1.0.1` & `v1.1.0` (Fast-Follow Polish)** | 🌟 Live Notification Bell, Direct Messages (`Msgs`), Actually Autistic Events calendar, and native App Store/Play Store packages. | Updates appear automatically in the app. |
+| **Nov 1 – Nov 10, 2026** | **`v1.0.1` & `v1.1.0` (Fast-Follow Polish)** | 🌟 **Already live on `main`:** 1-on-1 **Direct Messages** (`Msgs`) and the in-app **Notification Bell** ([#556](https://github.com/neiljaywarner/refuge/pull/556), [#625](https://github.com/neiljaywarner/refuge/pull/625)). **Still planned:** Actually Autistic Events calendar and native App Store/Play Store packages. | Updates appear automatically in the app. |
 
 ---
 
