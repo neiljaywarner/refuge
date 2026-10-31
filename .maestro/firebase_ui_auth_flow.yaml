@@ -9,13 +9,12 @@ tags:
 ---
 # Read-only navigation on the members-only sign-in wall (#574, #601).
 # Does not create an account or send a password reset.
-# Live title is "Sign In to Belong". FirebaseUI shows
-# "Don't have an account?", "Register", and "Forgotten password?".
+# Live/dev title uses "Sign in to Belong on the Spectrum" (#717).
 
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Sign In to Belong"
+    visible: ".*Sign in to Belong on the Spectrum.*"
     timeout: 45000
 - assertVisible: ".*Don't have an account\\?.*"
 - assertVisible: ".*Register.*"
@@ -27,7 +26,7 @@ tags:
     timeout: 15000
 - assertVisible: ".*Reset password.*"
 - back
-- assertVisible: "Sign In to Belong"
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
 
 - tapOn: ".*Register.*"
 - extendedWaitUntil:
@@ -36,4 +35,4 @@ tags:
 - assertVisible: ".*Already have an account\\?.*"
 
 - back
-- assertVisible: "Sign In to Belong"
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
