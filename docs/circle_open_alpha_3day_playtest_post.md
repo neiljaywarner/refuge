@@ -24,13 +24,15 @@ Belong on the Spectrum is built to be peaceful, predictable, and sensory-friendl
 👉 **Try the Live Web App**:  
 [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app)
 
+**Please sign in** with your member account to explore the feed and fellowship spaces. There is no guest browsing and no Demo Mode—if you are new, use **Sign in with Google** or the email you registered with, and complete email verification when prompted on production.
+
 📱 **Install as an App on Your Phone (PWA)**:
 - **Android (Chrome)**: Tap the three dots `⋮` at top right ➔ tap **Install app** or **Add to Home screen**.
 - **iPhone / iPad (Safari)**: Tap the Share button `⎋` (square with arrow up) ➔ tap **Add to Home Screen**.
 
 🤍 **What to Expect & How to Help**:
-- You can explore the feed, browse fellowship spaces, test the 4 sensory color schemes, and try reacting to reflections.
-- Because this is an open alpha, expect occasional quirks in Demo Mode while data connects.
+- Once signed in, browse fellowship spaces, test the 4 sensory color schemes, and try reacting to reflections.
+- Because this is an open alpha, you may see occasional quirks while we connect live community data.
 - Please share your thoughts using the in-app **Vote & Feedback** button on the home screen—it goes straight to our organizing team!
 - Want to help test or volunteer? Check out our [How You Can Help Guide](https://github.com/neiljaywarner/refuge/blob/main/docs/wiki/How-You-Can-Help-Volunteer-Guide.md).
 
@@ -40,4 +42,4 @@ Take all the time you need, explore at your own pace, and let us know how it fee
 
 ## 📌 Optional One-Liner for Pinned Banner / Circle Header
 
-> 🌿 **Belong Open Alpha Playtest is live through Mon Oct 27!** Explore our calm web home at [belongonthespectrum.web.app](https://belongonthespectrum.web.app) and share feedback via the in-app **Vote & Feedback** button. Cutover begins Tue Oct 28.
+> 🌿 **Belong Open Alpha Playtest is live through Mon Oct 27!** Sign in at [belongonthespectrum.web.app](https://belongonthespectrum.web.app) (members only—no guest mode) and share feedback via the in-app **Vote & Feedback** button. Cutover begins Tue Oct 28.
