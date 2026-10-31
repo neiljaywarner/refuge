@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/firebase/organizer_remote_config_service.dart';
+import '../../install/presentation/phone_install_guide_view.dart';
 import '../../notifications/data/notification_permissions_service.dart';
 import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
 import '../domain/fellowship_space.dart';
@@ -25,6 +26,14 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
     BelongSpaceItem item,
     OrganizerRemoteConfig remoteConfig,
   ) async {
+    if (item.phoneInstallFocus != null) {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PhoneInstallGuideView(focus: item.phoneInstallFocus!),
+        ),
+      );
+      return;
+    }
     if (item.slug == 'link_dfw_church' || item.externalUrl != null) {
       final urlString = item.slug == 'link_dfw_church'
           ? remoteConfig.dfwChurchUrl
@@ -89,13 +98,21 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
                   child: Column(
                     children: [
                       for (var i = 0; i < section.items.length; i++) ...[
-                        if (i > 0) Divider(height: 1, color: primary.withValues(alpha: 0.1)),
+                        if (i > 0)
+                          Divider(
+                            height: 1,
+                            color: primary.withValues(alpha: 0.1),
+                          ),
                         _SpaceRowTile(
                           item: section.items[i],
                           isSelected:
                               selectedSpaceSlug == section.items[i].slug &&
                               section.heading != 'PINNED',
-                          onTap: () => _handleTap(context, section.items[i], remoteConfig),
+                          onTap: () => _handleTap(
+                            context,
+                            section.items[i],
+                            remoteConfig,
+                          ),
                         ),
                       ],
                     ],
@@ -137,7 +154,11 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
 }
 
 class _SpaceRowTile extends StatelessWidget {
-  const _SpaceRowTile({required this.item, required this.isSelected, required this.onTap});
+  const _SpaceRowTile({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final BelongSpaceItem item;
   final bool isSelected;
@@ -149,7 +170,9 @@ class _SpaceRowTile extends StatelessWidget {
     return ListTile(
       dense: true,
       selected: isSelected,
-      leading: ExcludeSemantics(child: Text(item.emoji, style: const TextStyle(fontSize: 18))),
+      leading: ExcludeSemantics(
+        child: Text(item.emoji, style: const TextStyle(fontSize: 18)),
+      ),
       title: Text(
         item.title,
         style: TextStyle(
@@ -160,6 +183,8 @@ class _SpaceRowTile extends StatelessWidget {
       subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 11.5)),
       trailing: item.externalUrl != null
           ? Icon(Icons.open_in_new_rounded, size: 16, color: primary)
+          : item.phoneInstallFocus != null
+          ? Icon(Icons.menu_book_outlined, size: 18, color: primary)
           : item.isComingSoon
           ? Container(
               padding: const .symmetric(horizontal: 8, vertical: 2),
@@ -169,7 +194,11 @@ class _SpaceRowTile extends StatelessWidget {
               ),
               child: Text(
                 item.slug.startsWith('link_') ? 'Pending' : 'Coming Soon',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: primary),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: primary,
+                ),
               ),
             )
           : const Icon(Icons.chevron_right_rounded, size: 18),

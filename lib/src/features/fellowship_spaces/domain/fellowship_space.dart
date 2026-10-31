@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../install/domain/phone_install_links.dart';
+
 /// Predefined calm-tech fellowship spaces in Refuge (kept for backward compatibility
 /// with existing unit and BDD tests, plus Belong Circle.so spaces).
 const Map<String, String> kFellowshipSpaces = {
@@ -26,6 +28,7 @@ class BelongSpaceItem {
     this.isComingSoon = false,
     this.externalUrl,
     this.trackedIssueNumber,
+    this.phoneInstallFocus,
   });
 
   final String slug;
@@ -35,6 +38,9 @@ class BelongSpaceItem {
   final bool isComingSoon;
   final String? externalUrl;
   final int? trackedIssueNumber;
+
+  /// Opens the in-app phone guide instead of a Coming Soon card.
+  final PhoneInstallFocus? phoneInstallFocus;
 }
 
 /// Represents a collapsible/grouped section in the Circle.so-style Spaces view.
@@ -84,13 +90,15 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'saved_for_later',
         title: 'Saved for Later',
         emoji: '🔖',
-        subtitle: 'Private bookmarks — unhurried reflections saved for quiet reading',
+        subtitle:
+            'Private bookmarks — unhurried reflections saved for quiet reading',
       ),
       BelongSpaceItem(
         slug: 'members_directory',
         title: 'Members Section & Directory',
         emoji: '👥',
-        subtitle: 'Community profiles, church affiliations & fellowship connections',
+        subtitle:
+            'Community profiles, church affiliations & fellowship connections',
       ),
       BelongSpaceItem(
         slug: 'memes',
@@ -159,16 +167,17 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'link_android_app',
         title: 'Download the Android App',
         emoji: '🤖',
-        subtitle: 'Pending — Install via PWA now; Google Play Store coming soon',
-        isComingSoon: true,
+        subtitle: 'Open beta is ready. The Play Store is still pending.',
+        phoneInstallFocus: PhoneInstallFocus.android,
         trackedIssueNumber: 30,
       ),
       BelongSpaceItem(
         slug: 'link_ios_app',
         title: 'Download the iOS App',
         emoji: '🍎',
-        subtitle: 'Pending — Add to iPhone Home Screen now; App Store coming soon',
-        isComingSoon: true,
+        subtitle:
+            'App Store and TestFlight are pending. Website steps are inside.',
+        phoneInstallFocus: PhoneInstallFocus.ios,
         trackedIssueNumber: 31,
       ),
     ],
@@ -181,7 +190,11 @@ final activeSpaceKeyProvider = StateProvider<String>((ref) => 'general_chat');
 /// Human-friendly display metadata for a fellowship space (#618).
 @immutable
 class BelongSpaceInfo {
-  const BelongSpaceInfo({required this.slug, required this.title, required this.emoji});
+  const BelongSpaceInfo({
+    required this.slug,
+    required this.title,
+    required this.emoji,
+  });
 
   final String slug;
   final String title;
@@ -193,7 +206,11 @@ BelongSpaceInfo getBelongSpaceInfo(String slug) {
   for (final section in kBelongSpaceSections) {
     for (final item in section.items) {
       if (item.slug == slug) {
-        return BelongSpaceInfo(slug: item.slug, title: item.title, emoji: item.emoji);
+        return BelongSpaceInfo(
+          slug: item.slug,
+          title: item.title,
+          emoji: item.emoji,
+        );
       }
     }
   }
@@ -214,7 +231,12 @@ BelongSpaceInfo getBelongSpaceInfo(String slug) {
       'saved_for_later' => 'Saved for Later',
       _ =>
         parts.length > 1
-            ? parts.sublist(1).join(' ').replaceAll('#', '').replaceAll('-', ' ').trim()
+            ? parts
+                  .sublist(1)
+                  .join(' ')
+                  .replaceAll('#', '')
+                  .replaceAll('-', ' ')
+                  .trim()
             : slug,
     };
     return BelongSpaceInfo(slug: slug, title: name, emoji: emoji);
