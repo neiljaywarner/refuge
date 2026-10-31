@@ -300,9 +300,8 @@ class ReflectionComposer extends HookWidget {
               Text(
                 key: const Key('image_post_web_helper_text'),
                 'On web, use an image URL or Add Meme / GIF. Device upload is not available yet.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: 6),
