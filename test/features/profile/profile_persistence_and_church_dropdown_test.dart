@@ -7,20 +7,29 @@ import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repos
 import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('Member Profile Persistence & Church Dropdown Tests (#448)', () {
-    setUp(() {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
       ProfileStorageService.instance.clear();
     });
 
-    tearDown(() {
+    tearDown(() async {
       ProfileStorageService.instance.clear();
     });
 
     patrolWidgetTest(
       'Preferred display name and ICOC church selection persist across notifier reloads and app restarts',
       ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
         final container1 = ProviderContainer(
           overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
@@ -61,12 +70,25 @@ void main() {
         expect(restored.displayName, equals('Caleb Pioneer'));
         expect(restored.icocChurchAffiliation, equals('Austin Christian Church'));
         expect(restored.isIcocMember, isTrue);
+
+        // Clean up sign-in so subsequent tests start in guest state
+        await container2.read(memberProfileProvider.notifier).signOut();
+        ProfileStorageService.instance.clear();
       },
     );
 
     patrolWidgetTest(
       'MemberProfileDialog selects ICOC church via dropdown and saves persisted session',
       ($) async {
+        $.tester.view.devicePixelRatio = 1.0;
+        $.tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(() {
+          $.tester.view.resetPhysicalSize();
+          $.tester.view.resetDevicePixelRatio();
+        });
+
+        ProfileStorageService.instance.clear();
+
         final container = ProviderContainer(
           overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
         );
@@ -103,10 +125,21 @@ void main() {
         final saved = ProfileStorageService.instance.load();
         expect(saved!['displayName'], equals('Sarah Rest'));
         expect(saved['icocChurchAffiliation'], equals('Boston Church of Christ'));
+
+        // Clean up sign-in
+        await container.read(memberProfileProvider.notifier).signOut();
+        ProfileStorageService.instance.clear();
       },
     );
 
     patrolWidgetTest('Signing out clears persisted profile storage cleanly', ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
       final container = ProviderContainer(
         overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
       );
@@ -123,7 +156,7 @@ void main() {
       expect(ProfileStorageService.instance.load(), isNotNull);
 
       // Sign out
-      container.read(memberProfileProvider.notifier).signOut();
+      await container.read(memberProfileProvider.notifier).signOut();
 
       expect(container.read(memberProfileProvider).isSignedIn, isFalse);
       expect(ProfileStorageService.instance.load(), isNull);
