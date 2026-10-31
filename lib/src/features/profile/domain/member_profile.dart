@@ -360,6 +360,29 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     }
   }
 
+  /// Updates the signed-in display name without starting a new auth session (#663).
+  void saveCommunityName({required String displayName, String? icocChurchAffiliation}) {
+    final trimmed = displayName.trim();
+    if (trimmed.isEmpty || trimmed == 'Fellowship Member') return;
+    state = state.copyWith(displayName: trimmed, icocChurchAffiliation: icocChurchAffiliation);
+    _persistedProfile = state;
+    if (state.isSignedIn) {
+      ProfileStorageService.instance.save(
+        displayName: state.displayName,
+        email: state.email,
+        userId: state.userId,
+        bio: state.bio,
+        icocChurchAffiliation: state.icocChurchAffiliation,
+        comfortBadges: state.comfortBadges,
+        avatarUrl: state.avatarUrl,
+      );
+      _publishDirectory(state);
+    }
+    try {
+      fb_auth.FirebaseAuth.instance.currentUser?.updateDisplayName(trimmed);
+    } catch (_) {}
+  }
+
   void setAvatarUrl(String? url) {
     state = MemberProfile(
       userId: state.userId,
