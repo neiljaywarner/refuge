@@ -239,7 +239,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
               Tab(
                 key: const Key('tab_feature_voting'),
                 child: _webLabeledButton(
-                  label: 'Vote on Features (WIP)',
+                  label: 'Vote on Features',
                   identifier: 'tab_vote_on_features',
                   onTap: () => tabController.animateTo(0),
                   child: const Text('Vote on Features'),

@@ -29,6 +29,7 @@ void main() {
     registerFallbackValue(Uint8List(0));
     registerFallbackValue(<VotableFeatureItem>[]);
     registerFallbackValue(<String, dynamic>{});
+    registerFallbackValue((Transaction transaction) async {});
   });
 
   group('BelongFeedbackAndVotingSheet mocked repository', () {
@@ -37,6 +38,7 @@ void main() {
     late StreamController<List<VotableFeatureItem>> updates;
 
     setUp(() {
+      VoteStorageService.instance.clear();
       repo = MockFeatureVotingRepository();
       memory = InMemoryFeatureVotingRepository();
       updates = StreamController<List<VotableFeatureItem>>.broadcast();
@@ -315,6 +317,26 @@ void main() {
       final store = features.firstWhere((item) => item.id == 'planned-native-store-apps');
       expect(store.votes, 4);
       expect(features.firstWhere((item) => item.id == 'planned-google-sign-in').votes, 0);
+    });
+
+    test('Firestore transaction failure keeps optimistic thumb (#733)', () async {
+      VoteStorageService.instance.clear();
+      final firestore = MockFirebaseFirestore();
+      final collection = MockVoteCollection();
+
+      when(() => firestore.collection('feature_votes')).thenReturn(collection);
+      when(() => firestore.runTransaction(any())).thenThrow(Exception('firestore offline'));
+
+      final repo = FirebaseFeatureVotingRepository(
+        customFirestore: firestore,
+        memberId: () => 'member-uid',
+      );
+      final next = repo.toggleVote(repo.loadInitialFeatures(), 'planned-native-store-apps');
+      await Future<void>.delayed(Duration.zero);
+
+      final voted = next.firstWhere((item) => item.id == 'planned-native-store-apps');
+      expect(voted.userVoted, isTrue);
+      expect(voted.votes, 1);
     });
 
     test('toggleVote and submitFeedback survive a mocked Firestore write', () async {

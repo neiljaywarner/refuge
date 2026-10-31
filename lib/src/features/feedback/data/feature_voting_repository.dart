@@ -12,6 +12,7 @@ import '../domain/feedback_source_stamp.dart';
 import '../domain/vote_tally.dart';
 import 'github_feedback_client.dart';
 import 'member_feedback_bridge.dart';
+import 'resilient_feature_voting_repository.dart';
 import 'vote_storage_service.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
@@ -464,12 +465,7 @@ class FirebaseFeatureVotingRepository
         }, SetOptions(merge: true));
       });
     } catch (_) {
-      VoteStorageService.instance.setFeatureVoted(featureId, !wantVoted);
-      final reverted = super.toggleVote(optimisticNext, featureId);
-      if (_streamController != null && !_streamController!.isClosed) {
-        final remotePayload = [for (final item in reverted) item.copyWith(userVoted: false)];
-        _streamController!.add(remotePayload);
-      }
+      // Keep optimistic UI when Firestore is unreachable; thumb memory stays local.
     }
   }
 
@@ -599,8 +595,12 @@ final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) 
   final gitHubClient = ref.watch(gitHubFeedbackClientProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.serverpod => ServerpodFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.appwrite => AppwriteFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.firebase => FirebaseFeatureVotingRepository(gitHubClient: gitHubClient),
+    BackendTarget.serverpod ||
+    BackendTarget.appwrite ||
+    BackendTarget.firebase =>
+      ResilientFeatureVotingRepository(
+        target: target,
+        primary: FirebaseFeatureVotingRepository(gitHubClient: gitHubClient),
+      ),
   };
 });

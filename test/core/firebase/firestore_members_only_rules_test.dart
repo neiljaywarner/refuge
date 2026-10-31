@@ -50,6 +50,12 @@ void main() {
       }
     });
 
+    test('feature vote updates require voterIds membership (#733)', () {
+      expect(firestoreRules, contains('function featureVoteVoterIds'));
+      expect(firestoreRules, contains('function featureVoteUpvote()'));
+      expect(firestoreRules, contains('function featureVoteUnvote()'));
+    });
+
     test('feedback submissions are immutable to prevent tampering', () {
       expect(firestoreRules, contains('match /member_feedback/{feedbackId}'));
       expect(firestoreRules, contains('allow update, delete: if false;'));
@@ -57,14 +63,14 @@ void main() {
 
     test('comment update and delete require author check', () {
       expect(firestoreRules, contains('match /comments/{commentId}'));
-      expect(firestoreRules, contains('request.auth.uid == resource.data.authorId'));
+      expect(firestoreRules, contains('isAuthorOf(resource.data)'));
     });
 
     test('post and reflection mirrors guard update and delete by authorId', () {
       expect(firestoreRules, contains('match /posts/{postId}'));
       expect(firestoreRules, contains('match /reflections/{postId}'));
       expect(firestoreRules, contains('match /reflections_dev/{postId}'));
-      expect(firestoreRules, contains('request.auth.uid == resource.data.authorId'));
+      expect(firestoreRules, contains("request.auth.uid == resource.data.get('authorId', null)"));
     });
   });
 
