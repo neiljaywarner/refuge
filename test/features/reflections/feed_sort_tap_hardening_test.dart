@@ -12,6 +12,9 @@ import 'package:refuge4serverpod/src/features/reflections/data/local_comment_rep
 import 'package:refuge4serverpod/src/features/reflections/domain/feed_sort_option.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/tone_filter_row.dart';
+import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
+import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
+import 'package:refuge4serverpod/src/features/auth/domain/auth_session.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/sensory_themes/domain/sensory_mode.dart';
 import 'package:refuge4serverpod/src/home_screen.dart';
@@ -33,10 +36,16 @@ class _ThrowingCommentRepository extends LocalCommentRepository {
   }
 }
 
-class _GuestProfile extends MemberProfileNotifier {
-  @override
-  MemberProfile build() => const MemberProfile.guest();
-}
+AuthSession _signedInSession() => AuthSession(
+  userId: 'uid-feed-sort',
+  displayName: 'Fellow Member',
+  email: 'member@belongonthespectrum.com',
+  bio: 'Church acoustics and quiet rest',
+  comfortBadges: const ['Literal communication appreciated'],
+  isSignedIn: true,
+  authMethod: 'in_memory_password',
+  emailVerified: true,
+);
 
 class _SignedInProfile extends MemberProfileNotifier {
   @override
@@ -93,7 +102,7 @@ void main() {
     required LocalPostRepository repo,
     Size size = const Size(1080, 2400),
     SensoryMode theme = SensoryMode.sage,
-    bool guestProfile = true,
+    bool guestProfile = false,
     List<Override> overrides = const [],
   }) async {
     await TestFontLoader.loadAppFonts();
@@ -117,8 +126,15 @@ void main() {
           key: ValueKey('${theme.name}-$guestProfile-${overrides.length}'),
           repository: repo,
           initialTheme: theme,
+          enforceSignIn: true,
           overrides: [
-            if (guestProfile) memberProfileProvider.overrideWith(_GuestProfile.new),
+            authRepositoryProvider.overrideWithValue(
+              guestProfile
+                  ? InMemoryAuthRepository()
+                  : InMemoryAuthRepository(initialSession: _signedInSession()),
+            ),
+            appFlavorProvider.overrideWithValue(AppFlavor.dev),
+            if (!guestProfile) memberProfileProvider.overrideWith(_SignedInProfile.new),
             ...overrides,
           ],
           homeOverride: const RefugeHomeScreen(),
@@ -152,13 +168,13 @@ void main() {
     patrolWidgetTest('every sort option, rapid retap, and popup on the demo feed', ($) async {
       await pumpFeed($, repo: LocalPostRepository(isDevMode: false, initialPosts: samplePosts()));
 
-      expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsOneWidget);
-      expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
+      expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);
+      expect(find.textContaining('Quiet waters', skipOffstage: false), findsOneWidget);
 
       for (final option in FeedSortOption.values) {
         await tapSort($, option);
         await tapSort($, option);
-        expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
+        expect(find.textContaining('Quiet waters', skipOffstage: false), findsOneWidget);
       }
 
       await $.tester.tap(find.byKey(const Key('feed_sort_popup_button')));
@@ -231,10 +247,10 @@ void main() {
         overrides: [commentRepositoryProvider.overrideWithValue(_ThrowingCommentRepository())],
       );
 
-      expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
+      expect(find.textContaining('Quiet waters', skipOffstage: false), findsOneWidget);
       for (final option in FeedSortOption.values) {
         await tapSort($, option);
-        expect(find.textContaining('peace of mind', skipOffstage: false), findsOneWidget);
+        expect(find.textContaining('Quiet waters', skipOffstage: false), findsOneWidget);
       }
       expect($.tester.takeException(), isNull);
     });
