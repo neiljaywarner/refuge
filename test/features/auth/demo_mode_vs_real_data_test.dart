@@ -42,7 +42,9 @@ void main() {
       ],
     );
 
-    patrolWidgetTest('unsigned visitor sees sign-in wall, not demo feed or guest banner', ($) async {
+    patrolWidgetTest('unsigned visitor sees sign-in wall, not demo feed or guest banner', (
+      $,
+    ) async {
       $.tester.view.devicePixelRatio = 1.0;
       $.tester.view.physicalSize = const Size(1200, 2400);
       addTearDown(() {
@@ -93,7 +95,8 @@ void main() {
       expect(find.byKey(const Key('empty_reflections_placeholder')), findsOneWidget);
       expect($('No community reflections yet in this space.'), findsOneWidget);
 
-      await $(const Key('reflection_composer_input')).enterText('Blessed to gather together tonight.');
+      await $(const Key('reflection_composer_input'))
+          .enterText('Blessed to gather together tonight.');
       await $.pumpAndSettle();
       await $(const Key('publish_reflection_button')).tap();
       await $.pumpAndSettle();
