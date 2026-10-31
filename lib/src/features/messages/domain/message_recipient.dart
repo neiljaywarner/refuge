@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../profile/data/member_directory_store.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
 
 /// A member row in the New Message recipient picker (#441).
@@ -63,14 +64,21 @@ class MessageRecipient {
 
   factory MessageRecipient.fromFirestoreUser(String uid, Map<String, dynamic> data) {
     final email = data['email'] as String? ?? '';
-    final handle = email.contains('@') ? email.split('@').first : null;
+    final publishedHandle = (data['handle'] as String?)?.trim().toLowerCase();
+    final handle = publishedHandle?.isNotEmpty == true
+        ? publishedHandle
+        : publicHandleFromEmail(email);
+    final displayNameRaw = (data['displayName'] as String?)?.trim() ?? '';
+    final name = publicDisplayName(displayName: displayNameRaw, email: email);
+    final taglineField = (data['tagline'] as String?)?.trim();
     final bio = data['bio'] as String?;
+    final tagline = taglineField?.isNotEmpty == true
+        ? taglineField!
+        : (bio?.trim().isNotEmpty == true ? bio!.trim() : 'Community member');
     return MessageRecipient(
       id: uid,
-      name: (data['displayName'] as String?)?.trim().isNotEmpty == true
-          ? (data['displayName'] as String).trim()
-          : 'Fellow Member',
-      tagline: bio?.trim().isNotEmpty == true ? bio!.trim() : 'Community member',
+      name: name,
+      tagline: tagline,
       handle: handle?.isNotEmpty == true ? handle : null,
     );
   }

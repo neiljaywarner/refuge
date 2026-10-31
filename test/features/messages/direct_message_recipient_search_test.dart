@@ -40,7 +40,7 @@ void main() {
     await $(const Key('add_new_message_button')).tap();
     await $.pumpAndSettle();
 
-    await $(const Key('recipient_search_input')).enterText('grokbot2');
+    await $(const Key('recipient_search_input')).enterText('Handle search peer');
     await $.pumpAndSettle();
 
     expect($('Fellow Member'), findsOneWidget);
