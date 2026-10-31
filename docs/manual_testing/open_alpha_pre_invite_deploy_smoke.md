@@ -81,7 +81,7 @@ A calm, low-stress smoke checklist designed for an organizer to verify guest exp
 | # | Check | Action | Expected Result |
 |---|---|---|---|
 | **1** | **Home Feed Arrival** | Load `https://belongonthespectrum.web.app` as an unauthenticated guest. | Feed renders smoothly with quiet, calming reflections. No infinite spinners. |
-| **2** | **Monastic Dark Contrast** | Toggle theme to Monastic Dark (Sensory menu / palette icon). | Deep charcoal background (`#0D0F11`) with crisp, readable text (`#F0F3F6`) and high-contrast chips (`#28313B`). Zero washed-out gray text. |
+| **2** | **Dark theme contrast** | Toggle theme to **Dark** (Sensory menu / palette icon). | Deep charcoal background (`#0D0F11`) with crisp, readable text (`#F0F3F6`) and high-contrast chips (`#28313B`). Zero washed-out gray text. |
 | **3** | **Narrow Web Hit Targets** | Open developer tools at 360px–400px phone width; tap **Vote & Feedback**. | Bottom sheet opens cleanly; does **not** trigger or pop up the `+` Create Post menu. |
 | **4** | **Space Title & Navigation** | Tap **Spaces** in the sub-header bar, then tap any room (e.g., *Sensory Sanctuary* or *Coding & Tech*). | Space room title is displayed at top (`# Coding & Tech`). Back button or "All Spaces" returns cleanly to directory. |
 | **5** | **Sign In Sheet** | Tap the profile / Sign In button in the AppBar. | Authentication modal opens cleanly displaying Sign In with Google, Magic Link, and credentials. Cancel / Close returns to feed. |

@@ -159,7 +159,7 @@ void showAboutRefugeDialog(
                       },
                     ),
                     ChoiceChip(
-                      label: const Text('🌘 Monastic Dark'),
+                      label: const Text('🌙 Dark'),
                       selected: currentMode == SensoryMode.charcoal,
                       onSelected: (_) {
                         onSelectMode?.call(SensoryMode.charcoal);
