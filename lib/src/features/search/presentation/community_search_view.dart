@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../reflections/data/post_repository.dart';
 import '../../reflections/domain/post.dart';
 import '../../reflections/presentation/reflection_card.dart';
+import 'community_search_match.dart';
 
 /// Instant keyword, author, and special-interest search view for the `Search`
 /// bottom navigation tab (#18, #22), built as a [HookConsumerWidget].
@@ -51,11 +52,7 @@ class CommunitySearchView extends HookConsumerWidget {
     final allPostsSnapshot = useFuture(useMemoized(_loadAllPosts, [repository]));
 
     final posts = (allPostsSnapshot.data ?? const <Post>[]).where((p) {
-      if (query.isEmpty) return true;
-      return p.content.toLowerCase().contains(query) ||
-          p.authorName.toLowerCase().contains(query) ||
-          p.toneTag.toLowerCase().contains(query) ||
-          (p.specialInterestTag?.toLowerCase().contains(query) ?? false);
+      return communitySearchPostMatches(post: p, query: query);
     }).toList();
 
     return Padding(
@@ -91,11 +88,32 @@ class CommunitySearchView extends HookConsumerWidget {
                     itemCount: posts.length,
                     itemBuilder: (context, index) {
                       final p = posts[index];
-                      return ReflectionCard(
-                        post: p,
-                        isContrast: isContrast,
-                        onAddReaction: (reactionType) =>
-                            repository.addReaction(postId: p.id, reactionType: reactionType),
+                      final matchedTag = communitySearchMatchedTagLabel(post: p, query: query);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (matchedTag != null)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4, bottom: 4),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Chip(
+                                  key: Key('search_matched_tag_${p.id}'),
+                                  visualDensity: VisualDensity.compact,
+                                  label: Text(
+                                    matchedTag,
+                                    style: const TextStyle(fontSize: 11),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ReflectionCard(
+                            post: p,
+                            isContrast: isContrast,
+                            onAddReaction: (reactionType) =>
+                                repository.addReaction(postId: p.id, reactionType: reactionType),
+                          ),
+                        ],
                       );
                     },
                   ),
