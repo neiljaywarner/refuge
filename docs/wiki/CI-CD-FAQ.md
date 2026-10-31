@@ -97,6 +97,10 @@ A dry run does not need those secrets:
 
 GitHub Actions → Deploy → Run workflow → dry run enabled.
 
+### How is the private feedback GitHub token created?
+
+`FEEDBACK_GITHUB_PAT` is a fine-grained personal access token created in the GitHub web UI, then stored as a secret on the Appwrite function `feedback-forward`. The steps, including the Firebase Admin JSON secret and the preview stamp check, are in [Feedback forward function](Feedback-Forward-Function). Do not commit the token or the service-account JSON.
+
 ### What does a merge to `main` deploy?
 
 Since [#586](https://github.com/neiljaywarner/refuge/issues/586), a **push to `main`** runs `tool/deploy_dev_web.dart`. That builds Flutter web for the **dev** site and deploys **`https://dev-belongonthespectrum.web.app`**. The workflow also uploads a **`refuge-dev-release-apk`** artifact (and may distribute a dev APK when `FIREBASE_ANDROID_DEV_APP_ID` is set). It does **not** update production Hosting.
