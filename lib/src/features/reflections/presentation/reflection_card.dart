@@ -268,7 +268,7 @@ class ReflectionCard extends ConsumerWidget {
                 ),
                 child: Image.network(
                   post.imageUrl!,
-                  fit: BoxFit.cover,
+                  fit: isMeme ? BoxFit.cover : BoxFit.contain,
                   semanticLabel: post.specialInterestTag ?? 'Community reflection image',
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
