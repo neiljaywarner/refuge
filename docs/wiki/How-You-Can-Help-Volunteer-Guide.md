@@ -108,7 +108,11 @@ The bar at the bottom says **Home**, **Notifications**, **Messages**, and **Sear
 
 ## Put Belong on your phone
 
-Belong is not in the app stores yet. You can still keep it on your home screen, next to your other apps. It opens without the browser address bar. More of the "why" is on **[Why we are not in the app stores yet](Why-No-App-Store-App)**.
+The full page, with the Android app, the pending stores, and the website steps, is **[Get Belong on your phone](Get-Belong-on-Your-Phone)**. The same guide is inside Belong under **Spaces → Links**.
+
+If you have an Android phone, install the Android app. GIF search and message alerts work better there. The steps below put the **website** on your home screen. On Android, you only need the website steps if you are testing the website. On an iPhone, the website steps are the way to use Belong today, because the App Store and TestFlight are still pending.
+
+More of the "why" is on **[Why we are not in the app stores yet](Why-No-App-Store-App)**.
 
 Use the phone's own browser for these steps. On iPhone, that is **Safari**. On Android, that is **Chrome**.
 

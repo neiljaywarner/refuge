@@ -25,8 +25,8 @@ In **Belong on the Spectrum**, we connected the **"Message from the Organizer"**
 | **`organizer_banner_enabled`** | Shows (`true`) or hides (`false`) the organizer banner at the top of the feed | `true` |
 | **`dfw_church_url`** | Destination URL when a member taps `DFW Church` under `Spaces -> Links` | `"https://dfwchurch.org"` |
 | **`community_guidelines_markdown`** | Text shown when a member taps `Community Guidelines` under `Spaces -> Links` | Official Belong kindness & safety guidelines |
-| **`android_app_download_url`** | URL for `Download the Android App` under `Links` (leave empty for *"Pending / PWA Guide"*) | `""` *(Pending until Play Store launch)* |
-| **`ios_app_download_url`** | URL for `Download the iOS App` under `Links` (leave empty for *"Pending / PWA Guide"*) | `""` *(Pending until App Store launch)* |
+| **`android_app_download_url`** | Reserved for the Play Store URL. Members currently get the in-app guide ([Get Belong on your phone](Get-Belong-on-Your-Phone)), which already links the Android open beta. Leave this empty until Play is live. | `""` |
+| **`ios_app_download_url`** | Reserved for the App Store URL. Members currently get the in-app guide. TestFlight and the App Store stay pending. | `""` |
 | **`admin_emails_csv`** | Comma-separated emails that may pause and restore a member. Empty means nobody. | `""` *(published in Remote Config, not in git)* |
 
 The ban steps are in **[Ban a member](Admin-Pause-and-Restore)**. Production uses only this published list. Do not copy the addresses into the wiki, an issue, or a screenshot.

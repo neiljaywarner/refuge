@@ -79,7 +79,10 @@ When you tap the Belong icon, it launches into a distraction-free, fullscreen se
 ---
 
 ## 🎛️ In-App Integration
-If you tap `Download the Android App` or `Download the iOS App` inside the Belong app navigation:
-- A calm notice explains that the PWA is live today.
-- A **"📱 How to Add to Home Screen (PWA Guide)"** button opens an instant modal with these exact steps.
-- When Google Play and Apple TestFlight betas go live (**Milestone 1.0.0**), the links automatically point to the official store pages via Firebase Remote Config.
+
+**Spaces → Links → Download the Android App** or **Download the iOS App** opens **[Get Belong on your phone](Get-Belong-on-Your-Phone)**.
+
+- The Android open beta is the everyday Android path. The Play Store row says **Pending**.
+- The App Store and TestFlight rows say **Pending**.
+- iPhone members get the Safari Home Screen steps.
+- Android website steps are marked for testing the website, because the Android app is the better everyday choice.

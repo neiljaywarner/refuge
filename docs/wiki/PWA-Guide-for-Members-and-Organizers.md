@@ -1,6 +1,6 @@
 # 📱 Progressive Web App (PWA) Guide — For Community Members & Organizers
 
-> **Simple steps for iPhone and Android:** **[Put Belong on your phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)**. The rest of this page is extra detail.
+> **Start here:** **[Get Belong on your phone](Get-Belong-on-Your-Phone)** (Android app, pending stores, and website steps). Shorter website-only steps are also on **[Put Belong on your phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)**. The rest of this page is extra detail.
 
 > **Audience**:
 > - **Part 1 (For Community Members)**: How to install **Belong on the Spectrum** onto your iPhone, Android phone, iPad, or computer home screen in 10 seconds — no App Store password or large download needed!
