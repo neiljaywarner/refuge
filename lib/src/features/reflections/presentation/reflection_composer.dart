@@ -210,305 +210,310 @@ class ReflectionComposer extends HookWidget {
     return _wrapModalEscape(
       context,
       Container(
-      key: const Key('reflection_composer_card'),
-      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14.0),
-        border: Border.all(
-          color: isContrast ? Colors.white : Theme.of(context).dividerColor,
-          width: isContrast ? 2.0 : 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text(
-                'Intent Tag: ',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              Expanded(
-                child: DropdownButton<String>(
-                  value: selectedTone.value,
-                  isDense: true,
-                  isExpanded: true,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
-                  underline: const SizedBox(),
-                  items: kToneOptions
-                      .map((tone) => DropdownMenuItem(value: tone, child: Text(tone)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) selectedTone.value = val;
-                  },
-                ),
-              ),
-              if (!isModal)
-                IconButton(
-                  key: const Key('composer_collapse_button'),
-                  tooltip: 'Collapse',
-                  icon: const Icon(Icons.close_fullscreen_rounded, size: 16),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    isExpanded.value = false;
-                  },
-                ),
-            ],
+        key: const Key('reflection_composer_card'),
+        margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
+        padding: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(14.0),
+          border: Border.all(
+            color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+            width: isContrast ? 2.0 : 1.0,
           ),
-          if (isImagePost ||
-              selectedTone.value.contains('Special Interest') ||
-              selectedTone.value.contains('Meme') ||
-              selectedSpace == 'special_interests' ||
-              selectedSpace == 'memes') ...[
-            const SizedBox(height: 6),
-            TextField(
-              key: const Key('special_interest_tag_input'),
-              controller: specialInterestController,
-              decoration: InputDecoration(
-                hintText: isImagePost
-                    ? 'Image Tag / Topic (e.g. Christian Memes, Scripture Art, Church Architecture)...'
-                    : 'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Biblical Maps)...',
-                hintStyle: const TextStyle(fontSize: 11),
-                isDense: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  'Intent Tag: ',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              ),
-            ),
-          ],
-          if (isImagePost) ...[
-            const SizedBox(height: 6),
-            TextField(
-              key: const Key('image_post_url_input'),
-              controller: imageUrlController,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.link_rounded, size: 16),
-                hintText: 'Paste Image URL (https://...) or tap Add Meme below',
-                hintStyle: const TextStyle(fontSize: 11),
-                isDense: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextField(
-              key: const Key('image_post_alt_text_input'),
-              controller: altTextController,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.accessibility_new_rounded, size: 16),
-                hintText: 'Image description / alt-text (for screen readers & sensory comfort)...',
-                hintStyle: const TextStyle(fontSize: 11),
-                isDense: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              ),
-            ),
-          ],
-          if (hasActiveImage) ...[
-            const SizedBox(height: 8),
-            Container(
-              key: const Key('image_post_preview_container'),
-              constraints: BoxConstraints(maxHeight: isModal ? 140 : 100),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: Colors.amber.shade300),
-              ),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      customImageUrl.value.isNotEmpty
-                          ? customImageUrl.value
-                          : attachedMeme.value!.imageUrl!,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 60,
-                        alignment: Alignment.center,
-                        child: const Text('🖼️ [Image Attached]', style: TextStyle(fontSize: 12)),
-                      ),
+                Expanded(
+                  child: DropdownButton<String>(
+                    value: selectedTone.value,
+                    isDense: true,
+                    isExpanded: true,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
                     ),
+                    underline: const SizedBox(),
+                    items: kToneOptions
+                        .map((tone) => DropdownMenuItem(value: tone, child: Text(tone)))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) selectedTone.value = val;
+                    },
                   ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: InkWell(
-                      key: const Key('remove_image_button'),
-                      onTap: () {
-                        imageUrlController.clear();
-                        attachedMeme.value = null;
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, size: 14, color: Colors.white),
-                      ),
-                    ),
+                ),
+                if (!isModal)
+                  IconButton(
+                    key: const Key('composer_collapse_button'),
+                    tooltip: 'Collapse',
+                    icon: const Icon(Icons.close_fullscreen_rounded, size: 16),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () {
+                      isExpanded.value = false;
+                    },
                   ),
-                ],
-              ),
+              ],
             ),
-          ],
-          const SizedBox(height: 8),
-          Semantics(
-            identifier: 'reflection_composer',
-            child: Tooltip(
-              message: 'Share an unhurried thought',
-              triggerMode: TooltipTriggerMode.manual,
-              child: Focus(
-                onKeyEvent: isModal
-                    ? (node, event) {
-                        if (event is KeyDownEvent &&
-                            event.logicalKey == LogicalKeyboardKey.escape) {
-                          Navigator.of(context).maybePop();
-                          return KeyEventResult.handled;
-                        }
-                        return KeyEventResult.ignored;
-                      }
-                    : null,
-                child: TextField(
-                  key: const Key('reflection_composer_input'),
-                  controller: contentController,
-                  autofocus: true,
-                  maxLines: isImagePost || attachedMeme.value != null ? 2 : 3,
+            if (isImagePost ||
+                selectedTone.value.contains('Special Interest') ||
+                selectedTone.value.contains('Meme') ||
+                selectedSpace == 'special_interests' ||
+                selectedSpace == 'memes') ...[
+              const SizedBox(height: 6),
+              TextField(
+                key: const Key('special_interest_tag_input'),
+                controller: specialInterestController,
                 decoration: InputDecoration(
                   hintText: isImagePost
-                      ? 'Add an optional caption, thought, or context for this image...'
-                      : 'Share an unhurried thought, Scripture insight, or relatable reflection...',
-                  hintStyle: const TextStyle(fontSize: 12),
+                      ? 'Image Tag / Topic (e.g. Christian Memes, Scripture Art, Church Architecture)...'
+                      : 'Special Interest tag (e.g. Church Acoustics, Markan Chiasms, Biblical Maps)...',
+                  hintStyle: const TextStyle(fontSize: 11),
+                  isDense: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(8.0),
                     borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
-                  contentPadding: const EdgeInsets.all(12.0),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                ),
+              ),
+            ],
+            if (isImagePost) ...[
+              const SizedBox(height: 6),
+              TextField(
+                key: const Key('image_post_url_input'),
+                controller: imageUrlController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.link_rounded, size: 16),
+                  hintText: 'Paste Image URL (https://...) or tap Add Meme below',
+                  hintStyle: const TextStyle(fontSize: 11),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                key: const Key('image_post_alt_text_input'),
+                controller: altTextController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.accessibility_new_rounded, size: 16),
+                  hintText:
+                      'Image description / alt-text (for screen readers & sensory comfort)...',
+                  hintStyle: const TextStyle(fontSize: 11),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                ),
+              ),
+            ],
+            if (hasActiveImage) ...[
+              const SizedBox(height: 8),
+              Container(
+                key: const Key('image_post_preview_container'),
+                constraints: BoxConstraints(maxHeight: isModal ? 140 : 100),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.amber.shade300),
+                ),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(
+                        customImageUrl.value.isNotEmpty
+                            ? customImageUrl.value
+                            : attachedMeme.value!.imageUrl!,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 60,
+                          alignment: Alignment.center,
+                          child: const Text('🖼️ [Image Attached]', style: TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: InkWell(
+                        key: const Key('remove_image_button'),
+                        onTap: () {
+                          imageUrlController.clear();
+                          attachedMeme.value = null;
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close, size: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Semantics(
+              identifier: 'reflection_composer',
+              child: Tooltip(
+                message: 'Share an unhurried thought',
+                triggerMode: TooltipTriggerMode.manual,
+                child: Focus(
+                  onKeyEvent: isModal
+                      ? (node, event) {
+                          if (event is KeyDownEvent &&
+                              event.logicalKey == LogicalKeyboardKey.escape) {
+                            Navigator.of(context).maybePop();
+                            return KeyEventResult.handled;
+                          }
+                          return KeyEventResult.ignored;
+                        }
+                      : null,
+                  child: TextField(
+                    key: const Key('reflection_composer_input'),
+                    controller: contentController,
+                    autofocus: true,
+                    maxLines: isImagePost || attachedMeme.value != null ? 2 : 3,
+                    decoration: InputDecoration(
+                      hintText: isImagePost
+                          ? 'Add an optional caption, thought, or context for this image...'
+                          : 'Share an unhurried thought, Scripture insight, or relatable reflection...',
+                      hintStyle: const TextStyle(fontSize: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      ),
+                      contentPadding: const EdgeInsets.all(12.0),
+                    ),
+                  ),
                 ),
               ),
             ),
-            ),
-          ),
-          if (attachedMeme.value != null && !isImagePost) ...[
-            Container(
-              key: const Key('attached_meme_banner'),
-              margin: const EdgeInsets.only(top: 8.0),
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: Colors.amber.shade700),
-              ),
-              child: Row(
-                children: [
-                  if (attachedMeme.value!.imageUrl != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4.0),
-                      child: Container(
-                        width: 24,
-                        height: 24,
-                        color: Colors.amber.withValues(alpha: 0.2),
-                        child: CalmMediaImage(
-                          imageUrl: attachedMeme.value!.imageUrl!,
-                          fit: BoxFit.cover,
-                          fallbackWidget: Center(
-                            child: Text(
-                              attachedMeme.value!.icon,
-                              style: const TextStyle(fontSize: 14),
+            if (attachedMeme.value != null && !isImagePost) ...[
+              Container(
+                key: const Key('attached_meme_banner'),
+                margin: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.amber.shade700),
+                ),
+                child: Row(
+                  children: [
+                    if (attachedMeme.value!.imageUrl != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4.0),
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          color: Colors.amber.withValues(alpha: 0.2),
+                          child: CalmMediaImage(
+                            imageUrl: attachedMeme.value!.imageUrl!,
+                            fit: BoxFit.cover,
+                            fallbackWidget: Center(
+                              child: Text(
+                                attachedMeme.value!.icon,
+                                style: const TextStyle(fontSize: 14),
+                              ),
                             ),
                           ),
                         ),
+                      )
+                    else
+                      Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Attached: ${attachedMeme.value!.title}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isContrast ? Colors.yellow : Colors.amber.shade900,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    )
-                  else
-                    Text(attachedMeme.value!.icon, style: const TextStyle(fontSize: 16)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Attached: ${attachedMeme.value!.title}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.yellow : Colors.amber.shade900,
-                      ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  InkWell(
-                    key: const Key('remove_attached_meme_button'),
-                    onTap: () => attachedMeme.value = null,
-                    child: const Icon(Icons.close, size: 14),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          SizedBox(height: attachedMeme.value != null ? 0 : 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              OutlinedButton.icon(
-                key: const Key('add_meme_gif_button'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  side: BorderSide(
-                    color: isContrast ? Colors.white : Theme.of(context).dividerColor,
-                  ),
-                ),
-                onPressed: () => showMemeGalleryModal(context, onSelectedMeme: handleSelectMeme),
-                icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 14),
-                label: Text(
-                  attachedMeme.value != null ? 'Change Meme' : 'Add Meme / GIF',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                ),
-              ),
-              if (!isModal)
-                TextButton.icon(
-                  key: const Key('composer_collapse_bottom_button'),
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                  ),
-                  onPressed: () => isExpanded.value = false,
-                  icon: const Icon(Icons.unfold_less_rounded, size: 14),
-                  label: const Text('Collapse', style: TextStyle(fontSize: 11)),
-                ),
-              ElevatedButton.icon(
-                key: const Key('publish_reflection_button'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: isContrast ? Colors.black : Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                ),
-                onPressed: handlePublish,
-                icon: Icon(
-                  isImagePost ? Icons.photo_library_outlined : Icons.send_rounded,
-                  size: 14,
-                ),
-                label: Text(
-                  isImagePost ? 'Publish Image Post' : 'Publish Reflection',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    InkWell(
+                      key: const Key('remove_attached_meme_button'),
+                      onTap: () => attachedMeme.value = null,
+                      child: const Icon(Icons.close, size: 14),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-        ],
+            SizedBox(height: attachedMeme.value != null ? 0 : 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  key: const Key('add_meme_gif_button'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    side: BorderSide(
+                      color: isContrast ? Colors.white : Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  onPressed: () => showMemeGalleryModal(context, onSelectedMeme: handleSelectMeme),
+                  icon: const Icon(Icons.sentiment_very_satisfied_outlined, size: 14),
+                  label: Text(
+                    attachedMeme.value != null ? 'Change Meme' : 'Add Meme / GIF',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                if (!isModal)
+                  TextButton.icon(
+                    key: const Key('composer_collapse_bottom_button'),
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                    ),
+                    onPressed: () => isExpanded.value = false,
+                    icon: const Icon(Icons.unfold_less_rounded, size: 14),
+                    label: const Text('Collapse', style: TextStyle(fontSize: 11)),
+                  ),
+                ElevatedButton.icon(
+                  key: const Key('publish_reflection_button'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: isContrast ? Colors.black : Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  onPressed: handlePublish,
+                  icon: Icon(
+                    isImagePost ? Icons.photo_library_outlined : Icons.send_rounded,
+                    size: 14,
+                  ),
+                  label: Text(
+                    isImagePost ? 'Publish Image Post' : 'Publish Reflection',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 

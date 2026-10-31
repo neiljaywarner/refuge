@@ -21,7 +21,12 @@ void main() {
                       primaryColor: Colors.green,
                       isContrast: false,
                       isModal: true,
-                      onSubmit: ({required content, required toneTag, specialInterestTag, imageUrl}) async {},
+                      onSubmit: ({
+                        required content,
+                        required toneTag,
+                        specialInterestTag,
+                        imageUrl,
+                      }) async {},
                     ),
                   );
                 },
