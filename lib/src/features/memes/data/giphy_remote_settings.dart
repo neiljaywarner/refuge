@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Remote Config parameter for the Giphy beta key.
 ///
-/// Leave the published value blank to turn GIF search off. The same beta key
-/// can be pasted here for other PG refuge apps while you are trying the
-/// feature. The app downloads this value, so it is not hidden from a member
-/// who inspects the app. A copied key can use up the free hourly limit.
+/// Published only in Firebase Remote Config — never in git. Free tier: about
+/// 100 API requests/hour for that key across PWA HTTP calls and native SDK
+/// configure. See `docs/wiki/Giphy-GIF-Search.md` and GitHub #741 if quota
+/// gets tight.
 const String kGiphyApiKeyParameter = 'giphy_api_key';
 
 /// Remote Config parameter for the highest GIF rating to request.
