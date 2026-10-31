@@ -9,12 +9,11 @@ import '../../../core/widgets/calm_media_image.dart';
 import '../../profile/data/avatar_upload_service.dart';
 import '../../profile/domain/avatar_models.dart';
 import '../../profile/presentation/belong_image_crop_page.dart';
-import '../data/giphy_search.dart';
 import '../domain/calm_meme.dart';
 import 'giphy_search_panel.dart';
 
 /// Opens the modal bottom sheet allowing members to select an unhurried, calm-tech meme,
-/// search G-rated GIFs, attach a custom GIF or image URL, or upload/capture a photo.
+/// search GIFs, attach a custom GIF or image URL, or upload/capture a photo.
 void showMemeGalleryModal(BuildContext context, {required ValueChanged<CalmMeme> onSelectedMeme}) {
   showModalBottomSheet(
     context: context,
@@ -270,8 +269,8 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
             1 => _buildCustomMemeForm(),
             2 => _buildUploadPhotoForm(),
             _ => GiphySearchPanel(
-              onSelected: (gif) {
-                widget.onSelectedMeme(calmMemeFromGiphy(gif));
+              onSelected: (meme) {
+                widget.onSelectedMeme(meme);
                 Navigator.pop(context);
               },
             ),

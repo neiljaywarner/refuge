@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import '../domain/calm_meme.dart';
+import 'giphy_remote_settings.dart';
 
-/// A G-rated GIF from Giphy. [stillUrl] is the motionless preview.
+/// A GIF from Giphy. [stillUrl] is the motionless preview.
 /// [gifUrl] is what a member attaches to a reflection.
 class GiphyGif {
   const GiphyGif({
@@ -13,12 +14,14 @@ class GiphyGif {
     required this.title,
     required this.stillUrl,
     required this.gifUrl,
+    this.rating = 'pg',
   });
 
   final String id;
   final String title;
   final String stillUrl;
   final String gifUrl;
+  final String rating;
 }
 
 /// Calm failure for GIF search. The message never includes the API key or
@@ -32,22 +35,29 @@ class GiphySearchException implements Exception {
   String toString() => message;
 }
 
-/// Looks up G-rated GIFs. An empty [search] query means trending.
+/// Looks up GIFs at the configured rating ceiling. An empty [search] query
+/// means trending.
 abstract class GiphySearch {
   bool get isConfigured;
+
+  String get contentRating;
 
   Future<List<GiphyGif>> search(String query);
 }
 
 /// Giphy public API client.
 ///
-/// The key is `--dart-define=GIPHY_API_KEY=...`. A missing key is not an
+/// The key comes from Remote Config `giphy_api_key`, with
+/// `--dart-define=GIPHY_API_KEY` as a fallback. A missing key is not an
 /// error: [search] returns an empty list and never calls the network.
+/// The rating comes from Remote Config `giphy_content_rating` and defaults
+/// to PG.
 class HttpGiphySearch implements GiphySearch {
-  HttpGiphySearch({http.Client? httpClient, String? apiKey})
+  HttpGiphySearch({http.Client? httpClient, String? apiKey, String? rating})
     : _httpClient = httpClient ?? http.Client(),
       _apiKey = (apiKey ?? const String.fromEnvironment('GIPHY_API_KEY'))
           .trim(),
+      _rating = normalizeGiphyRating(rating),
       _ownsClient = httpClient == null;
 
   static const _unavailable = GiphySearchException(
@@ -56,10 +66,14 @@ class HttpGiphySearch implements GiphySearch {
 
   final http.Client _httpClient;
   final String _apiKey;
+  final String _rating;
   final bool _ownsClient;
 
   @override
   bool get isConfigured => _apiKey.isNotEmpty;
+
+  @override
+  String get contentRating => _rating;
 
   void close() {
     if (_ownsClient) _httpClient.close();
@@ -75,7 +89,7 @@ class HttpGiphySearch implements GiphySearch {
     final uri = Uri.https('api.giphy.com', '/v1/gifs/$endpoint', {
       'api_key': _apiKey,
       'limit': '12',
-      'rating': 'g',
+      'rating': _rating,
       if (bounded.isNotEmpty) 'q': bounded,
     });
 
@@ -121,6 +135,7 @@ List<GiphyGif> parseGiphyGifPayload(Object? payload) {
         title: _displayTitle(item['title']?.toString() ?? ''),
         stillUrl: still,
         gifUrl: gif,
+        rating: normalizeGiphyRating(item['rating']?.toString()),
       ),
     );
   }
@@ -131,7 +146,7 @@ List<GiphyGif> parseGiphyGifPayload(Object? payload) {
 CalmMeme calmMemeFromGiphy(GiphyGif gif) => CalmMeme(
   title: gif.title,
   icon: '🎞️',
-  subtitle: 'GIPHY · rated G',
+  subtitle: 'GIPHY · rated ${giphyRatingLabel(gif.rating)}',
   tag: 'Memes',
   body: gif.title,
   imageUrl: gif.gifUrl,
@@ -154,7 +169,11 @@ String? _httpsUrl(Object? image) {
 }
 
 final giphySearchProvider = Provider<GiphySearch>((ref) {
-  final search = HttpGiphySearch();
+  final settings = ref.watch(giphyRemoteSettingsProvider);
+  final search = HttpGiphySearch(
+    apiKey: settings.apiKey,
+    rating: settings.rating,
+  );
   ref.onDispose(search.close);
   return search;
 });

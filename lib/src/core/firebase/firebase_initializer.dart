@@ -148,7 +148,11 @@ class FirebaseInitializer {
           minimumFetchInterval: kDebugMode ? const Duration(minutes: 1) : const Duration(hours: 12),
         ),
       );
-      await rc.setDefaults(const {'admin_emails_csv': ''});
+      await rc.setDefaults(const {
+        'admin_emails_csv': '',
+        'giphy_api_key': '',
+        'giphy_content_rating': 'pg',
+      });
       await rc.fetchAndActivate().timeout(const Duration(seconds: 8));
     } catch (e) {
       talker.warning('⚠️ [FirebaseInitializer] Remote Config fetch skipped: $e');

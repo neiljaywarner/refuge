@@ -1,10 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:giphy_flutter_sdk/dto/giphy_content_type.dart';
+import 'package:giphy_flutter_sdk/dto/giphy_rating.dart';
+import 'package:refuge4serverpod/src/features/memes/data/giphy_remote_settings.dart';
+import 'package:refuge4serverpod/src/features/memes/data/giphy_sdk_picker.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_search.dart';
+import 'package:refuge4serverpod/src/features/memes/data/giphy_surface.dart';
 import 'package:refuge4serverpod/src/features/memes/domain/calm_meme.dart';
 import 'package:refuge4serverpod/src/features/memes/presentation/meme_gallery_modal.dart';
 
@@ -77,8 +83,79 @@ void main() {
       final meme = calmMemeFromGiphy(gif);
 
       expect(meme.imageUrl, gif.gifUrl);
-      expect(meme.subtitle, 'GIPHY · rated G');
+      expect(meme.subtitle, 'GIPHY · rated PG');
       expect(meme.tag, 'Memes');
+    });
+  });
+
+  group('giphySurfaceFor', () {
+    test('phones use the official SDK and the web uses the API', () {
+      expect(
+        giphySurfaceFor(isWeb: false, platform: TargetPlatform.android),
+        GiphySurface.nativeSdk,
+      );
+      expect(
+        giphySurfaceFor(isWeb: false, platform: TargetPlatform.iOS),
+        GiphySurface.nativeSdk,
+      );
+      expect(
+        giphySurfaceFor(isWeb: true, platform: TargetPlatform.android),
+        GiphySurface.webApi,
+      );
+      expect(
+        giphySurfaceFor(isWeb: false, platform: TargetPlatform.macOS),
+        GiphySurface.webApi,
+      );
+      expect(kNativeGiphyFeatures, contains('clips'));
+      expect(kWebApiGiphyFeatures, ['gif']);
+    });
+
+    test('the SDK dialog is locked to PG and includes clips', () {
+      final settings = belongGiphySettings('pg');
+      expect(settings.rating, GiphyRating.pg);
+      expect(settings.mediaTypeConfig, contains(GiphyContentType.clips));
+      expect(settings.mediaTypeConfig, contains(GiphyContentType.sticker));
+      expect(settings.mediaTypeConfig, contains(GiphyContentType.emoji));
+      expect(settings.mediaTypeConfig, contains(GiphyContentType.text));
+      expect(settings.enableDynamicText, isTrue);
+      expect(belongGiphySettings('r').rating, GiphyRating.pg);
+      expect(belongGiphySettings('pg-13').rating, GiphyRating.pg13);
+    });
+  });
+
+  group('readGiphyRemoteSettings', () {
+    test('a published key wins and a blank rating stays PG', () {
+      final settings = readGiphyRemoteSettings(
+        firebaseReady: true,
+        readString: (key) => switch (key) {
+          kGiphyApiKeyParameter => 'beta-key',
+          kGiphyContentRatingParameter => '  ',
+          _ => '',
+        },
+        dartDefineKey: 'local-key',
+      );
+
+      expect(settings.apiKey, 'beta-key');
+      expect(settings.rating, 'pg');
+    });
+
+    test('keeps the dart-define key when Remote Config is blank', () {
+      final settings = readGiphyRemoteSettings(
+        firebaseReady: true,
+        readString: (_) => '',
+        dartDefineKey: 'local-key',
+      );
+
+      expect(settings.apiKey, 'local-key');
+      expect(settings.rating, 'pg');
+    });
+
+    test('accepts g and pg-13 and treats r as pg', () {
+      expect(normalizeGiphyRating('g'), 'g');
+      expect(normalizeGiphyRating('PG-13'), 'pg-13');
+      expect(normalizeGiphyRating('pg13'), 'pg-13');
+      expect(normalizeGiphyRating('r'), 'pg');
+      expect(normalizeGiphyRating(null), 'pg');
     });
   });
 
@@ -92,7 +169,7 @@ void main() {
       expect(httpClient.uris, isEmpty);
     });
 
-    test('trending and search stay on rating g', () async {
+    test('trending and search stay on the PG ceiling', () async {
       final httpClient = _RecordingClient();
       final search = HttpGiphySearch(
         httpClient: httpClient,
@@ -104,12 +181,37 @@ void main() {
 
       expect(httpClient.uris, hasLength(2));
       expect(httpClient.uris[0].path, '/v1/gifs/trending');
-      expect(httpClient.uris[0].queryParameters['rating'], 'g');
+      expect(httpClient.uris[0].queryParameters['rating'], 'pg');
       expect(httpClient.uris[0].queryParameters['limit'], '12');
       expect(httpClient.uris[0].queryParameters.containsKey('q'), isFalse);
       expect(httpClient.uris[1].path, '/v1/gifs/search');
       expect(httpClient.uris[1].queryParameters['q'], 'chapel lights');
-      expect(httpClient.uris[1].queryParameters['rating'], 'g');
+      expect(httpClient.uris[1].queryParameters['rating'], 'pg');
+    });
+
+    test('sends g or pg-13 when asked and refuses r', () async {
+      final httpClient = _RecordingClient();
+      await HttpGiphySearch(
+        httpClient: httpClient,
+        apiKey: 'beta-key',
+        rating: 'g',
+      ).search('heroes');
+      await HttpGiphySearch(
+        httpClient: httpClient,
+        apiKey: 'beta-key',
+        rating: 'pg-13',
+      ).search('heroes');
+      await HttpGiphySearch(
+        httpClient: httpClient,
+        apiKey: 'beta-key',
+        rating: 'r',
+      ).search('heroes');
+
+      expect(httpClient.uris.map((uri) => uri.queryParameters['rating']), [
+        'g',
+        'pg-13',
+        'pg',
+      ]);
     });
 
     test('caps the query at 50 characters', () async {
@@ -251,6 +353,51 @@ void main() {
       expect(selected!.imageUrl, 'https://media.giphy.com/move.gif');
       expect(selected!.title, 'quiet chapel');
       expect(find.text('🖼️ Autism & Faith Meme Gallery'), findsNothing);
+      expect(find.byKey(const Key('giphy_platform_note')), findsNothing);
+    });
+
+    testWidgets('Android opens the official SDK picker at PG', (tester) async {
+      String? seenRating;
+      CalmMeme? selected;
+
+      await tester.pumpWidget(
+        _galleryHarness(
+          surface: GiphySurface.nativeSdk,
+          settings: const GiphyRemoteSettings(apiKey: 'beta-key', rating: 'pg'),
+          onSelected: (meme) => selected = meme,
+          sdkLauncher:
+              ({required apiKey, required rating, required onSelected}) {
+                seenRating = rating;
+                expect(apiKey, 'beta-key');
+                onSelected(
+                  const CalmMeme(
+                    title: 'hero',
+                    icon: '🎬',
+                    subtitle: 'GIPHY clip · rated PG',
+                    tag: 'Memes',
+                    body: 'hero',
+                    imageUrl: 'https://media.giphy.com/hero.gif',
+                  ),
+                );
+              },
+        ),
+      );
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.byKey(const Key('tab_giphy_search')));
+      await tester.pump();
+
+      expect(find.byKey(const Key('giphy_open_sdk_button')), findsOneWidget);
+      expect(find.byKey(const Key('giphy_search_input')), findsNothing);
+      expect(find.textContaining('clips'), findsWidgets);
+
+      await tester.tap(find.byKey(const Key('giphy_open_sdk_button')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(seenRating, 'pg');
+      expect(selected!.imageUrl, 'https://media.giphy.com/hero.gif');
     });
   });
 }
@@ -282,6 +429,9 @@ class _FakeGiphySearch implements GiphySearch {
   bool get isConfigured => true;
 
   @override
+  String get contentRating => 'pg';
+
+  @override
   Future<List<GiphyGif>> search(String query) async {
     lastQuery = query;
     return results;
@@ -291,10 +441,18 @@ class _FakeGiphySearch implements GiphySearch {
 Widget _galleryHarness({
   GiphySearch? search,
   ValueChanged<CalmMeme>? onSelected,
+  GiphySurface surface = GiphySurface.webApi,
+  GiphyRemoteSettings? settings,
+  GiphySdkLauncher? sdkLauncher,
 }) {
   return ProviderScope(
     overrides: [
+      giphySurfaceProvider.overrideWithValue(surface),
       if (search != null) giphySearchProvider.overrideWithValue(search),
+      if (settings != null)
+        giphyRemoteSettingsProvider.overrideWithValue(settings),
+      if (sdkLauncher != null)
+        giphySdkLauncherProvider.overrideWithValue(sdkLauncher),
     ],
     child: MaterialApp(
       home: Scaffold(

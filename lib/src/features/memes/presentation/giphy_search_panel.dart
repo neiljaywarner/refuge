@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/widgets/calm_media_image.dart';
+import '../data/giphy_remote_settings.dart';
+import '../data/giphy_sdk_picker.dart';
 import '../data/giphy_search.dart';
+import '../data/giphy_surface.dart';
+import '../domain/calm_meme.dart';
 
-/// G-rated GIF search. Previews stay still. The GIF URL is attached on tap.
+/// GIF search at the Remote Config rating ceiling.
+///
+/// Android and iOS open the official Giphy SDK. The PWA searches the Giphy API
+/// and shows still previews.
 class GiphySearchPanel extends ConsumerStatefulWidget {
   const GiphySearchPanel({super.key, required this.onSelected});
 
-  final ValueChanged<GiphyGif> onSelected;
+  final ValueChanged<CalmMeme> onSelected;
 
   @override
   ConsumerState<GiphySearchPanel> createState() => _GiphySearchPanelState();
@@ -26,7 +33,10 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _search('');
+      if (!mounted) return;
+      if (ref.read(giphySurfaceProvider) == GiphySurface.webApi) {
+        _search('');
+      }
     });
   }
 
@@ -72,7 +82,10 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final configured = ref.watch(giphySearchProvider).isConfigured;
+    final search = ref.watch(giphySearchProvider);
+    final surface = ref.watch(giphySurfaceProvider);
+    final configured = search.isConfigured;
+    final ratingLabel = giphyRatingLabel(search.contentRating);
     if (!configured) {
       return const Text(
         key: Key('giphy_unconfigured'),
@@ -81,11 +94,25 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       );
     }
 
+    if (surface == GiphySurface.nativeSdk) {
+      return _buildNativeSdk(ratingLabel);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'G-rated still previews. The GIF plays only after you attach it.',
+          key: const Key('giphy_platform_note'),
+          'This website searches GIFs. The Android and iOS apps also include stickers, emoji, clips, and animated text.',
+          style: TextStyle(
+            fontSize: 11,
+            height: 1.35,
+            color: Theme.of(context).textTheme.bodySmall?.color,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '$ratingLabel still previews. The GIF plays only after you attach it.',
           style: TextStyle(
             fontSize: 11,
             color: Theme.of(context).textTheme.bodySmall?.color,
@@ -121,7 +148,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
           ],
         ),
         const SizedBox(height: 8),
-        Expanded(child: _buildResults()),
+        Expanded(child: _buildResults(ratingLabel)),
         const SizedBox(height: 6),
         const Text(
           key: Key('giphy_attribution'),
@@ -132,7 +159,41 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
     );
   }
 
-  Widget _buildResults() {
+  Widget _buildNativeSdk(String ratingLabel) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          key: const Key('giphy_platform_note'),
+          'Official Giphy picker: GIFs, stickers, emoji, clips, and animated text. Clips can include sound here. The feed attaches a still image.',
+          style: TextStyle(
+            fontSize: 11,
+            height: 1.35,
+            color: Theme.of(context).textTheme.bodySmall?.color,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            key: const Key('giphy_open_sdk_button'),
+            onPressed: () {
+              final settings = ref.read(giphyRemoteSettingsProvider);
+              ref.read(giphySdkLauncherProvider)(
+                apiKey: settings.apiKey,
+                rating: settings.rating,
+                onSelected: widget.onSelected,
+              );
+            },
+            icon: const Icon(Icons.gif_box_outlined, size: 18),
+            label: Text('Open Giphy ($ratingLabel)'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResults(String ratingLabel) {
     if (_loading) {
       return const Center(
         child: SizedBox(
@@ -156,7 +217,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       return Text(
         _showingTrending
             ? 'No quiet GIF suggestions right now.'
-            : 'No G-rated GIFs for that search. Try a quieter word.',
+            : 'No $ratingLabel GIFs for that search. Try a quieter word.',
         key: const Key('giphy_empty_results'),
         style: const TextStyle(fontSize: 12),
       );
@@ -175,7 +236,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
         final gif = _results[index];
         return InkWell(
           key: Key('giphy_result_${gif.id}'),
-          onTap: () => widget.onSelected(gif),
+          onTap: () => widget.onSelected(calmMemeFromGiphy(gif)),
           borderRadius: BorderRadius.circular(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
