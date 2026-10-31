@@ -100,10 +100,7 @@ class CommunitySearchView extends HookConsumerWidget {
                                 child: Chip(
                                   key: Key('search_matched_tag_${p.id}'),
                                   visualDensity: VisualDensity.compact,
-                                  label: Text(
-                                    matchedTag,
-                                    style: const TextStyle(fontSize: 11),
-                                  ),
+                                  label: Text(matchedTag, style: const TextStyle(fontSize: 11)),
                                 ),
                               ),
                             ),
