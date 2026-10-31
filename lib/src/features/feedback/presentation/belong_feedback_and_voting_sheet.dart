@@ -161,6 +161,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final tabController = useTabController(initialLength: 2, initialIndex: initialTabIndex);
     final selectedSentiment = useState<FeedbackSentiment>(FeedbackSentiment.happy);
     final selectedStarRating = useState<int>(5);
+    final userChoseSentiment = useState(false);
+    final userChoseStarRating = useState(false);
     final feedbackController = useTextEditingController();
     useListenable(feedbackController);
     final contactController = useTextEditingController();
@@ -437,11 +439,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                 for (int star = 1; star <= 5; star++)
                                   IconButton(
                                     key: Key('star_rating_$star'),
-                                    tooltip: starLiteralDescription(star),
+                                    tooltip: '',
                                     onPressed: () {
                                       HapticFeedback.selectionClick();
                                       selectedStarRating.value = star;
-                                      selectedSentiment.value = sentimentForStars(star);
+                                      userChoseStarRating.value = true;
+                                      if (!userChoseSentiment.value) {
+                                        selectedSentiment.value = sentimentForStars(star);
+                                      }
                                       submittedMessage.value = null;
                                     },
                                     iconSize: 32,
@@ -500,13 +505,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                           borderRadius: .circular(12),
                           onTap: () {
                             selectedSentiment.value = sentiment;
-                            selectedStarRating.value = switch (sentiment) {
-                              FeedbackSentiment.happy =>
-                                selectedStarRating.value >= 4 ? selectedStarRating.value : 5,
-                              FeedbackSentiment.neutral => 3,
-                              FeedbackSentiment.sad =>
-                                selectedStarRating.value <= 2 ? selectedStarRating.value : 1,
-                            };
+                            userChoseSentiment.value = true;
+                            if (!userChoseStarRating.value) {
+                              selectedStarRating.value = switch (sentiment) {
+                                FeedbackSentiment.happy => 5,
+                                FeedbackSentiment.neutral => 3,
+                                FeedbackSentiment.sad => 1,
+                              };
+                            }
                             feedbackController.clear();
                             submittedMessage.value = null;
                           },
