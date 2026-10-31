@@ -14,6 +14,36 @@ void main() {
     });
   });
 
+  group('showSoftVerifyBanner', () {
+    AuthSession signedIn({bool emailVerified = false}) => AuthSession(
+      userId: 'uid-1',
+      displayName: 'David M.',
+      email: 'member@belongonthespectrum.com',
+      bio: 'bio',
+      comfortBadges: const ['Literal communication appreciated'],
+      isSignedIn: true,
+      authMethod: 'firebase_password',
+      emailVerified: emailVerified,
+    );
+
+    test('shows for an unverified member outside production', () {
+      expect(showSoftVerifyBanner(flavor: AppFlavor.dev, session: signedIn()), isTrue);
+      expect(showSoftVerifyBanner(flavor: AppFlavor.qa, session: signedIn()), isTrue);
+    });
+
+    test('hides when production already blocks Home, or the email is verified', () {
+      expect(showSoftVerifyBanner(flavor: AppFlavor.prod, session: signedIn()), isFalse);
+      expect(
+        showSoftVerifyBanner(flavor: AppFlavor.dev, session: signedIn(emailVerified: true)),
+        isFalse,
+      );
+      expect(
+        showSoftVerifyBanner(flavor: AppFlavor.dev, session: const AuthSession.guest()),
+        isFalse,
+      );
+    });
+  });
+
   group('showDevExampleAccounts', () {
     test('dev android and dev web', () {
       expect(

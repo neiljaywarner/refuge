@@ -6,6 +6,14 @@ import 'auth_session.dart';
 /// Production builds require a verified email before the main app is shown.
 bool mustVerifyEmail(AppFlavor flavor) => flavor.isProduction;
 
+/// Soft-launch flavors open Home while email is still unverified and explain
+/// that on a banner. Production keeps the check-email wall instead.
+bool showSoftVerifyBanner({required AppFlavor flavor, required AuthSession session}) {
+  if (mustVerifyEmail(flavor)) return false;
+  if (!sessionMayEnterCommunity(session)) return false;
+  return !session.emailVerified;
+}
+
 /// Circle-style members-only gate. Guests and Firebase anonymous sessions
 /// stay on the sign-in wall in every flavor.
 bool sessionMayEnterCommunity(AuthSession session) {

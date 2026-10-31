@@ -67,7 +67,10 @@ abstract interface class AuthRepository {
   /// Refreshes the current user from the auth backend (e.g. after email verification).
   Future<AuthSession> reloadCurrentUser();
 
-  /// Sends an email verification link when required for the active flavor.
+  /// Sends an email verification link for the signed-in member.
+  ///
+  /// Every flavor can send. Production still blocks Home until the link is
+  /// opened. Other flavors let the member in and send from the home banner.
   Future<void> sendEmailVerification();
 }
 
@@ -684,11 +687,16 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendEmailVerification() async {
-    if (!flavor.isProduction) return;
     final liveAuth = auth;
     if (liveAuth != null && _hasRealCredentials) {
       final user = liveAuth.currentUser;
-      if (user != null) {
+      if (user == null) {
+        throw const AuthException(
+          code: 'no-current-user',
+          message: 'Sign in first, then send the verification email again.',
+        );
+      }
+      if (!user.emailVerified) {
         await user.sendEmailVerification();
       }
       return;

@@ -67,7 +67,7 @@ class FakeAuthRepository extends InMemoryAuthRepository {
 
 void main() {
   group('AuthGate VerifyEmailWall Feedback & Busy Guard (#661)', () {
-    testWidgets('status message is initially absent on wall visit', (tester) async {
+    testWidgets('verify wall shows send progress instead of a blank wait', (tester) async {
       final repo = FakeAuthRepository(
         initialSession: _signedInSession(
           email: 'member@belongonthespectrum.com',
@@ -79,13 +79,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsOneWidget);
-      expect(find.byKey(const Key('auth_gate_verify_status')), findsNothing);
+      expect(find.byKey(const Key('auth_gate_verify_status')), findsOneWidget);
+      expect(find.text('Send the verification email again'), findsOneWidget);
+      expect(find.textContaining('These buttons stay here while you wait.'), findsOneWidget);
       expect(
-        find.text(
-          'We sent a verification link to member@belongonthespectrum.com. Open it, then come back.',
-        ),
+        find.text('Sent a verification link. Check your inbox and your spam folder.'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('first send failure is visible without tapping resend', (tester) async {
+      final repo = FakeAuthRepository(
+        initialSession: _signedInSession(
+          email: 'member@belongonthespectrum.com',
+          emailVerified: false,
+        ),
+        resendException: Exception('SocketException: Connection refused'),
+      );
+
+      await tester.pumpWidget(_gateApp(authRepo: repo));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsOneWidget);
+      expect(
+        find.text('Could not send right now. Please wait a minute and try again.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('auth_gate_resend_verification')), findsOneWidget);
+      expect(find.byKey(const Key('auth_gate_i_verified')), findsOneWidget);
     });
 
     testWidgets('resend success renders calm confirmation copy', (tester) async {
@@ -104,7 +125,7 @@ void main() {
 
       expect(find.byKey(const Key('auth_gate_verify_status')), findsOneWidget);
       expect(
-        find.text('Sent a fresh verification link. Please check your inbox and spam folder.'),
+        find.text('Sent a fresh verification link. Check your inbox and your spam folder.'),
         findsOneWidget,
       );
     });
