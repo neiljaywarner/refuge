@@ -127,6 +127,7 @@ class LocalPostRepository implements PostRepository {
         spaceKey: 'special_interests',
         toneTag: '[Autism & Faith Meme]',
         specialInterestTag: 'Church Acoustics',
+        imageUrl: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&auto=format&fit=crop&q=80',
         content: 'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
         timestamp: now.subtract(const Duration(minutes: 15)),
         reactions: {'pray': 4, 'peace': 8, 'relatable': 18},

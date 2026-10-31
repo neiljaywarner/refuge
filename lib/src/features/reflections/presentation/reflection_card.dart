@@ -11,6 +11,7 @@ import '../../profile/domain/member_profile.dart';
 import '../../profile/presentation/other_member_profile_dialog.dart';
 import '../data/post_repository.dart';
 import '../domain/post.dart';
+import 'reflection_post_media.dart';
 import 'reflections_providers.dart';
 import 'threaded_discussion_sheet.dart';
 
@@ -249,58 +250,14 @@ class ReflectionCard extends ConsumerWidget {
             label: post.content,
             child: Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
           ),
-          if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
+          if (ReflectionPostMedia.isRenderableUrl(post.imageUrl)) ...[
             const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: .circular(12.0),
-              child: Container(
-                key: Key('post_meme_image_${post.id}'),
-                constraints: const BoxConstraints(maxHeight: 280),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.06),
-                  borderRadius: .circular(12.0),
-                  border: Border.all(
-                    color: isMeme
-                        ? Colors.amber.shade300
-                        : (isContrast ? Colors.white70 : Colors.grey.shade300),
-                  ),
-                ),
-                child: Image.network(
-                  post.imageUrl!,
-                  fit: isMeme ? BoxFit.cover : BoxFit.contain,
-                  semanticLabel: post.specialInterestTag ?? 'Community reflection image',
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 120,
-                      alignment: Alignment.center,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.0,
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    padding: const .all(12.0),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisSize: .min,
-                      children: [
-                        Icon(Icons.broken_image_outlined, size: 18, color: Colors.amber.shade800),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Wholesome Meme / GIF Attached',
-                          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            ReflectionPostMedia(
+              postId: post.id,
+              imageUrl: post.imageUrl!.trim(),
+              isMeme: isMeme,
+              isContrast: isContrast,
+              semanticLabel: post.specialInterestTag ?? 'Community reflection image',
             ),
           ],
           const SizedBox(height: 12),

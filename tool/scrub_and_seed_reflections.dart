@@ -72,6 +72,8 @@ final List<Post> kCanonicalOrganizerReflections = [
     spaceKey: 'memes',
     toneTag: '[Autism & Faith Meme]',
     specialInterestTag: 'Church Acoustics',
+    imageUrl:
+        'https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&auto=format&fit=crop&q=80',
     content: 'When the pastor says "make a joyful noise unto the Lord" and my autistic brain starts calculating the sanctuary\'s 432Hz reverberation decay. Praise God for loop earplugs in worship! 😄🎧',
     timestamp: DateTime.utc(2026, 10, 24, 17, 15),
     reactions: const {'pray': 5, 'peace': 9, 'relatable': 24},
