@@ -8,7 +8,7 @@ tags:
 # password in this file. When someone runs it on purpose, pass
 # BELONG_AUTH_NAME, BELONG_AUTH_EMAIL, and BELONG_AUTH_PASSWORD in the
 # environment. Use a synthetic name such as Fellow Member.
-# Live sign-in is FirebaseUI ("Sign In to Belong", "Register",
+# Live sign-in uses SimpleSignInScreen ("Sign in to Belong on the Spectrum", Register,
 # "Forgotten password?"), not the older custom registration sheet.
 
 - launchApp:
