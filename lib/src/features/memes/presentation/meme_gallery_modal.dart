@@ -9,10 +9,12 @@ import '../../../core/widgets/calm_media_image.dart';
 import '../../profile/data/avatar_upload_service.dart';
 import '../../profile/domain/avatar_models.dart';
 import '../../profile/presentation/belong_image_crop_page.dart';
+import '../data/giphy_search.dart';
 import '../domain/calm_meme.dart';
+import 'giphy_search_panel.dart';
 
 /// Opens the modal bottom sheet allowing members to select an unhurried, calm-tech meme,
-/// attach a custom GIF or image URL, or upload/capture a photo via camera or device gallery.
+/// search G-rated GIFs, attach a custom GIF or image URL, or upload/capture a photo.
 void showMemeGalleryModal(BuildContext context, {required ValueChanged<CalmMeme> onSelectedMeme}) {
   showModalBottomSheet(
     context: context,
@@ -222,7 +224,7 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
           style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
         ),
         const SizedBox(height: 12),
-        // Tab Switcher (Curated, Custom URL, Upload / Camera)
+        // Tab Switcher (Curated, Custom URL, Upload / Camera, Giphy search)
         Wrap(
           spacing: 8,
           runSpacing: 6,
@@ -251,6 +253,14 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
                 if (selected) setState(() => _activeTabIndex = 2);
               },
             ),
+            ChoiceChip(
+              key: const Key('tab_giphy_search'),
+              label: const Text('Search GIFs', style: TextStyle(fontSize: 12)),
+              selected: _activeTabIndex == 3,
+              onSelected: (selected) {
+                if (selected) setState(() => _activeTabIndex = 3);
+              },
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -258,7 +268,13 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
           child: switch (_activeTabIndex) {
             0 => _buildCuratedList(),
             1 => _buildCustomMemeForm(),
-            _ => _buildUploadPhotoForm(),
+            2 => _buildUploadPhotoForm(),
+            _ => GiphySearchPanel(
+              onSelected: (gif) {
+                widget.onSelectedMeme(calmMemeFromGiphy(gif));
+                Navigator.pop(context);
+              },
+            ),
           },
         ),
       ],
