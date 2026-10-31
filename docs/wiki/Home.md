@@ -61,6 +61,6 @@ You will also find **Members Section & Directory**, **Saved for Later** (private
 
 ## Need a person?
 
-Tap **Vote & Feedback** (near Feed and Spaces). Inside that sheet, the **Share Feedback** tab is where you can write a note. Or message an organizer in Circle.
+Tap **Vote & Feedback** (near Feed and Spaces). Inside that sheet, the **Share Feedback** tab is where you can write a note. Use in-app Vote & Feedback only.
 
 Contributors shipping the app: [CI/CD FAQ](CI-CD-FAQ).

@@ -203,8 +203,6 @@ On **dev** Android or [dev web](https://dev-belongonthespectrum.web.app/), you c
 
 ## 💡 4. How to Submit Feedback
 
-If you find anything confusing, broken, or delightful, please let us know:
-1. **Inside the App**: Use **Flow 5** (Vote & Feedback $\rightarrow$ Share Feedback tab) to send thoughts directly.
-2. **By Email / Message**: Send your notes, screenshots, or screen recordings directly to the Belong Welcome Team.
+If you find anything confusing, broken, or delightful, use in-app **Vote & Feedback** only. Open **Flow 5** (Vote & Feedback → Share Feedback) and send the note, screenshots, and screen recordings from the app.
 
 *Thank you for being part of building a welcoming, sensory-friendly refuge for autistic believers and friends!*

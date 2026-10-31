@@ -221,9 +221,12 @@ void showAboutRefugeDialog(
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
                 const Gap(4),
+                // Soft launch (#495): help is in-app Vote & Feedback only.
+                // Do not add a public support address here.
                 const Text(
-                  '• Primary support during open alpha is through in-app Vote & Feedback (tap Vote & Feedback on the Home screen).\n'
-                  '• Need help, want to suggest an improvement, or report a quirk? Share your thoughts with zero pressure.',
+                  key: Key('about_support_copy'),
+                  '• Use in-app Vote & Feedback only. Tap Vote & Feedback on the Home screen.\n'
+                  '• Share help, an idea, or a quirk there.',
                   style: TextStyle(fontSize: 11.5, height: 1.4),
                 ),
               ],

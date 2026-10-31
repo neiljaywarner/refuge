@@ -1,4 +1,10 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/core/build/build_identity.dart';
 import 'package:refuge4serverpod/src/features/about/presentation/about_build_stamp.dart';
@@ -14,9 +20,11 @@ void main() {
     BuildIdentity? identity,
     Future<AppVersionLabel> Function()? loadVersion,
     VoidCallback? onOpenFeedback,
+    String? fontFamily,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: fontFamily == null ? null : ThemeData(fontFamily: fontFamily),
         home: Scaffold(
           body: Builder(
             builder: (context) => ElevatedButton(
@@ -91,42 +99,98 @@ void main() {
     expect(find.byKey(const Key('about_build_commit_url')), findsNothing);
   });
 
-  testWidgets(
-    'About dialog presents interim open-alpha support pointing to Vote & Feedback (#623)',
-    (tester) async {
-      var feedbackOpened = false;
+  testWidgets('About help copy says use in-app Vote & Feedback only (#495)', (tester) async {
+    var feedbackOpened = false;
+    await tester.binding.setSurfaceSize(const Size(900, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final captureHelp = Platform.environment['ABOUT_HELP_SCREENSHOT']?.isNotEmpty ?? false;
+    if (captureHelp) {
+      await _loadRoboto(tester);
+    }
 
-      await openAbout(
-        tester,
-        identity: const BuildIdentity(),
-        loadVersion: () async => AppVersionLabel.unknown,
-        onOpenFeedback: () => feedbackOpened = true,
-      );
+    await openAbout(
+      tester,
+      identity: const BuildIdentity(),
+      loadVersion: () async => AppVersionLabel.unknown,
+      onOpenFeedback: () => feedbackOpened = true,
+      fontFamily: captureHelp ? 'Roboto' : null,
+    );
+    await tester.ensureVisible(find.byKey(const Key('about_support_copy')));
+    await tester.pumpAndSettle();
 
-      // Header & plain language support copy
-      expect(find.text('Community Support & Feedback:'), findsOneWidget);
-      expect(
-        find.textContaining('Primary support during open alpha is through in-app Vote & Feedback'),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('Need help, want to suggest an improvement, or report a quirk?'),
-        findsOneWidget,
-      );
+    expect(find.text('Community Support & Feedback:'), findsOneWidget);
+    final support = tester.widget<Text>(find.byKey(const Key('about_support_copy')));
+    expect(support.data, contains('Use in-app Vote & Feedback only'));
+    expect(support.data, contains('Tap Vote & Feedback on the Home screen'));
+    expect(support.data, contains('Share help, an idea, or a quirk there'));
+    expect(support.data, isNot(contains('@')));
+    expect(support.data, isNot(contains('mailto')));
+    expect(support.data, isNot(contains('email')));
 
-      // Strictly zero Grok Bot support emails or internal WCAG/Firebase jargon in public text
-      expect(find.textContaining('grokbot'), findsNothing);
-      expect(find.textContaining('@mail.grokbot.com'), findsNothing);
-      expect(find.textContaining('WCAG'), findsNothing);
-      expect(find.textContaining('Firebase'), findsNothing);
+    expect(find.textContaining('grokbot'), findsNothing);
+    expect(find.textContaining('mail.grokbot.com'), findsNothing);
+    expect(find.textContaining('support@'), findsNothing);
+    expect(find.textContaining('WCAG'), findsNothing);
+    expect(find.textContaining('Firebase'), findsNothing);
 
-      // Action button opens feedback
-      final feedbackButton = find.byKey(const Key('about_dialog_open_feedback_button'));
-      expect(feedbackButton, findsOneWidget);
-      await tester.tap(feedbackButton);
-      await tester.pumpAndSettle();
+    await _writeAboutHelpScreenshot(tester);
 
-      expect(feedbackOpened, isTrue);
-    },
-  );
+    final feedbackButton = find.byKey(const Key('about_dialog_open_feedback_button'));
+    expect(feedbackButton, findsOneWidget);
+    await tester.tap(feedbackButton);
+    await tester.pumpAndSettle();
+
+    expect(feedbackOpened, isTrue);
+  });
+}
+
+Future<void> _loadRoboto(WidgetTester tester) async {
+  final roots = [
+    Platform.environment['FLUTTER_ROOT'],
+    Platform.environment['HOME'] == null ? null : '${Platform.environment['HOME']}/sdk/flutter',
+  ].whereType<String>();
+  File? font;
+  for (final root in roots) {
+    for (final path in [
+      '$root/bin/cache/artifacts/material_fonts/Roboto-Regular.ttf',
+      '$root/engine/src/flutter/txt/third_party/fonts/Roboto-Regular.ttf',
+    ]) {
+      final file = File(path);
+      if (file.existsSync()) {
+        font = file;
+        break;
+      }
+    }
+    if (font != null) break;
+  }
+  final file = font;
+  if (file == null) return;
+  await tester.runAsync(() async {
+    final bytes = await file.readAsBytes();
+    final data = ByteData.sublistView(Uint8List.fromList(bytes));
+    final loader = FontLoader('Roboto')..addFont(Future.value(data));
+    await loader.load();
+  });
+}
+
+/// Writes a PNG of the open About dialog when ABOUT_HELP_SCREENSHOT is set.
+Future<void> _writeAboutHelpScreenshot(WidgetTester tester) async {
+  final out = Platform.environment['ABOUT_HELP_SCREENSHOT'];
+  if (out == null || out.isEmpty) return;
+
+  final dialog = find.byType(AlertDialog);
+  expect(dialog, findsOneWidget);
+  var boundary = tester.renderObject(dialog).parent;
+  while (boundary != null && boundary is! RenderRepaintBoundary) {
+    boundary = boundary.parent;
+  }
+  final layer = boundary;
+  expect(layer, isA<RenderRepaintBoundary>());
+  await tester.runAsync(() async {
+    final image = await (layer! as RenderRepaintBoundary).toImage(pixelRatio: 2);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final file = File(out);
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes!.buffer.asUint8List());
+  });
 }
