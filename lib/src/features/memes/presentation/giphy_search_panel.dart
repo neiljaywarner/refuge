@@ -99,7 +99,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         Text(
           key: const Key('giphy_platform_note'),
@@ -122,14 +122,14 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
               child: TextField(
                 key: const Key('giphy_search_input'),
                 controller: _queryController,
-                textInputAction: TextInputAction.search,
+                textInputAction: .search,
                 decoration: InputDecoration(
                   labelText: 'Search GIFs',
                   hintText: 'quiet, bread, chapel',
                   hintStyle: const TextStyle(fontSize: 11),
                   isDense: true,
                   prefixIcon: const Icon(Icons.search, size: 16),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(borderRadius: .circular(10)),
                 ),
                 onSubmitted: _search,
               ),
@@ -148,7 +148,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
         const Text(
           key: Key('giphy_attribution'),
           'Powered by GIPHY',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 11, fontWeight: .w600),
         ),
       ],
     );
@@ -156,7 +156,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
 
   Widget _buildNativeSdk(String ratingLabel) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         Text(
           key: const Key('giphy_platform_note'),
@@ -232,16 +232,16 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
         return InkWell(
           key: Key('giphy_result_${gif.id}'),
           onTap: () => widget.onSelected(calmMemeFromGiphy(gif)),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: .circular(8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: .stretch,
             children: [
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: .circular(8),
                   child: CalmMediaImage(
                     imageUrl: gif.stillUrl,
-                    fit: BoxFit.cover,
+                    fit: .cover,
                     semanticLabel: gif.title,
                   ),
                 ),
@@ -250,7 +250,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
               Text(
                 gif.title,
                 maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                overflow: .ellipsis,
                 style: const TextStyle(fontSize: 10),
               ),
             ],

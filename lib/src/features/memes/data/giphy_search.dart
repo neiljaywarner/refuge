@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../domain/calm_meme.dart';
 import 'giphy_remote_settings.dart';
+import 'giphy_surface.dart';
 
 /// A GIF from Giphy. [stillUrl] is the motionless preview.
 /// [gifUrl] is what a member attaches to a reflection.
@@ -84,7 +85,7 @@ class HttpGiphySearch implements GiphySearch {
     final trimmed = query.trim();
     final bounded = trimmed.length > 50 ? trimmed.substring(0, 50) : trimmed;
     final endpoint = bounded.isEmpty ? 'trending' : 'search';
-    final uri = Uri.https('api.giphy.com', '/v1/gifs/$endpoint', {
+    final uri = Uri.https('api.giphy.com', '/v1/${_giphyWebCollection()}/$endpoint', {
       'api_key': _apiKey,
       'limit': '12',
       'rating': _rating,
@@ -106,6 +107,20 @@ class HttpGiphySearch implements GiphySearch {
       throw _unavailable;
     }
   }
+}
+
+/// `/v1/` collection for [kWebApiGiphyFeatures].
+///
+/// The website client only searches GIFs. Adding clips or stickers to that
+/// list without a matching endpoint fails here instead of looking enabled.
+String _giphyWebCollection() {
+  if (kWebApiGiphyFeatures.length != 1 || kWebApiGiphyFeatures.single != 'gif') {
+    throw StateError(
+      'Website Giphy search only requests GIFs. '
+      'Update HttpGiphySearch before changing kWebApiGiphyFeatures.',
+    );
+  }
+  return 'gifs';
 }
 
 /// Turns a Giphy JSON payload into still-preview GIFs.

@@ -8,6 +8,7 @@ import 'package:giphy_flutter_sdk/giphy_flutter_sdk.dart';
 
 import '../domain/calm_meme.dart';
 import 'giphy_remote_settings.dart';
+import 'giphy_surface.dart';
 
 /// Opens the official Giphy dialog. Tests replace this so they never touch
 /// the native plugin.
@@ -21,15 +22,12 @@ final giphySdkLauncherProvider = Provider<GiphySdkLauncher>((ref) => launchBelon
 
 /// Phone picker settings. Rating defaults to PG. The SDK's own default is
 /// PG-13, so this function always sets the rating explicitly.
+///
+/// Tabs come from [kNativeGiphyFeatures], in that order.
 GiphySettings belongGiphySettings(String rating) => GiphySettings(
   rating: giphySdkRating(rating),
-  mediaTypeConfig: const [
-    GiphyContentType.recents,
-    GiphyContentType.gif,
-    GiphyContentType.sticker,
-    GiphyContentType.clips,
-    GiphyContentType.text,
-    GiphyContentType.emoji,
+  mediaTypeConfig: [
+    for (final feature in kNativeGiphyFeatures) GiphyContentTypeExtension.fromStringValue(feature),
   ],
   selectedContentType: GiphyContentType.gif,
   enableDynamicText: true,

@@ -24,13 +24,14 @@ GiphyClient giphyClientFor({required bool isWeb, required TargetPlatform platfor
   };
 }
 
-/// Official SDK tabs. The package default already includes these. Belong sets
-/// them explicitly so the phone picker does not drift if the package default
-/// changes.
+/// Official SDK tabs, in picker order. `belongGiphySettings` maps these names
+/// onto `GiphyContentType`. Belong sets them explicitly so the phone picker
+/// does not drift if the package default changes.
 const List<String> kNativeGiphyFeatures = ['recents', 'gif', 'sticker', 'clips', 'text', 'emoji'];
 
-/// What the PWA search can attach. Clips, stickers, emoji, and animated text
-/// stay on the native SDK.
+/// What the website search can attach. Clips, stickers, emoji, and animated
+/// text stay on [kNativeGiphyFeatures]. `HttpGiphySearch` requests
+/// `/v1/gifs/` only while this list is exactly `gif`.
 const List<String> kWebApiGiphyFeatures = ['gif'];
 
 GiphySurface giphySurfaceFor({required bool isWeb, required TargetPlatform platform}) {
