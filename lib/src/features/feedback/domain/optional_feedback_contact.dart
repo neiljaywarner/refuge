@@ -18,4 +18,10 @@ abstract final class OptionalFeedbackContact {
     if (_emailPattern.hasMatch(contact)) return null;
     return emailError;
   }
+
+  /// True when [raw] is one full address organizers can reply to.
+  static bool looksLikeEmail(String raw) {
+    final contact = raw.trim();
+    return contact.contains('@') && errorText(contact) == null;
+  }
 }

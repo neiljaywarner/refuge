@@ -13,6 +13,7 @@ import '../data/feature_voting_repository.dart';
 import '../data/vote_storage_service.dart';
 import '../domain/feedback_and_voting_models.dart';
 import '../domain/feedback_source_stamp.dart';
+import '../domain/feedback_success_copy.dart';
 import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
 
@@ -99,9 +100,12 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     builder: (_) => SystemBottomInset(
       child: FractionallySizedBox(
         heightFactor: 0.88,
-        child: BelongFeedbackAndVotingSheet(
-          initialTabIndex: initialTabIndex,
-          screenshotBytes: screenshotBytes,
+        child: RepaintBoundary(
+          key: feedbackSheetRepaintBoundaryKey,
+          child: BelongFeedbackAndVotingSheet(
+            initialTabIndex: initialTabIndex,
+            screenshotBytes: screenshotBytes,
+          ),
         ),
       ),
     ),
@@ -171,6 +175,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final drawingAttachment = useState<Uint8List?>(null);
     final isSubmitting = useState<bool>(false);
     final submittedMessage = useState<String?>(null);
+    final feedbackScrollController = useScrollController();
+
+    void publishFeedbackResult(String message) {
+      submittedMessage.value = message;
+      if (feedbackScrollController.hasClients) {
+        feedbackScrollController.jumpTo(0);
+      }
+    }
 
     final features = ref.watch(featureVotingProvider);
     final colorScheme = Theme.of(context).colorScheme;
@@ -395,8 +407,13 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
                 // TAB 2: Industry-Standard 1-5 Star Rating + Literal 3-Intent Feedback Funnel (PWA, Web & Mobile)
                 ListView(
+                  controller: feedbackScrollController,
                   padding: listPadding,
                   children: [
+                    if (submittedMessage.value != null) ...[
+                      _FeedbackResultBanner(message: submittedMessage.value!),
+                      const SizedBox(height: 12),
+                    ],
                     // 1-5 Star Rating Card ("How do you like Belong on the Spectrum?")
                     Card(
                       key: const Key('star_rating_bar'),
@@ -651,8 +668,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                               OutlinedButton.icon(
                                 key: const Key('open_feedback_drawing_button'),
                                 onPressed: () async {
-                                  final screenshot =
-                                      screenshotBytes ?? await captureEnclosingScreenshot(context);
+                                  final live = await captureEnclosingScreenshot(context);
+                                  final screenshot = live ?? screenshotBytes;
                                   if (!context.mounted) return;
                                   final result = await FeedbackDrawingDialog.show(
                                     context,
@@ -670,28 +687,6 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                               ),
                               const SizedBox(height: 12),
                             ],
-                            if (submittedMessage.value != null) ...[
-                              Container(
-                                padding: const .all(10),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primaryContainer,
-                                  borderRadius: .circular(8),
-                                ),
-                                child: Semantics(
-                                  identifier: 'feedback_submit_result',
-                                  label: submittedMessage.value,
-                                  container: true,
-                                  child: Text(
-                                    submittedMessage.value!,
-                                    style: textTheme.bodySmall?.copyWith(
-                                      color: colorScheme.onPrimaryContainer,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                            ],
                             Wrap(
                               spacing: 10,
                               runSpacing: 8,
@@ -708,7 +703,9 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                           );
                                           contactError.value = contactProblem;
                                           if (text.isEmpty) {
-                                            submittedMessage.value = 'Please enter a short note above so we can read your thoughts.';
+                                            publishFeedbackResult(
+                                              'Please enter a short note so we can read your thoughts.',
+                                            );
                                             return;
                                           }
                                           if (contactProblem != null) {
@@ -746,6 +743,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
                                             final hostedUpload =
                                                 FeedbackAttachmentRef.isHostedUpload(attachmentUrl);
+                                            final keptDrawing =
+                                                attachmentBytes != null && !hostedUpload;
                                             final stamp = FeedbackSourceStamp.current();
                                             final summary = StringBuffer()
                                               ..writeln(
@@ -757,19 +756,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             if (contact.isNotEmpty) {
                                               summary.writeln('From: $contact');
                                             }
-                                            if (result.githubIssueNumber != null) {
-                                              summary.writeln(
-                                                'GitHub triage issue created: belong_feedback#${result.githubIssueNumber}',
-                                              );
-                                            } else {
-                                              summary.writeln(
-                                                'Organizer handoff: saved for organizers in Firestore member_feedback. The app did not file a GitHub issue and stores no API token.',
-                                              );
-                                            }
-                                            if (attachmentBytes != null && !hostedUpload) {
-                                              summary.writeln(
-                                                'Drawing: kept with this note, not uploaded.',
-                                              );
+                                            if (keptDrawing) {
+                                              summary.writeln('Drawing saved with this note.');
                                             } else if (hostedUpload) {
                                               summary.writeln('Attachment: $attachmentUrl');
                                             }
@@ -779,23 +767,30 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                               ).timeout(const Duration(milliseconds: 100));
                                             } catch (_) {}
 
-                                            if (result.githubIssueNumber != null) {
-                                              submittedMessage.value =
-                                                  'Thank you! Your feedback was routed to our private triage queue (belong_feedback#${result.githubIssueNumber}).';
+                                            if (sentiment.isPrivateTriage ||
+                                                result.githubIssueNumber != null) {
+                                              publishFeedbackResult(
+                                                feedbackSavedForOrganizers(
+                                                  hasReplyEmail:
+                                                      OptionalFeedbackContact.looksLikeEmail(
+                                                        contact,
+                                                      ),
+                                                  keptDrawing: keptDrawing,
+                                                ),
+                                              );
                                             } else {
-                                              final saved = sentiment.isPrivateTriage
-                                                  ? 'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub.'
-                                                  : 'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
-                                              submittedMessage.value =
-                                                  attachmentBytes != null && !hostedUpload
-                                                  ? '$saved The drawing stayed with the note and was not uploaded.'
-                                                  : saved;
+                                              const saved =
+                                                  'Thank you for your encouragement! Your praise was recorded and shared with our organizers.';
+                                              publishFeedbackResult(
+                                                keptDrawing
+                                                    ? '$saved Your drawing is saved with the note.'
+                                                    : saved,
+                                              );
                                             }
                                             feedbackController.clear();
                                             drawingAttachment.value = null;
                                           } catch (e) {
-                                            submittedMessage.value =
-                                                'Could not submit feedback: $e';
+                                            publishFeedbackResult('Could not submit feedback: $e');
                                           } finally {
                                             isSubmitting.value = false;
                                           }
@@ -821,6 +816,35 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FeedbackResultBanner extends StatelessWidget {
+  const _FeedbackResultBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      key: const Key('feedback_success_banner'),
+      padding: const .all(10),
+      decoration: BoxDecoration(color: colorScheme.primaryContainer, borderRadius: .circular(8)),
+      child: Semantics(
+        identifier: 'feedback_submit_result',
+        label: message,
+        container: true,
+        child: Text(
+          message,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onPrimaryContainer,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
