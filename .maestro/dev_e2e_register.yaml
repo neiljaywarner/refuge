@@ -16,8 +16,17 @@ tags:
 - inputText: ${BELONG_AUTH_EMAIL}
 - tapOn: ".*Password.*"
 - inputText: ${MAESTRO_TEST_PASSWORD}
+# FirebaseUI label is "Confirm password"; an empty submit shows
+# "Confirm your password". Either text is the same field.
+- tapOn: "Confirm your password|Confirm password"
+- inputText: ${MAESTRO_TEST_PASSWORD}
 - hideKeyboard
-- tapOn: ".*Register.*"
+# The screen title and the submit control both say Register.
+# The one under the confirm field is the submit button.
+- tapOn:
+    text: "^Register$"
+    below: "Confirm your password|Confirm password"
+    index: 0
 - extendedWaitUntil:
     visible: ".*(Feed|Save & Enter Belong|Check your email).*"
     timeout: 60000
