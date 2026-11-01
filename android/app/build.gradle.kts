@@ -78,15 +78,22 @@ android {
         release {
             val activeFlavor = resolvedFlavor ?: "prod"
             val suffix = suffixForFlavor(activeFlavor)
-            if (activeFlavor == "prod") {
-                // The Firebase project's only Android app is this legacy id.
-                // App Distribution rejects com.belongonthespectrum.refuge.
-                applicationId = "com.belongonthespectrum.sanctuary"
-            } else if (suffix.isNotEmpty()) {
+            if (suffix.isNotEmpty()) {
                 applicationIdSuffix = suffix
             }
             manifestPlaceholders["appName"] = appLabelForFlavor(activeFlavor)
             signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+}
+
+// Prod release must match the only Firebase Android app. Build types cannot
+// set applicationId in AGP 9; the variant API can.
+androidComponents {
+    onVariants { variant ->
+        val activeFlavor = resolvedFlavor ?: if (variant.buildType == "release") "prod" else "dev"
+        if (activeFlavor == "prod") {
+            variant.applicationId.set("com.belongonthespectrum.sanctuary")
         }
     }
 }
