@@ -8,12 +8,13 @@ tags:
 ---
 # Circle-style: a signed-out person sees only the sign-in wall.
 # They do not see the feed, Demo Mode, or Vote & Feedback (#574, #601).
+# Dev package title: [DEV] Sign in to Belong on the Spectrum PREVIEW (#717).
 
 - launchApp:
     clearState: true
 - extendedWaitUntil:
-    visible: "Sign In to Belong"
+    visible: ".*Sign in to Belong on the Spectrum.*"
     timeout: 45000
-- assertVisible: "Sign In to Belong"
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
 - assertNotVisible: "Demo Mode"
 - assertNotVisible: "Vote & Feedback"
