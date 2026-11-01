@@ -84,9 +84,12 @@ void main() {
     final add = $(const Key('composer_add_meme_compact_button'));
     await add.scrollTo();
     await add.tap();
-    expect($(find.textContaining('Open Giphy')), findsOneWidget);
+    // Exact strings. textContaining('Open Giphy') also matches Patrol's red
+    // test-name overlay ("... native Open Giphy attaches ..."), so the
+    // native case finds 2 widgets and fails before the tap (run 41353385501).
+    expect($('Open Giphy (PG)'), findsOneWidget);
     expect($('Powered by GIPHY'), findsNothing);
-    expect($(find.textContaining('The feed attaches a silent GIF.')), findsOneWidget);
+    expect($('GIFs, stickers, emoji, and clips. The feed attaches a silent GIF.'), findsOneWidget);
 
     await $(const Key('giphy_open_sdk_button')).waitUntilVisible();
     await $(const Key('giphy_open_sdk_button')).tap();
