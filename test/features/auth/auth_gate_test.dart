@@ -145,12 +145,13 @@ void main() {
       expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
     });
 
-    testWidgets('banned member sees the lockout copy and not the feed', (tester) async {
+    testWidgets('banned member sees the lockout copy after that session ends', (tester) async {
       final session = _signedInSession(
         email: 'qa-ban-member-591@example.com',
         emailVerified: true,
       ).copyWith(displayName: 'Caleb Stone');
       final bans = InMemoryAdminBanningRepository();
+      final authRepo = InMemoryAuthRepository(initialSession: session);
       await bans.banUser(
         userId: 'Caleb Stone',
         displayName: 'Caleb Stone',
@@ -160,7 +161,7 @@ void main() {
 
       await tester.pumpWidget(
         _gateApp(
-          authRepo: InMemoryAuthRepository(initialSession: session),
+          authRepo: authRepo,
           flavor: AppFlavor.dev,
           extra: [adminBanningRepositoryProvider.overrideWithValue(bans)],
         ),
@@ -168,7 +169,9 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
+      expect(authRepo.currentSession().isSignedIn, isFalse);
       expect(find.byKey(const Key('auth_gate_ban_refusal')), findsOneWidget);
+      expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsNothing);
       expect(find.text("This account can't sign in."), findsOneWidget);
       expect(find.byKey(const Key('reflection_composer')), findsNothing);
       expect(find.byKey(const Key('belong_profile_avatar_button')), findsNothing);

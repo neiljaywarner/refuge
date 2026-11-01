@@ -35,6 +35,7 @@ test/core/appwrite/appwrite_config_test.dart
 test/core/build/build_identity_test.dart
 test/core/geometry/point_test.dart
 test/core/config/app_flavor_hosting_urls_test.dart
+test/core/firebase/ban_standing_delete_rules_test.dart
 test/core/firebase/community_analytics_posthog_gate_test.dart
 test/core/firebase/firestore_members_only_rules_test.dart
 test/core/firebase/community_analytics_service_test.dart
@@ -46,7 +47,9 @@ test/core/preview_mode_test.dart
 test/core/theme/belong_text_styles_test.dart
 test/features/about/about_build_stamp_test.dart
 test/features/admin/admin_member_banning_widget_test.dart
+test/features/admin/ban_erase_failure_test.dart
 test/features/admin/admin_remote_config_and_soft_delete_test.dart
+test/features/auth/auth_gate_test.dart
 test/features/auth/belong_auth_sheet_widget_test.dart
 test/features/auth/firebase_auth_repository_test.dart
 test/features/auth/simple_auth_test.dart
