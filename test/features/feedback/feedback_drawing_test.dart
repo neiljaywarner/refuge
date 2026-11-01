@@ -12,11 +12,112 @@ import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repos
 import 'package:refuge4serverpod/src/features/feedback/data/github_feedback_client.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_source_stamp.dart';
+import 'package:refuge4serverpod/src/features/feedback/domain/feedback_success_copy.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/feedback_drawing_canvas.dart';
 import 'package:refuge4serverpod/src/features/storage/data/storage_repository.dart';
 
 void main() {
+  group('Feedback screenshot frame (#489)', () {
+    test('a portrait screenshot stays portrait inside a desktop column', () {
+      final size = FeedbackScreenshotFrame.canvasSize(
+        imageWidth: 390,
+        imageHeight: 844,
+        screen: const Size(1400, 900),
+        availableWidth: 1400,
+      );
+
+      expect(size.width, lessThanOrEqualTo(FeedbackScreenshotFrame.maxColumnWidth));
+      expect(size.height, greaterThan(size.width));
+      expect(size.width / size.height, closeTo(390 / 844, 0.02));
+    });
+
+    test('contain keeps the whole image inside a short wide canvas', () {
+      final rect = FeedbackScreenshotFrame.containRect(
+        image: const Size(390, 844),
+        canvas: const Size(800, 220),
+      );
+
+      expect(rect.height, closeTo(220, 0.1));
+      expect(rect.width, lessThan(800));
+      expect(rect.width / rect.height, closeTo(390 / 844, 0.02));
+      expect(rect.left, greaterThanOrEqualTo(0));
+      expect(rect.right, lessThanOrEqualTo(800));
+    });
+
+    testWidgets('largest repaint boundary skips a nested slice', (tester) async {
+      final innerKey = GlobalKey();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RepaintBoundary(
+            child: SizedBox(
+              width: 320,
+              height: 520,
+              child: Center(
+                child: RepaintBoundary(
+                  child: SizedBox(key: innerKey, width: 48, height: 16, child: const Text('slice')),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final chosen = largestRepaintBoundary(innerKey.currentContext!.findRenderObject());
+      expect(chosen, isNotNull);
+      expect(chosen!.size.width, greaterThan(200));
+      expect(chosen.size.height, greaterThan(200));
+    });
+
+    testWidgets('drawing dialog stays in a phone-like column on a wide window', (tester) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => FeedbackDrawingDialog.show(context),
+                child: const Text('Open drawing'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open drawing'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final dialog = tester.getSize(find.byKey(const Key('feedback_drawing_dialog')));
+      expect(dialog.width, lessThanOrEqualTo(FeedbackScreenshotFrame.maxColumnWidth));
+      expect(dialog.width, greaterThan(200));
+    });
+  });
+
+  group('Plain feedback success copy (#490)', () {
+    test('names a reply email only when the member did not leave one', () {
+      expect(
+        feedbackSavedForOrganizers(hasReplyEmail: false, keptDrawing: false),
+        'Thanks! Your note was saved for organizers. We can only reply if you add a valid email.',
+      );
+      expect(
+        feedbackSavedForOrganizers(hasReplyEmail: true, keptDrawing: true),
+        'Thanks! Your note was saved for organizers. Your drawing is saved with the note.',
+      );
+      expect(
+        feedbackSavedForOrganizers(hasReplyEmail: true, keptDrawing: false),
+        isNot(contains('GitHub')),
+      );
+      expect(
+        feedbackSavedForOrganizers(hasReplyEmail: false, keptDrawing: true),
+        isNot(contains('clipboard')),
+      );
+    });
+  });
+
   group('PrivateFeedbackRouter Attachment Formatting', () {
     test('formatPrivateIssue does not present the storage stub as an uploaded image', () {
       const router = PrivateFeedbackRouter();
@@ -352,13 +453,16 @@ void main() {
         await $(const Key('submit_feedback_button')).tap();
         await $.pumpAndSettle();
 
-        // The sheet must not claim a GitHub filing or a hosted upload.
-        expect(
-          $(
-            'Thank you. Your note was saved for organizers and copied to the clipboard. It was not sent to GitHub. The drawing stayed with the note and was not uploaded.',
-          ),
-          findsOneWidget,
-        );
+        // Members see plain language, above the send button, with no tracker jargon.
+        const saved =
+            'Thanks! Your note was saved for organizers. Your drawing is saved with the note.';
+        expect($(saved), findsOneWidget);
+        expect($(const Key('feedback_success_banner')), findsOneWidget);
+        final bannerTop = $.tester.getTopLeft(find.text(saved)).dy;
+        final sendTop = $.tester.getTopLeft(find.byKey(const Key('submit_feedback_button'))).dy;
+        expect(bannerTop, lessThan(sendTop));
+        expect($('GitHub'), findsNothing);
+        expect($('clipboard'), findsNothing);
         expect($('belong_feedback'), findsNothing);
         expect($('storage.belongonthespectrum.com'), findsNothing);
 
@@ -384,7 +488,7 @@ void main() {
     );
 
     patrolWidgetTest(
-      'Submits feedback with configured GitHub client and displays issue number confirmation',
+      'Submits feedback with configured GitHub client and keeps the confirmation plain',
       ($) async {
         $.tester.view.physicalSize = const Size(1000, 1600);
         $.tester.view.devicePixelRatio = 1.0;
@@ -427,10 +531,12 @@ void main() {
 
         expect(
           $(
-            'Thank you! Your feedback was routed to our private triage queue (belong_feedback#42).',
+            'Thanks! Your note was saved for organizers. We can only reply if you add a valid email.',
           ),
           findsOneWidget,
         );
+        expect($('GitHub'), findsNothing);
+        expect($('belong_feedback#42'), findsNothing);
         expect(inMemoryRepo.submittedFeedbackLog.length, 1);
         final log = inMemoryRepo.submittedFeedbackLog.first;
         expect(log['githubIssueCreated'], 'true');

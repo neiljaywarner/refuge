@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -10,57 +11,142 @@ final GlobalKey rootFeedbackRepaintBoundaryKey = GlobalKey(
   debugLabel: 'rootFeedbackRepaintBoundary',
 );
 
+/// Repaint boundary around the Vote & Feedback sheet itself.
+///
+/// Drawing capture prefers this over a nested control so the scribble sits on
+/// the sheet the member is looking at, not a cropped strip of one card.
+final GlobalKey feedbackSheetRepaintBoundaryKey = GlobalKey(
+  debugLabel: 'feedbackSheetRepaintBoundary',
+);
+
+/// How the drawing dialog frames a screenshot so the whole image stays visible.
+abstract final class FeedbackScreenshotFrame {
+  static const maxColumnWidth = 440.0;
+
+  /// Canvas size that keeps [imageWidth] / [imageHeight] and stays inside a
+  /// phone-like column. A missing image uses the short blank canvas.
+  static Size canvasSize({
+    double? imageWidth,
+    double? imageHeight,
+    required Size screen,
+    required double availableWidth,
+  }) {
+    final screenWidth = math.max(120.0, screen.width - 32);
+    final offered = availableWidth.isFinite ? availableWidth : maxColumnWidth;
+    final maxWidth = math.min(maxColumnWidth, math.min(offered, screenWidth));
+    final maxHeight = math.max(160.0, math.min(screen.height * 0.62, 640.0));
+    if (imageWidth == null || imageHeight == null || imageWidth <= 0 || imageHeight <= 0) {
+      final height = (screen.height * 0.42).clamp(150.0, 260.0);
+      return Size(maxWidth, height);
+    }
+    final aspect = imageWidth / imageHeight;
+    var width = maxWidth;
+    var height = width / aspect;
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = math.min(maxWidth, height * aspect);
+    }
+    if (height < 140) {
+      height = 140;
+      width = math.min(maxWidth, height * aspect);
+    }
+    return Size(width, height);
+  }
+
+  /// [BoxFit.contain] destination. The whole image stays inside [canvas].
+  static Rect containRect({required Size image, required Size canvas}) {
+    if (image.width <= 0 || image.height <= 0 || canvas.width <= 0 || canvas.height <= 0) {
+      return Offset.zero & canvas;
+    }
+    final fitted = applyBoxFit(BoxFit.contain, image, canvas);
+    return Alignment.center.inscribe(fitted.destination, Offset.zero & canvas);
+  }
+}
+
+/// Largest repaint boundary at or above [start].
+///
+/// A button or card strip is smaller than the screen the member meant to mark.
+RenderRepaintBoundary? largestRepaintBoundary(RenderObject? start) {
+  RenderRepaintBoundary? best;
+  var bestArea = 0.0;
+  var node = start;
+  while (node != null) {
+    if (node is RenderRepaintBoundary && node.attached && node.hasSize) {
+      final size = node.size;
+      if (size.width >= 8 && size.height >= 8) {
+        final area = size.width * size.height;
+        if (area >= bestArea) {
+          best = node;
+          bestArea = area;
+        }
+      }
+    }
+    node = node.parent;
+  }
+  return best;
+}
+
+bool _boundaryIsUsefulScreen(RenderRepaintBoundary? boundary) {
+  if (boundary == null || !boundary.attached || !boundary.hasSize) return false;
+  final size = boundary.size;
+  return size.shortestSide >= 160 && size.width >= 160 && size.height >= 200;
+}
+
+Future<Uint8List?> _pngOfBoundary(RenderRepaintBoundary? boundary) async {
+  if (boundary == null || !boundary.hasSize || boundary.size.shortestSide < 8) {
+    return null;
+  }
+  final binding = WidgetsBinding.instance;
+  // Widget tests have no rasterizer. toImage waits for a frame that the
+  // test will not flush while this callback is paused, so skip capture.
+  if (binding.runtimeType.toString().contains('Test')) {
+    return null;
+  }
+  binding.scheduleFrame();
+  await binding.endOfFrame.timeout(const Duration(milliseconds: 500), onTimeout: () {});
+  final image = await boundary.toImage(pixelRatio: 1);
+  try {
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+    return data?.buffer.asUint8List();
+  } finally {
+    image.dispose();
+  }
+}
+
 /// Captures a [GlobalKey]'s repaint boundary as PNG bytes.
 Future<Uint8List?> captureRepaintBoundary(GlobalKey key) async {
   try {
     final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null || !boundary.hasSize) {
-      return null;
-    }
-    final binding = WidgetsBinding.instance;
-    if (binding.runtimeType.toString().contains('Test')) {
-      return null;
-    }
-    binding.scheduleFrame();
-    await binding.endOfFrame.timeout(const Duration(milliseconds: 500), onTimeout: () {});
-    final image = await boundary.toImage(pixelRatio: 1);
-    try {
-      final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      return data?.buffer.asUint8List();
-    } finally {
-      image.dispose();
-    }
+    return await _pngOfBoundary(boundary);
   } catch (_) {
     return null;
   }
 }
 
-/// Captures the nearest repaint boundary as PNG bytes so the drawing dialog
-/// can annotate the screen the member was looking at.
+/// Captures the feedback sheet, or the largest useful screen behind the
+/// drawing control. A nested slice is skipped so the scribble is not a
+/// cropped strip.
 ///
 /// Widget tests often have no rasterizer; a failure returns null and the
 /// dialog stays usable without a background.
 Future<Uint8List?> captureEnclosingScreenshot(BuildContext context) async {
   try {
-    final boundary = context.findAncestorRenderObjectOfType<RenderRepaintBoundary>();
-    if (boundary == null || !boundary.hasSize) {
-      return null;
+    RenderRepaintBoundary? boundary;
+    final sheet = feedbackSheetRepaintBoundaryKey.currentContext?.findRenderObject();
+    if (sheet is RenderRepaintBoundary && _boundaryIsUsefulScreen(sheet)) {
+      boundary = sheet;
     }
-    final binding = WidgetsBinding.instance;
-    // Widget tests have no rasterizer. toImage waits for a frame that the
-    // test will not flush while this callback is paused, so skip capture.
-    if (binding.runtimeType.toString().contains('Test')) {
-      return null;
+    if (boundary == null) {
+      final largest = largestRepaintBoundary(context.findRenderObject());
+      if (_boundaryIsUsefulScreen(largest)) boundary = largest;
     }
-    binding.scheduleFrame();
-    await binding.endOfFrame.timeout(const Duration(milliseconds: 500), onTimeout: () {});
-    final image = await boundary.toImage(pixelRatio: 1);
-    try {
-      final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      return data?.buffer.asUint8List();
-    } finally {
-      image.dispose();
+    if (boundary == null) {
+      final root = rootFeedbackRepaintBoundaryKey.currentContext?.findRenderObject();
+      if (root is RenderRepaintBoundary && root.hasSize && root.size.shortestSide >= 64) {
+        boundary = root;
+      }
     }
+    return await _pngOfBoundary(boundary);
   } catch (_) {
     return null;
   }
@@ -97,11 +183,12 @@ class FeedbackDrawingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (backgroundImage != null) {
+      final imageSize = Size(backgroundImage!.width.toDouble(), backgroundImage!.height.toDouble());
       paintImage(
         canvas: canvas,
-        rect: Offset.zero & size,
+        rect: FeedbackScreenshotFrame.containRect(image: imageSize, canvas: size),
         image: backgroundImage!,
-        fit: BoxFit.cover,
+        fit: BoxFit.fill,
       );
     } else if (backgroundColor != Colors.transparent) {
       final bgPaint = Paint()..color = backgroundColor;
@@ -165,6 +252,7 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
   DrawnStroke? _activeStroke;
   Color _selectedColor = Colors.redAccent;
   double _selectedWidth = 4.0;
+  final GlobalKey _surfaceKey = GlobalKey();
 
   @override
   bool get wantKeepAlive => true;
@@ -216,11 +304,18 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
   }
 
   /// Exports the canvas strokes into a PNG image byte buffer.
-  Future<Uint8List> exportPngBytes({int width = 400, int height = 240}) async {
+  ///
+  /// Defaults to the on-screen surface so strokes stay lined up with the
+  /// screenshot. Pass [width] and [height] only for a fixed test raster.
+  Future<Uint8List> exportPngBytes({int? width, int? height}) async {
     try {
+      final box = _surfaceKey.currentContext?.findRenderObject() as RenderBox?;
+      final surface = box != null && box.hasSize ? box.size : const Size(400, 240);
+      final resolvedWidth = width ?? surface.width.round();
+      final resolvedHeight = height ?? surface.height.round();
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
-      final size = Size(width.toDouble(), height.toDouble());
+      final size = Size(resolvedWidth.toDouble(), resolvedHeight.toDouble());
 
       final painter = FeedbackDrawingPainter(
         strokes: _strokes,
@@ -235,7 +330,7 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
         return _fallbackSamplePng();
       }
 
-      final img = await picture.toImage(width, height);
+      final img = await picture.toImage(resolvedWidth, resolvedHeight);
       final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
       return byteData?.buffer.asUint8List() ?? _fallbackSamplePng();
     } catch (_) {
@@ -431,6 +526,7 @@ class FeedbackDrawingCanvasState extends State<FeedbackDrawingCanvas>
         ClipRRect(
           borderRadius: const .vertical(bottom: .circular(12)),
           child: Container(
+            key: _surfaceKey,
             height: widget.canvasHeight,
             color: bgColor,
             child: Semantics(
@@ -490,10 +586,19 @@ class FeedbackDrawingDialog extends StatefulWidget {
       showDialog<Uint8List>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => Dialog(
-          insetPadding: const .all(16),
-          child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),
-        ),
+        builder: (dialogContext) {
+          final column = math.min(
+            FeedbackScreenshotFrame.maxColumnWidth,
+            MediaQuery.sizeOf(dialogContext).width - 32,
+          );
+          return Dialog(
+            insetPadding: const .all(16),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: math.max(120, column)),
+              child: FeedbackDrawingDialog(screenshotBytes: screenshotBytes),
+            ),
+          );
+        },
       );
 
   @override
@@ -540,84 +645,103 @@ class _FeedbackDrawingDialogState extends State<FeedbackDrawingDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    final responsiveCanvasHeight = (screenHeight * 0.42).clamp(150.0, 260.0);
+    final screen = MediaQuery.sizeOf(context);
 
-    return SingleChildScrollView(
-      padding: const .all(16),
-      child: Column(
-        mainAxisSize: .min,
-        crossAxisAlignment: .stretch,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.draw_rounded, color: theme.colorScheme.primary, size: 20),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Draw / Annotate Feedback',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Close drawing',
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.close_rounded, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final image = _screenshot;
+        final frame = FeedbackScreenshotFrame.canvasSize(
+          imageWidth: image?.width.toDouble(),
+          imageHeight: image?.height.toDouble(),
+          screen: screen,
+          availableWidth: constraints.maxWidth,
+        );
+        return Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            key: const Key('feedback_drawing_dialog'),
+            width: frame.width,
+            child: _dialogBody(theme, frame.height),
           ),
-          const SizedBox(height: 6),
-          Text(
-            _hasScreenshot
-                ? 'Annotating a screenshot of this screen. Draw on it, then attach.'
-                : 'Circle a button, point out an issue, or draw what you expected.',
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 12),
-          FeedbackDrawingCanvas(
-            key: _canvasKey,
-            initialStrokes: widget.initialStrokes,
-            canvasHeight: responsiveCanvasHeight,
-            backgroundImage: _screenshot,
-            onChanged: (strokes) {
-              setState(() {
-                _hasStrokes = strokes.isNotEmpty;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                key: const Key('drawing_dialog_cancel_button'),
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton.icon(
-                key: const Key('drawing_dialog_attach_button'),
-                onPressed: _hasStrokes
-                    ? () async {
-                        final bytes = await _canvasKey.currentState?.exportPngBytes();
-                        if (context.mounted) {
-                          Navigator.of(context).pop(bytes);
-                        }
-                      }
-                    : null,
-                icon: const Icon(Icons.check_rounded, size: 16),
-                label: const Text('Attach Scribble'),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
+
+  Widget _dialogBody(ThemeData theme, double canvasHeight) => SingleChildScrollView(
+    padding: const .all(16),
+    child: Column(
+      mainAxisSize: .min,
+      crossAxisAlignment: .stretch,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.draw_rounded, color: theme.colorScheme.primary, size: 20),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Draw / Annotate Feedback',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Close drawing',
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.close_rounded, size: 20),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _hasScreenshot
+              ? 'Annotating a screenshot of this screen. Draw on it, then attach.'
+              : 'Circle a button, point out an issue, or draw what you expected.',
+          style: TextStyle(
+            fontSize: 12,
+            color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+          ),
+        ),
+        const SizedBox(height: 12),
+        FeedbackDrawingCanvas(
+          key: _canvasKey,
+          initialStrokes: widget.initialStrokes,
+          canvasHeight: canvasHeight,
+          backgroundImage: _screenshot,
+          onChanged: (strokes) {
+            setState(() {
+              _hasStrokes = strokes.isNotEmpty;
+            });
+          },
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            TextButton(
+              key: const Key('drawing_dialog_cancel_button'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton.icon(
+              key: const Key('drawing_dialog_attach_button'),
+              onPressed: _hasStrokes
+                  ? () async {
+                      final bytes = await _canvasKey.currentState?.exportPngBytes();
+                      if (mounted) {
+                        Navigator.of(context).pop(bytes);
+                      }
+                    }
+                  : null,
+              icon: const Icon(Icons.check_rounded, size: 16),
+              label: const Text('Attach Scribble'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 }

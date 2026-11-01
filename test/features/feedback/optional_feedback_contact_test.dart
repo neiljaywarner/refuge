@@ -19,6 +19,14 @@ void main() {
     expect(OptionalFeedbackContact.errorText('  member@belongonthespectrum.com  '), isNull);
   });
 
+  test('looksLikeEmail is only a full address', () {
+    expect(OptionalFeedbackContact.looksLikeEmail('member@belongonthespectrum.com'), isTrue);
+    expect(OptionalFeedbackContact.looksLikeEmail('  member@belongonthespectrum.com  '), isTrue);
+    expect(OptionalFeedbackContact.looksLikeEmail(''), isFalse);
+    expect(OptionalFeedbackContact.looksLikeEmail('Fellow Member'), isFalse);
+    expect(OptionalFeedbackContact.looksLikeEmail('not@email'), isFalse);
+  });
+
   test('rejects a value that contains @ but is not an address', () {
     for (final value in [
       'not@email',

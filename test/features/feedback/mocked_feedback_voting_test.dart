@@ -89,7 +89,7 @@ void main() {
         await $(const Key('submit_feedback_button')).tap();
         await $.pumpAndSettle();
 
-        expect($('Please enter a short note above so we can read your thoughts.'), findsOneWidget);
+        expect($('Please enter a short note so we can read your thoughts.'), findsOneWidget);
         verifyNever(
           () => repo.submitFeedback(
             sentiment: any(named: 'sentiment'),
