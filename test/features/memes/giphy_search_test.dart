@@ -132,17 +132,20 @@ void main() {
       expect(giphySurfaceFor(isWeb: false, platform: TargetPlatform.iOS), GiphySurface.nativeSdk);
       expect(giphySurfaceFor(isWeb: true, platform: TargetPlatform.android), GiphySurface.webApi);
       expect(giphySurfaceFor(isWeb: false, platform: TargetPlatform.macOS), GiphySurface.webApi);
-      expect(kNativeGiphyFeatures, contains('clips'));
-      expect(kWebApiGiphyFeatures, ['gif']);
     });
 
-    test('the SDK dialog is locked to PG and includes clips', () {
+    test('the SDK dialog is locked to PG and uses the native feature list', () {
       final settings = belongGiphySettings('pg');
       expect(settings.rating, GiphyRating.pg);
+      expect(
+        settings.mediaTypeConfig.map(GiphyContentTypeExtension.toStringValue).toList(),
+        kNativeGiphyFeatures,
+      );
       expect(settings.mediaTypeConfig, contains(GiphyContentType.clips));
       expect(settings.mediaTypeConfig, contains(GiphyContentType.sticker));
       expect(settings.mediaTypeConfig, contains(GiphyContentType.emoji));
       expect(settings.mediaTypeConfig, contains(GiphyContentType.text));
+      expect(settings.mediaTypeConfig, contains(GiphyContentType.gif));
       expect(settings.enableDynamicText, isTrue);
       expect(belongGiphySettings('r').rating, GiphyRating.pg);
       expect(belongGiphySettings('pg-13').rating, GiphyRating.pg13);
@@ -257,6 +260,7 @@ void main() {
       await search.search('  chapel lights  ');
 
       expect(httpClient.uris, hasLength(2));
+      expect(kWebApiGiphyFeatures, ['gif']);
       expect(httpClient.uris[0].path, '/v1/gifs/trending');
       expect(httpClient.uris[0].queryParameters['rating'], 'pg');
       expect(httpClient.uris[0].queryParameters['limit'], '12');
