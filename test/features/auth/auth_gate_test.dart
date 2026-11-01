@@ -91,6 +91,14 @@ void main() {
 
         expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
         expect(find.text('[DEV] Sign in to Belong on the Spectrum PREVIEW'), findsOneWidget);
+        expect(find.byKey(const Key('sign_in_recovery_panel')), findsOneWidget);
+        expect(find.text('Forgot your password?'), findsOneWidget);
+        expect(
+          find.textContaining(
+            'You can use the app while you wait, then send the verification email again.',
+          ),
+          findsOneWidget,
+        );
         expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
       });
     });
@@ -101,6 +109,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Sign in to Belong on the Spectrum'), findsOneWidget);
+      expect(find.text('Forgot your password?'), findsOneWidget);
+      expect(
+        find.textContaining('The next screen lets you send the verification email again.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('You can use the app while you wait'), findsNothing);
     });
 
     testWidgets('prod unverified shows verify wall', (tester) async {
@@ -114,6 +128,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsOneWidget);
+      expect(find.byKey(const Key('home_verify_email_banner')), findsNothing);
+      expect(find.text('Send the verification email again'), findsOneWidget);
       expect(find.byKey(const Key('home_top_bar_sign_in_button')), findsNothing);
     });
 
@@ -128,7 +144,24 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsNothing);
+      expect(find.byKey(const Key('home_verify_email_banner')), findsOneWidget);
+      expect(
+        find.textContaining(
+          'You can use the app while you wait for a verification email at member@belongonthespectrum.com.',
+        ),
+        findsOneWidget,
+      );
       expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('home_resend_verification')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Sent a fresh verification link. You can keep using the app. Check your inbox and your spam folder.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('prod verified reaches home', (tester) async {

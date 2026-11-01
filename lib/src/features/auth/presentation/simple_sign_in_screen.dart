@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
+import 'sign_in_recovery_panel.dart';
 
 /// Minimal sign-in, essentially the firebase_ui_auth pub.dev example.
 ///
@@ -18,7 +19,8 @@ class SimpleSignInScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tag = ref.watch(appFlavorProvider).environmentTag;
+    final flavor = ref.watch(appFlavorProvider);
+    final tag = flavor.environmentTag;
     final title = tag == null
         ? 'Sign in to Belong on the Spectrum'
         : '[$tag] Sign in to Belong on the Spectrum PREVIEW';
@@ -45,6 +47,7 @@ class SimpleSignInScreen extends ConsumerWidget {
                   key: Key('sign_in_unavailable'),
                   textAlign: TextAlign.center,
                 ),
+                SignInRecoveryPanel(canUseAppWhileWaiting: !flavor.isProduction),
               ],
             ),
           ),
@@ -56,6 +59,10 @@ class SimpleSignInScreen extends ConsumerWidget {
       providers: [EmailAuthProvider()],
       showPasswordVisibilityToggle: true,
       subtitleBuilder: (context, action) => titleText,
+      footerBuilder: (context, action) => SignInRecoveryPanel(
+        canUseAppWhileWaiting: !flavor.isProduction,
+        onForgotPassword: () => showForgotPasswordScreen(context: context),
+      ),
     );
   }
 }
