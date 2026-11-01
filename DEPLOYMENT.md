@@ -221,7 +221,7 @@ Local hooks match the fast part of that list. Install them with `dart run tool/i
 
 A push to `main` runs `dart run tool/deploy_dev_web.dart` and updates `https://dev-belongonthespectrum.web.app/`. It does not publish production.
 
-A `v*` tag, or a manual run with production turned on, runs `dart run tool/deploy_release.dart --prod`. That builds the prod flavor, deploys a 14-day preview channel, then publishes `https://belongonthespectrum.web.app/`. A manual run defaults production to off, so opening the workflow without that switch deploys the dev site. A manual release can also upload an APK to App Distribution. Automatic pushes do not create a GitHub Release and do not upload an APK.
+A `v*` tag runs `dart run tool/deploy_release.dart --prod --distribute-android`. A manual run with production turned on runs the same release with `--prod`, and adds `--distribute-android` when that input is on. Either path builds the prod flavor, deploys a 14-day preview channel, publishes `https://belongonthespectrum.web.app/`, and a tag or a manual Android release uploads the APK to App Distribution (`pre-alpha-testers`). A manual run defaults production to off, so opening the workflow without that switch deploys the dev site. Automatic pushes to `main` do not create a GitHub Release and do not upload a production APK.
 
 Pull requests do not deploy.
 

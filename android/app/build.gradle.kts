@@ -87,6 +87,17 @@ android {
     }
 }
 
+// Prod release must match the only Firebase Android app. Build types cannot
+// set applicationId in AGP 9; the variant API can.
+androidComponents {
+    onVariants { variant ->
+        val activeFlavor = resolvedFlavor ?: if (variant.buildType == "release") "prod" else "dev"
+        if (activeFlavor == "prod") {
+            variant.applicationId.set("com.belongonthespectrum.sanctuary")
+        }
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17

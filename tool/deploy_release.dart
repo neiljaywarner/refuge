@@ -135,12 +135,15 @@ Future<void> main(List<String> args) async {
   // Resolve the Android app id early so we fail fast before deploying anything.
   String? androidAppId;
   if (android) {
-    androidAppId =
-        _arg(args, '--android-app-id') ??
-        Platform.environment['FIREBASE_ANDROID_APP_ID'] ??
-        await _detectAndroidAppId();
+    androidAppId = _firstNonBlank([
+      _arg(args, '--android-app-id'),
+      Platform.environment['FIREBASE_ANDROID_APP_ID'],
+    ]);
+    // A missing GitHub secret is an empty string. The only Android app in
+    // this Firebase project is the legacy sanctuary package.
+    androidAppId ??= await _detectAndroidAppId();
     if (androidAppId == null) {
-      stderr.writeln('No Firebase Android app found. Pass --android-app-id.');
+      stderr.writeln('No Firebase Android app for $_prodAndroidPackage. Pass --android-app-id.');
       exit(65);
     }
   }
@@ -294,6 +297,41 @@ List<String> _argsAll(List<String> args, String flag) {
 
 void _log(String m) => stdout.writeln('[${DateTime.now().toIso8601String().substring(11, 19)}] $m');
 
+String? _firstNonBlank(Iterable<String?> values) {
+  for (final value in values) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isNotEmpty) return trimmed;
+  }
+  return null;
+}
+
+const String _prodAndroidPackage = 'com.belongonthespectrum.sanctuary';
+
+/// Android apps from `firebase apps:list ANDROID --json`.
+List<({String appId, String? packageName})> androidAppsFromFirebaseList(String jsonOut) {
+  final Object? decoded;
+  try {
+    decoded = jsonDecode(jsonOut);
+  } on FormatException {
+    return const [];
+  }
+  final Object? raw = switch (decoded) {
+    {'result': final Object? result} => result,
+    {'apps': final Object? apps} => apps,
+    _ => decoded,
+  };
+  if (raw is! List) return const [];
+  final apps = <({String appId, String? packageName})>[];
+  for (final item in raw) {
+    if (item is! Map) continue;
+    final appId = item['appId'];
+    if (appId is! String || !appId.contains(':android:')) continue;
+    final package = item['packageName'] ?? item['namespace'];
+    apps.add((appId: appId, packageName: package is String ? package : null));
+  }
+  return apps;
+}
+
 Future<String?> _detectAndroidAppId() async {
   final r = await Process.run(_bin('firebase'), [
     'apps:list',
@@ -302,9 +340,40 @@ Future<String?> _detectAndroidAppId() async {
     _project,
     '--json',
   ]);
+  if (r.exitCode != 0) {
+    final err = (r.stderr as String).trim();
+    if (err.isNotEmpty) stderr.writeln(err);
+    return null;
+  }
+  final apps = androidAppsFromFirebaseList(r.stdout as String);
+  for (final app in apps) {
+    if (app.packageName == _prodAndroidPackage) {
+      _log('Android App Distribution app ${app.appId} (${app.packageName})');
+      return app.appId;
+    }
+  }
+  for (final app in apps.where((app) => app.packageName == null)) {
+    final package = await _packageNameForAndroidApp(app.appId);
+    _log('Android app ${app.appId} package ${package ?? 'unknown'}');
+    if (package == _prodAndroidPackage) return app.appId;
+  }
+  final seen = apps
+      .map((app) => '${app.appId} (${app.packageName ?? 'package not listed'})')
+      .join(', ');
+  stderr.writeln('No Firebase Android app for $_prodAndroidPackage. Saw: $seen');
+  return null;
+}
+
+Future<String?> _packageNameForAndroidApp(String appId) async {
+  final r = await Process.run(_bin('firebase'), [
+    'apps:sdkconfig',
+    'ANDROID',
+    appId,
+    '--project',
+    _project,
+  ]);
   if (r.exitCode != 0) return null;
-  final match = RegExp(r'"appId"\s*:\s*"([^"]+:android:[^"]+)"').firstMatch(r.stdout as String);
-  return match?.group(1);
+  return RegExp(r'"package_name"\s*:\s*"([^"]+)"').firstMatch(r.stdout as String)?.group(1);
 }
 
 String? _extractPreviewUrl(String jsonOut) {
