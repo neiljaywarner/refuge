@@ -1,0 +1,35 @@
+appId: com.belongonthespectrum.refuge.dev
+# Dev package only. Password comes from MAESTRO_TEST_PASSWORD.
+# Email comes from BELONG_AUTH_EMAIL (timestamped @yopmail.com).
+tags:
+  - known-gap
+  - e2e
+  - dev-only
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*Sign in to Belong on the Spectrum.*"
+    timeout: 45000
+- tapOn: ".*Register.*"
+- tapOn: ".*Email.*"
+- inputText: ${BELONG_AUTH_EMAIL}
+- tapOn: ".*Password.*"
+- inputText: ${MAESTRO_TEST_PASSWORD}
+- hideKeyboard
+- tapOn: ".*Register.*"
+- extendedWaitUntil:
+    visible: ".*(Feed|Save & Enter Belong|Check your email).*"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Save & Enter Belong"
+    commands:
+      - tapOn: ".*Display name.*"
+      - inputText: "Fellow Member"
+      - tapOn: ".*congregation.*"
+      - tapOn: "I am not a member of an ICOC church"
+      - tapOn: "Save & Enter Belong"
+      - extendedWaitUntil:
+          visible: ".*Feed.*"
+          timeout: 30000
