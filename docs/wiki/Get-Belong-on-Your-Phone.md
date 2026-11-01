@@ -16,7 +16,7 @@ The **iPhone app is not ready**. iPhone members keep using the website until it 
 
 | Where | Status | What to do |
 | --- | --- | --- |
-| [Android app (open beta)](#android-app-ready) | Ready | Open Google's page on your Android phone and install Belong |
+| [Android open beta](#android-open-beta) | Open beta | Open the Android beta on your phone and install Belong |
 | [Google Play Store](#google-play-store-pending) | Pending | Searching the Play Store will not find Belong yet |
 | [Apple App Store](#apple-app-store-pending) | Pending | Searching the App Store will not find Belong yet |
 | [iPhone beta (TestFlight)](#iphone-beta-testflight-pending) | Pending | Apple's try-it-early app is not open for Belong yet |
@@ -31,11 +31,11 @@ A few words, in case they are new:
 
 ---
 
-## Android app (ready)
+## Android open beta
 
-This is the one to use day to day.
+This is the one to use day to day. It is an open beta, before the Play Store.
 
-On your **Android phone**, open [the Android beta page](https://appdistribution.firebase.google.com). A computer cannot install the app onto the phone for you.
+On your **Android phone**, tap **[Open the Android beta](https://appdistribution.firebase.google.com/testerapps/1:207506875171:android:e578634c4bc21da2b96296)**. That page stays on the ongoing beta, so later releases use the same link. A computer cannot install the app onto the phone for you.
 
 1. Sign in with a Google account if it asks. A Gmail address is fine.
 2. When you see **Belong on the Spectrum**, tap **Download**.
@@ -52,7 +52,7 @@ If the page says you have no apps yet, the open invite is still catching up. Use
 
 ## Google Play Store (pending)
 
-**Pending.** Searching the Play Store for Belong will not find it yet. There is no Play Store link to tap. Use the [Android app](#android-app-ready) above.
+**Pending.** Searching the Play Store for Belong will not find it yet. There is no Play Store link to tap. Use the [Android open beta](#android-open-beta) above. A Play Store link can be added here later.
 
 ---
 
@@ -92,7 +92,7 @@ Apple's steps: [Turn a website into an app in Safari on iPhone](https://support.
 
 ## Android website (for testing)
 
-You only need this if you are testing the website. The [Android app](#android-app-ready) is fine for everyday use, and GIF search and message alerts work better there.
+You only need this if you are testing the website. The [Android open beta](#android-open-beta) is fine for everyday use, and GIF search and message alerts work better there.
 
 1. Open **Chrome** and go to [belongonthespectrum.web.app](https://belongonthespectrum.web.app).
 2. Tap the **three dots** at the top.

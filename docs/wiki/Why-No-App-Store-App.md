@@ -7,7 +7,7 @@
 
 ## 💡 The 10-Second Short Answer
 
-**The Play Store and the App Store do not have Belong yet.** If you have an Android phone, install the [Android open beta](Get-Belong-on-Your-Phone#android-app-ready). GIF search and message alerts work better in that app. If you have an iPhone, add the website to your Home Screen. The steps for both are on **[Get Belong on your phone](Get-Belong-on-Your-Phone)**.
+**The Play Store and the App Store do not have Belong yet.** If you have an Android phone, install the [Android open beta](Get-Belong-on-Your-Phone#android-open-beta). GIF search and message alerts work better in that app. If you have an iPhone, add the website to your Home Screen. The steps for both are on **[Get Belong on your phone](Get-Belong-on-Your-Phone)**.
 
 You can also keep the website on your home screen. When you open **[belongonthespectrum.web.app](https://belongonthespectrum.web.app)** in your phone's web browser (Safari on iPhone, Chrome on Android), you can tap **"Install App"** or **"Add to Home Screen"** in 2 seconds. 
 

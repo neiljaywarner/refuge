@@ -68,6 +68,7 @@ test/features/feedback/optional_feedback_contact_test.dart
 test/features/feedback/private_feedback_router_test.dart
 test/features/feedback/vote_feedback_phone_width_test.dart
 test/features/fellowship_spaces/spaces_directory_muted_toggle_widget_test.dart
+test/features/install/phone_install_guide_test.dart
 test/features/goldens/sociable_golden_widgets_test.dart
 test/features/memes/calm_meme_and_gif_test.dart
 test/features/memes/giphy_search_test.dart

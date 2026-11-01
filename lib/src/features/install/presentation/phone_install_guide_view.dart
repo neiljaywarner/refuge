@@ -30,9 +30,7 @@ class _PhoneInstallGuideViewState extends State<PhoneInstallGuideView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _reveal(
-        widget.focus == PhoneInstallFocus.ios ? _iosWebKey : _androidBetaKey,
-      );
+      _reveal(widget.focus == PhoneInstallFocus.ios ? _iosWebKey : _androidBetaKey);
     });
   }
 
@@ -74,7 +72,7 @@ class _PhoneInstallGuideViewState extends State<PhoneInstallGuideView> {
                     children: [
                       _Jump(
                         key: const ValueKey('phone_install_jump_android'),
-                        label: 'Android app',
+                        label: 'Android open beta',
                         onTap: () => _jump('android-beta', _androidBetaKey),
                       ),
                       _Jump(
@@ -108,16 +106,15 @@ class _PhoneInstallGuideViewState extends State<PhoneInstallGuideView> {
                   _Section(
                     key: _androidBetaKey,
                     sectionKey: const ValueKey('phone_install_android_beta'),
-                    title: 'Android app',
-                    status: 'Ready',
+                    title: 'Android open beta',
+                    status: 'Open beta',
                     pending: false,
-                    blurb: 'This is the one to use day to day. Tap the button on your Android phone.',
+                    blurb: 'This Android open beta is for everyday use until the Play Store opens.',
                     expanded: _open.contains('android-beta'),
                     onToggle: () => _toggle('android-beta'),
                     leading: FilledButton.icon(
                       key: const ValueKey('phone_install_open_beta_button'),
-                      onPressed: () =>
-                          openPhoneInstallLink(PhoneInstallLinks.androidBeta),
+                      onPressed: () => openPhoneInstallLink(PhoneInstallLinks.androidBeta),
                       icon: const Icon(Icons.android_rounded),
                       label: const Text('Open the Android beta'),
                     ),
@@ -138,9 +135,7 @@ class _PhoneInstallGuideViewState extends State<PhoneInstallGuideView> {
                   ),
                   _Section(
                     key: _appStoreKey,
-                    sectionKey: const ValueKey(
-                      'phone_install_app_store_pending',
-                    ),
+                    sectionKey: const ValueKey('phone_install_app_store_pending'),
                     title: 'Apple App Store',
                     status: 'Pending',
                     pending: true,
@@ -153,14 +148,11 @@ class _PhoneInstallGuideViewState extends State<PhoneInstallGuideView> {
                   ),
                   _Section(
                     key: _testFlightKey,
-                    sectionKey: const ValueKey(
-                      'phone_install_testflight_pending',
-                    ),
+                    sectionKey: const ValueKey('phone_install_testflight_pending'),
                     title: 'iPhone beta (TestFlight)',
                     status: 'Pending',
                     pending: true,
-                    blurb:
-                        'Apple’s try-it-early app is not open for Belong yet.',
+                    blurb: 'Apple’s try-it-early app is not open for Belong yet.',
                     expanded: _open.contains('testflight'),
                     onToggle: () => _toggle('testflight'),
                     more: const _TestFlightMore(),
@@ -262,8 +254,7 @@ class _Jump extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) =>
-      ActionChip(label: Text(label), onPressed: onTap);
+  Widget build(BuildContext context) => ActionChip(label: Text(label), onPressed: onTap);
 }
 
 class _Section extends StatelessWidget {
@@ -311,10 +302,7 @@ class _Section extends StatelessWidget {
               children: [
                 Expanded(child: Text(title, style: theme.textTheme.titleSmall)),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: pending
                         ? theme.colorScheme.surfaceContainerHighest
@@ -326,19 +314,14 @@ class _Section extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: pending
-                          ? theme.colorScheme.onSurfaceVariant
-                          : primary,
+                      color: pending ? theme.colorScheme.onSurfaceVariant : primary,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Text(
-              blurb,
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.35),
-            ),
+            Text(blurb, style: theme.textTheme.bodyMedium?.copyWith(height: 1.35)),
             if (leading != null) ...[const SizedBox(height: 10), leading!],
             Align(
               alignment: Alignment.centerLeft,
@@ -405,18 +388,12 @@ class _AndroidBetaMore extends StatelessWidget {
             label: 'Google’s install steps',
             url: PhoneInstallLinks.googleInstallUnknownApps,
           ),
-          _DocLink(
-            label: 'Firebase’s tester steps',
-            url: PhoneInstallLinks.firebaseTesterHelp,
-          ),
+          _DocLink(label: 'Firebase’s tester steps', url: PhoneInstallLinks.firebaseTesterHelp),
           _DocLink(
             label: 'If the phone blocks the install',
             url: PhoneInstallLinks.firebaseUnknownApps,
           ),
-          _DocLink(
-            label: 'About Play Protect',
-            url: PhoneInstallLinks.playProtect,
-          ),
+          _DocLink(label: 'About Play Protect', url: PhoneInstallLinks.playProtect),
         ],
       ),
     ],
@@ -434,10 +411,7 @@ class _TestFlightMore extends StatelessWidget {
         'TestFlight is Apple’s app for trying an iPhone app before it is in the App Store. Belong does not have a TestFlight link yet. When it does, this row will stop saying Pending.',
       ),
       SizedBox(height: 8),
-      _DocLink(
-        label: 'Apple’s TestFlight page',
-        url: PhoneInstallLinks.appleTestFlight,
-      ),
+      _DocLink(label: 'Apple’s TestFlight page', url: PhoneInstallLinks.appleTestFlight),
     ],
   );
 }
@@ -465,18 +439,13 @@ class _IosWebMore extends StatelessWidget {
         '4. Turn on Open as Web App if you see that switch. The name should say Belong on the Spectrum. Tap Add.',
       ),
       SizedBox(height: 6),
-      Text(
-        '5. Tap the Belong icon on your Home Screen. It opens without Safari’s address bar.',
-      ),
+      Text('5. Tap the Belong icon on your Home Screen. It opens without Safari’s address bar.'),
       SizedBox(height: 6),
       Text(
         'GIF search on the website is simpler: still pictures, without stickers, clips, or emoji. Those are in the phone apps. Message alerts are also more reliable once the iPhone app exists. Until TestFlight and the App Store open, this Home Screen icon is the way to use Belong.',
       ),
       SizedBox(height: 8),
-      _DocLink(
-        label: 'Apple’s Home Screen steps',
-        url: PhoneInstallLinks.appleWebApp,
-      ),
+      _DocLink(label: 'Apple’s Home Screen steps', url: PhoneInstallLinks.appleWebApp),
       _DocLink(label: 'Open Belong', url: PhoneInstallLinks.belongWeb),
     ],
   );
@@ -504,10 +473,7 @@ class _AndroidWebMore extends StatelessWidget {
         '4. The Belong icon appears on your Home Screen and in the app list. It is still the website.',
       ),
       SizedBox(height: 8),
-      _DocLink(
-        label: 'Chrome’s install steps',
-        url: PhoneInstallLinks.chromeWebApp,
-      ),
+      _DocLink(label: 'Chrome’s install steps', url: PhoneInstallLinks.chromeWebApp),
       _DocLink(label: 'Open Belong', url: PhoneInstallLinks.belongWeb),
     ],
   );
@@ -520,8 +486,6 @@ class _DocLink extends StatelessWidget {
   final String url;
 
   @override
-  Widget build(BuildContext context) => TextButton(
-    onPressed: () => openPhoneInstallLink(url),
-    child: Text(label),
-  );
+  Widget build(BuildContext context) =>
+      TextButton(onPressed: () => openPhoneInstallLink(url), child: Text(label));
 }

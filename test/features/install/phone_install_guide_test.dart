@@ -5,52 +5,35 @@ import 'package:refuge4serverpod/src/features/install/domain/phone_install_links
 import 'package:refuge4serverpod/src/features/install/presentation/phone_install_guide_view.dart';
 
 void main() {
-  testWidgets(
-    'shows a calm summary, pending stores, and the Android website note',
-    (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: PhoneInstallGuideView(focus: PhoneInstallFocus.android),
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('shows a calm summary, pending stores, and the Android website note', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: PhoneInstallGuideView(focus: PhoneInstallFocus.android)),
+    );
+    await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const ValueKey('phone_install_summary')),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('Firebase is just the Google page'),
-        findsOneWidget,
-      );
-      expect(find.text('Pending'), findsNWidgets(3));
-      expect(
-        find.byKey(const ValueKey('phone_install_open_beta_button')),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining(
-          'You only need this if you are testing the website',
-        ),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Open as Web App'), findsNothing);
+    expect(find.byKey(const ValueKey('phone_install_summary')), findsOneWidget);
+    expect(find.textContaining('Firebase is just the Google page'), findsOneWidget);
+    expect(find.text('Pending'), findsNWidgets(3));
+    expect(find.text('Android open beta'), findsWidgets);
+    expect(find.text('Open the Android beta'), findsOneWidget);
+    expect(find.byKey(const ValueKey('phone_install_open_beta_button')), findsOneWidget);
+    expect(
+      find.textContaining('You only need this if you are testing the website'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Open as Web App'), findsNothing);
 
-      final iosJump = find.byKey(const ValueKey('phone_install_jump_ios_web'));
-      await tester.ensureVisible(iosJump);
-      await tester.pumpAndSettle();
-      await tester.tap(iosJump);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Add to Home Screen'), findsOneWidget);
-      expect(find.textContaining('Open as Web App'), findsOneWidget);
+    final iosJump = find.byKey(const ValueKey('phone_install_jump_ios_web'));
+    await tester.ensureVisible(iosJump);
+    await tester.pumpAndSettle();
+    await tester.tap(iosJump);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Add to Home Screen'), findsOneWidget);
+    expect(find.textContaining('Open as Web App'), findsOneWidget);
 
-      expect(find.textContaining('Allow from this source'), findsWidgets);
-      expect(
-        find.textContaining('If the warning says the app is harmful, stop'),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(find.textContaining('Allow from this source'), findsWidgets);
+    expect(find.textContaining('If the warning says the app is harmful, stop'), findsOneWidget);
+  });
 
   test('phone links open the guide and the stores stay unlinked', () {
     BelongSpaceItem? android;
@@ -72,7 +55,8 @@ void main() {
     expect(ios.phoneInstallFocus, PhoneInstallFocus.ios);
     expect(
       PhoneInstallLinks.androidBeta,
-      'https://appdistribution.firebase.google.com',
+      'https://appdistribution.firebase.google.com/testerapps/'
+      '1:207506875171:android:e578634c4bc21da2b96296',
     );
   });
 }

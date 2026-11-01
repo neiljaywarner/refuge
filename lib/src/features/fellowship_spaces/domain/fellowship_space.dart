@@ -90,15 +90,13 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'saved_for_later',
         title: 'Saved for Later',
         emoji: '🔖',
-        subtitle:
-            'Private bookmarks — unhurried reflections saved for quiet reading',
+        subtitle: 'Private bookmarks — unhurried reflections saved for quiet reading',
       ),
       BelongSpaceItem(
         slug: 'members_directory',
         title: 'Members Section & Directory',
         emoji: '👥',
-        subtitle:
-            'Community profiles, church affiliations & fellowship connections',
+        subtitle: 'Community profiles, church affiliations & fellowship connections',
       ),
       BelongSpaceItem(
         slug: 'memes',
@@ -167,7 +165,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'link_android_app',
         title: 'Download the Android App',
         emoji: '🤖',
-        subtitle: 'Open beta is ready. The Play Store is still pending.',
+        subtitle: 'Android open beta. The Play Store link comes later.',
         phoneInstallFocus: PhoneInstallFocus.android,
         trackedIssueNumber: 30,
       ),
@@ -175,8 +173,7 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'link_ios_app',
         title: 'Download the iOS App',
         emoji: '🍎',
-        subtitle:
-            'App Store and TestFlight are pending. Website steps are inside.',
+        subtitle: 'App Store and TestFlight are pending. Website steps are inside.',
         phoneInstallFocus: PhoneInstallFocus.ios,
         trackedIssueNumber: 31,
       ),
@@ -190,11 +187,7 @@ final activeSpaceKeyProvider = StateProvider<String>((ref) => 'general_chat');
 /// Human-friendly display metadata for a fellowship space (#618).
 @immutable
 class BelongSpaceInfo {
-  const BelongSpaceInfo({
-    required this.slug,
-    required this.title,
-    required this.emoji,
-  });
+  const BelongSpaceInfo({required this.slug, required this.title, required this.emoji});
 
   final String slug;
   final String title;
@@ -206,11 +199,7 @@ BelongSpaceInfo getBelongSpaceInfo(String slug) {
   for (final section in kBelongSpaceSections) {
     for (final item in section.items) {
       if (item.slug == slug) {
-        return BelongSpaceInfo(
-          slug: item.slug,
-          title: item.title,
-          emoji: item.emoji,
-        );
+        return BelongSpaceInfo(slug: item.slug, title: item.title, emoji: item.emoji);
       }
     }
   }
@@ -231,12 +220,7 @@ BelongSpaceInfo getBelongSpaceInfo(String slug) {
       'saved_for_later' => 'Saved for Later',
       _ =>
         parts.length > 1
-            ? parts
-                  .sublist(1)
-                  .join(' ')
-                  .replaceAll('#', '')
-                  .replaceAll('-', ' ')
-                  .trim()
+            ? parts.sublist(1).join(' ').replaceAll('#', '').replaceAll('-', ' ').trim()
             : slug,
     };
     return BelongSpaceInfo(slug: slug, title: name, emoji: emoji);

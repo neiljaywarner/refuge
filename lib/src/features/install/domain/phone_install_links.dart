@@ -3,14 +3,16 @@ enum PhoneInstallFocus { android, ios }
 
 /// Official pages for the member install guide.
 ///
-/// The Android button opens Google's Firebase App Distribution tester home.
-/// A per-release invite hash is not published in this repo, so the guide does
-/// not invent one. Play Store, App Store, and TestFlight stay pending.
+/// [androidBeta] is Belong's ongoing Firebase App Distribution app, not one
+/// release and not a Play Store listing. Play Store, App Store, and
+/// TestFlight stay pending until those listings exist.
 abstract final class PhoneInstallLinks {
   static const belongWeb = 'https://belongonthespectrum.web.app';
 
-  /// Sign-in page testers open on the Android phone.
-  static const androidBeta = 'https://appdistribution.firebase.google.com';
+  /// Belong Android open beta. The same page covers later beta releases.
+  static const androidBeta =
+      'https://appdistribution.firebase.google.com/testerapps/'
+      '1:207506875171:android:e578634c4bc21da2b96296';
 
   /// Google's own tester steps, including the optional App Tester app.
   static const firebaseTesterHelp =
@@ -26,8 +28,7 @@ abstract final class PhoneInstallLinks {
       'https://support.google.com/pixelphone/answer/7391672?hl=en';
 
   /// Android Help: leave Play Protect on.
-  static const playProtect =
-      'https://support.google.com/android/answer/2812853?hl=en';
+  static const playProtect = 'https://support.google.com/android/answer/2812853?hl=en';
 
   /// Chrome Help: install a website as an app on Android.
   static const chromeWebApp =
