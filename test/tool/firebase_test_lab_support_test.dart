@@ -55,6 +55,8 @@ void main() {
     expect(source, contains('listDartTests'));
     expect(gradle, contains('pl.leancode.patrol.PatrolJUnitRunner'));
     expect(gradle, contains('androidTestImplementation(project(":patrol"))'));
+    expect(gradle, contains('ANDROIDX_TEST_ORCHESTRATOR'));
+    expect(gradle, contains('androidx.test:orchestrator:1.5.1'));
   });
 
   group('parseAaptBadging', () {
@@ -159,6 +161,19 @@ application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic
       );
     });
 
+    test('adds orchestrator only when requested', () {
+      final args = gcloudFirebaseTestAndroidRunArgs(
+        appApkPath: 'app.apk',
+        testApkPath: 'test.apk',
+        device: 'model=panther,version=33',
+        project: 'belongonthespectrum',
+        timeout: '10m',
+        useOrchestrator: true,
+      );
+      expect(args, contains('--use-orchestrator'));
+      expect(args, containsAllInOrder(['--environment-variables', 'clearPackageData=true']));
+    });
+
     test('appends a normalized results bucket when set', () {
       expect(
         gcloudFirebaseTestAndroidRunArgs(
@@ -170,6 +185,37 @@ application: label='[DEV] Belong on the Spectrum' icon='res/mipmap-anydpi-v26/ic
           resultsBucket: 'gs://belongonthespectrum-ftl-results/',
         ),
         containsAllInOrder(['--results-bucket', 'belongonthespectrum-ftl-results']),
+      );
+    });
+  });
+
+  group('ftlTargetNeedsOrchestrator', () {
+    test('a single patrolTest stays on the plain runner', () {
+      expect(ftlTargetNeedsOrchestrator("patrolTest('one', (_) async {});"), isFalse);
+    });
+
+    test('two patrolTests need a fresh process each', () {
+      expect(
+        ftlTargetNeedsOrchestrator("""
+          patrolTest('one', (_) async {});
+          patrolTest('two', (_) async {});
+        """),
+        isTrue,
+      );
+    });
+
+    test('attach-media opts in and the home shell stays plain', () {
+      expect(
+        ftlTargetNeedsOrchestrator(
+          File('integration_test/patrol_ftl_attach_media_test.dart').readAsStringSync(),
+        ),
+        isTrue,
+      );
+      expect(
+        ftlTargetNeedsOrchestrator(
+          File('integration_test/patrol_ftl_home_shell_test.dart').readAsStringSync(),
+        ),
+        isFalse,
       );
     });
   });

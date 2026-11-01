@@ -68,6 +68,12 @@ Future<void> main(List<String> args) async {
     exit(64);
   }
   _log('Verified target test file: ${testFile.path}');
+  final useOrchestrator = ftlTargetNeedsOrchestrator(testFile.readAsStringSync());
+  _log(
+    useOrchestrator
+        ? 'Orchestrator   : on (more than one patrolTest; fresh process each)'
+        : 'Orchestrator   : off (single patrolTest)',
+  );
 
   final repoRoot = Directory.current.path;
   final appApk = resolveExistingApk(repoRoot, appApkRelativePaths());
@@ -154,6 +160,7 @@ Future<void> main(List<String> args) async {
     project: project,
     timeout: timeout,
     resultsBucket: resultsBucket,
+    useOrchestrator: useOrchestrator,
   );
 
   final gcloud = resolveGcloudExecutable();

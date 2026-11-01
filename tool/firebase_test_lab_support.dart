@@ -340,6 +340,7 @@ List<String> gcloudFirebaseTestAndroidRunArgs({
   required String project,
   required String timeout,
   String? resultsBucket,
+  bool useOrchestrator = false,
 }) {
   final bucket = normalizeResultsBucket(resultsBucket);
   return [
@@ -359,9 +360,25 @@ List<String> gcloudFirebaseTestAndroidRunArgs({
     project,
     '--timeout',
     timeout,
+    if (useOrchestrator) ...[
+      '--use-orchestrator',
+      '--environment-variables',
+      'clearPackageData=true',
+    ],
     if (bucket != null) ...['--results-bucket', bucket],
   ];
 }
+
+/// True when [source] declares more than one `patrolTest`.
+///
+/// `PatrolAppService.runDartTest` completes a one-shot completer. A second
+/// test in the same process asserts
+/// `_testExecutionCompleted.isCompleted == false` and the native client
+/// reports HTTP 500. Android Test Orchestrator starts a fresh process per
+/// test, which is what Patrol's Test Lab guide does. A single-test target
+/// stays on the plain runner.
+bool ftlTargetNeedsOrchestrator(String source) =>
+    RegExp(r'patrolTest\s*\(').allMatches(source).length >= 2;
 
 /// Resolves `aapt` from [androidHome] build-tools (newest version first).
 String? resolveAaptExecutable({String? androidHome}) {

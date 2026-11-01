@@ -58,6 +58,10 @@ A plain `flutter build apk` plus `assembleDebugAndroidTest` does not set those p
 
 `pumpDevReadOnlyHome` leaves a phone-width display alone. Forcing 390×844 at pixel ratio 1 on panther (Pixel 7) detaches Flutter’s surface: finders still see the tree, the screen stays on Patrol’s first frame, and a tap can land in the GIF search field. Desktop-width emulators (logical width ≥ 768) still get a 390-wide frame so the inline composer stays visible.
 
+The attach-media target does not `waitUntilVisible` on `attached_meme_banner`. On panther that banner is in the tree (amber padding 10,6,10,6) while its center is covered by the IME or sits below the fold, so the hit-test wait times out after the GIF has already attached (matrix run `41350970479`). The test hides the keyboard, scrolls the banner into view, and asserts the exact `Attached:` caption and that the sheet has closed.
+
+That file declares two `patrolTest`s. `PatrolAppService.runDartTest` is one-shot per process: the second native request returns HTTP 500 (`_testExecutionCompleted` already completed) and the Open Giphy case never runs. When the target source contains more than one `patrolTest`, the gcloud invocation adds `--use-orchestrator` and `--environment-variables clearPackageData=true`, matching [Patrol's Test Lab guide](https://patrol.leancode.co/documentation/integrations/firebase-test-lab). Single-test targets, including the daily home-shell smoke, stay on the plain runner.
+
 ---
 
 ## Firebase Test Lab pipeline
@@ -76,7 +80,7 @@ Prints `patrol build android …`, badging gate, and `gcloud firebase test andro
 dart run tool/run_firebase_test_lab.dart --build-only
 ```
 
-Uses `patrol build android` when the `patrol` CLI is on PATH; otherwise falls back to `flutter build apk` + Gradle.
+Uses `patrol build android`. There is no Gradle fallback: a plain `flutter build apk` omits Patrol's server ports.
 
 ### Upload
 

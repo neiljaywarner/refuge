@@ -65,8 +65,14 @@ android {
         versionName = flutter.versionName
         manifestPlaceholders["appName"] = "Belong on the Spectrum"
         // One runner for every integration_test/patrol_ftl_*.dart target.
-        // clearPackageData is omitted: Test Lab does not pass --use-orchestrator.
+        // clearPackageData is not baked in. Test Lab passes it with
+        // --use-orchestrator only when the target file has two patrolTests.
+        // A second runDartTest in one process returns HTTP 500.
         testInstrumentationRunner = "pl.leancode.patrol.PatrolJUnitRunner"
+    }
+
+    testOptions {
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 
     buildTypes {
@@ -113,6 +119,10 @@ dependencies {
     // Debug builds already link the patrol plugin. androidTest compiles
     // MainActivityTest against that same project.
     androidTestImplementation(project(":patrol"))
+    // Local `connectedAndroidTest` (what `patrol test` runs). Test Lab
+    // installs its own orchestrator when --use-orchestrator is set.
+    // 1.5.0 breaks test isolation; stay on 1.5.1+.
+    androidTestUtil("androidx.test:orchestrator:1.5.1")
 }
 
 flutter {
