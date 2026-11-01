@@ -231,7 +231,7 @@ Store these in GitHub repository secrets. Do not commit them.
 
 | Secret | Required | Purpose |
 | :--- | :--- | :--- |
-| `FIREBASE_SERVICE_ACCOUNT` | One of this or `FIREBASE_TOKEN` | Service account JSON with Firebase Hosting admin on project `belongonthespectrum` |
+| `FIREBASE_SERVICE_ACCOUNT` | One of this or `FIREBASE_TOKEN` | Service account JSON with Firebase Hosting admin on project `belongonthespectrum`. Do not commit `client_email`. The daily Test Lab workflow uses the same secret and needs extra IAM (see the Test Lab guide). |
 | `FIREBASE_TOKEN` | One of this or `FIREBASE_SERVICE_ACCOUNT` | Firebase CI token, used when the service account secret is empty |
 | `FIREBASE_ANDROID_APP_ID` | Only for App Distribution | Android app id. The script can try to detect one when this is unset |
 

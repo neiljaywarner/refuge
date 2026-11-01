@@ -1,8 +1,10 @@
 # 🧪 Firebase Test Lab & Patrol Integration Guide (`Firebase-Test-Lab-and-Patrol-Guide`)
 
-> **Related Issues**: [#136](https://github.com/neiljaywarner/refuge/issues/136), [#572](https://github.com/neiljaywarner/refuge/issues/572), [#573](https://github.com/neiljaywarner/refuge/issues/573)  
+> **Related Issues**: [#136](https://github.com/neiljaywarner/refuge/issues/136), [#572](https://github.com/neiljaywarner/refuge/issues/572), [#573](https://github.com/neiljaywarner/refuge/issues/573), [#649](https://github.com/neiljaywarner/refuge/issues/649)  
 > **Runner**: [`tool/run_firebase_test_lab.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/run_firebase_test_lab.dart)  
-> **Firebase Console**: [belongonthespectrum Test Lab](https://console.firebase.google.com/project/belongonthespectrum/testlab)
+> **Workflow**: [`.github/workflows/firebase-test-lab-daily.yml`](https://github.com/neiljaywarner/refuge/blob/main/.github/workflows/firebase-test-lab-daily.yml)  
+> **Firebase Console**: [belongonthespectrum Test Lab](https://console.firebase.google.com/project/belongonthespectrum/testlab)  
+> **Cloud IAM**: [belongonthespectrum IAM](https://console.cloud.google.com/iam-admin/iam?project=belongonthespectrum)
 
 ---
 
@@ -77,6 +79,90 @@ dart run tool/run_firebase_test_lab.dart \
 ```
 
 Default target is `patrol_ftl_home_shell_test.dart`.
+
+Optional project-owned results bucket (see IAM below):
+
+```bash
+dart run tool/run_firebase_test_lab.dart \
+  --results-bucket belongonthespectrum-ftl-results
+```
+
+`FTL_RESULTS_BUCKET` is the same flag. The daily workflow reads the repository variable of that name.
+
+---
+
+## CI service account
+
+| | |
+| --- | --- |
+| GitHub secret | `FIREBASE_SERVICE_ACCOUNT` (JSON key; same secret as Hosting deploy) |
+| `client_email` | Field inside that JSON. Do not commit the address. |
+| Project | `belongonthespectrum` |
+
+The workflow authenticates with `google-github-actions/auth` and then runs `gcloud firebase test android run`. Code cannot grant these roles. Apply them in [Cloud IAM](https://console.cloud.google.com/iam-admin/iam?project=belongonthespectrum) or with the commands below.
+
+### Upload 403 `storage.objects.create` on `gs://test-lab-*`
+
+`gcloud` uploads the APK to a Firebase-owned `gs://test-lab-*` bucket. [Firebase's results docs](https://firebase.google.com/docs/test-lab/android/analyzing-results) say that default bucket requires **`roles/editor`** on the principal. `roles/cloudtestservice.editor` and `roles/toolresults.editor` are not Cloud IAM role IDs. Firebase Test Lab Admin lists `storage.objects.create`, and that still does not satisfy the default bucket. Set `CLIENT_EMAIL` from the secret. Do not commit it.
+
+```bash
+PROJECT=belongonthespectrum
+MEMBER="serviceAccount:${CLIENT_EMAIL}"
+
+gcloud projects add-iam-policy-binding "$PROJECT" \
+  --member="$MEMBER" \
+  --role="roles/editor"
+
+gcloud projects add-iam-policy-binding "$PROJECT" \
+  --member="$MEMBER" \
+  --role="roles/cloudtestservice.testAdmin"
+
+gcloud services enable testing.googleapis.com toolresults.googleapis.com \
+  --project="$PROJECT"
+```
+
+The Cloud Testing API id is `testing.googleapis.com`. `cloudtesting.googleapis.com` is not a service. `gcloud services enable` then returns `SERVICE_CONFIG_NOT_FOUND_OR_PERMISSION_DENIED` even for a project owner, and the IAM binds above can still have succeeded. List what is already on before enabling:
+
+```bash
+gcloud services list --enabled --project="$PROJECT" \
+  --filter="config.name:(testing.googleapis.com OR toolresults.googleapis.com)"
+```
+
+Console: [IAM](https://console.cloud.google.com/iam-admin/iam?project=belongonthespectrum) → find the `client_email` from the secret → Add another role → **Editor** → Save.
+
+`roles/storage.objectAdmin` on the `gs://test-lab-*` bucket named in the 403 is not part of that documented grant. Use it only if Editor is already on this principal and the bucket policy still denies `storage.objects.create`.
+
+`roles/editor` is broad. It can edit every resource in the project, including Hosting and Storage. Prefer the custom bucket below when that blast radius is too large.
+
+### Custom results bucket (no project Editor)
+
+[IAM permissions reference](https://firebase.google.com/docs/test-lab/android/iam-permissions-reference): a bucket the project owns needs **Firebase Test Lab Admin** (`roles/cloudtestservice.testAdmin`) and **Firebase Analytics Viewer** (`roles/firebase.analyticsViewer`), plus object create on that bucket.
+
+```bash
+PROJECT=belongonthespectrum
+MEMBER="serviceAccount:${CLIENT_EMAIL}"
+BUCKET_NAME=belongonthespectrum-ftl-results
+
+gcloud storage buckets create "gs://${BUCKET_NAME}" \
+  --project="$PROJECT" \
+  --location=US
+
+gcloud storage buckets add-iam-policy-binding "gs://${BUCKET_NAME}" \
+  --member="$MEMBER" \
+  --role="roles/storage.objectAdmin"
+
+gcloud projects add-iam-policy-binding "$PROJECT" \
+  --member="$MEMBER" \
+  --role="roles/cloudtestservice.testAdmin"
+
+gcloud projects add-iam-policy-binding "$PROJECT" \
+  --member="$MEMBER" \
+  --role="roles/firebase.analyticsViewer"
+```
+
+Set GitHub repository variable `FTL_RESULTS_BUCKET` to `belongonthespectrum-ftl-results` (no `gs://` prefix). The daily workflow passes it through. Those Test Lab roles can read objects in other project buckets; see the caution on the Firebase IAM page.
+
+A catalog `403 Not authorized for project` (issue #649) is the Test Lab Admin grant and the two APIs above, not the Storage object create denial.
 
 ---
 
