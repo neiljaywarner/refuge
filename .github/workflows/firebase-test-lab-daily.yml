@@ -45,6 +45,14 @@ jobs:
       - name: Resolve packages
         run: flutter pub get
 
+      - name: Install Patrol CLI
+        # Same builder as a local `patrol test` (bundle + server ports).
+        # patrol 4.10 needs patrol_cli >= 4.8.0. Do not pass --flavor:
+        # this app has no assembleDevDebug; FLAVOR=dev is a dart-define.
+        run: |
+          dart pub global activate patrol_cli 4.8.0
+          echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+
       - name: Unit tests (FTL helpers)
         run: flutter test test/tool/firebase_test_lab_support_test.dart
 

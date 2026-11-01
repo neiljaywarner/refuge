@@ -52,7 +52,9 @@ patrol test -t integration_test/patrol_ftl_home_shell_test.dart \
 
 Native Android discovery lives in `android/app/src/androidTest/.../MainActivityTest.java` and `testInstrumentationRunner` `pl.leancode.patrol.PatrolJUnitRunner`. That one host serves every `integration_test/patrol_ftl_*.dart` file. Without it, `assembleDebugAndroidTest` emits an empty test APK and Test Lab reports success with zero tests.
 
-GitHub Actions does not install the Patrol CLI. The fallback builds the **debug** app from the selected integration test (`--dart-define=FLAVOR=dev`, package `com.belongonthespectrum.refuge.dev`) and then `app:assembleDebugAndroidTest`. The runner asks that app for its Dart tests.
+GitHub Actions installs `patrol_cli` **4.8.0** (the CLI that matches `patrol` 4.10) and builds with `patrol build android`. That is the same pair a local `patrol test` uses: a generated test bundle plus matching app and test server ports. Do not pass `--flavor`. This project has no `assembleDevDebug`; `FLAVOR=dev` is a dart-define, and the debug package stays `com.belongonthespectrum.refuge.dev`.
+
+A plain `flutter build apk` plus `assembleDebugAndroidTest` does not set those ports. `PatrolJUnitRunner` then waits for an app service that never answers, and Test Lab hits the 10 minute device timeout (matrix [8259225914821074286](https://console.firebase.google.com/project/belongonthespectrum/testlab/histories/bh.cfd6e1e9a2c20747/matrices/8259225914821074286)). The runner refuses that fallback.
 
 ---
 

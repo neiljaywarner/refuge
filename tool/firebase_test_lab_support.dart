@@ -20,9 +20,11 @@ const devMainEntrypoint = 'lib/main_dev.dart';
 
 /// `flutter build apk --debug` arguments for a safe Test Lab app APK.
 ///
-/// [target] defaults to [devMainEntrypoint]. The Gradle fallback passes the
-/// selected `integration_test/` file so PatrolJUnitRunner can list its Dart
-/// tests. Flavor stays `dev` either way, so the package remains `.dev`.
+/// [target] defaults to [devMainEntrypoint]. Flavor stays `dev` either way,
+/// so the package remains `.dev`. Test Lab itself does not use this command.
+/// It builds with `patrol build android`, which also sets the Patrol server
+/// ports. A bare Gradle assemble does not, and the instrumentation then waits
+/// until the device timeout.
 List<String> devFlutterApkBuildArgs({String target = devMainEntrypoint}) => [
   'build',
   'apk',
@@ -50,19 +52,12 @@ List<String> devReleaseApkRelativePaths() => [
   'build/app/outputs/apk/release/app-release.apk',
 ];
 
-/// Relative Gradle target for the hello-world instrumentation APK.
-String integrationTestGradleTarget(String targetPath) {
-  final normalized = targetPath.replaceAll(r'\', '/');
-  if (normalized.startsWith('integration_test/')) {
-    return '../$normalized';
-  }
-  return normalized;
-}
-
-/// Candidate app APK paths (Flutter vs legacy Gradle output).
+/// Candidate app APK paths. Gradle / `patrol build android` writes the first
+/// path. `flutter build apk` writes the second. Prefer the Gradle output so a
+/// leftover Flutter APK is not uploaded with a Patrol test APK.
 List<String> appApkRelativePaths() => [
-  'build/app/outputs/flutter-apk/app-debug.apk',
   'build/app/outputs/apk/debug/app-debug.apk',
+  'build/app/outputs/flutter-apk/app-debug.apk',
 ];
 
 const androidTestApkRelativePath =
