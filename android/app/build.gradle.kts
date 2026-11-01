@@ -78,7 +78,11 @@ android {
         release {
             val activeFlavor = resolvedFlavor ?: "prod"
             val suffix = suffixForFlavor(activeFlavor)
-            if (suffix.isNotEmpty()) {
+            if (activeFlavor == "prod") {
+                // The Firebase project's only Android app is this legacy id.
+                // App Distribution rejects com.belongonthespectrum.refuge.
+                applicationId = "com.belongonthespectrum.sanctuary"
+            } else if (suffix.isNotEmpty()) {
                 applicationIdSuffix = suffix
             }
             manifestPlaceholders["appName"] = appLabelForFlavor(activeFlavor)

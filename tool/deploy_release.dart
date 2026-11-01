@@ -139,9 +139,8 @@ Future<void> main(List<String> args) async {
       _arg(args, '--android-app-id'),
       Platform.environment['FIREBASE_ANDROID_APP_ID'],
     ]);
-    // A missing GitHub secret is an empty string. google-services.json maps
-    // the refuge package onto the sanctuary Firebase app, so App Distribution
-    // must use the Android app whose package is com.belongonthespectrum.refuge.
+    // A missing GitHub secret is an empty string. The only Android app in
+    // this Firebase project is the legacy sanctuary package.
     androidAppId ??= await _detectAndroidAppId();
     if (androidAppId == null) {
       stderr.writeln('No Firebase Android app for $_prodAndroidPackage. Pass --android-app-id.');
@@ -306,7 +305,7 @@ String? _firstNonBlank(Iterable<String?> values) {
   return null;
 }
 
-const String _prodAndroidPackage = 'com.belongonthespectrum.refuge';
+const String _prodAndroidPackage = 'com.belongonthespectrum.sanctuary';
 
 /// Android apps from `firebase apps:list ANDROID --json`.
 List<({String appId, String? packageName})> androidAppsFromFirebaseList(String jsonOut) {
