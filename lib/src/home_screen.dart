@@ -256,11 +256,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
               ),
               if (selectedSpace.value == 'saved_for_later')
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  margin: const .symmetric(horizontal: 14.0, vertical: 4.0),
+                  padding: const .symmetric(horizontal: 12.0, vertical: 8.0),
                   decoration: BoxDecoration(
                     color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: .circular(10.0),
                     border: Border.all(
                       color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.3),
                     ),
@@ -359,9 +359,9 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           child: selectedSpace.value == 'saved_for_later'
                               ? Center(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(24.0),
+                                    padding: const .all(24.0),
                                     child: Column(
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisSize: .min,
                                       children: [
                                         Icon(
                                           Icons.bookmark_border_rounded,
@@ -401,12 +401,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     } else {
                       feedSlivers.add(
                         SliverPadding(
-                          padding: const EdgeInsets.only(
-                            left: 12.0,
-                            right: 12.0,
-                            top: 8.0,
-                            bottom: 48.0,
-                          ),
+                          padding: const .only(left: 12.0, right: 12.0, top: 8.0, bottom: 48.0),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate((context, index) {
                               final p = posts[index];
@@ -489,7 +484,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
         title: InkWell(
           key: const Key('belong_app_bar_title_tap_target'),
           excludeFromSemantics: true,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: .circular(8),
           onTap: () {
             final now = DateTime.now();
             if (easterEggLastTap.value == null ||
@@ -506,16 +501,16 @@ class RefugeHomeScreen extends HookConsumerWidget {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            padding: const .symmetric(horizontal: 4, vertical: 2),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: .min,
               children: [
                 if (flavor.environmentTag != null) ...[
                   FlavorEnvironmentChip(tag: flavor.environmentTag!),
                   const SizedBox(width: 6),
                 ],
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: .circular(6),
                   child: Image.asset(
                     brand.logoAssetPath,
                     key: const Key('belong_header_logo'),
@@ -527,11 +522,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 const SizedBox(width: 8),
                 Flexible(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: .start,
+                    mainAxisSize: .min,
                     children: [
                       Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisSize: .min,
                         children: [
                           Flexible(
                             child: Semantics(
@@ -558,7 +553,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         ],
                       ),
                       Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisSize: .min,
                         children: [
                           Container(
                             width: 7,
@@ -653,7 +648,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            padding: const .symmetric(horizontal: 2.0),
             child: Semantics(
               label: 'Create post or image post (+)',
               button: true,
@@ -662,7 +657,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 tooltip: '',
                 offset: const Offset(0, 40),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: .circular(14),
                   side: BorderSide(
                     color: isContrast ? Colors.white : Theme.of(context).dividerColor,
                   ),
@@ -700,18 +695,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const .all(6),
                           decoration: BoxDecoration(
                             color: primaryColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: .circular(8),
                           ),
                           child: Icon(Icons.edit_note_rounded, color: primaryColor, size: 18),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: .start,
+                            mainAxisSize: .min,
                             children: [
                               const Text(
                                 'Create Post',
@@ -739,18 +734,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const .all(6),
                           decoration: BoxDecoration(
                             color: Colors.amber.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: .circular(8),
                           ),
                           child: const Icon(Icons.image_outlined, color: Colors.amber, size: 18),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: .start,
+                            mainAxisSize: .min,
                             children: [
                               const Text(
                                 'Create Image Post',
@@ -773,7 +768,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   ),
                 ],
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const .all(6),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.secondaryContainer,
                     shape: BoxShape.circle,
@@ -789,11 +784,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
           if (!profile.isSignedIn)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              padding: const .symmetric(vertical: 8, horizontal: 4),
               child: FilledButton.tonalIcon(
                 key: const Key('home_top_bar_sign_in_button'),
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  padding: const .symmetric(horizontal: 10, vertical: 0),
                   visualDensity: VisualDensity.compact,
                 ),
                 onPressed: () => SimpleAuthScreen.show(context),
@@ -806,10 +801,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
             )
           else
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const .only(right: 8),
               child: InkWell(
                 key: const Key('belong_profile_avatar_button'),
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: .circular(999),
                 onTap: () => MemberProfileDialog.show(context),
                 child: Tooltip(
                   message: 'Member Profile (${profile.displayName})',
@@ -979,7 +974,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      padding: const .fromLTRB(12, 10, 12, 6),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // A single row plus a trailing spacer pushes Vote & Feedback past
@@ -1021,20 +1016,18 @@ void _showCreatePostModal({
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: .vertical(top: .circular(20))),
     builder: (ctx) => SystemBottomInset(
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: .min,
+            crossAxisAlignment: .stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                padding: const .fromLTRB(16, 14, 16, 4),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: .spaceBetween,
                   children: [
                     Row(
                       children: [
