@@ -4,8 +4,8 @@
 * **Date**: October 18, 2026
 * **Deciders**: Neil Jay Warner & Engineering Team
 * **Related Docs**:
-  * [`unattended_session_908pm.md`](https://github.com/neiljaywarner/refuge/blob/main/unattended_session_908pm.md)
-  * [`neil_to_review_sunday_night.md`](https://github.com/neiljaywarner/refuge/blob/main/neil_to_review_sunday_night.md)
+  * [`docs/archive/unattended_session_908pm.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/archive/unattended_session_908pm.md)
+  * [`docs/archive/neil_to_review_sunday_night.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/archive/neil_to_review_sunday_night.md)
   * [`DEPLOYMENT.md`](../../DEPLOYMENT.md)
   * [ADR-0007: Neurodivergent-First Feedback & 1-Tap Feature Voting](../../docs/adr/0007-neurodivergent-feedback-and-feature-voting.md)
   * [ADR-0008: Appwrite Migration Timing](../../docs/adr/0008-appwrite-migration-timing.md)

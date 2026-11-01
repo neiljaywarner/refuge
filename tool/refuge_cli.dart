@@ -578,7 +578,7 @@ Gives us a deterministic, 1-command pure-Dart deployment pipeline (`tool/deploy_
 ## Acceptance Criteria
 - [x] Provision `belongonthespectrum` Firebase project and `https://belongonthespectrum.web.app` Hosting site.
 - [ ] Implement `tool/deploy_release.dart` in pure Dart (preferring Dart over bash/python per repo convention).
-- [ ] Create `DEPLOYMENT.md` linked to `unattended_session_908pm.md`, `neil_to_review_sunday_night.md`, and `ADR-0009`.
+- [ ] Create `DEPLOYMENT.md` linked to `docs/archive/unattended_session_908pm.md`, `docs/archive/neil_to_review_sunday_night.md`, and `ADR-0009`.
 ''',
     llmComment: '''
 ### 🤖 LLM Execution Brief
@@ -645,7 +645,7 @@ Many neurodivergent community members and busy organizers experience cognitive f
     llmComment: '''
 ### 🤖 LLM Execution Brief (`week1` Experiment)
 - **Labels**: `week1`, `accessibility`, `ux-neurodivergent`
-- **Cross-References**: `DEPLOYMENT.md`, `ADR-0009`, `neil_to_review_sunday_night.md`
+- **Cross-References**: `DEPLOYMENT.md`, `ADR-0009`, `docs/archive/neil_to_review_sunday_night.md`
 ''',
   );
 }
@@ -909,7 +909,7 @@ Beyond serving **Belong on the Spectrum**, this repository (`neiljaywarner/refug
 1. **CodeWithAndrea Feature-First Layered Architecture + `hooks_riverpod`** (`presentation` -> `application` -> `domain` -> `data`).
 2. **Pragmatic Red-Green-Refactor BDD**: Human-readable `.feature` files (`bdd_widget_test`) paired with fast 1-second widget tests and live **Marionette MCP** / **Patrol MCP** verification.
 3. **Pure Dart Developer Tooling (`tool/refuge_cli.dart`)**: Favoring clean, type-safe Dart CLI scripts over brittle bash scripts so Flutter developers can read and maintain every automation tool in one language.
-4. **Student & Free-Tier AI Token Optimization**: Practical guides (`tokens-usage.md` and Wiki) showing students on free or budget AI tiers how to stretch their 5-hour and weekly quotas by 5x–10x.
+4. **Student & Free-Tier AI Token Optimization**: Practical guides (`docs/archive/tokens-usage.md` and Wiki) showing students on free or budget AI tiers how to stretch their 5-hour and weekly quotas by 5x–10x.
 
 ## Stories in This Epic
 - [ ] **Story #39**: Organize pure-Dart helper scripts (`tool/refuge_cli.dart`) and publish the **Student, Apprentice & Free-Tier Token Optimization Wiki Guide** (`docs/wiki/Apprentice-and-Token-Optimization-Guide.md`).
@@ -1058,12 +1058,12 @@ Fast development should never mean cutting corners or accumulating code smells. 
 When building across multiple AI model families (**Gemini 4 Argon Low/Med/High**, **Claude Sonnet/Haiku/Opus**, and **GPT**), an automated **Dart Token & Worktree Orchestrator Harness (`tool/token_harness.dart`)** helps developers and mentees:
 1. Inspect open GitHub issues and their `🤖 LLM Execution Brief` comments.
 2. Automatically spin up isolated `git worktree` directories on our 48GB RAM Mac.
-3. Recommend the optimal model tier for the current 5-hour burst window and 7-day weekly quota (`tokens-usage.md`).
+3. Recommend the optimal model tier for the current 5-hour burst window and 7-day weekly quota (`docs/archive/tokens-usage.md`).
 4. Run Red-Green-Refactor BDD verification (`dart analyze` + `flutter test --coverage`) before opening PRs.
 
 ## Acceptance Criteria
 - [ ] Implement `tool/token_harness.dart` in pure Dart using `package:args`.
-- [ ] Document usage in `tokens-usage.md` and the Contributor Wiki for mentees.
+- [ ] Document usage in `docs/archive/tokens-usage.md` and the Contributor Wiki for mentees.
 ''',
     llmComment: '''
 ### 🤖 LLM Execution Brief (Argon Low / Medium Ready)

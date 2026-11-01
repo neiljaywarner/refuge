@@ -1,6 +1,6 @@
 # 🖼️ Belong on the Spectrum — Visual UI & Accessibility Catalog
 
-*Catalog File: `visual_catalog.md`*  
+*Catalog File: `docs/wiki/visual_catalog.md`*  
 *Target Environment: Flutter 3.38+ / Dart 3.8+ (Web, Android Pixel 9a, iOS)*
 
 This catalog provides an exhaustive visual audit of every screen, sensory mode, interactive modal, and real-time state in **Belong on the Spectrum** (powered by Refuge). Beneath each visual asset reference, this guide documents the design rationale, calm-tech affordances, what to look for during QA audits, and links to the tracked GitHub Issue and Wiki architectural guide.

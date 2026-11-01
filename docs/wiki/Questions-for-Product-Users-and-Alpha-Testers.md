@@ -2,7 +2,7 @@
 
 > **Target Audience**: Pastors, Community Organizers, Neurodivergent Members, and Alpha Testers  
 > **Related Issues**: [#243](https://github.com/neiljaywarner/refuge/issues/243), [#241](https://github.com/neiljaywarner/refuge/issues/241), [#239](https://github.com/neiljaywarner/refuge/issues/239), [#236](https://github.com/neiljaywarner/refuge/issues/236), [#101](https://github.com/neiljaywarner/refuge/issues/101)  
-> **Master Dashboard**: [`status.md`](https://github.com/neiljaywarner/refuge/blob/main/status.md)
+> **Master Dashboard**: [`docs/archive/status.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/archive/status.md)
 
 ---
 

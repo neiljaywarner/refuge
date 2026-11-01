@@ -41,7 +41,7 @@
   - [x] Non-Technical Team Wiki (`docs/wiki/`)
   - [x] Competitor Analysis (`docs/COMPETITOR_ANALYSIS.md`)
   - [x] Product Requirements Document (`docs/PRD.md`)
-  - [x] Serverpod Integration Guide (`serverpod_integration.md`)
+  - [x] Serverpod Integration Guide (`docs/archive/serverpod_integration.md`)
 - [ ] **Release Tag**: Cut a git release tag `v1.0.0-hackathon` prior to submitting.
 
 ---

@@ -103,7 +103,7 @@ stateDiagram-v2
 5. ⚪ **Bead 5 (Minimal Seam)**: Write only the code necessary to fulfill the ticket.
 6. ⚪ **Bead 6 (Dart MCP Verification)**: Run `analyze_files` and `run_tests` via Dart MCP.
 7. ⚪ **Bead 7 (Zero-Approval GitHub MCP Push)**: Atomic push via `push_files`, PR created, and squash-merged.
-8. ⚪ **Bead 8 (Prune & Compact)**: Delete worktree, update `status.md`, and run `/compact` to reset conversation tokens to zero.
+8. ⚪ **Bead 8 (Prune & Compact)**: Delete worktree, update `docs/archive/status.md`, and run `/compact` to reset conversation tokens to zero.
 
 ---
 
@@ -131,7 +131,7 @@ The local API endpoint is available at `http://localhost:11434/v1` for any compa
 2. **Delegate Broad Search to Flash**: Spawn a `flash` subagent for codebase grepping to keep the main agent context slim.
 3. **Use GitHub MCP Exclusively**: Never run interactive terminal `git push` which hangs on credentials.
 4. **Run `/compact` Frequently**: Reset conversation memory every 2–3 completed PRs.
-5. **Persist State to Disk**: Keep master dashboards in `status.md` and `human_to_review_after_session.md`.
+5. **Persist State to Disk**: Keep master dashboards in `docs/archive/status.md` and `docs/archive/human_to_review_after_session.md`.
 6. **Pre-Check with Dart MCP**: Always run `analyze_files` before opening PRs to avoid wasted review cycles.
 7. **Small Atomic PRs**: 1 Issue = 1 Worktree = 1 PR keeps token diffs under 5,000 tokens.
 8. **Rotate Model Tiers**: After 45 minutes of heavy Gemini Pro execution, rotate 1–2 tickets to Flash or local Ollama.

@@ -42,4 +42,4 @@ flutter test
 flutter run -d chrome -t lib/main_dev.dart
 ```
 
-For AI-assisted development and token quota optimization, see [`less_expensive_llm_to_execute_guidance.md`](less_expensive_llm_to_execute_guidance.md) and our [Apprentice & Token Optimization Wiki Guide](https://github.com/neiljaywarner/refuge/wiki/Apprentice-and-Token-Optimization-Guide).
+For AI-assisted development and token quota optimization, see [`docs/archive/less_expensive_llm_to_execute_guidance.md`](docs/archive/less_expensive_llm_to_execute_guidance.md) and our [Apprentice & Token Optimization Wiki Guide](https://github.com/neiljaywarner/refuge/wiki/Apprentice-and-Token-Optimization-Guide).

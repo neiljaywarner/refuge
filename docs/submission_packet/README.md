@@ -31,5 +31,5 @@ This directory contains everything required to complete and submit Sanctuary to 
 - **Competitor Landscape Analysis**: [`docs/COMPETITOR_ANALYSIS.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/COMPETITOR_ANALYSIS.md)
 - **Architecture Decision Records (ADR)**: [`docs/adr/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/adr/)
 - **Non-Technical Team Wiki**: [`docs/wiki/`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/wiki/)
-- **Serverpod Integration Guide**: [`serverpod_integration.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/serverpod_integration.md)
+- **Serverpod Integration Guide**: [`docs/archive/serverpod_integration.md`](../archive/serverpod_integration.md)
 - **Automated Test Suite**: 11/11 tests passing (`flutter test` in 4s); 0 analyzer issues (`flutter analyze` in 1.8s)

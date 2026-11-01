@@ -49,4 +49,4 @@ Every agent (across all model tiers) working in `/Users/neil/belongonthespectrum
 ## 4. Marionette `*_feature.txt` Driving + `patrol_finders` BDD + Pragmatic TDD
 - **Marionette `test/features/*_feature.txt` Specs**: Write human-readable Gherkin `*_feature.txt` files driven interactively via Marionette MCP/CLI and converted into fast `patrol_finders` widget tests (`patrolWidgetTest` / `$`) or Patrol native integration tests (`patrolTest`).
 - **Pragmatic Unit TDD**: Use Red-Green-Refactor unit tests strictly for genuine domain/business logic.
-- **Visual Screenshots & Videos on Wiki, PRs & Issues**: Follow `plan_to_make_videos_and_screenshots_for_wiki_and_prs_andgithub_issues.md` to capture and embed screenshots/videos across the Wiki (`refuge.wiki.git`), Pull Requests, and GitHub Issues.
+- **Visual Screenshots & Videos on Wiki, PRs & Issues**: Follow `docs/archive/plan_to_make_videos_and_screenshots_for_wiki_and_prs_andgithub_issues.md` to capture and embed screenshots/videos across the Wiki (`refuge.wiki.git`), Pull Requests, and GitHub Issues.
