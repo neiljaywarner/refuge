@@ -91,11 +91,13 @@ jobs:
         run: |
           set -eu
           short="${GITHUB_SHA::7}"
-          # Push to main deploys the dev site only. Production is a v* tag or an explicit release run.
+          # Push to main deploys the dev site only. A v* tag publishes production
+          # Hosting and uploads the release APK to App Distribution. A manual
+          # release does the same when production and distribute_android are on.
           if [ "${{ steps.firebase_auth.outputs.mode }}" = "dry" ]; then
             flutter pub run tool/deploy_release.dart --version "ci-$short" --dry-run
           elif [ "${{ github.ref_type }}" = "tag" ]; then
-            flutter pub run tool/deploy_release.dart --version "${GITHUB_REF_NAME}" --prod
+            flutter pub run tool/deploy_release.dart --version "${GITHUB_REF_NAME}" --prod --distribute-android
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.production }}" = "true" ]; then
             args=(--version "release-$short" --prod)
             if [ "${{ inputs.distribute_android }}" = "true" ]; then
