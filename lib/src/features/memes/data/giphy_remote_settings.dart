@@ -39,12 +39,11 @@ String normalizeGiphyRating(String? raw) {
 }
 
 /// Short label for the picker and the attached reflection.
-String giphyRatingLabel(String rating) =>
-    switch (normalizeGiphyRating(rating)) {
-      'g' => 'G',
-      'pg-13' => 'PG-13',
-      _ => 'PG',
-    };
+String giphyRatingLabel(String rating) => switch (normalizeGiphyRating(rating)) {
+  'g' => 'G',
+  'pg-13' => 'PG-13',
+  _ => 'PG',
+};
 
 /// Key and rating ceiling used by GIF search.
 class GiphyRemoteSettings {
@@ -96,23 +95,14 @@ GiphyRemoteSettings readGiphyRemoteSettings({
 
   final remoteRating = readString(kGiphyContentRatingParameter);
   return GiphyRemoteSettings(
-    apiKey: resolveGiphyApiKey(
-      client: client,
-      readString: readString,
-      dartDefineKey: localKey,
-    ),
-    rating: normalizeGiphyRating(
-      remoteRating.trim().isEmpty ? 'pg' : remoteRating,
-    ),
+    apiKey: resolveGiphyApiKey(client: client, readString: readString, dartDefineKey: localKey),
+    rating: normalizeGiphyRating(remoteRating.trim().isEmpty ? 'pg' : remoteRating),
   );
 }
 
 final giphyRemoteSettingsProvider = Provider<GiphyRemoteSettings>((ref) {
   const dartDefineKey = String.fromEnvironment('GIPHY_API_KEY');
-  final client = giphyClientFor(
-    isWeb: kIsWeb,
-    platform: defaultTargetPlatform,
-  );
+  final client = giphyClientFor(isWeb: kIsWeb, platform: defaultTargetPlatform);
   if (Firebase.apps.isEmpty) {
     return readGiphyRemoteSettings(
       firebaseReady: false,

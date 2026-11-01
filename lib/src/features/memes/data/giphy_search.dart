@@ -56,14 +56,11 @@ abstract class GiphySearch {
 class HttpGiphySearch implements GiphySearch {
   HttpGiphySearch({http.Client? httpClient, String? apiKey, String? rating})
     : _httpClient = httpClient ?? http.Client(),
-      _apiKey = (apiKey ?? const String.fromEnvironment('GIPHY_API_KEY'))
-          .trim(),
+      _apiKey = (apiKey ?? const String.fromEnvironment('GIPHY_API_KEY')).trim(),
       _rating = normalizeGiphyRating(rating),
       _ownsClient = httpClient == null;
 
-  static const _unavailable = GiphySearchException(
-    'GIF search is unavailable right now.',
-  );
+  static const _unavailable = GiphySearchException('GIF search is unavailable right now.');
 
   final http.Client _httpClient;
   final String _apiKey;
@@ -123,11 +120,8 @@ List<GiphyGif> parseGiphyGifPayload(Object? payload) {
     if (item is! Map) continue;
     final images = item['images'];
     if (images is! Map) continue;
-    final still =
-        _httpsUrl(images['fixed_height_still']) ??
-        _httpsUrl(images['fixed_width_still']);
-    final gif =
-        _httpsUrl(images['fixed_height']) ?? _httpsUrl(images['downsized']);
+    final still = _httpsUrl(images['fixed_height_still']) ?? _httpsUrl(images['fixed_width_still']);
+    final gif = _httpsUrl(images['fixed_height']) ?? _httpsUrl(images['downsized']);
     final id = item['id']?.toString().trim() ?? '';
     if (still == null || gif == null || id.isEmpty) continue;
     gifs.add(
@@ -171,10 +165,7 @@ String? _httpsUrl(Object? image) {
 
 final giphySearchProvider = Provider<GiphySearch>((ref) {
   final settings = ref.watch(giphyRemoteSettingsProvider);
-  final search = HttpGiphySearch(
-    apiKey: settings.apiKey,
-    rating: settings.rating,
-  );
+  final search = HttpGiphySearch(apiKey: settings.apiKey, rating: settings.rating);
   ref.onDispose(search.close);
   return search;
 });

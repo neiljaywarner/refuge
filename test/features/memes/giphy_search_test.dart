@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,9 +22,7 @@ void main() {
             'id': 'abc',
             'title': 'quiet chapel',
             'images': {
-              'fixed_height_still': {
-                'url': 'https://media.giphy.com/still.gif',
-              },
+              'fixed_height_still': {'url': 'https://media.giphy.com/still.gif'},
               'fixed_height': {'url': 'https://media.giphy.com/move.gif'},
             },
           },
@@ -33,9 +30,7 @@ void main() {
             'id': 'skip',
             'title': 'insecure still',
             'images': {
-              'fixed_height_still': {
-                'url': 'http://insecure.example/still.gif',
-              },
+              'fixed_height_still': {'url': 'http://insecure.example/still.gif'},
               'fixed_height': {'url': 'https://media.giphy.com/move.gif'},
             },
           },
@@ -57,9 +52,7 @@ void main() {
             'id': 'long',
             'title': 'a' * 90,
             'images': {
-              'fixed_height_still': {
-                'url': 'https://media.giphy.com/still.gif',
-              },
+              'fixed_height_still': {'url': 'https://media.giphy.com/still.gif'},
               'downsized': {'url': 'https://media.giphy.com/move.gif'},
             },
           },
@@ -94,18 +87,9 @@ void main() {
         giphySurfaceFor(isWeb: false, platform: TargetPlatform.android),
         GiphySurface.nativeSdk,
       );
-      expect(
-        giphySurfaceFor(isWeb: false, platform: TargetPlatform.iOS),
-        GiphySurface.nativeSdk,
-      );
-      expect(
-        giphySurfaceFor(isWeb: true, platform: TargetPlatform.android),
-        GiphySurface.webApi,
-      );
-      expect(
-        giphySurfaceFor(isWeb: false, platform: TargetPlatform.macOS),
-        GiphySurface.webApi,
-      );
+      expect(giphySurfaceFor(isWeb: false, platform: TargetPlatform.iOS), GiphySurface.nativeSdk);
+      expect(giphySurfaceFor(isWeb: true, platform: TargetPlatform.android), GiphySurface.webApi);
+      expect(giphySurfaceFor(isWeb: false, platform: TargetPlatform.macOS), GiphySurface.webApi);
       expect(kNativeGiphyFeatures, contains('clips'));
       expect(kWebApiGiphyFeatures, ['gif']);
     });
@@ -169,8 +153,7 @@ void main() {
         readGiphyRemoteSettings(
           firebaseReady: true,
           client: GiphyClient.web,
-          readString: (key) =>
-              key == kGiphyApiKeyParameter ? 'legacy-android' : '',
+          readString: (key) => key == kGiphyApiKeyParameter ? 'legacy-android' : '',
           dartDefineKey: 'local-key',
         ).apiKey,
         'local-key',
@@ -181,8 +164,7 @@ void main() {
       final settings = readGiphyRemoteSettings(
         firebaseReady: true,
         client: GiphyClient.android,
-        readString: (key) =>
-            key == kGiphyApiKeyParameter ? 'legacy-android' : '',
+        readString: (key) => key == kGiphyApiKeyParameter ? 'legacy-android' : '',
         dartDefineKey: 'local-key',
       );
 
@@ -190,18 +172,9 @@ void main() {
     });
 
     test('installed web and desktop stay on the web key slot', () {
-      expect(
-        giphyClientFor(isWeb: true, platform: TargetPlatform.android),
-        GiphyClient.web,
-      );
-      expect(
-        giphyClientFor(isWeb: false, platform: TargetPlatform.iOS),
-        GiphyClient.ios,
-      );
-      expect(
-        giphyClientFor(isWeb: false, platform: TargetPlatform.android),
-        GiphyClient.android,
-      );
+      expect(giphyClientFor(isWeb: true, platform: TargetPlatform.android), GiphyClient.web);
+      expect(giphyClientFor(isWeb: false, platform: TargetPlatform.iOS), GiphyClient.ios);
+      expect(giphyClientFor(isWeb: false, platform: TargetPlatform.android), GiphyClient.android);
     });
 
     test('keeps the dart-define key when Remote Config is blank', () {
@@ -236,10 +209,7 @@ void main() {
 
     test('trending and search stay on the PG ceiling', () async {
       final httpClient = _RecordingClient();
-      final search = HttpGiphySearch(
-        httpClient: httpClient,
-        apiKey: 'beta-key',
-      );
+      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key');
 
       await search.search('  ');
       await search.search('  chapel lights  ');
@@ -272,19 +242,12 @@ void main() {
         rating: 'r',
       ).search('heroes');
 
-      expect(httpClient.uris.map((uri) => uri.queryParameters['rating']), [
-        'g',
-        'pg-13',
-        'pg',
-      ]);
+      expect(httpClient.uris.map((uri) => uri.queryParameters['rating']), ['g', 'pg-13', 'pg']);
     });
 
     test('caps the query at 50 characters', () async {
       final httpClient = _RecordingClient();
-      final search = HttpGiphySearch(
-        httpClient: httpClient,
-        apiKey: 'beta-key',
-      );
+      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key');
 
       await search.search('x' * 60);
 
@@ -293,10 +256,7 @@ void main() {
 
     test('errors stay calm and omit the api key', () async {
       const secret = 'beta-key-do-not-leak';
-      final httpClient = _RecordingClient(
-        statusCode: 403,
-        body: '{"message":"bad $secret"}',
-      );
+      final httpClient = _RecordingClient(statusCode: 403, body: '{"message":"bad $secret"}');
       final search = HttpGiphySearch(httpClient: httpClient, apiKey: secret);
 
       await expectLater(
@@ -319,19 +279,14 @@ void main() {
               'id': 'abc',
               'title': 'quiet chapel',
               'images': {
-                'fixed_height_still': {
-                  'url': 'https://media.giphy.com/still.gif',
-                },
+                'fixed_height_still': {'url': 'https://media.giphy.com/still.gif'},
                 'fixed_height': {'url': 'https://media.giphy.com/move.gif'},
               },
             },
           ],
         }),
       );
-      final search = HttpGiphySearch(
-        httpClient: httpClient,
-        apiKey: 'beta-key',
-      );
+      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key');
 
       final gifs = await search.search('');
 
@@ -342,10 +297,7 @@ void main() {
   group('Search GIFs tab', () {
     setUp(() {
       final binding = TestWidgetsFlutterBinding.ensureInitialized();
-      binding.platformDispatcher.implicitView?.physicalSize = const Size(
-        1080,
-        2400,
-      );
+      binding.platformDispatcher.implicitView?.physicalSize = const Size(1080, 2400);
       binding.platformDispatcher.implicitView?.devicePixelRatio = 1.0;
     });
 
@@ -355,9 +307,7 @@ void main() {
       binding.platformDispatcher.implicitView?.resetDevicePixelRatio();
     });
 
-    testWidgets('explains that search is off when no key is configured', (
-      tester,
-    ) async {
+    testWidgets('explains that search is off when no key is configured', (tester) async {
       await tester.pumpWidget(_galleryHarness());
       await tester.tap(find.byKey(const Key('open_gallery_button')));
       await tester.pump();
@@ -371,9 +321,7 @@ void main() {
       expect(find.byKey(const Key('giphy_attribution')), findsNothing);
     });
 
-    testWidgets('attaches the GIF when a still preview is tapped', (
-      tester,
-    ) async {
+    testWidgets('attaches the GIF when a still preview is tapped', (tester) async {
       CalmMeme? selected;
       final fake = _FakeGiphySearch(
         results: const [
@@ -386,9 +334,7 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(
-        _galleryHarness(search: fake, onSelected: (meme) => selected = meme),
-      );
+      await tester.pumpWidget(_galleryHarness(search: fake, onSelected: (meme) => selected = meme));
       await tester.tap(find.byKey(const Key('open_gallery_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
@@ -401,10 +347,7 @@ void main() {
       expect(find.byKey(const Key('giphy_attribution')), findsOneWidget);
       expect(fake.lastQuery, '');
 
-      await tester.enterText(
-        find.byKey(const Key('giphy_search_input')),
-        'bread',
-      );
+      await tester.enterText(find.byKey(const Key('giphy_search_input')), 'bread');
       await tester.tap(find.byKey(const Key('giphy_search_button')));
       await tester.pump();
 
@@ -430,21 +373,20 @@ void main() {
           surface: GiphySurface.nativeSdk,
           settings: const GiphyRemoteSettings(apiKey: 'beta-key', rating: 'pg'),
           onSelected: (meme) => selected = meme,
-          sdkLauncher:
-              ({required apiKey, required rating, required onSelected}) {
-                seenRating = rating;
-                expect(apiKey, 'beta-key');
-                onSelected(
-                  const CalmMeme(
-                    title: 'hero',
-                    icon: '🎬',
-                    subtitle: 'GIPHY clip · rated PG',
-                    tag: 'Memes',
-                    body: 'hero',
-                    imageUrl: 'https://media.giphy.com/hero.gif',
-                  ),
-                );
-              },
+          sdkLauncher: ({required apiKey, required rating, required onSelected}) {
+            seenRating = rating;
+            expect(apiKey, 'beta-key');
+            onSelected(
+              const CalmMeme(
+                title: 'hero',
+                icon: '🎬',
+                subtitle: 'GIPHY clip · rated PG',
+                tag: 'Memes',
+                body: 'hero',
+                imageUrl: 'https://media.giphy.com/hero.gif',
+              ),
+            );
+          },
         ),
       );
       await tester.tap(find.byKey(const Key('open_gallery_button')));
@@ -477,10 +419,7 @@ class _RecordingClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     uris.add(request.url);
-    return http.StreamedResponse(
-      Stream<List<int>>.value(utf8.encode(body)),
-      statusCode,
-    );
+    return http.StreamedResponse(Stream<List<int>>.value(utf8.encode(body)), statusCode);
   }
 }
 
@@ -514,20 +453,15 @@ Widget _galleryHarness({
     overrides: [
       giphySurfaceProvider.overrideWithValue(surface),
       if (search != null) giphySearchProvider.overrideWithValue(search),
-      if (settings != null)
-        giphyRemoteSettingsProvider.overrideWithValue(settings),
-      if (sdkLauncher != null)
-        giphySdkLauncherProvider.overrideWithValue(sdkLauncher),
+      if (settings != null) giphyRemoteSettingsProvider.overrideWithValue(settings),
+      if (sdkLauncher != null) giphySdkLauncherProvider.overrideWithValue(sdkLauncher),
     ],
     child: MaterialApp(
       home: Scaffold(
         body: Builder(
           builder: (context) => ElevatedButton(
             key: const Key('open_gallery_button'),
-            onPressed: () => showMemeGalleryModal(
-              context,
-              onSelectedMeme: onSelected ?? (_) {},
-            ),
+            onPressed: () => showMemeGalleryModal(context, onSelectedMeme: onSelected ?? (_) {}),
             child: const Text('Open Gallery'),
           ),
         ),

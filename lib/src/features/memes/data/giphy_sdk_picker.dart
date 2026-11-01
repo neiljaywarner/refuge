@@ -17,9 +17,7 @@ typedef GiphySdkLauncher = void Function({
   required void Function(CalmMeme meme) onSelected,
 });
 
-final giphySdkLauncherProvider = Provider<GiphySdkLauncher>(
-  (ref) => launchBelongGiphyDialog,
-);
+final giphySdkLauncherProvider = Provider<GiphySdkLauncher>((ref) => launchBelongGiphyDialog);
 
 /// Phone picker settings. Rating defaults to PG. The SDK's own default is
 /// PG-13, so this function always sets the rating explicitly.
@@ -38,12 +36,11 @@ GiphySettings belongGiphySettings(String rating) => GiphySettings(
   showConfirmationScreen: true,
 );
 
-GiphyRating giphySdkRating(String rating) =>
-    switch (normalizeGiphyRating(rating)) {
-      'g' => GiphyRating.g,
-      'pg-13' => GiphyRating.pg13,
-      _ => GiphyRating.pg,
-    };
+GiphyRating giphySdkRating(String rating) => switch (normalizeGiphyRating(rating)) {
+  'g' => GiphyRating.g,
+  'pg-13' => GiphyRating.pg13,
+  _ => GiphyRating.pg,
+};
 
 /// Turns a dialog selection into a reflection attachment.
 ///

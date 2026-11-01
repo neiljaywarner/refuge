@@ -113,10 +113,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
         const SizedBox(height: 8),
         Text(
           '$ratingLabel still previews. The GIF plays only after you attach it.',
-          style: TextStyle(
-            fontSize: 11,
-            color: Theme.of(context).textTheme.bodySmall?.color,
-          ),
+          style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
         ),
         const SizedBox(height: 8),
         Row(
@@ -132,9 +129,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
                   hintStyle: const TextStyle(fontSize: 11),
                   isDense: true,
                   prefixIcon: const Icon(Icons.search, size: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onSubmitted: _search,
               ),
