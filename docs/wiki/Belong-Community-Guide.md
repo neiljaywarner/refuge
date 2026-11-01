@@ -76,4 +76,4 @@ There is also a one-tap jump between **Sage** and **High Contrast**.
 - Special interests are welcome. So is silence.
 - Church friends, family, and guests can be here without pretending.
 
-Questions? Tap **Vote & Feedback**. Inside that sheet, the **Share Feedback** tab is where you can write a note. Or message an organizer in Circle.
+Questions? Tap **Vote & Feedback**. Inside that sheet, the **Share Feedback** tab is where you can write a note. Use in-app Vote & Feedback only.

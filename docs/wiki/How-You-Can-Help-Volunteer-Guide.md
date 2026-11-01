@@ -159,7 +159,7 @@ On a computer, open Belong in Chrome, Edge, or Safari. Look for an install icon 
 
 ## If something feels off
 
-Use **Bug / Confusing** or **Idea / Tweak** inside **Vote & Feedback**. Or message an organizer in Circle.
+Use **Bug / Confusing** or **Idea / Tweak** inside **Vote & Feedback**. Use in-app Vote & Feedback only.
 
 You can stop after one try. Thank you for helping the rooms feel like a place to land.
 
