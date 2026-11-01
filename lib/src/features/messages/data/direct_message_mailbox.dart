@@ -292,6 +292,9 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     }
 
     try {
+      // This write is what the calm-email Cloud Function watches
+      // (`functions/src/index.js`). Sample threads and device-only sends
+      // return before here, so they are not emailed.
       await db.collection(collection).doc(id).set(message.toMap()).timeout(sendTimeout);
       // Keep the row on this device too. The recipient's bell can show it
       // in the same session when the Firestore read is not deployed yet.

@@ -24,7 +24,7 @@ The function id is `dm-push`. The runtime is Node 22. The entrypoint is `src/mai
 - It will not send to a sample member. Those sends never create a `direct_messages` document.
 - It will not put the message text from the phone into the notification. It reads the stored document.
 - It will not send when the FCM credential secret is missing. The response says the credential is not configured.
-- It does not send email. That is [#570](https://github.com/neiljaywarner/refuge/issues/570).
+- It does not send email. The calm email is the Cloud Function in `functions/`. See [Direct message email function](Direct-Message-Email-Function).
 
 ## Secret
 
@@ -69,4 +69,4 @@ October 25, 2026, dev app, two synthetic signed-in members. Message alerts was o
 
 [Short clip of that recipient screen](images/dm-receiver-banner.mp4)
 
-Email for the same moment is still [#570](https://github.com/neiljaywarner/refuge/issues/570).
+Email for the same moment is the Cloud Function in `functions/`. See [Direct message email function](Direct-Message-Email-Function).

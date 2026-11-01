@@ -37,6 +37,7 @@ integration_test/test_bundle.dart
 /coverage/
 .firebase/
 appwrite/functions/*/node_modules/
+functions/node_modules/
 
 # Symbolication related
 app.*.symbols
