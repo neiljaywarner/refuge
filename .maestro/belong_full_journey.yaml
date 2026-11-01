@@ -1,51 +1,17 @@
 appId: com.belongonthespectrum.refuge.dev
 # Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
-# Belong on the Spectrum — end-to-end journey against the live accessibility tree.
-# Header nodes may be separate ("Belong", "Refuge", "Calm Tech • Live|Resilient")
-# or one combined label. Welcome copy is "Welcome to Belong on the Spectrum".
-# Sensory menu ids: sensory_theme_charcoal (Dark), sensory_theme_sage,
-# sensory_theme_contrast. The row name is "Dark\nDark", not "Dark".
+# Clear-state launch is the members-only sign-in wall (#574, #601, #720).
+# The old "Welcome to Belong on the Spectrum" home is not shown until sign-in.
+# The signed-in walk (Spaces, notifications, delete) is dev_e2e_*.yaml.
 
-# clearState drops a persisted debug sign-in. Signed in, the header
-# shows a profile avatar and "Sign In" is absent from the tree.
 - launchApp:
     clearState: true
 
 - extendedWaitUntil:
-    visible: ".*Welcome to Belong on the Spectrum.*"
+    visible: ".*Sign in to Belong on the Spectrum.*"
     timeout: 45000
-- assertVisible: ".*Welcome to Belong on the Spectrum.*"
-- assertVisible: ".*Belong.*"
-
-- tapOn:
-    id: "sensory_theme_toggle_button"
-- tapOn:
-    id: "sensory_theme_charcoal"
-- assertVisible: ".*Welcome to Belong on the Spectrum.*"
-
-- tapOn:
-    id: "sensory_theme_toggle_button"
-- tapOn:
-    id: "sensory_theme_sage"
-- assertVisible: ".*Welcome to Belong on the Spectrum.*"
-
-- tapOn: ".*Spaces.*"
-- extendedWaitUntil:
-    visible: ".*General Chat.*"
-    timeout: 15000
-- assertVisible: ".*General Chat.*"
-
-- tapOn: ".*About Belong.*"
-- extendedWaitUntil:
-    visible: ".*Psalm 139:14.*"
-    timeout: 10000
-- assertVisible: ".*Psalm 139:14.*"
-- tapOn: "Close.*"
-
-- tapOn: ".*Sign In.*"
-- extendedWaitUntil:
-    visible: ".*Sign [Ii]n.*"
-    timeout: 15000
-- assertVisible: ".*Sign [Ii]n.*"
-- back
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
+- assertVisible: ".*Register.*"
+- assertNotVisible: "Demo Mode"
+- assertNotVisible: "Vote & Feedback"
