@@ -139,12 +139,12 @@ Future<void> main(List<String> args) async {
       _arg(args, '--android-app-id'),
       Platform.environment['FIREBASE_ANDROID_APP_ID'],
     ]);
-    // GitHub Actions sets a missing secret to an empty string, which must
-    // not block auto-detect or the app id committed in google-services.json.
+    // A missing GitHub secret is an empty string. google-services.json maps
+    // the refuge package onto the sanctuary Firebase app, so App Distribution
+    // must use the Android app whose package is com.belongonthespectrum.refuge.
     androidAppId ??= await _detectAndroidAppId();
-    androidAppId ??= _androidAppIdFromGoogleServices();
     if (androidAppId == null) {
-      stderr.writeln('No Firebase Android app found. Pass --android-app-id.');
+      stderr.writeln('No Firebase Android app for $_prodAndroidPackage. Pass --android-app-id.');
       exit(65);
     }
   }
@@ -306,35 +306,31 @@ String? _firstNonBlank(Iterable<String?> values) {
   return null;
 }
 
-/// Prod application id from the committed Firebase config.
-///
-/// Prefers the unsuffixed `com.belongonthespectrum.refuge` client. This file
-/// holds the public app id, not a credential.
-String? _androidAppIdFromGoogleServices() {
-  final file = File('android/app/google-services.json');
-  if (!file.existsSync()) return null;
+const String _prodAndroidPackage = 'com.belongonthespectrum.refuge';
+
+/// Android apps from `firebase apps:list ANDROID --json`.
+List<({String appId, String? packageName})> androidAppsFromFirebaseList(String jsonOut) {
   final Object? decoded;
   try {
-    decoded = jsonDecode(file.readAsStringSync());
+    decoded = jsonDecode(jsonOut);
   } on FormatException {
-    return null;
+    return const [];
   }
-  if (decoded is! Map) return null;
-  final clients = decoded['client'];
-  if (clients is! List) return null;
-  String? fallback;
-  for (final client in clients) {
-    if (client is! Map) continue;
-    final info = client['client_info'];
-    if (info is! Map) continue;
-    final appId = info['mobilesdk_app_id'];
+  final Object? raw = switch (decoded) {
+    {'result': final Object? result} => result,
+    {'apps': final Object? apps} => apps,
+    _ => decoded,
+  };
+  if (raw is! List) return const [];
+  final apps = <({String appId, String? packageName})>[];
+  for (final item in raw) {
+    if (item is! Map) continue;
+    final appId = item['appId'];
     if (appId is! String || !appId.contains(':android:')) continue;
-    fallback ??= appId;
-    final android = info['android_client_info'];
-    final package = android is Map ? android['package_name'] : null;
-    if (package == 'com.belongonthespectrum.refuge') return appId;
+    final package = item['packageName'] ?? item['namespace'];
+    apps.add((appId: appId, packageName: package is String ? package : null));
   }
-  return fallback;
+  return apps;
 }
 
 Future<String?> _detectAndroidAppId() async {
@@ -345,9 +341,40 @@ Future<String?> _detectAndroidAppId() async {
     _project,
     '--json',
   ]);
+  if (r.exitCode != 0) {
+    final err = (r.stderr as String).trim();
+    if (err.isNotEmpty) stderr.writeln(err);
+    return null;
+  }
+  final apps = androidAppsFromFirebaseList(r.stdout as String);
+  for (final app in apps) {
+    if (app.packageName == _prodAndroidPackage) {
+      _log('Android App Distribution app ${app.appId} (${app.packageName})');
+      return app.appId;
+    }
+  }
+  for (final app in apps.where((app) => app.packageName == null)) {
+    final package = await _packageNameForAndroidApp(app.appId);
+    _log('Android app ${app.appId} package ${package ?? 'unknown'}');
+    if (package == _prodAndroidPackage) return app.appId;
+  }
+  final seen = apps
+      .map((app) => '${app.appId} (${app.packageName ?? 'package not listed'})')
+      .join(', ');
+  stderr.writeln('No Firebase Android app for $_prodAndroidPackage. Saw: $seen');
+  return null;
+}
+
+Future<String?> _packageNameForAndroidApp(String appId) async {
+  final r = await Process.run(_bin('firebase'), [
+    'apps:sdkconfig',
+    'ANDROID',
+    appId,
+    '--project',
+    _project,
+  ]);
   if (r.exitCode != 0) return null;
-  final match = RegExp(r'"appId"\s*:\s*"([^"]+:android:[^"]+)"').firstMatch(r.stdout as String);
-  return match?.group(1);
+  return RegExp(r'"package_name"\s*:\s*"([^"]+)"').firstMatch(r.stdout as String)?.group(1);
 }
 
 String? _extractPreviewUrl(String jsonOut) {

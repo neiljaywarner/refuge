@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/core/build/build_identity.dart';
 import 'package:refuge4serverpod/src/core/build/release_build_stamp.dart';
 
+import '../../../tool/deploy_release.dart';
+
 const _sha = '0123456789abcdef0123456789abcdef01234567';
 
 void main() {
@@ -298,5 +300,20 @@ void main() {
       expect(deployWorkflow, contains('Push to main deploys the dev site only.'));
       expect(deployWorkflow, contains('--prod --distribute-android'));
     }, skip: kIsWeb);
+  });
+
+  test('android app list keeps the refuge package and ignores sanctuary', () {
+    const json = '''
+{"status":"success","result":[
+  {"appId":"1:1:android:sanctuary","packageName":"com.belongonthespectrum.sanctuary"},
+  {"appId":"1:1:android:refuge","packageName":"com.belongonthespectrum.refuge"}
+]}
+''';
+    final apps = androidAppsFromFirebaseList(json);
+    expect(apps.map((app) => app.appId), ['1:1:android:sanctuary', '1:1:android:refuge']);
+    expect(
+      apps.firstWhere((app) => app.packageName == 'com.belongonthespectrum.refuge').appId,
+      '1:1:android:refuge',
+    );
   });
 }
