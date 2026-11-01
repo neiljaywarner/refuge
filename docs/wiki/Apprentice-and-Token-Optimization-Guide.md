@@ -44,7 +44,7 @@ Whether you are using a **free tier** or managing **5-hour burst limits and 7-da
 - By keeping a live status file (`18Oct2026_session_plan_and_status.md`) and using **1 GitHub Issue = 1 Worktree Branch = 1 PR**, you can run `/compact` or start a fresh chat after every 2–3 PRs without losing context.
 
 ### Habit 5: Rotate Model Families Before Your 5-Hour Window Resets
-- Check your quota meter (`tokens-usage.md`):
+- Check your quota meter (`docs/archive/tokens-usage.md`):
   - Use **Flash / Argon Low** for boilerplate, icons, and unit/BDD tests.
   - Use **Claude Sonnet / Argon Medium** for UI layout, `hooks_riverpod` refactoring, and documentation.
   - Save **Argon High / Pro / Opus** strictly for complex multi-layer architecture or tricky debugging.

@@ -117,7 +117,7 @@ stateDiagram-v2
 7. **Bead 7: Zero-Approval GitHub MCP Push & PR**:
    - Push commit via `push_files`. Open PR referencing `Closes #<NUM>`. Squash-merge via `merge_pull_request`.
 8. **Bead 8: Prune & Reset (`/compact`)**:
-   - Delete worktree, update `status.md`, and recommend `/compact` so the next ticket begins with near-zero input token overhead.
+   - Delete worktree, update `docs/archive/status.md`, and recommend `/compact` so the next ticket begins with near-zero input token overhead.
 
 ---
 
@@ -163,7 +163,7 @@ When cloud quota cools down or is reserved for architecture, the local endpoint 
 2. **Delegate Broad Grep to Flash Subagents**: When searching the repo for keywords, spawn an `invoke_subagent(Model: 'flash')` rather than executing wide terminal searches in the primary context.
 3. **Execute Non-Interactive GitHub MCP Calls**: Always use `push_files`, `create_pull_request`, and `merge_pull_request`. Terminal `git push` hangs on credential prompts and wastes tokens in wait loops.
 4. **Trigger `/compact` Every 2–3 Merged PRs**: Long transcripts carry expensive historical tokens into every subsequent call. Compact regularly.
-5. **Persist State to Disk, Not Working Memory**: Master state belongs in `status.md`, `human_to_review_after_session.md`, and `docs/wiki/`. When restarting, the agent reads only the top summary lines.
+5. **Persist State to Disk, Not Working Memory**: Master state belongs in `docs/archive/status.md`, `docs/archive/human_to_review_after_session.md`, and `docs/wiki/`. When restarting, the agent reads only the top summary lines.
 6. **Run Pre-Checks via Dart MCP**: Always run `analyze_files` via Dart MCP to catch syntax errors before opening PRs, preventing failed CI cycles.
 7. **Use Strict `1 Issue = 1 Worktree = 1 PR`**: Small, surgical PRs require 90% fewer tokens to generate, review, and merge than monolithic changes.
 8. **Rotate Model Tiers During Sprints**: After 45 minutes of heavy Gemini Pro execution, rotate 1–2 tickets to Flash or local Ollama to allow the 5-hour rolling window to reset.

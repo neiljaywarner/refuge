@@ -39,7 +39,7 @@ Because Belong operates with lean developer resources, traditional manual QA is 
 - **Workflow**:
   1. At 2:00 AM CST, the agent spins up an isolated worktree on latest `main`.
   2. Runs static analysis via Dart MCP (`analyze_files`) and the full 170+ test suite (`run_tests`).
-  3. If all tests pass green, records a clean audit receipt in `status.md`.
+  3. If all tests pass green, records a clean audit receipt in `docs/archive/status.md`.
   4. If any test fails, the agent isolates the failing file, performs root-cause analysis using `git blame`, prepares a candidate fix, verifies it green, and opens a GitHub PR with full before/after diffs and test logs ready for morning review.
 
 ---

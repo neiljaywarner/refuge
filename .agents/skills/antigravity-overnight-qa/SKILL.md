@@ -26,4 +26,4 @@ Enables an Antigravity agent running via scheduled cron (`/schedule`) or backgro
    - Open draft PR with GitHub MCP `create_pull_request` referencing the failure details.
 
 4. **Morning Report Generation**:
-   - Post summary comment to active tracking ticket or `status.md`.
+   - Post summary comment to active tracking ticket or `docs/archive/status.md`.

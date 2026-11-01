@@ -25,7 +25,7 @@ This skill governs multi-hour autonomous development sessions (e.g. overnight or
    - Validate UI changes across connected Pixels (`56091JEBF14039`, `58221JEBF20835`) or Android emulator (`emulator-5554`) using Maestro MCP (`run` and `take_screenshot`).
    - Capture Before & After screenshots with zero terminal prompts using Maestro MCP `take_screenshot`.
 5. **Continuous Dashboard Sync**:
-   - Keep `status.md`, `unattended_session_*.md`, and `neil_to_review_sunday_night.md` up to date with fresh timestamps and verified metrics.
+   - Keep `docs/archive/status.md`, `docs/archive/unattended_session_*.md`, and `docs/archive/neil_to_review_sunday_night.md` up to date with fresh timestamps and verified metrics.
 
 ---
 
