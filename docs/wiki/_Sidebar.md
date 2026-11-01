@@ -2,7 +2,7 @@
 * **[🏠 Welcome](Home)**
 * **[🤝 Business & Partnership Overview](Business-Partner-Overview)**
 * **[🤝 How You Can Help](How-You-Can-Help-Volunteer-Guide)**
-* **[📅 Plan through October 31](Non-Technical-Roadmap-to-Oct-31)**
+* **[📅 After October 31 — solid 1.0](Non-Technical-Roadmap-to-Oct-31)**
 * **[🏘️ Our Community Spaces](Belong-Community-Guide)**
 * **[❓ Questions for Members and Organizers](Questions-for-Product-Users-and-Alpha-Testers)**
 * **[📱 Why Belong Is Not in the App Stores Yet](Why-No-App-Store-App)**

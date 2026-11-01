@@ -10,7 +10,7 @@
 ### 🌟 For Non-Technical Contributors & Community Volunteers
 - **Test Sensory Comfort**: Try switching between our 4 sensory presets (*High Clarity*, *Warm Calm*, *Low Stimulus Dark*, and *Low Motion*) on your phone or computer and let us know if any screen feels visually overwhelming.
 - **Review Community Copy & Guidelines**: Help refine the welcoming language in `Start Here & Introduce Yourself`, `Announcements`, and `Community Guidelines` (**Issue #29**).
-- **Assist with Circle.so CSV Exports**: Help export and verify community history ahead of the **October 31st Circle.so cutover** (**Issue #41**).
+- **Assist with Circle.so CSV Exports**: Help export and verify community history when an organizer asks (**Issue #41**). Re-import polish is not required to call 1.0 solid ([#765](https://github.com/neiljaywarner/refuge/issues/765)).
 
 ### 💻 For Developers, Students & Mentees
 We practice strict **Ticket-Driven Development (TDD + BDD)**:

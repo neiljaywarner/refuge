@@ -1,6 +1,6 @@
 # Changelog & Release Roadmap (`Belong on the Spectrum` / `refuge`)
 
-All notable changes, accomplishments, and planned release milestones leading up to the **October 24–31, 2026 Circle.so Cutover & Overlap Window** are documented in this file.
+Notable changes are documented in this file. As of **November 1, 2026**, the October 24–31 overlap window is past. The short list still open for a solid 1.0 is [issue #765](https://github.com/neiljaywarner/refuge/issues/765) and [`docs/solid_1.0_checklist.md`](docs/solid_1.0_checklist.md). Entries below are history, not a claim that those versions are what production is serving today.
 
 ---
 

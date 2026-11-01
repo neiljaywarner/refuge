@@ -127,7 +127,7 @@ It is a **Progressive Web App (PWA)**, which is an industry standard supported b
 ### *"Will we ever be in the official Apple & Google Stores?"*
 **Yes!** We already have an official compiled **Android APK** (`com.belongonthespectrum.sanctuary`) that we test on physical Google Pixels, and an official **iOS native build** is scheduled for release in **Mid-November 2026 (`v1.1.0`)**. 
 
-However, during our current community transition and initial soft launch, the web app provides **100% of the fellowship, reflections, spaces, and sensory comfort** with **0% of the app store friction**.
+For soft launch, the web app is how members use Belong. App Store and Play listings are later ([#765](https://github.com/neiljaywarner/refuge/issues/765)).
 
 ### *"Do I have to pay anything?"*
 **Never.** Belong on the Spectrum is 100% free. There are no subscriptions, no in-app purchases, and no advertisements.

@@ -1,5 +1,7 @@
 # 📋 Maintainer Executive Review After Session (`human_to_review_after_session.md`)
 
+> **Session log from October 21, 2026.** The overlap-week action at the top of this file is not the current plan. As of November 1, 2026 the short list is [#765](https://github.com/neiljaywarner/refuge/issues/765) and [`docs/solid_1.0_checklist.md`](docs/solid_1.0_checklist.md). Production: [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/). Dev: [https://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/).
+>
 > **Current Timestamp**: **Wednesday Oct 21, 2026 @ 9:20 AM CDT**  
 > **Session State**: 🟢 Verified & Caffeinated (53 PRs merged cleanly, 175/175 tests green, 0 static errors)  
 > **Overall Grade**: **`A` (95 / 100)**  

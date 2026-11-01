@@ -101,7 +101,7 @@ Friendship and mutual trust come first. There is no pitch deck pressure and no r
 
 
 ### Q7: If I'm curious, what is the easiest first step?
-**A**: Spend five unhurried minutes clicking around our prototype on your phone or laptop (ask me for the link or look around), skim our [Plan through October 31](Non-Technical-Roadmap-to-Oct-31), and share your candid business gut check—what resonates, what you would trim or sharpen, and whether any angle of advising or partnering sounds life-giving to you.
+**A**: Spend five unhurried minutes on [belongonthespectrum.web.app](https://belongonthespectrum.web.app/), skim [After October 31 — solid 1.0](Non-Technical-Roadmap-to-Oct-31), and share your candid business gut check—what resonates, what you would trim or sharpen, and whether any angle of advising or partnering sounds life-giving to you.
 
 ---
 

@@ -5,7 +5,7 @@
 
 **Belong on the Spectrum** is a calm online home for autistic and neurodivergent adults, friends, families, and the people who care with them. We partner with [DFW Church](https://dfwchurch.org).
 
-Open Belong at [belongonthespectrum.web.app](https://belongonthespectrum.web.app). Ways to help this week are on **[How you can help](How-You-Can-Help-Volunteer-Guide)**.
+Open Belong at [belongonthespectrum.web.app](https://belongonthespectrum.web.app/). Testers use [dev-belongonthespectrum.web.app](https://dev-belongonthespectrum.web.app/). [onthespectrum.web.app](https://onthespectrum.web.app/) is not a Belong site. Ways to help are on **[How you can help](How-You-Can-Help-Volunteer-Guide)**.
 
 An earlier sketch of this page used the name Sanctuary and five `#hashtag` rooms. Those rooms are not what you will see. The list below matches Belong today.
 

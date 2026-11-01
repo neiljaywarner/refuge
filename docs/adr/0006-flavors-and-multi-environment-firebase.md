@@ -7,7 +7,7 @@
 
 ## 1. Context & Problem Statement
 
-As **Refuge** transitions into the production platform for **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** ahead of the **October 31st Circle.so cutover**, we need:
+As **Refuge** became the production platform for **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** (the October 31, 2026 Circle overlap window is past; see [#765](https://github.com/neiljaywarner/refuge/issues/765)), we need:
 1. **Strict Environment Isolation**: Developer testing, BDD test runs, and Firebase Hosting preview channels in **`dev`** must **never** pollute or clash with **`prod`** community posts, Firebase Analytics events, or Firebase Remote Config settings.
 2. **Non-Technical Organizer Control ("Message from the Organizer")**: Community organizers must be able to update welcome banners, announcements, and store download links live via **Firebase Remote Config** on **Web/PWA, Android, and iOS** without needing a developer or code deployment.
 3. **Complete FlutterFire Foundation Installed Up Front**: Installing all core Firebase packages (`firebase_core`, `firebase_analytics`, `firebase_remote_config`, `firebase_in_app_messaging`, `firebase_crashlytics`, `firebase_auth`, `firebase_messaging`, `firebase_performance`, `firebase_app_check`) in one cohesive setup avoids repeated native dependency churn later.
@@ -38,7 +38,7 @@ We adopt the **Hybrid CodeWithAndrea + VGV Flavor Pattern**:
   - `lib/main.dart` (reads `FLAVOR` from `String.fromEnvironment('FLAVOR', defaultValue: 'dev')` so a plain `flutter run` stays on `dev`).
 - **Web deploy split** (one Firebase project, two Hosting configs):
   - Release / `--prod` uses `firebase.json` → `belongonthespectrum.web.app`, built from `main_prod.dart`.
-  - Stable dev uses `firebase.dev.json` → `dev-belongonthespectrum.web.app`, built from `main_dev.dart` via `tool/deploy_dev_web.dart`. Not a side effect of a prod release. A separate config keeps `firebase deploy --only hosting` from failing while the dev site does not exist yet.
+  - Stable dev uses `firebase.dev.json` → `dev-belongonthespectrum.web.app`, built from `main_dev.dart` via `tool/deploy_dev_web.dart`. Not a side effect of a prod release. The configs stay split so a hosting deploy of one site does not publish the other. As of November 1, 2026 the dev host is live. [https://onthespectrum.web.app/](https://onthespectrum.web.app/) is not a Belong host.
   - Preview channels stay on the prod site and expire. They are not the dev site.
   - `stg` / `qa` are not deployed. Auth and Firestore are still the same Firebase project; `dev` only isolates app data (for example `reflections_dev`).
 - Wrap **Firebase Remote Config**, **Firebase Analytics**, and **Firebase In-App Messaging** behind clean, Riverpod-injected interfaces (`OrganizerRemoteConfigService` and `CommunityAnalyticsService`):

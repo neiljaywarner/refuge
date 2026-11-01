@@ -2,16 +2,19 @@
 
 **Belong on the Spectrum** is a calm, sensory-safe online community for autistic and neurodivergent adults, friends, families, and the people who care with them. We partner with [DFW Church](https://dfwchurch.org).
 
-**Open Belong:** [belongonthespectrum.web.app](https://belongonthespectrum.web.app)  
+**Open Belong:** [belongonthespectrum.web.app](https://belongonthespectrum.web.app/)  
+**Try newer work:** [dev-belongonthespectrum.web.app](https://dev-belongonthespectrum.web.app/)  
 **Our website:** [belongonthespectrum.com](https://www.belongonthespectrum.com/)
+
+[onthespectrum.web.app](https://onthespectrum.web.app/) is not a Belong site.
 
 ---
 
-## This week (October 24–31)
+## Now (November 1, 2026)
 
-We are gently moving from Circle into Belong. Both places stay open through **October 31**, so there is no rush. Take your time.
+The Circle overlap week is over. Open Belong at the production link above and take your time. Calling 1.0 solid is a short list for the next few hours and days, tracked on **[After October 31](Non-Technical-Roadmap-to-Oct-31)**.
 
-**[How you can help](How-You-Can-Help-Volunteer-Guide)** is the short page for this week. It includes what to try, what to look for, iPhone and Android home-screen steps, and a message you can paste into Circle.
+**[How you can help](How-You-Can-Help-Volunteer-Guide)** is the short page for members. It includes what to try, what to look for, and iPhone and Android home-screen steps.
 
 ### Three easy ways to help
 
@@ -26,10 +29,10 @@ We are gently moving from Circle into Belong. Both places stay open through **Oc
 | Guide | Who it is for | What you will find |
 | --- | --- | --- |
 | **[Business & Partnership Overview](Business-Partner-Overview)** | Potential partners and advisors | Executive summary, 37signals philosophy, commercial opportunity, and business FAQ |
-| **[How you can help](How-You-Can-Help-Volunteer-Guide)** | Everyone | The easy start for this week, including testing and putting Belong on your phone |
+| **[How you can help](How-You-Can-Help-Volunteer-Guide)** | Everyone | What to try, including testing and putting Belong on your phone |
 | **[What to look for](How-You-Can-Help-Volunteer-Guide#what-to-look-for)** | Willing helpers | Calm feel, contrast, labels, voting, feedback, and whether the rooms feel warm |
 | **[Put Belong on your phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)** | Anyone with a phone | iPhone (Safari) and Android (Chrome) steps, with Android pictures |
-| **[Plan through October 31](Non-Technical-Roadmap-to-Oct-31)** | Organizers and leaders | Why we are moving, the calm overlap week, and what is ready when |
+| **[After October 31 — solid 1.0](Non-Technical-Roadmap-to-Oct-31)** | Organizers and leaders | The short list still open after the overlap week |
 | **[Why we are not in the app stores yet](Why-No-App-Store-App)** | Members and leaders | Plain answers about stores, passwords, and using Belong from the web |
 | **[Update the welcome message](Organizer-Remote-Config-Guide)** | Organizers | Change the message at the top of Belong from a web page |
 | **[Ban a member](Admin-Pause-and-Restore)** | Organizers | A ban removes their writing and stops that account from signing in. It does not lock an IP address, and it cannot be undone in the app. |

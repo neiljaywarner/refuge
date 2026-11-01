@@ -1,5 +1,7 @@
 # Notes for First Meeting with Human Reviewer — Soft Launch & Community Readiness
 
+> **Meeting notes from October 24, 2026.** The overlap week they describe is past. The current short list is [#765](https://github.com/neiljaywarner/refuge/issues/765). Production: [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/). Dev: [https://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/). [https://onthespectrum.web.app/](https://onthespectrum.web.app/) is not a Belong host.
+>
 > **Audience**: Semi-technical human reviewer (retired engineer / technical manager background).  
 > **Date**: October 24, 2026  
 > **Community**: [Belong on the Spectrum](https://belongonthespectrum.com) (Christian & Neurodivergent-Affirming digital fellowship)  
