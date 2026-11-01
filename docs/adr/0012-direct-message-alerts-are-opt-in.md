@@ -58,3 +58,7 @@ Email is unchanged. [Issue #570](https://github.com/neiljaywarner/refuge/issues/
 2. Sign in as two different test members, turn Message alerts on both phones, and send one real direct message.
 3. Confirm the other phone shows a Belong notification with sound on the Direct messages channel, and confirm a sample-member send still stays on the sending phone.
 4. Do not message a real community member. Do not commit the FCM service account JSON.
+
+## 6. Update (1 November 2026)
+
+[Issue #570](https://github.com/neiljaywarner/refuge/issues/570) is the calm email. It is a Cloud Function trigger on `direct_messages` create, not a send from the phone. The same opt-in applies: `CalmNotificationPreferences.enabled` stays off until the member asks, and a muted schedule sends nothing. The subject names the sender and says a message is waiting. It does not include the message body or an email address. Sample and device-only threads still never create the document. Deploying the function needs the Blaze plan. The mail provider key is the secret `DM_EMAIL_TRANSPORT_JSON` and is not in this repository.

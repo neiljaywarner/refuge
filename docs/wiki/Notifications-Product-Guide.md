@@ -7,7 +7,7 @@
 > **Technical Companion**: [[Notifications-Technical-Architecture]]  
 > **Architectural Decisions**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]
 
-> **Status (24 October 2026).** Message alerts are opt-in. See [Direct message alerts](ADR-0012-Direct-Message-Alerts) and [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md). The send function is in `appwrite/functions/dm-push` and is deployed. Firebase Cloud Functions stay unused because the project is still on Spark. Phone launcher dots are still not updated. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) remains open for that badge.
+> **Status (24 October 2026).** Message alerts are opt-in. See [Direct message alerts](ADR-0012-Direct-Message-Alerts) and [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md). The send function is in `appwrite/functions/dm-push` and is deployed. A calm email for the same message is the Cloud Function in `functions/`. That function needs a Blaze deploy before it can send. See [Direct message email function](Direct-Message-Email-Function). Phone launcher dots are still not updated. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) remains open for that badge.
 
 ---
 
