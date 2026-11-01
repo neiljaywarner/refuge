@@ -3,8 +3,9 @@ import 'vote_storage_stub.dart'
     if (dart.library.io) 'vote_storage_io.dart'
     if (dart.library.html) 'vote_storage_web.dart';
 
-/// Provides persistent local feature voting state across web page reloads,
-/// app restarts, and offline sessions (#487, #500).
+/// Remembers which roadmap cards this signed-in member already pressed on
+/// this device, so a reload is an unvote instead of a second upvote.
+/// Community totals come from Firestore, not from this cache.
 class VoteStorageService {
   VoteStorageService._();
   static final VoteStorageService instance = VoteStorageService._();

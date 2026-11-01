@@ -121,19 +121,20 @@ Stores calm-tech fellowship reflections, prayers, and study insights.
 
 ---
 
-### 3.3. Collection: `features` (Roadmap & Feature Voting)
-Public roadmap features that community members can vote on.
+### 3.3. Collection: `feature_votes` (Roadmap & Feature Voting)
+Public roadmap features that signed-in members can vote on (#733). Only seeded document IDs are creatable via client rules.
 
-*Document ID*: Feature slug/id (e.g., `wip-direct-messages`).
+*Document ID*: Feature slug/id (e.g., `planned-native-store-apps`).
 
 ```json
 {
-  "id": "wip-direct-messages",
-  "title": "Direct Messages (Msgs Tab)",
-  "description": "Private, low-pressure 1-on-1 messaging with unhurried response expectations.",
-  "stage": "inProgress",
-  "votesCount": 25,
-  "votedUserIds": ["usr_948194a28f", "usr_102849"]
+  "id": "planned-native-store-apps",
+  "title": "Native App Store Listings",
+  "description": "Ship Refuge on Google Play and the Apple App Store with community-safe release cadence.",
+  "stage": "planned",
+  "votes": 2,
+  "voterIds": ["member_uid_a", "member_uid_b"],
+  "lastVotedAt": "<server timestamp>"
 }
 ```
 

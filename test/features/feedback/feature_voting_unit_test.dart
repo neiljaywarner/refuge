@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
+import 'package:refuge4serverpod/src/features/feedback/domain/vote_tally.dart';
 import 'package:refuge4serverpod/src/features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 
 void main() {
@@ -109,6 +110,43 @@ void main() {
       );
       expect(repo.submittedFeedbackLog.last['rating'], '2');
       expect(repo.submittedFeedbackLog.last['sentiment'], 'sad');
+    });
+
+    test('applyMemberVote increments, dedupes, and unvotes safely (#733)', () {
+      const uid = 'member-uid';
+
+      final first = applyMemberVote(votes: 0, voterIds: const [], uid: uid, wantVoted: true);
+      expect(first.changed, isTrue);
+      expect(first.votes, 1);
+      expect(first.voterIds, [uid]);
+
+      final duplicate = applyMemberVote(
+        votes: first.votes,
+        voterIds: first.voterIds,
+        uid: uid,
+        wantVoted: true,
+      );
+      expect(duplicate.changed, isFalse);
+      expect(duplicate.votes, 1);
+
+      final unvote = applyMemberVote(
+        votes: first.votes,
+        voterIds: first.voterIds,
+        uid: uid,
+        wantVoted: false,
+      );
+      expect(unvote.changed, isTrue);
+      expect(unvote.votes, 0);
+      expect(unvote.voterIds, isEmpty);
+
+      final stranger = applyMemberVote(
+        votes: 3,
+        voterIds: const ['other-uid'],
+        uid: uid,
+        wantVoted: false,
+      );
+      expect(stranger.changed, isFalse);
+      expect(stranger.votes, 3);
     });
   });
 }
