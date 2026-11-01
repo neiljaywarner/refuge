@@ -174,24 +174,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('auth_gate_verify_email_wall')), findsNothing);
-      expect(find.byKey(const Key('home_verify_email_banner')), findsOneWidget);
-      expect(
-        find.textContaining(
-          'You can use the app while you wait for a verification email at member@belongonthespectrum.com.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('home_verify_email_banner')), findsNothing);
+      expect(find.byKey(const Key('home_resend_verification')), findsNothing);
       expect(find.byKey(const Key('belong_profile_avatar_button')), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('home_resend_verification')));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text(
-          'Sent a fresh verification link. You can keep using the app. Check your inbox and your spam folder.',
-        ),
-        findsOneWidget,
-      );
     });
 
     testWidgets('prod verified reaches home', (tester) async {

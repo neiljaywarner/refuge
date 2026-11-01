@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
@@ -257,8 +258,12 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
               ),
               IconButton(
                 key: const Key('meme_gallery_close_button'),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.close, size: 18),
+                tooltip: 'Close',
+                style: IconButton.styleFrom(
+                  minimumSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                ),
+                icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -267,11 +272,21 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
             child: Stack(
               fit: StackFit.expand,
               children: [
-                GiphySearchPanel(
-                  onSelected: (meme) {
-                    widget.onSelectedMeme(meme);
-                    Navigator.pop(context);
-                  },
+                Focus(
+                  canRequestFocus: !_moreOpen,
+                  descendantsAreFocusable: !_moreOpen,
+                  child: ExcludeSemantics(
+                    excluding: _moreOpen,
+                    child: IgnorePointer(
+                      ignoring: _moreOpen,
+                      child: GiphySearchPanel(
+                        onSelected: (meme) {
+                          widget.onSelectedMeme(meme);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                  ),
                 ),
                 if (_moreOpen) Material(color: sheetColor, child: _buildMoreList()),
               ],
@@ -279,15 +294,26 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
           ),
           Align(
             alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              key: const Key('attach_media_more'),
-              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-              onPressed: () => setState(() {
-                _moreOpen = !_moreOpen;
-                if (!_moreOpen) _moreSection = _AttachMoreSection.none;
-              }),
-              icon: Icon(_moreOpen ? Icons.gif_box_outlined : Icons.expand_more, size: 18),
-              label: Text(_moreOpen ? 'Back to GIFs' : 'More'),
+            child: Semantics(
+              identifier: 'attach_media_more',
+              button: true,
+              child: TextButton.icon(
+                key: const Key('attach_media_more'),
+                style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                onPressed: () {
+                  final opening = !_moreOpen;
+                  setState(() {
+                    _moreOpen = opening;
+                    if (!opening) _moreSection = _AttachMoreSection.none;
+                  });
+                  if (opening) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+                  }
+                },
+                icon: Icon(_moreOpen ? Icons.gif_box_outlined : Icons.expand_more, size: 18),
+                label: Text(_moreOpen ? 'Back to GIFs' : 'More'),
+              ),
             ),
           ),
         ],
@@ -326,13 +352,22 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
     required _AttachMoreSection section,
   }) {
     final open = _moreSection == section;
-    return ListTile(
-      key: key,
-      dense: true,
-      contentPadding: .zero,
-      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-      trailing: Icon(open ? Icons.expand_less : Icons.expand_more, size: 18),
-      onTap: () => _toggleSection(section),
+    return Semantics(
+      identifier: switch (section) {
+        _AttachMoreSection.memes => 'attach_media_memes',
+        _AttachMoreSection.link => 'attach_media_link',
+        _AttachMoreSection.photo => 'attach_media_photo',
+        _AttachMoreSection.none => 'attach_media_section',
+      },
+      button: true,
+      child: ListTile(
+        key: key,
+        dense: true,
+        contentPadding: .zero,
+        title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        trailing: Icon(open ? Icons.expand_less : Icons.expand_more, size: 18),
+        onTap: () => _toggleSection(section),
+      ),
     );
   }
 

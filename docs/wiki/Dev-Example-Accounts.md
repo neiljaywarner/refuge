@@ -45,7 +45,9 @@ Treat anything in those inboxes as public.
 
 ## Creating or refreshing the accounts
 
-Maintainers usually create both users **through the dev app** (Register on the sign-in wall, or the one-tap buttons after `DEV_EXAMPLE_PASSWORD` is set). They live in the same Firebase Authentication project as production packages, but dev builds do not block on email verification.
+Maintainers usually create both users **through the dev app** (Register on the sign-in wall, or the one-tap buttons after `DEV_EXAMPLE_PASSWORD` is set). They live in the same Firebase Authentication project as production packages.
+
+Dev (`lib/main_dev.dart`, `FLAVOR=dev`, package `com.belongonthespectrum.refuge.dev`) does not require email verification. It does not show the check-email wall, does not show the Home reminder, and does not send a verification email. That gate is `mustVerifyEmail` / `sendsEmailVerification` on `AppFlavor`, not a shared flag. Production (`AppFlavor.prod`) still blocks Home until the email is verified.
 
 If a shortcut says the password does not match:
 

@@ -36,8 +36,12 @@ tags:
 - extendedWaitUntil:
     visible: ".*Attach media.*"
     timeout: 15000
-- tapOn: "More"
-- tapOn: "Photo"
+- tapOn:
+    text: "^More$"
+    below: "Attach media"
+- tapOn:
+    text: "^Photo$"
+    below: "Belong memes"
 - extendedWaitUntil:
     visible: ".*Use Camera.*"
     timeout: 10000

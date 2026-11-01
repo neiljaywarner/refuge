@@ -35,7 +35,10 @@ tags:
     visible: ".*Attach media.*"
     timeout: 15000
 - assertVisible: ".*Attach media.*"
-- assertVisible: "More"
+# Exact "^More$" so this does not hit "Paste a link under More."
+- assertVisible:
+    text: "^More$"
+    below: "Attach media"
 
 # Phone builds: official picker entry. Do not treat a missing HTTP footer as a failure.
 - runFlow:
@@ -60,10 +63,16 @@ tags:
     commands:
       - assertVisible: ".*Paste a link under More.*"
 
-- tapOn: "More"
+# id attach_media_more / attach_media_photo. Anchored exact text so the
+# unconfigured sentence and any other "Photo" cannot win the tap.
+- tapOn:
+    text: "^More$"
+    below: "Attach media"
 - assertVisible: "Belong memes"
 - assertVisible: "Paste a link"
-- assertVisible: "Photo"
+- assertVisible:
+    text: "^Photo$"
+    below: "Belong memes"
 
 # Leave the sheet without attaching or posting.
 - pressKey: back

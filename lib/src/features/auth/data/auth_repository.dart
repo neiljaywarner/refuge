@@ -7,6 +7,7 @@ import '../../../core/config/app_flavor.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/account_deletion_exception.dart';
 import '../../feedback/data/feature_voting_repository.dart';
+import '../domain/auth_access_policy.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_session.dart';
 import '../../../core/logging/app_logger.dart';
@@ -469,10 +470,12 @@ class FirebaseAuthRepository implements AuthRepository {
         final user = credential.user;
         if (user != null) {
           await user.updateDisplayName(displayName.trim());
-          try {
-            await user.sendEmailVerification();
-          } catch (e) {
-            talker.warning('⚠️ [FirebaseAuthRepository] sendEmailVerification failed: $e');
+          if (sendsEmailVerification(flavor)) {
+            try {
+              await user.sendEmailVerification();
+            } catch (e) {
+              talker.warning('⚠️ [FirebaseAuthRepository] sendEmailVerification failed: $e');
+            }
           }
           final session = AuthSession(
             userId: user.uid,
@@ -685,6 +688,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendEmailVerification() async {
+    if (!sendsEmailVerification(flavor)) return;
     final liveAuth = auth;
     if (liveAuth != null && _hasRealCredentials) {
       final user = liveAuth.currentUser;

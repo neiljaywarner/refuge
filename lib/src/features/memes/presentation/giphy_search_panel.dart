@@ -29,12 +29,13 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
   String? _error;
   List<GiphyGif> _results = const [];
   var _showingTrending = true;
+  var _searchGeneration = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || _searchGeneration != 0) return;
       if (ref.read(giphySurfaceProvider) == GiphySurface.webApi) {
         _search('');
       }
@@ -58,21 +59,39 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       return;
     }
 
+    final trimmed = query.trim();
+    final generation = ++_searchGeneration;
+    if (trimmed.isEmpty) {
+      final cached = ref.read(giphyTrendingCacheProvider).resultsFor(client.contentRating);
+      if (cached != null) {
+        setState(() {
+          _loading = false;
+          _error = null;
+          _showingTrending = true;
+          _results = cached;
+        });
+        return;
+      }
+    }
+
     setState(() {
       _loading = true;
       _error = null;
-      _showingTrending = query.trim().isEmpty;
+      _showingTrending = trimmed.isEmpty;
     });
 
     try {
       final results = await client.search(query);
-      if (!mounted) return;
+      if (!mounted || generation != _searchGeneration) return;
+      if (trimmed.isEmpty) {
+        ref.read(giphyTrendingCacheProvider).remember(client.contentRating, results);
+      }
       setState(() {
         _loading = false;
         _results = results;
       });
     } on GiphySearchException catch (error) {
-      if (!mounted) return;
+      if (!mounted || generation != _searchGeneration) return;
       setState(() {
         _loading = false;
         _error = error.message;
@@ -125,15 +144,16 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
             const SizedBox(width: 8),
             ElevatedButton(
               key: const Key('giphy_search_button'),
-              onPressed: _loading ? null : () => _search(_queryController.text),
+              onPressed: () => _search(_queryController.text),
               child: const Text('Search', style: TextStyle(fontSize: 12)),
             ),
           ],
         );
-        const attribution = Text(
-          key: Key('giphy_attribution'),
-          'Powered by GIPHY',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.2),
+        final attribution = _giphyAttribution(context);
+        final stillNote = Text(
+          '$ratingLabel still previews. The GIF plays only after you attach it.',
+          key: const Key('giphy_still_motion_note'),
+          style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
         );
         final results = _buildResults(ratingLabel);
 
@@ -147,6 +167,8 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
               children: [
                 searchRow,
                 const SizedBox(height: 6),
+                stillNote,
+                const SizedBox(height: 6),
                 attribution,
                 const SizedBox(height: 8),
                 SizedBox(height: 160, child: results),
@@ -159,6 +181,8 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
           crossAxisAlignment: .start,
           children: [
             searchRow,
+            const SizedBox(height: 6),
+            stillNote,
             const SizedBox(height: 8),
             Expanded(child: results),
             const SizedBox(height: 6),
@@ -166,6 +190,37 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
           ],
         );
       },
+    );
+  }
+
+  /// Official horizontal lockup from GIPHY's attribution pack
+  /// (https://media.giphy.com/giphy-attribution-marks.zip), unmodified.
+  /// Black ink sits on a light sheet; white ink sits on a dark sheet.
+  /// The text beside it keeps [Key] `giphy_attribution`'s readable name.
+  Widget _giphyAttribution(BuildContext context) {
+    final onLight = Theme.of(context).brightness == Brightness.light;
+    return Semantics(
+      key: const Key('giphy_attribution'),
+      label: 'Powered by GIPHY',
+      child: ExcludeSemantics(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              onLight
+                  ? 'assets/images/giphy/powered_by_giphy_on_light.png'
+                  : 'assets/images/giphy/powered_by_giphy_on_dark.png',
+              height: 18,
+              filterQuality: FilterQuality.medium,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Powered by GIPHY',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.2),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

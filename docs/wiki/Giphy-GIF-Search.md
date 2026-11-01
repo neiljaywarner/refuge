@@ -38,7 +38,7 @@ Putting keys in Remote Config is normal for Giphy: they are **not** payment secr
 
 Composer **Add Meme / GIF** opens one **Attach media** sheet ([#762](https://github.com/neiljaywarner/refuge/issues/762)). GIF search is the first thing on the sheet. There is no separate Search GIFs chip.
 
-- **Web, PWA, and desktop:** the search field and trending results are visible as soon as the sheet opens. Still previews while you browse; motion starts after you attach. A tap on a trending GIF attaches it.
+- **Web, PWA, and desktop:** the search field is visible as soon as the sheet opens, with one trending request. Opening the sheet again in the same session reuses that list. A search that is still in flight cannot overwrite a newer one. Copy on the sheet: “PG still previews. The GIF plays only after you attach it.”
 - **Android and iOS:** **Open Giphy** is the primary action. It opens the official SDK dialog (GIFs, stickers, emoji, clips, animated text). That dialog keeps Giphy’s own branding.
 - **More:** Belong memes, paste a link, and photo (camera or gallery) sit under **More**, collapsed until someone asks for them.
 - The sheet height follows the space above the keyboard so the results grid stays in the remaining area ([#761](https://github.com/neiljaywarner/refuge/issues/761)).
@@ -59,7 +59,7 @@ The Patrol target uses an in-memory GIF double. It does not call Giphy, log a ke
 
 Giphy’s [API docs](https://developers.giphy.com/docs/) (Attribution) and [API Terms](https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service) require a conspicuous **Powered by GIPHY** mark where the API is used. Approved marks: [brand guidelines](https://support.giphy.com/hc/en-us/articles/360022283772-GIPHY-Brand-Guidelines).
 
-- The **web/PWA picker** shows **Powered by GIPHY** on the Attach media sheet, next to search and results. That line is not moved to About.
+- The **web/PWA picker** shows the official horizontal **Powered by GIPHY** lockup (from [GIPHY’s attribution marks](https://media.giphy.com/giphy-attribution-marks.zip), unmodified) beside the words **Powered by GIPHY** (`Key('giphy_attribution')`). That mark stays on this sheet. It is not moved to About.
 - The **native SDK dialog** keeps its own Giphy marks. Belong does not strip them.
 - **About** adds one calm line: GIF features are gratefully powered by GIPHY, and GIPHY does not endorse Belong, with a link to [giphy.com](https://giphy.com). Help on About stays Vote & Feedback ([#495](https://github.com/neiljaywarner/refuge/issues/495), [#752](https://github.com/neiljaywarner/refuge/issues/752)).
 

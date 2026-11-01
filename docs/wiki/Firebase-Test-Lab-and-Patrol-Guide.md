@@ -12,7 +12,7 @@
 
 Every Test Lab build uses:
 
-- `-t lib/main_dev.dart` (via Patrol `build android` dart-defines)
+- Patrol `build android -t` the integration_test target (not `lib/main_dev.dart`)
 - `--dart-define=FLAVOR=dev`
 - `--dart-define=ENABLE_SERVERPOD=false`
 - Package `com.belongonthespectrum.refuge.dev` only (upload refused otherwise)
@@ -56,7 +56,7 @@ GitHub Actions installs `patrol_cli` **4.8.0** (the CLI that matches `patrol` 4.
 
 A plain `flutter build apk` plus `assembleDebugAndroidTest` does not set those ports. `PatrolJUnitRunner` then waits for an app service that never answers, and Test Lab hits the 10 minute device timeout (matrix [8259225914821074286](https://console.firebase.google.com/project/belongonthespectrum/testlab/histories/bh.cfd6e1e9a2c20747/matrices/8259225914821074286)). The runner refuses that fallback.
 
-`pumpDevReadOnlyHome` leaves a phone-width display alone. Forcing 390×844 at pixel ratio 1 on panther (Pixel 7) detaches Flutter’s surface: finders still see the tree, the screen stays on Patrol’s first frame, and a tap can land in the GIF search field. Desktop-width emulators (logical width ≥ 768) still get a 390-wide frame so the inline composer stays visible.
+`pumpDevReadOnlyHome` leaves a phone-width display alone. Forcing 390×844 at pixel ratio 1 on panther (Pixel 7, about 412 dp) detaches Flutter’s surface: finders still see the tree, the screen stays on Patrol’s first frame, and a tap can land in the GIF search field. That override stays only when the logical width is already at least 768, so a desktop emulator still shows the inline composer (it hides at that width). Panther does not take the override.
 
 The attach-media target does not `waitUntilVisible` on `attached_meme_banner`. On panther that banner is in the tree (amber padding 10,6,10,6) while its center is covered by the IME or sits below the fold, so the hit-test wait times out after the GIF has already attached (matrix run `41350970479`). The test hides the keyboard, scrolls the banner into view, and asserts the exact `Attached:` caption and that the sheet has closed.
 

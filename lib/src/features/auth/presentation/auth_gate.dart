@@ -30,7 +30,8 @@ import 'verify_email_copy.dart';
 /// 3. not banned (else the lockout copy, which stays up after sign-out), and
 /// 4. in production only, email-verified.
 ///
-/// Other flavors keep the soft gate and explain verification on Home.
+/// Dev does not send a verification email and does not show a reminder.
+/// Other non-production flavors keep the soft banner.
 ///
 /// Reads [authRepositoryProvider], not [memberProfileProvider].
 class AuthGate extends ConsumerStatefulWidget {
@@ -163,9 +164,9 @@ class _AuthGateState extends ConsumerState<AuthGate> {
               _scheduleBanRefusal();
               return const _BanRefusalWall();
             }
-            if (!session.emailVerified) {
-              // Dev does not block, but still sends one message so a yopmail
-              // inbox can confirm the account (#749). The wall stays prod-only.
+            if (sendsEmailVerification(flavor) && !session.emailVerified) {
+              // Dev never reaches this. Other flavors send one message.
+              // The wall below stays production-only.
               _sendVerificationOnce(session.userId);
             }
 
