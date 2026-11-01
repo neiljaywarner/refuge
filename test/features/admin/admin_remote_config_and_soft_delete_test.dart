@@ -121,6 +121,27 @@ void main() {
       expect(restored.originalData['church'], 'DFW Church');
     });
 
+    test('cloud ban document omits email addresses', () {
+      final map = firestoreBanDocument(
+        userId: 'caleb-123',
+        displayName: 'Caleb Stone',
+        reason: 'Testing remote soft-delete',
+        additionalData: {
+          'role': 'Audio Ministry',
+          'email': 'caleb@example.com',
+          'bannedByAdminEmail': 'organizer@belongonthespectrum.com',
+          'contactEmail': 'caleb@example.com',
+        },
+      );
+
+      expect(map.containsKey('email'), isFalse);
+      expect(map.containsKey('bannedByAdminEmail'), isFalse);
+      expect(map['userId'], 'caleb-123');
+      expect(map['displayName'], 'Caleb Stone');
+      expect(map['softDeleted'], isTrue);
+      expect(map['originalData'], {'role': 'Audio Ministry'});
+    });
+
     test('converts Firestore Timestamp to DateTime properly in fromMap', () {
       final now = DateTime.utc(2026, 10, 22, 12, 0);
       final timestamp = Timestamp.fromDate(now);

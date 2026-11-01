@@ -3,6 +3,8 @@ service firebase.storage {
   match /b/{bucket}/o {
     // Circle-style members-only community (#601, #620).
     // Unauthenticated guests and anonymous Firebase sessions cannot read or write storage.
+    // Soft-launch re-audit: no public read or write. Avatar and post-media
+    // reads stay member-only on purpose. Feedback and diagnostics stay unreadable.
     function isSignedInMember() {
       return request.auth != null
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
