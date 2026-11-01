@@ -1,5 +1,7 @@
 # 🤝 Notes for 1:00 PM Meeting with Potential Business Partner / Technical Co-Founder
 
+> **Meeting notes from October 24, 2026.** The overlap week they describe is past. Current short list: [#765](https://github.com/neiljaywarner/refuge/issues/765). Production: [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/).
+>
 > **Date**: October 24, 2026 — 1:00 PM (CDT)  
 > **Topic**: Belong on the Spectrum — Ministry Launch, Technical Architecture & Commercial SaaS Expansion  
 > **Context**: Partner has successfully run his own software development consultancy / agency for years. Discussion explores mutual interest in advising, partnering, or co-founding to scale Belong from a local church ministry into a sustainable, revenue-generating calm-tech community platform.

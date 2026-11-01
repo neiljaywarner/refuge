@@ -12,5 +12,5 @@ We are grateful to everyone helping build, test, and steward **Belong on the Spe
 
 ## 🎓 Student Mentees, Apprentices & Open-Source Contributors
 Want to add your name here?
-1. Non-technical community members: Help test our October 24–31 Circle transition or share feedback via our [Volunteer Guide](https://github.com/neiljaywarner/refuge/wiki/How-You-Can-Help-Volunteer-Guide)!
+1. Non-technical community members: Open [belongonthespectrum.web.app](https://belongonthespectrum.web.app/) and share feedback via our [Volunteer Guide](https://github.com/neiljaywarner/refuge/wiki/How-You-Can-Help-Volunteer-Guide). Testers use [dev-belongonthespectrum.web.app](https://dev-belongonthespectrum.web.app/). [onthespectrum.web.app](https://onthespectrum.web.app/) is not a Belong site.
 2. Developers & apprentices: Pick any open issue labeled [`good first issue`](https://github.com/neiljaywarner/refuge/labels/good%20first%20issue) or [`mentoring`](https://github.com/neiljaywarner/refuge/labels/mentoring) and submit a Pull Request following [`CONTRIBUTING.md`](CONTRIBUTING.md).

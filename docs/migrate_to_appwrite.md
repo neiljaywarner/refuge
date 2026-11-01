@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary: 37signals "Getting Real" + Why Google Sign-In Matters So Much
 
-Our top priority is launching a calm, reliable **Belong on the Spectrum** community app by **October 24, 2026** so our members have a **7-day calm overlap window** before the **October 31, 2026** Circle.so subscription renewal (saving ~$1,000+/year).
+This evaluation was written while the goal was a calm Belong launch by October 24, 2026, ahead of the October 31 overlap window. That window is past. The short list still open is [#765](https://github.com/neiljaywarner/refuge/issues/765). The recommendation below is the evaluation record, not a new schedule.
 
 Following 37signals' **"Getting Real"** philosophy:
 1. **For `v0.6.0`–`v0.8.0-alpha` (Tonight)**: Ship the working alpha + Firebase Hosting Preview Channel immediately with Stage 1 Auth (simple account/profile) so people can explore all 6 Belong spaces, search, and vote on features tonight without waiting on OAuth console setup.

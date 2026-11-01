@@ -1,6 +1,8 @@
 # 🎉 Welcome to Belong on the Spectrum — Our Calm-Tech Digital Home!
 
-> **Community Overlap Window:** October 24 – October 31, 2026  
+> **Archived invitation.** The October 24–31, 2026 overlap window is past. This file is the copy prepared for that week. The current short list is [`docs/solid_1.0_checklist.md`](solid_1.0_checklist.md) and [#765](https://github.com/neiljaywarner/refuge/issues/765). Member app: [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/). Dev: [https://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/). [https://onthespectrum.web.app/](https://onthespectrum.web.app/) is not a Belong host.
+>
+> **Community Overlap Window (then):** October 24 – October 31, 2026  
 > **Short 3-Day Playtest Post (Oct 25–27):** [`docs/circle_open_alpha_3day_playtest_post.md`](circle_open_alpha_3day_playtest_post.md)  
 > **Production Sanctuary Web App:** [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app)  
 > **Maintainer Tracking Issue:** [GitHub Issue #249](https://github.com/neiljaywarner/refuge/issues/249)  

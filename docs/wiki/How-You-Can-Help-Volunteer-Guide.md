@@ -2,11 +2,12 @@
 
 You do not need special skills. If you can open a link, look around, and say how it felt, you can help.
 
-This week, **October 24–31**, Circle and Belong both stay open. Go at your own pace.
+Belong is open. Go at your own pace.
 
-**Open Belong:** [belongonthespectrum.web.app](https://belongonthespectrum.web.app)
+**Open Belong:** [belongonthespectrum.web.app](https://belongonthespectrum.web.app/)  
+**Try newer work:** [dev-belongonthespectrum.web.app](https://dev-belongonthespectrum.web.app/)
 
-A longer schedule for leaders is on **[Plan through October 31](Non-Technical-Roadmap-to-Oct-31)**. The rooms are described on **[Our community spaces](Belong-Community-Guide)**.
+[onthespectrum.web.app](https://onthespectrum.web.app/) is not a Belong site. The short list still open for leaders is **[After October 31 — solid 1.0](Non-Technical-Roadmap-to-Oct-31)**. The rooms are described on **[Our community spaces](Belong-Community-Guide)**.
 
 ---
 
@@ -29,10 +30,10 @@ Copy everything in the box. It already includes the Belong link.
 ```markdown
 👋 Hey Belong family!
 
-Before October 31, we are gently moving from Circle into Belong on the Spectrum. Both places stay open through October 31. There is no rush.
+Belong on the Spectrum is open. Take your time.
 
 Open Belong here:
-https://belongonthespectrum.web.app
+https://belongonthespectrum.web.app/
 
 Our website:
 https://www.belongonthespectrum.com/
@@ -48,7 +49,7 @@ Three easy ways to help (about 2 minutes):
 
 You can also put Belong on your iPhone or Android home screen. Steps for both are in the "How you can help" guide.
 
-Reply here if you would like to welcome people this week.
+Reply here if you would like to welcome people.
 ```
 
 ---

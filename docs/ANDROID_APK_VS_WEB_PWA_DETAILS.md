@@ -161,7 +161,7 @@ While both targets share **98% of business logic, domain models, Riverpod state 
 
 ## 🎯 Architectural Verdict & Best-of-Both Recommendation
 
-For the **October 24–31 soft launch and community cutover**:
+For soft launch (the October 24–31 overlap window is past; see [#765](https://github.com/neiljaywarner/refuge/issues/765)):
 1. **Primary Recommendation for All Members**: Use the **Web PWA** (`belongonthespectrum.web.app`). It provides an instantaneous, zero-friction experience with no passwords, no storage bloat, and automatic updates.
 2. **Recommendation for Power Users & Organizers**: Install the **Native Android APK** if you require guaranteed background FCM wakeup notifications, hardware launcher unread badges, or deep offline SQLite persistence in areas with poor cellular connectivity.
 

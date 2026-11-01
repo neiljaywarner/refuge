@@ -7,7 +7,7 @@
 
 ## 🎯 Why We Use Strict Ticket-Driven Development
 
-This repository is designed both to **ship our production Circle.so replacement before October 31, 2026** and to serve as an **exemplary teaching codebase for Flutter apprentices, mentees, and AI pair-programmers** (Epic `#38`).
+This repository is the Belong on the Spectrum codebase and a teaching reference for Flutter apprentices, mentees, and AI pair-programmers (Epic `#38`). The October 31, 2026 overlap window is past. The short list still open is [#765](https://github.com/neiljaywarner/refuge/issues/765).
 
 By enforcing **`1 GitHub Issue = 1 Git Worktree = 1 Atomic Pull Request`**, anyone inspecting our commit history, Pull Requests, or GitHub Issues can trace *why* every line of code was written.
 

@@ -2,7 +2,7 @@
 
 > **Context**: Compiled during repository audit and milestone verification on Monday, October 19, 2026.  
 > **Linked Review**: [`human_to_review_after_session.md`](human_to_review_after_session.md)  
-> **Status**: Open for maintainer input before October 31 cutover.
+> **Status**: Questions from October 19, 2026. The October 31 overlap window is past. Current short list: [#765](https://github.com/neiljaywarner/refuge/issues/765).
 
 ---
 

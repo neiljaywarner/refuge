@@ -1,6 +1,8 @@
 # Belong on the Spectrum — Circle 3-Day Open Playtest Announcement
 
-> **Status**: Ready to paste into Circle.so  
+> **Archived.** The October 25–27 playtest and the October 31 overlap window are past. Do not paste this as a current announcement. The living list is [#765](https://github.com/neiljaywarner/refuge/issues/765).
+>
+> **Status (then)**: Ready to paste into Circle.so  
 > **Audience**: Circle community members, disciples, families, and mentors  
 > **Playtest Window**: Saturday, October 25 – Monday, October 27, 2026  
 > **Estimated Cutover Date**: Tuesday, October 28, 2026  

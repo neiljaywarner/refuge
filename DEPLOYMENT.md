@@ -6,9 +6,18 @@
 
 ---
 
-## Soft-launch status (22 October 2026)
+## Hosts (confirmed November 1, 2026)
 
-Checked against `origin/main` for the overlap week. This section does not record a new production deploy. The existing site remains [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app).
+| Role | URL |
+| :--- | :--- |
+| Production / soft launch | [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/) |
+| Dev | [https://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/) |
+
+[https://onthespectrum.web.app/](https://onthespectrum.web.app/) is not a Belong host (Firebase Site Not Found). The October overlap window is past. A fresh non-DEV production deploy is still open: [`docs/solid_1.0_checklist.md`](docs/solid_1.0_checklist.md) and [#765](https://github.com/neiljaywarner/refuge/issues/765).
+
+## Snapshot from 22 October 2026
+
+Checked against `origin/main` during the overlap week. This section does not record a new production deploy. The last production deploy this runbook records is **v0.9.2** on 2026-10-28. That is not a claim about which build strangers see today. The production host remains [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/).
 
 - **Posts.** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
 - **Android debug compile.** `android/app/build.gradle.kts` on `main` sets `jvmTarget` to `org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17`. That change is on `main` via [PR #413](https://github.com/neiljaywarner/refuge/pull/413). This note does not record a new debug build from the docs pass.
@@ -65,9 +74,9 @@ One Firebase project (`belongonthespectrum`) hosts two sites. Auth and Firestore
 | Release **preview channel** | `dart run tool/deploy_release.dart --version vX.Y.Z` | `lib/main_prod.dart`, `FLAVOR=prod` | `https://belongonthespectrum--<channel>.web.app` (expires) |
 | **Production** | same command with `--prod` | same prod build | `https://belongonthespectrum.web.app/` |
 
-Preview channels are short-lived release candidates on the prod site. They are not the dev site. `--prod` deploys `firebase.json` only, so a release cannot overwrite the dev site. `tool/deploy_dev_web.dart` deploys `firebase.dev.json` and refuses `--prod`. The configs stay split so a missing dev site cannot break `firebase deploy --only hosting`.
+Preview channels are short-lived release candidates on the prod site. They are not the dev site. `--prod` deploys `firebase.json` only, so a release cannot overwrite the dev site. `tool/deploy_dev_web.dart` deploys `firebase.dev.json` and refuses `--prod`. The configs stay split so a hosting deploy of one site does not publish the other.
 
-The dev site id does not exist until someone who is logged into Firebase runs `dart run tool/deploy_dev_web.dart --create-site` once. Until then the URL is Firebase's "Site Not Found" page.
+As of November 1, 2026, [https://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/) is a live Belong host. `dart run tool/deploy_dev_web.dart --create-site` is only the first-time Firebase step if that site id is missing. Do not send people to [https://onthespectrum.web.app/](https://onthespectrum.web.app/).
 
 A plain `flutter build web` uses `lib/main.dart`, which stays on `dev` unless `FLAVOR` is set. Release builds pass `-t lib/main_prod.dart` so they do not publish the dev flavor to production.
 

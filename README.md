@@ -1,9 +1,10 @@
 # ♾️ Refuge — Powering Belong on the Spectrum
 
 > *"I praise you because I am fearfully and wonderfully made."* — **Psalm 139:14**  
-> **Current Release**: **`v0.9.5-rc` (Release Readiness Gate)** · **Live Web & PWA**: **[`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)**  
+> **As of November 1, 2026**: soft launch is open. A fresh non-DEV production deploy (aim **0.9.7**, **0.9.8**, or a named **1.0.0**) is still ahead — [issue #765](https://github.com/neiljaywarner/refuge/issues/765).  
+> **Production**: **[`https://belongonthespectrum.web.app/`](https://belongonthespectrum.web.app/)** · **Dev**: **[`https://dev-belongonthespectrum.web.app/`](https://dev-belongonthespectrum.web.app/)**  
 > **First Community**: **[Belong on the Spectrum](https://www.belongonthespectrum.com/)** (partnered with **[DFW Church](https://dfwchurch.org)**)  
-> **Circle.so Overlap Window**: **October 24 – October 31, 2026** · **Final Cutover**: **Saturday, October 31, 2026**
+> **Not a Belong host**: [`https://onthespectrum.web.app/`](https://onthespectrum.web.app/) (Firebase Site Not Found). The October 24–31 overlap window is past.
 
 ---
 
@@ -11,7 +12,7 @@
 - 📱 **[Real Device Driving & Maestro Automation (`docs/real_device_driving_and_automation.md`)](docs/real_device_driving_and_automation.md)**: Real hardware fleet (Pixel 9a, Pixel 8, emulator), Maestro MCP Server, live screen viewer (`http://127.0.0.1:9999/`), and Patrol BDD tests.
 - 🧠 **[Community Leader & Pastoral Brainstorms (`docs/wiki/Community-Leader-Brainstorms.md`)](docs/wiki/Community-Leader-Brainstorms.md)**: Thoughtful calm-tech design trade-offs, church affiliation badge placement (Feed vs. Directory), notification cadence, and autistic-first norms ([Issue #265](https://github.com/neiljaywarner/refuge/issues/265)).
 - 🚀 **[Release Readiness Gate & Progress Dashboard (`#261`)](https://github.com/neiljaywarner/refuge/issues/261)**: Real-time and async launch gate covering Web, PWA (WebAPK), Android APK, and documentation synchronization.
-- 📣 **[Circle Migration Overlap Welcome Post (`docs/circle_migration_invitation_post.md`)](docs/circle_migration_invitation_post.md)**: Ready-to-copy announcement post for Circle.so to initiate the Oct 24–31 overlap week ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)).
+- 📣 **[Circle overlap invitation (`docs/circle_migration_invitation_post.md`)](docs/circle_migration_invitation_post.md)**: Archived copy of the October 24–31 welcome post ([Issue #249](https://github.com/neiljaywarner/refuge/issues/249)). It is not the current plan.
 - 📊 **[Circle App Store Review Learnings (`docs/benchmarks/circle_app_store_review_learnings.md`)](docs/benchmarks/circle_app_store_review_learnings.md)**: Competitive sentiment audit, pitfalls to avoid (notification spam, webview latency, back-stack bugs), and beloved patterns to replicate.
 - 🧭 **[Careful Maestro Driving Guide (`docs/benchmarks/circle_maestro_driving_guide.md`)](docs/benchmarks/circle_maestro_driving_guide.md)**: Non-destructive, read-only device discovery on Google Pixel 9a (`so.circle.circle`) with Zero-PII clean-framing protocol.
 - 🎨 **[Golden Testing & Visual Regression Guide (`docs/wiki/Golden-Testing-and-Visual-Regression-Guide.md`)](docs/wiki/Golden-Testing-and-Visual-Regression-Guide.md)**: Headless font loading (`TestFontLoader`), Martin Fowler sociable widget goldens, and pixel-fidelity regression verification.
@@ -56,7 +57,7 @@ Its flagship community is **[Belong on the Spectrum](https://www.belongonthespec
 | Guide | Audience | Description |
 | :--- | :--- | :--- |
 | **[🧠 Leadership & Pastoral Brainstorms](docs/wiki/Community-Leader-Brainstorms.md)** | **Pastors & Organizers** | Open design questions: church badge placement (Feed vs. Directory), calm notification digests, and icebreaker prompts. |
-| **[📅 Oct 31 Circle.so Cutover Schedule](docs/wiki/Non-Technical-Roadmap-to-Oct-31.md)** | **Organizers & Pastors** | Plain-English day-by-day schedule from Oct 18 to Oct 31, 2026 (final day of Circle.so subscription). |
+| **[📅 After October 31 — solid 1.0](docs/wiki/Non-Technical-Roadmap-to-Oct-31.md)** | **Organizers & Pastors** | Short list still open after the overlap week. Engineering detail: [`docs/solid_1.0_checklist.md`](docs/solid_1.0_checklist.md) and [#765](https://github.com/neiljaywarner/refuge/issues/765). |
 | **[⚖️ Backend Migration & Hybrid Grading (ADR-0009)](docs/wiki/Backend-Migration-Strategy-Serverpod-Appwrite-Firebase.md)** | **Engineers & Architects** | Why Appwrite Core (Auth/DB/Realtime) + Firebase Edge (Hosting/FCM/Audiences) scores **A+ (`9.7/10`)**, and Piece-by-Piece vs. One-Shot grading. |
 | **[🛠️ Refuge CLI (`tool/refuge_cli.dart`)](docs/wiki/Refuge-CLI.md)** | **Engineers & Mentees** | `ship-pr` (CodeRabbit-gated merges), `privacy-scan`, `sync-wiki`, exit codes & FAQ. Run `dart run tool/refuge_cli.dart help`. |
 | **[🚀 Deployment & Release Runbook](DEPLOYMENT.md)** | **Engineers & Release Ops** | Pure-Dart deployment script (`tool/deploy_release.dart`) + `week1` Audio MP3 Release Notes roadmap. |

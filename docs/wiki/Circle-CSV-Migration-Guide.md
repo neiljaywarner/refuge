@@ -1,7 +1,7 @@
 # 📥 Bringing Over Past Posts & Introductions (Spreadsheet / CSV Migration Guide)
 
 > **Audience**: Community Organizers, Pastors, Moderators, and Non-Technical Volunteers  
-> **Purpose**: Plain-English guide on how our past discussions, introductions, and prayer requests are safely brought into Belong on the Spectrum before October 31st, 2026.  
+> **Purpose**: Plain-English guide on how past discussions, introductions, and prayer requests can be brought into Belong on the Spectrum. Re-import polish is not required to call 1.0 solid ([#765](https://github.com/neiljaywarner/refuge/issues/765)).  
 > **Technical Tool Reference**: `tool/import_circle_csv.dart` ([Issue #41](https://github.com/neiljaywarner/refuge/issues/41), [PR #98](https://github.com/neiljaywarner/refuge/pull/98))
 
 ---
@@ -16,7 +16,7 @@ When you open a CSV in Excel, you see familiar rows and columns:
 * **Column C**: Which room it was posted in (e.g., `Start Here` or `General Chat`).
 * **Column D**: The actual message or reflection.
 
-When our community leaves our old paid platform on October 31st, the platform lets community organizers download an archive of past messages as a spreadsheet.
+Circle can give organizers a spreadsheet archive of past messages. That export is optional follow-up work. It is not required to call 1.0 solid.
 
 ---
 
@@ -89,21 +89,17 @@ As an open-source, public-friendly ministry project, we adhere to the highest st
    - Phone numbers and private email addresses are never published to community feeds.
    - Posts only show the member's chosen display name and message text.
 3. **No Overwrites**:
-   - Importing past posts does not overwrite or delete any new posts made by members who are already exploring the app during our October 24–31 overlap week.
+   - Importing past posts does not overwrite or delete any new posts members have already made in Belong.
 
 ---
 
-## 6. Official Circle.so Welcome & Overlap Invitation Post (Oct 24–31)
+## 6. Archived Circle.so welcome post (October 24–31)
 
-To begin the calm 7-day exploration overlap week, organizers post the official invitation in Circle.so **Announcements**:
+The overlap week is past. The invitation below is the copy that was prepared for that week. It is not the current plan. The current short list is **[After October 31 — solid 1.0](Non-Technical-Roadmap-to-Oct-31)**.
 
-> [!IMPORTANT]
-> **High-Priority Maintainer Tracking**: [Issue #249](https://github.com/neiljaywarner/refuge/issues/249) (`*** 🚨 HIGH PRIORITY: Copy Circle.so Welcome Post into Circle to begin Oct 24–31 Overlap Week 🚨 ***`).  
-> **Source Markdown File**: [`docs/circle_migration_invitation_post.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/circle_migration_invitation_post.md)  
-> **Self-Testing Guide**: [`docs/ascii_email_for_self_testing_alpha_verification.txt`](https://github.com/neiljaywarner/refuge/blob/main/docs/ascii_email_for_self_testing_alpha_verification.txt)  
-> **Production App URL**: [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app)
+The template below is the October copy. Do not post it as if that week is still ahead. Current member link: [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/). Source file: [`docs/circle_migration_invitation_post.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/circle_migration_invitation_post.md). Tracking issue from that week: [#249](https://github.com/neiljaywarner/refuge/issues/249).
 
-### Quick Copy Template for Organizers
+### Archived copy (October 24–31)
 ```markdown
 🎉 Welcome to Belong on the Spectrum — Our Calm-Tech Digital Home!
 
