@@ -17,7 +17,12 @@ void main() {
     expect($('Messages'), findsOneWidget);
     expect($('Search'), findsOneWidget);
 
-    expect($('Filter: '), findsOneWidget);
+    // Home content is at most 820 wide, so phone chrome (#484) drops the
+    // "Filter:" prefix and shows the active filter name instead.
+    expect($(const Key('tone_filter_popup_button')), findsOneWidget);
+    expect($(const Key('tone_filter_active_label')), findsOneWidget);
+    expect($('All'), findsWidgets);
+    expect($(const Key('feed_sort_popup_button')), findsOneWidget);
     expect($(ChoiceChip), findsWidgets);
 
     expect($('Vote & Feedback'), findsOneWidget);
