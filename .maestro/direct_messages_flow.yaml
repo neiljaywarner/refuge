@@ -7,6 +7,8 @@ tags:
   - regression
 ---
 # Bottom nav label is "Messages" (semantics: "Messages tab"), not a bare "Msgs" id.
+# That tab is on Home, behind the members-only sign-in wall (#601).
+# An unsigned launch does not mean the Messages tab was removed.
 # Thread list includes Marty. Reply field hint: "Type a calm reply...".
 
 - launchApp:

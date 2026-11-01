@@ -6,7 +6,7 @@ appId: com.belongonthespectrum.refuge.dev
 # The signed-in walk (Spaces, notifications, delete) is dev_e2e_*.yaml.
 
 - launchApp:
-    clearState: true
+    clearState: false
 
 - extendedWaitUntil:
     visible: ".*Sign in to Belong on the Spectrum.*"

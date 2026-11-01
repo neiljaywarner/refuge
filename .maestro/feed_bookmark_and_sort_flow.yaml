@@ -1,6 +1,8 @@
 appId: com.belongonthespectrum.refuge.dev
 # Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
+# Requires Home chrome. "Vote & Feedback" is hidden on the sign-in wall (#601).
+# "Feed" is a whole word so it does not match the Feedback chip.
 # Intent filters on the live home feed: All, [Prayer Request], [Comfort Only],
 # [Bible Deep-Dive]. Sort chips use Semantics ids. The runner fails the
 # command if logcat shows a Flutter exception after the New Activity tap.
@@ -12,7 +14,7 @@ appId: com.belongonthespectrum.refuge.dev
 - extendedWaitUntil:
     visible: ".*Vote & Feedback.*"
     timeout: 45000
-- assertVisible: ".*Feed.*"
+- assertVisible: ".*\\bFeed\\b.*"
 - assertVisible: ".*\\[Prayer Request\\].*"
 - assertVisible: ".*\\[Comfort Only\\].*"
 - assertVisible: ".*\\[Bible Deep-Dive\\].*"
@@ -56,5 +58,5 @@ appId: com.belongonthespectrum.refuge.dev
     timeout: 15000
 - assertVisible: ".*Saved for Later.*"
 
-- tapOn: ".*Feed.*"
-- assertVisible: ".*Feed.*"
+- tapOn: ".*\\bFeed\\b.*"
+- assertVisible: ".*\\bFeed\\b.*"

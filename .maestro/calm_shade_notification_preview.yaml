@@ -7,7 +7,8 @@ tags:
   - regression
 ---
 # bottom_nav_tab_notifications is often absent. The visible name is
-# "Notifications tab". Preview button copy: "Preview shade notification".
+# "Notifications tab". Preview button copy includes "Preview shade notification".
+# The tab is on Home, behind the members-only sign-in wall (#601).
 
 - setPermissions:
     permissions:

@@ -7,6 +7,8 @@ tags:
   - adr-0007
   - adr-0009
 ---
+# "Vote & Feedback" is the Home subheader chip. Unsigned launch stays on
+# the sign-in wall (#601), so a missing chip there is not a removed entry.
 - launchApp
 - extendedWaitUntil:
     visible: ".*Vote & Feedback.*"

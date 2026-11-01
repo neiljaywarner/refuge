@@ -2,6 +2,7 @@ appId: com.belongonthespectrum.refuge.dev
 # Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 ---
 # Refuge calm-tech walkthrough. Header copy is "Belong", "Refuge", and
+# "Vote & Feedback" is Home chrome behind the sign-in wall (#601).
 # "Calm Tech • Live" or "Calm Tech • Resilient". Space titles live under Spaces.
 
 - launchApp
@@ -57,6 +58,6 @@ appId: com.belongonthespectrum.refuge.dev
 - assertVisible: ".*Refuge.*"
 
 # Read-only. Do not type a reflection or tap Publish Reflection.
-- tapOn: ".*Feed.*"
+- tapOn: ".*\\bFeed\\b.*"
 - assertVisible: ".*Share an unhurried thought.*"
 - assertVisible: ".*Add Meme / GIF.*"

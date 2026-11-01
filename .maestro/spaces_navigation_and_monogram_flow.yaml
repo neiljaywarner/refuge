@@ -8,9 +8,9 @@ appId: com.belongonthespectrum.refuge.dev
     clearState: false
 
 - extendedWaitUntil:
-    visible: ".*Feed.*"
+    visible: ".*\\bFeed\\b.*"
     timeout: 45000
-- assertVisible: ".*Feed.*"
+- assertVisible: ".*\\bFeed\\b.*"
 - assertVisible: ".*Spaces.*"
 
 - tapOn: ".*Spaces.*"
@@ -32,5 +32,5 @@ appId: com.belongonthespectrum.refuge.dev
 - assertVisible: ".*Community Organizer.*"
 
 - tapOn: ".*Back to Spaces.*"
-- tapOn: ".*Feed.*"
-- assertVisible: ".*Feed.*"
+- tapOn: ".*\\bFeed\\b.*"
+- assertVisible: ".*\\bFeed\\b.*"
