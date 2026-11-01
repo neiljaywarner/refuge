@@ -9,8 +9,11 @@ import '../application/feedback_attachment_ref.dart';
 import '../application/private_feedback_router.dart';
 import '../domain/feedback_and_voting_models.dart';
 import '../domain/feedback_source_stamp.dart';
+import '../domain/vote_tally.dart';
 import 'github_feedback_client.dart';
 import 'member_feedback_bridge.dart';
+import '../../../core/logging/app_logger.dart';
+import 'resilient_feature_voting_repository.dart';
 import 'vote_storage_service.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
@@ -98,12 +101,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     final votedIds = VoteStorageService.instance.getVotedFeatureIds();
     return [
       for (final item in kDefaultBelongVotableFeatures)
-        item.copyWith(
-          userVoted: votedIds.contains(item.id),
-          // Seed tallies do not include this device's guest vote. Add it
-          // back so a reload keeps the count and a second tap removes it.
-          votes: item.votes + (votedIds.contains(item.id) ? 1 : 0),
-        ),
+        item.copyWith(userVoted: votedIds.contains(item.id)),
     ];
   }
 
@@ -350,6 +348,20 @@ class FirebaseFeatureVotingRepository
   @override
   BackendTarget get target => BackendTarget.firebase;
 
+  static final Set<String> _seedFeatureIds = {
+    for (final item in kDefaultBelongVotableFeatures) item.id,
+  };
+
+  String? _signedInMemberUid() {
+    try {
+      final rawUid = (memberId ?? readCurrentMemberId)()?.trim();
+      if (rawUid == null || rawUid.isEmpty) return null;
+      return rawUid;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Stream<List<VotableFeatureItem>> watchFeatures() {
     final fs = firestore;
@@ -358,21 +370,35 @@ class FirebaseFeatureVotingRepository
     }
     try {
       return fs.collection(featuresCollectionPath).snapshots().map((snapshot) {
-        final remoteVotes = <String, int>{};
+        final remoteById = <String, ({int votes, List<String> voterIds})>{};
         for (final doc in snapshot.docs) {
+          if (!_seedFeatureIds.contains(doc.id)) continue;
           final data = doc.data();
-          if (data.containsKey('votes')) {
-            remoteVotes[doc.id] = (data['votes'] as num).toInt();
-          }
+          final votes = (data['votes'] as num?)?.toInt() ?? 0;
+          final voterIds =
+              (data['voterIds'] as List?)
+                  ?.map((entry) => entry.toString())
+                  .toList(growable: false) ??
+              const <String>[];
+          remoteById[doc.id] = (votes: votes, voterIds: voterIds);
         }
         final base = loadInitialFeatures();
         final votedIds = VoteStorageService.instance.getVotedFeatureIds();
+        final uid = _signedInMemberUid();
         return [
           for (final item in base)
-            if (remoteVotes.containsKey(item.id))
-              item.copyWith(votes: remoteVotes[item.id]!, userVoted: votedIds.contains(item.id))
-            else
-              item.copyWith(userVoted: votedIds.contains(item.id)),
+            () {
+              final remote = remoteById[item.id];
+              if (uid != null) {
+                final userVoted = remote != null && remote.voterIds.contains(uid);
+                return item.copyWith(votes: remote?.votes ?? item.votes, userVoted: userVoted);
+              }
+              if (remote == null) {
+                return item.copyWith(userVoted: votedIds.contains(item.id));
+              }
+              final userVoted = votedIds.contains(item.id);
+              return item.copyWith(votes: remote.votes, userVoted: userVoted);
+            }(),
         ];
       });
     } catch (_) {
@@ -382,27 +408,89 @@ class FirebaseFeatureVotingRepository
 
   @override
   List<VotableFeatureItem> toggleVote(List<VotableFeatureItem> current, String featureId) {
-    final next = super.toggleVote(current, featureId);
-    final targetItem = next.firstWhere(
-      (e) => e.id == featureId,
-      orElse: () => current.firstWhere((e) => e.id == featureId),
-    );
+    final uid = _signedInMemberUid();
+    final List<VotableFeatureItem> next;
+    if (uid != null) {
+      final item = current.firstWhere((e) => e.id == featureId);
+      final wantVoted = !item.userVoted;
+      VoteStorageService.instance.setFeatureVoted(featureId, wantVoted);
+      next = [
+        for (final voteItem in current)
+          if (voteItem.id == featureId)
+            voteItem.copyWith(
+              userVoted: wantVoted,
+              votes: wantVoted ? voteItem.votes + 1 : (voteItem.votes > 0 ? voteItem.votes - 1 : 0),
+            )
+          else
+            voteItem,
+      ];
+    } else {
+      next = super.toggleVote(current, featureId);
+    }
 
     final fs = firestore;
-    if (fs != null) {
-      try {
-        fs.collection(featuresCollectionPath).doc(featureId).set({
-          'id': featureId,
-          'title': targetItem.title,
-          'description': targetItem.description,
-          'votes': targetItem.votes,
-          'lastVotedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      } catch (_) {
-        // Resilient offline fallback
-      }
+    if (fs == null || uid == null) {
+      return next;
     }
+
+    final targetItem = next.firstWhere((e) => e.id == featureId);
+    unawaited(
+      _persistSignedInVote(
+        fs: fs,
+        featureId: featureId,
+        targetItem: targetItem,
+        uid: uid,
+        wantVoted: targetItem.userVoted,
+        optimisticNext: next,
+      ),
+    );
     return next;
+  }
+
+  Future<void> _persistSignedInVote({
+    required FirebaseFirestore fs,
+    required String featureId,
+    required VotableFeatureItem targetItem,
+    required String uid,
+    required bool wantVoted,
+    required List<VotableFeatureItem> optimisticNext,
+  }) async {
+    try {
+      await fs.runTransaction((transaction) async {
+        final ref = fs.collection(featuresCollectionPath).doc(featureId);
+        final snap = await transaction.get(ref);
+        final data = snap.data() ?? <String, dynamic>{};
+        final votes = (data['votes'] as num?)?.toInt() ?? 0;
+        final voterIds =
+            (data['voterIds'] as List?)?.map((entry) => entry.toString()).toList() ?? <String>[];
+        final tally = applyMemberVote(
+          votes: votes,
+          voterIds: voterIds,
+          uid: uid,
+          wantVoted: wantVoted,
+        );
+        if (!tally.changed) return;
+        final voteFields = <String, dynamic>{
+          'votes': tally.votes,
+          'voterIds': tally.voterIds,
+          'lastVotedAt': FieldValue.serverTimestamp(),
+        };
+        if (snap.exists) {
+          transaction.update(ref, voteFields);
+        } else {
+          transaction.set(ref, {
+            'id': featureId,
+            'title': targetItem.title,
+            'description': targetItem.description,
+            'stage': targetItem.stage.name,
+            ...voteFields,
+          });
+        }
+      });
+    } catch (error, stack) {
+      AppLogger.warning('feature_votes persist failed for $featureId', error, stack);
+      // Keep optimistic UI when Firestore is unreachable; thumb memory stays local.
+    }
   }
 
   @override
@@ -531,8 +619,11 @@ final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) 
   final gitHubClient = ref.watch(gitHubFeedbackClientProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.serverpod => ServerpodFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.appwrite => AppwriteFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.firebase => FirebaseFeatureVotingRepository(gitHubClient: gitHubClient),
+    BackendTarget.serverpod ||
+    BackendTarget.appwrite ||
+    BackendTarget.firebase => ResilientFeatureVotingRepository(
+      target: target,
+      primary: FirebaseFeatureVotingRepository(gitHubClient: gitHubClient),
+    ),
   };
 });

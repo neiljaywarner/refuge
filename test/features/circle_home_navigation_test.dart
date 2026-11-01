@@ -16,14 +16,14 @@ void main() {
       addTearDown(container.dispose);
 
       final initial = container.read(featureVotingProvider);
-      final dmItem = initial.firstWhere((e) => e.id == 'wip-direct-messages');
+      final dmItem = initial.firstWhere((e) => e.id == 'planned-native-store-apps');
       expect(dmItem.votes, 0);
       expect(dmItem.userVoted, isFalse);
 
-      container.read(featureVotingProvider.notifier).toggleVote('wip-direct-messages');
+      container.read(featureVotingProvider.notifier).toggleVote('planned-native-store-apps');
       final afterUpvote = container
           .read(featureVotingProvider)
-          .firstWhere((e) => e.id == 'wip-direct-messages');
+          .firstWhere((e) => e.id == 'planned-native-store-apps');
       expect(afterUpvote.votes, 1);
       expect(afterUpvote.userVoted, isTrue);
     });
@@ -55,19 +55,25 @@ void main() {
       // 3. Tap Vote & Feedback button and upvote a WIP item in 1 tap
       await $(const Key('open_feedback_and_voting_button')).tap();
       expect($('Belong Roadmap & Feedback'), findsOneWidget);
-      expect($('Direct Messages (Msgs Tab)'), findsOneWidget);
+      expect($('Google Sign-In (Good Auth)'), findsOneWidget);
+      await $.tester.dragUntilVisible(
+        find.byKey(const Key('vote_button_planned-native-store-apps')),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+      await $.pumpAndSettle();
       expect(
         find.descendant(
-          of: find.byKey(const Key('vote_button_wip-direct-messages')),
+          of: find.byKey(const Key('vote_button_planned-native-store-apps')),
           matching: find.text('0'),
         ),
         findsOneWidget,
       );
 
-      await $(const Key('vote_button_wip-direct-messages')).tap();
+      await $(const Key('vote_button_planned-native-store-apps')).tap();
       expect(
         find.descendant(
-          of: find.byKey(const Key('vote_button_wip-direct-messages')),
+          of: find.byKey(const Key('vote_button_planned-native-store-apps')),
           matching: find.text('1'),
         ),
         findsOneWidget,

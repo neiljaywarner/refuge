@@ -50,6 +50,14 @@ void main() {
       }
     });
 
+    test('feature vote updates require voterIds membership (#733)', () {
+      expect(firestoreRules, contains('function featureVoteVoterIds'));
+      expect(firestoreRules, contains('function featureVoteUpvote()'));
+      expect(firestoreRules, contains('function featureVoteUnvote()'));
+      expect(firestoreRules, contains('hasAll(featureVoteVoterIds(resource.data))'));
+      expect(firestoreRules, contains("hasOnly(['votes', 'voterIds', 'lastVotedAt'])"));
+    });
+
     test('feedback submissions are immutable to prevent tampering', () {
       expect(firestoreRules, contains('match /member_feedback/{feedbackId}'));
       expect(firestoreRules, contains('allow update, delete: if false;'));
@@ -125,7 +133,9 @@ void main() {
 
     test('vote board cannot be deleted and feedback cannot be filed as someone else', () {
       expect(firestoreRules, contains('match /feature_votes/{featureId}'));
-      expect(firestoreRules, contains('allow read, create, update: if isSignedInMember();'));
+      // #733 replaced the blanket read/create/update allow with voterIds checks.
+      expect(firestoreRules, contains('function featureVoteUpvote()'));
+      expect(firestoreRules, contains('allow read: if isSignedInMember();'));
       expect(firestoreRules, contains('allow delete: if false;'));
       expect(
         firestoreRules,

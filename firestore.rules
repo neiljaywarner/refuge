@@ -28,6 +28,39 @@ service cloud.firestore {
         || request.auth.uid == data.get('userId', null);
     }
 
+    function featureVoteVoterIds(data) {
+      return data.get('voterIds', []) is list ? data.get('voterIds', []) : [];
+    }
+
+    function featureVoteUpvote() {
+      return request.resource.data.votes == resource.data.get('votes', 0) + 1
+        && !(request.auth.uid in featureVoteVoterIds(resource.data))
+        && request.auth.uid in featureVoteVoterIds(request.resource.data)
+        && featureVoteVoterIds(request.resource.data).size() == featureVoteVoterIds(resource.data).size() + 1
+        && featureVoteVoterIds(request.resource.data).hasAll(featureVoteVoterIds(resource.data));
+    }
+
+    function featureVoteUnvote() {
+      return request.resource.data.votes == resource.data.get('votes', 0) - 1
+        && request.auth.uid in featureVoteVoterIds(resource.data)
+        && !(request.auth.uid in featureVoteVoterIds(request.resource.data))
+        && featureVoteVoterIds(request.resource.data).size() == featureVoteVoterIds(resource.data).size() - 1
+        && featureVoteVoterIds(resource.data).hasAll(featureVoteVoterIds(request.resource.data));
+    }
+
+    function featureVoteUpdateFieldsOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['votes', 'voterIds', 'lastVotedAt']);
+    }
+
+    function isSeedFeatureVoteId(featureId) {
+      return featureId in [
+        'planned-autistic-events',
+        'planned-google-sign-in',
+        'planned-native-store-apps',
+      ];
+    }
+
     // A Circle-style ban writes `soft_deleted_users/{displayName}` before
     // erase. Author-only delete cannot remove another member's posts, so a
     // standing ban also allows that delete (#758).
@@ -98,11 +131,21 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // 1. Feature Voting
-    // Members share one tally per feature. Guests never read or write it.
-    // Delete stays closed so a member cannot wipe the board.
+    // 1. Feature Voting (#733: per-member voterIds, no blind overwrites)
     match /feature_votes/{featureId} {
-      allow read, create, update: if isSignedInMember();
+      allow read: if isSignedInMember();
+      allow create: if isSignedInMember()
+        && isSeedFeatureVoteId(featureId)
+        && request.resource.data.keys().hasOnly([
+          'id', 'title', 'description', 'stage', 'votes', 'voterIds', 'lastVotedAt'
+        ])
+        && request.resource.data.id == featureId
+        && request.resource.data.votes == 1
+        && featureVoteVoterIds(request.resource.data).size() == 1
+        && request.resource.data.voterIds[0] == request.auth.uid;
+      allow update: if isSignedInMember()
+        && featureVoteUpdateFieldsOnly()
+        && (featureVoteUpvote() || featureVoteUnvote());
       allow delete: if false;
     }
 
