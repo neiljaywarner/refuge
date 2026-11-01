@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "parameter": "backup_mirroring",
+  "backupTypes": ["none", "cloudflare", "googleDrive", "dropbox", "other"],
+  "flavors": {
+    "dev": {
+      "deployed": true,
+      "mirrors": {
+        "serverpod": false,
+        "appwriteDb": false,
+        "cloudStore": false
+      },
+      "backup": {
+        "enabled": false,
+        "type": "none"
+      }
+    },
+    "stg": {
+      "deployed": false,
+      "mirrors": {
+        "serverpod": false,
+        "appwriteDb": false,
+        "cloudStore": false
+      },
+      "backup": {
+        "enabled": false,
+        "type": "none"
+      }
+    },
+    "qa": {
+      "deployed": false,
+      "mirrors": {
+        "serverpod": false,
+        "appwriteDb": false,
+        "cloudStore": false
+      },
+      "backup": {
+        "enabled": false,
+        "type": "none"
+      }
+    },
+    "prod": {
+      "deployed": true,
+      "mirrors": {
+        "serverpod": false,
+        "appwriteDb": false,
+        "cloudStore": false
+      },
+      "backup": {
+        "enabled": false,
+        "type": "none"
+      }
+    }
+  }
+}
