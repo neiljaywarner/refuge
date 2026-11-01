@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../install/domain/phone_install_links.dart';
+
 /// Predefined calm-tech fellowship spaces in Refuge (kept for backward compatibility
 /// with existing unit and BDD tests, plus Belong Circle.so spaces).
 const Map<String, String> kFellowshipSpaces = {
@@ -26,6 +28,7 @@ class BelongSpaceItem {
     this.isComingSoon = false,
     this.externalUrl,
     this.trackedIssueNumber,
+    this.phoneInstallFocus,
   });
 
   final String slug;
@@ -35,6 +38,9 @@ class BelongSpaceItem {
   final bool isComingSoon;
   final String? externalUrl;
   final int? trackedIssueNumber;
+
+  /// Opens the in-app phone guide instead of a Coming Soon card.
+  final PhoneInstallFocus? phoneInstallFocus;
 }
 
 /// Represents a collapsible/grouped section in the Circle.so-style Spaces view.
@@ -159,16 +165,16 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         slug: 'link_android_app',
         title: 'Download the Android App',
         emoji: '🤖',
-        subtitle: 'Pending — Install via PWA now; Google Play Store coming soon',
-        isComingSoon: true,
+        subtitle: 'Android open beta. The Play Store link comes later.',
+        phoneInstallFocus: PhoneInstallFocus.android,
         trackedIssueNumber: 30,
       ),
       BelongSpaceItem(
         slug: 'link_ios_app',
         title: 'Download the iOS App',
         emoji: '🍎',
-        subtitle: 'Pending — Add to iPhone Home Screen now; App Store coming soon',
-        isComingSoon: true,
+        subtitle: 'App Store and TestFlight are pending. Website steps are inside.',
+        phoneInstallFocus: PhoneInstallFocus.ios,
         trackedIssueNumber: 31,
       ),
     ],

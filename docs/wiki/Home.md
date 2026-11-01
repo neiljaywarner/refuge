@@ -31,6 +31,7 @@ The Circle overlap week is over. Open Belong at the production link above and ta
 | **[Business & Partnership Overview](Business-Partner-Overview)** | Potential partners and advisors | Executive summary, 37signals philosophy, commercial opportunity, and business FAQ |
 | **[How you can help](How-You-Can-Help-Volunteer-Guide)** | Everyone | What to try, including testing and putting Belong on your phone |
 | **[What to look for](How-You-Can-Help-Volunteer-Guide#what-to-look-for)** | Willing helpers | Calm feel, contrast, labels, voting, feedback, and whether the rooms feel warm |
+| **[Get Belong on your phone](Get-Belong-on-Your-Phone)** | Anyone with a phone | Android open beta, pending stores, and website steps in plain language |
 | **[Put Belong on your phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)** | Anyone with a phone | iPhone (Safari) and Android (Chrome) steps, with Android pictures |
 | **[After October 31 — solid 1.0](Non-Technical-Roadmap-to-Oct-31)** | Organizers and leaders | The short list still open after the overlap week |
 | **[Why we are not in the app stores yet](Why-No-App-Store-App)** | Members and leaders | Plain answers about stores, passwords, and using Belong from the web |

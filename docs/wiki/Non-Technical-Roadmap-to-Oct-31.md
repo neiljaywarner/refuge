@@ -24,4 +24,6 @@ Open Belong, use **Vote & Feedback**, and say hello in **Start Here** if you wan
 
 App stores, a full phone-beta matrix, iPhone push checks, and one-tap Google or Apple as the default sign-in. Those can follow. They are not what “solid 1.0” means right now.
 
+The Android open beta is already explained on **[Get Belong on your phone](Get-Belong-on-Your-Phone)**. Play Store, App Store, and TestFlight stay pending until those listings exist.
+
 Day-by-day notes from October 18–31 are in git history for this file. They are not the current plan.
