@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:giphy_flutter_sdk/dto/giphy_content_type.dart';
+import 'package:giphy_flutter_sdk/dto/giphy_image.dart';
+import 'package:giphy_flutter_sdk/dto/giphy_images.dart';
+import 'package:giphy_flutter_sdk/dto/giphy_media.dart';
 import 'package:giphy_flutter_sdk/dto/giphy_rating.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_remote_settings.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_sdk_picker.dart';
@@ -61,6 +64,45 @@ void main() {
 
       expect(gifs.single.title.length, 80);
       expect(gifs.single.title, endsWith('...'));
+    });
+  });
+
+  group('calmMemeFromGiphyMedia', () {
+    test('uses an image rendition and ignores the Giphy page url', () {
+      final pageOnly = calmMemeFromGiphyMedia(
+        GiphyMedia(
+          id: 'page',
+          url: 'https://giphy.com/gifs/page',
+          rating: GiphyRating.pg,
+          images: const GiphyImages(),
+        ),
+      );
+      expect(pageOnly, isNull);
+
+      final downsized = calmMemeFromGiphyMedia(
+        GiphyMedia(
+          id: 'down',
+          url: 'https://giphy.com/gifs/down',
+          title: 'quiet room',
+          rating: GiphyRating.pg,
+          images: const GiphyImages(
+            downsized: GiphyImage(gifUrl: 'https://media.giphy.com/down.gif'),
+          ),
+        ),
+      );
+      expect(downsized?.imageUrl, 'https://media.giphy.com/down.gif');
+
+      final original = calmMemeFromGiphyMedia(
+        GiphyMedia(
+          id: 'orig',
+          rating: GiphyRating.g,
+          images: const GiphyImages(
+            original: GiphyImage(gifUrl: 'https://media.giphy.com/orig.gif'),
+            downsized: GiphyImage(gifUrl: 'https://media.giphy.com/down.gif'),
+          ),
+        ),
+      );
+      expect(original?.imageUrl, 'https://media.giphy.com/orig.gif');
     });
   });
 

@@ -52,7 +52,7 @@ CalmMeme? calmMemeFromGiphyMedia(GiphyMedia media) {
       media.rating == GiphyRating.unrated) {
     return null;
   }
-  final url = _https(media.images.original?.gifUrl) ?? _https(media.url);
+  final url = _https(media.images.original?.gifUrl) ?? _https(media.images.downsized?.gifUrl);
   if (url == null) return null;
   final title = (media.title ?? media.altText ?? '').trim();
   final display = title.isEmpty

@@ -160,7 +160,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       children: [
         Text(
           key: const Key('giphy_platform_note'),
-          'Official Giphy picker: GIFs, stickers, emoji, clips, and animated text. Clips can include sound here. The feed attaches a still image.',
+          'Official Giphy picker: GIFs, stickers, emoji, clips, and animated text. Clips can include sound here. The feed attaches a silent GIF.',
           style: TextStyle(
             fontSize: 11,
             height: 1.35,

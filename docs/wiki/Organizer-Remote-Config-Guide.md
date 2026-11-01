@@ -36,7 +36,7 @@ In **Belong on the Spectrum**, we connected the **"Message from the Organizer"**
 
 The ban steps are in **[Ban a member](Admin-Pause-and-Restore)**. Production uses only this published list. Do not copy the addresses into the wiki, an issue, or a screenshot.
 
-GIF search uses the same Remote Config key and rating on every platform. What the member can pick depends on the device. The phone apps use Giphy's official SDK. The website uses the Giphy API. See **[Giphy GIF search](Giphy-GIF-Search)**.
+GIF search uses the same rating on every platform, but each platform reads its own API key. Publish `giphy_api_key_android`, `giphy_api_key_ios`, and `giphy_api_key_web` separately. What the member can pick depends on the device. The phone apps use Giphy's official SDK. The website uses the Giphy API. See **[Giphy GIF search](Giphy-GIF-Search)**.
 
 ---
 

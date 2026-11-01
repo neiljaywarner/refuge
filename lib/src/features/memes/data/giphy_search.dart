@@ -93,7 +93,7 @@ class HttpGiphySearch implements GiphySearch {
 
     final http.Response response;
     try {
-      response = await _httpClient.get(uri);
+      response = await _httpClient.get(uri).timeout(const Duration(seconds: 10));
     } catch (_) {
       throw _unavailable;
     }
