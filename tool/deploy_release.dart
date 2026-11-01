@@ -135,10 +135,14 @@ Future<void> main(List<String> args) async {
   // Resolve the Android app id early so we fail fast before deploying anything.
   String? androidAppId;
   if (android) {
-    androidAppId =
-        _arg(args, '--android-app-id') ??
-        Platform.environment['FIREBASE_ANDROID_APP_ID'] ??
-        await _detectAndroidAppId();
+    androidAppId = _firstNonBlank([
+      _arg(args, '--android-app-id'),
+      Platform.environment['FIREBASE_ANDROID_APP_ID'],
+    ]);
+    // GitHub Actions sets a missing secret to an empty string, which must
+    // not block auto-detect or the app id committed in google-services.json.
+    androidAppId ??= await _detectAndroidAppId();
+    androidAppId ??= _androidAppIdFromGoogleServices();
     if (androidAppId == null) {
       stderr.writeln('No Firebase Android app found. Pass --android-app-id.');
       exit(65);
@@ -293,6 +297,45 @@ List<String> _argsAll(List<String> args, String flag) {
 }
 
 void _log(String m) => stdout.writeln('[${DateTime.now().toIso8601String().substring(11, 19)}] $m');
+
+String? _firstNonBlank(Iterable<String?> values) {
+  for (final value in values) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isNotEmpty) return trimmed;
+  }
+  return null;
+}
+
+/// Prod application id from the committed Firebase config.
+///
+/// Prefers the unsuffixed `com.belongonthespectrum.refuge` client. This file
+/// holds the public app id, not a credential.
+String? _androidAppIdFromGoogleServices() {
+  final file = File('android/app/google-services.json');
+  if (!file.existsSync()) return null;
+  final Object? decoded;
+  try {
+    decoded = jsonDecode(file.readAsStringSync());
+  } on FormatException {
+    return null;
+  }
+  if (decoded is! Map) return null;
+  final clients = decoded['client'];
+  if (clients is! List) return null;
+  String? fallback;
+  for (final client in clients) {
+    if (client is! Map) continue;
+    final info = client['client_info'];
+    if (info is! Map) continue;
+    final appId = info['mobilesdk_app_id'];
+    if (appId is! String || !appId.contains(':android:')) continue;
+    fallback ??= appId;
+    final android = info['android_client_info'];
+    final package = android is Map ? android['package_name'] : null;
+    if (package == 'com.belongonthespectrum.refuge') return appId;
+  }
+  return fallback;
+}
 
 Future<String?> _detectAndroidAppId() async {
   final r = await Process.run(_bin('firebase'), [

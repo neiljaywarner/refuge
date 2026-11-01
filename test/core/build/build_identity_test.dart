@@ -295,12 +295,8 @@ void main() {
       expect(deployWorkflow, contains('secrets.POSTHOG_KEY'));
       expect(deployWorkflow, contains("tags: ['v*']"));
       expect(deployWorkflow, contains('tool/deploy_dev_web.dart'));
-      expect(
-        deployWorkflow,
-        contains(
-          'Push to main deploys the dev site only. Production is a v* tag or an explicit release run.',
-        ),
-      );
+      expect(deployWorkflow, contains('Push to main deploys the dev site only.'));
+      expect(deployWorkflow, contains('--prod --distribute-android'));
     }, skip: kIsWeb);
   });
 }
