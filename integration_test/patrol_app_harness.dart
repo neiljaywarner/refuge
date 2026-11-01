@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol/patrol.dart';
 import 'package:refuge4serverpod/main.dart';
-import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 
 /// Read-only Patrol harness: local posts, guest profile, no sign-in wall.
-Future<void> pumpDevReadOnlyHome(PatrolIntegrationTester $) async {
+///
+/// [extraOverrides] inject fakes (for example a Giphy search double) without
+/// signing in or writing a member feed.
+Future<void> pumpDevReadOnlyHome(
+  PatrolIntegrationTester $, {
+  List<Override> extraOverrides = const [],
+}) async {
   $.tester.view.devicePixelRatio = 1.0;
   $.tester.view.physicalSize = const Size(390, 844);
   addTearDown(() {
@@ -17,9 +23,7 @@ Future<void> pumpDevReadOnlyHome(PatrolIntegrationTester $) async {
     RefugeApp(
       repository: LocalPostRepository(isDevMode: true),
       enforceSignIn: false,
-      overrides: [
-        memberProfileProvider.overrideWith(_GuestProfile.new),
-      ],
+      overrides: [memberProfileProvider.overrideWith(_GuestProfile.new), ...extraOverrides],
     ),
   );
 }

@@ -37,6 +37,7 @@ Read-only FTL targets under `integration_test/`:
 | `patrol_ftl_home_shell_test.dart` | Home branding, tone filters, bottom nav, Vote & Feedback (no taps that post or sign in) |
 | `patrol_ftl_bottom_nav_readonly_test.dart` | Bottom nav semantics keys switch Search / Notifications / Home |
 | `patrol_ftl_native_resume_test.dart` | Native `pressHome` + `openApp` for the `.dev` package ([native overview](https://patrol.leancode.co/documentation/native/overview)) |
+| `patrol_ftl_attach_media_test.dart` | Attach media sheet: HTTP GIF search double (Powered by GIPHY, no publish) and native Open Giphy stub (no live key, no SDK dialog). Dev APK only. |
 | `patrol_hello_world_test.dart` | Legacy alias of the home-shell smoke |
 
 Local device (not Test Lab):
@@ -77,6 +78,15 @@ Requires `gcloud auth login` and project `belongonthespectrum`:
 dart run tool/run_firebase_test_lab.dart \
   --target integration_test/patrol_ftl_home_shell_test.dart
 ```
+
+Attach media / Giphy (dev APK, in-memory search double, does not publish):
+
+```bash
+dart run tool/run_firebase_test_lab.dart \
+  --target integration_test/patrol_ftl_attach_media_test.dart
+```
+
+The daily workflow's `workflow_dispatch` input `target` accepts that path. The scheduled run stays on the home-shell smoke. Upload is still refused unless badging says `com.belongonthespectrum.refuge.dev`.
 
 Default target is `patrol_ftl_home_shell_test.dart`.
 

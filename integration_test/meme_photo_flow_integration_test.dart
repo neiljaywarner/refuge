@@ -34,9 +34,7 @@ void main() {
 
         await $.pumpWidgetAndSettle(
           ProviderScope(
-            overrides: [
-              avatarUploadServiceProvider.overrideWithValue(fakeService),
-            ],
+            overrides: [avatarUploadServiceProvider.overrideWithValue(fakeService)],
             child: MaterialApp(
               home: Scaffold(
                 appBar: AppBar(title: const Text('Belong Memes Integration')),
@@ -45,16 +43,12 @@ void main() {
                   primaryColor: Colors.teal,
                   isContrast: false,
                   isModal: true,
-                  onSubmit: ({
-                    required content,
-                    required toneTag,
-                    specialInterestTag,
-                    imageUrl,
-                  }) async {
-                    submittedContent = content;
-                    submittedTone = toneTag;
-                    submittedImage = imageUrl;
-                  },
+                  onSubmit:
+                      ({required content, required toneTag, specialInterestTag, imageUrl}) async {
+                        submittedContent = content;
+                        submittedTone = toneTag;
+                        submittedImage = imageUrl;
+                      },
                 ),
               ),
             ),
@@ -68,10 +62,10 @@ void main() {
         // 2. Open Meme Gallery
         await $(const Key('add_meme_gif_button')).tap();
         await $.pumpAndSettle();
-        expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
+        expect($('Attach media'), findsOneWidget);
 
-        // 3. Switch to Upload Photo / Camera Tab
-        await $(const Key('tab_upload_photo')).tap();
+        await $(const Key('attach_media_more')).tap();
+        await $(const Key('attach_media_photo')).tap();
         await $.pumpAndSettle();
         expect($(const Key('meme_upload_camera_button')), findsOneWidget);
         expect($(const Key('meme_upload_gallery_button')), findsOneWidget);
@@ -145,41 +139,36 @@ void main() {
       },
     );
 
-    patrolWidgetTest(
-      'Reflection Card Renders Inline Base64 Photo Without Network Latency',
-      ($) async {
-        const photoDataUri =
-            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    patrolWidgetTest('Reflection Card Renders Inline Base64 Photo Without Network Latency', (
+      $,
+    ) async {
+      const photoDataUri =
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
-        final postWithPhoto = Post(
-          id: 'post_integration_photo',
-          authorName: 'Sarah K.',
-          spaceKey: 'memes',
-          toneTag: '[Autism & Faith Meme]',
-          content: 'Found a cozy quiet corner in the garden today 🌿',
-          imageUrl: photoDataUri,
-          timestamp: DateTime.now(),
-          reactions: {'gentle': 4},
-        );
+      final postWithPhoto = Post(
+        id: 'post_integration_photo',
+        authorName: 'Sarah K.',
+        spaceKey: 'memes',
+        toneTag: '[Autism & Faith Meme]',
+        content: 'Found a cozy quiet corner in the garden today 🌿',
+        imageUrl: photoDataUri,
+        timestamp: DateTime.now(),
+        reactions: {'gentle': 4},
+      );
 
-        await $.pumpWidgetAndSettle(
-          ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: ReflectionCard(
-                  post: postWithPhoto,
-                  isContrast: false,
-                  onAddReaction: (_) {},
-                ),
-              ),
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ReflectionCard(post: postWithPhoto, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
-        );
+        ),
+      );
 
-        expect($('Sarah K.'), findsOneWidget);
-        expect($('Found a cozy quiet corner in the garden today 🌿'), findsOneWidget);
-        expect($(const Key('post_meme_image_post_integration_photo')), findsOneWidget);
-      },
-    );
+      expect($('Sarah K.'), findsOneWidget);
+      expect($('Found a cozy quiet corner in the garden today 🌿'), findsOneWidget);
+      expect($(const Key('post_meme_image_post_integration_photo')), findsOneWidget);
+    });
   });
 }

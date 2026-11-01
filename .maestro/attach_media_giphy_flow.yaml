@@ -1,0 +1,72 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Attach media — Giphy sheet on the dev package"
+tags:
+  - belong
+  - meme
+  - giphy
+  - issue-762
+---
+# Dev package only. Does not publish a reflection and does not open the camera.
+# Android/iOS show Open Giphy (official SDK dialog keeps Giphy's marks).
+# Web/PWA shows the HTTP search field and "Powered by GIPHY" on this sheet.
+#
+# maestro test .maestro/attach_media_giphy_flow.yaml
+# Package: com.belongonthespectrum.refuge.dev (lib/main_dev.dart, FLAVOR=dev).
+
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- assertVisible: ".*Belong.*"
+
+- tapOn: ".*Spaces.*"
+- extendedWaitUntil:
+    visible: ".*Memes.*"
+    timeout: 15000
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 15000
+
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Attach media.*"
+    timeout: 15000
+- assertVisible: ".*Attach media.*"
+- assertVisible: "More"
+
+# Phone builds: official picker entry. Do not treat a missing HTTP footer as a failure.
+- runFlow:
+    when:
+      visible: "Open Giphy.*"
+    commands:
+      - assertVisible: "Open Giphy.*"
+      - assertVisible: ".*silent GIF.*"
+
+# Web/PWA builds: attribution stays on the search surface.
+- runFlow:
+    when:
+      visible: "Powered by GIPHY"
+    commands:
+      - assertVisible: "Powered by GIPHY"
+      - assertVisible: "Search"
+
+# Unconfigured dev build: paste-a-link remains under More. Still do not publish.
+- runFlow:
+    when:
+      visible: ".*not turned on.*"
+    commands:
+      - assertVisible: ".*Paste a link under More.*"
+
+- tapOn: "More"
+- assertVisible: "Belong memes"
+- assertVisible: "Paste a link"
+- assertVisible: "Photo"
+
+# Leave the sheet without attaching or posting.
+- pressKey: back
+- assertNotVisible: ".*Attach media.*"
+- assertVisible: ".*Add Meme / GIF.*"
+- assertNotVisible: ".*Attached:.*"

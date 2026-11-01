@@ -40,10 +40,11 @@ tags:
 
 - tapOn: ".*Add Meme / GIF.*"
 - extendedWaitUntil:
-    visible: ".*Meme Gallery.*"
+    visible: ".*Attach media.*"
     timeout: 15000
 
-- tapOn: ".*Upload Photo / Camera.*"
+- tapOn: "More"
+- tapOn: "Photo"
 - extendedWaitUntil:
     visible: ".*Choose Photo.*"
     timeout: 10000
@@ -92,6 +93,6 @@ tags:
 
 - tapOn: ".*Attach Photo to Reflection.*"
 - extendedWaitUntil:
-    notVisible: ".*Meme Gallery.*"
+    notVisible: ".*Attach media.*"
     timeout: 15000
 - assertVisible: ".*Attached:.*"

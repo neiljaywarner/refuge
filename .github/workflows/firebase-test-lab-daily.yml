@@ -11,6 +11,15 @@ on:
   schedule:
     - cron: '0 12 * * *'
   workflow_dispatch:
+    inputs:
+      target:
+        description: Dev-only Patrol target
+        required: false
+        default: integration_test/patrol_ftl_home_shell_test.dart
+        type: choice
+        options:
+          - integration_test/patrol_ftl_home_shell_test.dart
+          - integration_test/patrol_ftl_attach_media_test.dart
 
 concurrency:
   group: ftl-daily-${{ github.workflow }}
@@ -20,6 +29,10 @@ jobs:
   test-lab-dev-apk:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      # Scheduled runs keep the home-shell smoke. Dispatch can select the
+      # attach-media target. Upload stays on the .dev package.
+      FTL_TARGET: ${{ github.event.inputs.target || 'integration_test/patrol_ftl_home_shell_test.dart' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -36,7 +49,7 @@ jobs:
         run: flutter test test/tool/firebase_test_lab_support_test.dart
 
       - name: Build dev APK pair and verify badging
-        run: dart run tool/run_firebase_test_lab.dart --build-only
+        run: dart run tool/run_firebase_test_lab.dart --build-only --target "$FTL_TARGET"
 
       - name: Check Firebase credentials
         id: ftl_auth
@@ -67,4 +80,4 @@ jobs:
         if: steps.ftl_auth.outputs.has_sa == 'true'
         env:
           FTL_RESULTS_BUCKET: ${{ vars.FTL_RESULTS_BUCKET }}
-        run: dart run tool/run_firebase_test_lab.dart
+        run: dart run tool/run_firebase_test_lab.dart --target "$FTL_TARGET"

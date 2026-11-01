@@ -340,7 +340,7 @@ void main() {
     });
   });
 
-  group('Search GIFs tab', () {
+  group('Attach media GIF search', () {
     setUp(() {
       final binding = TestWidgetsFlutterBinding.ensureInitialized();
       binding.platformDispatcher.implicitView?.physicalSize = const Size(1080, 2400);
@@ -359,10 +359,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
-      await tester.tap(find.byKey(const Key('tab_giphy_search')));
-      await tester.pump();
-      await tester.pump();
-
+      expect(find.text('Attach media'), findsOneWidget);
+      expect(find.byKey(const Key('tab_giphy_search')), findsNothing);
       expect(find.byKey(const Key('giphy_unconfigured')), findsOneWidget);
       expect(find.byKey(const Key('giphy_attribution')), findsNothing);
     });
@@ -384,11 +382,10 @@ void main() {
       await tester.tap(find.byKey(const Key('open_gallery_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-
-      await tester.tap(find.byKey(const Key('tab_giphy_search')));
-      await tester.pump();
       await tester.pump();
 
+      expect(find.text('Attach media'), findsOneWidget);
+      expect(find.byKey(const Key('tab_giphy_search')), findsNothing);
       expect(find.text('quiet chapel'), findsOneWidget);
       expect(find.byKey(const Key('giphy_attribution')), findsOneWidget);
       expect(fake.lastQuery, '');
@@ -406,7 +403,7 @@ void main() {
       expect(selected, isNotNull);
       expect(selected!.imageUrl, 'https://media.giphy.com/move.gif');
       expect(selected!.title, 'quiet chapel');
-      expect(find.text('🖼️ Autism & Faith Meme Gallery'), findsNothing);
+      expect(find.text('Attach media'), findsNothing);
       expect(find.byKey(const Key('giphy_platform_note')), findsNothing);
     });
 
@@ -438,11 +435,10 @@ void main() {
       await tester.tap(find.byKey(const Key('open_gallery_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byKey(const Key('tab_giphy_search')));
-      await tester.pump();
 
       expect(find.byKey(const Key('giphy_open_sdk_button')), findsOneWidget);
       expect(find.byKey(const Key('giphy_search_input')), findsNothing);
+      expect(find.byKey(const Key('giphy_attribution')), findsNothing);
       expect(find.textContaining('clips'), findsWidgets);
 
       await tester.tap(find.byKey(const Key('giphy_open_sdk_button')));
@@ -451,6 +447,48 @@ void main() {
 
       expect(seenRating, 'pg');
       expect(selected!.imageUrl, 'https://media.giphy.com/hero.gif');
+    });
+
+    testWidgets('keeps search, attribution, and the grid above the keyboard', (tester) async {
+      tester.view.physicalSize = const Size(390, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+
+      final fake = _FakeGiphySearch(
+        results: const [
+          GiphyGif(
+            id: 'abc',
+            title: 'quiet chapel',
+            stillUrl: 'https://media.giphy.com/still.gif',
+            gifUrl: 'https://media.giphy.com/move.gif',
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(_galleryHarness(search: fake));
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const Key('giphy_search_input')), findsOneWidget);
+      expect(find.byKey(const Key('giphy_attribution')), findsOneWidget);
+      expect(find.byKey(const Key('giphy_results_grid')), findsOneWidget);
+
+      const keyboardTop = 640.0 - 280.0;
+      final searchBox = tester.getRect(find.byKey(const Key('giphy_search_input')));
+      final gridBox = tester.getRect(find.byKey(const Key('giphy_results_grid')));
+      final creditBox = tester.getRect(find.byKey(const Key('giphy_attribution')));
+
+      expect(searchBox.bottom, lessThan(keyboardTop));
+      expect(creditBox.bottom, lessThanOrEqualTo(keyboardTop + 1));
+      expect(gridBox.height, greaterThan(24));
+      expect(gridBox.bottom, lessThanOrEqualTo(keyboardTop + 1));
+      expect(tester.takeException(), isNull);
     });
   });
 }

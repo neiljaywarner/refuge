@@ -32,9 +32,10 @@ tags:
     timeout: 15000
 - tapOn: ".*Add Meme / GIF.*"
 - extendedWaitUntil:
-    visible: ".*Meme Gallery.*"
+    visible: ".*Attach media.*"
     timeout: 15000
-- tapOn: ".*Upload Photo / Camera.*"
+- tapOn: "More"
+- tapOn: "Photo"
 - extendedWaitUntil:
     visible: ".*Use Camera.*"
     timeout: 10000

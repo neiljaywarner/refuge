@@ -107,12 +107,13 @@ void main() {
 
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme));
       await $('Open Gallery').tap();
-      expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
-      expect($('Curated Calm Memes'), findsOneWidget);
-      expect($('Attach Custom GIF / URL'), findsOneWidget);
-      expect($('Upload Photo / Camera'), findsOneWidget);
+      expect($('Attach media'), findsOneWidget);
+      expect($(const Key('attach_media_more')), findsOneWidget);
+      expect($(const Key('tab_giphy_search')), findsNothing);
+      expect($('Elijah Under the Broom Tree'), findsNothing);
 
-      // Tap curated Elijah meme
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_memes')).tap();
       await $('Elijah Under the Broom Tree').tap();
 
       expect(selectedMeme, isNotNull);
@@ -126,8 +127,8 @@ void main() {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (meme) => selectedMeme = meme));
       await $('Open Gallery').tap();
 
-      // Switch to custom GIF / URL tab
-      await $(const Key('tab_custom_meme')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_link')).tap();
       expect($('Image or GIF URL'), findsOneWidget);
       expect($('Meme Title or Caption'), findsOneWidget);
 
@@ -158,7 +159,8 @@ void main() {
       await $('Open Gallery').tap();
 
       // Switch to Upload Photo / Camera tab
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
       expect($(const Key('meme_upload_camera_button')), findsOneWidget);
       expect($(const Key('meme_upload_gallery_button')), findsOneWidget);
 
@@ -195,7 +197,8 @@ void main() {
       await $('Open Gallery').tap();
 
       // Switch to Upload Photo / Camera tab
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
 
       // Tap gallery button
       await $(const Key('meme_upload_gallery_button')).tap();
@@ -218,7 +221,8 @@ void main() {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
       await $(const Key('meme_upload_camera_button')).tap();
       await $.pumpAndSettle();
 
@@ -239,7 +243,8 @@ void main() {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
       await $(const Key('meme_upload_camera_button')).tap();
       await $.pumpAndSettle();
 
@@ -259,7 +264,8 @@ void main() {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
       await $(const Key('meme_upload_camera_button')).tap();
       await $.pumpAndSettle();
 
@@ -276,7 +282,8 @@ void main() {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}, avatarService: fakeService));
       await $('Open Gallery').tap();
 
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
       await $(const Key('meme_upload_camera_button')).tap();
       await $.pumpAndSettle();
 
@@ -292,19 +299,19 @@ void main() {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
       await $('Open Gallery').tap();
 
-      expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
+      expect($('Attach media'), findsOneWidget);
       await $(const Key('meme_gallery_close_button')).tap();
       await $.pumpAndSettle();
 
-      expect($('🖼️ Autism & Faith Meme Gallery'), findsNothing);
+      expect($('Attach media'), findsNothing);
     });
 
     patrolWidgetTest('tab switching between custom presets and back to curated list', ($) async {
       await $.pumpWidget(buildModalHarness(onSelectedMeme: (_) {}));
       await $('Open Gallery').tap();
 
-      // Switch to custom tab
-      await $(const Key('tab_custom_meme')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_link')).tap();
       await $.pumpAndSettle();
 
       // Tap special interest preset
@@ -317,8 +324,7 @@ void main() {
       await $.pumpAndSettle();
       expect($(const Key('custom_meme_preview')), findsOneWidget);
 
-      // Switch back to curated memes tab
-      await $(const Key('tab_curated_memes')).tap();
+      await $(const Key('attach_media_memes')).tap();
       await $.pumpAndSettle();
       expect($('Elijah Under the Broom Tree'), findsOneWidget);
     });
@@ -443,10 +449,9 @@ void main() {
       // Verify initial tone tag is [Autism & Faith Meme] because space is 'memes'
       expect($('[Autism & Faith Meme]'), findsOneWidget);
 
-      // Open meme gallery
       await $(const Key('add_meme_gif_button')).tap();
-
-      // Tap curated Elijah meme
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_memes')).tap();
       await $('Elijah Under the Broom Tree').tap();
 
       // Attached meme banner is visible
@@ -506,7 +511,8 @@ void main() {
       await $(const Key('add_meme_gif_button')).tap();
 
       // Switch to Upload Photo tab
-      await $(const Key('tab_upload_photo')).tap();
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_photo')).tap();
 
       // Tap Use Camera
       await $(const Key('meme_upload_camera_button')).tap();
