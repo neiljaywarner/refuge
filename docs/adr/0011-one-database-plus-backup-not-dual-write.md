@@ -57,3 +57,7 @@ Firebase Hosting, Cloud Messaging, Analytics, and Remote Config stay on Firebase
 * The undo window without a credit card is the weekly private JSON file, plus about one hour of Firestore history.
 * The Appwrite tables stay disabled until the function, not the phone, is the writer.
 * [PR #546](https://github.com/neiljaywarner/refuge/pull/546) remains a seam. Its client-side dual-write and three-way merge are not the accepted mirror.
+
+## 5. Follow-through for direct messages (1 November 2026)
+
+Direct messages use the same rule. Firestore collection `direct_messages` is the copy the app reads and writes. The Appwrite function `dm-mirror` checks the Firebase ID token and writes the same fields with an API key that stays on the function. The phone does not write the table. If the function fails, the sender still has the Firestore message. Reflection tables stay disabled. Guest create and guest update stay off. This mirror is not a backup of an older copy.

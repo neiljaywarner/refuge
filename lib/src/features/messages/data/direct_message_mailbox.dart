@@ -13,6 +13,7 @@ import '../../profile/presentation/belong_members_directory_view.dart';
 import '../domain/message_recipient.dart';
 import '../domain/message_thread.dart';
 import '../domain/stored_direct_message.dart';
+import 'direct_message_mirror.dart';
 
 fb_auth.User? _currentFirebaseUser() {
   try {
@@ -183,10 +184,15 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
 }
 
 class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
-  FirestoreDirectMessageMailbox({FirebaseFirestore? firestore, this.isProduction = false})
-    : _firestore = firestore;
+  FirestoreDirectMessageMailbox({
+    FirebaseFirestore? firestore,
+    DirectMessageMirror? mirror,
+    this.isProduction = false,
+  }) : _firestore = firestore,
+       _mirror = mirror ?? AppwriteFunctionDirectMessageMirror();
 
   final FirebaseFirestore? _firestore;
+  final DirectMessageMirror _mirror;
   final bool isProduction;
   final InMemoryDirectMessageMailbox _offline = InMemoryDirectMessageMailbox();
 
@@ -299,6 +305,7 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
       // Keep the row on this device too. The recipient's bell can show it
       // in the same session when the Firestore read is not deployed yet.
       _offline.cacheMessage(message);
+      await _copyToMirror(message);
       if (shouldRequestDirectMessagePush(DirectMessageSendOutcome.delivered.name)) {
         unawaited(requestDirectMessagePush(id));
       }
@@ -323,6 +330,15 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     required String currentUserId,
     required List<BelongNotification> existing,
   }) => _offline.notificationsForUser(currentUserId: currentUserId, existing: existing);
+
+  /// Copies the stored message. A down mirror does not undo the Firestore write.
+  Future<void> _copyToMirror(StoredDirectMessage message) async {
+    try {
+      await _mirror.copyMessage(message).timeout(const Duration(seconds: 2));
+    } catch (error, stack) {
+      talker.handle(error, stack, 'Direct message mirror failed');
+    }
+  }
 
   Future<void> hydrateFromFirestore(String currentUserId) async {
     final db = _db;

@@ -74,6 +74,7 @@ test/features/memes/calm_meme_and_gif_test.dart
 test/features/memes/giphy_search_test.dart
 test/features/messages/belong_messages_search_and_compose_test.dart
 test/features/messages/direct_message_mailbox_test.dart
+test/features/messages/direct_message_mirror_test.dart
 test/features/messages/direct_message_recipient_search_test.dart
 test/features/messages/mocked_direct_messages_test.dart
 test/features/navigation/narrow_web_vote_hit_target_test.dart
