@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_core/firebase_core.dart';
 
+import '../../../core/logging/app_logger.dart';
 import '../domain/comment.dart';
 import 'comment_repository.dart';
 
@@ -234,7 +235,10 @@ class LocalCommentRepository implements CommentRepository {
         for (final id in removedIds) {
           await fs.collection(collectionName).doc(id).delete();
         }
-      } catch (_) {}
+      } catch (error, stack) {
+        talker.handle(error, stack, 'Firestore comment ban erase failed');
+        rethrow;
+      }
     }
     return removed;
   }

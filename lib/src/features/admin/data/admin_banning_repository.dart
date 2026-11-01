@@ -253,6 +253,10 @@ final isMemberBannedProvider = Provider.family<bool, String>((ref, memberNameOrI
   );
 });
 
+/// Stays true after a banned sign-in is refused, so the lockout copy remains
+/// on screen once that Firebase session has ended.
+final banRefusalVisibleProvider = StateProvider<bool>((ref) => false);
+
 /// True when the signed-in member matches a standing ban.
 final isCurrentMemberBannedProvider = Provider<bool>((ref) {
   final profile = ref.watch(memberProfileProvider);

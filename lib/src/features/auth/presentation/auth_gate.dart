@@ -7,6 +7,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/config/app_flavor.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/presentation/return_after_delete_panel.dart';
+import '../../admin/data/admin_banning_repository.dart';
+import '../../admin/presentation/account_paused_banner.dart';
 import '../../profile/domain/member_profile.dart';
 import '../../reflections/data/post_repository.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
@@ -24,8 +26,9 @@ import 'verify_email_copy.dart';
 
 /// Blocks the main app until the member is:
 /// 1. signed in (plain [SimpleSignInScreen]),
-/// 2. not soft-deleted (else [ReturnAfterDeletePanel]), and
-/// 3. in production only, email-verified.
+/// 2. not soft-deleted (else [ReturnAfterDeletePanel]),
+/// 3. not banned (else the lockout copy, which stays up after sign-out), and
+/// 4. in production only, email-verified.
 ///
 /// Other flavors keep the soft gate and explain verification on Home.
 ///
@@ -47,6 +50,11 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   String? _deleteCheckUserId;
   Future<bool>? _deleteCheck;
 
+  /// Ban lookup, cached per user id. Runs before the feed is built.
+  String? _banCheckUserId;
+  Future<bool>? _banCheck;
+  bool _banRefusalScheduled = false;
+
   /// Firebase UI registration does not send a verification email, so the
   /// gate sends one the first time a prod member lands on the verify wall.
   String? _verificationSentFor;
@@ -60,6 +68,33 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       _deleteCheck = ref.read(accountDeletionRepositoryProvider).isSignInBlocked(userId);
     }
     return _deleteCheck!;
+  }
+
+  Future<bool> _isBanned(AuthSession session) {
+    if (_banCheckUserId != session.userId || _banCheck == null) {
+      _banCheckUserId = session.userId;
+      _banCheck = _lookupBan(session);
+    }
+    return _banCheck!;
+  }
+
+  Future<bool> _lookupBan(AuthSession session) async {
+    final bans = ref.read(adminBanningRepositoryProvider);
+    for (final key in [session.userId, session.email, session.displayName]) {
+      if (key.trim().isEmpty) continue;
+      if (await bans.isUserBanned(key)) return true;
+    }
+    return false;
+  }
+
+  void _scheduleBanRefusal() {
+    if (_banRefusalScheduled) return;
+    _banRefusalScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      ref.read(banRefusalVisibleProvider.notifier).state = true;
+      await _signOut();
+    });
   }
 
   @override
@@ -77,6 +112,17 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     final session = _effectiveSession(streamSession);
 
+    if (ref.watch(banRefusalVisibleProvider)) {
+      return _BanRefusalWall(
+        onBack: () {
+          ref.read(banRefusalVisibleProvider.notifier).state = false;
+          _banRefusalScheduled = false;
+          _banCheck = null;
+          _banCheckUserId = null;
+        },
+      );
+    }
+
     if (!sessionMayEnterCommunity(session)) {
       return KeyedSubtree(
         key: const Key('auth_gate_sign_in_wall'),
@@ -86,31 +132,12 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     return FutureBuilder<bool>(
       future: _isSoftDeleted(session.userId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            key: Key('auth_gate_checking_account'),
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      VerifyEmailCopy.checkingAccount,
-                      key: Key('auth_gate_checking_account_message'),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+      builder: (context, deleteSnapshot) {
+        if (deleteSnapshot.connectionState != ConnectionState.done) {
+          return _checkingAccountScaffold;
         }
 
-        if (snapshot.data ?? false) {
+        if (deleteSnapshot.data ?? false) {
           return Scaffold(
             key: const Key('auth_gate_soft_deleted_wall'),
             appBar: AppBar(title: const Text('Come back?'), centerTitle: true),
@@ -126,26 +153,40 @@ class _AuthGateState extends ConsumerState<AuthGate> {
           );
         }
 
-        if (!session.emailVerified) {
-          // Dev does not block, but still sends one message so a yopmail
-          // inbox can confirm the account (#749). The wall stays prod-only.
-          _sendVerificationOnce(session.userId);
-        }
+        return FutureBuilder<bool>(
+          future: _isBanned(session),
+          builder: (context, banSnapshot) {
+            if (banSnapshot.connectionState != ConnectionState.done) {
+              return _checkingAccountScaffold;
+            }
+            if (banSnapshot.data ?? false) {
+              _scheduleBanRefusal();
+              return const _BanRefusalWall();
+            }
+            if (!session.emailVerified) {
+              // Dev does not block, but still sends one message so a yopmail
+              // inbox can confirm the account (#749). The wall stays prod-only.
+              _sendVerificationOnce(session.userId);
+            }
 
-        if (mustVerifyEmail(flavor) && !session.emailVerified) {
-          return KeyedSubtree(
-            key: const Key('auth_gate_verify_email_wall'),
-            child: _VerifyEmailWall(
-              email: session.email,
-              initialSend: _initialVerification,
-              onReload: _reloadVerified,
-              onResend: _resendVerification,
-              onSignOut: _signOut,
-            ),
-          );
-        }
-
-        return RefugeHomeScreen(repository: widget.repository, themeNotifier: widget.themeNotifier);
+            if (mustVerifyEmail(flavor) && !session.emailVerified) {
+              return KeyedSubtree(
+                key: const Key('auth_gate_verify_email_wall'),
+                child: _VerifyEmailWall(
+                  email: session.email,
+                  initialSend: _initialVerification,
+                  onReload: _reloadVerified,
+                  onResend: _resendVerification,
+                  onSignOut: _signOut,
+                ),
+              );
+            }
+            return RefugeHomeScreen(
+              repository: widget.repository,
+              themeNotifier: widget.themeNotifier,
+            );
+          },
+        );
       },
     );
   }
@@ -182,6 +223,8 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       _reloadedSession = null;
       _deleteCheck = null;
       _deleteCheckUserId = null;
+      _banCheck = null;
+      _banCheckUserId = null;
     });
     await ref.read(memberProfileProvider.notifier).signOut();
   }
@@ -320,4 +363,56 @@ class _VerifyEmailWallState extends State<_VerifyEmailWall> {
       ),
     ),
   );
+}
+
+/// Shown while a soft-delete or ban lookup is in flight.
+const _checkingAccountScaffold = Scaffold(
+  key: Key('auth_gate_checking_account'),
+  body: Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircularProgressIndicator(),
+        SizedBox(height: 16),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            VerifyEmailCopy.checkingAccount,
+            key: Key('auth_gate_checking_account_message'),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+
+/// Full-screen refusal. Stays up after sign-out so the member can read it.
+class _BanRefusalWall extends StatelessWidget {
+  const _BanRefusalWall({this.onBack});
+
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: const Key('auth_gate_ban_refusal'),
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AccountPausedLockout(),
+              if (onBack != null)
+                TextButton(
+                  key: const Key('ban_refusal_back_to_sign_in'),
+                  onPressed: onBack,
+                  child: const Text('Back to sign in'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

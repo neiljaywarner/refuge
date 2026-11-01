@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/config/app_flavor.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../notifications/data/direct_message_push_caller.dart';
 import '../../notifications/domain/belong_notification.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
@@ -355,7 +356,10 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
         await doc.reference.delete();
         removed++;
       }
-    } catch (_) {}
+    } catch (error, stack) {
+      talker.handle(error, stack, 'Firestore message ban erase failed');
+      rethrow;
+    }
     return removed;
   }
 }
