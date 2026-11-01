@@ -127,6 +127,11 @@ void main() {
     expect(support.data, isNot(contains('mailto')));
     expect(support.data, isNot(contains('email')));
 
+    final giphyLine = tester.widget<Text>(find.byKey(const Key('about_giphy_line')));
+    expect(giphyLine.data, contains('gratefully powered by GIPHY'));
+    expect(giphyLine.data, contains('does not endorse Belong'));
+    expect(find.byKey(const Key('about_giphy_link')), findsOneWidget);
+
     expect(find.textContaining('grokbot'), findsNothing);
     expect(find.textContaining('mail.grokbot.com'), findsNothing);
     expect(find.textContaining('support@'), findsNothing);

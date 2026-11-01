@@ -163,11 +163,11 @@ void main() {
       // Open gallery modal
       await addMemeButton.tap();
 
-      // Check modal content
-      expect($('🖼️ Autism & Faith Meme Gallery'), findsOneWidget);
+      expect($('Attach media'), findsOneWidget);
+      await $(const Key('attach_media_more')).tap();
+      await $(const Key('attach_media_memes')).tap();
       expect($('Elijah Under the Broom Tree'), findsOneWidget);
 
-      // Tap on Elijah meme
       await $('Elijah Under the Broom Tree').tap();
 
       // Modal is dismissed, attachment preview banner is shown

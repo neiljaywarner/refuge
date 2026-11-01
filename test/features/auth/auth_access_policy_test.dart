@@ -14,6 +14,15 @@ void main() {
     });
   });
 
+  group('sendsEmailVerification', () {
+    test('dev never sends; every other flavor does', () {
+      expect(sendsEmailVerification(AppFlavor.dev), isFalse);
+      expect(sendsEmailVerification(AppFlavor.prod), isTrue);
+      expect(sendsEmailVerification(AppFlavor.stg), isTrue);
+      expect(sendsEmailVerification(AppFlavor.qa), isTrue);
+    });
+  });
+
   group('showSoftVerifyBanner', () {
     AuthSession signedIn({bool emailVerified = false}) => AuthSession(
       userId: 'uid-1',
@@ -26,8 +35,9 @@ void main() {
       emailVerified: emailVerified,
     );
 
-    test('shows for an unverified member outside production', () {
-      expect(showSoftVerifyBanner(flavor: AppFlavor.dev, session: signedIn()), isTrue);
+    test('shows for an unverified member on stg and qa, not on dev', () {
+      expect(showSoftVerifyBanner(flavor: AppFlavor.dev, session: signedIn()), isFalse);
+      expect(showSoftVerifyBanner(flavor: AppFlavor.stg, session: signedIn()), isTrue);
       expect(showSoftVerifyBanner(flavor: AppFlavor.qa, session: signedIn()), isTrue);
     });
 

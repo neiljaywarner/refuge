@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/build/build_identity.dart';
 import '../../../core/config/other_site_info_button.dart';
@@ -8,6 +9,17 @@ import '../../../core/logging/app_logger.dart';
 import '../../sensory_themes/domain/sensory_font_scale.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import 'about_build_stamp.dart';
+
+/// Opens Giphy's home page from the About gratitude line.
+///
+/// Failure stays quiet: the sentence above the link is still readable.
+Future<void> _openGiphyHome() async {
+  try {
+    await launchUrl(Uri.parse('https://giphy.com'), mode: LaunchMode.externalApplication);
+  } catch (_) {
+    // The gratitude line stays readable when the browser cannot open.
+  }
+}
 
 /// Shows the About Belong on the Spectrum & Sensory Settings dialog
 /// (with all hackathon / Judge API Explorer clutter removed per Issue #18).
@@ -214,6 +226,26 @@ void showAboutRefugeDialog(
                   '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
                   '• Community announcements and guidance are updated unhurriedly by organizers.',
                   style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+                const Gap(8),
+                const Text(
+                  key: Key('about_giphy_line'),
+                  'GIF features are gratefully powered by GIPHY. GIPHY does not endorse Belong.',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    key: const Key('about_giphy_link'),
+                    style: TextButton.styleFrom(
+                      padding: .zero,
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: _openGiphyHome,
+                    child: const Text('giphy.com', style: TextStyle(fontSize: 11.5)),
+                  ),
                 ),
                 const Divider(height: 20),
                 const Text(

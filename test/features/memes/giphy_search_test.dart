@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -340,7 +341,7 @@ void main() {
     });
   });
 
-  group('Search GIFs tab', () {
+  group('Attach media GIF search', () {
     setUp(() {
       final binding = TestWidgetsFlutterBinding.ensureInitialized();
       binding.platformDispatcher.implicitView?.physicalSize = const Size(1080, 2400);
@@ -359,10 +360,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
-      await tester.tap(find.byKey(const Key('tab_giphy_search')));
-      await tester.pump();
-      await tester.pump();
-
+      expect(find.text('Attach media'), findsOneWidget);
+      expect(find.byKey(const Key('tab_giphy_search')), findsNothing);
       expect(find.byKey(const Key('giphy_unconfigured')), findsOneWidget);
       expect(find.byKey(const Key('giphy_attribution')), findsNothing);
     });
@@ -384,13 +383,21 @@ void main() {
       await tester.tap(find.byKey(const Key('open_gallery_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-
-      await tester.tap(find.byKey(const Key('tab_giphy_search')));
-      await tester.pump();
       await tester.pump();
 
+      expect(find.text('Attach media'), findsOneWidget);
+      expect(find.byKey(const Key('tab_giphy_search')), findsNothing);
       expect(find.text('quiet chapel'), findsOneWidget);
       expect(find.byKey(const Key('giphy_attribution')), findsOneWidget);
+      expect(find.text('Powered by GIPHY'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('giphy_attribution')),
+          matching: find.byType(Image),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('giphy_still_motion_note')), findsOneWidget);
       expect(fake.lastQuery, '');
 
       await tester.enterText(find.byKey(const Key('giphy_search_input')), 'bread');
@@ -406,7 +413,7 @@ void main() {
       expect(selected, isNotNull);
       expect(selected!.imageUrl, 'https://media.giphy.com/move.gif');
       expect(selected!.title, 'quiet chapel');
-      expect(find.text('🖼️ Autism & Faith Meme Gallery'), findsNothing);
+      expect(find.text('Attach media'), findsNothing);
       expect(find.byKey(const Key('giphy_platform_note')), findsNothing);
     });
 
@@ -438,11 +445,10 @@ void main() {
       await tester.tap(find.byKey(const Key('open_gallery_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byKey(const Key('tab_giphy_search')));
-      await tester.pump();
 
       expect(find.byKey(const Key('giphy_open_sdk_button')), findsOneWidget);
       expect(find.byKey(const Key('giphy_search_input')), findsNothing);
+      expect(find.byKey(const Key('giphy_attribution')), findsNothing);
       expect(find.textContaining('clips'), findsWidgets);
 
       await tester.tap(find.byKey(const Key('giphy_open_sdk_button')));
@@ -451,6 +457,170 @@ void main() {
 
       expect(seenRating, 'pg');
       expect(selected!.imageUrl, 'https://media.giphy.com/hero.gif');
+    });
+
+    testWidgets('keeps search, attribution, and the grid above the keyboard', (tester) async {
+      tester.view.physicalSize = const Size(390, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+
+      final fake = _FakeGiphySearch(
+        results: const [
+          GiphyGif(
+            id: 'abc',
+            title: 'quiet chapel',
+            stillUrl: 'https://media.giphy.com/still.gif',
+            gifUrl: 'https://media.giphy.com/move.gif',
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(_galleryHarness(search: fake));
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const Key('giphy_search_input')), findsOneWidget);
+      expect(find.byKey(const Key('giphy_attribution')), findsOneWidget);
+      expect(find.byKey(const Key('giphy_results_grid')), findsOneWidget);
+
+      const keyboardTop = 640.0 - 280.0;
+      final searchBox = tester.getRect(find.byKey(const Key('giphy_search_input')));
+      final gridBox = tester.getRect(find.byKey(const Key('giphy_results_grid')));
+      final creditBox = tester.getRect(find.byKey(const Key('giphy_attribution')));
+
+      expect(searchBox.bottom, lessThan(keyboardTop));
+      expect(creditBox.bottom, lessThanOrEqualTo(keyboardTop + 1));
+      expect(gridBox.height, greaterThan(24));
+      expect(gridBox.bottom, lessThanOrEqualTo(keyboardTop + 1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a slower trending response cannot replace a newer search', (tester) async {
+      final search = _QueuedGiphySearch();
+      await tester.pumpWidget(_galleryHarness(search: search));
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump();
+
+      await tester.enterText(find.byKey(const Key('giphy_search_input')), 'bread');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pump();
+      expect(search.pendingCount(''), 1);
+      expect(search.pendingCount('bread'), 1);
+
+      search.complete('bread', const [
+        GiphyGif(
+          id: 'bread',
+          title: 'quiet bread',
+          stillUrl: 'https://media.giphy.com/bread-still.gif',
+          gifUrl: 'https://media.giphy.com/bread.gif',
+        ),
+      ]);
+      await tester.pump();
+      search.complete('', const [
+        GiphyGif(
+          id: 'trend',
+          title: 'trending chapel',
+          stillUrl: 'https://media.giphy.com/trend-still.gif',
+          gifUrl: 'https://media.giphy.com/trend.gif',
+        ),
+      ]);
+      await tester.pump();
+
+      expect(find.text('quiet bread'), findsOneWidget);
+      expect(find.text('trending chapel'), findsNothing);
+    });
+
+    testWidgets('reopening the sheet reuses trending and skips a second request', (tester) async {
+      final search = _CountingGiphySearch(
+        results: const [
+          GiphyGif(
+            id: 'abc',
+            title: 'quiet chapel',
+            stillUrl: 'https://media.giphy.com/still.gif',
+            gifUrl: 'https://media.giphy.com/move.gif',
+          ),
+        ],
+      );
+      await tester.pumpWidget(_galleryHarness(search: search));
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      expect(search.calls, 1);
+
+      Navigator.of(tester.element(find.text('Attach media'))).pop();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Attach media'), findsNothing);
+
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(search.calls, 1);
+      expect(find.text('quiet chapel'), findsOneWidget);
+    });
+
+    testWidgets('More hides the GIF field from semantics and drops the keyboard', (tester) async {
+      final search = _FakeGiphySearch(
+        results: const [
+          GiphyGif(
+            id: 'abc',
+            title: 'quiet chapel',
+            stillUrl: 'https://media.giphy.com/still.gif',
+            gifUrl: 'https://media.giphy.com/move.gif',
+          ),
+        ],
+      );
+      await tester.pumpWidget(_galleryHarness(search: search));
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump();
+
+      tester.state<EditableTextState>(find.byType(EditableText)).requestKeyboard();
+      await tester.pump();
+      tester.widget<TextButton>(find.byKey(const Key('attach_media_more'))).onPressed!();
+      await tester.pump();
+
+      expect(find.byKey(const Key('attach_media_photo')), findsOneWidget);
+      expect(tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus, isFalse);
+      final excluded = tester.widget<ExcludeSemantics>(
+        find
+            .ancestor(
+              of: find.byKey(const Key('giphy_search_input')),
+              matching: find.byType(ExcludeSemantics),
+            )
+            .first,
+      );
+      expect(excluded.excluding, isTrue);
+      final inert = tester.widget<IgnorePointer>(
+        find
+            .ancestor(
+              of: find.byKey(const Key('giphy_search_input')),
+              matching: find.byType(IgnorePointer),
+            )
+            .first,
+      );
+      expect(inert.ignoring, isTrue);
+    });
+
+    testWidgets('close control is named Close and at least 48 dp', (tester) async {
+      await tester.pumpWidget(_galleryHarness(search: _FakeGiphySearch(results: const [])));
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byTooltip('Close'), findsOneWidget);
+      final size = tester.getSize(find.byKey(const Key('meme_gallery_close_button')));
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
     });
   });
 }
@@ -466,6 +636,45 @@ class _RecordingClient extends http.BaseClient {
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     uris.add(request.url);
     return http.StreamedResponse(Stream<List<int>>.value(utf8.encode(body)), statusCode);
+  }
+}
+
+class _CountingGiphySearch extends _FakeGiphySearch {
+  _CountingGiphySearch({required super.results});
+
+  int calls = 0;
+
+  @override
+  Future<List<GiphyGif>> search(String query) {
+    calls++;
+    return super.search(query);
+  }
+}
+
+class _QueuedGiphySearch implements GiphySearch {
+  final pending = <String, List<Completer<List<GiphyGif>>>>{};
+
+  int pendingCount(String query) => pending[query]?.length ?? 0;
+
+  void complete(String query, List<GiphyGif> results) {
+    final next = pending[query]?.removeAt(0);
+    if (next == null) {
+      throw StateError('no pending search for "$query"');
+    }
+    next.complete(results);
+  }
+
+  @override
+  bool get isConfigured => true;
+
+  @override
+  String get contentRating => 'pg';
+
+  @override
+  Future<List<GiphyGif>> search(String query) {
+    final completer = Completer<List<GiphyGif>>();
+    pending.putIfAbsent(query, () => []).add(completer);
+    return completer.future;
   }
 }
 

@@ -7,9 +7,9 @@ appId: com.belongonthespectrum.refuge.dev
 # Flutter Keys such as add_meme_gif_button, meme_upload_camera_button, and
 # meme_gallery_close_button are not resource ids in the tree.
 # Visible labels: Spaces row "Memes", composer "Add Meme / GIF",
-# sheet "Autism & Faith Meme Gallery", chip "Upload Photo / Camera",
-# button "Use Camera". The close control is an unlabeled Button, so Back
-# dismisses the sheet. These steps are required; a missing label fails the flow.
+# sheet "Attach media", row "More", then "Photo", button "Use Camera".
+# The close control is an unlabeled Button, so Back dismisses the sheet.
+# These steps are required; a missing label fails the flow.
 - launchApp:
     clearState: false
 
@@ -30,12 +30,16 @@ appId: com.belongonthespectrum.refuge.dev
 
 - tapOn: ".*Add Meme / GIF.*"
 - extendedWaitUntil:
-    visible: ".*Meme Gallery.*"
+    visible: ".*Attach media.*"
     timeout: 15000
-- assertVisible: ".*Meme Gallery.*"
-- assertVisible: ".*Curated Calm Memes.*"
+- assertVisible: ".*Attach media.*"
 
-- tapOn: ".*Upload Photo / Camera.*"
+- tapOn:
+    text: "^More$"
+    below: "Attach media"
+- tapOn:
+    text: "^Photo$"
+    below: "Belong memes"
 - extendedWaitUntil:
     visible: ".*Use Camera.*"
     timeout: 10000
@@ -46,5 +50,5 @@ appId: com.belongonthespectrum.refuge.dev
 # meme_gallery_photo_upload_e2e.yaml (and avatar_gallery_change_e2e.yaml).
 # Do not open the system camera here. Back closes the unlabeled sheet.
 - pressKey: back
-- assertNotVisible: ".*Meme Gallery.*"
+- assertNotVisible: ".*Attach media.*"
 - assertVisible: ".*Add Meme / GIF.*"

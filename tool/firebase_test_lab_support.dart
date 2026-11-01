@@ -19,12 +19,18 @@ const devAndroidApplicationLabel = devLauncherTitle;
 const devMainEntrypoint = 'lib/main_dev.dart';
 
 /// `flutter build apk --debug` arguments for a safe Test Lab app APK.
-List<String> devFlutterApkBuildArgs() => [
+///
+/// [target] defaults to [devMainEntrypoint]. Flavor stays `dev` either way,
+/// so the package remains `.dev`. Test Lab itself does not use this command.
+/// It builds with `patrol build android`, which also sets the Patrol server
+/// ports. A bare Gradle assemble does not, and the instrumentation then waits
+/// until the device timeout.
+List<String> devFlutterApkBuildArgs({String target = devMainEntrypoint}) => [
   'build',
   'apk',
   '--debug',
   '-t',
-  devMainEntrypoint,
+  target,
   '--dart-define=FLAVOR=dev',
   '--dart-define=ENABLE_SERVERPOD=false',
 ];
@@ -46,19 +52,12 @@ List<String> devReleaseApkRelativePaths() => [
   'build/app/outputs/apk/release/app-release.apk',
 ];
 
-/// Relative Gradle target for the hello-world instrumentation APK.
-String integrationTestGradleTarget(String targetPath) {
-  final normalized = targetPath.replaceAll(r'\', '/');
-  if (normalized.startsWith('integration_test/')) {
-    return '../$normalized';
-  }
-  return normalized;
-}
-
-/// Candidate app APK paths (Flutter vs legacy Gradle output).
+/// Candidate app APK paths. Gradle / `patrol build android` writes the first
+/// path. `flutter build apk` writes the second. Prefer the Gradle output so a
+/// leftover Flutter APK is not uploaded with a Patrol test APK.
 List<String> appApkRelativePaths() => [
-  'build/app/outputs/flutter-apk/app-debug.apk',
   'build/app/outputs/apk/debug/app-debug.apk',
+  'build/app/outputs/flutter-apk/app-debug.apk',
 ];
 
 const androidTestApkRelativePath =
@@ -341,6 +340,7 @@ List<String> gcloudFirebaseTestAndroidRunArgs({
   required String project,
   required String timeout,
   String? resultsBucket,
+  bool useOrchestrator = false,
 }) {
   final bucket = normalizeResultsBucket(resultsBucket);
   return [
@@ -360,9 +360,25 @@ List<String> gcloudFirebaseTestAndroidRunArgs({
     project,
     '--timeout',
     timeout,
+    if (useOrchestrator) ...[
+      '--use-orchestrator',
+      '--environment-variables',
+      'clearPackageData=true',
+    ],
     if (bucket != null) ...['--results-bucket', bucket],
   ];
 }
+
+/// True when [source] declares more than one `patrolTest`.
+///
+/// `PatrolAppService.runDartTest` completes a one-shot completer. A second
+/// test in the same process asserts
+/// `_testExecutionCompleted.isCompleted == false` and the native client
+/// reports HTTP 500. Android Test Orchestrator starts a fresh process per
+/// test, which is what Patrol's Test Lab guide does. A single-test target
+/// stays on the plain runner.
+bool ftlTargetNeedsOrchestrator(String source) =>
+    RegExp(r'patrolTest\s*\(').allMatches(source).length >= 2;
 
 /// Resolves `aapt` from [androidHome] build-tools (newest version first).
 String? resolveAaptExecutable({String? androidHome}) {

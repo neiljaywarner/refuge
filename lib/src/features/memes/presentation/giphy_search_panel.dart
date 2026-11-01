@@ -10,8 +10,9 @@ import '../domain/calm_meme.dart';
 
 /// GIF search at the Remote Config rating ceiling.
 ///
-/// Android and iOS open the official Giphy SDK. The PWA searches the Giphy API
-/// and shows still previews.
+/// Android and iOS open the official Giphy SDK, which carries Giphy's own
+/// marks. The PWA searches the Giphy API, shows still previews, and keeps a
+/// visible "Powered by GIPHY" line on this surface.
 class GiphySearchPanel extends ConsumerStatefulWidget {
   const GiphySearchPanel({super.key, required this.onSelected});
 
@@ -28,12 +29,13 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
   String? _error;
   List<GiphyGif> _results = const [];
   var _showingTrending = true;
+  var _searchGeneration = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || _searchGeneration != 0) return;
       if (ref.read(giphySurfaceProvider) == GiphySurface.webApi) {
         _search('');
       }
@@ -57,21 +59,39 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       return;
     }
 
+    final trimmed = query.trim();
+    final generation = ++_searchGeneration;
+    if (trimmed.isEmpty) {
+      final cached = ref.read(giphyTrendingCacheProvider).resultsFor(client.contentRating);
+      if (cached != null) {
+        setState(() {
+          _loading = false;
+          _error = null;
+          _showingTrending = true;
+          _results = cached;
+        });
+        return;
+      }
+    }
+
     setState(() {
       _loading = true;
       _error = null;
-      _showingTrending = query.trim().isEmpty;
+      _showingTrending = trimmed.isEmpty;
     });
 
     try {
       final results = await client.search(query);
-      if (!mounted) return;
+      if (!mounted || generation != _searchGeneration) return;
+      if (trimmed.isEmpty) {
+        ref.read(giphyTrendingCacheProvider).remember(client.contentRating, results);
+      }
       setState(() {
         _loading = false;
         _results = results;
       });
     } on GiphySearchException catch (error) {
-      if (!mounted) return;
+      if (!mounted || generation != _searchGeneration) return;
       setState(() {
         _loading = false;
         _error = error.message;
@@ -89,7 +109,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
     if (!configured) {
       return const Text(
         key: Key('giphy_unconfigured'),
-        'GIF search is not turned on for this build. You can still paste a GIF URL under Attach Custom GIF / URL.',
+        'GIF search is not turned on for this build. Paste a link under More.',
         style: TextStyle(fontSize: 12, height: 1.35),
       );
     }
@@ -98,37 +118,24 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       return _buildNativeSdk(ratingLabel);
     }
 
-    return Column(
-      crossAxisAlignment: .start,
-      children: [
-        Text(
-          key: const Key('giphy_platform_note'),
-          'This website searches GIFs, including when it is installed on a phone home screen. The Android and iOS apps also include stickers, emoji, clips, and animated text.',
-          style: TextStyle(
-            fontSize: 11,
-            height: 1.35,
-            color: Theme.of(context).textTheme.bodySmall?.color,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '$ratingLabel still previews. The GIF plays only after you attach it.',
-          style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
-        ),
-        const SizedBox(height: 8),
-        Row(
+    return _buildWebApi(ratingLabel);
+  }
+
+  Widget _buildWebApi(String ratingLabel) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final searchRow = Row(
           children: [
             Expanded(
               child: TextField(
                 key: const Key('giphy_search_input'),
                 controller: _queryController,
-                textInputAction: .search,
+                textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  labelText: 'Search GIFs',
                   hintText: 'quiet, bread, chapel',
-                  hintStyle: const TextStyle(fontSize: 11),
+                  hintStyle: const TextStyle(fontSize: 12),
                   isDense: true,
-                  prefixIcon: const Icon(Icons.search, size: 16),
+                  prefixIcon: const Icon(Icons.search, size: 18),
                   border: OutlineInputBorder(borderRadius: .circular(10)),
                 ),
                 onSubmitted: _search,
@@ -137,20 +144,83 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
             const SizedBox(width: 8),
             ElevatedButton(
               key: const Key('giphy_search_button'),
-              onPressed: _loading ? null : () => _search(_queryController.text),
+              onPressed: () => _search(_queryController.text),
               child: const Text('Search', style: TextStyle(fontSize: 12)),
             ),
           ],
+        );
+        final attribution = _giphyAttribution(context);
+        final stillNote = Text(
+          '$ratingLabel still previews. The GIF plays only after you attach it.',
+          key: const Key('giphy_still_motion_note'),
+          style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
+        );
+        final results = _buildResults(ratingLabel);
+
+        // A short viewport (keyboard open) cannot pin a footer under an
+        // Expanded grid. Keep the attribution with the search field so it
+        // stays on screen, and let the grid fill whatever height remains.
+        if (!constraints.maxHeight.isFinite || constraints.maxHeight < 150) {
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: .start,
+              children: [
+                searchRow,
+                const SizedBox(height: 6),
+                stillNote,
+                const SizedBox(height: 6),
+                attribution,
+                const SizedBox(height: 8),
+                SizedBox(height: 160, child: results),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: .start,
+          children: [
+            searchRow,
+            const SizedBox(height: 6),
+            stillNote,
+            const SizedBox(height: 8),
+            Expanded(child: results),
+            const SizedBox(height: 6),
+            attribution,
+          ],
+        );
+      },
+    );
+  }
+
+  /// Official horizontal lockup from GIPHY's attribution pack
+  /// (https://media.giphy.com/giphy-attribution-marks.zip), unmodified.
+  /// Black ink sits on a light sheet; white ink sits on a dark sheet.
+  /// The text beside it keeps [Key] `giphy_attribution`'s readable name.
+  Widget _giphyAttribution(BuildContext context) {
+    final onLight = Theme.of(context).brightness == Brightness.light;
+    return Semantics(
+      key: const Key('giphy_attribution'),
+      label: 'Powered by GIPHY',
+      child: ExcludeSemantics(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              onLight
+                  ? 'assets/images/giphy/powered_by_giphy_on_light.png'
+                  : 'assets/images/giphy/powered_by_giphy_on_dark.png',
+              height: 18,
+              filterQuality: FilterQuality.medium,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Powered by GIPHY',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.2),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Expanded(child: _buildResults(ratingLabel)),
-        const SizedBox(height: 6),
-        const Text(
-          key: Key('giphy_attribution'),
-          'Powered by GIPHY',
-          style: TextStyle(fontSize: 11, fontWeight: .w600),
-        ),
-      ],
+      ),
     );
   }
 
@@ -158,16 +228,6 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
     return Column(
       crossAxisAlignment: .start,
       children: [
-        Text(
-          key: const Key('giphy_platform_note'),
-          'Official Giphy picker: GIFs, stickers, emoji, clips, and animated text. Clips can include sound here. The feed attaches a silent GIF.',
-          style: TextStyle(
-            fontSize: 11,
-            height: 1.35,
-            color: Theme.of(context).textTheme.bodySmall?.color,
-          ),
-        ),
-        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -182,6 +242,15 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
             },
             icon: const Icon(Icons.gif_box_outlined, size: 18),
             label: Text('Open Giphy ($ratingLabel)'),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'GIFs, stickers, emoji, and clips. The feed attaches a silent GIF.',
+          style: TextStyle(
+            fontSize: 11,
+            height: 1.35,
+            color: Theme.of(context).textTheme.bodySmall?.color,
           ),
         ),
       ],
@@ -229,31 +298,31 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
       itemCount: _results.length,
       itemBuilder: (context, index) {
         final gif = _results[index];
-        return InkWell(
-          key: Key('giphy_result_${gif.id}'),
-          onTap: () => widget.onSelected(calmMemeFromGiphy(gif)),
-          borderRadius: .circular(8),
-          child: Column(
-            crossAxisAlignment: .stretch,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: .circular(8),
-                  child: CalmMediaImage(
-                    imageUrl: gif.stillUrl,
-                    fit: .cover,
-                    semanticLabel: gif.title,
+        return Semantics(
+          button: true,
+          label: gif.title,
+          child: InkWell(
+            key: Key('giphy_result_${gif.id}'),
+            onTap: () => widget.onSelected(calmMemeFromGiphy(gif)),
+            borderRadius: .circular(8),
+            child: Column(
+              crossAxisAlignment: .stretch,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: .circular(8),
+                    child: CalmMediaImage(imageUrl: gif.stillUrl, fit: BoxFit.cover),
                   ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                gif.title,
-                maxLines: 2,
-                overflow: .ellipsis,
-                style: const TextStyle(fontSize: 10),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  gif.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
           ),
         );
       },

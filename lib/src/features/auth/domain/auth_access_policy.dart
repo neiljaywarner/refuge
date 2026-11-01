@@ -3,13 +3,22 @@ import 'package:flutter/foundation.dart';
 import '../../../core/config/app_flavor.dart';
 import 'auth_session.dart';
 
-/// Production builds require a verified email before the main app is shown.
-bool mustVerifyEmail(AppFlavor flavor) => flavor.isProduction;
+/// Production is the only flavor that blocks Home until the email is verified.
+///
+/// Dev (`AppFlavor.dev`, `lib/main_dev.dart`, package
+/// `com.belongonthespectrum.refuge.dev`) does not. The decision is this
+/// flavor comparison. There is no shared flag a prod build can inherit.
+bool mustVerifyEmail(AppFlavor flavor) => flavor == AppFlavor.prod;
 
-/// Soft-launch flavors open Home while email is still unverified and explain
-/// that on a banner. Production keeps the check-email wall instead.
+/// Dev does not send a Firebase verification email. Every other flavor does,
+/// including production. [FirebaseAuthRepository] defaults to [AppFlavor.prod].
+bool sendsEmailVerification(AppFlavor flavor) => flavor != AppFlavor.dev;
+
+/// Non-dev, non-production flavors open Home and explain verification on a
+/// banner. Dev skips that banner so Maestro can register and sign in without
+/// an email step. Production uses the check-email wall instead.
 bool showSoftVerifyBanner({required AppFlavor flavor, required AuthSession session}) {
-  if (mustVerifyEmail(flavor)) return false;
+  if (flavor == AppFlavor.dev || mustVerifyEmail(flavor)) return false;
   if (!sessionMayEnterCommunity(session)) return false;
   return !session.emailVerified;
 }

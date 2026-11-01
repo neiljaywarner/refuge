@@ -34,20 +34,40 @@ There is **no credit card charge** if a cap is hit — that platform's search pa
 
 Putting keys in Remote Config is normal for Giphy: they are **not** payment secrets. The app downloads the key for the current platform at runtime. Do not paste keys into chat, screenshots, commits, or the wiki. If traffic on one platform grows, add another key or upgrade that Giphy app — tracked in GitHub **#741**.
 
-## Website: a real GIF picker
+## Attach media sheet
 
-On **belongonthespectrum.web.app** (and other web/desktop targets), **Search GIFs** is a full picker, not a placeholder:
+Composer **Add Meme / GIF** opens one **Attach media** sheet ([#762](https://github.com/neiljaywarner/refuge/issues/762)). GIF search is the first thing on the sheet. There is no separate Search GIFs chip.
 
-- Trending and search against Giphy’s API at the published rating ceiling.
-- **Still previews** while you browse (motion starts after you attach).
-- **Powered by GIPHY** attribution.
-- Paste-a-URL still works if search is off or you already have a link.
+- **Web, PWA, and desktop:** the search field is visible as soon as the sheet opens, with one trending request. Opening the sheet again in the same session reuses that list. A search that is still in flight cannot overwrite a newer one. Copy on the sheet: “PG still previews. The GIF plays only after you attach it.”
+- **Android and iOS:** **Open Giphy** is the primary action. It opens the official SDK dialog (GIFs, stickers, emoji, clips, animated text). That dialog keeps Giphy’s own branding.
+- **More:** Belong memes, paste a link, and photo (camera or gallery) sit under **More**, collapsed until someone asks for them.
+- The sheet height follows the space above the keyboard so the results grid stays in the remaining area ([#761](https://github.com/neiljaywarner/refuge/issues/761)).
 
-That is enough for reflections, memes, and calm humor on the web. We do not treat the website as a “demo” of the phone app.
+### Checks
 
-## Phone apps: the same button, more Giphy
+Widget tests cover the sheet, attribution, and the short-phone keyboard case. Device checks stay on the **dev** package `com.belongonthespectrum.refuge.dev`:
 
-On **Android and iOS**, the same **Search GIFs** tab opens Giphy’s official dialog with:
+```bash
+maestro test .maestro/attach_media_giphy_flow.yaml
+dart run tool/run_firebase_test_lab.dart \
+  --target integration_test/patrol_ftl_attach_media_test.dart
+```
+
+The Patrol target uses an in-memory GIF double. It does not call Giphy, log a key, or publish a reflection. The Maestro flow asserts Attach media on a dev build and does not post. Native SDK tabs still come from `belongGiphySettings` / `kNativeGiphyFeatures` ([#763](https://github.com/neiljaywarner/refuge/issues/763)).
+
+### Attribution stays where search lives
+
+Giphy’s [API docs](https://developers.giphy.com/docs/) (Attribution) and [API Terms](https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service) require a conspicuous **Powered by GIPHY** mark where the API is used. Approved marks: [brand guidelines](https://support.giphy.com/hc/en-us/articles/360022283772-GIPHY-Brand-Guidelines).
+
+- The **web/PWA picker** shows the official horizontal **Powered by GIPHY** lockup (from [GIPHY’s attribution marks](https://media.giphy.com/giphy-attribution-marks.zip), unmodified) beside the words **Powered by GIPHY** (`Key('giphy_attribution')`). That mark stays on this sheet. It is not moved to About.
+- The **native SDK dialog** keeps its own Giphy marks. Belong does not strip them.
+- **About** adds one calm line: GIF features are gratefully powered by GIPHY, and GIPHY does not endorse Belong, with a link to [giphy.com](https://giphy.com). Help on About stays Vote & Feedback ([#495](https://github.com/neiljaywarner/refuge/issues/495), [#752](https://github.com/neiljaywarner/refuge/issues/752)).
+
+Paste-a-URL still works if search is off or you already have a link.
+
+## Phone apps: the same sheet, more Giphy
+
+On **Android and iOS**, **Open Giphy** on the Attach media sheet opens Giphy’s official dialog with:
 
 | Feature | Phone (SDK) | Website (API) |
 | --- | --- | --- |
@@ -84,5 +104,5 @@ See also **[Organizer Remote Config Guide](Organizer-Remote-Config-Guide)** for 
 
 ## Related work
 
-- GitHub: [#666](https://github.com/neiljaywarner/refuge/issues/666) (Giphy integration), PR [#715](https://github.com/neiljaywarner/refuge/pull/715), [#738](https://github.com/neiljaywarner/refuge/issues/738) (Clips), [#741](https://github.com/neiljaywarner/refuge/issues/741) (more keys later), [#743](https://github.com/neiljaywarner/refuge/issues/743) (iPhone SDK and Clips check — no device yet).
+- GitHub: [#666](https://github.com/neiljaywarner/refuge/issues/666) (Giphy integration), PR [#715](https://github.com/neiljaywarner/refuge/pull/715), [#738](https://github.com/neiljaywarner/refuge/issues/738) (Clips), [#741](https://github.com/neiljaywarner/refuge/issues/741) (more keys later), [#743](https://github.com/neiljaywarner/refuge/issues/743) (iPhone SDK and Clips check — no device yet), [#762](https://github.com/neiljaywarner/refuge/issues/762) (one Attach media sheet), [#761](https://github.com/neiljaywarner/refuge/issues/761) (keyboard height).
 - Store beta path: [#44](https://github.com/neiljaywarner/refuge/issues/44) (TestFlight and Play internal/closed beta before [#45](https://github.com/neiljaywarner/refuge/issues/45) / [#46](https://github.com/neiljaywarner/refuge/issues/46)).

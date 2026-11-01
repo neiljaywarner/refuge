@@ -36,6 +36,22 @@ class GiphySearchException implements Exception {
   String toString() => message;
 }
 
+/// Session memory for the empty-query (trending) response.
+///
+/// Opening the sheet again in the same process reuses this list instead of
+/// spending another beta-key request. A typed search still hits the network.
+class GiphyTrendingCache {
+  final Map<String, List<GiphyGif>> _byRating = {};
+
+  List<GiphyGif>? resultsFor(String rating) => _byRating[rating];
+
+  void remember(String rating, List<GiphyGif> results) {
+    _byRating[rating] = List<GiphyGif>.unmodifiable(results);
+  }
+}
+
+final giphyTrendingCacheProvider = Provider<GiphyTrendingCache>((ref) => GiphyTrendingCache());
+
 /// Looks up GIFs at the configured rating ceiling. An empty [search] query
 /// means trending.
 abstract class GiphySearch {

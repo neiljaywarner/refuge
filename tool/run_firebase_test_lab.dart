@@ -68,6 +68,12 @@ Future<void> main(List<String> args) async {
     exit(64);
   }
   _log('Verified target test file: ${testFile.path}');
+  final useOrchestrator = ftlTargetNeedsOrchestrator(testFile.readAsStringSync());
+  _log(
+    useOrchestrator
+        ? 'Orchestrator   : on (more than one patrolTest; fresh process each)'
+        : 'Orchestrator   : off (single patrolTest)',
+  );
 
   final repoRoot = Directory.current.path;
   final appApk = resolveExistingApk(repoRoot, appApkRelativePaths());
@@ -76,63 +82,38 @@ Future<void> main(List<String> args) async {
   _log('\nPhase 1: Dev debug APK assembly (Patrol native instrumentation)');
   _log('patrol ${patrolBuildAndroidArgs(target: target).join(' ')}');
   _log(
-    'Fallback: flutter ${devFlutterApkBuildArgs().join(' ')} && '
-    'gradlew app:assembleDebugAndroidTest '
-    '-Ptarget=${integrationTestGradleTarget(target)}',
+    'No Gradle fallback. A plain flutter build apk plus assembleDebugAndroidTest '
+    'omits Patrol server ports and the test bundle. On Test Lab that pair waits '
+    'until the device timeout (run 41346774462).',
   );
 
   if (!dryRun) {
     final patrol = resolvePatrolExecutable();
-    if (patrol != null) {
-      _log('Running patrol build android...');
-      final patrolBuild = await Process.run(
-        patrol,
-        patrolBuildAndroidArgs(target: target),
-        workingDirectory: repoRoot,
+    if (patrol == null) {
+      stderr.writeln(
+        'patrol CLI not found. Install the version that matches package:patrol '
+        '(patrol_cli 4.8.0 for patrol 4.10) and put it on PATH:',
       );
-      if (patrolBuild.exitCode != 0) {
-        stderr.writeln('patrol build android failed (${patrolBuild.exitCode}).');
-        stderr.write(patrolBuild.stderr);
-        stdout.write(patrolBuild.stdout);
-        exit(patrolBuild.exitCode);
-      }
-      _log('Patrol dev APK pair built.');
-    } else {
-      final flutter = await _resolveFlutterExecutable();
-      if (flutter == null) {
-        stderr.writeln('Neither patrol nor flutter found on PATH.');
-        exit(127);
-      }
-
-      _log('Patrol CLI missing; using flutter + Gradle fallback...');
-      final flutterBuild = await Process.run(
-        flutter,
-        devFlutterApkBuildArgs(),
-        workingDirectory: repoRoot,
-      );
-      if (flutterBuild.exitCode != 0) {
-        stderr.writeln('flutter build apk failed (${flutterBuild.exitCode}).');
-        stderr.write(flutterBuild.stderr);
-        stdout.write(flutterBuild.stdout);
-        exit(flutterBuild.exitCode);
-      }
-
-      final androidDir = Directory('$repoRoot/android');
-      final gradleCmd = Platform.isWindows ? 'gradlew.bat' : './gradlew';
-      final gradleProcess = await Process.run(gradleCmd, [
-        'app:assembleDebugAndroidTest',
-        '-Ptarget=${integrationTestGradleTarget(target)}',
-      ], workingDirectory: androidDir.path);
-      if (gradleProcess.exitCode != 0) {
-        stderr.writeln('Gradle assembleDebugAndroidTest failed (${gradleProcess.exitCode}).');
-        stderr.write(gradleProcess.stderr);
-        stdout.write(gradleProcess.stdout);
-        exit(gradleProcess.exitCode);
-      }
-      _log('Dev APK pair built (fallback).');
+      stderr.writeln('  dart pub global activate patrol_cli 4.8.0');
+      stderr.writeln('  export PATH="\$HOME/.pub-cache/bin:\$PATH"');
+      exit(127);
     }
+
+    _log('Running patrol build android...');
+    final patrolBuild = await Process.run(
+      patrol,
+      patrolBuildAndroidArgs(target: target),
+      workingDirectory: repoRoot,
+    );
+    if (patrolBuild.exitCode != 0) {
+      stderr.writeln('patrol build android failed (${patrolBuild.exitCode}).');
+      stderr.write(patrolBuild.stderr);
+      stdout.write(patrolBuild.stdout);
+      exit(patrolBuild.exitCode);
+    }
+    _log('Patrol dev APK pair built.');
   } else {
-    _log('[Dry Run] Skipped Patrol / Gradle builds.');
+    _log('[Dry Run] Skipped patrol build android.');
   }
 
   final resolvedAppApk =
@@ -179,6 +160,7 @@ Future<void> main(List<String> args) async {
     project: project,
     timeout: timeout,
     resultsBucket: resultsBucket,
+    useOrchestrator: useOrchestrator,
   );
 
   final gcloud = resolveGcloudExecutable();
@@ -239,41 +221,6 @@ Future<String?> _devApkRefusalForFile(File apk) async {
     return 'Could not parse aapt dump badging output.';
   }
   return devApkUploadRefusal(badging);
-}
-
-Future<String?> _resolveFlutterExecutable() async {
-  final pathEnv = Platform.environment['PATH'] ?? '';
-  for (final segment in pathEnv.split(Platform.pathSeparator)) {
-    if (segment.isEmpty) continue;
-    final candidate = File('$segment/flutter');
-    if (candidate.existsSync()) {
-      return candidate.path;
-    }
-  }
-  final home = Platform.environment['HOME'];
-  if (home != null) {
-    for (final relative in [
-      '.puro/envs/default/flutter/bin/flutter',
-      'fvm/default/bin/flutter',
-      'development/flutter/bin/flutter',
-    ]) {
-      final candidate = File('$home/$relative');
-      if (candidate.existsSync()) {
-        return candidate.path;
-      }
-    }
-  }
-  final which = await Process.run('bash', [
-    '-lc',
-    'command -v flutter',
-  ], environment: Platform.environment);
-  if (which.exitCode == 0) {
-    final resolved = (which.stdout as String).trim();
-    if (resolved.isNotEmpty) {
-      return resolved;
-    }
-  }
-  return null;
 }
 
 String? _getArg(List<String> args, String flag) {
