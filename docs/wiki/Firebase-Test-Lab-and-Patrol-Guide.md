@@ -56,6 +56,8 @@ GitHub Actions installs `patrol_cli` **4.8.0** (the CLI that matches `patrol` 4.
 
 A plain `flutter build apk` plus `assembleDebugAndroidTest` does not set those ports. `PatrolJUnitRunner` then waits for an app service that never answers, and Test Lab hits the 10 minute device timeout (matrix [8259225914821074286](https://console.firebase.google.com/project/belongonthespectrum/testlab/histories/bh.cfd6e1e9a2c20747/matrices/8259225914821074286)). The runner refuses that fallback.
 
+`pumpDevReadOnlyHome` leaves a phone-width display alone. Forcing 390×844 at pixel ratio 1 on panther (Pixel 7) detaches Flutter’s surface: finders still see the tree, the screen stays on Patrol’s first frame, and a tap can land in the GIF search field. Desktop-width emulators (logical width ≥ 768) still get a 390-wide frame so the inline composer stays visible.
+
 ---
 
 ## Firebase Test Lab pipeline

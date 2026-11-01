@@ -39,7 +39,15 @@ void main() {
     expect($('quiet chapel'), findsOneWidget);
     expect($(const Key('tab_giphy_search')), findsNothing);
 
-    await $('quiet chapel').tap();
+    // Tap the result tile, not the title text. On a mis-sized surface the
+    // title finder can resolve while the hit lands in the search field
+    // (hint "quiet, bread, chapel"), which opens the keyboard and never
+    // attaches.
+    final result = $(const Key('giphy_result_patrol-chapel'));
+    await result.waitUntilVisible();
+    await result.tap();
+    await $(const Key('attached_meme_banner'))
+        .waitUntilVisible(timeout: const Duration(seconds: 20));
     expect($('Attached: quiet chapel'), findsOneWidget);
     expect($(const Key('publish_reflection_button')), findsOneWidget);
     expect($('Attach media'), findsNothing);
@@ -69,7 +77,7 @@ void main() {
               subtitle: 'GIPHY clip · rated PG',
               tag: 'Memes',
               body: 'quiet clip',
-              imageUrl: 'https://media.giphy.com/media/patrol-clip/200.gif',
+              imageUrl: _still,
             ),
           );
         }),
@@ -83,12 +91,20 @@ void main() {
     expect($('Powered by GIPHY'), findsNothing);
     expect($(find.textContaining('The feed attaches a silent GIF.')), findsOneWidget);
 
+    await $(const Key('giphy_open_sdk_button')).waitUntilVisible();
     await $(const Key('giphy_open_sdk_button')).tap();
+    await $(const Key('attached_meme_banner'))
+        .waitUntilVisible(timeout: const Duration(seconds: 20));
     expect(seenRating, 'pg');
     expect($('Attached: quiet clip'), findsOneWidget);
     expect($(const Key('publish_reflection_button')), findsOneWidget);
   });
 }
+
+const _still =
+    'data:image/png;base64,'
+    'iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAH0lEQVR4nGNwa6qg'
+    'CmIYNWjUoFGDRg0aNWjUoIE3CADmqdAf59hpwwAAAABJRU5ErkJggg==';
 
 class _PatrolGiphySearch implements GiphySearch {
   @override
@@ -102,8 +118,10 @@ class _PatrolGiphySearch implements GiphySearch {
     GiphyGif(
       id: 'patrol-chapel',
       title: 'quiet chapel',
-      stillUrl: 'https://media.giphy.com/media/patrol-still/200_s.gif',
-      gifUrl: 'https://media.giphy.com/media/patrol-move/200.gif',
+      // Solid still. A network preview on panther does not have to finish
+      // before the tile can paint or receive a tap.
+      stillUrl: _still,
+      gifUrl: _still,
     ),
   ];
 }

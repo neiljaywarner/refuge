@@ -12,12 +12,24 @@ Future<void> pumpDevReadOnlyHome(
   PatrolIntegrationTester $, {
   List<Override> extraOverrides = const [],
 }) async {
-  $.tester.view.devicePixelRatio = 1.0;
-  $.tester.view.physicalSize = const Size(390, 844);
-  addTearDown(() {
-    $.tester.view.resetPhysicalSize();
-    $.tester.view.resetDevicePixelRatio();
-  });
+  // A Pixel 7 (panther) is already ~412 dp wide. Forcing 390x844 at
+  // devicePixelRatio 1 detaches Flutter's surface from that window: the
+  // widget tree still builds (finders pass) but the device keeps Patrol's
+  // first frame, and taps hit the wrong control.
+  // Desktop-width emulators still get a phone frame so the inline composer
+  // stays on screen (it hides at width >= 768).
+  await $.pump();
+  final view = $.tester.view;
+  final dpr = view.devicePixelRatio == 0 ? 1.0 : view.devicePixelRatio;
+  final logicalWidth = view.physicalSize.width / dpr;
+  if (logicalWidth >= 768) {
+    view.devicePixelRatio = 1.0;
+    view.physicalSize = const Size(390, 844);
+    addTearDown(() {
+      view.resetPhysicalSize();
+      view.resetDevicePixelRatio();
+    });
+  }
 
   await $.pumpWidgetAndSettle(
     RefugeApp(

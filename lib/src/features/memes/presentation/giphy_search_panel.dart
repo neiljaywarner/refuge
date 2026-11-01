@@ -256,11 +256,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: .circular(8),
-                    child: CalmMediaImage(
-                      imageUrl: gif.stillUrl,
-                      fit: BoxFit.cover,
-                      semanticLabel: gif.title,
-                    ),
+                    child: CalmMediaImage(imageUrl: gif.stillUrl, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(height: 4),
