@@ -76,7 +76,7 @@ Future<void> main(List<String> args) async {
   _log('\nPhase 1: Dev debug APK assembly (Patrol native instrumentation)');
   _log('patrol ${patrolBuildAndroidArgs(target: target).join(' ')}');
   _log(
-    'Fallback: flutter ${devFlutterApkBuildArgs().join(' ')} && '
+    'Fallback: flutter ${devFlutterApkBuildArgs(target: target).join(' ')} && '
     'gradlew app:assembleDebugAndroidTest '
     '-Ptarget=${integrationTestGradleTarget(target)}',
   );
@@ -107,7 +107,7 @@ Future<void> main(List<String> args) async {
       _log('Patrol CLI missing; using flutter + Gradle fallback...');
       final flutterBuild = await Process.run(
         flutter,
-        devFlutterApkBuildArgs(),
+        devFlutterApkBuildArgs(target: target),
         workingDirectory: repoRoot,
       );
       if (flutterBuild.exitCode != 0) {

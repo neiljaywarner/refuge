@@ -64,6 +64,9 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["appName"] = "Belong on the Spectrum"
+        // One runner for every integration_test/patrol_ftl_*.dart target.
+        // clearPackageData is omitted: Test Lab does not pass --use-orchestrator.
+        testInstrumentationRunner = "pl.leancode.patrol.PatrolJUnitRunner"
     }
 
     buildTypes {
@@ -107,6 +110,9 @@ kotlin {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Debug builds already link the patrol plugin. androidTest compiles
+    // MainActivityTest against that same project.
+    androidTestImplementation(project(":patrol"))
 }
 
 flutter {

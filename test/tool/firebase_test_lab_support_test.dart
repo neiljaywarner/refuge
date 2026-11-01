@@ -31,6 +31,30 @@ void main() {
         '--dart-define=ENABLE_SERVERPOD=false',
       ]);
     });
+
+    test('a Patrol target stays on the dev flavor', () {
+      expect(devFlutterApkBuildArgs(target: 'integration_test/patrol_ftl_attach_media_test.dart'), [
+        'build',
+        'apk',
+        '--debug',
+        '-t',
+        'integration_test/patrol_ftl_attach_media_test.dart',
+        '--dart-define=FLAVOR=dev',
+        '--dart-define=ENABLE_SERVERPOD=false',
+      ]);
+    });
+  });
+
+  test('androidTest wires PatrolJUnitRunner for every FTL target', () {
+    final source = File(
+      'android/app/src/androidTest/java/com/belongonthespectrum/refuge/MainActivityTest.java',
+    ).readAsStringSync();
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+    expect(source, contains('class MainActivityTest'));
+    expect(source, contains('PatrolJUnitRunner'));
+    expect(source, contains('listDartTests'));
+    expect(gradle, contains('pl.leancode.patrol.PatrolJUnitRunner'));
+    expect(gradle, contains('androidTestImplementation(project(":patrol"))'));
   });
 
   group('parseAaptBadging', () {

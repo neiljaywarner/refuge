@@ -19,12 +19,16 @@ const devAndroidApplicationLabel = devLauncherTitle;
 const devMainEntrypoint = 'lib/main_dev.dart';
 
 /// `flutter build apk --debug` arguments for a safe Test Lab app APK.
-List<String> devFlutterApkBuildArgs() => [
+///
+/// [target] defaults to [devMainEntrypoint]. The Gradle fallback passes the
+/// selected `integration_test/` file so PatrolJUnitRunner can list its Dart
+/// tests. Flavor stays `dev` either way, so the package remains `.dev`.
+List<String> devFlutterApkBuildArgs({String target = devMainEntrypoint}) => [
   'build',
   'apk',
   '--debug',
   '-t',
-  devMainEntrypoint,
+  target,
   '--dart-define=FLAVOR=dev',
   '--dart-define=ENABLE_SERVERPOD=false',
 ];
