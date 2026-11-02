@@ -48,7 +48,7 @@
 * **[💬 Threaded Comments & Nested Discussion Architecture](Threaded-Comments-and-Discussion-Architecture)**
 * **[🛠️ Refuge CLI Developer Tool](Refuge-CLI)**
 * **[🧪 CI/CD FAQ and Troubleshooting](CI-CD-FAQ)**
-* **[🚦 Ops / Deploy readiness (1 Nov 2026)](Ops-Deploy-Readiness)**
+* **[🚦 Ops / Deploy readiness (Blaze $0–$5)](Ops-Deploy-Readiness)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
 
 ### 🏛️ Historical Archives & Early Prototypes
