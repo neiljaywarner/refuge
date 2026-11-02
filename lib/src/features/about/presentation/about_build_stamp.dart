@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -136,7 +137,40 @@ class _BuildStampBody extends StatelessWidget {
           ),
         if (source != null)
           Text('Source: $source', key: const Key('about_build_source'), style: styles.caption),
+        const Gap(6),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const Key('about_copy_build_info_button'),
+            style: TextButton.styleFrom(
+              padding: .zero,
+              minimumSize: const Size(0, 36),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            onPressed: () => _copyBuildInfo(context, identity: identity, version: version),
+            icon: const Icon(Icons.copy_outlined, size: 16),
+            label: const Text('Copy build info', style: TextStyle(fontSize: 12)),
+          ),
+        ),
       ],
     );
   }
+}
+
+Future<void> _copyBuildInfo(
+  BuildContext context, {
+  required BuildIdentity identity,
+  required AppVersionLabel version,
+}) async {
+  final text = identity.supportClipboardBlock(versionLine: version.versionLine);
+  try {
+    await Clipboard.setData(ClipboardData(text: text));
+  } catch (_) {
+    return;
+  }
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Build info copied to clipboard')),
+  );
 }

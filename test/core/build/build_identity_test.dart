@@ -61,6 +61,32 @@ void main() {
       }
     });
 
+    test('supportClipboardBlock matches About lines for stamped and dev builds', () {
+      final stamped = BuildIdentity(
+        gitCommitSha: _sha,
+        buildTimeMs: '$builtAtMs',
+        releaseTag: 'v0.9.1',
+      );
+      expect(
+        stamped.supportClipboardBlock(versionLine: 'v0.9.1+2'),
+        '''
+Version: v0.9.1+2
+Git commit: $_sha
+Build time: 2026-10-24T22:42:02.123Z ($builtAtMs ms)
+Release: v0.9.1
+$gitCommitUrlPrefix$_sha''',
+      );
+
+      expect(
+        const BuildIdentity().supportClipboardBlock(versionLine: 'unknown'),
+        '''
+Version: unknown
+Git commit: unknown
+Build time: unknown
+Source: dev''',
+      );
+    });
+
     test('pads a zero-millisecond timestamp', () {
       final ms = DateTime.utc(2026, 10, 24, 22, 42, 2).millisecondsSinceEpoch;
       expect(formatUtcEpochMillis(ms), '2026-10-24T22:42:02.000Z');
