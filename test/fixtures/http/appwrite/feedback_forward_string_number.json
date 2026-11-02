@@ -1,0 +1,4 @@
+{
+  "responseStatusCode": 200,
+  "responseBody": "{\"forwarded\":true,\"githubIssueNumber\":\"44\"}"
+}

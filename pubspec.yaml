@@ -66,6 +66,11 @@ dev_dependencies:
   rps: ^0.10.1
   patrol: ^4.10.0
   fake_cloud_firestore: ^4.5.0
+  # charlatan 0.5.0 requires Dart 2 (`sdk: <3.0.0`) and does not resolve here.
+  # nock is the Dart 3 cassette stand-in for http.Client / Appwrite HttpClient.
+  nock: ^1.2.3
+  path_provider_platform_interface: ^2.1.2
+  url_launcher_platform_interface: ^2.3.2
 
 scripts:
   test:
@@ -76,6 +81,9 @@ scripts:
     features: flutter test test/features
     concurrency: flutter test test/features/concurrency
     tool: flutter test test/tool
+  coverage:
+    $description: "Line coverage for the CI manifest. No device and no live backend."
+    $default: dart run tool/run_soft_launch_coverage.dart
   analyze:
     $description: "Performs static analysis with zero lint warnings"
     $default: flutter analyze

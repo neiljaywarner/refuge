@@ -40,6 +40,14 @@ CI runs the largest passing subset of `flutter test` (81 `*_test.dart` files lis
 
 `tool/check_line_coverage.dart` reads `coverage/lcov.info` and exits non-zero under the floor.
 
+Re-run that same report locally, including the headless Patrol widget tests that are listed in the manifest:
+
+```bash
+dart run tool/run_soft_launch_coverage.dart
+```
+
+That command does not start a device and does not call live Firebase or Appwrite. HTTP cassettes use `package:nock` and JSON files under `test/fixtures/http/` (`charlatan` 0.5.0 does not resolve on Dart 3). Slice percentages are printed by `tool/lcov_summary.dart`. Device Patrol and Maestro stay outside this number. See [Soft-Launch-Coverage.md](Soft-Launch-Coverage.md).
+
 ### Why did CI fail on `dart format`?
 
 CI runs `dart format --output=none --set-exit-if-changed -l 100` on `lib`, `test`, `tool`, and `packages/belong_lints`. `analysis_options.yaml` sets `formatter.line_length: 100` so editors match.

@@ -22,10 +22,21 @@ appId: com.belongonthespectrum.refuge.dev
     timeout: 15000
 - assertVisible: ".*COMMUNITY.*"
 
+# Soft-launch smoke (#796): Links are visible. Do not tap DFW Church or the
+# store rows — those leave the app. Community Guidelines stays pending.
+- scrollUntilVisible:
+    element: ".*\\bLINKS\\b.*"
+    direction: DOWN
+    timeout: 20000
+    centerElement: true
+- assertVisible: ".*Community Guidelines.*"
+- assertVisible: ".*DFW Church.*"
+- assertVisible: ".*Download the Android App.*"
+
 - scrollUntilVisible:
     element: ".*Members Section & Directory.*"
-    direction: DOWN
-    timeout: 15000
+    direction: UP
+    timeout: 20000
 - tapOn: ".*Members Section & Directory.*"
 - extendedWaitUntil:
     visible: ".*Member Directory.*"

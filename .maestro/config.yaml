@@ -26,5 +26,12 @@
 # Feed-sort flows that assumed Demo Mode / guest browse are tagged known-gap
 # after #601 (members-only wall). sign_in_wall_unsigned.yaml covers unsigned
 # launch. Re-enable sort flows after an Example User 1 session.
+#
+# Soft-launch critical smoke (#796). Maestro is not the line-coverage driver.
+# Run these on a dev build. The spaces and vote flows need the saved dev
+# account subflow; the sign-in wall flow does not.
+#   maestro test .maestro/sign_in_wall_unsigned.yaml \
+#     .maestro/spaces_navigation_and_monogram_flow.yaml \
+#     .maestro/feature_voting_flow.yaml
 excludeTags:
   - known-gap

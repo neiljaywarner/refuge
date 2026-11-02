@@ -1,8 +1,10 @@
-# Flutter widget/unit files run in PR CI (issue #515).
+# Flutter widget/unit files run in PR CI (issue #515, extended by #796).
 # Generated from the largest passing subset on main; 25 files excluded until fixed.
-# Full-tree `flutter test` compiles but 36 cases fail (Patrol/BDD/UI drift).
+# Full-tree `flutter test` compiles but some Patrol/BDD/UI cases still fail.
 # Coverage floor applies to lines recorded in coverage/lcov.info from this run,
 # not to every Dart line in the repository.
+# Headless patrolWidgetTest files in this list contribute to that lcov report.
+# Device `patrol test` and Maestro smoke stay outside it.
 #
 # Excluded (tracked on main, failing or flaky as of widen-CI pass):
 #   test/bdd_features_test.dart
@@ -50,8 +52,10 @@ test/features/admin/admin_member_banning_widget_test.dart
 test/features/admin/ban_erase_failure_test.dart
 test/features/admin/admin_remote_config_and_soft_delete_test.dart
 test/features/auth/auth_gate_test.dart
+test/features/auth/soft_verify_banner_widget_test.dart
 test/features/auth/belong_auth_sheet_widget_test.dart
 test/features/auth/firebase_auth_repository_test.dart
+test/features/auth/firebase_auth_repository_mocktail_test.dart
 test/features/auth/simple_auth_test.dart
 test/features/auth/auth_gate_verify_email_feedback_test.dart
 test/features/circle_parity_release_readiness_bdd_test.dart
@@ -66,12 +70,14 @@ test/features/feedback/feedback_drawing_test.dart
 test/features/feedback/feedback_source_stamp_test.dart
 test/features/feedback/feedback_sheet_safe_area_test.dart
 test/features/feedback/github_feedback_client_test.dart
+test/features/feedback/appwrite_feedback_forward_nock_test.dart
 test/features/feedback/member_feedback_bridge_test.dart
 test/features/feedback/guest_vote_persistence_test.dart
 test/features/feedback/optional_feedback_contact_test.dart
 test/features/feedback/private_feedback_router_test.dart
 test/features/feedback/vote_feedback_phone_width_test.dart
 test/features/fellowship_spaces/spaces_directory_muted_toggle_widget_test.dart
+test/features/fellowship_spaces/spaces_links_directory_widget_test.dart
 test/features/install/phone_install_guide_test.dart
 test/features/goldens/sociable_golden_widgets_test.dart
 test/features/memes/attach_media_turns_test.dart
@@ -97,6 +103,7 @@ test/features/observability/firebase_installations_service_test.dart
 test/features/observability/in_app_messaging_service_test.dart
 test/features/observability/observability_easter_egg_widget_test.dart
 test/features/patrol_hello_world_widget_test.dart
+test/features/soft_launch/soft_launch_critical_path_patrol_test.dart
 test/features/profile/belong_members_directory_view_test.dart
 test/features/profile/delete_account_contrast_test.dart
 test/features/profile/first_visit_welcome_card_test.dart
@@ -105,6 +112,8 @@ test/features/profile/member_profile_activity_counters_test.dart
 test/features/profile/member_profile_test.dart
 test/features/profile/profile_persistence_and_church_dropdown_test.dart
 test/features/reflections/appwrite_post_repository_test.dart
+test/features/reflections/appwrite_row_mapping_test.dart
+test/features/reflections/appwrite_tablesdb_nock_test.dart
 test/features/reflections/comment_repository_test.dart
 test/features/reflections/empty_space_starter_posts_test.dart
 test/features/reflections/feed_sort_controls_test.dart
@@ -122,6 +131,7 @@ test/features/spaces/space_room_title_test.dart
 test/smoke/pwa_release_smoke_test.dart
 test/tool/analyze_app_reviews_test.dart
 test/tool/check_line_coverage_test.dart
+test/tool/lcov_summary_test.dart
 test/tool/cli_tools_test.dart
 test/tool/firebase_test_lab_support_test.dart
 test/tool/generate_belong_icons_test.dart
