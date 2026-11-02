@@ -40,16 +40,19 @@ void main() {
     enabled: true,
   );
 
-  test('is disabled by default while Appwrite tier-0 uses dm-push and dm-mirror (#808)', () async {
-    final defaultBridge = AppwriteMemberFeedbackBridge(
-      config: config,
-      idTokenReader: () async => 'firebase-id-token',
-    );
+  test(
+    'is disabled by default while Appwrite tier-0 uses dm-push and dm-mirror (#808)',
+    () async {
+      final defaultBridge = AppwriteMemberFeedbackBridge(
+        config: config,
+        idTokenReader: () async => 'firebase-id-token',
+      );
 
-    expect(defaultFeedbackForwardEnabled, isFalse);
-    expect(await defaultBridge.forward('feedbackDoc1'), isNull);
-    expect(nock.activeMocks, isEmpty);
-  });
+      expect(defaultFeedbackForwardEnabled, isFalse);
+      expect(await defaultBridge.forward('feedbackDoc1'), isNull);
+      expect(nock.activeMocks, isEmpty);
+    },
+  );
 
   void replay(String fixture, {int statusCode = 201}) {
     nock(endpoint)

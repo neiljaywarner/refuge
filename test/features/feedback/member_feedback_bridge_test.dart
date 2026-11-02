@@ -89,19 +89,22 @@ void main() {
       expect(raw, isNot(contains('github_pat')));
     });
 
-    test('skips the Appwrite HTTP call by default when APPWRITE_FEEDBACK_FORWARD_ENABLED is false (#808)', () async {
-      var called = false;
-      final httpClient = MockClient((request) async {
-        called = true;
-        return http.Response('{}', 201);
-      });
-      final bridge = AppwriteMemberFeedbackBridge(
-        httpClient: httpClient,
-        idTokenReader: () async => 'firebase-id-token',
-      );
-      expect(await bridge.forward('feedbackDoc1'), isNull);
-      expect(called, isFalse);
-    });
+    test(
+      'skips Appwrite HTTP call when APPWRITE_FEEDBACK_FORWARD_ENABLED is false (#808)',
+      () async {
+        var called = false;
+        final httpClient = MockClient((request) async {
+          called = true;
+          return http.Response('{}', 201);
+        });
+        final bridge = AppwriteMemberFeedbackBridge(
+          httpClient: httpClient,
+          idTokenReader: () async => 'firebase-id-token',
+        );
+        expect(await bridge.forward('feedbackDoc1'), isNull);
+        expect(called, isFalse);
+      },
+    );
 
     test('returns null when the execution HTTP call times out', () async {
       final httpClient = MockClient((request) async {
