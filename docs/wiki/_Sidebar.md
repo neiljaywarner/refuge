@@ -18,6 +18,7 @@
 * **[🌿 Calm Design and Sensory Comfort](Calm-Tech-and-Accessibility)**
 * **[🌸 Gentle Notifications](Notifications-Product-Guide)**
 * **[🚪 Delete your account, and come back](Delete-and-Return)**
+* **[🚌 Bus Protocol & Continuity](Bus-Protocol)**
 * **[📋 Notes for First Meeting with Human Reviewer](https://github.com/neiljaywarner/refuge/blob/main/docs/archive/notes_for_first_meeting_with_human_reviewer.md)**
 
 ### 🛠️ Engineering, Architecture & Mentoring
@@ -50,6 +51,7 @@
 * **[🛠️ Refuge CLI Developer Tool](Refuge-CLI)**
 * **[🧪 CI/CD FAQ and Troubleshooting](CI-CD-FAQ)**
 * **[🚦 Ops / Deploy readiness (Blaze $0–$5)](Ops-Deploy-Readiness)**
+* **[🚌 Bus Protocol & Continuity](Bus-Protocol)**
 * **[🏆 Engineering Showcase](Resume-and-Engineering-Showcase)**
 
 ### 🏛️ Historical Archives & Early Prototypes
