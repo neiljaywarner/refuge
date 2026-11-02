@@ -10,6 +10,16 @@ import '../../../core/appwrite/appwrite_config.dart';
 /// Appwrite function that files a stored note. Public id, not a secret.
 const feedbackForwardFunctionId = 'feedback-forward';
 
+/// Whether client builds invoke the Appwrite `feedback-forward` function.
+///
+/// Disabled by default while Appwrite Cloud free tier (`tier-0`) uses its two
+/// function slots for `dm-push` and `dm-mirror` (#797, #808). Feedback notes
+/// are always persisted directly in Cloud Firestore `member_feedback`.
+const bool defaultFeedbackForwardEnabled = bool.fromEnvironment(
+  'APPWRITE_FEEDBACK_FORWARD_ENABLED',
+  defaultValue: false,
+);
+
 /// How long the app waits for the function to create the GitHub issue.
 const memberFeedbackForwardTimeout = Duration(seconds: 12);
 
@@ -57,6 +67,7 @@ class AppwriteMemberFeedbackBridge {
     Future<String?> Function()? idTokenReader,
     Duration? timeout,
     this.functionId = feedbackForwardFunctionId,
+    this.enabled = defaultFeedbackForwardEnabled,
   }) : _client = httpClient ?? http.Client(),
        _config = config ?? AppwriteConfig.fromEnvironment,
        _idTokenReader = idTokenReader ?? readFirebaseIdToken,
@@ -67,8 +78,10 @@ class AppwriteMemberFeedbackBridge {
   final Future<String?> Function() _idTokenReader;
   final Duration timeout;
   final String functionId;
+  final bool enabled;
 
   Future<({int number, String htmlUrl})?> forward(String feedbackId) async {
+    if (!enabled) return null;
     final id = feedbackId.trim();
     if (id.isEmpty || !_config.isConfigured) return null;
     try {
