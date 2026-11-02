@@ -69,7 +69,9 @@ Future<void> main(List<String> args) async {
   final buildAndroid = args.contains('--build-android');
   final distributeAndroid = args.contains('--distribute-android');
   final version = _arg(args, '--version') ?? 'dev';
+  final channel = _arg(args, '--channel');
   final groups = _arg(args, '--groups') ?? _defaultTesterGroups;
+  final testersFile = _arg(args, '--testers-file') ?? Platform.environment['DEV_TESTERS_FILE'];
 
   final git = await Process.run('git', ['rev-parse', 'HEAD']);
   final stamp = ReleaseBuildStamp.tryFromGitHead(
@@ -171,6 +173,29 @@ Future<void> main(List<String> args) async {
     'Dev web $version ${stamp.gitSha}',
   ], dryRun: dryRun);
 
+  String? previewChannelUrl;
+  if (channel != null && channel.trim().isNotEmpty) {
+    final cleanChannel = channel.trim();
+    stdout.writeln('Deploying dev preview channel "$cleanChannel"...');
+    final previewOut = await _runCapture(_bin('firebase'), [
+      'hosting:channel:deploy',
+      cleanChannel,
+      '--config',
+      'firebase.dev.json',
+      '--project',
+      _project,
+      '--expires',
+      '14d',
+      '--json',
+    ], dryRun: dryRun);
+    previewChannelUrl = dryRun
+        ? 'https://dev-belongonthespectrum--$cleanChannel-dryrun.web.app'
+        : extractHostingChannelPreviewUrl(previewOut);
+    if (previewChannelUrl != null) {
+      stdout.writeln('Dev preview channel URL: $previewChannelUrl');
+    }
+  }
+
   if (distributeAndroid) {
     if (!buildAndroid) {
       stderr.writeln('--distribute-android requires --build-android.');
@@ -195,13 +220,17 @@ Future<void> main(List<String> args) async {
     final notes = File('build/DEV_ANDROID_RELEASE_NOTES_$version.txt');
     if (!dryRun) {
       await notes.writeAsString(
-        'Dev Android $version\n'
-        'Web: $_devUrl\n'
-        'Package: $devAndroidPackageId\n'
-        'Git: ${stamp.gitSha}\n',
+        buildDevReleaseNotes(
+          version: version,
+          devUrl: _devUrl,
+          previewChannelUrl: previewChannelUrl,
+          packageId: devAndroidPackageId,
+          gitSha: stamp.gitSha,
+        ),
       );
     }
     stdout.writeln('Uploading dev APK to App Distribution (groups: $groups)...');
+    final cleanTestersFile = testersFile?.trim();
     await _run(_bin('firebase'), [
       'appdistribution:distribute',
       apk?.path ?? devReleaseApkRelativePaths().first,
@@ -209,6 +238,10 @@ Future<void> main(List<String> args) async {
       androidAppId,
       '--groups',
       groups,
+      if (cleanTestersFile != null && cleanTestersFile.isNotEmpty) ...[
+        '--testers-file',
+        cleanTestersFile,
+      ],
       '--release-notes-file',
       notes.path,
       '--project',
@@ -217,6 +250,9 @@ Future<void> main(List<String> args) async {
   }
 
   stdout.writeln('Dev web target: $_devUrl');
+  if (previewChannelUrl != null) {
+    stdout.writeln('Dev preview URL: $previewChannelUrl');
+  }
 }
 
 String? _arg(List<String> args, String flag) {
@@ -257,4 +293,20 @@ Future<void> _run(String bin, List<String> args, {required bool dryRun}) async {
     stderr.writeln('$bin failed (exit $code)');
     exit(code);
   }
+}
+
+Future<String> _runCapture(String bin, List<String> args, {required bool dryRun}) async {
+  final printable = '$bin ${joinArgsRedactingAnalyticsDefines(args)}';
+  stdout.writeln(dryRun ? '[dry-run] $printable' : '\$ $printable');
+  if (dryRun) return '';
+  final r = await Process.run(bin, args);
+  final out = (r.stdout?.toString() ?? '').trim();
+  final err = (r.stderr?.toString() ?? '').trim();
+  if (out.isNotEmpty) stdout.writeln(out);
+  if (err.isNotEmpty) stderr.writeln(err);
+  if (r.exitCode != 0) {
+    stderr.writeln('$bin failed (exit ${r.exitCode})');
+    exit(r.exitCode);
+  }
+  return out;
 }
