@@ -6,10 +6,12 @@ import '../../../core/presentation/system_insets.dart';
 import '../../admin/data/admin_banning_repository.dart';
 import '../../admin/domain/ban_standing.dart';
 import '../../admin/presentation/account_paused_banner.dart';
+import '../../auth/data/auth_repository.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/comment_repository.dart';
 import '../domain/comment.dart';
 import '../domain/post.dart';
+import 'reaction_details_sheet.dart';
 import 'reflections_providers.dart';
 
 /// Modal bottom sheet providing calm, threaded discussion replies under reflections.
@@ -232,9 +234,24 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                       key: Key('comment_item_${comment.id}'),
                       comment: comment,
                       onReply: () => replyingTo.value = comment,
-                      onReaction: (reaction) => ref
-                          .read(commentRepositoryProvider)
-                          .addReaction(commentId: comment.id, reactionType: reaction),
+                      onReaction: (reaction) {
+                        try {
+                          final session = ref.read(authRepositoryProvider).currentSession();
+                          ref
+                              .read(commentRepositoryProvider)
+                              .toggleReaction(
+                                commentId: comment.id,
+                                reactionType: reaction,
+                                userId: session.userId,
+                                displayName: session.displayName,
+                                avatarUrl: session.photoUrl,
+                              );
+                        } catch (_) {
+                          ref
+                              .read(commentRepositoryProvider)
+                              .addReaction(commentId: comment.id, reactionType: reaction);
+                        }
+                      },
                     );
                   },
                 );
@@ -492,34 +509,40 @@ class _CommentTile extends StatelessWidget {
                 _reactionButton(
                   context,
                   key: Key('comment_reaction_pray_${comment.id}'),
+                  type: 'pray',
                   emoji: '🙏',
-                  count: comment.reactions['pray'] ?? 0,
+                  count: comment.countForReaction('pray'),
                   onTap: () => onReaction('pray'),
                 ),
                 const SizedBox(width: 6),
                 _reactionButton(
                   context,
                   key: Key('comment_reaction_peace_${comment.id}'),
+                  type: 'peace',
                   emoji: '🤍',
-                  count: comment.reactions['peace'] ?? 0,
+                  count: comment.countForReaction('peace'),
                   onTap: () => onReaction('peace'),
                 ),
                 if (comment.reactions.containsKey('encouraged') ||
-                    comment.reactions.containsKey('relatable')) ...[
+                    comment.reactions.containsKey('relatable') ||
+                    comment.reactionMembers.containsKey('encouraged') ||
+                    comment.reactionMembers.containsKey('relatable')) ...[
                   const SizedBox(width: 6),
                   _reactionButton(
                     context,
                     key: Key('comment_reaction_encouraged_${comment.id}'),
+                    type: 'encouraged',
                     emoji: '🌱',
-                    count: comment.reactions['encouraged'] ?? 0,
+                    count: comment.countForReaction('encouraged'),
                     onTap: () => onReaction('encouraged'),
                   ),
                   const SizedBox(width: 6),
                   _reactionButton(
                     context,
                     key: Key('comment_reaction_relatable_${comment.id}'),
+                    type: 'relatable',
                     emoji: '😄',
-                    count: comment.reactions['relatable'] ?? 0,
+                    count: comment.countForReaction('relatable'),
                     onTap: () => onReaction('relatable'),
                   ),
                 ],
@@ -566,28 +589,34 @@ class _CommentTile extends StatelessWidget {
   Widget _reactionButton(
     BuildContext context, {
     required Key key,
+    required String type,
     required String emoji,
     required int count,
     required VoidCallback onTap,
-  }) => InkWell(
-    key: key,
-    borderRadius: .circular(6),
-    onTap: onTap,
-    child: Container(
-      padding: const .symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-        borderRadius: .circular(6),
-      ),
-      child: Row(
-        mainAxisSize: .min,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 11)),
-          if (count > 0) ...[
-            const SizedBox(width: 4),
-            Text('$count', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+  }) => Tooltip(
+    message: 'Tap to react • Long-press to see who reacted',
+    child: InkWell(
+      key: key,
+      borderRadius: BorderRadius.circular(6),
+      onTap: onTap,
+      onLongPress: () =>
+          ReactionDetailsSheet.show(context, comment: comment, initialReactionType: type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 11)),
+            if (count > 0) ...[
+              const SizedBox(width: 4),
+              Text('$count', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            ],
           ],
-        ],
+        ),
       ),
     ),
   );
