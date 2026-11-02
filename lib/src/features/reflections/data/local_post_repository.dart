@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../domain/post.dart';
+import '../domain/reaction_member.dart';
 import 'canonical_organizer_starter_posts.dart';
 import 'local_account_scope.dart';
 import 'post_merge.dart';
@@ -18,12 +19,14 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   late final Future<void> _hydrationFuture;
   String? _adoptedAccount;
   bool _didAdopt = false;
+  final bool _suppressOrganizerStarters;
 
   LocalPostRepository({
     this.isDevMode = true,
     List<Post>? initialPosts,
     SavedPostsStore? savedPostsStore,
-  }) : _savedPostsStore =
+  }) : _suppressOrganizerStarters = initialPosts != null,
+       _savedPostsStore =
            savedPostsStore ??
            SavedPostsStore(environment: reflectionEnvironment(isDevMode: isDevMode)) {
     if (initialPosts != null) {
@@ -48,18 +51,24 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
     _savedPostIds.addAll(snapshots.keys);
 
     var changed = false;
-    for (var i = 0; i < _store.length; i++) {
-      final post = _store[i];
+    // 1. Mark existing posts in store as saved
+    for (final (i, post) in _store.indexed) {
       if (_savedPostIds.contains(post.id) && !post.isSaved) {
         _store[i] = post.copyWith(isSaved: true);
         changed = true;
       }
     }
-    for (final entry in snapshots.entries) {
-      if (_store.every((p) => p.id != entry.key)) {
-        _store.add(entry.value.copyWith(isSaved: true));
-        changed = true;
-      }
+
+    // 2. Functional hydration of missing snapshot posts in O(1) set lookup
+    final existingIds = _store.map((p) => p.id).toSet();
+    final missingPosts = snapshots.entries
+        .where((entry) => !existingIds.contains(entry.key))
+        .map((entry) => entry.value.copyWith(isSaved: true))
+        .toList();
+
+    if (missingPosts.isNotEmpty) {
+      _store.addAll(missingPosts);
+      changed = true;
     }
     if (changed) {
       _notify();
@@ -304,7 +313,7 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
 
   /// In prod (`isDevMode: false`), inject read-only organizer anchors when a space is empty (#664).
   void _ensureOrganizerStartersForSpace(String spaceKey) {
-    if (isDevMode) return;
+    if (isDevMode || _suppressOrganizerStarters) return;
     final wanted = normalizeReflectionSpaceKey(spaceKey);
     final hasPosts = _store.any((p) => normalizeReflectionSpaceKey(p.spaceKey) == wanted);
     if (hasPosts) return;
@@ -357,14 +366,57 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   }
 
   @override
-  Future<void> addReaction({required String postId, required String reactionType}) async {
+  Future<void> addReaction({required String postId, required String reactionType}) =>
+      toggleReaction(
+        postId: postId,
+        reactionType: reactionType,
+        userId: 'current_user',
+        displayName: 'Fellowship Member',
+      );
+
+  @override
+  Future<void> toggleReaction({
+    required String postId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    String? avatarUrl,
+  }) async {
     final index = _store.indexWhere((p) => p.id == postId);
     if (index != -1) {
       final post = _store[index];
-      final currentCount = post.reactions[reactionType] ?? 0;
+      final currentMembers = List<ReactionMember>.from(
+        post.reactionMembers[reactionType] ?? const [],
+      );
+      final existingIndex = currentMembers.indexWhere((m) => m.userId == userId);
+
+      final updatedReactionMembers = Map<String, List<ReactionMember>>.from(post.reactionMembers);
       final updatedReactions = Map<String, int>.from(post.reactions);
-      updatedReactions[reactionType] = currentCount + 1;
-      _store[index] = post.copyWith(reactions: updatedReactions);
+
+      if (existingIndex != -1) {
+        // Toggle OFF: member already reacted -> remove them
+        currentMembers.removeAt(existingIndex);
+        final currentCount = updatedReactions[reactionType] ?? 1;
+        updatedReactions[reactionType] = currentCount > 0 ? currentCount - 1 : 0;
+      } else {
+        // Toggle ON: member not in list -> add them
+        currentMembers.add(
+          ReactionMember(
+            userId: userId,
+            displayName: displayName,
+            avatarUrl: avatarUrl,
+            timestamp: DateTime.now(),
+          ),
+        );
+        final currentCount = updatedReactions[reactionType] ?? 0;
+        updatedReactions[reactionType] = currentCount + 1;
+      }
+
+      updatedReactionMembers[reactionType] = currentMembers;
+      _store[index] = post.copyWith(
+        reactions: updatedReactions,
+        reactionMembers: updatedReactionMembers,
+      );
       _notify();
     }
   }
