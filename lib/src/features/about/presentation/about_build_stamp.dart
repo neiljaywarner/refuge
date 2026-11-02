@@ -170,7 +170,6 @@ Future<void> _copyBuildInfo(
     return;
   }
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Build info copied to clipboard')),
-  );
+  ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('Build info copied to clipboard')));
 }

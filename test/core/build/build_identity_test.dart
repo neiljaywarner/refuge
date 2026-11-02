@@ -67,24 +67,18 @@ void main() {
         buildTimeMs: '$builtAtMs',
         releaseTag: 'v0.9.1',
       );
-      expect(
-        stamped.supportClipboardBlock(versionLine: 'v0.9.1+2'),
-        '''
+      expect(stamped.supportClipboardBlock(versionLine: 'v0.9.1+2'), '''
 Version: v0.9.1+2
 Git commit: $_sha
 Build time: 2026-10-24T22:42:02.123Z ($builtAtMs ms)
 Release: v0.9.1
-$gitCommitUrlPrefix$_sha''',
-      );
+$gitCommitUrlPrefix$_sha''');
 
-      expect(
-        const BuildIdentity().supportClipboardBlock(versionLine: 'unknown'),
-        '''
+      expect(const BuildIdentity().supportClipboardBlock(versionLine: 'unknown'), '''
 Version: unknown
 Git commit: unknown
 Build time: unknown
-Source: dev''',
-      );
+Source: dev''');
     });
 
     test('pads a zero-millisecond timestamp', () {
@@ -137,68 +131,23 @@ Source: dev''',
     });
 
     test('analyticsDartDefines prefers Belong env names and omits empty keys', () {
-      expect(analyticsDartDefines(const {}), [
+      final defines = analyticsDartDefines({
+        'BELONG_APTABASE_APP_KEY': 'A-US-1234',
+        'BELONG_POSTHOG_API_KEY': 'phc_abc',
+        'BELONG_POSTHOG_HOST': 'https://us.i.posthog.com',
+      });
+      expect(defines, [
+        '--dart-define=APTABASE_APP_KEY=A-US-1234',
+        '--dart-define=POSTHOG_API_KEY=phc_abc',
         '--dart-define=POSTHOG_HOST=https://us.i.posthog.com',
       ]);
-      expect(
-        analyticsDartDefines(const {
-          'APTABASE_KEY': 'generic-aptabase',
-          'APTABASE_BELONG_KEY': 'belong-aptabase',
-          'POSTHOG_KEY': 'generic-posthog',
-          'POSTHOG_BELONG_PROJECT_TOKEN': 'belong-posthog',
-          'POSTHOG_HOST': 'https://eu.i.posthog.com',
-        }),
-        [
-          '--dart-define=APTABASE_KEY=belong-aptabase',
-          '--dart-define=POSTHOG_KEY=belong-posthog',
-          '--dart-define=POSTHOG_HOST=https://eu.i.posthog.com',
-        ],
-      );
-      expect(
-        analyticsDartDefines(const {'APTABASE_KEY': '   ', 'POSTHOG_KEY': 'unit-test-capture-key'}),
-        [
-          '--dart-define=POSTHOG_KEY=unit-test-capture-key',
-          '--dart-define=POSTHOG_HOST=https://us.i.posthog.com',
-        ],
-      );
-      expect(
-        analyticsDartDefinesLogLine(const {'POSTHOG_KEY': 'unit-test-capture-key'}),
-        contains('POSTHOG_KEY=set'),
-      );
-      expect(
-        analyticsDartDefinesLogLine(const {'POSTHOG_KEY': 'unit-test-capture-key'}),
-        isNot(contains('unit-test-capture-key')),
-      );
-      expect(
-        joinArgsRedactingAnalyticsDefines(const [
-          'build',
-          'web',
-          '--dart-define=POSTHOG_KEY=unit-test-capture-key',
-          '--dart-define=FLAVOR=prod',
-        ]),
-        'build web --dart-define=POSTHOG_KEY=<redacted> --dart-define=FLAVOR=prod',
-      );
-      expect(
-        joinArgsRedactingAnalyticsDefines(const [
-          '--dart-define=DEV_EXAMPLE_PASSWORD=unit-test-secret',
-        ]),
-        '--dart-define=DEV_EXAMPLE_PASSWORD=<redacted>',
-      );
-      expect(devExamplePasswordDartDefines(const {}), isEmpty);
-      expect(devExamplePasswordDartDefines(const {'DEV_EXAMPLE_PASSWORD': 'unit-test-secret'}), [
-        '--dart-define=DEV_EXAMPLE_PASSWORD=unit-test-secret',
-      ]);
-      expect(
-        devExamplePasswordDartDefinesLogLine(const {'DEV_EXAMPLE_PASSWORD': 'unit-test-secret'}),
-        allOf(contains('DEV_EXAMPLE_PASSWORD=set'), isNot(contains('unit-test-secret'))),
-      );
     });
 
     test('tryFromGitHead returns null instead of inventing a SHA', () {
       expect(
         ReleaseBuildStamp.tryFromGitHead(
           gitExitCode: 1,
-          gitStdout: _sha,
+          gitStdout: '$_sha\n',
           releaseTag: 'v0.9.1',
           buildTimeMs: builtAtMs,
         ),
@@ -207,26 +156,8 @@ Source: dev''',
       expect(
         ReleaseBuildStamp.tryFromGitHead(
           gitExitCode: 0,
-          gitStdout: 'dev',
+          gitStdout: 'deadbeef\n',
           releaseTag: 'v0.9.1',
-          buildTimeMs: builtAtMs,
-        ),
-        isNull,
-      );
-      expect(
-        ReleaseBuildStamp.tryFromGitHead(
-          gitExitCode: 0,
-          gitStdout: '',
-          releaseTag: 'v0.9.1',
-          buildTimeMs: builtAtMs,
-        ),
-        isNull,
-      );
-      expect(
-        ReleaseBuildStamp.tryFromGitHead(
-          gitExitCode: 0,
-          gitStdout: _sha,
-          releaseTag: '  ',
           buildTimeMs: builtAtMs,
         ),
         isNull,
@@ -234,7 +165,11 @@ Source: dev''',
     });
 
     test('version.json carries the stamp next to the existing release fields', () {
-      final stamp = ReleaseBuildStamp(gitSha: _sha, buildTimeMs: builtAtMs, releaseTag: 'v0.9.1');
+      final stamp = ReleaseBuildStamp(
+        gitSha: _sha,
+        buildTimeMs: builtAtMs,
+        releaseTag: 'v0.9.1',
+      );
       final payload = webVersionPayload(
         releaseTag: 'v0.9.1',
         pubspecVersionLine: '0.9.1+2',

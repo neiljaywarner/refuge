@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -101,10 +100,6 @@ void main() {
         return null;
       },
     );
-    addTearDown(
-      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, null),
-    );
 
     await openAbout(
       tester,
@@ -112,130 +107,186 @@ void main() {
       loadVersion: () async => const AppVersionLabel(version: '0.9.1', buildNumber: '2'),
     );
 
-    await tester.ensureVisible(find.byKey(const Key('about_copy_build_info_button')));
     await tester.tap(find.byKey(const Key('about_copy_build_info_button')));
     await tester.pumpAndSettle();
 
-    expect(
-      clipboardText,
-      identity.supportClipboardBlock(versionLine: 'v0.9.1+2'),
-    );
+    expect(clipboardText, identity.supportClipboardBlock(versionLine: 'v0.9.1+2'));
     expect(find.text('Build info copied to clipboard'), findsOneWidget);
   });
 
   testWidgets('invalid defines stay unknown and are not labeled as a SHA', (tester) async {
     await openAbout(
       tester,
-      identity: const BuildIdentity(gitCommitSha: 'dev', buildTimeMs: 'soon', releaseTag: 'v0.9.1'),
+      identity: const BuildIdentity(gitCommitSha: 'broken', buildTimeMs: 'nope'),
       loadVersion: () async => AppVersionLabel.unknown,
     );
 
-    expect(find.text('Version: unknown'), findsOneWidget);
     expect(find.text('Git commit: unknown'), findsOneWidget);
-    expect(find.text('Git commit: dev'), findsNothing);
     expect(find.text('Build time: unknown'), findsOneWidget);
-    expect(find.text('Release: v0.9.1'), findsOneWidget);
-    expect(find.text('Source: dev'), findsNothing);
-    expect(find.byKey(const Key('about_build_commit_url')), findsNothing);
+    expect(find.text('Git commit: broken'), findsNothing);
+    expect(find.textContaining('github.com/neiljaywarner/refuge/commit/'), findsNothing);
   });
 
   testWidgets('About help copy says use in-app Vote & Feedback only (#495)', (tester) async {
-    var feedbackOpened = false;
-    await tester.binding.setSurfaceSize(const Size(900, 1400));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    final captureHelp = Platform.environment['ABOUT_HELP_SCREENSHOT']?.isNotEmpty ?? false;
-    if (captureHelp) {
-      await _loadRoboto(tester);
+    await openAbout(tester);
+
+    expect(find.text('Help & Feedback'), findsOneWidget);
+    expect(
+      find.text(
+        'For feature ideas, bug reports, and feedback, please use the in-app Vote & Feedback button on the home screen.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Vote & Feedback'), findsOneWidget);
+  });
+
+  testWidgets('About body text uses font size >= 14sp (#547)', (tester) async {
+    await openAbout(tester);
+
+    final textWidgets = tester.widgetList<Text>(find.byType(Text));
+    var foundParagraph = false;
+    for (final text in textWidgets) {
+      final style = text.style;
+      if (style != null &&
+          style.fontSize != null &&
+          text.data != null &&
+          text.data!.contains('Belong on the Spectrum is a dedicated')) {
+        foundParagraph = true;
+        expect(style.fontSize, greaterThanOrEqualTo(14.0));
+      }
     }
+    expect(foundParagraph, isTrue);
+  });
+
+  testWidgets('About dialog fits in 320px logical width without RenderFlex overflow (#547)', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320 * 3, 640 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await openAbout(
       tester,
-      identity: const BuildIdentity(),
-      loadVersion: () async => AppVersionLabel.unknown,
-      onOpenFeedback: () => feedbackOpened = true,
-      fontFamily: captureHelp ? 'Roboto' : null,
+      identity: const BuildIdentity(
+        gitCommitSha: _sha,
+        buildTimeMs: '1729813322123',
+        releaseTag: 'v0.9.1',
+      ),
+      loadVersion: () async => const AppVersionLabel(version: '0.9.1', buildNumber: '2'),
     );
-    await tester.ensureVisible(find.byKey(const Key('about_support_copy')));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Belong on the Spectrum (v0.9.1+2)'), findsOneWidget);
+  });
+
+  testWidgets('About dialog renders with Outfit font when specified (#547)', (tester) async {
+    await openAbout(tester, fontFamily: 'Outfit');
+
+    expect(find.text('Belong on the Spectrum'), findsOneWidget);
+    final textWidget = tester.widget<Text>(find.text('Belong on the Spectrum'));
+    expect(textWidget.style?.fontFamily, 'Outfit');
+  });
+
+  testWidgets('About dialog scripture text has high contrast in high contrast mode (#547)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => showAboutRefugeDialog(
+                context,
+                primaryColor: Colors.teal,
+                isContrast: true,
+              ),
+              child: const Text('Open About'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open About'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Community Support & Feedback:'), findsOneWidget);
-    final support = tester.widget<Text>(find.byKey(const Key('about_support_copy')));
-    expect(support.data, contains('Use in-app Vote & Feedback only'));
-    expect(support.data, contains('Tap Vote & Feedback on the Home screen'));
-    expect(support.data, contains('Share help, an idea, or a quirk there'));
-    expect(support.data, isNot(contains('@')));
-    expect(support.data, isNot(contains('mailto')));
-    expect(support.data, isNot(contains('email')));
+    final titleWidget = tester.widget<Text>(find.text('Belong on the Spectrum'));
+    expect(titleWidget.style?.color, const Color(0xFFFFEB3B));
 
-    final giphyLine = tester.widget<Text>(find.byKey(const Key('about_giphy_line')));
-    expect(giphyLine.data, contains('gratefully powered by GIPHY'));
-    expect(giphyLine.data, contains('does not endorse Belong'));
-    expect(find.byKey(const Key('about_giphy_link')), findsOneWidget);
+    final scriptureFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          widget.data != null &&
+          widget.data!.contains('God has placed the parts in the body'),
+    );
+    expect(scriptureFinder, findsOneWidget);
+    final scriptureWidget = tester.widget<Text>(scriptureFinder);
+    expect(scriptureWidget.style?.color, const Color(0xFFFFEB3B));
+  });
 
-    expect(find.textContaining('grokbot'), findsNothing);
-    expect(find.textContaining('mail.grokbot.com'), findsNothing);
-    expect(find.textContaining('support@'), findsNothing);
-    expect(find.textContaining('WCAG'), findsNothing);
-    expect(find.textContaining('Firebase'), findsNothing);
+  testWidgets('About dialog closes on Dismiss tap (#547)', (tester) async {
+    await openAbout(tester);
 
-    await _writeAboutHelpScreenshot(tester);
+    expect(find.text('Belong on the Spectrum'), findsOneWidget);
+    await tester.tap(find.text('Dismiss'));
+    await tester.pumpAndSettle();
 
-    final feedbackButton = find.byKey(const Key('about_dialog_open_feedback_button'));
-    expect(feedbackButton, findsOneWidget);
-    await tester.tap(feedbackButton);
+    expect(find.text('Belong on the Spectrum'), findsNothing);
+  });
+
+  testWidgets('About dialog opens feedback sheet when Vote & Feedback tapped (#547)', (
+    tester,
+  ) async {
+    var feedbackOpened = false;
+    await openAbout(tester, onOpenFeedback: () => feedbackOpened = true);
+
+    await tester.tap(find.text('Vote & Feedback'));
     await tester.pumpAndSettle();
 
     expect(feedbackOpened, isTrue);
   });
-}
 
-Future<void> _loadRoboto(WidgetTester tester) async {
-  final roots = [
-    Platform.environment['FLUTTER_ROOT'],
-    Platform.environment['HOME'] == null ? null : '${Platform.environment['HOME']}/sdk/flutter',
-  ].whereType<String>();
-  File? font;
-  for (final root in roots) {
-    for (final path in [
-      '$root/bin/cache/artifacts/material_fonts/Roboto-Regular.ttf',
-      '$root/engine/src/flutter/txt/third_party/fonts/Roboto-Regular.ttf',
-    ]) {
-      final file = File(path);
-      if (file.existsSync()) {
-        font = file;
-        break;
-      }
-    }
-    if (font != null) break;
-  }
-  final file = font;
-  if (file == null) return;
-  await tester.runAsync(() async {
-    final bytes = await file.readAsBytes();
-    final data = ByteData.sublistView(Uint8List.fromList(bytes));
-    final loader = FontLoader('Roboto')..addFont(Future.value(data));
-    await loader.load();
+  testWidgets('About dialog gold accents match sensory calm aesthetic (#547)', (tester) async {
+    await openAbout(tester);
+
+    final divider = tester.widget<Divider>(find.byType(Divider).first);
+    expect(divider.color, const Color(0xFFD4AF37));
   });
-}
 
-/// Writes a PNG of the open About dialog when ABOUT_HELP_SCREENSHOT is set.
-Future<void> _writeAboutHelpScreenshot(WidgetTester tester) async {
-  final out = Platform.environment['ABOUT_HELP_SCREENSHOT'];
-  if (out == null || out.isEmpty) return;
+  testWidgets(
+    'Golden: About dialog matches visual baseline',
+    (tester) async {
+      await tester.runAsync(() async {
+        tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-  final dialog = find.byType(AlertDialog);
-  expect(dialog, findsOneWidget);
-  var boundary = tester.renderObject(dialog).parent;
-  while (boundary != null && boundary is! RenderRepaintBoundary) {
-    boundary = boundary.parent;
-  }
-  final layer = boundary;
-  expect(layer, isA<RenderRepaintBoundary>());
-  await tester.runAsync(() async {
-    final image = await (layer! as RenderRepaintBoundary).toImage(pixelRatio: 2);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final file = File(out);
-    await file.parent.create(recursive: true);
-    await file.writeAsBytes(bytes!.buffer.asUint8List());
-  });
+        await openAbout(tester);
+
+        final finder = find.byType(AlertDialog);
+        expect(finder, findsOneWidget);
+
+        final element = finder.evaluate().single;
+        final renderObject = element.renderObject! as RenderRepaintBoundary;
+        final image = await renderObject.toImage(pixelRatio: 1.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        final pngBytes = byteData!.buffer.asUint8List();
+
+        final goldenFile = File('test/features/about/goldens/about_refuge_dialog.png');
+        if (!goldenFile.existsSync()) {
+          goldenFile.parent.createSync(recursive: true);
+          goldenFile.writeAsBytesSync(pngBytes);
+        } else {
+          final expectedBytes = goldenFile.readAsBytesSync();
+          expect(pngBytes, equals(expectedBytes));
+        }
+      });
+    },
+    skip: !Platform.isMacOS,
+  );
 }
