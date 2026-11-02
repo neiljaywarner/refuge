@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
+import 'package:refuge4serverpod/src/features/feedback/data/vote_persist_failure_bus.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/vote_storage_service.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/feedback_and_voting_models.dart';
 import 'package:refuge4serverpod/src/features/feedback/domain/optional_feedback_contact.dart';
@@ -319,10 +320,13 @@ void main() {
       expect(features.firstWhere((item) => item.id == 'planned-google-sign-in').votes, 0);
     });
 
-    test('Firestore transaction failure keeps optimistic thumb (#733)', () async {
+    test('Firestore transaction failure reverts optimistic vote (#783)', () async {
       VoteStorageService.instance.clear();
       final firestore = MockFirebaseFirestore();
       final collection = MockVoteCollection();
+      final bus = VotePersistFailureBus();
+      List<VotableFeatureItem>? reverted;
+      String? message;
 
       when(() => firestore.collection('feature_votes')).thenReturn(collection);
       when(() => firestore.runTransaction(any())).thenThrow(Exception('firestore offline'));
@@ -330,13 +334,20 @@ void main() {
       final repo = FirebaseFeatureVotingRepository(
         customFirestore: firestore,
         memberId: () => 'member-uid',
+        votePersistFailureBus: bus,
       );
-      final next = repo.toggleVote(repo.loadInitialFeatures(), 'planned-native-store-apps');
+      bus.handler = (items, memberMessage) {
+        reverted = items;
+        message = memberMessage;
+      };
+      repo.toggleVote(repo.loadInitialFeatures(), 'planned-native-store-apps');
       await Future<void>.delayed(Duration.zero);
 
-      final voted = next.firstWhere((item) => item.id == 'planned-native-store-apps');
-      expect(voted.userVoted, isTrue);
-      expect(voted.votes, 1);
+      final voted = reverted!.firstWhere((item) => item.id == 'planned-native-store-apps');
+      expect(voted.userVoted, isFalse);
+      expect(voted.votes, 0);
+      expect(message, kVoteDidNotSaveMessage);
+      expect(VoteStorageService.instance.getVotedFeatureIds(), isEmpty);
     });
 
     test('toggleVote and submitFeedback survive a mocked Firestore write', () async {
