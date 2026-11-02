@@ -3,6 +3,8 @@
 *File: `docs/wiki/deployment.md`*  
 *Target Platforms: Web PWA, Android Native (Google Play / App Distribution), Serverpod Backend*
 
+Friendlies deploy checklist (rules, calm DM email, dm-mirror, Crashlytics, Giphy): **[Ops / Deploy readiness (1 Nov 2026)](Ops-Deploy-Readiness)**.
+
 ---
 
 ## Production release runbook (copy and paste)
