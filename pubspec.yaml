@@ -8,6 +8,8 @@ environment:
   sdk: ^3.13.5
   flutter: ">=3.47.7"
 
+# Milestone 1.2 Tooling Alternatives Epic (Dio/Retrofit, Freezed, Derry vs RPS):
+# https://github.com/neiljaywarner/refuge/issues/831
 dependencies:
   flutter:
     sdk: flutter
@@ -36,10 +38,21 @@ dependencies:
   salomon_bottom_bar: ^3.3.2
   url_launcher: ^6.3.3
   package_info_plus: ^10.2.2
+  # Data Modeling & Immutability:
+  # Evaluated in Epic #831 & Issue #834:
+  # https://github.com/neiljaywarner/refuge/issues/834
+  # Currently using Equatable + handcrafted copyWith & Dart 3 sealed classes/pattern matching.
+  # Sub-issue #834 evaluates package:freezed + json_serializable for 1.2 state models.
   equatable: ^2.1.0
   marionette_flutter: ^0.7.0
   cloud_firestore: ^7.0.0
   gap: ^3.0.1
+  # HTTP Client & REST:
+  # Evaluated in Epic #831 (1.2 Tooling Alternatives) & Issue #833:
+  # https://github.com/neiljaywarner/refuge/issues/831
+  # https://github.com/neiljaywarner/refuge/issues/833
+  # Currently using lightweight package:http for Appwrite Cloud Function triggers and Nock tests.
+  # Sub-issue #833 benchmarks package:dio + retrofit for interceptors and Talker retry chains.
   http: ^1.2.0
   appwrite: ^28.1.0
   image_picker: ^1.2.4
@@ -64,6 +77,10 @@ dev_dependencies:
     sdk: flutter
   args: ^2.5.0
   crypto: ^3.0.7
+  # Task Runner & Scripts:
+  # Evaluated in Epic #831 & Issue #835:
+  # https://github.com/neiljaywarner/refuge/issues/835
+  # Comparing rps (in pubspec.yaml) vs derry (in derry.yaml) vs native Dart CLI (tool/*.dart).
   rps: ^0.10.1
   patrol: ^4.10.0
   fake_cloud_firestore: ^4.5.0
@@ -73,6 +90,9 @@ dev_dependencies:
   path_provider_platform_interface: ^2.1.2
   url_launcher_platform_interface: ^2.3.2
 
+# Project Script Automation (rps runner):
+# Evaluated against derry (Issue #835) and native Dart CLI tools (tool/*.dart) for Milestone 1.2:
+# https://github.com/neiljaywarner/refuge/issues/835
 scripts:
   test:
     $description: "Runs the test suite across unit, widget, and feature domains"
