@@ -20,7 +20,7 @@ import 'dart:io';
 import 'firebase_test_lab_support.dart';
 
 const _defaultProject = 'belongonthespectrum';
-const _defaultTarget = 'integration_test/patrol_ftl_home_shell_test.dart';
+const _defaultTarget = 'integration_test/patrol_ftl_full_free_tier_suite_test.dart';
 const _defaultDevice = 'model=panther,version=33,locale=en,orientation=portrait';
 
 Future<void> main(List<String> args) async {
