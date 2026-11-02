@@ -35,7 +35,11 @@ class MessageThread {
     required this.lastActivity,
     this.subject,
     this.messageType = 'Direct',
+    this.groupName,
     this.recipientNames = const [],
+    this.participantIds = const [],
+    this.recipientIds = const [],
+    this.isSample = false,
     this.unreadCount = 0,
     this.isBatchedDigest = true,
     this.messages = const [],
@@ -48,10 +52,23 @@ class MessageThread {
   final DateTime lastActivity;
   final String? subject;
   final String? messageType;
+  final String? groupName;
   final List<String> recipientNames;
+  final List<String> participantIds;
+  final List<String> recipientIds;
+  final bool isSample;
   final int unreadCount;
   final bool isBatchedDigest;
   final List<DirectMessage> messages;
+
+  bool get isGroup =>
+      messageType == 'Group' ||
+      participantIds.length > 2 ||
+      recipientNames.length > 1 ||
+      (groupName != null && groupName!.trim().isNotEmpty);
+
+  String get displayTitle =>
+      (groupName != null && groupName!.trim().isNotEmpty) ? groupName!.trim() : participantName;
 
   /// Returns friendly relative date formatting:
   /// e.g. "Just now", "15m ago", "2 hrs ago", "3 days ago", "Sep 7".
@@ -65,7 +82,11 @@ class MessageThread {
     DateTime? lastActivity,
     String? subject,
     String? messageType,
+    String? groupName,
     List<String>? recipientNames,
+    List<String>? participantIds,
+    List<String>? recipientIds,
+    bool? isSample,
     int? unreadCount,
     bool? isBatchedDigest,
     List<DirectMessage>? messages,
@@ -77,7 +98,11 @@ class MessageThread {
     lastActivity: lastActivity ?? this.lastActivity,
     subject: subject ?? this.subject,
     messageType: messageType ?? this.messageType,
+    groupName: groupName ?? this.groupName,
     recipientNames: recipientNames ?? this.recipientNames,
+    participantIds: participantIds ?? this.participantIds,
+    recipientIds: recipientIds ?? this.recipientIds,
+    isSample: isSample ?? this.isSample,
     unreadCount: unreadCount ?? this.unreadCount,
     isBatchedDigest: isBatchedDigest ?? this.isBatchedDigest,
     messages: messages ?? this.messages,
@@ -94,6 +119,7 @@ class MessageThread {
         subject: 'Welcome to Belong Fellowship',
         messageType: 'Fellowship',
         recipientNames: const ['Marty (Organizer)'],
+        isSample: true,
         previewSnippet: 'Welcome to Belong on the Spectrum! Glad you are here with us.',
         lastActivity: now.subtract(const Duration(minutes: 15)),
         unreadCount: 0,
@@ -115,6 +141,7 @@ class MessageThread {
         subject: 'Wingspan & Cascadia Setup',
         messageType: 'Group',
         recipientNames: const ['Alex K.', 'Hannah M.'],
+        isSample: true,
         previewSnippet: 'Bringing Wingspan and Cascadia this Friday! Quiet room reserved.',
         lastActivity: now.subtract(const Duration(hours: 2)),
         unreadCount: 0,
@@ -136,6 +163,7 @@ class MessageThread {
         subject: 'Tomorrow 2 PM Coworking',
         messageType: 'Group',
         recipientNames: const ['Jordan P.'],
+        isSample: true,
         previewSnippet: 'Tomorrow 2 PM: cameras optional, ambient lo-fi, zero masking.',
         lastActivity: now.subtract(const Duration(hours: 6)),
         unreadCount: 0,

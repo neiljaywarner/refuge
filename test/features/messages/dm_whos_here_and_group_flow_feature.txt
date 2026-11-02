@@ -1,0 +1,17 @@
+Feature: Direct Message Who's Here Directory Picker, Named Groups, and Durable Replies (#818)
+  As a neurodivergent fellowship member
+  I want to browse Who's Here checkboxes, name group conversations, see sender labels on group bubbles, and persist replies
+  So that 1:1 and group conversations are clear, unhurried, and never lost on refresh
+
+  Scenario: Browse Who's Here checkboxes, create a named group DM, and send a persisted reply
+    Given I open BelongMessagesView with a seeded real directory
+    When I tap add_new_message_button
+    Then I see the dm_whos_here_header and directory checkboxes without typing a search query
+    When I check two directory members and enter "Friday Wingspan Circle" as the group name
+    And I enter a message and tap send_new_message_button
+    Then the active group thread displays "Friday Wingspan Circle" and persists replies to the mailbox
+
+  Scenario: Group thread displays sender attribution labels on incoming messages and prod hides samples
+    Given a Group thread has incoming messages from multiple members
+    When I open the Group thread in BelongMessagesView
+    Then each incoming message bubble renders its sender attribution label

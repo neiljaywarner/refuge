@@ -14,6 +14,7 @@ class StoredDirectMessage {
     required this.content,
     required this.sentAt,
     this.subject,
+    this.groupName,
   });
 
   final String id;
@@ -24,6 +25,7 @@ class StoredDirectMessage {
   final List<String> recipientNames;
   final List<String> participantIds;
   final String? subject;
+  final String? groupName;
   final String content;
   final DateTime sentAt;
 
@@ -40,6 +42,7 @@ class StoredDirectMessage {
     'recipientNames': recipientNames,
     'participantIds': participantIds,
     if (subject != null && subject!.isNotEmpty) 'subject': subject,
+    if (groupName != null && groupName!.trim().isNotEmpty) 'groupName': groupName!.trim(),
     'content': content,
     'sentAt': sentAt.toIso8601String(),
   };
@@ -58,6 +61,7 @@ class StoredDirectMessage {
       recipientNames: _stringList(data['recipientNames']),
       participantIds: _stringList(data['participantIds']),
       subject: data['subject'] as String?,
+      groupName: data['groupName'] as String?,
       content: data['content'] as String? ?? '',
       sentAt: sentAt,
     );
