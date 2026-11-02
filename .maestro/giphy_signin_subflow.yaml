@@ -1,0 +1,23 @@
+---
+- runFlow:
+    when:
+      visible: ".*Sign In.*"
+    commands:
+      - tapOn: ".*Sign In.*"
+      - tapOn: "Email"
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Check your email"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: "Check your email"
+    commands:
+      - takeScreenshot:
+          path: qa_artifacts/giphy/blocked_verify_email.png
+      - stopRecording
+      - stopApp
+- assertVisible: ".*Member Profile.*"

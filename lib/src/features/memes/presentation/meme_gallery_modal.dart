@@ -254,7 +254,12 @@ class _MemeGalleryModalContentState extends ConsumerState<_MemeGalleryModalConte
             ),
             ChoiceChip(
               key: const Key('tab_giphy_search'),
-              label: const Text('Search GIFs', style: TextStyle(fontSize: 12)),
+              label: Semantics(
+                identifier: 'tab_giphy_search',
+                button: true,
+                label: 'Search GIFs',
+                child: const Text('Search GIFs', style: TextStyle(fontSize: 12)),
+              ),
               selected: _activeTabIndex == 3,
               onSelected: (selected) {
                 if (selected) setState(() => _activeTabIndex = 3);

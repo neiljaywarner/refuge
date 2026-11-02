@@ -1,0 +1,59 @@
+appId: com.belongonthespectrum.refuge.dev
+name: Giphy media capture — Pixel / Android (screens + video)
+tags:
+  - giphy
+  - media-capture
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Share an unhurried thought.*|.*Sign In.*"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Sign In.*"
+    commands:
+      - tapOn: ".*Sign In.*"
+      - tapOn: "Email"
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+      - extendedWaitUntil:
+          visible: ".*Share an unhurried thought.*"
+          timeout: 90000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_01_home.png
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_02_memes_space.png
+- tapOn: ".*Add Meme / GIF.*"
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_03_meme_gallery_curated.png
+- tapOn:
+    id: tab_giphy_search
+    optional: true
+- tapOn: ".*Search GIFs.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_04_giphy_tab_native.png
+- assertVisible: ".*Open Giphy.*"
+- tapOn: ".*Open Giphy.*"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_05_giphy_dialog.png
+- runFlow:
+    when:
+      visible: ".*Clip.*"
+    commands:
+      - tapOn: ".*Clip.*"
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot:
+          path: qa_artifacts/giphy/pixel_06_clips_tab.png
+- pressKey: back
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_07_after_giphy_dialog.png

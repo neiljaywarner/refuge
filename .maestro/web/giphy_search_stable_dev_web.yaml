@@ -1,0 +1,65 @@
+url: https://dev-belongonthespectrum.web.app
+name: Giphy on stable dev hosting (main deploy baseline)
+tags:
+  - giphy
+  - qa
+  - live-dev
+---
+# Same credentials as preview QA. Stable dev may lag PR #715 until merge.
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Belong.*"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Member Profile.*"
+    commands:
+      - tapOn: ".*Member Profile.*"
+      - tapOn: "Sign Out"
+      - extendedWaitUntil:
+          visible: "Sign In"
+          timeout: 20000
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: ".*Register.*"
+    timeout: 20000
+- tapOn: "Register"
+- extendedWaitUntil:
+    visible: "Confirm password"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: ${GIPHY_QA_EMAIL}
+- tapOn: "Password"
+- inputText: ${GIPHY_QA_PASSWORD}
+- tapOn: "Confirm password"
+- inputText: ${GIPHY_QA_PASSWORD}
+- tapOn: "^Register$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Verify your email|.*already in use.*|.*already exists.*"
+    timeout: 45000
+- runFlow:
+    when:
+      visible: ".*already in use.*|.*already exists.*"
+    commands:
+      - tapOn: "Sign in"
+      - tapOn: "Email"
+      - eraseText: 80
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - eraseText: 80
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+      - extendedWaitUntil:
+          visible: ".*Member Profile.*"
+          timeout: 45000
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 30000
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- tapOn: ".*Add Meme / GIF.*"
+- tapOn: ".*Search GIFs.*"
+- extendedWaitUntil:
+    visible: "Powered by GIPHY|GIF search is not turned on|Open Giphy"
+    timeout: 45000
+- takeScreenshot: giphy_qa_stable_dev_giphy_tab

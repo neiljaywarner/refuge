@@ -1,0 +1,60 @@
+appId: com.belongonthespectrum.refuge.dev
+name: Giphy Clips on Pixel (dev APK PR 715)
+tags:
+  - giphy
+  - qa
+  - pixel
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Sign In.*|.*Member Profile.*"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: ".*Sign In.*"
+    commands:
+      - tapOn: ".*Sign In.*"
+      - tapOn: "Email"
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Check your email"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: "Check your email"
+    commands:
+      - takeScreenshot: pixel_giphy_blocked_verify_email
+      - stopApp
+- assertVisible: ".*Member Profile.*"
+- takeScreenshot: pixel_giphy_01_home
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 30000
+- tapOn: ".*Add Meme / GIF.*"
+- tapOn: ".*Search GIFs.*"
+- extendedWaitUntil:
+    visible: ".*Open Giphy.*"
+    timeout: 30000
+- takeScreenshot: pixel_giphy_02_open_button
+- tapOn: ".*Open Giphy.*"
+- extendedWaitUntil:
+    visible: ".*Search.*|.*GIPHY.*|.*GIF.*|.*Clip.*"
+    timeout: 45000
+- takeScreenshot: pixel_giphy_03_dialog
+- runFlow:
+    when:
+      visible: ".*Clip.*"
+    commands:
+      - tapOn: ".*Clip.*"
+      - extendedWaitUntil:
+          visible: ".*"
+          timeout: 15000
+      - takeScreenshot: pixel_giphy_04_clips_tab
+- pressKey: back
+- takeScreenshot: pixel_giphy_05_after_dialog

@@ -1,0 +1,73 @@
+appId: com.belongonthespectrum.refuge.dev
+name: Giphy native SDK QA (dev APK, PR 715)
+tags:
+  - giphy
+  - qa
+  - e2e
+---
+# Credentials via env only (yopmail disposable):
+#   GIPHY_QA_EMAIL, GIPHY_QA_PASSWORD
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*Sign In.*"
+    timeout: 60000
+- tapOn: ".*Sign In.*"
+- extendedWaitUntil:
+    visible: ".*Register.*"
+    timeout: 20000
+- tapOn: ".*Register.*"
+- extendedWaitUntil:
+    visible: "Confirm password"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: ${GIPHY_QA_EMAIL}
+- tapOn: "Password"
+- inputText: ${GIPHY_QA_PASSWORD}
+- tapOn: "Confirm password"
+- inputText: ${GIPHY_QA_PASSWORD}
+- tapOn: "^Register$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Verify your email|.*already in use.*|.*already exists.*"
+    timeout: 45000
+- runFlow:
+    when:
+      visible: ".*already in use.*|.*already exists.*"
+    commands:
+      - tapOn: "Sign in"
+      - extendedWaitUntil:
+          notVisible: "Confirm password"
+          timeout: 15000
+      - tapOn: "Email"
+      - eraseText: 80
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - eraseText: 80
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+      - extendedWaitUntil:
+          visible: ".*Member Profile.*"
+          timeout: 45000
+- extendedWaitUntil:
+    visible: ".*Member Profile.*"
+    timeout: 30000
+- takeScreenshot: giphy_qa_android_signed_in
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- extendedWaitUntil:
+    visible: ".*Add Meme / GIF.*"
+    timeout: 20000
+- tapOn: ".*Add Meme / GIF.*"
+- extendedWaitUntil:
+    visible: ".*Search GIFs.*"
+    timeout: 20000
+- tapOn: ".*Search GIFs.*"
+- extendedWaitUntil:
+    visible: ".*Open Giphy.*"
+    timeout: 20000
+- takeScreenshot: giphy_qa_android_open_giphy_button
+- tapOn: ".*Open Giphy.*"
+- extendedWaitUntil:
+    visible: ".*GIPHY.*|.*GIF.*|.*Search.*"
+    timeout: 25000
+- takeScreenshot: giphy_qa_android_giphy_dialog

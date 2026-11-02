@@ -1,0 +1,45 @@
+url: https://dev-belongonthespectrum--giphy-666-qa-vasz0dlu.web.app
+name: Giphy web QA after sign-in (dev preview PR 715)
+tags:
+  - giphy
+  - qa
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Belong.*"
+    timeout: 120000
+- tapOn: "Sign In"
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${GIPHY_QA_EMAIL}
+- tapOn: "Password"
+- inputText: ${GIPHY_QA_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Check your email"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Check your email"
+    commands:
+      - assertVisible: "Check your email"
+      - takeScreenshot: giphy_qa_web_blocked_verify_email
+      - stopApp
+- assertVisible: ".*Member Profile.*"
+- takeScreenshot: giphy_qa_web_signed_in
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- tapOn: ".*Add Meme / GIF.*"
+- tapOn: ".*Search GIFs.*"
+- extendedWaitUntil:
+    visible: "Powered by GIPHY"
+    timeout: 60000
+- takeScreenshot: giphy_qa_web_giphy_trending
+- assertNotVisible: ".*Open Giphy.*"
+- tapOn: "Search"
+- extendedWaitUntil:
+    visible: ".*quiet.*|.*GIF.*|.*No.*"
+    timeout: 30000
+- takeScreenshot: giphy_qa_web_after_search

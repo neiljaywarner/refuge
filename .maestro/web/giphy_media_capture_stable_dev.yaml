@@ -1,0 +1,30 @@
+url: https://dev-belongonthespectrum.web.app
+name: Giphy media capture — stable dev web baseline
+tags:
+  - giphy
+  - media-capture
+  - live-dev
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*Belong.*"
+    timeout: 120000
+- tapOn: "Sign In"
+- tapOn: "Email"
+- inputText: ${GIPHY_QA_EMAIL}
+- tapOn: "Password"
+- inputText: ${GIPHY_QA_PASSWORD}
+- tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Check your email|.*Share an unhurried thought.*"
+    timeout: 90000
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- tapOn: ".*Add Meme / GIF.*"
+- takeScreenshot:
+    path: qa_artifacts/giphy/web_stable_01_gallery.png
+- tapOn: "Search GIFs"
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: qa_artifacts/giphy/web_stable_02_giphy_tab.png

@@ -1,0 +1,44 @@
+appId: com.belongonthespectrum.refuge.dev
+name: Giphy Android QA sign-in then Open Giphy
+tags:
+  - giphy
+  - qa
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Sign In.*|.*Member Profile.*"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: ".*Sign In.*"
+    commands:
+      - tapOn: ".*Sign In.*"
+      - tapOn: "Email"
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+- extendedWaitUntil:
+    visible: ".*Member Profile.*|Check your email"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Check your email"
+    commands:
+      - takeScreenshot: giphy_qa_android_blocked_verify
+      - stopApp
+- assertVisible: ".*Member Profile.*"
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- tapOn: ".*Add Meme / GIF.*"
+- tapOn: ".*Search GIFs.*"
+- extendedWaitUntil:
+    visible: ".*Open Giphy.*"
+    timeout: 30000
+- takeScreenshot: giphy_qa_android_native_button
+- tapOn: ".*Open Giphy.*"
+- extendedWaitUntil:
+    visible: ".*Search.*|.*GIPHY.*|.*GIF.*"
+    timeout: 30000
+- takeScreenshot: giphy_qa_android_giphy_dialog

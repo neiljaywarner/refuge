@@ -1,0 +1,106 @@
+appId: com.belongonthespectrum.refuge.dev
+name: Giphy Android SDK — Pixel 9a full capture (PR 715)
+tags:
+  - giphy
+  - media-capture
+  - pixel
+  - android-sdk
+---
+# Dev APK: com.belongonthespectrum.refuge.dev
+# Remote Config: giphy_api_key_android + giphy_content_rating=pg (Firebase console)
+# Validates: gallery tab, HTTP trending on panel, Open Giphy SDK (GIF/sticker/emoji/clips/text), attach path
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*Share an unhurried thought.*|.*Sign In.*"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Sign In.*"
+    commands:
+      - tapOn: ".*Sign In.*"
+      - tapOn: "Email"
+      - inputText: ${GIPHY_QA_EMAIL}
+      - tapOn: "Password"
+      - inputText: ${GIPHY_QA_PASSWORD}
+      - tapOn: "^Sign in$"
+      - extendedWaitUntil:
+          visible: ".*Share an unhurried thought.*"
+          timeout: 90000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_01_home_signed_in.png
+- tapOn: ".*Spaces.*"
+- tapOn: ".*Memes.*"
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_02_memes_space.png
+- tapOn: ".*Add Meme / GIF.*"
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_03_gallery_curated_tab.png
+- tapOn:
+    id: tab_giphy_search
+    optional: true
+- tapOn: ".*Search GIFs.*"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_04_giphy_panel_trending.png
+- assertVisible: ".*Open Giphy.*"
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_05_open_giphy_cta.png
+- tapOn: ".*Open Giphy.*"
+- extendedWaitUntil:
+    visible: ".*GIPHY.*|.*Search.*|.*GIF.*|.*Clip.*|.*Sticker.*"
+    timeout: 60000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_06_sdk_dialog_gifs_tab.png
+- runFlow:
+    when:
+      visible: ".*Sticker.*"
+    commands:
+      - tapOn: ".*Sticker.*"
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot:
+          path: qa_artifacts/giphy/pixel_07_sdk_stickers_tab.png
+- runFlow:
+    when:
+      visible: ".*Clip.*"
+    commands:
+      - tapOn: ".*Clip.*"
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot:
+          path: qa_artifacts/giphy/pixel_08_sdk_clips_tab.png
+- runFlow:
+    when:
+      visible: ".*Emoji.*"
+    commands:
+      - tapOn: ".*Emoji.*"
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot:
+          path: qa_artifacts/giphy/pixel_09_sdk_emoji_tab.png
+- pressKey: back
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_10_after_sdk_dismiss.png
+- runFlow:
+    when:
+      visible: ".*Open Giphy.*"
+    commands:
+      - tapOn: ".*Open Giphy.*"
+      - extendedWaitUntil:
+          visible: ".*Search.*"
+          timeout: 45000
+      - tapOn:
+          text: "Search"
+          optional: true
+      - inputText: quiet
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - takeScreenshot:
+          path: qa_artifacts/giphy/pixel_11_sdk_search_quiet.png
+      - pressKey: back
+- takeScreenshot:
+    path: qa_artifacts/giphy/pixel_99_final_state.png
