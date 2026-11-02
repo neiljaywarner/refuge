@@ -14,17 +14,10 @@ class const MirrorRow({
   required final String tableId,
   required final Map<String, Object?> data,
 }) {
-  Map<String, Object?> toJson() => {
-    'rowId': rowId,
-    'tableId': tableId,
-    'data': data,
-  };
+  Map<String, Object?> toJson() => {'rowId': rowId, 'tableId': tableId, 'data': data};
 }
 
-class const SkipNote({
-  required final String sourcePath,
-  required final String reason,
-}) {
+class const SkipNote({required final String sourcePath, required final String reason}) {
   Map<String, Object?> toJson() => {'sourcePath': sourcePath, 'reason': reason};
 }
 
@@ -60,9 +53,7 @@ class const RestoreReport({
   Map<String, Object?> toJson({required bool includePatches}) => {
     'collection': collectionKey,
     'dryRun': dryRun,
-    'patches': includePatches
-        ? [for (final patch in patches) patch.toJson()]
-        : patches.length,
+    'patches': includePatches ? [for (final patch in patches) patch.toJson()] : patches.length,
   };
 }
 
@@ -71,10 +62,7 @@ MirrorRow buildMirrorRow({
   required FirestoreDocument document,
   required DateTime mirroredAt,
 }) {
-  final updated = sourceUpdatedAt(
-    updateTime: document.updateTime,
-    fields: document.fields,
-  );
+  final updated = sourceUpdatedAt(updateTime: document.updateTime, fields: document.fields);
   final payload = jsonEncode(document.fields);
   return MirrorRow(
     rowId: backupRowId(
@@ -99,14 +87,10 @@ bool isOlderThan(String? updated, DateTime since) {
   return parsed.toUtc().isBefore(since.toUtc());
 }
 
-List<BackupRequest> provisionRequests(
-  BackupCollection collection,
-  BackupConfig config,
-) {
+List<BackupRequest> provisionRequests(BackupCollection collection, BackupConfig config) {
   requireSyncable(collection);
   config.requireHttps();
-  final root =
-      '${config.normalizedEndpoint}/tablesdb/${config.databaseId}/tables';
+  final root = '${config.normalizedEndpoint}/tablesdb/${config.databaseId}/tables';
   final headers = _appwriteHeaders(config, includeKey: false);
   final table = BackupRequest(
     method: 'POST',
@@ -130,11 +114,7 @@ List<BackupRequest> provisionRequests(
     table,
     column('varchar', {'key': 'sourcePath', 'size': 768, 'required': true}),
     column('varchar', {'key': 'sourceId', 'size': 256, 'required': true}),
-    column('varchar', {
-      'key': 'sourceUpdatedAt',
-      'size': 64,
-      'required': false,
-    }),
+    column('varchar', {'key': 'sourceUpdatedAt', 'size': 64, 'required': false}),
     column('varchar', {'key': 'mirroredAt', 'size': 64, 'required': true}),
     column('longtext', {'key': 'payload', 'required': true}),
   ];
@@ -157,16 +137,10 @@ Future<SyncReport> syncCollection({
   final rows = <MirrorRow>[];
   final skipped = <SkipNote>[];
   for (final document in documents) {
-    final row = buildMirrorRow(
-      collection: collection,
-      document: document,
-      mirroredAt: mirroredAt,
-    );
+    final row = buildMirrorRow(collection: collection, document: document, mirroredAt: mirroredAt);
     final updated = row.data['sourceUpdatedAt'] as String?;
     if (since != null && isOlderThan(updated, since)) {
-      skipped.add(
-        SkipNote(sourcePath: document.sourcePath, reason: 'older than --since'),
-      );
+      skipped.add(SkipNote(sourcePath: document.sourcePath, reason: 'older than --since'));
       continue;
     }
     final payload = row.data['payload'];
@@ -227,10 +201,7 @@ Future<void> provisionCollection({
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final detail = redactSecrets(response.body, config);
       final clipped = detail.length > 400 ? detail.substring(0, 400) : detail;
-      throw BackupCliException(
-        'Appwrite provision failed (${response.statusCode}) $clipped',
-        70,
-      );
+      throw BackupCliException('Appwrite provision failed (${response.statusCode}) $clipped', 70);
     }
   }
 }
@@ -253,18 +224,12 @@ Future<RestoreReport> restoreCollection({
       await _writeFirestore(config, transport, patch);
     }
   }
-  return RestoreReport(
-    collectionKey: collection.key,
-    dryRun: dryRun,
-    patches: patches,
-  );
+  return RestoreReport(collectionKey: collection.key, dryRun: dryRun, patches: patches);
 }
 
 List<FirestorePatch> patchesFromMirrorJson(Object? decoded) {
   if (decoded is! Map || decoded['rows'] is! List) {
-    throw const FormatException(
-      'Restore input must be a JSON object with a rows array.',
-    );
+    throw const FormatException('Restore input must be a JSON object with a rows array.');
   }
   final patches = <FirestorePatch>[];
   for (final item in (decoded['rows'] as List).cast<Object?>()) {
@@ -277,12 +242,7 @@ List<FirestorePatch> patchesFromMirrorJson(Object? decoded) {
       throw const FormatException('Each row needs sourcePath');
     }
     encodeFirestorePath(sourcePath);
-    patches.add(
-      FirestorePatch(
-        sourcePath: sourcePath,
-        fields: fieldsFromPayload(data['payload']),
-      ),
-    );
+    patches.add(FirestorePatch(sourcePath: sourcePath, fields: fieldsFromPayload(data['payload'])));
   }
   return patches;
 }
@@ -299,17 +259,12 @@ Future<List<FirestoreDocument>> _fetchLive(
   final parent = collection.parentCollection;
   final child = collection.subcollectionId;
   if (parent == null || child == null) {
-    throw BackupCliException(
-      '${collection.key} is missing its parent path.',
-      70,
-    );
+    throw BackupCliException('${collection.key} is missing its parent path.', 70);
   }
   final parents = await _listDocuments(config, transport, parent);
   final documents = <FirestoreDocument>[];
   for (final parentDoc in parents) {
-    documents.addAll(
-      await _listDocuments(config, transport, '${parentDoc.sourcePath}/$child'),
-    );
+    documents.addAll(await _listDocuments(config, transport, '${parentDoc.sourcePath}/$child'));
   }
   return documents;
 }
@@ -383,19 +338,13 @@ Future<List<FirestorePatch>> _patchesFromAppwrite(
         }),
       );
     }
-    final query = queries
-        .map((item) => 'queries[]=${Uri.encodeQueryComponent(item)}')
-        .join('&');
+    final query = queries.map((item) => 'queries[]=${Uri.encodeQueryComponent(item)}').join('&');
     final url = Uri.parse(
       '${config.normalizedEndpoint}/tablesdb/${config.databaseId}/tables/${collection.tableId}/rows?$query',
     );
     final response = await _sendOk(
       transport,
-      BackupRequest(
-        method: 'GET',
-        url: url,
-        headers: _appwriteHeaders(config, includeKey: true),
-      ),
+      BackupRequest(method: 'GET', url: url, headers: _appwriteHeaders(config, includeKey: true)),
       config,
       'Appwrite list ${collection.tableId}',
     );
@@ -414,10 +363,7 @@ Future<List<FirestorePatch>> _patchesFromAppwrite(
       final sourcePath = row['sourcePath'];
       if (sourcePath is! String) continue;
       patches.add(
-        FirestorePatch(
-          sourcePath: sourcePath,
-          fields: fieldsFromPayload(row['payload']),
-        ),
+        FirestorePatch(sourcePath: sourcePath, fields: fieldsFromPayload(row['payload'])),
       );
     }
     if (rows.length < _pageSize || lastId == null) break;
@@ -438,9 +384,7 @@ Future<void> _writeFirestore(
   if (patch.fields.isEmpty) {
     final parentSlash = encodedPath.lastIndexOf('/');
     final parent = parentSlash < 0 ? '' : encodedPath.substring(0, parentSlash);
-    final docId = parentSlash < 0
-        ? encodedPath
-        : encodedPath.substring(parentSlash + 1);
+    final docId = parentSlash < 0 ? encodedPath : encodedPath.substring(parentSlash + 1);
     final createUrl = Uri.parse(
       'https://firestore.googleapis.com/v1/projects/${config.firestoreProjectId}'
       '/databases/(default)/documents/$parent?documentId=$docId',
@@ -456,8 +400,7 @@ Future<void> _writeFirestore(
         body: jsonEncode({'fields': <String, Object?>{}}),
       ),
     );
-    if (response.statusCode == 409 ||
-        (response.statusCode >= 200 && response.statusCode < 300)) {
+    if (response.statusCode == 409 || (response.statusCode >= 200 && response.statusCode < 300)) {
       return;
     }
     throw BackupCliException(
@@ -487,10 +430,7 @@ Future<void> _writeFirestore(
   }
 }
 
-Map<String, String> _appwriteHeaders(
-  BackupConfig config, {
-  required bool includeKey,
-}) => {
+Map<String, String> _appwriteHeaders(BackupConfig config, {required bool includeKey}) => {
   'Content-Type': 'application/json',
   'X-Appwrite-Project': config.projectId,
   'X-Appwrite-Response-Format': '1.8.0',
@@ -526,10 +466,7 @@ Future<BackupResponse> _sendOk(
   if (response.statusCode < 200 || response.statusCode >= 300) {
     final detail = redactSecrets(response.body, config);
     final clipped = detail.length > 400 ? detail.substring(0, 400) : detail;
-    throw BackupCliException(
-      '$label failed (${response.statusCode}) $clipped',
-      70,
-    );
+    throw BackupCliException('$label failed (${response.statusCode}) $clipped', 70);
   }
   return response;
 }

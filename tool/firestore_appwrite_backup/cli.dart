@@ -55,10 +55,7 @@ Future<int> runFirestoreAppwriteBackup(
   final env = environment ?? Platform.environment;
   final cwd = workingDirectory ?? Directory.current.path;
   try {
-    if (args.isEmpty ||
-        args.contains('--help') ||
-        args.contains('-h') ||
-        args.first == 'help') {
+    if (args.isEmpty || args.contains('--help') || args.contains('-h') || args.first == 'help') {
       out.writeln(backupUsage);
       return 0;
     }
@@ -70,37 +67,23 @@ Future<int> runFirestoreAppwriteBackup(
     switch (command) {
       case 'inventory':
         out.writeln(
-          _encoder.convert([
-            for (final collection in backupCollections) collection.toJson(),
-          ]),
+          _encoder.convert([for (final collection in backupCollections) collection.toJson()]),
         );
         return 0;
       case 'schema':
         final collection = _collection(flags);
-        out.writeln(
-          _encoder.convert(_requestJson(provisionRequests(collection, config))),
-        );
-        err.writeln(
-          'Schema only. No request was sent. Add X-Appwrite-Key when you provision.',
-        );
+        out.writeln(_encoder.convert(_requestJson(provisionRequests(collection, config))));
+        err.writeln('Schema only. No request was sent. Add X-Appwrite-Key when you provision.');
         return 0;
       case 'provision':
         final collection = _collection(flags);
         _requireMode(flags);
         if (flags.dryRun) {
-          out.writeln(
-            _encoder.convert(
-              _requestJson(provisionRequests(collection, config)),
-            ),
-          );
+          out.writeln(_encoder.convert(_requestJson(provisionRequests(collection, config))));
           err.writeln('dry-run: no table was created.');
           return 0;
         }
-        await provisionCollection(
-          collection: collection,
-          config: config,
-          transport: http,
-        );
+        await provisionCollection(collection: collection, config: config, transport: http);
         err.writeln(
           'Provisioned ${collection.tableId}. Wait until columns are available, then sync.',
         );
@@ -219,12 +202,8 @@ String? _readInput(_Flags flags) {
 
 void _writeOutsideRepo(String path, String contents, String workingDirectory) {
   final root = Directory(workingDirectory).absolute.path;
-  final resolved = Directory(workingDirectory).absolute.uri
-      .resolve(path)
-      .toFilePath();
-  final prefix = root.endsWith(Platform.pathSeparator)
-      ? root
-      : '$root${Platform.pathSeparator}';
+  final resolved = Directory(workingDirectory).absolute.uri.resolve(path).toFilePath();
+  final prefix = root.endsWith(Platform.pathSeparator) ? root : '$root${Platform.pathSeparator}';
   if (resolved == root || resolved.startsWith(prefix)) {
     throw BackupCliException(
       'Refusing to write backup JSON inside the repository. Choose a path outside this public repo.',
@@ -236,11 +215,7 @@ void _writeOutsideRepo(String path, String contents, String workingDirectory) {
 
 List<Map<String, Object?>> _requestJson(List<BackupRequest> requests) => [
   for (final request in requests)
-    {
-      'method': request.method,
-      'url': request.url.toString(),
-      'body': jsonDecode(request.body!),
-    },
+    {'method': request.method, 'url': request.url.toString(), 'body': jsonDecode(request.body!)},
 ];
 
 class _Flags {

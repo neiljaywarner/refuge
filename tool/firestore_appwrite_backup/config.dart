@@ -21,10 +21,8 @@ class const BackupConfig({
   static BackupConfig fromEnvironment(Map<String, String> env) {
     final endpoint = (env['APPWRITE_ENDPOINT'] ?? defaultEndpoint).trim();
     final projectId = (env['APPWRITE_PROJECT_ID'] ?? defaultProjectId).trim();
-    final databaseId = (env['APPWRITE_DATABASE_ID'] ?? defaultDatabaseId)
-        .trim();
-    final firestoreProjectId =
-        (env['FIRESTORE_PROJECT_ID'] ?? defaultFirestoreProjectId).trim();
+    final databaseId = (env['APPWRITE_DATABASE_ID'] ?? defaultDatabaseId).trim();
+    final firestoreProjectId = (env['FIRESTORE_PROJECT_ID'] ?? defaultFirestoreProjectId).trim();
     final apiKey = env['APPWRITE_API_KEY']?.trim();
     final token = env['FIRESTORE_ACCESS_TOKEN']?.trim();
     return BackupConfig(
@@ -39,15 +37,12 @@ class const BackupConfig({
 
   String get normalizedEndpoint {
     final trimmed = endpoint.trim();
-    return trimmed.endsWith('/')
-        ? trimmed.substring(0, trimmed.length - 1)
-        : trimmed;
+    return trimmed.endsWith('/') ? trimmed.substring(0, trimmed.length - 1) : trimmed;
   }
 
   bool get hasApiKey => apiKey != null && apiKey!.isNotEmpty;
 
-  bool get hasFirestoreToken =>
-      firestoreAccessToken != null && firestoreAccessToken!.isNotEmpty;
+  bool get hasFirestoreToken => firestoreAccessToken != null && firestoreAccessToken!.isNotEmpty;
 
   void requireHttps() {
     final uri = Uri.tryParse(normalizedEndpoint);

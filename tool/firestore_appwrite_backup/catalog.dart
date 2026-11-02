@@ -22,9 +22,7 @@ class const BackupCollection({
   /// Top-level document path. Subcollections must supply `sourcePath` instead.
   String childPath(String id) {
     if (shape != BackupSyncShape.topLevel) {
-      throw FormatException(
-        '$key needs a sourcePath because it is not a top-level collection',
-      );
+      throw FormatException('$key needs a sourcePath because it is not a top-level collection');
     }
     return '$key/$id';
   }
@@ -78,8 +76,7 @@ const List<BackupCollection> backupCollections = [
     tableId: 'backup_reflections',
     shape: BackupSyncShape.topLevel,
     idStrategy: docIdOrHash,
-    dartSource:
-        'lib/src/features/reflections/data/appwrite_post_repository.dart',
+    dartSource: 'lib/src/features/reflections/data/appwrite_post_repository.dart',
     why:
         'Production reflection feed. New ids look like post-<millis>. This table '
         'is not the disabled product table reflection_posts.',
@@ -91,8 +88,7 @@ const List<BackupCollection> backupCollections = [
     tableId: 'backup_reflections_dev',
     shape: BackupSyncShape.topLevel,
     idStrategy: docIdOrHash,
-    dartSource:
-        'lib/src/features/reflections/data/appwrite_post_repository.dart',
+    dartSource: 'lib/src/features/reflections/data/appwrite_post_repository.dart',
     why: 'Dev-flavor reflections. Kept off the production backup table.',
     memberContent: true,
   ),
@@ -115,8 +111,7 @@ const List<BackupCollection> backupCollections = [
     tableId: 'backup_comments',
     shape: BackupSyncShape.topLevel,
     idStrategy: docIdOrHash,
-    dartSource:
-        'lib/src/features/reflections/data/local_comment_repository.dart',
+    dartSource: 'lib/src/features/reflections/data/local_comment_repository.dart',
     why: 'Production thread comments and replies.',
     memberContent: true,
   ),
@@ -126,8 +121,7 @@ const List<BackupCollection> backupCollections = [
     tableId: 'backup_comments_dev',
     shape: BackupSyncShape.topLevel,
     idStrategy: docIdOrHash,
-    dartSource:
-        'lib/src/features/reflections/data/local_comment_repository.dart',
+    dartSource: 'lib/src/features/reflections/data/local_comment_repository.dart',
     why: 'Dev-flavor comments.',
     memberContent: true,
   ),
@@ -161,8 +155,7 @@ const List<BackupCollection> backupCollections = [
     tableId: 'backup_member_notifications',
     shape: BackupSyncShape.topLevel,
     idStrategy: docIdOrHash,
-    dartSource:
-        'lib/src/features/notifications/data/member_notification_store.dart',
+    dartSource: 'lib/src/features/notifications/data/member_notification_store.dart',
     why: 'Cross-account bell items. Direct-message text is not copied onto the public user document.',
     memberContent: true,
   ),
@@ -185,8 +178,7 @@ const List<BackupCollection> backupCollections = [
     tableId: 'backup_self_deleted_accounts',
     shape: BackupSyncShape.topLevel,
     idStrategy: docIdOrHash,
-    dartSource:
-        'lib/src/features/account_deletion/data/account_deletion_sinks.dart',
+    dartSource: 'lib/src/features/account_deletion/data/account_deletion_sinks.dart',
     why: 'Self-service tombstones. The id is flavor_uid. The document includes an email field.',
     memberContent: true,
     sensitive: true,
@@ -223,8 +215,7 @@ const List<BackupCollection> backupCollections = [
     idStrategy: pathHash,
     parentCollection: 'users',
     subcollectionId: 'notification_settings',
-    dartSource:
-        'lib/src/features/notifications/data/push_preference_store.dart',
+    dartSource: 'lib/src/features/notifications/data/push_preference_store.dart',
     why:
         'Owner-only push preference. The current document id is push and it can '
         'hold an fcmToken. Row permissions stay empty.',
@@ -292,9 +283,6 @@ BackupCollection requireBackupCollection(String key) {
 
 void requireSyncable(BackupCollection collection) {
   if (collection.shape == BackupSyncShape.skipped) {
-    throw BackupCliException(
-      '${collection.key} is out of scope. ${collection.why}',
-      64,
-    );
+    throw BackupCliException('${collection.key} is out of scope. ${collection.why}', 64);
   }
 }

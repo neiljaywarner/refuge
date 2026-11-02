@@ -51,10 +51,7 @@ const List<String> sourceTimeKeys = [
 ];
 
 /// Prefer the document `updateTime`. Fall back to a field the app actually writes.
-String? sourceUpdatedAt({
-  String? updateTime,
-  required Map<String, Object?> fields,
-}) {
+String? sourceUpdatedAt({String? updateTime, required Map<String, Object?> fields}) {
   if (updateTime != null && updateTime.isNotEmpty) return updateTime;
   for (final key in sourceTimeKeys) {
     final iso = isoFromFirestoreValue(fields[key]);
@@ -73,10 +70,7 @@ String? isoFromFirestoreValue(Object? value) {
   if (integerValue is String) {
     final millis = int.tryParse(integerValue);
     if (millis != null) {
-      return DateTime.fromMillisecondsSinceEpoch(
-        millis,
-        isUtc: true,
-      ).toIso8601String();
+      return DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true).toIso8601String();
     }
   }
   return null;
@@ -84,10 +78,7 @@ String? isoFromFirestoreValue(Object? value) {
 
 Map<String, Object?> stringKeyed(Object? value) {
   if (value is! Map) throw const FormatException('Expected a JSON object');
-  return {
-    for (final entry in value.entries)
-      entry.key.toString(): entry.value as Object?,
-  };
+  return {for (final entry in value.entries) entry.key.toString(): entry.value as Object?};
 }
 
 FirestoreDocument documentFromRest(Map<String, Object?> json) {
@@ -104,10 +95,7 @@ FirestoreDocument documentFromRest(Map<String, Object?> json) {
   );
 }
 
-FirestoreDocument documentFromJson(
-  Map<String, Object?> json,
-  BackupCollection collection,
-) {
+FirestoreDocument documentFromJson(Map<String, Object?> json, BackupCollection collection) {
   final fieldsRaw = json['fields'];
   final dataRaw = json['data'];
   final Map<String, Object?> fields;
@@ -161,10 +149,7 @@ Object encodePlainValue(Object? value) => switch (value) {
   _ => {'stringValue': '$value'},
 };
 
-List<FirestoreDocument> documentsFromInput(
-  String jsonText,
-  BackupCollection collection,
-) {
+List<FirestoreDocument> documentsFromInput(String jsonText, BackupCollection collection) {
   final decoded = jsonDecode(jsonText);
   final List<Object?> items;
   if (decoded is List) {
@@ -172,13 +157,9 @@ List<FirestoreDocument> documentsFromInput(
   } else if (decoded is Map && decoded['documents'] is List) {
     items = (decoded['documents'] as List).cast<Object?>();
   } else if (decoded is Map && decoded['rows'] is List) {
-    throw const FormatException(
-      'This file is a mirror snapshot. Pass it to restore, not sync.',
-    );
+    throw const FormatException('This file is a mirror snapshot. Pass it to restore, not sync.');
   } else {
-    throw const FormatException(
-      'Input JSON must be a documents array or {"documents": [...]}',
-    );
+    throw const FormatException('Input JSON must be a documents array or {"documents": [...]}');
   }
   final documents = <FirestoreDocument>[];
   for (final item in items) {
@@ -194,9 +175,7 @@ List<FirestoreDocument> documentsFromInput(
 String encodeFirestorePath(String sourcePath) {
   final segments = sourcePath.split('/');
   if (segments.isEmpty ||
-      segments.any(
-        (segment) => segment.isEmpty || segment == '.' || segment == '..',
-      )) {
+      segments.any((segment) => segment.isEmpty || segment == '.' || segment == '..')) {
     throw FormatException('Unsafe sourcePath "$sourcePath"');
   }
   return segments.map(Uri.encodeComponent).join('/');

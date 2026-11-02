@@ -8,10 +8,7 @@ class const BackupRequest({
   final String? body,
 });
 
-class const BackupResponse({
-  required final int statusCode,
-  required final String body,
-});
+class const BackupResponse({required final int statusCode, required final String body});
 
 abstract interface class BackupTransport {
   Future<BackupResponse> send(BackupRequest request);

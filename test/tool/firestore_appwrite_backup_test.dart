@@ -18,48 +18,31 @@ void main() {
     'FIRESTORE_ACCESS_TOKEN': 'test-token',
   });
 
-  test(
-    'inventory lists app collections and the paths the app does not write',
-    () {
-      final byKey = {
-        for (final collection in backupCollections) collection.key: collection,
-      };
-      expect(byKey['users']!.tableId, 'backup_users');
-      expect(byKey['reflections']!.tableId, 'backup_reflections');
-      expect(byKey['reflections']!.tableId, isNot('reflection_posts'));
-      expect(byKey['direct_messages']!.tableId, 'backup_direct_messages');
-      expect(byKey['direct_messages']!.tableId, isNot('direct_messages'));
-      expect(byKey['posts']!.shape, BackupSyncShape.skipped);
-      expect(byKey['directory_members']!.shape, BackupSyncShape.skipped);
-      expect(byKey['auth']!.shape, BackupSyncShape.skipped);
-      expect(byKey['storage']!.shape, BackupSyncShape.skipped);
-      expect(byKey['saved_posts']!.idStrategy, pathHash);
-      expect(byKey['feature_votes']!.idStrategy, docIdOrHash);
-    },
-  );
+  test('inventory lists app collections and the paths the app does not write', () {
+    final byKey = {for (final collection in backupCollections) collection.key: collection};
+    expect(byKey['users']!.tableId, 'backup_users');
+    expect(byKey['reflections']!.tableId, 'backup_reflections');
+    expect(byKey['reflections']!.tableId, isNot('reflection_posts'));
+    expect(byKey['direct_messages']!.tableId, 'backup_direct_messages');
+    expect(byKey['direct_messages']!.tableId, isNot('direct_messages'));
+    expect(byKey['posts']!.shape, BackupSyncShape.skipped);
+    expect(byKey['directory_members']!.shape, BackupSyncShape.skipped);
+    expect(byKey['auth']!.shape, BackupSyncShape.skipped);
+    expect(byKey['storage']!.shape, BackupSyncShape.skipped);
+    expect(byKey['saved_posts']!.idStrategy, pathHash);
+    expect(byKey['feature_votes']!.idStrategy, docIdOrHash);
+  });
 
   test('row ids keep a legal document id and hash everything else', () {
     expect(
-      backupRowId(
-        sourcePath: 'feature_votes/planned-native-store-apps',
-        topLevel: true,
-      ),
+      backupRowId(sourcePath: 'feature_votes/planned-native-store-apps', topLevel: true),
       'planned-native-store-apps',
     );
     final nested = 'users/uid_example/saved_posts/post-1';
-    final digest = sha256
-        .convert(utf8.encode(nested))
-        .toString()
-        .substring(0, 32);
+    final digest = sha256.convert(utf8.encode(nested)).toString().substring(0, 32);
     expect(backupRowId(sourcePath: nested, topLevel: false), 'b$digest');
-    expect(
-      backupRowId(sourcePath: 'soft_deleted_users/bad id', topLevel: true),
-      isNot('bad id'),
-    );
-    expect(
-      backupRowId(sourcePath: 'soft_deleted_users/bad id', topLevel: true),
-      hasLength(33),
-    );
+    expect(backupRowId(sourcePath: 'soft_deleted_users/bad id', topLevel: true), isNot('bad id'));
+    expect(backupRowId(sourcePath: 'soft_deleted_users/bad id', topLevel: true), hasLength(33));
   });
 
   test('sourceUpdatedAt prefers the Firestore document updateTime', () {
@@ -74,9 +57,7 @@ void main() {
   });
 
   test('dry-run sync of feature votes, users, reflections, and messages sends nothing', () async {
-    final transport = _ScriptedTransport(
-      (request) => throw StateError(request.url.toString()),
-    );
+    final transport = _ScriptedTransport((request) => throw StateError(request.url.toString()));
     for (final example in _examples) {
       final report = await syncCollection(
         collection: requireBackupCollection(example.key),
@@ -91,86 +72,68 @@ void main() {
       expect(report.rows, hasLength(1));
       expect(report.rows.single.rowId, example.rowId);
       expect(report.rows.single.data['mirroredAt'], '2026-11-02T02:11:00.000Z');
+      expect(report.rows.single.data['sourceUpdatedAt'], '2026-11-01T00:00:00.000Z');
+      final payload = jsonDecode(report.rows.single.data['payload']! as String) as Map;
       expect(
-        report.rows.single.data['sourceUpdatedAt'],
-        '2026-11-01T00:00:00.000Z',
-      );
-      final payload =
-          jsonDecode(report.rows.single.data['payload']! as String) as Map;
-      expect(
-        payload['title'] ??
-            payload['displayName'] ??
-            payload['content'] ??
-            payload['subject'],
+        payload['title'] ?? payload['displayName'] ?? payload['content'] ?? payload['subject'],
         isNotNull,
       );
     }
   });
 
-  test(
-    'live sync upserts feature_votes with an empty permission list',
-    () async {
-      final transport = _ScriptedTransport(
-        (_) => const BackupResponse(statusCode: 200, body: '{}'),
-      );
-      final report = await syncCollection(
-        collection: requireBackupCollection('feature_votes'),
-        config: config,
-        transport: transport,
-        dryRun: false,
-        mirroredAt: clock,
-        inputText: File('test/fixtures/backup/feature_votes.json')
-            .readAsStringSync(),
-      );
-      expect(report.rows.single.rowId, 'planned-native-store-apps');
-      expect(transport.requests, hasLength(1));
-      final request = transport.requests.single;
-      expect(request.method, 'PUT');
-      expect(
-        request.url.path,
-        contains('/tables/backup_feature_votes/rows/planned-native-store-apps'),
-      );
-      expect(request.headers['X-Appwrite-Key'], 'test-api-key');
-      final body = jsonDecode(request.body!) as Map<String, Object?>;
-      expect(body['permissions'], isEmpty);
-      expect(body.toString(), isNot(contains('test-api-key')));
-      final data = body['data']! as Map<String, Object?>;
-      final payload = jsonDecode(data['payload']! as String) as Map;
-      expect(payload['votes'], {'integerValue': '2'});
-    },
-  );
+  test('live sync upserts feature_votes with an empty permission list', () async {
+    final transport = _ScriptedTransport((_) => const BackupResponse(statusCode: 200, body: '{}'));
+    final report = await syncCollection(
+      collection: requireBackupCollection('feature_votes'),
+      config: config,
+      transport: transport,
+      dryRun: false,
+      mirroredAt: clock,
+      inputText: File('test/fixtures/backup/feature_votes.json').readAsStringSync(),
+    );
+    expect(report.rows.single.rowId, 'planned-native-store-apps');
+    expect(transport.requests, hasLength(1));
+    final request = transport.requests.single;
+    expect(request.method, 'PUT');
+    expect(
+      request.url.path,
+      contains('/tables/backup_feature_votes/rows/planned-native-store-apps'),
+    );
+    expect(request.headers['X-Appwrite-Key'], 'test-api-key');
+    final body = jsonDecode(request.body!) as Map<String, Object?>;
+    expect(body['permissions'], isEmpty);
+    expect(body.toString(), isNot(contains('test-api-key')));
+    final data = body['data']! as Map<String, Object?>;
+    final payload = jsonDecode(data['payload']! as String) as Map;
+    expect(payload['votes'], {'integerValue': '2'});
+  });
 
-  test(
-    '--since skips an older document and still copies one with no time',
-    () async {
-      final transport = _ScriptedTransport(
-        (_) => const BackupResponse(statusCode: 200, body: '{}'),
-      );
-      final report = await syncCollection(
-        collection: requireBackupCollection('feature_votes'),
-        config: config,
-        transport: transport,
-        dryRun: true,
-        mirroredAt: clock,
-        since: DateTime.utc(2026, 11, 1),
-        inputText: jsonEncode({
-          'documents': [
-            {
-              'id': 'planned-google-sign-in',
-              'updateTime': '2026-10-01T00:00:00.000Z',
-              'data': {'votes': 1},
-            },
-            {
-              'id': 'planned-autistic-events',
-              'data': {'votes': 0},
-            },
-          ],
-        }),
-      );
-      expect(report.rows.map((row) => row.rowId), ['planned-autistic-events']);
-      expect(report.skipped.single.reason, 'older than --since');
-    },
-  );
+  test('--since skips an older document and still copies one with no time', () async {
+    final transport = _ScriptedTransport((_) => const BackupResponse(statusCode: 200, body: '{}'));
+    final report = await syncCollection(
+      collection: requireBackupCollection('feature_votes'),
+      config: config,
+      transport: transport,
+      dryRun: true,
+      mirroredAt: clock,
+      since: DateTime.utc(2026, 11, 1),
+      inputText: jsonEncode({
+        'documents': [
+          {
+            'id': 'planned-google-sign-in',
+            'updateTime': '2026-10-01T00:00:00.000Z',
+            'data': {'votes': 1},
+          },
+          {
+            'id': 'planned-autistic-events',
+            'data': {'votes': 0},
+          },
+        ],
+      }),
+    );
+    expect(report.rows.map((row) => row.rowId), ['planned-autistic-events']);
+    expect(report.skipped.single.reason, 'older than --since');
+  });
 
   test('a live list walks pages and then each parent saved_posts subcollection', () async {
     final transport = _ScriptedTransport((request) {
@@ -203,30 +166,21 @@ void main() {
       dryRun: true,
       mirroredAt: clock,
     );
-    expect(
-      transport.requests.where((request) => request.method == 'PUT'),
-      isEmpty,
-    );
+    expect(transport.requests.where((request) => request.method == 'PUT'), isEmpty);
     expect(report.rows, hasLength(2));
     expect(report.rows.map((row) => row.rowId).toSet(), hasLength(2));
-    expect(
-      report.rows.first.data['sourcePath'],
-      'users/uid_a/saved_posts/post-1',
-    );
+    expect(report.rows.first.data['sourcePath'], 'users/uid_a/saved_posts/post-1');
   });
 
   test('restore dry-run rebuilds the typed Firestore fields', () async {
-    final transport = _ScriptedTransport(
-      (request) => throw StateError(request.method),
-    );
+    final transport = _ScriptedTransport((request) => throw StateError(request.method));
     final synced = await syncCollection(
       collection: requireBackupCollection('feature_votes'),
       config: config,
       transport: transport,
       dryRun: true,
       mirroredAt: clock,
-      inputText: File('test/fixtures/backup/feature_votes.json')
-          .readAsStringSync(),
+      inputText: File('test/fixtures/backup/feature_votes.json').readAsStringSync(),
     );
     final report = await restoreCollection(
       collection: requireBackupCollection('feature_votes'),
@@ -235,107 +189,79 @@ void main() {
       dryRun: true,
       inputText: jsonEncode(synced.toJson(includeRows: true)),
     );
-    expect(
-      report.patches.single.sourcePath,
-      'feature_votes/planned-native-store-apps',
-    );
+    expect(report.patches.single.sourcePath, 'feature_votes/planned-native-store-apps');
     expect(report.patches.single.fields['votes'], {'integerValue': '2'});
   });
 
-  test(
-    'restore --write patches Firestore and recreates an empty allowlist doc',
-    () async {
-      final transport = _ScriptedTransport(
-        (_) => const BackupResponse(statusCode: 200, body: '{}'),
-      );
-      await restoreCollection(
-        collection: requireBackupCollection('feature_votes'),
-        config: config,
-        transport: transport,
-        dryRun: false,
-        inputText: jsonEncode({
-          'rows': [
-            {
-              'data': {
-                'sourcePath': 'feature_votes/planned-native-store-apps',
-                'payload': jsonEncode({
-                  'votes': {'integerValue': '2'},
-                }),
-              },
+  test('restore --write patches Firestore and recreates an empty allowlist doc', () async {
+    final transport = _ScriptedTransport((_) => const BackupResponse(statusCode: 200, body: '{}'));
+    await restoreCollection(
+      collection: requireBackupCollection('feature_votes'),
+      config: config,
+      transport: transport,
+      dryRun: false,
+      inputText: jsonEncode({
+        'rows': [
+          {
+            'data': {
+              'sourcePath': 'feature_votes/planned-native-store-apps',
+              'payload': jsonEncode({
+                'votes': {'integerValue': '2'},
+              }),
             },
-          ],
-        }),
-      );
-      final patch = transport.requests.single;
-      expect(patch.method, 'PATCH');
-      expect(
-        patch.url.toString(),
-        contains('documents/feature_votes/planned-native-store-apps'),
-      );
-      expect(patch.url.queryParametersAll['updateMask.fieldPaths'], ['votes']);
-      expect(patch.headers['Authorization'], 'Bearer test-token');
+          },
+        ],
+      }),
+    );
+    final patch = transport.requests.single;
+    expect(patch.method, 'PATCH');
+    expect(patch.url.toString(), contains('documents/feature_votes/planned-native-store-apps'));
+    expect(patch.url.queryParametersAll['updateMask.fieldPaths'], ['votes']);
+    expect(patch.headers['Authorization'], 'Bearer test-token');
 
-      transport.requests.clear();
-      await restoreCollection(
-        collection: requireBackupCollection('rules_admins'),
-        config: config,
-        transport: transport,
-        dryRun: false,
-        inputText: jsonEncode({
-          'rows': [
-            {
-              'data': {
-                'sourcePath': 'rules_admins/uid_example',
-                'payload': '{}',
-              },
-            },
-          ],
-        }),
-      );
-      expect(transport.requests.single.method, 'POST');
-      expect(
-        transport.requests.single.url.queryParameters['documentId'],
-        'uid_example',
-      );
-    },
-  );
+    transport.requests.clear();
+    await restoreCollection(
+      collection: requireBackupCollection('rules_admins'),
+      config: config,
+      transport: transport,
+      dryRun: false,
+      inputText: jsonEncode({
+        'rows': [
+          {
+            'data': {'sourcePath': 'rules_admins/uid_example', 'payload': '{}'},
+          },
+        ],
+      }),
+    );
+    expect(transport.requests.single.method, 'POST');
+    expect(transport.requests.single.url.queryParameters['documentId'], 'uid_example');
+  });
 
-  test(
-    'provision treats an existing table as success and never grants guests',
-    () async {
-      final transport = _ScriptedTransport((request) {
-        if (request.url.path.endsWith('/tables')) {
-          return const BackupResponse(statusCode: 409, body: 'exists');
-        }
-        return const BackupResponse(statusCode: 202, body: '{}');
-      });
-      await provisionCollection(
-        collection: requireBackupCollection('users'),
-        config: config,
-        transport: transport,
-      );
-      expect(transport.requests, hasLength(6));
-      final table =
-          jsonDecode(transport.requests.first.body!) as Map<String, Object?>;
-      expect(table['permissions'], isEmpty);
-      expect(table['rowSecurity'], isTrue);
-      expect(transport.requests.last.url.path, endsWith('/columns/longtext'));
-    },
-  );
+  test('provision treats an existing table as success and never grants guests', () async {
+    final transport = _ScriptedTransport((request) {
+      if (request.url.path.endsWith('/tables')) {
+        return const BackupResponse(statusCode: 409, body: 'exists');
+      }
+      return const BackupResponse(statusCode: 202, body: '{}');
+    });
+    await provisionCollection(
+      collection: requireBackupCollection('users'),
+      config: config,
+      transport: transport,
+    );
+    expect(transport.requests, hasLength(6));
+    final table = jsonDecode(transport.requests.first.body!) as Map<String, Object?>;
+    expect(table['permissions'], isEmpty);
+    expect(table['rowSecurity'], isTrue);
+    expect(transport.requests.last.url.path, endsWith('/columns/longtext'));
+  });
 
   test('CLI dry-run, usage, missing key, and repo output guard', () async {
     final out = StringBuffer();
     final err = StringBuffer();
     final fixture = 'test/fixtures/backup/feature_votes.json';
     final code = await runFirestoreAppwriteBackup(
-      [
-        'sync',
-        '--collection',
-        'feature_votes',
-        '--dry-run',
-        '--input',
-        fixture,
-      ],
+      ['sync', '--collection', 'feature_votes', '--dry-run', '--input', fixture],
       stdoutSink: out,
       stderrSink: err,
       environment: const {},
@@ -440,10 +366,7 @@ const _examples = [
       {
         'id': 'planned-native-store-apps',
         'updateTime': '2026-11-01T00:00:00.000Z',
-        'data': {
-          'title': 'Native iOS App Store and Google Play Apps',
-          'votes': 2,
-        },
+        'data': {'title': 'Native iOS App Store and Google Play Apps', 'votes': 2},
       },
     ],
   ),
@@ -467,10 +390,7 @@ const _examples = [
       {
         'id': 'post-1730000000000',
         'updateTime': '2026-11-01T00:00:00.000Z',
-        'data': {
-          'content': 'A short synthetic reflection.',
-          'authorName': 'Fellow Member',
-        },
+        'data': {'content': 'A short synthetic reflection.', 'authorName': 'Fellow Member'},
       },
     ],
   ),
