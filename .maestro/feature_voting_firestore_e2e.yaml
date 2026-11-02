@@ -21,8 +21,16 @@ tags:
 - tapOn:
     text: "Sign in"
 - extendedWaitUntil:
-    visible: "Welcome to Belong on the Spectrum"
+    visible: "Save & Enter Belong|Welcome to Belong on the Spectrum|Feed"
     timeout: 90000
+- runFlow:
+    when:
+      visible: "Save & Enter Belong"
+    commands:
+      - tapOn: "Skip for now"
+- extendedWaitUntil:
+    visible: "Welcome to Belong on the Spectrum|Feed"
+    timeout: 60000
 - tapOn:
     text: ".*Vote & Feedback.*"
 - extendedWaitUntil:
@@ -33,8 +41,13 @@ tags:
       id: "vote_planned-native-store-apps"
     direction: DOWN
     timeout: 25000
-- tapOn:
-    id: "vote_planned-native-store-apps"
+# Idempotent: Firestore keeps voterIds across clearState; do not un-vote if already up.
+- runFlow:
+    when:
+      visible: "Vote for Native iOS App Store and Google Play Apps"
+    commands:
+      - tapOn:
+          id: "vote_planned-native-store-apps"
 - extendedWaitUntil:
     visible: "Remove vote for Native iOS App Store and Google Play Apps"
     timeout: 30000
@@ -45,7 +58,15 @@ tags:
 - launchApp:
     clearState: false
 - extendedWaitUntil:
-    visible: "Welcome to Belong on the Spectrum"
+    visible: "Save & Enter Belong|Welcome to Belong on the Spectrum|Feed"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: "Save & Enter Belong"
+    commands:
+      - tapOn: "Skip for now"
+- extendedWaitUntil:
+    visible: "Welcome to Belong on the Spectrum|Feed"
     timeout: 60000
 - tapOn:
     text: ".*Vote & Feedback.*"
