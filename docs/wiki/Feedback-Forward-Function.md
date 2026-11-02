@@ -2,6 +2,7 @@
 
 > **Code**: `appwrite/functions/feedback-forward`
 > **Operator notes**: [README](../../appwrite/functions/feedback-forward/README.md)
+> **Current Appwrite Cloud `tier-0` Status (`#797`, `#808`)**: Appwrite Cloud's free plan (`tier-0`) allows **2 functions per project**, which are currently allocated to **`dm-push`** (instant push notifications) and **`dm-mirror`** (cross-cloud DM backup). Client builds therefore default to `--dart-define=APPWRITE_FEEDBACK_FORWARD_ENABLED=false` and store all private feedback notes durably in Cloud Firestore `member_feedback`. Re-enable with `--dart-define=APPWRITE_FEEDBACK_FORWARD_ENABLED=true` only if the Appwrite project has a 3rd function slot available.
 
 This Appwrite function files a private Belong note that is already stored in Cloud Firestore `member_feedback`. It creates the GitHub issue in `neiljaywarner/belong_feedback`. The Flutter app does not contain `FEEDBACK_GITHUB_PAT`.
 

@@ -74,6 +74,7 @@ void main() {
       final bridge = AppwriteMemberFeedbackBridge(
         httpClient: httpClient,
         idTokenReader: () async => 'firebase-id-token',
+        enabled: true,
       );
       final result = await bridge.forward('feedbackDoc1');
 
@@ -88,6 +89,23 @@ void main() {
       expect(raw, isNot(contains('github_pat')));
     });
 
+    test(
+      'skips Appwrite HTTP call when APPWRITE_FEEDBACK_FORWARD_ENABLED is false (#808)',
+      () async {
+        var called = false;
+        final httpClient = MockClient((request) async {
+          called = true;
+          return http.Response('{}', 201);
+        });
+        final bridge = AppwriteMemberFeedbackBridge(
+          httpClient: httpClient,
+          idTokenReader: () async => 'firebase-id-token',
+        );
+        expect(await bridge.forward('feedbackDoc1'), isNull);
+        expect(called, isFalse);
+      },
+    );
+
     test('returns null when the execution HTTP call times out', () async {
       final httpClient = MockClient((request) async {
         await Future<void>.delayed(const Duration(milliseconds: 80));
@@ -97,6 +115,7 @@ void main() {
         httpClient: httpClient,
         idTokenReader: () async => 'firebase-id-token',
         timeout: const Duration(milliseconds: 15),
+        enabled: true,
       );
       expect(await bridge.forward('feedbackDoc1'), isNull);
       await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -111,6 +130,7 @@ void main() {
       final bridge = AppwriteMemberFeedbackBridge(
         httpClient: httpClient,
         idTokenReader: () async => null,
+        enabled: true,
       );
       expect(await bridge.forward('feedbackDoc1'), isNull);
       expect(called, isFalse);
