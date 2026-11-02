@@ -67,4 +67,4 @@ You will also find **Members Section & Directory**, **Saved for Later** (private
 
 Tap **Vote & Feedback** (near Feed and Spaces). Inside that sheet, the **Share Feedback** tab is where you can write a note. Use in-app Vote & Feedback only.
 
-Contributors shipping the app: [CI/CD FAQ](CI-CD-FAQ). Private feedback GitHub token and Appwrite secrets: [Feedback forward function](Feedback-Forward-Function).
+Contributors shipping the app: [CI/CD FAQ](CI-CD-FAQ). Private feedback GitHub token and Appwrite secrets: [Feedback forward function](Feedback-Forward-Function). Appwrite Free pause (weekly Console visit, not client heartbeats): [Free-tier inactivity and session audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit).
