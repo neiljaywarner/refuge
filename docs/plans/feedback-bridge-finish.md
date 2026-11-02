@@ -2,6 +2,8 @@
 
 Hand this file to a cheaper model. Run it on the Mac checkout of `neiljaywarner/refuge`. If `uname -s` is not `Darwin`, stop. Do not do this on the Linux cloud agent. Firebase login and Flutter are already on the Mac. This session cannot place work there.
 
+**Cloud agent (Sunday Nov 1, 2026):** README toast sentence fixed, `docs/archive/feedback_bridge_status.md` refreshed, Node + Flutter feedback tests green on PR #785. Steps 1–9 below still require Mac.
+
 Do not deploy production. Do not pass `--prod`. Do not print tokens, service-account JSON, passwords, or member emails. Do not put `FEEDBACK_GITHUB_PAT` in `--dart-define`.
 
 ## Already done (do not redo)

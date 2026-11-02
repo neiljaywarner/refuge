@@ -156,6 +156,6 @@ Preview and production write to the same private repo. Use a Hosting preview cha
 dart run tool/deploy_release.dart --version feedback-659
 ```
 
-The channel host looks like `https://belongonthespectrum--feedback-659-<hash>.web.app`. Open that host, sign in, and submit private Vote & Feedback. In `neiljaywarner/belong_feedback`, expect an issue title `[preview] …`, the label `preview`, and **Source environment** `preview`. The toast should name `belong_feedback#N`. The body should also include that channel host.
+The channel host looks like `https://belongonthespectrum--feedback-659-<hash>.web.app`. Open that host, sign in, and submit private Vote & Feedback. The member toast stays the plain saved-for-organizers sentence from `feedback_success_copy.dart` and does not name GitHub or an issue number (issue #490). In `neiljaywarner/belong_feedback`, organizers should see an issue title `[preview] …`, the label `preview`, **Source environment** `preview`, and the preview channel host in the body.
 
 A note sent from `https://belongonthespectrum.web.app` stays unprefixed and has no `preview` label. `https://dev-belongonthespectrum.web.app` is `dev`. `localhost` is `local`.

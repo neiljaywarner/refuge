@@ -1,25 +1,34 @@
 # Feedback bridge status
 
-Updated Saturday, Oct 31, 2026, 1:30 PM America/Chicago.
+Updated Sunday, Nov 1, 2026, 9:50 PM America/Chicago.
 
-Issue [#659](https://github.com/neiljaywarner/refuge/issues/659). Pull request [#716](https://github.com/neiljaywarner/refuge/pull/716) is merged to `main` (`e91434d`).
+Issue [#659](https://github.com/neiljaywarner/refuge/issues/659). Pull request [#716](https://github.com/neiljaywarner/refuge/pull/716) is merged to `main`. Finish checklist: [feedback-bridge-finish.md](../plans/feedback-bridge-finish.md) (PR [#785](https://github.com/neiljaywarner/refuge/pull/785)).
 
-## Done
+## Done (code and backend)
 
-- Appwrite function `feedback-forward` is deployed and live. Runtime Node 22. Entrypoint `src/main.js`. Deployment `6ae61ffc9bbd12cf1006`.
-- A live call with an empty body returned `400` and `{"error":"missing feedback"}`.
-- A live call with a bad token returned `401` and `{"error":"unauthorized"}`. No GitHub issue was created.
-- The function’s variable list is empty. `FEEDBACK_GITHUB_PAT` and `FIREBASE_SERVICE_ACCOUNT_JSON` are not set.
-- A prod-flavor web build of the branch (`lib/main_prod.dart`, `FLAVOR=prod`) loads in Chrome and stops on the members-only sign-in wall. The subtitle is “Sign in to Belong on the Spectrum”. There is no `[DEV]` or `PREVIEW` tag. Vote & Feedback is not on that screen.
-- A fake `*.web.app` host over plain HTTP is rejected by Chrome with `ERR_SSL_PROTOCOL_ERROR`. That is not a Hosting preview channel.
+- Appwrite function `feedback-forward` is deployed. Runtime Node 22. Entrypoint `src/main.js`. Deployment `6ae61ffc9bbd12cf1006` status `ready`.
+- Live smoke: empty body → `400` `{"error":"missing feedback"}`; bad Firebase ID token → `401` `{"error":"unauthorized"}`.
+- Function secret **names** are configured on Appwrite: `FEEDBACK_GITHUB_PAT` and `FIREBASE_SERVICE_ACCOUNT_JSON`. Values are not stored in git and must not be printed.
+- Flutter writes Firestore first, stamps `sourceEnvironment` / `sourceHost`, then calls the function with the member’s Firebase ID token. Member confirmation copy is plain (`feedbackSavedForOrganizers`); it does not show `belong_feedback#N` (issue #490).
+- `appwrite/functions/feedback-forward/README.md` documents the plain toast and organizer-side preview stamp (cloud doc fix, PR #785).
+- Tests (Sunday Nov 1, cloud agent): `npm test` in `appwrite/functions/feedback-forward` (15/15 pass); `flutter test` on `feedback_drawing_test.dart`, `member_feedback_bridge_test.dart`, `feedback_source_stamp_test.dart` (all pass).
 
-## Not done
+## Not done (requires Mac + signed-in member)
 
-- No Firebase Hosting preview URL. This Linux agent’s Firebase CLI has no logged-in user, so `dart run tool/deploy_release.dart --version feedback-659` has not run. Production `https://belongonthespectrum.web.app` was not published from this work.
-- No end-to-end note. The app requires a signed-in member, and the function cannot file `belong_feedback#N` until the two secrets above exist.
+| Check | Status |
+| --- | --- |
+| Firebase Hosting preview URL for `--version feedback-659` | **Not deployed** — Linux cloud agent Firebase CLI has no logged-in user |
+| End-to-end private note on real preview host | **Not run** — needs preview URL and Belong sign-in |
+| Confirmed `[preview]` issue in `neiljaywarner/belong_feedback` from a real submit | **Not confirmed** |
 
-## Next
+When the Mac finish pass completes, fill in:
 
-1. Finish the Firebase CLI login started in chat. The session id is in the chat, not in this file. Paste the authorization code back. Then this agent deploys a preview channel only: `dart run tool/deploy_release.dart --version feedback-659`, with no `--prod`.
-2. A Mac worker for this repo is connected and idle. This session cannot place a command on it. A trial subagent stayed on Linux, so the preview was not deployed from the Mac.
-3. Set `FEEDBACK_GITHUB_PAT` and `FIREBASE_SERVICE_ACCOUNT_JSON` on Appwrite function `feedback-forward` before expecting a toast that names `belong_feedback#N`.
+- Preview URL: _(pending)_
+- Issue filed from E2E: yes / no
+- Issue number (if yes): _(pending)_
+
+## Next (Mac only)
+
+Follow [feedback-bridge-finish.md](../plans/feedback-bridge-finish.md) steps 1–9 on a Darwin checkout: preview deploy without `--prod`, sign in, send one synthetic private note, verify plain toast and one preview-stamped GitHub issue. Then update the table above with URL and issue number (no member note text, no emails).
+
+If the toast succeeds but no issue appears, inspect Appwrite executions for `feedback-forward` and record only HTTP status and the `error` / `reason` string (for example `github credential is not configured` if the PAT is empty).
