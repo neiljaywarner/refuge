@@ -7,6 +7,7 @@
 * **[❓ Questions for Members and Organizers](Questions-for-Product-Users-and-Alpha-Testers)**
 * **[📱 Why Belong Is Not in the App Stores Yet](Why-No-App-Store-App)**
 * **[📱 Get Belong on Your Phone](Get-Belong-on-Your-Phone)**
+* **[🤖 Android open beta & Google signup](Android-Open-Beta-Google-Signup-Guide)**
 * **[📱 Put Belong on Your Phone](How-You-Can-Help-Volunteer-Guide#put-belong-on-your-phone)**
 * **[📱 More about Using Belong from the Web](PWA-Guide-for-Members-and-Organizers)**
 * **[🎥 Android Home-Screen Pictures](PWA-Installation-and-Mobile-Web-Guide)**

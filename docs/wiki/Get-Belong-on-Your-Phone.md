@@ -4,6 +4,8 @@ A calm page for someone who has never heard of Firebase, a beta, or a home-scree
 
 The same words are inside Belong: open **Spaces**, then **Links**, then **Download the Android App** or **Download the iOS App**.
 
+For Google’s **“share your email with the developer”** screen, see **[Android open beta and Google signup](Android-Open-Beta-Google-Signup-Guide)** (TL;DR + technical notes).
+
 ---
 
 ## A short version
@@ -35,7 +37,16 @@ A few words, in case they are new:
 
 This is the one to use day to day. It is an open beta, before the Play Store.
 
-On your **Android phone**, tap **[Open the Android beta](https://appdistribution.firebase.google.com/testerapps/1:207506875171:android:e578634c4bc21da2b96296)**. That page stays on the ongoing beta, so later releases use the same link. A computer cannot install the app onto the phone for you.
+**TL;DR:** Tap **Open the Android beta** on your Android phone. The first time, Google may ask you to sign in and tap **Sign up** when it says it will share your email with **the developer** (that means Belong). It is **not a waitlist**. Then tap **Download** and install.
+
+On your **Android phone**:
+
+- **[Open the Android beta](https://appdistribution.firebase.google.com/testerapps/1:207506875171:android:e578634c4bc21da2b96296)** — ongoing beta downloads (same link for later releases).
+- **[First time? Sign up with Google](https://appdistribution.firebase.google.com/i/be440f5ac9684d13)** — only if Google says you have no apps yet, or you have not finished Sign up.
+
+More detail, official Google links, and organizer notes: **[Android open beta and Google signup](Android-Open-Beta-Google-Signup-Guide)**.
+
+A computer cannot install the app onto the phone for you.
 
 1. Sign in with a Google account if it asks. A Gmail address is fine.
 2. When you see **Belong on the Spectrum**, tap **Download**.
@@ -46,7 +57,7 @@ On your **Android phone**, tap **[Open the Android beta](https://appdistribution
 
 Leave **Google Play Protect** on. It may say it does not recognize Belong yet. If the warning says the app is **harmful**, stop and do not install it. [Google's Play Protect page](https://support.google.com/android/answer/2812853?hl=en) explains what that check is. Do not turn Play Protect off for the whole phone.
 
-If the page says you have no apps yet, the open invite is still catching up. Use the [Android website](#android-website-for-testing) steps for today, and tell an organizer.
+If the page says you have no apps yet, tap **[First time? Sign up with Google](https://appdistribution.firebase.google.com/i/be440f5ac9684d13)**, complete Sign up, then open **[Open the Android beta](https://appdistribution.firebase.google.com/testerapps/1:207506875171:android:e578634c4bc21da2b96296)** again. If something still fails, use the [Android website](#android-website-for-testing) steps for today, and tell an organizer.
 
 ---
 

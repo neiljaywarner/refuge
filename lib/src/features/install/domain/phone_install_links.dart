@@ -14,6 +14,9 @@ abstract final class PhoneInstallLinks {
       'https://appdistribution.firebase.google.com/testerapps/'
       '1:207506875171:android:e578634c4bc21da2b96296';
 
+  /// First-time Firebase App Distribution signup (Google "share your email" card).
+  static const androidBetaSignup = 'https://appdistribution.firebase.google.com/i/be440f5ac9684d13';
+
   /// Google's own tester steps, including the optional App Tester app.
   static const firebaseTesterHelp =
       'https://firebase.google.com/docs/app-distribution/get-set-up-as-a-tester?platform=android';
