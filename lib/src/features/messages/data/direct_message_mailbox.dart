@@ -39,6 +39,13 @@ class DirectMessageSendResult {
   final MessageThread thread;
 }
 
+int _dmSequence = 0;
+
+String _nextDirectMessageId() {
+  _dmSequence = (_dmSequence + 1) % 1000000;
+  return 'dm-${DateTime.now().microsecondsSinceEpoch}-$_dmSequence';
+}
+
 /// Loads recipients, persists direct messages, and builds inbox threads (#441).
 abstract class DirectMessageMailbox {
   Future<List<MessageRecipient>> loadDirectory({
@@ -54,6 +61,9 @@ abstract class DirectMessageMailbox {
     required List<MessageRecipient> recipients,
     required String content,
     String? subject,
+    String? groupName,
+    String? existingThreadId,
+    List<DirectMessage>? existingMessages,
   });
 
   List<BelongNotification> notificationsForUser({
@@ -92,6 +102,7 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     final real = <MessageRecipient>[];
     for (final entry in _users.entries) {
       if (entry.key == currentId) continue;
+      if (entry.value['listedInDirectory'] == false) continue;
       real.add(MessageRecipient.fromFirestoreUser(entry.key, entry.value));
     }
     if (real.isNotEmpty) return real;
@@ -112,14 +123,22 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     required List<MessageRecipient> recipients,
     required String content,
     String? subject,
+    String? groupName,
+    String? existingThreadId,
+    List<DirectMessage>? existingMessages,
   }) async {
     final recipientIds = recipients.where((r) => !r.isSample).map((r) => r.id).toList();
     final allSample = recipients.every((r) => r.isSample);
     final participantIds = <String>{if (!allSample) senderId, ...recipientIds}.toList();
-    final threadId = allSample
-        ? 'thread-local-${DateTime.now().millisecondsSinceEpoch}'
-        : StoredDirectMessage.computeThreadId(participantIds);
-    final id = 'dm-${DateTime.now().millisecondsSinceEpoch}';
+    final threadId = (existingThreadId != null && existingThreadId.trim().isNotEmpty)
+        ? existingThreadId.trim()
+        : (allSample
+              ? 'thread-local-${DateTime.now().millisecondsSinceEpoch}'
+              : StoredDirectMessage.computeThreadId(participantIds));
+    final normalizedGroupName = (groupName != null && groupName.trim().isNotEmpty)
+        ? groupName.trim()
+        : null;
+    final id = _nextDirectMessageId();
     final message = StoredDirectMessage(
       id: id,
       threadId: threadId,
@@ -129,13 +148,19 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
       recipientNames: recipients.map((r) => r.name).toList(),
       participantIds: allSample ? [senderId, ...recipients.map((r) => r.id)] : participantIds,
       subject: subject,
+      groupName: normalizedGroupName,
       content: content,
       sentAt: DateTime.now(),
     );
     if (!allSample) {
       _messages[id] = message;
     }
-    final thread = _threadForMessage(message, senderId, recipients);
+    final thread = _threadForMessage(
+      message,
+      senderId,
+      recipients,
+      previousMessages: existingMessages,
+    );
     return DirectMessageSendResult(
       outcome: allSample ? DirectMessageSendOutcome.localOnly : DirectMessageSendOutcome.delivered,
       message: message,
@@ -214,15 +239,28 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
   }) async {
     final db = _db;
     final user = _currentFirebaseUser();
-    if (db == null || user == null) {
+    if (db == null || (user == null && _firestore == null)) {
       return _offline.loadDirectory(includeSamples: includeSamples, isProduction: isProduction);
     }
     try {
+      final excludedIds = <String>{};
+      for (final col in const ['banned_uids', 'soft_deleted_users', 'self_deleted_accounts']) {
+        try {
+          final snap = await db.collection(col).get();
+          for (final doc in snap.docs) {
+            excludedIds.add(doc.id);
+          }
+        } catch (_) {}
+      }
+
       final snap = await db.collection('users').get();
       final real = <MessageRecipient>[];
       for (final doc in snap.docs) {
-        if (doc.id == user.uid) continue;
-        real.add(MessageRecipient.fromFirestoreUser(doc.id, doc.data()));
+        if (user != null && doc.id == user.uid) continue;
+        if (excludedIds.contains(doc.id)) continue;
+        final data = doc.data();
+        if (data['listedInDirectory'] == false) continue;
+        real.add(MessageRecipient.fromFirestoreUser(doc.id, data));
       }
       real.sort((a, b) => a.name.compareTo(b.name));
       if (real.isNotEmpty) return real;
@@ -258,6 +296,9 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     required List<MessageRecipient> recipients,
     required String content,
     String? subject,
+    String? groupName,
+    String? existingThreadId,
+    List<DirectMessage>? existingMessages,
   }) async {
     final allSample = recipients.every((r) => r.isSample);
     if (allSample) {
@@ -267,13 +308,21 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
         recipients: recipients,
         content: content,
         subject: subject,
+        groupName: groupName,
+        existingThreadId: existingThreadId,
+        existingMessages: existingMessages,
       );
     }
 
     final recipientIds = recipients.map((r) => r.id).toList();
     final participantIds = <String>{senderId, ...recipientIds}.toList();
-    final threadId = StoredDirectMessage.computeThreadId(participantIds);
-    final id = 'dm-${DateTime.now().millisecondsSinceEpoch}';
+    final threadId = (existingThreadId != null && existingThreadId.trim().isNotEmpty)
+        ? existingThreadId.trim()
+        : StoredDirectMessage.computeThreadId(participantIds);
+    final normalizedGroupName = (groupName != null && groupName.trim().isNotEmpty)
+        ? groupName.trim()
+        : null;
+    final id = _nextDirectMessageId();
     final message = StoredDirectMessage(
       id: id,
       threadId: threadId,
@@ -283,10 +332,16 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
       recipientNames: recipients.map((r) => r.name).toList(),
       participantIds: participantIds,
       subject: subject,
+      groupName: normalizedGroupName,
       content: content,
       sentAt: DateTime.now(),
     );
-    final thread = _threadForMessage(message, senderId, recipients);
+    final thread = _threadForMessage(
+      message,
+      senderId,
+      recipients,
+      previousMessages: existingMessages,
+    );
 
     final db = _db;
     if (db == null) {
@@ -451,6 +506,9 @@ List<MessageThread> _threadsFromMessages(List<StoredDirectMessage> messages, Str
   for (final entry in byThread.entries) {
     final sorted = [...entry.value]..sort((a, b) => a.sentAt.compareTo(b.sentAt));
     final last = sorted.last;
+    final groupName = sorted.reversed
+        .map((m) => m.groupName)
+        .firstWhere((g) => g != null && g.trim().isNotEmpty, orElse: () => null);
     final otherNames = last.participantIds.where((id) => id != currentUserId).map((id) {
       final match = sorted.reversed.firstWhere(
         (m) => m.senderId == id || m.recipientIds.contains(id),
@@ -463,22 +521,31 @@ List<MessageThread> _threadsFromMessages(List<StoredDirectMessage> messages, Str
       }
       return 'Fellow Member';
     }).toList();
-    final participantName = otherNames.isEmpty
+    final fallbackTitle = otherNames.isEmpty
         ? 'Fellow Member'
         : otherNames.length == 1
         ? otherNames.first
         : '${otherNames.first} & ${otherNames.length - 1} others';
+    final participantName = (groupName != null && groupName.trim().isNotEmpty)
+        ? groupName.trim()
+        : fallbackTitle;
     final initials = participantName.isNotEmpty
         ? MessageRecipient(id: 'x', name: participantName, tagline: '').initials
         : 'B';
+    final otherIds = last.participantIds.where((id) => id != currentUserId).toList();
     threads.add(
       MessageThread(
         id: entry.key,
         participantName: participantName,
         avatarInitials: initials,
         subject: last.subject,
-        messageType: otherNames.length > 1 ? 'Group' : 'Direct',
+        messageType: (otherNames.length > 1 || (groupName != null && groupName.trim().isNotEmpty))
+            ? 'Group'
+            : 'Direct',
+        groupName: groupName,
         recipientNames: otherNames,
+        participantIds: last.participantIds,
+        recipientIds: otherIds,
         previewSnippet: last.content,
         lastActivity: last.sentAt,
         messages: [
@@ -501,30 +568,43 @@ List<MessageThread> _threadsFromMessages(List<StoredDirectMessage> messages, Str
 MessageThread _threadForMessage(
   StoredDirectMessage message,
   String senderId,
-  List<MessageRecipient> recipients,
-) {
-  final participantName = recipients.length == 1
+  List<MessageRecipient> recipients, {
+  List<DirectMessage>? previousMessages,
+}) {
+  final fallbackTitle = recipients.isEmpty
+      ? 'Fellow Member'
+      : recipients.length == 1
       ? recipients.first.name
       : '${recipients.first.name} & ${recipients.length - 1} others';
-  final initials = recipients.first.initials;
+  final groupName = message.groupName;
+  final participantName = (groupName != null && groupName.trim().isNotEmpty)
+      ? groupName.trim()
+      : fallbackTitle;
+  final initials = participantName.isNotEmpty
+      ? MessageRecipient(id: 'x', name: participantName, tagline: '').initials
+      : (recipients.isNotEmpty ? recipients.first.initials : 'B');
+  final newMsg = DirectMessage(
+    id: message.id,
+    senderName: 'You',
+    isFromMe: true,
+    content: message.content,
+    sentAt: message.sentAt,
+  );
   return MessageThread(
     id: message.threadId,
     participantName: participantName,
     avatarInitials: initials,
     subject: message.subject,
-    messageType: recipients.length > 1 ? 'Group' : 'Direct',
+    messageType: (recipients.length > 1 || (groupName != null && groupName.trim().isNotEmpty))
+        ? 'Group'
+        : 'Direct',
+    groupName: groupName,
     recipientNames: recipients.map((r) => r.name).toList(),
+    participantIds: message.participantIds,
+    recipientIds: message.recipientIds,
     previewSnippet: message.content,
     lastActivity: message.sentAt,
-    messages: [
-      DirectMessage(
-        id: message.id,
-        senderName: 'You',
-        isFromMe: true,
-        content: message.content,
-        sentAt: message.sentAt,
-      ),
-    ],
+    messages: [if (previousMessages != null) ...previousMessages, newMsg],
   );
 }
 

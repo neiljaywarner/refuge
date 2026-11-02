@@ -15,6 +15,8 @@ import '../../admin/data/admin_banning_repository.dart';
 import '../../admin/domain/circle_ban.dart';
 import '../../admin/domain/soft_deleted_user.dart';
 import '../../messages/data/direct_message_providers.dart';
+import '../../messages/domain/message_recipient.dart';
+import '../../messages/presentation/belong_messages_view.dart';
 import '../../reflections/data/comment_repository.dart';
 import '../../profile/domain/member_profile.dart';
 import 'belong_members_directory_view.dart';
@@ -518,6 +520,24 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               ),
           ],
         ],
+        if (!isBanned)
+          TextButton.icon(
+            key: const Key('other_member_profile_message_button'),
+            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+            label: const Text('Message'),
+            onPressed: () {
+              final recipient = MessageRecipient.fromDevMember(effectiveMember);
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (ctx) => BelongMessagesView(
+                    onBackToHome: () => Navigator.of(ctx).pop(),
+                    initialComposeRecipients: [recipient],
+                  ),
+                ),
+              );
+            },
+          ),
         TextButton(
           key: const Key('profile_done_button'),
           onPressed: () => Navigator.of(context).pop(),

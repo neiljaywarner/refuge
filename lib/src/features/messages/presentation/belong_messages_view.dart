@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../notifications/presentation/notifications_controller.dart';
 import '../data/direct_message_mailbox.dart';
@@ -11,30 +12,37 @@ import '../data/direct_message_providers.dart';
 import '../domain/message_recipient.dart';
 import '../domain/message_thread.dart';
 
-/// Direct Messages View featuring calm, asynchronous communication (Issue #288, #330).
+/// Direct Messages View featuring calm, asynchronous communication (Issue #288, #330, #818).
 /// Supports message searching, thread list with avatars, dates, subjects,
-/// and cute "Add Msg" compose modal with multi-recipient autocomplete member selection.
+/// and "Who's Here" compose modal with multi-recipient selection and named groups.
 class BelongMessagesView extends HookConsumerWidget {
   const BelongMessagesView({
     super.key,
     this.initialThreads,
     this.onBackToHome,
     this.initialActiveThreadId,
+    this.initialComposeRecipients,
   });
 
   final List<MessageThread>? initialThreads;
   final VoidCallback? onBackToHome;
   final String? initialActiveThreadId;
+  final List<MessageRecipient>? initialComposeRecipients;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final flavor = ref.watch(appFlavorProvider);
+    final includeSamples = ref.watch(messageRecipientIncludeSamplesProvider);
+    final allowSamples = includeSamples && !flavor.isProduction;
 
-    final baseThreads = initialThreads ?? MessageThread.sampleThreads();
+    final baseThreads =
+        initialThreads ?? (allowSamples ? MessageThread.sampleThreads() : const <MessageThread>[]);
     final threads = useState<List<MessageThread>>(baseThreads);
     final calmDigestEnabled = useState(true);
     final mailbox = ref.watch(directMessageMailboxProvider);
+    final openedInitialCompose = useState(false);
 
     fb_auth.User? currentUser() {
       try {
@@ -48,17 +56,26 @@ class BelongMessagesView extends HookConsumerWidget {
     useEffect(() {
       if (initialThreads != null) return null;
       final user = currentUser();
-      if (user == null) return null;
+      if (user == null) {
+        if (!allowSamples) {
+          threads.value = const <MessageThread>[];
+        }
+        return null;
+      }
       var cancelled = false;
       Future.microtask(() async {
         final remote = await mailbox.loadThreads(user.uid);
-        if (cancelled || remote.isEmpty) return;
-        threads.value = remote;
+        if (cancelled) return;
+        if (remote.isNotEmpty) {
+          threads.value = remote;
+        } else if (!allowSamples) {
+          threads.value = const <MessageThread>[];
+        }
       });
       return () {
         cancelled = true;
       };
-    }, [mailbox]);
+    }, [mailbox, allowSamples]);
 
     useEffect(() {
       final user = currentUser();
@@ -89,34 +106,36 @@ class BelongMessagesView extends HookConsumerWidget {
     final searchController = useTextEditingController();
     final replyController = useTextEditingController();
 
-    // Filter threads by search query across sender name, subject, and preview
+    // Filter threads by search query across sender name, group name, subject, and preview
     final filteredThreads = threads.value.where((t) {
       final q = searchQuery.value.trim().toLowerCase();
       if (q.isEmpty) return true;
-      final nameMatch = t.participantName.toLowerCase().contains(q);
+      final nameMatch =
+          t.participantName.toLowerCase().contains(q) || t.displayTitle.toLowerCase().contains(q);
       final subjectMatch = (t.subject ?? '').toLowerCase().contains(q);
       final snippetMatch = t.previewSnippet.toLowerCase().contains(q);
       return nameMatch || subjectMatch || snippetMatch;
     }).toList();
 
-    void sendReply() {
+    Future<void> sendReply() async {
       final text = replyController.text.trim();
       if (text.isEmpty || activeThread.value == null) return;
 
+      final current = activeThread.value!;
+      final now = DateTime.now();
       final newMsg = DirectMessage(
-        id: 'msg-${DateTime.now().millisecondsSinceEpoch}',
+        id: 'msg-${now.microsecondsSinceEpoch}',
         senderName: 'You',
         isFromMe: true,
         content: text,
-        sentAt: DateTime.now(),
+        sentAt: now,
       );
 
-      final current = activeThread.value!;
       final updatedMessages = [...current.messages, newMsg];
       final updatedThread = current.copyWith(
         messages: updatedMessages,
         previewSnippet: text,
-        lastActivity: DateTime.now(),
+        lastActivity: now,
         unreadCount: 0,
       );
 
@@ -125,9 +144,50 @@ class BelongMessagesView extends HookConsumerWidget {
           .toList();
       activeThread.value = updatedThread;
       replyController.clear();
+
+      if (current.isSample) return;
+
+      final user = currentUser();
+      final senderId = user?.uid ?? 'guest-local';
+      final senderName = user?.displayName?.trim().isNotEmpty == true
+          ? user!.displayName!.trim()
+          : 'Fellow Member';
+      final targetIds = current.recipientIds.isNotEmpty
+          ? current.recipientIds
+          : current.participantIds.where((id) => id != senderId).toList();
+      final recipients = <MessageRecipient>[];
+      for (var i = 0; i < targetIds.length; i++) {
+        final name = i < current.recipientNames.length
+            ? current.recipientNames[i]
+            : current.participantName;
+        recipients.add(MessageRecipient(id: targetIds[i], name: name, tagline: ''));
+      }
+      if (recipients.isEmpty) {
+        recipients.add(
+          MessageRecipient(id: current.id, name: current.participantName, tagline: ''),
+        );
+      }
+
+      final result = await mailbox.sendMessage(
+        senderId: senderId,
+        senderName: senderName,
+        recipients: recipients,
+        content: text,
+        subject: current.subject,
+        groupName: current.groupName,
+        existingThreadId: current.id,
+        existingMessages: current.messages,
+      );
+      if (result.outcome == DirectMessageSendOutcome.deviceOnly &&
+          flavor.isProduction &&
+          context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reply stayed on this device only. Check your connection.')),
+        );
+      }
     }
 
-    void openNewMessageModal() {
+    void openNewMessageModal([List<MessageRecipient>? preselected]) {
       showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -135,7 +195,8 @@ class BelongMessagesView extends HookConsumerWidget {
         backgroundColor: Colors.transparent,
         builder: (ctx) => SystemBottomInset(
           child: _NewMessageModalSheet(
-            onSendMessage: (recipients, subject, content) async {
+            initialRecipients: preselected ?? const [],
+            onSendMessage: (recipients, subject, content, groupName) async {
               final user = currentUser();
               final senderId = user?.uid ?? 'guest-local';
               final senderName = user?.displayName?.trim().isNotEmpty == true
@@ -147,6 +208,7 @@ class BelongMessagesView extends HookConsumerWidget {
                 recipients: recipients,
                 content: content,
                 subject: subject.trim().isEmpty ? null : subject.trim(),
+                groupName: groupName,
               );
               final updated = [
                 result.thread,
@@ -165,6 +227,19 @@ class BelongMessagesView extends HookConsumerWidget {
         ),
       );
     }
+
+    useEffect(() {
+      final initial = initialComposeRecipients;
+      if (initial != null && initial.isNotEmpty && !openedInitialCompose.value) {
+        openedInitialCompose.value = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            openNewMessageModal(initial);
+          }
+        });
+      }
+      return null;
+    }, [initialComposeRecipients]);
 
     if (activeThread.value != null) {
       return _buildThreadDetail(
@@ -456,7 +531,7 @@ class BelongMessagesView extends HookConsumerWidget {
               mainAxisSize: .min,
               children: [
                 Text(
-                  thread.participantName,
+                  thread.displayTitle,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -497,6 +572,18 @@ class BelongMessagesView extends HookConsumerWidget {
                     crossAxisAlignment: .start,
                     mainAxisSize: .min,
                     children: [
+                      if (!msg.isFromMe && thread.isGroup) ...[
+                        Text(
+                          msg.senderName,
+                          key: Key('dm_sender_label_${msg.id}'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                      ],
                       Text(
                         msg.content,
                         style: TextStyle(
@@ -576,12 +663,14 @@ class BelongMessagesView extends HookConsumerWidget {
 /// Compose modal sheet supporting single or multi-recipient autocomplete selection
 /// with Member Name as title and Member Profile Tagline as subtitle.
 class _NewMessageModalSheet extends HookConsumerWidget {
-  const _NewMessageModalSheet({required this.onSendMessage});
+  const _NewMessageModalSheet({required this.onSendMessage, this.initialRecipients = const []});
 
+  final List<MessageRecipient> initialRecipients;
   final Future<DirectMessageSendOutcome> Function(
     List<MessageRecipient> recipients,
     String subject,
     String content,
+    String? groupName,
   )
   onSendMessage;
 
@@ -590,12 +679,13 @@ class _NewMessageModalSheet extends HookConsumerWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
-    final selectedRecipients = useState<List<MessageRecipient>>([]);
+    final selectedRecipients = useState<List<MessageRecipient>>(initialRecipients);
     final recipientQuery = useState('');
     final sending = useState(false);
     final sendResult = useState<String?>(null);
     final sendError = useState<String?>(null);
     final recipientSearchController = useTextEditingController();
+    final groupNameController = useTextEditingController();
     final subjectController = useTextEditingController();
     final contentController = useTextEditingController();
     final directoryAsync = ref.watch(messageRecipientDirectoryProvider);
@@ -704,13 +794,25 @@ class _NewMessageModalSheet extends HookConsumerWidget {
             ),
             const SizedBox(height: 6),
 
-            // Autocomplete Member Dropdown List
-            if (availableMembers.isNotEmpty)
+            // Who's Here Header + Directory Picker List
+            if (availableMembers.isNotEmpty) ...[
+              Padding(
+                padding: const .only(left: 4, bottom: 4),
+                child: Text(
+                  "Who's Here — tap to select 1 or more (${availableMembers.length})",
+                  key: const Key('dm_whos_here_header'),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ),
               Material(
                 color: theme.cardColor,
                 borderRadius: .circular(10),
                 child: Container(
-                  constraints: const BoxConstraints(maxHeight: 140),
+                  constraints: const BoxConstraints(maxHeight: 170),
                   decoration: BoxDecoration(
                     borderRadius: .circular(10),
                     border: Border.all(color: Colors.grey.shade200),
@@ -723,6 +825,12 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                       final member = availableMembers[idx];
                       final singleMatch =
                           availableMembers.length == 1 && recipientQuery.value.trim().isNotEmpty;
+                      void selectMember() {
+                        selectedRecipients.value = [...selectedRecipients.value, member];
+                        recipientSearchController.clear();
+                        recipientQuery.value = '';
+                      }
+
                       final tile = ListTile(
                         key: Key('member_picker_item_${member.name}'),
                         dense: true,
@@ -742,12 +850,13 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: const Icon(Icons.add_circle_outline_rounded, size: 16),
-                        onTap: () {
-                          selectedRecipients.value = [...selectedRecipients.value, member];
-                          recipientSearchController.clear();
-                          recipientQuery.value = '';
-                        },
+                        trailing: Checkbox(
+                          key: Key('dm_directory_checkbox_${member.id}'),
+                          value: false,
+                          visualDensity: VisualDensity.compact,
+                          onChanged: (_) => selectMember(),
+                        ),
+                        onTap: selectMember,
                       );
                       if (!singleMatch) return tile;
                       return Semantics(
@@ -760,7 +869,29 @@ class _NewMessageModalSheet extends HookConsumerWidget {
                   ),
                 ),
               ),
+            ],
             const SizedBox(height: 10),
+
+            if (selectedRecipients.value.length >= 2) ...[
+              TextField(
+                key: const Key('new_message_group_name_input'),
+                controller: groupNameController,
+                decoration: InputDecoration(
+                  hintText: 'Group Name (optional, e.g. Friday Wingspan Circle)',
+                  hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  prefixIcon: const Icon(Icons.groups_rounded, size: 18),
+                  isDense: true,
+                  filled: true,
+                  fillColor: theme.cardColor,
+                  contentPadding: const .symmetric(horizontal: 10, vertical: 8),
+                  border: OutlineInputBorder(
+                    borderRadius: .circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
 
             // Subject Field
             TextField(
@@ -854,10 +985,12 @@ class _NewMessageModalSheet extends HookConsumerWidget {
 
                       sending.value = true;
                       try {
+                        final rawGroupName = groupNameController.text.trim();
                         final outcome = await onSendMessage(
                           selectedRecipients.value,
                           subjectController.text,
                           contentController.text.trim(),
+                          rawGroupName.isEmpty ? null : rawGroupName,
                         );
                         sending.value = false;
                         if (!context.mounted) return;

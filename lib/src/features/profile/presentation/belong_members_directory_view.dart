@@ -2,10 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/app_flavor.dart';
 import '../../admin/data/admin_banning_repository.dart';
 import '../../admin/domain/ban_standing.dart';
 import '../../admin/domain/soft_deleted_user.dart';
 import '../../branding/presentation/brand_config_provider.dart';
+import '../../messages/domain/message_recipient.dart';
+import '../../messages/presentation/belong_messages_view.dart';
+import '../data/member_directory_store.dart';
 import '../domain/member_profile.dart';
 import 'member_profile_sheet.dart';
 import 'other_member_profile_dialog.dart';
@@ -147,8 +151,32 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
     final brand = ref.watch(communityBrandConfigProvider);
     final currentProfile = ref.watch(memberProfileProvider);
     final bans = ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
+    final flavor = ref.watch(appFlavorProvider);
+    final liveDirectory = ref.watch(directoryMembersProvider).value ?? const <DirectoryMember>[];
 
-    final filteredMembers = kDevFellowshipMembers.where((m) {
+    final realMembers = liveDirectory
+        .map(
+          (dm) => DevFellowshipMember(
+            name: dm.displayName,
+            role: dm.handle.isNotEmpty ? '@${dm.handle}' : 'Fellowship Member',
+            tagline: dm.tagline.isNotEmpty ? dm.tagline : 'Fellowship Member',
+            bio: dm.tagline.isNotEmpty ? dm.tagline : 'Community member in Belong on the Spectrum.',
+            churchAffiliation: 'Fellowship Circle',
+            isIcocMember: true,
+            comfortBadges: const ['Directory Member'],
+            accountId: dm.uid,
+            handle: dm.handle.isNotEmpty ? dm.handle : null,
+          ),
+        )
+        .toList();
+    final existingNames = realMembers.map((m) => m.name.toLowerCase()).toSet();
+    final combinedMembers = <DevFellowshipMember>[
+      ...realMembers,
+      if (!flavor.isProduction)
+        ...kDevFellowshipMembers.where((m) => !existingNames.contains(m.name.toLowerCase())),
+    ];
+
+    final filteredMembers = combinedMembers.where((m) {
       final matchesQuery =
           _searchQuery.isEmpty ||
           m.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -293,6 +321,17 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
                           authorName: member.name,
                           member: member,
                         ),
+                        onMessageTap: () {
+                          final recipient = MessageRecipient.fromDevMember(member);
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (ctx) => BelongMessagesView(
+                                onBackToHome: () => Navigator.of(ctx).pop(),
+                                initialComposeRecipients: [recipient],
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 10),
                     ],
@@ -425,10 +464,11 @@ class _SelfMemberCard extends StatelessWidget {
 }
 
 class _FellowshipMemberCard extends StatelessWidget {
-  const _FellowshipMemberCard({required this.member, required this.onTap});
+  const _FellowshipMemberCard({required this.member, required this.onTap, this.onMessageTap});
 
   final DevFellowshipMember member;
   final VoidCallback onTap;
+  final VoidCallback? onMessageTap;
 
   @override
   Widget build(BuildContext context) {
@@ -519,6 +559,18 @@ class _FellowshipMemberCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (onMessageTap != null)
+                    IconButton(
+                      key: Key('message_member_button_${member.accountId ?? member.name}'),
+                      icon: Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                      tooltip: 'Message ${member.name}',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onMessageTap,
+                    ),
                   const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey),
                 ],
               ),
