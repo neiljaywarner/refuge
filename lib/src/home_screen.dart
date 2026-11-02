@@ -413,9 +413,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 post: p,
                                 isContrast: isContrast,
                                 isHighlighted: highlightedPostId.value == p.id,
-                                onAddReaction: (reactionType) => activeRepository.addReaction(
+                                onAddReaction: (reactionType) => activeRepository.toggleReaction(
                                   postId: p.id,
                                   reactionType: reactionType,
+                                  userId: profile.userId,
+                                  displayName: profile.displayName,
+                                  avatarUrl: profile.avatarUrl,
                                 ),
                               );
                             }, childCount: posts.length),
