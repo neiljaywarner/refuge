@@ -10,6 +10,7 @@ import '../../../core/presentation/system_insets.dart';
 import '../../storage/data/storage_repository.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
+import '../data/vote_persist_failure_bus.dart';
 import '../data/vote_storage_service.dart';
 import '../domain/feedback_and_voting_models.dart';
 import '../domain/feedback_source_stamp.dart';
@@ -25,6 +26,10 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
   @override
   List<VotableFeatureItem> build() {
     final repo = ref.watch(featureVotingRepositoryProvider);
+    ref.read(votePersistFailureBusProvider).handler = (revertedItems, message) {
+      state = revertedItems;
+      ref.read(voteSaveErrorMessageProvider.notifier).state = message;
+    };
     _subscription?.cancel();
     _subscription = repo.watchFeatures().listen((updatedList) {
       final votedIds = VoteStorageService.instance.getVotedFeatureIds();
@@ -32,7 +37,10 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
       state = [
         for (final remote in updatedList)
           remote.copyWith(
-            userVoted: votedIds.contains(remote.id) || (currentMap[remote.id]?.userVoted ?? false),
+            userVoted:
+                remote.userVoted ||
+                votedIds.contains(remote.id) ||
+                (currentMap[remote.id]?.userVoted ?? false),
           ),
       ];
     });
@@ -43,6 +51,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
   }
 
   void toggleVote(String featureId) {
+    ref.read(voteSaveErrorMessageProvider.notifier).state = null;
     final repo = ref.read(featureVotingRepositoryProvider);
     state = repo.toggleVote(state, featureId);
   }
@@ -297,6 +306,10 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                         ],
                       ),
                     ),
+                    if (ref.watch(voteSaveErrorMessageProvider) != null) ...[
+                      const SizedBox(height: 12),
+                      _VoteSaveErrorBanner(message: ref.watch(voteSaveErrorMessageProvider)!),
+                    ],
                     const SizedBox(height: 12),
                     for (final item in features)
                       Card(
@@ -341,48 +354,11 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  _webLabeledButton(
-                                    label: item.userVoted
-                                        ? 'Remove vote for ${item.title}'
-                                        : 'Vote for ${item.title}',
-                                    identifier: 'vote_${item.id}',
-                                    onTap: () {
-                                      HapticFeedback.selectionClick();
+                                  _VoteTallyButton(
+                                    item: item,
+                                    onToggle: () {
                                       ref.read(featureVotingProvider.notifier).toggleVote(item.id);
                                     },
-                                    child: Tooltip(
-                                      message: item.userVoted
-                                          ? 'Remove vote for ${item.title}'
-                                          : 'Vote for ${item.title}',
-                                      child: OutlinedButton.icon(
-                                        key: Key('vote_button_${item.id}'),
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: item.userVoted
-                                              ? colorScheme.primaryContainer
-                                              : null,
-                                        ),
-                                        onPressed: () {
-                                          HapticFeedback.selectionClick();
-                                          ref
-                                              .read(featureVotingProvider.notifier)
-                                              .toggleVote(item.id);
-                                        },
-                                        icon: Icon(
-                                          item.userVoted
-                                              ? Icons.thumb_up
-                                              : Icons.thumb_up_alt_outlined,
-                                          size: 16,
-                                          color: item.userVoted ? colorScheme.primary : null,
-                                        ),
-                                        label: Text(
-                                          '${item.votes}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: item.userVoted ? colorScheme.primary : null,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
                                   ),
                                 ],
                               ),
@@ -826,6 +802,82 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VoteSaveErrorBanner extends StatelessWidget {
+  const _VoteSaveErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      key: const Key('vote_save_error_banner'),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Semantics(
+        identifier: 'vote_save_error',
+        label: message,
+        container: true,
+        child: Text(
+          message,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onErrorContainer,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VoteTallyButton extends StatelessWidget {
+  const _VoteTallyButton({required this.item, required this.onToggle});
+
+  final VotableFeatureItem item;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final label = item.userVoted ? 'Remove vote for ${item.title}' : 'Vote for ${item.title}';
+    return Semantics(
+      label: label,
+      identifier: 'vote_${item.id}',
+      button: true,
+      container: true,
+      child: Tooltip(
+        message: label,
+        child: OutlinedButton.icon(
+          key: Key('vote_button_${item.id}'),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: item.userVoted ? colorScheme.primaryContainer : null,
+          ),
+          onPressed: () {
+            HapticFeedback.selectionClick();
+            onToggle();
+          },
+          icon: Icon(
+            item.userVoted ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+            size: 16,
+            color: item.userVoted ? colorScheme.primary : null,
+          ),
+          label: Text(
+            '${item.votes}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: item.userVoted ? colorScheme.primary : null,
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -14,6 +14,7 @@ import 'github_feedback_client.dart';
 import 'member_feedback_bridge.dart';
 import '../../../core/logging/app_logger.dart';
 import 'resilient_feature_voting_repository.dart';
+import 'vote_persist_failure_bus.dart';
 import 'vote_storage_service.dart';
 
 /// Identifies which backend adapter is active for Feature Voting & Feedback.
@@ -318,6 +319,7 @@ class FirebaseFeatureVotingRepository
     this.feedbackForward,
     this.memberId,
     this.persistFeedbackDocument,
+    this.votePersistFailureBus,
   });
 
   final String featuresCollectionPath;
@@ -329,6 +331,8 @@ class FirebaseFeatureVotingRepository
 
   /// Test hook that stores the note and returns its id. Production uses Firestore.
   final Future<String?> Function(Map<String, dynamic> data)? persistFeedbackDocument;
+
+  final VotePersistFailureBus? votePersistFailureBus;
 
   @override
   final GitHubFeedbackClient? gitHubClient;
@@ -412,6 +416,7 @@ class FirebaseFeatureVotingRepository
     final List<VotableFeatureItem> next;
     if (uid != null) {
       final item = current.firstWhere((e) => e.id == featureId);
+      final priorItem = item;
       final wantVoted = !item.userVoted;
       VoteStorageService.instance.setFeatureVoted(featureId, wantVoted);
       next = [
@@ -424,26 +429,26 @@ class FirebaseFeatureVotingRepository
           else
             voteItem,
       ];
+      final fs = firestore;
+      if (fs != null) {
+        final targetItem = next.firstWhere((e) => e.id == featureId);
+        unawaited(
+          _persistSignedInVote(
+            fs: fs,
+            featureId: featureId,
+            targetItem: targetItem,
+            priorItem: priorItem,
+            uid: uid,
+            wantVoted: targetItem.userVoted,
+            optimisticNext: next,
+          ),
+        );
+      }
+      return next;
     } else {
       next = super.toggleVote(current, featureId);
     }
 
-    final fs = firestore;
-    if (fs == null || uid == null) {
-      return next;
-    }
-
-    final targetItem = next.firstWhere((e) => e.id == featureId);
-    unawaited(
-      _persistSignedInVote(
-        fs: fs,
-        featureId: featureId,
-        targetItem: targetItem,
-        uid: uid,
-        wantVoted: targetItem.userVoted,
-        optimisticNext: next,
-      ),
-    );
     return next;
   }
 
@@ -451,6 +456,7 @@ class FirebaseFeatureVotingRepository
     required FirebaseFirestore fs,
     required String featureId,
     required VotableFeatureItem targetItem,
+    required VotableFeatureItem priorItem,
     required String uid,
     required bool wantVoted,
     required List<VotableFeatureItem> optimisticNext,
@@ -489,7 +495,11 @@ class FirebaseFeatureVotingRepository
       });
     } catch (error, stack) {
       AppLogger.warning('feature_votes persist failed for $featureId', error, stack);
-      // Keep optimistic UI when Firestore is unreachable; thumb memory stays local.
+      VoteStorageService.instance.setFeatureVoted(featureId, priorItem.userVoted);
+      final reverted = [
+        for (final voteItem in optimisticNext) voteItem.id == featureId ? priorItem : voteItem,
+      ];
+      votePersistFailureBus?.report(reverted, kVoteDidNotSaveMessage);
     }
   }
 
@@ -613,17 +623,27 @@ class FirebaseFeatureVotingRepository
 /// Defaults to [BackendTarget.firebase] for v0.8.0-alpha shared cloud persistence.
 final featureVotingBackendTargetProvider = Provider<BackendTarget>((ref) => BackendTarget.firebase);
 
+final votePersistFailureBusProvider = Provider<VotePersistFailureBus>(
+  (ref) => VotePersistFailureBus(),
+);
+
+final voteSaveErrorMessageProvider = StateProvider<String?>((ref) => null);
+
 /// Provides the active [FeatureVotingRepository] implementation.
 final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) {
   final target = ref.watch(featureVotingBackendTargetProvider);
   final gitHubClient = ref.watch(gitHubFeedbackClientProvider);
+  final votePersistBus = ref.watch(votePersistFailureBusProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryFeatureVotingRepository(gitHubClient: gitHubClient),
     BackendTarget.serverpod ||
     BackendTarget.appwrite ||
     BackendTarget.firebase => ResilientFeatureVotingRepository(
       target: target,
-      primary: FirebaseFeatureVotingRepository(gitHubClient: gitHubClient),
+      primary: FirebaseFeatureVotingRepository(
+        gitHubClient: gitHubClient,
+        votePersistFailureBus: votePersistBus,
+      ),
     ),
   };
 });
