@@ -21,7 +21,6 @@ class ReflectionPostMedia extends StatefulWidget {
   final String? semanticLabel;
 
   /// True when the client can attempt to decode or fetch this attachment.
-  @visibleForTesting
   static bool isRenderableUrl(String? raw) {
     final trimmed = raw?.trim() ?? '';
     if (trimmed.isEmpty) return false;
