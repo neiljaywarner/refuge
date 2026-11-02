@@ -1,0 +1,53 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/wiki/**'
+      - 'tool/refuge_cli.dart'
+      - '.github/workflows/sync-wiki.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-wiki
+  cancel-in-progress: false
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Sync docs/wiki to GitHub Wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          WIKI_DIR="$(mktemp -d)"
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" "${WIKI_DIR}"
+          rsync -av --include='*/' \
+            --include='*.md' \
+            --include='*.png' \
+            --include='*.jpg' \
+            --include='*.jpeg' \
+            --include='*.gif' \
+            --include='*.webp' \
+            --include='*.svg' \
+            --include='*.mp4' \
+            --exclude='*' \
+            docs/wiki/ "${WIKI_DIR}/"
+          cd "${WIKI_DIR}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+          git commit -m "docs(wiki): auto-sync from docs/wiki (${GITHUB_SHA::7})"
+          git push origin HEAD
