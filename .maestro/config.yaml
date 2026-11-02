@@ -18,6 +18,10 @@
 # submit registration. It reads credentials from the environment only.
 # dev_e2e_*.yaml is also known-gap. Run it with:
 #   MAESTRO_TEST_PASSWORD=... dart run tool/dev_yopmail_e2e.dart
+# Saved dev account for #721–731 flows:
+#   BELONG_DEV_E2E_EMAIL=belong-dev-maestro@yopmail.com
+#   maestro test .maestro/dev_saved_account_register_once.yaml (once)
+#   then flows with subflows/dev_saved_account_home.yaml
 # The password is a GitHub secret named MAESTRO_TEST_PASSWORD. Never commit it.
 # Feed-sort flows that assumed Demo Mode / guest browse are tagged known-gap
 # after #601 (members-only wall). sign_in_wall_unsigned.yaml covers unsigned

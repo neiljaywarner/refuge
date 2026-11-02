@@ -1,0 +1,50 @@
+appId: com.belongonthespectrum.refuge.dev
+# One-time: create belong-dev-maestro@yopmail.com on the dev package.
+# Uses BELONG_DEV_E2E_EMAIL and MAESTRO_TEST_PASSWORD from the environment.
+tags:
+  - known-gap
+  - dev-only
+  - e2e
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*Sign in to Belong on the Spectrum.*"
+    timeout: 45000
+- tapOn: ".*Register.*"
+- tapOn: ".*Email.*"
+- inputText: ${BELONG_DEV_E2E_EMAIL}
+- tapOn: ".*Password.*"
+- inputText: ${MAESTRO_TEST_PASSWORD}
+- tapOn: "Confirm your password|Confirm password"
+- inputText: ${MAESTRO_TEST_PASSWORD}
+- hideKeyboard
+- tapOn:
+    text: "^Register$"
+    below: "Confirm your password|Confirm password"
+    index: 0
+- extendedWaitUntil:
+    visible: ".*(Save & Enter Belong|Feed|Vote & Feedback|already exists|already in use|network error).*"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: ".*already exists.*"
+    commands:
+      - tapOn: "Sign in"
+      - extendedWaitUntil:
+          visible: ".*Sign in to Belong on the Spectrum.*"
+          timeout: 30000
+      - runFlow:
+          file: subflows/dev_saved_account_home.yaml
+- runFlow:
+    when:
+      visible: "Save & Enter Belong"
+    commands:
+      - tapOn: ".*Display name.*"
+      - inputText: "Fellow Member"
+      - tapOn: ".*congregation.*"
+      - tapOn: "I am not a member of an ICOC church"
+      - tapOn: "Save & Enter Belong"
+      - extendedWaitUntil:
+          visible: ".*(Feed|Vote & Feedback).*"
+          timeout: 30000

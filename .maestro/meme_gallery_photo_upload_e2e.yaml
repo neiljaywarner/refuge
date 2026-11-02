@@ -25,6 +25,9 @@ tags:
     clearState: false
     stopApp: true
 
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+
 - extendedWaitUntil:
     visible: ".*Vote & Feedback.*"
     timeout: 45000
