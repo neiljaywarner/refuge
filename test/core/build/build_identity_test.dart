@@ -210,11 +210,7 @@ Source: dev''');
     });
 
     test('version.json carries the stamp next to the existing release fields', () {
-      final stamp = ReleaseBuildStamp(
-        gitSha: _sha,
-        buildTimeMs: builtAtMs,
-        releaseTag: 'v0.9.1',
-      );
+      final stamp = ReleaseBuildStamp(gitSha: _sha, buildTimeMs: builtAtMs, releaseTag: 'v0.9.1');
       final payload = webVersionPayload(
         releaseTag: 'v0.9.1',
         pubspecVersionLine: '0.9.1+2',
