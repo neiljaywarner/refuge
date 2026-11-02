@@ -475,7 +475,7 @@ String? resolveGcloudExecutable() {
   return null;
 }
 
-/// Extracts the deployed preview channel URL from `firebase hosting:channel:deploy --json` output (#825).
+/// Extracts the deployed preview channel URL from `hosting:channel:deploy --json` (#825).
 String? extractHostingChannelPreviewUrl(String jsonOut) {
   final match = RegExp(r'"url"\s*:\s*"(https://[^"]+)"').firstMatch(jsonOut);
   return match?.group(1);
@@ -491,8 +491,9 @@ String buildDevReleaseNotes({
   required String packageId,
   required String gitSha,
 }) {
-  final previewLine = (previewChannelUrl != null && previewChannelUrl.trim().isNotEmpty)
-      ? 'Please also try the web preview at ${previewChannelUrl.trim()} (or stable dev web: $devUrl)\n'
+  final trimmedPreview = previewChannelUrl?.trim();
+  final previewLine = (trimmedPreview != null && trimmedPreview.isNotEmpty)
+      ? 'Please also try the web preview at $trimmedPreview (or stable dev web: $devUrl)\n'
       : 'Please also try the web preview at $devUrl\n';
   return 'Dev Android $version\n'
       '$previewLine'
