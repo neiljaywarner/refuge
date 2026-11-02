@@ -15,9 +15,9 @@ tags:
     clearState: false
 
 - extendedWaitUntil:
-    visible: ".*Feed.*"
+    visible: ".*\\bFeed\\b.*"
     timeout: 45000
-- assertVisible: ".*Feed.*"
+- assertVisible: ".*\\bFeed\\b.*"
 - assertVisible: ".*Spaces.*"
 - tapOn: ".*Spaces.*"
 
@@ -55,4 +55,4 @@ tags:
 
 - tapOn: ".*Save & Return.*"
 - tapOn: ".*Home tab.*"
-- assertVisible: ".*Feed.*"
+- assertVisible: ".*\\bFeed\\b.*"

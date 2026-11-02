@@ -9,6 +9,8 @@ tags:
   - regression
 ---
 # Bottom nav is text ("Notifications tab"), not belong_bottom_nav_bar.
+# The tab is on Home, behind the members-only sign-in wall (#601).
+# An unsigned launch does not mean the Notifications tab was removed.
 # Filter chips are Inbox, Mentions, Direct Messages, Threads, Following.
 # Preferences control: "Calm Notification Preferences".
 

@@ -3,6 +3,7 @@ appId: com.belongonthespectrum.refuge.dev
 # Legacy com.belongonthespectrum.sanctuary is not the current applicationId.
 # See .maestro/config.yaml.
 ---
+# Requires Home. "Vote & Feedback" is behind the sign-in wall (#601).
 # Meme gallery on the live dev build (emulator accessibility tree).
 # Flutter Keys such as add_meme_gif_button, meme_upload_camera_button, and
 # meme_gallery_close_button are not resource ids in the tree.

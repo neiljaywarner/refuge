@@ -9,7 +9,7 @@ tags:
 - launchApp:
     clearState: false
 - extendedWaitUntil:
-    visible: ".*Feed.*"
+    visible: ".*\\bFeed\\b.*"
     timeout: 45000
 - assertVisible: ".*Spaces.*"
 - tapOn: ".*Spaces.*"

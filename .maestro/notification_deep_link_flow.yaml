@@ -10,6 +10,7 @@ tags:
 ---
 # Seeded rows are visible text, not notification_list_tile_* resource ids.
 # DM copy includes "sent you a direct message" and "Welcome to Belong".
+# "Notifications tab" is Home chrome behind the sign-in wall (#601).
 # Mention copy includes "mentioned you".
 
 - launchApp:

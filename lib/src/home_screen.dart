@@ -802,34 +802,39 @@ class RefugeHomeScreen extends HookConsumerWidget {
           else
             Padding(
               padding: const .only(right: 8),
-              child: InkWell(
-                key: const Key('belong_profile_avatar_button'),
-                borderRadius: .circular(999),
-                onTap: () => MemberProfileDialog.show(context),
-                child: Tooltip(
-                  message: 'Member Profile (${profile.displayName})',
-                  child: CircleAvatar(
-                    radius: 14,
-                    backgroundColor: isContrast
-                        ? Colors.yellow
-                        : primaryColor.withValues(alpha: 0.2),
-                    backgroundImage: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
-                        ? NetworkImage(profile.avatarUrl!)
-                        : null,
-                    onBackgroundImageError:
-                        (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
-                        ? (_, _) {}
-                        : null,
-                    child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
-                        ? Text(
-                            profile.initials,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: isContrast ? Colors.black : primaryColor,
-                            ),
-                          )
-                        : null,
+              child: Semantics(
+                button: true,
+                identifier: 'profile_avatar_button',
+                label: 'Member Profile',
+                child: InkWell(
+                  key: const Key('belong_profile_avatar_button'),
+                  borderRadius: .circular(999),
+                  onTap: () => MemberProfileDialog.show(context),
+                  child: Tooltip(
+                    message: 'Member Profile (${profile.displayName})',
+                    child: CircleAvatar(
+                      radius: 14,
+                      backgroundColor: isContrast
+                          ? Colors.yellow
+                          : primaryColor.withValues(alpha: 0.2),
+                      backgroundImage: (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
+                          ? NetworkImage(profile.avatarUrl!)
+                          : null,
+                      onBackgroundImageError:
+                          (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty)
+                          ? (_, _) {}
+                          : null,
+                      child: (profile.avatarUrl == null || profile.avatarUrl!.isEmpty)
+                          ? Text(
+                              profile.initials,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isContrast ? Colors.black : primaryColor,
+                              ),
+                            )
+                          : null,
+                    ),
                   ),
                 ),
               ),

@@ -40,5 +40,5 @@ tags:
       - tapOn: "I am not a member of an ICOC church"
       - tapOn: "Save & Enter Belong"
       - extendedWaitUntil:
-          visible: ".*Feed.*"
+          visible: ".*\\bFeed\\b.*"
           timeout: 30000

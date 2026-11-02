@@ -2,6 +2,7 @@ appId: com.belongonthespectrum.refuge.dev
 # Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
 name: "Calm shade preview tap only"
 ---
+# "Notifications tab" is Home chrome behind the sign-in wall (#601).
 - setPermissions:
     permissions:
       notifications: allow

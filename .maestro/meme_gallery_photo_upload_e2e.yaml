@@ -6,6 +6,7 @@ tags:
   - upload-e2e
   - issue-559
 ---
+# "Vote & Feedback" is Home chrome behind the sign-in wall (#601).
 # End-to-end: inject a test image into the device gallery, pick it from
 # Choose Photo, assert preview + attach, then confirm the composer banner.
 # Requires photos permission; does not open the system camera UI.
