@@ -5,7 +5,11 @@ appId: com.belongonthespectrum.refuge.dev
 # "Vote & Feedback" is Home chrome behind the sign-in wall (#601).
 # "Calm Tech • Live" or "Calm Tech • Resilient". Space titles live under Spaces.
 
-- launchApp
+- launchApp:
+    clearState: false
+
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
 
 - extendedWaitUntil:
     visible: ".*Vote & Feedback.*"

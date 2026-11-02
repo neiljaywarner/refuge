@@ -9,7 +9,12 @@ tags:
 ---
 # "Vote & Feedback" is the Home subheader chip. Unsigned launch stays on
 # the sign-in wall (#601), so a missing chip there is not a removed entry.
-- launchApp
+- launchApp:
+    clearState: false
+
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+
 - extendedWaitUntil:
     visible: ".*Vote & Feedback.*"
     timeout: 45000

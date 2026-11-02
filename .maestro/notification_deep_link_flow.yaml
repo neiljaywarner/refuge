@@ -16,6 +16,9 @@ tags:
 - launchApp:
     clearState: false
 
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+
 - extendedWaitUntil:
     visible: ".*Notifications tab.*"
     timeout: 45000

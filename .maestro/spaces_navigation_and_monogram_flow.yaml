@@ -7,6 +7,9 @@ appId: com.belongonthespectrum.refuge.dev
 - launchApp:
     clearState: false
 
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+
 - extendedWaitUntil:
     visible: ".*\\bFeed\\b.*"
     timeout: 45000

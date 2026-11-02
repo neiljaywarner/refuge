@@ -1,0 +1,36 @@
+appId: com.belongonthespectrum.refuge.dev
+# Requires BELONG_DEV_E2E_EMAIL and MAESTRO_TEST_PASSWORD in the environment.
+# Dev package only. Never commit a password.
+---
+- runFlow:
+    when:
+      visible: ".*Sign in to Belong on the Spectrum.*"
+    commands:
+      - tapOn: ".*Email.*"
+      - inputText: ${BELONG_DEV_E2E_EMAIL}
+      - tapOn: ".*Password.*"
+      - inputText: ${MAESTRO_TEST_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          text: ".*Sign [Ii]n.*"
+          index: 0
+      - extendedWaitUntil:
+          visible: ".*(Save & Enter Belong|Feed|Vote & Feedback).*"
+          timeout: 60000
+
+- runFlow:
+    when:
+      visible: "Save & Enter Belong"
+    commands:
+      - tapOn: ".*Display name.*"
+      - inputText: "Fellow Member"
+      - tapOn: ".*congregation.*"
+      - tapOn: "I am not a member of an ICOC church"
+      - tapOn: "Save & Enter Belong"
+      - extendedWaitUntil:
+          visible: ".*(Feed|Vote & Feedback).*"
+          timeout: 30000
+
+- extendedWaitUntil:
+    visible: ".*(Feed|Vote & Feedback|Notifications tab).*"
+    timeout: 45000
