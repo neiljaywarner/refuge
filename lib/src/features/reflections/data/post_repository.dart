@@ -13,6 +13,18 @@ abstract class PostRepository {
   /// that were stored before the uid was written.
   Future<int> deleteByAuthor({required String authorName, String? authorId});
   Future<void> addReaction({required String postId, required String reactionType});
+
+  /// Toggles a member's care reaction on [postId].
+  ///
+  /// If the member already reacted with [reactionType], the reaction is removed (-1).
+  /// If not, the reaction is recorded (+1) with member attribution.
+  Future<void> toggleReaction({
+    required String postId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    String? avatarUrl,
+  });
   Stream<List<Post>> watchPosts({required String spaceKey});
   Future<String?> getQuietDigest({required String spaceKey});
   Future<List<Post>> getPostsByAuthor({required String authorName});

@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../admin/data/authored_document_erase.dart';
 import '../domain/comment.dart';
+import '../domain/reaction_member.dart';
 import 'comment_repository.dart';
 
 /// In-memory, broadcast stream implementation of [CommentRepository] with
@@ -244,13 +245,62 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
-  Future<void> addReaction({required String commentId, required String reactionType}) async {
+  Future<void> addReaction({required String commentId, required String reactionType}) =>
+      toggleReaction(
+        commentId: commentId,
+        reactionType: reactionType,
+        userId: 'current_user',
+        displayName: 'Fellowship Member',
+      );
+
+  @override
+  Future<void> toggleReaction({
+    required String commentId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    String? avatarUrl,
+  }) async {
     final index = _store.indexWhere((c) => c.id == commentId);
     if (index != -1) {
       final existing = _store[index];
+      final currentMembers = List<ReactionMember>.from(
+        existing.reactionMembers[reactionType] ?? const [],
+      );
+      final existingIndex = currentMembers.indexWhere((m) => m.userId == userId);
+
+      final updatedReactionMembers = Map<String, List<ReactionMember>>.from(
+        existing.reactionMembers,
+      );
       final updatedReactions = Map<String, int>.from(existing.reactions);
-      updatedReactions[reactionType] = (updatedReactions[reactionType] ?? 0) + 1;
-      _store[index] = existing.copyWith(reactions: updatedReactions);
+      int incrementAmount = 1;
+
+      if (existingIndex != -1) {
+        // Toggle OFF
+        currentMembers.removeAt(existingIndex);
+        final currentCount = updatedReactions[reactionType] ?? 1;
+        updatedReactions[reactionType] = currentCount > 0 ? currentCount - 1 : 0;
+        incrementAmount = -1;
+      } else {
+        // Toggle ON
+        currentMembers.add(
+          ReactionMember(
+            userId: userId,
+            displayName: displayName,
+            avatarUrl: avatarUrl,
+            timestamp: DateTime.now(),
+          ),
+        );
+        final currentCount = updatedReactions[reactionType] ?? 0;
+        updatedReactions[reactionType] = currentCount + 1;
+        incrementAmount = 1;
+      }
+
+      updatedReactionMembers[reactionType] = currentMembers;
+      _store[index] = existing.copyWith(
+        reactions: updatedReactions,
+        reactionMembers: updatedReactionMembers,
+      );
       _controller.add(List.unmodifiable(_store));
 
       final fs = firestore;
@@ -259,7 +309,7 @@ class LocalCommentRepository implements CommentRepository {
           await fs
               .collection(collectionName)
               .doc(commentId)
-              .update({'reactions.$reactionType': FieldValue.increment(1)})
+              .update({'reactions.$reactionType': FieldValue.increment(incrementAmount)})
               .timeout(_firestoreTimeout);
         } catch (_) {
           // Silent edge fallback

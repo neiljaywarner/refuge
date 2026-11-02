@@ -7,10 +7,12 @@ import '../../../core/firebase/community_analytics_service.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
 import '../../fellowship_spaces/domain/fellowship_space.dart';
+import '../../auth/data/auth_repository.dart';
 import '../../profile/domain/member_profile.dart';
 import '../../profile/presentation/other_member_profile_dialog.dart';
 import '../data/post_repository.dart';
 import '../domain/post.dart';
+import 'reaction_details_sheet.dart';
 import 'reflection_post_media.dart';
 import 'reflections_providers.dart';
 import 'threaded_discussion_sheet.dart';
@@ -36,6 +38,19 @@ class ReflectionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMeme = post.toneTag.contains('Meme');
     final text = BelongTextStyles.of(context);
+
+    String? currentUserId;
+    try {
+      currentUserId = ref.watch(authRepositoryProvider).currentSession().userId;
+    } catch (_) {
+      // Graceful fallback for minimal widget tests without AuthRepository
+      currentUserId = null;
+    }
+
+    final hasPrayed = post.hasMemberReacted('pray', currentUserId);
+    final hasSupported = post.hasMemberReacted('peace', currentUserId);
+    final hasEncouraged = post.hasMemberReacted('encouraged', currentUserId);
+    final hasRelated = post.hasMemberReacted('relatable', currentUserId);
 
     return Container(
       key: Key('reflection_card_${post.id}'),
@@ -273,58 +288,48 @@ class ReflectionCard extends ConsumerWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const .symmetric(horizontal: 8),
-                  ),
-                  onPressed: () => onAddReaction('pray'),
-                  icon: const Text('🙏', style: TextStyle(fontSize: 12)),
-                  label: Text(
-                    '${post.reactions['pray'] ?? 0} Praying',
-                    style: const TextStyle(fontSize: 11),
-                  ),
+                _buildReactionButton(
+                  context: context,
+                  type: 'pray',
+                  emoji: '🙏',
+                  label: 'Praying',
+                  hasReacted: hasPrayed,
+                  count: post.countForReaction('pray'),
+                  key: Key('reaction_button_pray_${post.id}'),
                 ),
                 const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const .symmetric(horizontal: 8),
-                  ),
-                  onPressed: () => onAddReaction('peace'),
-                  icon: const Text('🤍', style: TextStyle(fontSize: 12)),
-                  label: Text(
-                    '${post.reactions['peace'] ?? 0} Support',
-                    style: const TextStyle(fontSize: 11),
-                  ),
+                _buildReactionButton(
+                  context: context,
+                  type: 'peace',
+                  emoji: '🤍',
+                  label: 'Support',
+                  hasReacted: hasSupported,
+                  count: post.countForReaction('peace'),
+                  key: Key('reaction_button_peace_${post.id}'),
                 ),
                 if (post.reactions.containsKey('encouraged') ||
-                    post.reactions.containsKey('relatable')) ...[
+                    post.reactions.containsKey('relatable') ||
+                    post.reactionMembers.containsKey('encouraged') ||
+                    post.reactionMembers.containsKey('relatable')) ...[
                   const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const .symmetric(horizontal: 8),
-                    ),
-                    onPressed: () => onAddReaction('encouraged'),
-                    icon: const Text('🌱', style: TextStyle(fontSize: 12)),
-                    label: Text(
-                      '${post.reactions['encouraged'] ?? 0} Encouraged',
-                      style: const TextStyle(fontSize: 11),
-                    ),
+                  _buildReactionButton(
+                    context: context,
+                    type: 'encouraged',
+                    emoji: '🌱',
+                    label: 'Encouraged',
+                    hasReacted: hasEncouraged,
+                    count: post.countForReaction('encouraged'),
+                    key: Key('reaction_button_encouraged_${post.id}'),
                   ),
                   const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const .symmetric(horizontal: 8),
-                    ),
-                    onPressed: () => onAddReaction('relatable'),
-                    icon: const Text('😄', style: TextStyle(fontSize: 12)),
-                    label: Text(
-                      '${post.reactions['relatable'] ?? 0} Relatable',
-                      style: const TextStyle(fontSize: 11),
-                    ),
+                  _buildReactionButton(
+                    context: context,
+                    type: 'relatable',
+                    emoji: '😄',
+                    label: 'Relatable',
+                    hasReacted: hasRelated,
+                    count: post.countForReaction('relatable'),
+                    key: Key('reaction_button_relatable_${post.id}'),
                   ),
                 ],
                 const SizedBox(width: 8),
@@ -336,7 +341,7 @@ class ReflectionCard extends ConsumerWidget {
                       key: Key('discussion_button_${post.id}'),
                       style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const .symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       onPressed:
                           onOpenDiscussion ??
@@ -353,6 +358,52 @@ class ReflectionCard extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReactionButton({
+    required BuildContext context,
+    required String type,
+    required String emoji,
+    required String label,
+    required bool hasReacted,
+    required int count,
+    required Key key,
+  }) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: 'Tap to ${hasReacted ? 'remove' : 'add'} reaction • Long-press to see who reacted',
+      child: GestureDetector(
+        onLongPress: () =>
+            ReactionDetailsSheet.show(context, post: post, initialReactionType: type),
+        child: OutlinedButton.icon(
+          key: key,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: hasReacted
+                ? (isContrast
+                      ? const Color(0xFF2A2A00)
+                      : theme.colorScheme.primary.withValues(alpha: 0.15))
+                : null,
+            side: BorderSide(
+              color: hasReacted
+                  ? (isContrast ? Colors.yellow : theme.colorScheme.primary)
+                  : (isContrast ? Colors.white : theme.dividerColor),
+              width: hasReacted ? 1.5 : 1.0,
+            ),
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          onPressed: () => onAddReaction(type),
+          icon: Text(emoji, style: const TextStyle(fontSize: 12)),
+          label: Text(
+            '$count $label',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: hasReacted ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
       ),
     );
   }

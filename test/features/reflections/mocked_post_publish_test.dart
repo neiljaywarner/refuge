@@ -25,6 +25,9 @@ class _ImageHttpClient extends Fake implements HttpClient {
 
   @override
   Future<HttpClientRequest> openUrl(String method, Uri url) async => _ImageRequest();
+
+  @override
+  set badCertificateCallback(bool Function(X509Certificate cert, String host, int port)? callback) {}
 }
 
 class _ImageHeaders extends Fake implements HttpHeaders {
@@ -208,6 +211,23 @@ void main() {
         (invocation) => local.addReaction(
           postId: invocation.namedArguments[#postId] as String,
           reactionType: invocation.namedArguments[#reactionType] as String,
+        ),
+      );
+      when(
+        () => repo.toggleReaction(
+          postId: any(named: 'postId'),
+          reactionType: any(named: 'reactionType'),
+          userId: any(named: 'userId'),
+          displayName: any(named: 'displayName'),
+          avatarUrl: any(named: 'avatarUrl'),
+        ),
+      ).thenAnswer(
+        (invocation) => local.toggleReaction(
+          postId: invocation.namedArguments[#postId] as String,
+          reactionType: invocation.namedArguments[#reactionType] as String,
+          userId: invocation.namedArguments[#userId] as String,
+          displayName: invocation.namedArguments[#displayName] as String,
+          avatarUrl: invocation.namedArguments[#avatarUrl] as String?,
         ),
       );
     });
@@ -412,11 +432,14 @@ void main() {
         await Future<void>.value();
       }
 
-      expect(seen.last.map((post) => post.content).toList(), [
+      final nonCanonical = seen.last
+          .where((post) => !post.id.startsWith('canonical-'))
+          .toList();
+      expect(nonCanonical.map((post) => post.content).toList(), [
         'A second note.',
         'Revised reading.',
       ]);
-      expect(seen.last.first.id, '8');
+      expect(nonCanonical.first.id, '8');
       expect(repo.isLiveConnected, isTrue);
 
       final digest = await repo.getQuietDigest(spaceKey: 'memes');

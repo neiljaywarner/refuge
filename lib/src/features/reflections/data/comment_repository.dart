@@ -18,6 +18,18 @@ abstract class CommentRepository {
   /// Increments a care reaction tally for a comment.
   Future<void> addReaction({required String commentId, required String reactionType});
 
+  /// Toggles a member's care reaction on [commentId].
+  ///
+  /// If the member already reacted with [reactionType], the reaction is removed (-1).
+  /// If not, the reaction is recorded (+1) with member attribution.
+  Future<void> toggleReaction({
+    required String commentId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    String? avatarUrl,
+  });
+
   /// Asynchronously watches live comment additions and reaction updates for a post.
   Stream<List<Comment>> watchComments({required String postId});
 

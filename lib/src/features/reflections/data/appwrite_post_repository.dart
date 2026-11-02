@@ -299,8 +299,29 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
   }
 
   @override
-  Future<void> addReaction({required String postId, required String reactionType}) async {
-    await _fallback.addReaction(postId: postId, reactionType: reactionType);
+  Future<void> addReaction({required String postId, required String reactionType}) =>
+      toggleReaction(
+        postId: postId,
+        reactionType: reactionType,
+        userId: 'current_user',
+        displayName: 'Fellowship Member',
+      );
+
+  @override
+  Future<void> toggleReaction({
+    required String postId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    String? avatarUrl,
+  }) async {
+    await _fallback.toggleReaction(
+      postId: postId,
+      reactionType: reactionType,
+      userId: userId,
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+    );
     final column = reactionColumn(reactionType);
     final fs = firestore;
     if (fs != null && column != null) {

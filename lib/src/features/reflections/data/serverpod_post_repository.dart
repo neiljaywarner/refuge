@@ -166,9 +166,29 @@ class ServerpodPostRepository implements PostRepository {
   }
 
   @override
-  Future<void> addReaction({required String postId, required String reactionType}) async {
-    // 1. Immediately mirror to local fallback for sub-16ms latency
-    _fallback.addReaction(postId: postId, reactionType: reactionType);
+  Future<void> addReaction({required String postId, required String reactionType}) =>
+      toggleReaction(
+        postId: postId,
+        reactionType: reactionType,
+        userId: 'current_user',
+        displayName: 'Fellowship Member',
+      );
+
+  @override
+  Future<void> toggleReaction({
+    required String postId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    String? avatarUrl,
+  }) async {
+    await _fallback.toggleReaction(
+      postId: postId,
+      reactionType: reactionType,
+      userId: userId,
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+    );
 
     // Dual-redundancy: dispatch to Firebase Cloud Firestore
     final fs = firestore;
