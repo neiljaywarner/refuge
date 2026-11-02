@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -81,6 +80,43 @@ void main() {
     expect(find.textContaining('github.com/neiljaywarner/refuge/commit/'), findsNothing);
     expect(BuildIdentity.fromEnvironment.commitLabel, 'unknown');
     expect(BuildIdentity.fromEnvironment.sourceLabel, 'dev');
+  });
+
+  testWidgets('Copy build info puts the stamp on the clipboard', (tester) async {
+    final builtAt = DateTime.utc(2026, 10, 24, 22, 42, 2, 123);
+    final builtAtMs = builtAt.millisecondsSinceEpoch;
+    final identity = BuildIdentity(
+      gitCommitSha: _sha,
+      buildTimeMs: '$builtAtMs',
+      releaseTag: 'v0.9.1',
+    );
+    String? clipboardText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (methodCall) async {
+        if (methodCall.method == 'Clipboard.setData') {
+          clipboardText = methodCall.arguments['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await openAbout(
+      tester,
+      identity: identity,
+      loadVersion: () async => const AppVersionLabel(version: '0.9.1', buildNumber: '2'),
+    );
+
+    await tester.ensureVisible(find.byKey(const Key('about_copy_build_info_button')));
+    await tester.tap(find.byKey(const Key('about_copy_build_info_button')));
+    await tester.pumpAndSettle();
+
+    expect(clipboardText, identity.supportClipboardBlock(versionLine: 'v0.9.1+2'));
+    expect(find.text('Build info copied to clipboard'), findsOneWidget);
   });
 
   testWidgets('invalid defines stay unknown and are not labeled as a SHA', (tester) async {

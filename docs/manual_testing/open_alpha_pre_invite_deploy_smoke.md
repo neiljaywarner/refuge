@@ -69,9 +69,11 @@ Immediately after deployment completes, verify that the live site is serving the
    - Open [https://belongonthespectrum.web.app](https://belongonthespectrum.web.app) in an incognito/private browser window.
    - Click the **About** (`info_outline`) button in the top AppBar.
    - Verify the displayed:
-     - **Version tag**: matches your deploy tag (e.g. `v0.8.0-alpha`)
-     - **Git Commit SHA**: 7-character short commit hash matching `git rev-parse --short HEAD`
-     - **Build Time**: UTC timestamp corresponding to your deployment run.
+     - **Version**: pubspec version + build number (e.g. `v0.9.1+2`)
+     - **Git commit**: full 40-character SHA matching `version.json` → `git_sha`
+     - **Build time**: UTC line matching `version.json` → `build_time_utc` and `build_time_ms`
+     - **Release** (when present): matches your deploy `--version` tag
+   - Tap **Copy build info** and paste into a scratch note. Confirm the block includes version, git commit, build time, release (if any), and the GitHub commit URL.
 
 ---
 

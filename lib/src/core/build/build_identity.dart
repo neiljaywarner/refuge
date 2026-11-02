@@ -105,4 +105,21 @@ class BuildIdentity {
 
   /// `dev` for an unstamped local binary. Null when any define was supplied.
   String? get sourceLabel => isLocalDevBuild ? 'dev' : null;
+
+  /// Plain-text block for support threads, GitHub issues, and deploy audits.
+  ///
+  /// [versionLine] matches the About dialog (`v0.9.1+2` or `unknown`).
+  String supportClipboardBlock({required String versionLine}) {
+    final buffer = StringBuffer()
+      ..writeln('Version: $versionLine')
+      ..writeln('Git commit: $commitLabel')
+      ..writeln('Build time: $buildTimeLine');
+    final release = releaseTagOrNull;
+    if (release != null) buffer.writeln('Release: $release');
+    final url = commitUrl;
+    if (url != null) buffer.writeln(url);
+    final source = sourceLabel;
+    if (source != null) buffer.writeln('Source: $source');
+    return buffer.toString().trimRight();
+  }
 }
