@@ -35,6 +35,7 @@
 * **[🔔 Notifications Technical Architecture & State](Notifications-Technical-Architecture)**
 * **[🗄️ Backend & Database Architecture](Backend-and-Database-Architecture)**
 * **[📡 Dual Observability, Analytics & Crash Reporting](Observability-Crashlytics-Analytics-and-Diagnostics)**
+* **[⏸️ Appwrite Free Pause and Session Audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit)**
 * **[🧪 QA, Device Driving & Beta Testing](QA-and-Beta-Testing-Guide)**
 * **[🎥 Maestro UI Tests](Maestro-UI-Tests)**
 * **[📱 Real Device Driving & Maestro Automation](https://github.com/neiljaywarner/refuge/blob/main/docs/real_device_driving_and_automation.md)**

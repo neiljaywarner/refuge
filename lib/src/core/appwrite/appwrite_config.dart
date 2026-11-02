@@ -20,6 +20,8 @@ class AppwriteConfig {
   static const belongDatabaseId = 'belong_community_db';
   static const reflectionTableId = 'reflection_posts';
   static const quietDigestTableId = 'quiet_digests';
+  static const clientSessionAuditsTableId = 'client_session_audits';
+  static const clientSessionWeeklySummariesTableId = 'client_session_weekly_summaries';
 
   /// Reads `--dart-define=APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, and
   /// `APPWRITE_DATABASE_ID`. Defaults point at the live belong project.
