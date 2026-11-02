@@ -109,14 +109,42 @@ class _PhoneInstallGuideViewState extends State<PhoneInstallGuideView> {
                     title: 'Android open beta',
                     status: 'Open beta',
                     pending: false,
-                    blurb: 'This Android open beta is for everyday use until the Play Store opens.',
+                    blurb:
+                        'This Android open beta is for everyday use until the Play Store opens. '
+                        'The first time, Google asks you to sign in and tap Sign up. That lets Belong '
+                        'know your email so we can hand you the app. It is not a waitlist, and you do '
+                        'not create a Firebase account.',
                     expanded: _open.contains('android-beta'),
                     onToggle: () => _toggle('android-beta'),
-                    leading: FilledButton.icon(
-                      key: const ValueKey('phone_install_open_beta_button'),
-                      onPressed: () => openPhoneInstallLink(PhoneInstallLinks.androidBeta),
-                      icon: const Icon(Icons.android_rounded),
-                      label: const Text('Open the Android beta'),
+                    leading: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            FilledButton.icon(
+                              key: const ValueKey('phone_install_open_beta_button'),
+                              onPressed: () => openPhoneInstallLink(PhoneInstallLinks.androidBeta),
+                              icon: const Icon(Icons.android_rounded),
+                              label: const Text('Open the Android beta'),
+                            ),
+                            IconButton(
+                              key: const ValueKey('phone_install_beta_info'),
+                              tooltip: 'What Google will ask',
+                              onPressed: () => _jump('android-beta', _androidBetaKey),
+                              icon: const Icon(Icons.info_outline),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          key: const ValueKey('phone_install_beta_signup_button'),
+                          onPressed: () =>
+                              openPhoneInstallLink(PhoneInstallLinks.androidBetaSignup),
+                          child: const Text('First time? Sign up with Google'),
+                        ),
+                      ],
                     ),
                     more: const _AndroidBetaMore(),
                   ),
@@ -353,6 +381,19 @@ class _AndroidBetaMore extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
+        key: ValueKey('phone_install_google_email_explanation'),
+        'Google’s page may say: “Sign up to share your email address with the developer and get access.” '
+        'Developer means Belong. Sign up means this Google account may receive the Android beta. '
+        'A Gmail address already on the phone is fine. You should only have to do this once. '
+        'After that, Open the Android beta should show Download.',
+      ),
+      SizedBox(height: 8),
+      Text(
+        'If Google says you have no apps yet, tap First time? Sign up with Google above, complete '
+        'Sign up, then tap Open the Android beta again.',
+      ),
+      SizedBox(height: 8),
+      Text(
         '1. On your Android phone, tap Open the Android beta. A computer cannot install it onto the phone for you.',
       ),
       SizedBox(height: 6),
@@ -377,7 +418,7 @@ class _AndroidBetaMore extends StatelessWidget {
       ),
       SizedBox(height: 6),
       Text(
-        'If the page says you have no apps yet, the open invite is still catching up. Use the Android website steps for today, and tell an organizer.',
+        'If something still will not download after Sign up, use the Android website steps for today, and tell an organizer.',
       ),
       SizedBox(height: 8),
       Wrap(

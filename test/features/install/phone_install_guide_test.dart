@@ -6,6 +6,11 @@ import 'package:refuge4serverpod/src/features/install/presentation/phone_install
 
 void main() {
   testWidgets('shows a calm summary, pending stores, and the Android website note', (tester) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       const MaterialApp(home: PhoneInstallGuideView(focus: PhoneInstallFocus.android)),
     );
@@ -17,11 +22,18 @@ void main() {
     expect(find.text('Android open beta'), findsWidgets);
     expect(find.text('Open the Android beta'), findsOneWidget);
     expect(find.byKey(const ValueKey('phone_install_open_beta_button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('phone_install_beta_info')), findsOneWidget);
+    expect(find.text('First time? Sign up with Google'), findsOneWidget);
+    expect(find.textContaining('not a waitlist'), findsOneWidget);
     expect(
       find.textContaining('You only need this if you are testing the website'),
       findsOneWidget,
     );
     expect(find.textContaining('Open as Web App'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('phone_install_beta_info')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('share your email address with the developer'), findsOneWidget);
 
     final iosJump = find.byKey(const ValueKey('phone_install_jump_ios_web'));
     await tester.ensureVisible(iosJump);
@@ -57,6 +69,10 @@ void main() {
       PhoneInstallLinks.androidBeta,
       'https://appdistribution.firebase.google.com/testerapps/'
       '1:207506875171:android:e578634c4bc21da2b96296',
+    );
+    expect(
+      PhoneInstallLinks.androidBetaSignup,
+      'https://appdistribution.firebase.google.com/i/be440f5ac9684d13',
     );
   });
 }
