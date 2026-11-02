@@ -68,6 +68,27 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
   AuthSession _effectiveSession(AuthSession streamSession) => _reloadedSession ?? streamSession;
 
+  String? _accountForCache(AuthSession session) {
+    if (!session.isSignedIn) return null;
+    final id = session.userId.trim();
+    if (id.isEmpty || id == 'guest') return null;
+    return id;
+  }
+
+  String? _lastAdoptedAccount;
+  bool _adoptScheduled = false;
+
+  void _adoptCachedAccount(AuthSession session) {
+    final accountId = _accountForCache(session);
+    if (_adoptScheduled && _lastAdoptedAccount == accountId) return;
+    _adoptScheduled = true;
+    _lastAdoptedAccount = accountId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(widget.repository.adoptSignedInAccount(accountId));
+    });
+  }
+
   Future<bool> _isSoftDeleted(String userId) {
     if (_deleteCheckUserId != userId || _deleteCheck == null) {
       _deleteCheckUserId = userId;
@@ -113,10 +134,15 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     ref.listen<AsyncValue<AuthSession>>(authSessionStreamProvider, (_, next) {
       if (next.hasValue) {
         setState(() => _reloadedSession = null);
+        final session = next.value;
+        if (session != null) {
+          unawaited(widget.repository.adoptSignedInAccount(_accountForCache(session)));
+        }
       }
     });
 
     final session = _effectiveSession(streamSession);
+    _adoptCachedAccount(session);
 
     if (ref.watch(banRefusalVisibleProvider)) {
       return _BanRefusalWall(

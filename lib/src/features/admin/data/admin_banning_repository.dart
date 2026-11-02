@@ -30,6 +30,28 @@ abstract interface class AdminBanningRepository {
 
   /// Restores a soft-deleted user back to active standing.
   Future<void> unbanUser(String userId);
+
+  /// Firebase uid for [userId] or [displayName], when a `users` row identifies one account.
+  ///
+  /// Returns null when no single uid can be chosen. Sample names without a
+  /// `users` document stay name-only and cannot be blocked in security rules.
+  Future<String?> resolveAccountUid({required String userId, required String displayName});
+
+  /// Records that the ban exists and content erase still needs another attempt.
+  Future<void> markErasePending({
+    required String userId,
+    required String displayName,
+    required List<String> failedSteps,
+  });
+
+  /// Clears the retry flag after posts, comments, and messages are gone.
+  Future<void> clearErasePending({required String userId, required String displayName});
+}
+
+/// Firebase Auth uids are long and have no spaces. Display names do not qualify.
+bool isImmutableAccountUid(String value) {
+  final id = value.trim();
+  return id.length >= 20 && !id.contains(' ') && RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(id);
 }
 
 /// In-Memory implementation of [AdminBanningRepository] for deterministic,
@@ -91,6 +113,60 @@ class InMemoryAdminBanningRepository implements AdminBanningRepository {
     _controller.add(_bannedUsers.values.toSet().toList());
   }
 
+  @override
+  Future<String?> resolveAccountUid({required String userId, required String displayName}) async {
+    final trimmed = userId.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  @override
+  Future<void> markErasePending({
+    required String userId,
+    required String displayName,
+    required List<String> failedSteps,
+  }) async {
+    _replaceMatching(
+      userId: userId,
+      displayName: displayName,
+      update: (user) =>
+          user.copyWith(erasePending: true, eraseErrors: List<String>.from(failedSteps)),
+    );
+  }
+
+  @override
+  Future<void> clearErasePending({required String userId, required String displayName}) async {
+    _replaceMatching(
+      userId: userId,
+      displayName: displayName,
+      update: (user) => user.copyWith(erasePending: false, eraseErrors: const []),
+    );
+  }
+
+  void _replaceMatching({
+    required String userId,
+    required String displayName,
+    required SoftDeletedUser Function(SoftDeletedUser user) update,
+  }) {
+    final id = userId.trim().toLowerCase();
+    final name = displayName.trim().toLowerCase();
+    final keys = _bannedUsers.entries
+        .where(
+          (entry) =>
+              entry.key == id ||
+              entry.key == name ||
+              entry.value.userId.toLowerCase() == id ||
+              entry.value.displayName.toLowerCase() == name,
+        )
+        .map((entry) => entry.key)
+        .toList();
+    for (final key in keys) {
+      _bannedUsers[key] = update(_bannedUsers[key]!);
+    }
+    if (keys.isNotEmpty) {
+      _controller.add(_bannedUsers.values.toSet().toList());
+    }
+  }
+
   void dispose() {
     _controller.close();
   }
@@ -132,6 +208,7 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
   final InMemoryAdminBanningRepository _fallback;
 
   static const String collectionName = 'soft_deleted_users';
+  static const String bannedUidCollection = 'banned_uids';
 
   FirebaseFirestore? get firestore {
     if (customFirestore != null) return customFirestore;
@@ -164,7 +241,21 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
     );
 
     if (fs != null) {
-      await fs.collection(collectionName).doc(userId).set(payload);
+      final batch = fs.batch();
+      batch.set(fs.collection(collectionName).doc(userId), payload);
+      final name = displayName.trim();
+      if (name.isNotEmpty && name != userId) {
+        batch.set(fs.collection(collectionName).doc(name), payload);
+      }
+      if (isImmutableAccountUid(userId)) {
+        batch.set(fs.collection(bannedUidCollection).doc(userId), {
+          'uid': userId,
+          'banned': true,
+          'bannedAt': FieldValue.serverTimestamp(),
+          'displayName': name,
+        });
+      }
+      await batch.commit();
       AppLogger.info('Moved user "$displayName" ($userId) into remote soft-delete collection');
       return;
     }
@@ -230,21 +321,118 @@ class FirestoreAdminBanningRepository implements AdminBanningRepository {
     if (fs != null) {
       final key = userId.trim();
       final updates = {'softDeleted': false, 'unbannedAt': FieldValue.serverTimestamp()};
+      final uids = <String>{};
       final direct = fs.collection(collectionName).doc(key);
       final directSnap = await direct.get();
       if (directSnap.exists) {
         await direct.update(updates);
+        final storedUid = directSnap.data()?['userId'];
+        if (storedUid is String && storedUid.isNotEmpty) uids.add(storedUid);
+        if (isImmutableAccountUid(key)) uids.add(key);
       }
       final byName = await fs.collection(collectionName).where('displayName', isEqualTo: key).get();
       for (final doc in byName.docs) {
         if (doc.data()['softDeleted'] == true) {
           await doc.reference.update(updates);
+          final storedUid = doc.data()['userId'];
+          if (storedUid is String && storedUid.isNotEmpty) uids.add(storedUid);
         }
+      }
+      for (final uid in uids) {
+        if (!isImmutableAccountUid(uid)) continue;
+        await fs.collection(bannedUidCollection).doc(uid).set({
+          'uid': uid,
+          'banned': false,
+          'displayName': key,
+        }, SetOptions(merge: true));
       }
       return;
     }
     await _fallback.unbanUser(userId);
   }
+
+  @override
+  Future<String?> resolveAccountUid({required String userId, required String displayName}) async {
+    final fs = firestore;
+    if (fs == null) return _fallback.resolveAccountUid(userId: userId, displayName: displayName);
+    final trimmedId = userId.trim();
+    if (trimmedId.isNotEmpty) {
+      final direct = await fs.collection('users').doc(trimmedId).get();
+      if (direct.exists) {
+        final stored = direct.data()?['uid'];
+        if (stored is String && stored.trim().isNotEmpty) return stored.trim();
+        return direct.id;
+      }
+    }
+    final name = displayName.trim();
+    if (name.isNotEmpty) {
+      final matches = await fs
+          .collection('users')
+          .where('displayName', isEqualTo: name)
+          .limit(2)
+          .get();
+      if (matches.docs.length > 1) {
+        throw BanTargetAmbiguousException(name);
+      }
+      if (matches.docs.length == 1) {
+        final doc = matches.docs.single;
+        final stored = doc.data()['uid'];
+        if (stored is String && stored.trim().isNotEmpty) return stored.trim();
+        return doc.id;
+      }
+    }
+    if (isImmutableAccountUid(trimmedId)) return trimmedId;
+    return null;
+  }
+
+  @override
+  Future<void> markErasePending({
+    required String userId,
+    required String displayName,
+    required List<String> failedSteps,
+  }) async {
+    final fs = firestore;
+    if (fs == null) {
+      await _fallback.markErasePending(
+        userId: userId,
+        displayName: displayName,
+        failedSteps: failedSteps,
+      );
+      return;
+    }
+    final payload = {'erasePending': true, 'eraseErrors': failedSteps};
+    await fs.collection(collectionName).doc(userId).set(payload, SetOptions(merge: true));
+    final name = displayName.trim();
+    if (name.isNotEmpty && name != userId) {
+      await fs.collection(collectionName).doc(name).set(payload, SetOptions(merge: true));
+    }
+  }
+
+  @override
+  Future<void> clearErasePending({required String userId, required String displayName}) async {
+    final fs = firestore;
+    if (fs == null) {
+      await _fallback.clearErasePending(userId: userId, displayName: displayName);
+      return;
+    }
+    const payload = {'erasePending': false, 'eraseErrors': <String>[]};
+    await fs.collection(collectionName).doc(userId).set(payload, SetOptions(merge: true));
+    final name = displayName.trim();
+    if (name.isNotEmpty && name != userId) {
+      await fs.collection(collectionName).doc(name).set(payload, SetOptions(merge: true));
+    }
+  }
+}
+
+/// More than one `users` row shares this public name, so a ban must not guess a uid.
+class BanTargetAmbiguousException implements Exception {
+  BanTargetAmbiguousException(this.displayName);
+
+  final String displayName;
+
+  @override
+  String toString() =>
+      'More than one account uses the name "$displayName". Ban the member from their account id.';
 }
 
 /// Provider supplying the [AdminBanningRepository] singleton.

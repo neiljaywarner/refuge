@@ -5,9 +5,29 @@ service cloud.firestore {
     // anonymous sessions cannot read or write fellowship data. Email
     // verification stays an app-gate concern because the same Firebase
     // project serves dev example accounts and production packages.
-    function isSignedInMember() {
+    function isAuthenticatedNonAnonymous() {
       return request.auth != null
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // Ban state is the Firebase uid, which the member cannot change.
+    // banned_uids/{uid} is the explicit record. soft_deleted_users/{uid}
+    // still counts so a ban written before that collection keeps blocking.
+    function uidBanActive(uid) {
+      return uid is string
+        && uid.size() > 0
+        && (
+          (exists(/databases/$(database)/documents/banned_uids/$(uid))
+            && get(/databases/$(database)/documents/banned_uids/$(uid)).data.get('banned', false) == true)
+          || (exists(/databases/$(database)/documents/soft_deleted_users/$(uid))
+            && get(/databases/$(database)/documents/soft_deleted_users/$(uid)).data.get('softDeleted', false) == true
+            && get(/databases/$(database)/documents/soft_deleted_users/$(uid)).data.get('userId', '') == uid)
+        );
+    }
+
+    function isSignedInMember() {
+      return isAuthenticatedNonAnonymous()
+        && !uidBanActive(request.auth.uid);
     }
 
     // Care reactions (#662): any member may bump reaction counters on someone
@@ -76,6 +96,16 @@ service cloud.firestore {
         || standingBan(resource.data.get('senderName', ''))
         || standingBan(resource.data.get('authorId', ''))
         || standingBan(resource.data.get('senderId', ''));
+    }
+
+    // Uid check does not grant a read of the message or post. It only decides
+    // whether a delete of a known document is allowed.
+    function authorIsBanned() {
+      return namedAuthorIsBanned()
+        || uidBanActive(resource.data.get('authorId', ''))
+        || uidBanActive(resource.data.get('authorUid', ''))
+        || uidBanActive(resource.data.get('senderId', ''))
+        || uidBanActive(resource.data.get('userId', ''));
     }
 
     // Create must name the signed-in member. A missing authorId does not match.
@@ -170,7 +200,7 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
+        && (request.auth.uid == resource.data.get('authorId', null) || authorIsBanned());
     }
 
     // 4. Member Profiles
@@ -195,6 +225,21 @@ service cloud.firestore {
       match /saved_posts/{postId} {
         allow read, write: if isSignedInMember() && request.auth.uid == userId;
       }
+
+      // Message ids only, no bodies. The sender may append. A rules admin
+      // reads and deletes the index while erasing a banned account.
+      // Owners cannot delete rows, so they cannot hide sent messages from erase.
+      match /sent_message_ids/{messageId} {
+        allow read: if isRulesAdmin()
+          || (isSignedInMember() && request.auth.uid == userId);
+        allow create: if isSignedInMember()
+          && request.auth.uid == userId
+          && request.resource.data.get('messageId', '') == messageId
+          && request.resource.data.get('senderId', '') == userId
+          && request.resource.data.keys().hasOnly(['messageId', 'senderId']);
+        allow delete: if isRulesAdmin();
+        allow update: if false;
+      }
     }
 
     // 5. Discussion Comments & Nested Replies
@@ -204,7 +249,7 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && (isAuthorOf(resource.data) || namedAuthorIsBanned());
+        && (isAuthorOf(resource.data) || authorIsBanned());
     }
     // Dev builds share this Firebase project; keep their threads separate.
     match /comments_dev/{commentId} {
@@ -213,16 +258,33 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (isAuthorOf(resource.data) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && (isAuthorOf(resource.data) || namedAuthorIsBanned());
+        && (isAuthorOf(resource.data) || authorIsBanned());
     }
 
     // 6. Admin soft-deleted users (#356).
     // Every member may read so the client can close a paused session.
     // Only a rules_admins uid may write. Any signed-in email used to be enough.
     match /soft_deleted_users/{userId} {
-      allow read: if isSignedInMember();
+      // A banned account is not a member, but may still read its own row
+      // so the app can show the lockout. Listing other rows stays member-only.
+      allow get: if isAuthenticatedNonAnonymous()
+        && (request.auth.uid == userId || isSignedInMember());
+      allow list: if isSignedInMember();
       allow create: if isRulesAdmin() && banCreateOmitsEmail();
       allow update: if isRulesAdmin() && banEmailUnchanged();
+      allow delete: if false;
+    }
+
+    // Immutable uid ban. Clients cannot delete it. Unban sets banned to false.
+    match /banned_uids/{uid} {
+      allow get: if isAuthenticatedNonAnonymous()
+        && (request.auth.uid == uid || isRulesAdmin());
+      allow list: if isRulesAdmin();
+      allow create, update: if isRulesAdmin()
+        && request.resource.data.get('uid', '') == uid
+        && request.resource.data.banned is bool
+        && request.resource.data.keys().hasAll(['uid', 'banned'])
+        && request.resource.data.keys().hasOnly(['uid', 'banned', 'bannedAt', 'displayName']);
       allow delete: if false;
     }
 
@@ -233,7 +295,7 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
+        && (request.auth.uid == resource.data.get('authorId', null) || authorIsBanned());
     }
     match /reflections_dev/{postId} {
       allow read: if isSignedInMember();
@@ -241,7 +303,7 @@ service cloud.firestore {
       allow update: if isSignedInMember()
         && (request.auth.uid == resource.data.get('authorId', null) || isReactionOnlyUpdate());
       allow delete: if isSignedInMember()
-        && (request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned());
+        && (request.auth.uid == resource.data.get('authorId', null) || authorIsBanned());
     }
 
     // 8. Direct messages (#441). Participants only. Clients cannot update a
@@ -253,7 +315,7 @@ service cloud.firestore {
         && request.resource.data.senderId == request.auth.uid
         && request.auth.uid in request.resource.data.participantIds;
       allow update: if false;
-      allow delete: if isSignedInMember() && namedAuthorIsBanned();
+      allow delete: if isSignedInMember() && authorIsBanned();
     }
 
     // 9. Member directory used by the direct-message picker.

@@ -13,6 +13,7 @@ import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 import '../../../core/firebase/organizer_remote_config_service.dart';
 import '../../admin/data/admin_banning_repository.dart';
 import '../../admin/domain/circle_ban.dart';
+import '../../admin/domain/soft_deleted_user.dart';
 import '../../messages/data/direct_message_providers.dart';
 import '../../reflections/data/comment_repository.dart';
 import '../../profile/domain/member_profile.dart';
@@ -70,6 +71,14 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
         );
 
     final isBanned = ref.watch(isMemberBannedProvider(effectiveMember.name));
+    final banRows = ref.watch(bannedUsersStreamProvider).value ?? const <SoftDeletedUser>[];
+    final erasePending = banRows.any(
+      (row) =>
+          row.erasePending &&
+          (row.displayName.toLowerCase() == effectiveMember.name.toLowerCase() ||
+              row.userId.toLowerCase() == effectiveMember.name.toLowerCase() ||
+              (effectiveMember.accountId != null && row.userId == effectiveMember.accountId)),
+    );
 
     final posts = postsAsync.value ?? <Post>[];
     final comments = commentsAsync.value ?? <Comment>[];
@@ -492,7 +501,7 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
               ),
               onPressed: () => _confirmBanMember(context, ref, effectiveMember),
             )
-          else
+          else ...[
             const Padding(
               padding: .only(right: 8),
               child: Text(
@@ -501,6 +510,13 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
                 style: TextStyle(fontSize: 12),
               ),
             ),
+            if (erasePending)
+              TextButton(
+                key: const Key('admin_retry_erase_button'),
+                onPressed: () => _retryErase(context, ref, effectiveMember),
+                child: const Text('Retry removing their posts and messages'),
+              ),
+          ],
         ],
         TextButton(
           key: const Key('profile_done_button'),
@@ -509,6 +525,41 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
         ),
       ],
     );
+  }
+
+  static Future<void> _retryErase(
+    BuildContext context,
+    WidgetRef ref,
+    DevFellowshipMember member,
+  ) async {
+    try {
+      await retryCircleBanErase(
+        bans: ref.read(adminBanningRepositoryProvider),
+        posts: ref.read(postRepositoryProvider),
+        comments: ref.read(commentRepositoryProvider),
+        mailbox: ref.read(directMessageMailboxProvider),
+        userId: member.accountId ?? member.name,
+        displayName: member.name,
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Their posts, comments, and messages were removed.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   static Future<void> _confirmBanMember(
@@ -593,9 +644,10 @@ class OtherMemberProfileDialog extends HookConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
+          final message = e is CircleBanEraseException ? '$e' : 'Failed to ban member: $e';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to ban member: $e'),
+              content: Text(message),
               backgroundColor: Colors.redAccent,
               behavior: SnackBarBehavior.floating,
             ),

@@ -105,6 +105,7 @@ test/features/profile/member_profile_activity_counters_test.dart
 test/features/profile/member_profile_test.dart
 test/features/profile/profile_persistence_and_church_dropdown_test.dart
 test/features/reflections/appwrite_post_repository_test.dart
+test/features/reflections/friendly_blocker_fixes_test.dart
 test/features/reflections/comment_repository_test.dart
 test/features/reflections/empty_space_starter_posts_test.dart
 test/features/reflections/feed_sort_controls_test.dart

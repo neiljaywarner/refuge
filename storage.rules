@@ -5,9 +5,25 @@ service firebase.storage {
     // Unauthenticated guests and anonymous Firebase sessions cannot read or write storage.
     // Soft-launch re-audit: no public read or write. Avatar and post-media
     // reads stay member-only on purpose. Feedback and diagnostics stay unreadable.
+    // Cross-service Firestore reads require the Blaze plan to deploy.
+    // Until that plan is available, this check is the intended rule and
+    // a banned uid is still blocked in firestore.rules.
+    function uidBanActive(uid) {
+      return uid is string
+        && uid.size() > 0
+        && (
+          (firestore.exists(/databases/(default)/documents/banned_uids/$(uid))
+            && firestore.get(/databases/(default)/documents/banned_uids/$(uid)).data.banned == true)
+          || (firestore.exists(/databases/(default)/documents/soft_deleted_users/$(uid))
+            && firestore.get(/databases/(default)/documents/soft_deleted_users/$(uid)).data.softDeleted == true
+            && firestore.get(/databases/(default)/documents/soft_deleted_users/$(uid)).data.userId == uid)
+        );
+    }
+
     function isSignedInMember() {
       return request.auth != null
-        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && !uidBanActive(request.auth.uid);
     }
 
     // 1. Member Avatars: readable by signed-in members, write only own avatar (<5MB image)

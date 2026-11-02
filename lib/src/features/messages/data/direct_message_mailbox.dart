@@ -302,6 +302,20 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
       // (`functions/src/index.js`). Sample threads and device-only sends
       // return before here, so they are not emailed.
       await db.collection(collection).doc(id).set(message.toMap()).timeout(sendTimeout);
+      // Id-only index so an organizer can erase this message without reading
+      // every direct message. A modified client can skip this write. Messages
+      // sent before the index existed are not listed here.
+      try {
+        await db
+            .collection('users')
+            .doc(senderId)
+            .collection(sentMessageIndexCollection)
+            .doc(id)
+            .set({'messageId': id, 'senderId': senderId})
+            .timeout(sendTimeout);
+      } catch (error, stack) {
+        talker.handle(error, stack, 'Sent-message index write failed');
+      }
       // Keep the row on this device too. The recipient's bell can show it
       // in the same session when the Firestore read is not deployed yet.
       _offline.cacheMessage(message);
@@ -363,25 +377,70 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
     final db = _db;
     if (db == null) return removedOffline;
     var removed = removedOffline;
+    final ids = <String>{};
+    Object? indexFailure;
+    final id = senderId.trim();
+    if (id.isNotEmpty) {
+      try {
+        final index = await db
+            .collection('users')
+            .doc(id)
+            .collection(sentMessageIndexCollection)
+            .get();
+        ids.addAll(index.docs.map((doc) => doc.id));
+      } catch (error, stack) {
+        indexFailure = error;
+        talker.handle(error, stack, 'Sent-message index read failed');
+      }
+    }
+    var queryDenied = false;
     try {
-      final byId = senderId.trim().isEmpty
+      final byId = id.isEmpty
           ? null
-          : await db.collection(collection).where('senderId', isEqualTo: senderId).get();
+          : await db.collection(collection).where('senderId', isEqualTo: id).get();
       final byName = senderName.trim().isEmpty
           ? null
           : await db.collection(collection).where('senderName', isEqualTo: senderName).get();
-      final docs = {...?byId?.docs, ...?byName?.docs};
-      for (final doc in docs) {
-        await doc.reference.delete();
-        removed++;
+      for (final doc in {...?byId?.docs, ...?byName?.docs}) {
+        ids.add(doc.id);
       }
     } catch (error, stack) {
-      talker.handle(error, stack, 'Firestore message ban erase failed');
-      rethrow;
+      queryDenied = true;
+      talker.handle(
+        error,
+        stack,
+        'Direct message query by sender was denied; using the sent-message index',
+      );
+      if (ids.isEmpty) {
+        throw indexFailure ?? error;
+      }
+    }
+    for (final messageId in ids) {
+      await db.collection(collection).doc(messageId).delete();
+      if (id.isNotEmpty) {
+        try {
+          await db
+              .collection('users')
+              .doc(id)
+              .collection(sentMessageIndexCollection)
+              .doc(messageId)
+              .delete();
+        } catch (error, stack) {
+          talker.handle(error, stack, 'Sent-message index delete failed');
+        }
+      }
+      removed++;
+    }
+    if (queryDenied && ids.isEmpty && indexFailure != null) {
+      throw indexFailure;
     }
     return removed;
   }
 }
+
+/// Subcollection of message ids only. Organizers read this during a ban erase.
+/// It does not store message bodies.
+const sentMessageIndexCollection = 'sent_message_ids';
 
 List<MessageThread> _threadsFromMessages(List<StoredDirectMessage> messages, String currentUserId) {
   final byThread = <String, List<StoredDirectMessage>>{};

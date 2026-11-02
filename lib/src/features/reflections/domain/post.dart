@@ -1,5 +1,13 @@
 import '../../../core/formatting/relative_date.dart';
 
+/// How far a reflection got past this device.
+///
+/// [confirmed] is stored in a cloud the fellowship can read, or there is no
+/// cloud configured and a durable local copy exists.
+/// [pending] is durable on this device and still waiting for that cloud.
+/// [failed] never became durable, so the composer must keep the draft.
+enum PostPublishStatus { confirmed, pending, failed }
+
 /// Domain model representing an unhurried reflection with intent, tone, and optional calm media/GIF.
 class Post {
   final String id;
@@ -14,6 +22,12 @@ class Post {
   final bool isDemo;
   final bool isSaved;
 
+  /// Firebase uid of the member who wrote this reflection, when known.
+  final String? authorId;
+
+  /// Local delivery state. Cloud rows are [PostPublishStatus.confirmed].
+  final PostPublishStatus publishStatus;
+
   const Post({
     required this.id,
     required this.authorName,
@@ -26,6 +40,8 @@ class Post {
     required this.reactions,
     this.isDemo = false,
     this.isSaved = false,
+    this.authorId,
+    this.publishStatus = PostPublishStatus.confirmed,
   });
 
   /// Same relative or calendar label as a direct message, using [timestamp].
@@ -43,6 +59,8 @@ class Post {
     Map<String, int>? reactions,
     bool? isDemo,
     bool? isSaved,
+    String? authorId,
+    PostPublishStatus? publishStatus,
   }) => Post(
     id: id ?? this.id,
     authorName: authorName ?? this.authorName,
@@ -55,6 +73,8 @@ class Post {
     reactions: reactions ?? Map<String, int>.from(this.reactions),
     isDemo: isDemo ?? this.isDemo,
     isSaved: isSaved ?? this.isSaved,
+    authorId: authorId ?? this.authorId,
+    publishStatus: publishStatus ?? this.publishStatus,
   );
 
   Map<String, dynamic> toJson() => {
@@ -69,6 +89,8 @@ class Post {
     'reactions': reactions,
     'isDemo': isDemo,
     'isSaved': isSaved,
+    if (authorId != null && authorId!.isNotEmpty) 'authorId': authorId,
+    'publishStatus': publishStatus.name,
   };
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -94,6 +116,10 @@ class Post {
       reactions: parsedReactions,
       isDemo: json['isDemo'] as bool? ?? false,
       isSaved: json['isSaved'] as bool? ?? true,
+      authorId: json['authorId'] as String?,
+      publishStatus:
+          PostPublishStatus.values.asNameMap()[json['publishStatus']] ??
+          PostPublishStatus.confirmed,
     );
   }
 
@@ -111,7 +137,9 @@ class Post {
           content == other.content &&
           timestamp == other.timestamp &&
           isDemo == other.isDemo &&
-          isSaved == other.isSaved;
+          isSaved == other.isSaved &&
+          authorId == other.authorId &&
+          publishStatus == other.publishStatus;
 
   @override
   int get hashCode =>
@@ -124,5 +152,7 @@ class Post {
       content.hashCode ^
       timestamp.hashCode ^
       isDemo.hashCode ^
-      isSaved.hashCode;
+      isSaved.hashCode ^
+      authorId.hashCode ^
+      publishStatus.hashCode;
 }

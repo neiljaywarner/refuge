@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_composer.dart';
 
 void main() {
@@ -26,6 +27,7 @@ void main() {
                       String? imageUrl,
                     }) async {
                       submitted = true;
+                      return PostPublishStatus.confirmed;
                     },
               ),
             ),
@@ -66,7 +68,7 @@ void main() {
                   required String toneTag,
                   String? specialInterestTag,
                   String? imageUrl,
-                }) async {},
+                }) async => PostPublishStatus.confirmed,
               ),
             ),
           ),
@@ -109,7 +111,7 @@ void main() {
                 required String toneTag,
                 String? specialInterestTag,
                 String? imageUrl,
-              }) async {},
+              }) async => PostPublishStatus.confirmed,
             ),
           ),
         ),
@@ -147,6 +149,7 @@ void main() {
                     }) async {
                       submittedText = content;
                       submittedTone = toneTag;
+                      return PostPublishStatus.confirmed;
                     },
               ),
             ),
@@ -198,7 +201,7 @@ void main() {
                   required String toneTag,
                   String? specialInterestTag,
                   String? imageUrl,
-                }) async {},
+                }) async => PostPublishStatus.confirmed,
               ),
             ),
           ),
@@ -230,7 +233,7 @@ void main() {
                   required String toneTag,
                   String? specialInterestTag,
                   String? imageUrl,
-                }) async {},
+                }) async => PostPublishStatus.confirmed,
               ),
             ),
           ),
