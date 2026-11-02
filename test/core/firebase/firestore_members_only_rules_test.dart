@@ -17,6 +17,10 @@ void main() {
   group('firestore.rules members-only & guest audit (#601, #620)', () {
     test('defines isSignedInMember and rejects anonymous', () {
       expect(firestoreRules, contains('function isSignedInMember()'));
+      expect(firestoreRules, contains('function uidBanActive(uid)'));
+      expect(firestoreRules, contains('!uidBanActive(request.auth.uid)'));
+      expect(storageRules, contains('function uidBanActive(uid)'));
+      expect(storageRules, contains('!uidBanActive(request.auth.uid)'));
       expect(
         firestoreRules,
         contains("request.auth.token.firebase.sign_in_provider != 'anonymous'"),
@@ -169,22 +173,18 @@ void main() {
       expect(firestoreRules, contains('request.auth.uid in resource.data.participantIds'));
       expect(firestoreRules, contains('request.auth.uid in request.resource.data.participantIds'));
       expect(firestoreRules, contains('allow update: if false;'));
-      expect(
-        firestoreRules,
-        contains('allow delete: if isSignedInMember() && namedAuthorIsBanned();'),
-      );
+      expect(firestoreRules, contains('allow delete: if isSignedInMember() && authorIsBanned();'));
       expect(firestoreRules, contains('allow list: if false;'));
     });
 
     test('a standing ban can delete reflections and comments', () {
       expect(firestoreRules, contains('function standingBan(docId)'));
       expect(firestoreRules, contains('function namedAuthorIsBanned()'));
-      expect(firestoreRules, contains('isAuthorOf(resource.data) || namedAuthorIsBanned()'));
+      expect(firestoreRules, contains('function authorIsBanned()'));
+      expect(firestoreRules, contains('isAuthorOf(resource.data) || authorIsBanned()'));
       expect(
         firestoreRules,
-        contains(
-          "request.auth.uid == resource.data.get('authorId', null) || namedAuthorIsBanned()",
-        ),
+        contains("request.auth.uid == resource.data.get('authorId', null) || authorIsBanned()"),
       );
     });
   });

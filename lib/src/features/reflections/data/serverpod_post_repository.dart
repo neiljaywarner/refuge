@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sanctuary_server_client/sanctuary_server_client.dart' as sp;
 
 import '../../../core/logging/app_logger.dart';
+import '../../admin/data/authored_document_erase.dart';
 import '../domain/post.dart';
 import 'local_post_repository.dart';
 import 'post_repository.dart';
@@ -302,18 +303,17 @@ class ServerpodPostRepository implements PostRepository {
   }
 
   @override
-  Future<int> deleteByAuthor({required String authorName}) async {
-    final removed = await _fallback.deleteByAuthor(authorName: authorName);
+  Future<int> deleteByAuthor({required String authorName, String? authorId}) async {
+    final removed = await _fallback.deleteByAuthor(authorName: authorName, authorId: authorId);
     final fs = firestore;
-    if (fs == null || authorName.trim().isEmpty) return removed;
+    final uid = authorId?.trim() ?? '';
+    if (fs == null || (authorName.trim().isEmpty && uid.isEmpty)) return removed;
     try {
-      final snap = await fs
-          .collection(collectionName)
-          .where('authorName', isEqualTo: authorName)
-          .get();
-      for (final doc in snap.docs) {
-        await doc.reference.delete();
-      }
+      await deleteAuthoredDocuments(
+        collection: fs.collection(collectionName),
+        authorName: authorName,
+        authorId: authorId,
+      );
     } catch (error, stack) {
       talker.handle(error, stack, 'Firestore ban erase failed');
       rethrow;

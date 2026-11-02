@@ -30,6 +30,11 @@ jobs:
       - name: Direct message mirror function tests
         run: node --test appwrite/functions/dm-mirror/test/handle.test.js
 
+      - name: Firestore rules emulator
+        run: |
+          npm ci --prefix tool/rules_emulator
+          ./tool/rules_emulator/node_modules/.bin/firebase emulators:exec --only firestore --project demo-belong-rules "npm test --prefix tool/rules_emulator"
+
       - name: Resolve packages
         run: flutter pub get
 

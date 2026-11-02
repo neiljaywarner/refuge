@@ -262,6 +262,20 @@ class _ThrowingBanRepository implements AdminBanningRepository {
 
   @override
   Future<void> unbanUser(String userId) async {}
+
+  @override
+  Future<String?> resolveAccountUid({required String userId, required String displayName}) async =>
+      null;
+
+  @override
+  Future<void> markErasePending({
+    required String userId,
+    required String displayName,
+    required List<String> failedSteps,
+  }) async {}
+
+  @override
+  Future<void> clearErasePending({required String userId, required String displayName}) async {}
 }
 
 class _StaticProfileNotifier extends MemberProfileNotifier {

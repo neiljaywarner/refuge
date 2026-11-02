@@ -10,6 +10,7 @@ import 'package:refuge4serverpod/src/features/memes/data/giphy_sdk_picker.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_search.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_surface.dart';
 import 'package:refuge4serverpod/src/features/memes/domain/calm_meme.dart';
+import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_composer.dart';
 
 /// Dev-only frame host for Attach media screenshots. Not a production entry.
@@ -84,7 +85,7 @@ class _ShotHostState extends State<_ShotHost> {
                   required toneTag,
                   specialInterestTag,
                   imageUrl,
-                }) async {},
+                }) async => PostPublishStatus.confirmed,
               ),
               TextButton(
                 key: const Key('shot_host_surface'),

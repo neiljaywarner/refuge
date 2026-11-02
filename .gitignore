@@ -38,6 +38,11 @@ integration_test/test_bundle.dart
 .firebase/
 appwrite/functions/*/node_modules/
 functions/node_modules/
+tool/rules_emulator/node_modules/
+firestore-debug.log
+firebase-debug.log
+ui-debug.log
+*-debug.log
 
 # Symbolication related
 app.*.symbols

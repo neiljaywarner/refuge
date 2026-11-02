@@ -147,7 +147,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
       analytics.logSpaceViewed(spaceKey);
     }
 
-    Future<void> submitPost({
+    Future<PostPublishStatus> submitPost({
       required String content,
       required String toneTag,
       String? specialInterestTag,
@@ -155,16 +155,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
     }) async {
       if (selectedSpace.value == 'saved_for_later') {
         // Saved for later is a private bookmarks sanctuary; public reflections cannot be posted here.
-        return;
+        return PostPublishStatus.failed;
       }
       final targetSpace = selectedSpace.value;
+      Post? published;
       final created = await createContributionUnlessBanned(
         isBanned: ref.read(isCurrentMemberBannedProvider),
         create: () async {
-          await activeRepository.createPost(
+          published = await activeRepository.createPost(
             Post(
               id: 'post-${DateTime.now().millisecondsSinceEpoch}',
               authorName: profile.displayName,
+              authorId: profile.userId == 'guest' ? null : profile.userId,
               content: content,
               timestamp: DateTime.now(),
               spaceKey: targetSpace,
@@ -176,7 +178,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
           );
         },
       );
-      if (!created) return;
+      final status = published?.publishStatus ?? PostPublishStatus.failed;
+      if (!created || status != PostPublishStatus.confirmed) return status;
       final lengthBucket = content.length <= 140
           ? 1
           : content.length <= 280
@@ -194,6 +197,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
             )
             .timeout(const Duration(seconds: 8));
       } catch (_) {}
+      return status;
     }
 
     Widget buildHomeBody() {
@@ -1008,7 +1012,7 @@ void _showCreatePostModal({
   required Color primaryColor,
   required bool isContrast,
   bool isImagePost = false,
-  required Future<void> Function({
+  required Future<PostPublishStatus> Function({
     required String content,
     required String toneTag,
     String? specialInterestTag,
@@ -1068,17 +1072,12 @@ void _showCreatePostModal({
                       required String toneTag,
                       String? specialInterestTag,
                       String? imageUrl,
-                    }) async {
-                      await onSubmit(
-                        content: content,
-                        toneTag: toneTag,
-                        specialInterestTag: specialInterestTag,
-                        imageUrl: imageUrl,
-                      );
-                      if (ctx.mounted) {
-                        Navigator.of(ctx).pop();
-                      }
-                    },
+                    }) => onSubmit(
+                      content: content,
+                      toneTag: toneTag,
+                      specialInterestTag: specialInterestTag,
+                      imageUrl: imageUrl,
+                    ),
               ),
               const SizedBox(height: 12),
             ],

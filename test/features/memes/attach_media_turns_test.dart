@@ -11,6 +11,7 @@ import 'package:refuge4serverpod/src/features/memes/data/giphy_sdk_picker.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_search.dart';
 import 'package:refuge4serverpod/src/features/memes/data/giphy_surface.dart';
 import 'package:refuge4serverpod/src/features/memes/domain/calm_meme.dart';
+import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_composer.dart';
 
 const _tealStill =
@@ -165,7 +166,8 @@ Widget _shotApp({
             primaryColor: Colors.teal,
             isContrast: false,
             isModal: true,
-            onSubmit: ({required content, required toneTag, specialInterestTag, imageUrl}) async {},
+            onSubmit: ({required content, required toneTag, specialInterestTag, imageUrl}) async =>
+                PostPublishStatus.confirmed,
           ),
         ),
       ),

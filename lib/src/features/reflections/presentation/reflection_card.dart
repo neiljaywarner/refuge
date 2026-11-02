@@ -113,6 +113,14 @@ class ReflectionCard extends ConsumerWidget {
                       key: Key('post_timestamp_${post.id}'),
                       style: text.caption,
                     ),
+                    if (post.publishStatus == PostPublishStatus.pending) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        'Waiting to share',
+                        key: Key('post_pending_${post.id}'),
+                        style: text.caption,
+                      ),
+                    ],
                   ],
                 ),
               ),

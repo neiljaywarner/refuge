@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../../core/widgets/calm_media_image.dart';
+import '../domain/post.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../../memes/domain/calm_meme.dart';
 import '../../memes/presentation/meme_gallery_modal.dart';
@@ -25,7 +26,7 @@ class ReflectionComposer extends HookWidget {
   final bool isContrast;
   final bool isImagePost;
   final bool isModal;
-  final Future<void> Function({
+  final Future<PostPublishStatus> Function({
     required String content,
     required String toneTag,
     String? specialInterestTag,
@@ -117,20 +118,50 @@ class ReflectionComposer extends HookWidget {
           ? specialInterestController.text.trim()
           : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
 
+      final status = await onSubmit(
+        content: text,
+        toneTag: selectedTone.value,
+        specialInterestTag: specialInterest,
+        imageUrl: effectiveImageUrl,
+      );
+      if (!context.mounted) return;
+
+      if (status == PostPublishStatus.failed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            key: Key('reflection_publish_failed_snackbar'),
+            content: Text(
+              'This reflection was not saved. Your words are still here.',
+              style: TextStyle(fontSize: 12),
+            ),
+            duration: Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
+
       contentController.clear();
       specialInterestController.clear();
       imageUrlController.clear();
       altTextController.clear();
       attachedMeme.value = null;
 
-      await onSubmit(
-        content: text,
-        toneTag: selectedTone.value,
-        specialInterestTag: specialInterest,
-        imageUrl: effectiveImageUrl,
-      );
+      if (status == PostPublishStatus.pending) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            key: Key('reflection_publish_pending_snackbar'),
+            content: Text(
+              'Saved on this device. It will be shared when the connection returns.',
+              style: TextStyle(fontSize: 12),
+            ),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
 
-      if (!isModal) {
+      if (isModal) {
+        Navigator.of(context).maybePop();
+      } else {
         isExpanded.value = false;
       }
     }

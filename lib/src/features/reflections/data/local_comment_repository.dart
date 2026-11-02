@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_core/firebase_core.dart';
 
 import '../../../core/logging/app_logger.dart';
+import '../../admin/data/authored_document_erase.dart';
 import '../domain/comment.dart';
 import 'comment_repository.dart';
 
@@ -209,9 +210,10 @@ class LocalCommentRepository implements CommentRepository {
   }
 
   @override
-  Future<int> deleteByAuthor({required String authorName}) async {
+  Future<int> deleteByAuthor({required String authorName, String? authorId}) async {
     final name = authorName.trim().toLowerCase();
-    if (name.isEmpty) return 0;
+    final uid = authorId?.trim() ?? '';
+    if (name.isEmpty && uid.isEmpty) return 0;
     final before = _store.length;
     final removedIds = _store
         .where((comment) => comment.authorName.trim().toLowerCase() == name)
@@ -225,13 +227,11 @@ class LocalCommentRepository implements CommentRepository {
     final fs = firestore;
     if (fs != null) {
       try {
-        final snap = await fs
-            .collection(collectionName)
-            .where('authorName', isEqualTo: authorName)
-            .get();
-        for (final doc in snap.docs) {
-          await doc.reference.delete();
-        }
+        await deleteAuthoredDocuments(
+          collection: fs.collection(collectionName),
+          authorName: authorName,
+          authorId: authorId,
+        );
         for (final id in removedIds) {
           await fs.collection(collectionName).doc(id).delete();
         }

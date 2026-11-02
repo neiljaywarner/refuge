@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_composer.dart';
 
 void main() {
@@ -26,7 +27,7 @@ void main() {
                         required toneTag,
                         specialInterestTag,
                         imageUrl,
-                      }) async {},
+                      }) async => PostPublishStatus.confirmed,
                     ),
                   );
                 },

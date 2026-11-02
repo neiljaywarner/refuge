@@ -48,6 +48,7 @@ void main() {
                         submittedContent = content;
                         submittedTone = toneTag;
                         submittedImage = imageUrl;
+                        return PostPublishStatus.confirmed;
                       },
                 ),
               ),

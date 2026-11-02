@@ -100,9 +100,11 @@ void main() {
         email: 'qa-ban-member-591@example.com',
         bannedByAdminEmail: 'qa-ban-admin-591@example.com',
       ),
-      throwsA(isA<FirebaseException>()),
+      throwsA(isA<CircleBanEraseException>()),
     );
     expect(await bans.isUserBanned('Caleb Stone'), isTrue);
+    final pending = await bans.watchBannedUsers().first;
+    expect(pending.any((row) => row.erasePending), isTrue);
   });
 
   testWidgets('Confirm Ban shows the erase failure instead of a success note', (tester) async {
@@ -160,9 +162,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('confirm_ban_button')));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(seconds: 1));
 
-    expect(find.textContaining('Failed to ban member'), findsOneWidget);
+    expect(find.textContaining('Erase still needs a retry'), findsOneWidget);
     expect(
       find.text('Caleb Stone is banned. Their posts, comments, and messages were removed.'),
       findsNothing,

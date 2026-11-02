@@ -9,9 +9,14 @@ import 'package:firebase_core/firebase_core.dart';
 import '../../../core/appwrite/appwrite_client_factory.dart';
 import '../../../core/appwrite/appwrite_config.dart';
 import '../../../core/logging/app_logger.dart';
+import '../../admin/data/authored_document_erase.dart';
 import '../domain/post.dart';
+import 'local_account_scope.dart';
 import 'local_post_repository.dart';
+import 'pending_post_outbox.dart';
 import 'post_repository.dart';
+
+export 'post_merge.dart';
 
 /// Cloud copy of a reflection feed. Production uses Appwrite TablesDB.
 /// Tests supply an in-memory implementation so they never open a socket.
@@ -145,21 +150,29 @@ class AppwriteReflectionMirror implements ReflectionMirror {
 /// Each write goes to Appwrite and Cloud Firestore. The local cache is what
 /// the screen reads first, so a cloud timeout never blanks the feed. Sign-in
 /// stays on Firebase Auth.
-class AppwritePostRepository implements PostRepository {
+enum CloudWrite { skipped, ok, failed }
+
+class AppwritePostRepository implements PostRepository, AccountScopedCache {
   AppwritePostRepository({
     LocalPostRepository? fallback,
     this.customFirestore,
     ReflectionMirror? mirror,
     AppwriteServices? services,
     this.isDevMode = true,
+    PendingPostOutbox? outbox,
   }) : _fallback = fallback ?? LocalPostRepository(isDevMode: isDevMode),
-       _mirror = mirror ?? _mirrorFrom(services);
+       _mirror = mirror ?? _mirrorFrom(services),
+       _outbox =
+           outbox ?? PendingPostOutbox(environment: reflectionEnvironment(isDevMode: isDevMode));
 
   final LocalPostRepository _fallback;
   final FirebaseFirestore? customFirestore;
   final ReflectionMirror? _mirror;
+  final PendingPostOutbox _outbox;
   final bool isDevMode;
   bool _isLiveConnected = false;
+  String? _adoptedAccount;
+  bool _didAdopt = false;
 
   bool get isLiveConnected => _isLiveConnected;
 
@@ -192,10 +205,27 @@ class AppwritePostRepository implements PostRepository {
     return AppwriteReflectionMirror(resolved, AppwriteConfig.fromEnvironment);
   }
 
+  /// Reloads private bookmarks and the pending outbox for [accountId].
+  @override
+  Future<void> adoptAccount(String? accountId) async {
+    final normalized = accountId?.trim();
+    final next = (normalized == null || normalized.isEmpty || normalized == 'guest')
+        ? null
+        : normalized;
+    if (_didAdopt && _adoptedAccount == next) return;
+    _didAdopt = true;
+    _adoptedAccount = next;
+    _outbox.adoptAccount(next);
+    _fallback.dropPendingPosts();
+    await _fallback.adoptAccount(next);
+    await _flushPending();
+  }
+
   @override
   Future<List<Post>> getPosts({required String spaceKey}) async {
-    final local = await _fallback.getPosts(spaceKey: spaceKey);
-    final cloud = <Post>[];
+    await _flushPending();
+    final fsRows = <Post>[];
+    var fsAuthoritative = false;
     final fs = firestore;
     if (fs != null) {
       try {
@@ -204,16 +234,18 @@ class AppwritePostRepository implements PostRepository {
             .where('spaceKey', isEqualTo: canonicalSpaceKey(spaceKey))
             .get()
             .timeout(const Duration(seconds: 2));
-        cloud.addAll(snap.docs.map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey)));
+        fsRows.addAll(snap.docs.map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey)));
+        fsAuthoritative = true;
         _isLiveConnected = true;
       } catch (error, stack) {
         talker.handle(error, stack, 'Firestore reflection read failed');
       }
     }
+    final mirrorRows = <Post>[];
     final mirror = _mirror;
     if (mirror != null) {
       try {
-        cloud.addAll(
+        mirrorRows.addAll(
           await mirror.listPosts(spaceKey: spaceKey).timeout(const Duration(seconds: 2)),
         );
         _isLiveConnected = true;
@@ -221,9 +253,21 @@ class AppwritePostRepository implements PostRepository {
         talker.handle(error, stack, 'Appwrite reflection read failed');
       }
     }
-    if (cloud.isEmpty) return _applySavedState(local);
-    _fallback.cacheExternalPosts(cloud);
-    return _applySavedState(mergePosts(local, cloud));
+    if (fsAuthoritative) {
+      final pending = await _outbox.ids();
+      _fallback.retainAuthoritativeSpace(
+        spaceKey: spaceKey,
+        cloudIds: {for (final post in fsRows) post.id},
+        pendingIds: pending,
+      );
+      _fallback.absorbCloudPosts(fsRows);
+      for (final post in fsRows) {
+        await _outbox.remove(post.id);
+      }
+    } else if (mirrorRows.isNotEmpty) {
+      _fallback.absorbCloudPosts(mirrorRows);
+    }
+    return _applySavedState(await _fallback.getPosts(spaceKey: spaceKey));
   }
 
   List<Post> _applySavedState(List<Post> posts) => [
@@ -235,10 +279,23 @@ class AppwritePostRepository implements PostRepository {
 
   @override
   Future<Post> createPost(Post post) async {
-    final saved = await _fallback.createPost(post);
-    await _writeFirestore(saved);
-    await _writeAppwrite(saved);
-    return saved;
+    final authored = _withAuthor(post);
+    final queued = await _outbox.enqueue(
+      authored.copyWith(publishStatus: PostPublishStatus.pending),
+    );
+    final firestoreWrite = await _writeFirestore(authored);
+    final appwriteWrite = await _writeAppwrite(authored);
+    final status = publishStatusFor(
+      queued: queued,
+      firestoreWrite: firestoreWrite,
+      appwriteWrite: appwriteWrite,
+    );
+    final saved = authored.copyWith(publishStatus: status);
+    if (status == PostPublishStatus.failed) return saved;
+    if (firestoreWrite == CloudWrite.ok || appwriteWrite == CloudWrite.ok) {
+      await _outbox.remove(saved.id);
+    }
+    return _fallback.createPost(saved);
   }
 
   @override
@@ -284,13 +341,11 @@ class AppwritePostRepository implements PostRepository {
     }
 
     controller.onListen = () async {
-      latest = await _fallback.getPosts(spaceKey: spaceKey);
+      await _flushPending();
       if (disposed) return;
-      await emit(List<Post>.from(latest));
-
       subscriptions.add(
         _fallback.watchPosts(spaceKey: spaceKey).listen((local) {
-          emit(mergePosts(local, latest));
+          emit(local);
         }),
       );
 
@@ -302,13 +357,21 @@ class AppwritePostRepository implements PostRepository {
               .where('spaceKey', isEqualTo: canonicalSpaceKey(spaceKey))
               .snapshots()
               .listen(
-                (snap) {
+                (snap) async {
                   _isLiveConnected = true;
                   final cloudRows = snap.docs
                       .map((doc) => postFromFirestore(doc.id, doc.data(), spaceKey))
                       .toList();
-                  _fallback.cacheExternalPosts(cloudRows);
-                  emit(mergePosts(latest, cloudRows));
+                  final pending = await _outbox.ids();
+                  _fallback.retainAuthoritativeSpace(
+                    spaceKey: spaceKey,
+                    cloudIds: {for (final post in cloudRows) post.id},
+                    pendingIds: pending,
+                  );
+                  _fallback.absorbCloudPosts(cloudRows);
+                  for (final post in cloudRows) {
+                    await _outbox.remove(post.id);
+                  }
                 },
                 onError: (Object error, StackTrace stack) {
                   talker.handle(error, stack, 'Firestore reflection watch failed');
@@ -323,8 +386,9 @@ class AppwritePostRepository implements PostRepository {
           final rows = await mirror.listPosts(spaceKey: spaceKey);
           if (!disposed) {
             _isLiveConnected = true;
-            _fallback.cacheExternalPosts(rows);
-            await emit(mergePosts(latest, rows));
+            // Appwrite list is additive. Firestore snapshots are what drop
+            // deleted rows, because this mirror watch is not a full snapshot.
+            _fallback.absorbCloudPosts(rows);
           }
         } catch (error, stack) {
           talker.handle(error, stack, 'Appwrite reflection list failed');
@@ -336,8 +400,7 @@ class AppwritePostRepository implements PostRepository {
               .listen(
                 (post) {
                   _isLiveConnected = true;
-                  _fallback.cacheExternalPosts([post]);
-                  emit(mergePosts(latest, [post]));
+                  _fallback.absorbCloudPosts([post]);
                 },
                 onError: (Object error, StackTrace stack) {
                   talker.handle(error, stack, 'Appwrite reflection watch failed');
@@ -404,34 +467,40 @@ class AppwritePostRepository implements PostRepository {
   @override
   Stream<List<Post>> watchSavedPosts() => _fallback.watchSavedPosts();
 
-  Future<void> _writeFirestore(Post post) async {
+  Future<CloudWrite> _writeFirestore(Post post) async {
     final fs = firestore;
-    if (fs == null) return;
+    if (fs == null) return CloudWrite.skipped;
     try {
       await fs
           .collection(collectionName)
           .doc(post.id)
-          .set(firestoreReflectionData(post, authorId: _authorUid))
+          .set(firestoreReflectionData(post, authorId: post.authorId ?? _authorUid))
           .timeout(const Duration(seconds: 2));
       _isLiveConnected = true;
+      return CloudWrite.ok;
     } catch (error, stack) {
       talker.handle(error, stack, 'Firestore reflection mirror failed');
+      return CloudWrite.failed;
     }
   }
 
   @override
-  Future<int> deleteByAuthor({required String authorName}) async {
-    final removed = await _fallback.deleteByAuthor(authorName: authorName);
+  Future<int> deleteByAuthor({required String authorName, String? authorId}) async {
+    final removed = await _fallback.deleteByAuthor(authorName: authorName, authorId: authorId);
+    final uid = authorId?.trim() ?? '';
+    final name = authorName.trim().toLowerCase();
+    await _outbox.removeWhere((post) {
+      if (uid.isNotEmpty && post.authorId == uid) return true;
+      return name.isNotEmpty && post.authorName.trim().toLowerCase() == name;
+    });
     final fs = firestore;
-    if (fs != null && authorName.trim().isNotEmpty) {
+    if (fs != null && (authorName.trim().isNotEmpty || uid.isNotEmpty)) {
       try {
-        final snap = await fs
-            .collection(collectionName)
-            .where('authorName', isEqualTo: authorName)
-            .get();
-        for (final doc in snap.docs) {
-          await doc.reference.delete();
-        }
+        await deleteAuthoredDocuments(
+          collection: fs.collection(collectionName),
+          authorName: authorName,
+          authorId: authorId,
+        );
       } catch (error, stack) {
         talker.handle(error, stack, 'Firestore ban erase failed');
         rethrow;
@@ -440,16 +509,57 @@ class AppwritePostRepository implements PostRepository {
     return removed;
   }
 
-  Future<void> _writeAppwrite(Post post) async {
+  Future<CloudWrite> _writeAppwrite(Post post) async {
     final mirror = _mirror;
-    if (mirror == null) return;
+    if (mirror == null) return CloudWrite.skipped;
     try {
       await mirror.upsertPost(post).timeout(const Duration(seconds: 2));
       _isLiveConnected = true;
+      return CloudWrite.ok;
     } catch (error, stack) {
       talker.handle(error, stack, 'Appwrite reflection mirror failed');
+      return CloudWrite.failed;
     }
   }
+
+  Post _withAuthor(Post post) {
+    if (post.authorId != null && post.authorId!.isNotEmpty) return post;
+    final uid = _authorUid;
+    if (uid == null || uid.isEmpty) return post;
+    return post.copyWith(authorId: uid);
+  }
+
+  Future<void> _flushPending() async {
+    final pending = await _outbox.readAll();
+    for (final post in pending) {
+      final firestoreWrite = await _writeFirestore(post);
+      final appwriteWrite = await _writeAppwrite(post);
+      final status = publishStatusFor(
+        queued: true,
+        firestoreWrite: firestoreWrite,
+        appwriteWrite: appwriteWrite,
+      );
+      if (firestoreWrite == CloudWrite.ok || appwriteWrite == CloudWrite.ok) {
+        await _outbox.remove(post.id);
+      }
+      if (status == PostPublishStatus.failed) continue;
+      _fallback.upsertLocal(post.copyWith(publishStatus: status));
+    }
+  }
+}
+
+/// Decides whether a reflection is confirmed, still waiting, or not durable.
+PostPublishStatus publishStatusFor({
+  required bool queued,
+  required CloudWrite firestoreWrite,
+  required CloudWrite appwriteWrite,
+}) {
+  final attempted = firestoreWrite != CloudWrite.skipped || appwriteWrite != CloudWrite.skipped;
+  final confirmed = firestoreWrite == CloudWrite.ok || appwriteWrite == CloudWrite.ok;
+  if (confirmed) return PostPublishStatus.confirmed;
+  if (!attempted && queued) return PostPublishStatus.confirmed;
+  if (queued) return PostPublishStatus.pending;
+  return PostPublishStatus.failed;
 }
 
 /// Appwrite row ids allow letters, numbers, period, hyphen, and underscore.
@@ -539,6 +649,7 @@ Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {
         DateTime.now(),
     reactions: reactions,
     isDemo: data['isDemo'] as bool? ?? false,
+    authorId: data['authorId'] as String?,
   );
 }
 
@@ -570,31 +681,4 @@ Post? postFromAppwritePayload(Map<String, dynamic> payload) {
     },
     isDemo: data['isDemo'] as bool? ?? false,
   );
-}
-
-List<Post> mergePosts(List<Post> base, List<Post> overlay) {
-  final byId = <String, Post>{for (final post in base) post.id: post};
-  for (final post in overlay) {
-    final existing = byId[post.id];
-    byId[post.id] = existing == null ? post : preferPost(existing, post);
-  }
-  final merged = byId.values.toList()..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-  return merged;
-}
-
-/// Keeps the newer reflection. Equal timestamps keep the copy with more care
-/// affirmations, so a local tap is not overwritten by a stale cloud row.
-/// Also preserves `isSaved` if either copy is marked saved.
-Post preferPost(Post current, Post incoming) {
-  final saved = current.isSaved || incoming.isSaved;
-  if (incoming.timestamp.isAfter(current.timestamp)) {
-    return incoming.isSaved == saved ? incoming : incoming.copyWith(isSaved: saved);
-  }
-  if (current.timestamp.isAfter(incoming.timestamp)) {
-    return current.isSaved == saved ? current : current.copyWith(isSaved: saved);
-  }
-  final currentScore = current.reactions.values.fold<int>(0, (total, value) => total + value);
-  final incomingScore = incoming.reactions.values.fold<int>(0, (total, value) => total + value);
-  final winner = incomingScore >= currentScore ? incoming : current;
-  return winner.isSaved == saved ? winner : winner.copyWith(isSaved: saved);
 }

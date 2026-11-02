@@ -2,24 +2,30 @@ import 'dart:async';
 
 import '../domain/post.dart';
 import 'canonical_organizer_starter_posts.dart';
+import 'local_account_scope.dart';
+import 'post_merge.dart';
 import 'post_repository.dart';
 import 'saved_posts_store.dart';
 
 /// Resilient local-first in-memory implementation with asynchronous broadcast streams.
 /// Seeds both the original Sanctuary spaces and the Circle.so-style Belong spaces.
-class LocalPostRepository implements PostRepository {
+class LocalPostRepository implements PostRepository, AccountScopedCache {
   final bool isDevMode;
   final SavedPostsStore _savedPostsStore;
   final List<Post> _store = [];
   final Set<String> _savedPostIds = {};
   final StreamController<List<Post>> _controller = StreamController<List<Post>>.broadcast();
   late final Future<void> _hydrationFuture;
+  String? _adoptedAccount;
+  bool _didAdopt = false;
 
   LocalPostRepository({
     this.isDevMode = true,
     List<Post>? initialPosts,
     SavedPostsStore? savedPostsStore,
-  }) : _savedPostsStore = savedPostsStore ?? SavedPostsStore() {
+  }) : _savedPostsStore =
+           savedPostsStore ??
+           SavedPostsStore(environment: reflectionEnvironment(isDevMode: isDevMode)) {
     if (initialPosts != null) {
       _store.addAll(initialPosts);
     } else if (isDevMode) {
@@ -62,6 +68,96 @@ class LocalPostRepository implements PostRepository {
 
   /// Whether [postId] is currently marked as saved by the member.
   bool isPostSaved(String postId) => _savedPostIds.contains(postId);
+
+  /// Drops in-memory bookmarks and reloads the bucket for [accountId].
+  ///
+  /// The same account is a no-op so an auth rebuild does not flicker the feed.
+  /// Pending reflections are removed by the cloud repository before this runs.
+  @override
+  Future<void> adoptAccount(String? accountId) async {
+    final normalized = _normalizeAccount(accountId);
+    if (_didAdopt && _adoptedAccount == normalized) return;
+    await _hydrationFuture;
+    _didAdopt = true;
+    _adoptedAccount = normalized;
+    _savedPostsStore.adoptAccount(normalized);
+    _savedPostIds.clear();
+    for (var i = 0; i < _store.length; i++) {
+      if (_store[i].isSaved) {
+        _store[i] = _store[i].copyWith(isSaved: false);
+      }
+    }
+    await _hydrateSavedPosts();
+    _notify();
+  }
+
+  /// Removes reflections that were waiting on a cloud write.
+  void dropPendingPosts() {
+    final before = _store.length;
+    _store.removeWhere((post) => post.publishStatus == PostPublishStatus.pending);
+    if (_store.length != before) _notify();
+  }
+
+  /// Inserts or replaces [post] in the in-memory feed.
+  void upsertLocal(Post post) {
+    final index = _store.indexWhere((existing) => existing.id == post.id);
+    if (index == -1) {
+      _store.insert(0, post);
+    } else {
+      _store[index] = post;
+    }
+    _notify();
+  }
+
+  /// Drops posts in [spaceKey] that a successful cloud snapshot no longer has.
+  ///
+  /// Demo seeds and [pendingIds] stay. Other spaces stay.
+  void retainAuthoritativeSpace({
+    required String spaceKey,
+    required Set<String> cloudIds,
+    required Set<String> pendingIds,
+  }) {
+    final wanted = normalizeReflectionSpaceKey(spaceKey);
+    final before = _store.length;
+    _store.removeWhere((post) {
+      if (normalizeReflectionSpaceKey(post.spaceKey) != wanted) return false;
+      if (post.isDemo) return false;
+      if (post.publishStatus == PostPublishStatus.pending) return false;
+      if (pendingIds.contains(post.id)) return false;
+      return !cloudIds.contains(post.id);
+    });
+    if (_store.length != before) _notify();
+  }
+
+  /// Merges cloud rows into the local feed, preserving a local bookmark.
+  void absorbCloudPosts(Iterable<Post> posts) {
+    var changed = false;
+    for (final incoming in posts) {
+      final saved = _savedPostIds.contains(incoming.id) || incoming.isSaved;
+      if (saved) _savedPostIds.add(incoming.id);
+      final index = _store.indexWhere((existing) => existing.id == incoming.id);
+      if (index == -1) {
+        _store.add(incoming.copyWith(isSaved: saved, publishStatus: PostPublishStatus.confirmed));
+        changed = true;
+      } else {
+        final existing = _store[index];
+        final preferred = preferPost(
+          existing,
+          incoming.copyWith(isSaved: saved, publishStatus: PostPublishStatus.confirmed),
+        );
+        final merged = preferred.copyWith(
+          publishStatus: PostPublishStatus.confirmed,
+          authorId: incoming.authorId ?? existing.authorId ?? preferred.authorId,
+          isSaved: saved || existing.isSaved,
+        );
+        if (merged != existing || !_sameReactionCounts(merged.reactions, existing.reactions)) {
+          _store[index] = merged;
+          changed = true;
+        }
+      }
+    }
+    if (changed) _notify();
+  }
 
   /// Registers cloud reflections in the local store so bookmarking a live
   /// Firestore/Appwrite post works and streams into `Saved for Later`.
@@ -232,14 +328,32 @@ class LocalPostRepository implements PostRepository {
   }
 
   @override
-  Future<int> deleteByAuthor({required String authorName}) async {
+  Future<int> deleteByAuthor({required String authorName, String? authorId}) async {
     final name = authorName.trim().toLowerCase();
-    if (name.isEmpty) return 0;
+    final uid = authorId?.trim() ?? '';
+    if (name.isEmpty && uid.isEmpty) return 0;
     final before = _store.length;
-    _store.removeWhere((post) => post.authorName.trim().toLowerCase() == name);
+    _store.removeWhere((post) {
+      if (uid.isNotEmpty && post.authorId == uid) return true;
+      return name.isNotEmpty && post.authorName.trim().toLowerCase() == name;
+    });
     final removed = before - _store.length;
     if (removed > 0) _notify();
     return removed;
+  }
+
+  static bool _sameReactionCounts(Map<String, int> a, Map<String, int> b) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
+
+  static String? _normalizeAccount(String? accountId) {
+    final trimmed = accountId?.trim();
+    if (trimmed == null || trimmed.isEmpty || trimmed == 'guest') return null;
+    return trimmed;
   }
 
   @override
