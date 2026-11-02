@@ -1,0 +1,4 @@
+{
+  "responseStatusCode": 200,
+  "responseBody": "{\"forwarded\":true,\"githubIssueNumber\":12,\"githubIssueUrl\":\"https://github.com/neiljaywarner/belong_feedback/issues/12\"}"
+}

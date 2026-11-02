@@ -1,0 +1,24 @@
+{
+  "total": 1,
+  "rows": [
+    {
+      "$id": "post-100",
+      "$sequence": "1",
+      "$tableId": "reflection_posts",
+      "$databaseId": "belong_community_db",
+      "$createdAt": "2026-10-24T12:00:00.000Z",
+      "$updatedAt": "2026-10-24T12:00:00.000Z",
+      "$permissions": [],
+      "authorName": "Fellow Member",
+      "spaceKey": "prayer",
+      "intentTag": "[Support]",
+      "content": "A quiet note from the cassette.",
+      "createdAt": "2026-10-24T12:00:00.000Z",
+      "prayingCount": 1,
+      "standingWithCount": 0,
+      "peaceCount": 0,
+      "encouragedCount": 2,
+      "isDemo": false
+    }
+  ]
+}

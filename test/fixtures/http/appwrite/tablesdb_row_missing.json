@@ -1,0 +1,6 @@
+{
+  "message": "Row with the requested ID could not be found.",
+  "code": 404,
+  "type": "row_not_found",
+  "version": "1.8.0"
+}

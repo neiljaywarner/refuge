@@ -1,0 +1,4 @@
+{
+  "responseStatusCode": 200,
+  "responseBody": "{\"forwarded\":false,\"reason\":\"github credential is not configured\"}"
+}
