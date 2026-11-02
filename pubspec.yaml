@@ -63,6 +63,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   args: ^2.5.0
+  crypto: ^3.0.7
   rps: ^0.10.1
   patrol: ^4.10.0
   fake_cloud_firestore: ^4.5.0

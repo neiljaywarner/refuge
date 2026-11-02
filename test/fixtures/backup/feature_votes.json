@@ -1,0 +1,14 @@
+{
+  "documents": [
+    {
+      "id": "planned-native-store-apps",
+      "updateTime": "2026-11-01T00:00:00.000Z",
+      "data": {
+        "id": "planned-native-store-apps",
+        "title": "Native iOS App Store and Google Play Apps",
+        "votes": 2,
+        "voterIds": ["member_uid_a"]
+      }
+    }
+  ]
+}

@@ -118,3 +118,7 @@ Move the live notes to Appwrite when members have an Appwrite session. Then the 
 5. Cancel Serverpod after a released build no longer calls it.
 
 The on-device list stays. It is what makes the screen calm when the network drops. It is not the backup of the community's notes.
+
+## First-pass nearly-everything mirror (November 2026)
+
+The weekly private JSON file is still the older copy. A CLI now copies the current Firestore documents into Appwrite `backup_*` tables so a general restore is possible. It does not add an Appwrite function. `dm-mirror` and `dm-push` stay the two live functions. See [Firestore to Appwrite backup](Firestore-to-Appwrite-Backup). GCS exports and hourly point-in-time recovery are [#799](https://github.com/neiljaywarner/refuge/issues/799) and are not this page.
