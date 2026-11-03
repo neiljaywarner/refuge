@@ -30,7 +30,7 @@ function harness(responses) {
 
 test('maxAgeSeconds reads max-age and ignores junk', () => {
   assert.equal(maxAgeSeconds('public, max-age=19876, must-revalidate'), 19876);
-  assert.equal(maxAgeSeconds('max-age=0'), null);
+  assert.equal(maxAgeSeconds('max-age=0'), 0);
   assert.equal(maxAgeSeconds('no-cache'), null);
   assert.equal(maxAgeSeconds(undefined), null);
 });

@@ -98,10 +98,10 @@ class FirebaseStorageRepository implements StorageRepository {
   final InMemoryStorageRepository _fallback;
 
   /// Guard flag: When Spark plan has no default GCS bucket, custom photo binary uploads
-  /// can be disabled via --dart-define=FIREBASE_STORAGE_ENABLED=false
+  /// must be explicitly enabled via --dart-define=FIREBASE_STORAGE_ENABLED=true
   static const bool isStorageEnabled = bool.fromEnvironment(
     'FIREBASE_STORAGE_ENABLED',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   @override

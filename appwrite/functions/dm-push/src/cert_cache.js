@@ -20,14 +20,14 @@ const defaultMaxAgeMs = 60 * 60 * 1000;
 
 /**
  * Reads `max-age` seconds from a Cache-Control header value.
- * Returns null when it is absent or not a positive integer.
+ * Returns null when it is absent or not a non-negative integer.
  */
 function maxAgeSeconds(cacheControl) {
   if (typeof cacheControl !== 'string') return null;
   const match = /(?:^|[,\s])max-age=(\d+)/i.exec(cacheControl);
   if (!match) return null;
   const seconds = Number.parseInt(match[1], 10);
-  return seconds > 0 ? seconds : null;
+  return seconds >= 0 ? seconds : null;
 }
 
 function createCertCache({

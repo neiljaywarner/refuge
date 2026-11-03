@@ -253,7 +253,10 @@ void main() {
       await $(const Key('submit_feedback_button')).tap();
       await $.pumpAndSettle();
 
-      expect($(find.textContaining('Could not submit feedback: Exception: offline')), findsOneWidget);
+      expect(
+        $(find.textContaining('Could not submit feedback: Exception: offline')),
+        findsOneWidget,
+      );
     });
 
     patrolWidgetTest(
