@@ -11,12 +11,15 @@ import '../../memes/presentation/meme_gallery_modal.dart';
 
 /// Intent / tone tags available in the dropdown
 const kToneOptions = [
+  '[General Chat]',
+  '[Fellowship]',
   '[Prayer Request]',
   '[Comfort Only]',
   '[Bible Deep Dive]',
   '[Special Interest]',
   '[Autism & Faith Meme]',
   '[Praise Report]',
+  '[Other]',
 ];
 
 /// Composes unhurried reflections using declarative Flutter Hooks for text editing controllers.
@@ -50,6 +53,7 @@ class ReflectionComposer extends HookWidget {
         ? (selectedSpace == 'memes' ? '[Autism & Faith Meme]' : '[Special Interest]')
         : (selectedSpace == 'memes' ? '[Autism & Faith Meme]' : '[Prayer Request]');
     final selectedTone = useState(initialTone);
+    final priorTone = useState<String?>(null);
     final attachedMeme = useState<CalmMeme?>(null);
     final isExpanded = useState(isModal || isImagePost);
     final contentController = useTextEditingController();
@@ -73,6 +77,7 @@ class ReflectionComposer extends HookWidget {
       if (meme.imageUrl != null) {
         imageUrlController.text = meme.imageUrl!;
       }
+      priorTone.value = selectedTone.value;
       selectedTone.value = '[Autism & Faith Meme]';
       specialInterestController.text = meme.tag;
       if (altTextController.text.trim().isEmpty) {
@@ -376,10 +381,10 @@ class ReflectionComposer extends HookWidget {
                       child: Image.network(
                         customImageUrl.value.isNotEmpty
                             ? customImageUrl.value
-                            : attachedMeme.value!.imageUrl!,
+                            : (attachedMeme.value?.imageUrl ?? ''),
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (context, error, stackTrace) => Container(
                           height: 60,
                           alignment: Alignment.center,
                           child: const Text('🖼️ [Image Attached]', style: TextStyle(fontSize: 12)),
@@ -394,6 +399,10 @@ class ReflectionComposer extends HookWidget {
                         onTap: () {
                           imageUrlController.clear();
                           attachedMeme.value = null;
+                          if (priorTone.value != null) {
+                            selectedTone.value = priorTone.value!;
+                            priorTone.value = null;
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.all(4),
@@ -493,7 +502,13 @@ class ReflectionComposer extends HookWidget {
                     ),
                     InkWell(
                       key: const Key('remove_attached_meme_button'),
-                      onTap: () => attachedMeme.value = null,
+                      onTap: () {
+                        attachedMeme.value = null;
+                        if (priorTone.value != null) {
+                          selectedTone.value = priorTone.value!;
+                          priorTone.value = null;
+                        }
+                      },
                       child: const Icon(Icons.close, size: 14),
                     ),
                   ],
