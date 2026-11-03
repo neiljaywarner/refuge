@@ -374,12 +374,14 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                         ),
                                         const SizedBox(height: 12),
                                         Text(
-                                          'No saved reflections yet.\nTap the bookmark icon on any reflection to save it for quiet contemplation.',
+                                          'No saved reflections yet.\n\nTap the bookmark icon (🔖) on any reflection in Prayer Sanctuary or Community Spaces to save it here for private reading.',
+                                          key: const Key('saved_for_later_empty_explainer'),
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontSize: 12.5,
+                                            height: 1.4,
                                             color: Theme.of(context).textTheme.bodySmall?.color
-                                                ?.withValues(alpha: 0.7),
+                                                ?.withValues(alpha: 0.75),
                                           ),
                                         ),
                                       ],
@@ -413,6 +415,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                                 post: p,
                                 isContrast: isContrast,
                                 isHighlighted: highlightedPostId.value == p.id,
+                                onNavigateToSaved: () => selectSpace('saved_for_later'),
                                 onAddReaction: (reactionType) => activeRepository.toggleReaction(
                                   postId: p.id,
                                   reactionType: reactionType,
