@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/other_site_info_button.dart';
+import 'auth_help_and_about_sheet.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/soft_delete_sign_in_guard.dart';
@@ -214,6 +215,8 @@ class _BelongFirebaseSignIn extends HookConsumerWidget {
                       ),
                     ),
                     const OtherSiteInfoButton(),
+                    const SizedBox(width: 4),
+                    const AuthHelpAndAboutButton(),
                   ],
                 ),
               ],

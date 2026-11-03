@@ -6,6 +6,7 @@ import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/presentation/return_after_delete_panel.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../../profile/domain/member_profile.dart';
+import 'auth_help_and_about_sheet.dart';
 import '../domain/auth_exception.dart';
 import '../../../core/config/preview_mode_provider.dart';
 
@@ -291,6 +292,7 @@ class BelongAuthSheet extends HookConsumerWidget {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
+              const AuthHelpAndAboutButton(),
               IconButton(
                 key: const Key('auth_sheet_close_button'),
                 icon: const Icon(Icons.close_rounded, size: 20),

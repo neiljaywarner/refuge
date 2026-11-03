@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'auth_help_and_about_sheet.dart';
 import '../../../core/config/other_site_info_button.dart';
 import '../../profile/presentation/member_profile_sheet.dart';
 
@@ -58,6 +59,8 @@ class BelongFirebaseSignInScreen extends StatelessWidget {
               ),
             ),
             const OtherSiteInfoButton(),
+            const SizedBox(width: 4),
+            const AuthHelpAndAboutButton(),
           ],
         ),
       ),
