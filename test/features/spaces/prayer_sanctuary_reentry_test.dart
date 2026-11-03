@@ -8,7 +8,7 @@ import 'package:refuge4serverpod/src/features/reflections/presentation/space_nav
 import 'package:refuge4serverpod/src/features/sensory_themes/domain/sensory_mode.dart';
 
 void main() {
-  group('Prayer Sanctuary Directory & Re-entry (#846 Bruce Feedback)', () {
+  group('Prayer Sanctuary Directory & Re-entry (#846 User Usability Feedback)', () {
     testWidgets(
       'Prayer Sanctuary is prominently pinned in Spaces Directory and selects prayer slug',
       (tester) async {
