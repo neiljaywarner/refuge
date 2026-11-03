@@ -24,7 +24,7 @@ const defaultMaxAgeMs = 60 * 60 * 1000;
  */
 function maxAgeSeconds(cacheControl) {
   if (typeof cacheControl !== 'string') return null;
-  const match = /(?:^|[\s])max-age=(\d+)/i.exec(cacheControl);
+  const match = /(?:^|[,\s])max-age=(\d+)/i.exec(cacheControl);
   if (!match) return null;
   const seconds = Number.parseInt(match[1], 10);
   return seconds > 0 ? seconds : null;
