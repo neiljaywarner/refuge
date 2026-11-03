@@ -48,5 +48,28 @@ void main() {
       await tester.pumpAndSettle();
       expect(selectedFilter, equals('[Other]'));
     });
+
+    testWidgets('ReflectionComposer renders expanded intent options without errors', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReflectionComposer(
+              selectedSpace: 'prayer',
+              primaryColor: Colors.blue,
+              isContrast: false,
+              onSubmit: ({required content, required toneTag, specialInterestTag, imageUrl}) async {
+                return PostPublishStatus.confirmed;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('composer_expand_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('[Prayer Request]'), findsOneWidget);
+    });
   });
 }
