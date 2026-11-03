@@ -11,11 +11,11 @@ import '../../../core/presentation/system_insets.dart';
 import '../../storage/data/storage_repository.dart';
 import '../application/feedback_attachment_ref.dart';
 import '../data/feature_voting_repository.dart';
-import '../data/vote_persist_failure_bus.dart';
 import '../data/vote_storage_service.dart';
 import '../domain/feedback_and_voting_models.dart';
 import '../domain/feedback_source_stamp.dart';
 import '../domain/feedback_success_copy.dart';
+import '../domain/local_feedback_receipt.dart';
 import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
 
@@ -186,6 +186,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final isSubmitting = useState<bool>(false);
     final submittedMessage = useState<String?>(null);
     final feedbackScrollController = useScrollController();
+    final localReceipts = useState<List<LocalFeedbackReceipt>>([]);
+
+    useEffect(() {
+      LocalFeedbackReceiptStore.loadReceipts().then((items) {
+        localReceipts.value = items;
+      });
+      return null;
+    }, []);
 
     void publishFeedbackResult(String message) {
       submittedMessage.value = message;
@@ -774,6 +782,20 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                                     : saved,
                                               );
                                             }
+                                            // Persist local receipt so member always has proof of "What I Entered" (#852)
+                                            final receipt = LocalFeedbackReceipt(
+                                              id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                              message: text,
+                                              sentimentLabel: sentiment.label,
+                                              sentimentEmoji: sentiment.emoji,
+                                              rating: selectedStarRating.value,
+                                              contact: contact.isNotEmpty ? contact : null,
+                                              hasDrawing: keptDrawing || hostedUpload,
+                                              timestamp: DateTime.now(),
+                                            );
+                                            await LocalFeedbackReceiptStore.saveReceipt(receipt);
+                                            localReceipts.value = [receipt, ...localReceipts.value];
+
                                             feedbackController.clear();
                                             drawingAttachment.value = null;
                                           } on FirebaseException catch (e) {
@@ -805,6 +827,14 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                         ),
                       ),
                     ),
+                    if (localReceipts.value.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      _RecentSubmissionsHistoryCard(
+                        receipts: localReceipts.value,
+                        colorScheme: colorScheme,
+                        textTheme: textTheme,
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -814,6 +844,108 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       ),
     );
   }
+}
+
+class _RecentSubmissionsHistoryCard extends StatelessWidget {
+  const _RecentSubmissionsHistoryCard({
+    required this.receipts,
+    required this.colorScheme,
+    required this.textTheme,
+  });
+
+  final List<LocalFeedbackReceipt> receipts;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) => Card(
+      key: const Key('recent_submissions_history_card'),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ExpansionTile(
+        key: const Key('recent_submissions_expansion_tile'),
+        initiallyExpanded: true,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+        childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        leading: Icon(Icons.history_rounded, color: colorScheme.primary, size: 20),
+        title: Text(
+          'Your Recent Submissions (${receipts.length})',
+          style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          'Saved locally so you can review what you entered',
+          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        children: receipts.map((r) {
+          final timeStr =
+              '${r.timestamp.month}/${r.timestamp.day} at ${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}';
+          return Container(
+            key: Key('feedback_receipt_${r.id}'),
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(r.sentimentEmoji, style: const TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          r.sentimentLabel,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        if (r.rating != null) ...[
+                          const SizedBox(width: 6),
+                          Text('${r.rating}★', style: const TextStyle(fontSize: 11, color: Colors.amber)),
+                        ],
+                        if (r.hasDrawing) ...[
+                          const SizedBox(width: 6),
+                          const Icon(Icons.draw_outlined, size: 13),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      timeStr,
+                      style: textTheme.bodySmall?.copyWith(
+                        fontSize: 10,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  r.message,
+                  style: textTheme.bodySmall?.copyWith(fontSize: 12),
+                ),
+                if (r.contact != null && r.contact!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Contact: ${r.contact}',
+                    style: textTheme.bodySmall?.copyWith(
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
 }
 
 class _VoteSaveErrorBanner extends StatelessWidget {
