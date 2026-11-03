@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -775,8 +776,16 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                             }
                                             feedbackController.clear();
                                             drawingAttachment.value = null;
+                                          } on FirebaseException catch (e) {
+                                            publishFeedbackResult(
+                                              'Could not submit feedback to cloud: ${e.message ?? e.code}. '
+                                              'Your note and drawing are safely preserved so you can retry.',
+                                            );
                                           } catch (e) {
-                                            publishFeedbackResult('Could not submit feedback: $e');
+                                            publishFeedbackResult(
+                                              'Could not submit feedback: $e. '
+                                              'Your note and drawing are safely preserved so you can retry.',
+                                            );
                                           } finally {
                                             isSubmitting.value = false;
                                           }

@@ -105,7 +105,49 @@ When `count == 0` (e.g. after tapping *"Mark all read"*), the Dart service asks 
 
 ---
 
-## 5. Verification & Test Suite
+## 5. Web Push, VAPID & `WEB_PUSH_VAPID_KEY` Architecture
+
+### 5.1 What is VAPID? (High-Level Summary)
+**VAPID** stands for **Voluntary Application Server Identification for Web Push**, codified as standard [IETF RFC 8292](https://datatracker.ietf.org/doc/html/rfc8292) and designed to work with the [W3C Push API](https://www.w3.org/TR/push-api/).
+
+On mobile platforms (native Android or iOS), push notifications authenticate using proprietary OS vendor mechanisms (such as Google Play Services or Apple APNs authentication keys). On the open web, however, browsers (Chrome, Firefox, Safari, Edge) connect to different vendor-managed push services.
+
+Without VAPID, web developers had to register separate developer accounts and API keys with every individual browser vendor. **VAPID eliminates this fragmentation**:
+- It uses an **asymmetric elliptic curve keypair** (ECDSA over NIST curve P-256 / prime256v1).
+- The **Public Key** (the `WEB_PUSH_VAPID_KEY`) is safe to ship to client browsers in frontend code.
+- The **Private Key** stays protected on your application server or cloud functions.
+- When your server sends a push message, it signs a JSON Web Token (JWT) using the private key. The browser vendor's push service (e.g. Mozilla Autopush, Google FCM Web Push Endpoint, Apple Push Service for Web) verifies the JWT signature against the public key associated with the client's subscription. This cryptographically proves the sender's identity and prevents unauthorized push spoofing without requiring vendor-specific API credentials.
+
+### 5.2 Deep Technical Specifications & Standards
+1. **Cryptographic Primitives ([RFC 8292 §2](https://datatracker.ietf.org/doc/html/rfc8292#section-2))**:
+   - Algorithm: ECDSA using SHA-256 on the P-256 curve (`ES256`).
+   - Public Key Encoding: Uncompressed point format (65 bytes starting with `0x04`), serialized as URL-safe Base64 without padding (typically 87 characters, starting with `B...`).
+2. **Subscription Binding ([RFC 8292 §3](https://datatracker.ietf.org/doc/html/rfc8292#section-3))**:
+   - In browser JavaScript: `pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey })`.
+   - In Flutter Web with Firebase Cloud Messaging:
+     ```dart
+     final fcmToken = await FirebaseMessaging.instance.getToken(
+       vapidKey: String.fromEnvironment('WEB_PUSH_VAPID_KEY'),
+     );
+     ```
+3. **Application Server Request Authentication**:
+   - The backend includes an `Authorization: vapid t=<jwt>, k=<vapidPublicKey>` HTTP header when dispatching to the push service endpoint.
+   - The signed JWT includes the `aud` claim (the origin of the push service), an `exp` expiration, and a `sub` claim (contact info, e.g. `mailto:support@belongonthespectrum.com`).
+
+### 5.3 Belong on the Spectrum Implementation & Best Practices
+- **Environment Injection**: The public key is injected at compile time via `--dart-define=WEB_PUSH_VAPID_KEY=<public_key>`.
+- **Honest Fallback Behavior (`#811`)**:
+  - If `WEB_PUSH_VAPID_KEY` is empty, unset, or a mock placeholder on Web, the client must **not** pass a dummy string to `getToken(vapidKey: ...)`, as modern browsers throw an `InvalidAccessError` or fail silently.
+  - The app gracefully reports Web Push as unavailable on the web tab, surfaces a gentle prompt to install the PWA or use native notifications, and never crashes or records a false `enabled: true` in user preferences.
+- **Authoritative References**:
+  - [IETF RFC 8292: Voluntary Application Server Identification (VAPID) for Web Push](https://datatracker.ietf.org/doc/html/rfc8292)
+  - [W3C Push API Specification](https://www.w3.org/TR/push-api/)
+  - [Mozilla Developer Network (MDN): Sending VAPID identified WebPush Notifications](https://developer.mozilla.org/en-US/docs/Web/API/Push_API/Best_Practices#application_server_keys)
+  - [Firebase Cloud Messaging Web Setup & VAPID Key Guide](https://firebase.google.com/docs/cloud-messaging/js/client#configure_web_credentials_with_fcm)
+
+---
+
+## 6. Verification & Test Suite
 
 1. **Domain & Formatting Unit Tests**: `test/features/notifications/belong_notifications_test.dart`
 2. **Preference & Schedule Unit Tests**: `test/features/notifications/notification_preferences_test.dart`

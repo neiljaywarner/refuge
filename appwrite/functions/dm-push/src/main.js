@@ -18,6 +18,7 @@
  */
 
 const crypto = require('crypto');
+const { createCertCache } = require('./cert_cache');
 const {
   handleDirectMessagePush,
   messageFromFirestoreDocument,
@@ -26,10 +27,8 @@ const {
 } = require('./handle');
 const { directMessageAndroidConfig } = require('./decide');
 
-const certUrl =
-  'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
-
-let cachedCerts = null;
+// Honors Cache-Control max-age and refetches once on an unknown kid (#811).
+const certCache = createCertCache();
 let cachedAccessToken = null;
 
 async function verifyIdToken(idToken) {
@@ -45,13 +44,7 @@ async function verifyIdToken(idToken) {
     throw new Error('wrong issuer');
   }
   if (typeof payload.exp !== 'number' || payload.exp < now) throw new Error('expired');
-  if (!cachedCerts) {
-    const response = await fetch(certUrl);
-    if (!response.ok) throw new Error('could not load token certificates');
-    cachedCerts = await response.json();
-  }
-  const certificate = cachedCerts[header.kid];
-  if (!certificate) throw new Error('unknown token key');
+  const certificate = await certCache.certificateFor(header.kid);
   const verifier = crypto.createVerify('RSA-SHA256');
   verifier.update(`${headerPart}.${payloadPart}`);
   const valid = verifier.verify(certificate, Buffer.from(signaturePart, 'base64url'));

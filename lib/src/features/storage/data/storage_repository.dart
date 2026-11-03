@@ -97,6 +97,13 @@ class FirebaseStorageRepository implements StorageRepository {
 
   final InMemoryStorageRepository _fallback;
 
+  /// Guard flag: When Spark plan has no default GCS bucket, custom photo binary uploads
+  /// must be explicitly enabled via --dart-define=FIREBASE_STORAGE_ENABLED=true
+  static const bool isStorageEnabled = bool.fromEnvironment(
+    'FIREBASE_STORAGE_ENABLED',
+    defaultValue: false,
+  );
+
   @override
   BackendTarget get target => BackendTarget.firebase;
 
@@ -105,14 +112,29 @@ class FirebaseStorageRepository implements StorageRepository {
     required String userId,
     required Uint8List bytes,
     required String filename,
-  }) async => _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
+  }) async {
+    if (!isStorageEnabled) {
+      throw UnsupportedError(
+        'Custom photo uploads are paused while cloud storage is provisioning. '
+        'Please select one of the calm preset avatars or a Giphy GIF.',
+      );
+    }
+    return _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
+  }
 
   @override
   Future<String> uploadPostMedia({
     required String spaceSlug,
     required Uint8List bytes,
     required String filename,
-  }) async => _fallback.uploadPostMedia(spaceSlug: spaceSlug, bytes: bytes, filename: filename);
+  }) async {
+    if (!isStorageEnabled) {
+      throw UnsupportedError(
+        'Media upload is temporarily paused. Please use preset artwork or text reflections.',
+      );
+    }
+    return _fallback.uploadPostMedia(spaceSlug: spaceSlug, bytes: bytes, filename: filename);
+  }
 
   @override
   Future<String> uploadFeedbackAttachment({

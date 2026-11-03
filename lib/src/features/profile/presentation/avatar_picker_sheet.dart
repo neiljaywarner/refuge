@@ -88,7 +88,8 @@ class _AvatarPickerSheetState extends ConsumerState<AvatarPickerSheet> {
       }
 
       final croppedBytes = await avatarService.cropSquare(framed);
-      final userId = profile.email.isNotEmpty ? profile.email : 'member_guest';
+      final rawUid = profile.userId.isNotEmpty ? profile.userId : profile.email;
+      final userId = rawUid.isNotEmpty ? rawUid : 'member_guest';
       final downloadUrl = await storageRepo.uploadAvatar(
         userId: userId,
         bytes: croppedBytes,

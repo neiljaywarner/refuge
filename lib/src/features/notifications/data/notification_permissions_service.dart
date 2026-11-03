@@ -102,9 +102,16 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       }
       String? token;
       try {
-        token = await messaging.getToken(
-          vapidKey: kIsWeb ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum' : null,
-        );
+        const vapidEnvKey = String.fromEnvironment('WEB_PUSH_VAPID_KEY');
+        final vapidKey = vapidEnvKey.trim().isNotEmpty
+            ? vapidEnvKey.trim()
+            : (kIsWeb ? null : null);
+        if (kIsWeb && (vapidKey == null || vapidKey.isEmpty)) {
+          // Honest check: If WEB_PUSH_VAPID_KEY is unset on web, push token cannot be acquired
+          token = null;
+        } else {
+          token = await messaging.getToken(vapidKey: vapidKey);
+        }
       } catch (_) {
         token = state.fcmToken;
       }
@@ -195,9 +202,15 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
       if (granted) {
         String? token;
         try {
-          token = await messaging.getToken(
-            vapidKey: kIsWeb ? 'BEl5_VapidKeyPlaceholderBelongOnTheSpectrum' : null,
-          );
+          const vapidEnvKey = String.fromEnvironment('WEB_PUSH_VAPID_KEY');
+          final vapidKey = vapidEnvKey.trim().isNotEmpty
+              ? vapidEnvKey.trim()
+              : (kIsWeb ? null : null);
+          if (kIsWeb && (vapidKey == null || vapidKey.isEmpty)) {
+            token = null;
+          } else {
+            token = await messaging.getToken(vapidKey: vapidKey);
+          }
         } catch (_) {
           // Token retrieval may fail if offline or VAPID key not configured yet
         }
@@ -205,6 +218,15 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
           await messaging.subscribeToTopic(kCalmFcmPreviewTopic);
         } catch (_) {
           // Topic subscribe may fail in tests or offline harnesses.
+        }
+        if (kIsWeb && const String.fromEnvironment('WEB_PUSH_VAPID_KEY').trim().isEmpty) {
+          // On Web, if VAPID is missing, report unavailable rather than returning fake enabled
+          state = state.copyWith(
+            enabled: false,
+            isSystemPermissionDenied: true,
+            fcmToken: null,
+          );
+          return false;
         }
         state = state.copyWith(
           enabled: true,
