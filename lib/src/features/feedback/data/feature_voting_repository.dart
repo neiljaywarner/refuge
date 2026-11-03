@@ -577,9 +577,12 @@ class FirebaseFeatureVotingRepository
               .timeout(const Duration(seconds: 6));
           createdId = created.id;
         }
-      } catch (_) {
-        // Resilient offline fallback. A missing document id skips the forward.
-        createdId = null;
+      } on FirebaseException catch (e, stack) {
+        AppLogger.warning('Feedback persist failed to Firestore: ${e.code}', e, stack);
+        rethrow;
+      } catch (error, stack) {
+        AppLogger.warning('Feedback persist unexpected failure', error, stack);
+        rethrow;
       }
     }
 

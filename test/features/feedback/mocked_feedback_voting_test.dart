@@ -253,7 +253,7 @@ void main() {
       await $(const Key('submit_feedback_button')).tap();
       await $.pumpAndSettle();
 
-      expect($('Could not submit feedback: Exception: offline'), findsOneWidget);
+      expect($(find.textContaining('Could not submit feedback: Exception: offline')), findsOneWidget);
     });
 
     patrolWidgetTest(
@@ -356,6 +356,7 @@ void main() {
       final collection = MockVoteCollection();
       final document = _MockDocumentReference();
 
+      when(() => document.id).thenReturn('mock-doc-id');
       when(() => firestore.collection(any())).thenReturn(collection);
       when(() => collection.doc(any())).thenReturn(document);
       when(() => collection.add(any())).thenAnswer((_) async => document);
