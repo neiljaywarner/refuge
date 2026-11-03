@@ -24,6 +24,7 @@ class ReflectionCard extends ConsumerWidget {
   final ValueChanged<String> onAddReaction;
   final VoidCallback? onOpenDiscussion;
   final bool isHighlighted;
+  final VoidCallback? onNavigateToSaved;
 
   const ReflectionCard({
     super.key,
@@ -32,6 +33,7 @@ class ReflectionCard extends ConsumerWidget {
     required this.onAddReaction,
     this.onOpenDiscussion,
     this.isHighlighted = false,
+    this.onNavigateToSaved,
   });
 
   @override
@@ -189,10 +191,32 @@ class ReflectionCard extends ConsumerWidget {
                           key: Key('save_for_later_snackbar_${post.id}'),
                           duration: const Duration(seconds: 4),
                           behavior: SnackBarBehavior.floating,
-                          content: Text(
-                            wasSaved
-                                ? 'Removed from Saved for Later.'
-                                : '🔖 Saved to your private Saved for Later space.',
+                          content: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  wasSaved
+                                      ? 'Removed from Saved for Later.'
+                                      : '🔖 Saved to your private Saved for Later space.',
+                                ),
+                              ),
+                              if (!wasSaved && onNavigateToSaved != null) ...[
+                                const SizedBox(width: 8),
+                                TextButton(
+                                  key: Key('view_saved_for_later_btn_${post.id}'),
+                                  style: TextButton.styleFrom(
+                                    visualDensity: VisualDensity.compact,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+                                  ),
+                                  onPressed: () {
+                                    messenger.hideCurrentSnackBar();
+                                    onNavigateToSaved!();
+                                  },
+                                  child: const Text('View Saved', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ],
                           ),
                           action: SnackBarAction(
                             label: 'Undo',

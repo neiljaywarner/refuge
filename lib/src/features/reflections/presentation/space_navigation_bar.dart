@@ -94,12 +94,20 @@ class SpaceNavigationBar extends ConsumerWidget {
             showPrefix: showPrefix,
             maxLabelWidth: maxSortLabelWidth,
           );
+          final prayerReentry = selectedSpace != 'prayer'
+              ? _returnToPrayerSanctuaryButton(context, ref, theme, primary, effectiveContrast)
+              : null;
 
           if (phoneChrome) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                title,
+                Row(
+                  children: [
+                    Expanded(child: title),
+                    if (prayerReentry != null) ...[const SizedBox(width: 6), prayerReentry],
+                  ],
+                ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
@@ -118,6 +126,7 @@ class SpaceNavigationBar extends ConsumerWidget {
                 _slash(theme, effectiveContrast),
               ],
               Expanded(child: title),
+              if (prayerReentry != null) ...[const SizedBox(width: 6), prayerReentry],
               if (filter != null) ...[const SizedBox(width: 6), filter],
               if (sort != null) ...[const SizedBox(width: 6), sort],
               if (showBreadcrumbs) ...[
@@ -202,6 +211,54 @@ class SpaceNavigationBar extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: effectiveContrast ? Colors.white70 : theme.textTheme.bodySmall?.color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Widget _returnToPrayerSanctuaryButton(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeData theme,
+    Color primary,
+    bool effectiveContrast,
+  ) => Semantics(
+    button: true,
+    label: 'Return to Prayer Sanctuary',
+    child: InkWell(
+      key: const Key('return_to_prayer_sanctuary_button'),
+      borderRadius: BorderRadius.circular(8),
+      onTap: () {
+        selectFeedSortAfterFrame(context, () {
+          ref.read(activeSpaceKeyProvider.notifier).state = 'prayer';
+          onSelectSpace('prayer');
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: effectiveContrast
+              ? Colors.yellow.withValues(alpha: 0.2)
+              : primary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: effectiveContrast ? Colors.yellow : primary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🙏', style: TextStyle(fontSize: 13)),
+            const SizedBox(width: 4),
+            Text(
+              'Prayer Sanctuary',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: effectiveContrast ? Colors.yellow : primary,
               ),
             ),
           ],

@@ -100,6 +100,7 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
                       for (var i = 0; i < section.items.length; i++) ...[
                         if (i > 0) Divider(height: 1, color: primary.withValues(alpha: 0.1)),
                         _SpaceRowTile(
+                          key: Key('space_tile_${section.items[i].slug}'),
                           item: section.items[i],
                           isSelected:
                               selectedSpaceSlug == section.items[i].slug &&
@@ -146,7 +147,12 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
 }
 
 class _SpaceRowTile extends StatelessWidget {
-  const _SpaceRowTile({required this.item, required this.isSelected, required this.onTap});
+  const _SpaceRowTile({
+    super.key,
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final BelongSpaceItem item;
   final bool isSelected;
