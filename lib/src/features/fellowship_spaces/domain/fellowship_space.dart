@@ -59,6 +59,12 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
     heading: 'PINNED',
     items: [
       BelongSpaceItem(
+        slug: 'prayer',
+        title: 'Prayer Sanctuary',
+        emoji: '🙏',
+        subtitle: 'Quiet fellowship, prayer requests & peaceful encouragement (Home)',
+      ),
+      BelongSpaceItem(
         slug: 'general_chat',
         title: 'General Chat',
         emoji: '📌',
