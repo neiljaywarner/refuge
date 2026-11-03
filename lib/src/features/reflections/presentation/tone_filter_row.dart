@@ -6,6 +6,8 @@ import 'reflections_providers.dart';
 
 const List<String> kToneFilters = [
   'All',
+  '[General Chat]',
+  '[Fellowship]',
   '[Prayer Request]',
   '[Comfort Only]',
   '[Bible Deep-Dive]',
@@ -14,6 +16,7 @@ const List<String> kToneFilters = [
   '[Giving Thanks]',
   '[Question]',
   '[Resource]',
+  '[Other]',
 ];
 
 /// Stable semantics id / widget key for a tone filter pill.
