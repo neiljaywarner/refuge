@@ -47,6 +47,28 @@ String publicDisplayName({required String displayName, required String email}) {
   return trimmed.isEmpty ? 'Fellowship Member' : trimmed;
 }
 
+/// Checks whether a member account is eligible to be listed in public directories
+/// and the direct message recipient picker (#813).
+///
+/// An account is eligible ONLY if:
+/// 1. The account is not hidden via opt-out ([listedInDirectory] != false).
+/// 2. The UID is not in [excludedUids] (banned or soft/self-deleted accounts).
+/// 3. The account does not have [banned] or [softDeleted] set to true.
+/// 4. The UID is not equal to [currentUserId] (if supplied).
+bool isMemberEligibleForDirectory({
+  required String uid,
+  required Map<String, dynamic> userData,
+  Set<String> excludedUids = const {},
+  String? currentUserId,
+}) {
+  if (uid.isEmpty) return false;
+  if (currentUserId != null && uid == currentUserId) return false;
+  if (excludedUids.contains(uid)) return false;
+  if (userData['banned'] == true || userData['softDeleted'] == true) return false;
+  if (userData[MemberDirectoryStore.listedField] == false) return false;
+  return true;
+}
+
 /// Signed-in members published for the message picker.
 ///
 /// Documents live at `users/{uid}`, which production rules already allow the
@@ -95,7 +117,7 @@ class MemberDirectoryStore {
     } catch (_) {}
   }
 
-  Stream<List<DirectoryMember>> watchDirectoryMembers() {
+  Stream<List<DirectoryMember>> watchDirectoryMembers({Set<String> excludedUids = const {}}) {
     final fs = firestore;
     if (fs == null) return Stream.value(const []);
     try {
@@ -106,7 +128,13 @@ class MemberDirectoryStore {
         for (final doc in snapshot.docs) {
           final data = doc.data();
           final uid = (data['uid'] as String?) ?? doc.id;
-          if (uid.isEmpty) continue;
+          if (!isMemberEligibleForDirectory(
+            uid: uid,
+            userData: data,
+            excludedUids: excludedUids,
+          )) {
+            continue;
+          }
           members.add(
             DirectoryMember(
               uid: uid,

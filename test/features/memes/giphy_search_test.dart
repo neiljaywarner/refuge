@@ -135,6 +135,11 @@ void main() {
       expect(giphySurfaceFor(isWeb: false, platform: TargetPlatform.macOS), GiphySurface.webApi);
     });
 
+    test('iOS PWA and Mobile Safari standalone mode uses webApi and web key', () {
+      expect(giphySurfaceFor(isWeb: true, platform: TargetPlatform.iOS), GiphySurface.webApi);
+      expect(giphyClientFor(isWeb: true, platform: TargetPlatform.iOS), GiphyClient.web);
+    });
+
     test('the SDK dialog is locked to PG and uses the native feature list', () {
       final settings = belongGiphySettings('pg');
       expect(settings.rating, GiphyRating.pg);
@@ -458,6 +463,52 @@ void main() {
       expect(seenRating, 'pg');
       expect(selected!.imageUrl, 'https://media.giphy.com/hero.gif');
     });
+
+    testWidgets(
+      'iOS PWA (Mobile Safari standalone mode) renders web search and still previews without native SDK MethodChannel',
+      (tester) async {
+        CalmMeme? selected;
+        final fake = _FakeGiphySearch(
+          results: const [
+            GiphyGif(
+              id: 'pwa-gif',
+              title: 'serene sanctuary',
+              stillUrl: 'https://media.giphy.com/still_pwa.gif',
+              gifUrl: 'https://media.giphy.com/move_pwa.gif',
+            ),
+          ],
+        );
+
+        final surface = giphySurfaceFor(isWeb: true, platform: TargetPlatform.iOS);
+        expect(surface, GiphySurface.webApi);
+
+        await tester.pumpWidget(
+          _galleryHarness(
+            surface: surface,
+            search: fake,
+            onSelected: (meme) => selected = meme,
+          ),
+        );
+        await tester.tap(find.byKey(const Key('open_gallery_button')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(const Key('giphy_search_input')), findsOneWidget);
+        expect(find.byKey(const Key('giphy_attribution')), findsOneWidget);
+        expect(find.text('Powered by GIPHY'), findsOneWidget);
+        expect(find.text('serene sanctuary'), findsOneWidget);
+
+        await tester.tap(find.byKey(const Key('giphy_result_pwa-gif')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+
+        expect(selected, isNotNull);
+        expect(selected!.imageUrl, 'https://media.giphy.com/move_pwa.gif');
+        expect(selected!.title, 'serene sanctuary');
+      },
+    );
 
     testWidgets('keeps search, attribution, and the grid above the keyboard', (tester) async {
       tester.view.physicalSize = const Size(390, 640);
