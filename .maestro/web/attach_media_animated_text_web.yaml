@@ -1,0 +1,60 @@
+url: http://127.0.0.1:8095
+name: "Attach media — Animated Text via Giphy on Web / PWA"
+tags:
+  - web
+  - giphy
+  - animated-text
+  - issue-861
+---
+# Verifies the Web/PWA Attach Media sheet supports Animated Text (Issue #861).
+# Allows entering a custom phrase like "calm words" to fetch and select animated text styles.
+- launchApp
+- extendedWaitUntil:
+    visible: "Belong"
+    timeout: 60000
+
+# Open composer and Attach Media sheet if not already open
+- runFlow:
+    when:
+      notVisible: ".*Attach media.*"
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Share an unhurried thought.*"
+          commands:
+            - tapOn: ".*Share an unhurried thought.*"
+      - runFlow:
+          when:
+            visible:
+              id: "add_meme_gif_button"
+          commands:
+            - tapOn:
+                id: "add_meme_gif_button"
+
+- extendedWaitUntil:
+    visible: ".*Attach media.*"
+    timeout: 30000
+
+# Assert mode selector chips
+- assertVisible:
+    id: "giphy_mode_gifs"
+- assertVisible:
+    id: "giphy_mode_text"
+
+# Switch to Animate Text
+- tapOn:
+    id: "giphy_mode_text"
+
+# Assert input hint and animate button
+- assertVisible:
+    id: "giphy_search_input"
+- assertVisible: "Animate"
+
+# Enter text and trigger animation
+- tapOn:
+    id: "giphy_search_input"
+- inputText: "calm words"
+- tapOn: "Animate"
+
+# Assert attribution stays visible on the sheet
+- assertVisible: "Powered by GIPHY"

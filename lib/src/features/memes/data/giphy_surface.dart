@@ -29,10 +29,10 @@ GiphyClient giphyClientFor({required bool isWeb, required TargetPlatform platfor
 /// does not drift if the package default changes.
 const List<String> kNativeGiphyFeatures = ['recents', 'gif', 'sticker', 'clips', 'text', 'emoji'];
 
-/// What the website search can attach. Clips, stickers, emoji, and animated
-/// text stay on [kNativeGiphyFeatures]. `HttpGiphySearch` requests
-/// `/v1/gifs/` only while this list is exactly `gif`.
-const List<String> kWebApiGiphyFeatures = ['gif'];
+/// What the website search can attach. Clips, stickers, and emoji stay on
+/// [kNativeGiphyFeatures]. Web, PWA, and WebAPK support standard GIFs and
+/// animated text (`text`) via Giphy JS SDK / REST endpoint parity.
+const List<String> kWebApiGiphyFeatures = ['gif', 'text'];
 
 GiphySurface giphySurfaceFor({required bool isWeb, required TargetPlatform platform}) {
   if (!isWeb && (platform == TargetPlatform.android || platform == TargetPlatform.iOS)) {

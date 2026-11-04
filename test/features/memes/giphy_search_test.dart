@@ -266,7 +266,7 @@ void main() {
       await search.search('  chapel lights  ');
 
       expect(httpClient.uris, hasLength(2));
-      expect(kWebApiGiphyFeatures, ['gif']);
+      expect(kWebApiGiphyFeatures, ['gif', 'text']);
       expect(httpClient.uris[0].path, '/v1/gifs/trending');
       expect(httpClient.uris[0].queryParameters['rating'], 'pg');
       expect(httpClient.uris[0].queryParameters['limit'], '12');
@@ -343,6 +343,55 @@ void main() {
       final gifs = await search.search('');
 
       expect(gifs.single.id, 'abc');
+    });
+
+    test('animateText requests /v1/text/animate at PG ceiling and maps animated text items', () async {
+      final httpClient = _RecordingClient(
+        body: jsonEncode({
+          'data': [
+            {
+              'id': 'anim_1',
+              'title': 'calm words',
+              'rating': 'pg',
+              'images': {
+                'fixed_height_still': {'url': 'https://media.giphy.com/text_still.gif'},
+                'fixed_height': {'url': 'https://media.giphy.com/text_move.gif'},
+              },
+            },
+          ],
+        }),
+      );
+      // Even if initialized with pg-13, animateText enforces the PG ceiling.
+      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key', rating: 'pg-13');
+
+      final results = await search.animateText('  calm words  ');
+
+      expect(httpClient.uris.single.path, '/v1/text/animate');
+      expect(httpClient.uris.single.queryParameters['m'], 'calm words');
+      expect(httpClient.uris.single.queryParameters['s'], 'calm words');
+      expect(httpClient.uris.single.queryParameters['rating'], 'pg');
+      expect(httpClient.uris.single.queryParameters['limit'], '12');
+
+      expect(results, hasLength(1));
+      expect(results.single.id, 'anim_1');
+      expect(results.single.title, 'calm words');
+      expect(results.single.isAnimatedText, isTrue);
+
+      final meme = calmMemeFromGiphy(results.single);
+      expect(meme.subtitle, 'GIPHY animated text · rated PG');
+      expect(meme.imageUrl, 'https://media.giphy.com/text_move.gif');
+    });
+
+    test('animateText caps input at 50 chars and ignores empty strings without network call', () async {
+      final httpClient = _RecordingClient();
+      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key');
+
+      final empty = await search.animateText('   ');
+      expect(empty, isEmpty);
+      expect(httpClient.uris, isEmpty);
+
+      await search.animateText('y' * 65);
+      expect(httpClient.uris.single.queryParameters['m']!.length, 50);
     });
   });
 
@@ -673,6 +722,80 @@ void main() {
       expect(size.width, greaterThanOrEqualTo(48));
       expect(size.height, greaterThanOrEqualTo(48));
     });
+
+    testWidgets('web picker switches to Animate Text, types "calm words", and attaches animated text', (tester) async {
+      CalmMeme? picked;
+      final fakeSearch = _FakeGiphySearch(
+        results: const [
+          GiphyGif(
+            id: 'gif_1',
+            title: 'quiet river',
+            stillUrl: 'https://media.giphy.com/river_s.gif',
+            gifUrl: 'https://media.giphy.com/river.gif',
+            rating: 'pg',
+          ),
+        ],
+        animatedTextResults: const [
+          GiphyGif(
+            id: 'anim_calm',
+            title: 'calm words',
+            stillUrl: 'https://media.giphy.com/calm_s.gif',
+            gifUrl: 'https://media.giphy.com/calm.gif',
+            rating: 'pg',
+            isAnimatedText: true,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        _galleryHarness(
+          search: fakeSearch,
+          onSelected: (meme) => picked = meme,
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('open_gallery_button')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      // Initial state is standard GIF search
+      expect(find.byKey(const Key('giphy_mode_gifs')), findsOneWidget);
+      expect(find.byKey(const Key('giphy_mode_text')), findsOneWidget);
+      expect(find.text('quiet river'), findsOneWidget);
+
+      // Tap "Animate Text" mode chip
+      await tester.tap(find.byKey(const Key('giphy_mode_text')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // In empty text mode, prompts user
+      expect(find.text('Type a phrase to see animated text styles.'), findsOneWidget);
+
+      // Enter "calm words" and tap Animate
+      await tester.enterText(find.byKey(const Key('giphy_search_input')), 'calm words');
+      await tester.tap(find.byKey(const Key('giphy_search_button')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(fakeSearch.lastAnimatedText, 'calm words');
+      expect(find.byKey(const Key('giphy_result_anim_calm')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('giphy_result_anim_calm')),
+          matching: find.text('calm words'),
+        ),
+        findsOneWidget,
+      );
+
+      // Tap the animated text result to attach
+      await tester.tap(find.byKey(const Key('giphy_result_anim_calm')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(picked, isNotNull);
+      expect(picked!.imageUrl, 'https://media.giphy.com/calm.gif');
+      expect(picked!.subtitle, 'GIPHY animated text · rated PG');
+    });
   });
 }
 
@@ -691,7 +814,7 @@ class _RecordingClient extends http.BaseClient {
 }
 
 class _CountingGiphySearch extends _FakeGiphySearch {
-  _CountingGiphySearch({required super.results});
+  _CountingGiphySearch({required super.results, super.animatedTextResults});
 
   int calls = 0;
 
@@ -699,6 +822,12 @@ class _CountingGiphySearch extends _FakeGiphySearch {
   Future<List<GiphyGif>> search(String query) {
     calls++;
     return super.search(query);
+  }
+
+  @override
+  Future<List<GiphyGif>> animateText(String text) {
+    calls++;
+    return super.animateText(text);
   }
 }
 
@@ -727,13 +856,22 @@ class _QueuedGiphySearch implements GiphySearch {
     pending.putIfAbsent(query, () => []).add(completer);
     return completer.future;
   }
+
+  @override
+  Future<List<GiphyGif>> animateText(String text) {
+    final completer = Completer<List<GiphyGif>>();
+    pending.putIfAbsent(text, () => []).add(completer);
+    return completer.future;
+  }
 }
 
 class _FakeGiphySearch implements GiphySearch {
-  _FakeGiphySearch({required this.results});
+  _FakeGiphySearch({required this.results, this.animatedTextResults});
 
   final List<GiphyGif> results;
+  final List<GiphyGif>? animatedTextResults;
   String? lastQuery;
+  String? lastAnimatedText;
 
   @override
   bool get isConfigured => true;
@@ -745,6 +883,12 @@ class _FakeGiphySearch implements GiphySearch {
   Future<List<GiphyGif>> search(String query) async {
     lastQuery = query;
     return results;
+  }
+
+  @override
+  Future<List<GiphyGif>> animateText(String text) async {
+    lastAnimatedText = text;
+    return animatedTextResults ?? results;
   }
 }
 

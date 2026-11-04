@@ -16,6 +16,7 @@ class GiphyGif {
     required this.stillUrl,
     required this.gifUrl,
     this.rating = 'pg',
+    this.isAnimatedText = false,
   });
 
   final String id;
@@ -23,6 +24,7 @@ class GiphyGif {
   final String stillUrl;
   final String gifUrl;
   final String rating;
+  final bool isAnimatedText;
 }
 
 /// Calm failure for GIF search. The message never includes the API key or
@@ -60,6 +62,8 @@ abstract class GiphySearch {
   String get contentRating;
 
   Future<List<GiphyGif>> search(String query);
+
+  Future<List<GiphyGif>> animateText(String text);
 }
 
 /// Giphy public API client.
@@ -123,17 +127,52 @@ class HttpGiphySearch implements GiphySearch {
       throw _unavailable;
     }
   }
+
+  @override
+  Future<List<GiphyGif>> animateText(String text) async {
+    if (!isConfigured) return const [];
+
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return const [];
+
+    final bounded = trimmed.length > 50 ? trimmed.substring(0, 50) : trimmed;
+    final ratingCeiling = _rating == 'g' ? 'g' : 'pg';
+    final uri = Uri.https('api.giphy.com', '/v1/text/animate', {
+      'api_key': _apiKey,
+      'limit': '12',
+      'rating': ratingCeiling,
+      'm': bounded,
+      's': bounded,
+    });
+
+    final http.Response response;
+    try {
+      response = await _httpClient.get(uri).timeout(const Duration(seconds: 10));
+    } catch (_) {
+      throw _unavailable;
+    }
+
+    if (response.statusCode != 200) throw _unavailable;
+
+    try {
+      return parseGiphyGifPayload(
+        jsonDecode(response.body),
+        isAnimatedText: true,
+        defaultTitle: bounded,
+      );
+    } on FormatException {
+      throw _unavailable;
+    }
+  }
 }
 
 /// `/v1/` collection for [kWebApiGiphyFeatures].
 ///
-/// The website client only searches GIFs. Adding clips or stickers to that
-/// list without a matching endpoint fails here instead of looking enabled.
+/// The website client searches GIFs and supports dynamic animated text.
 String _giphyWebCollection() {
-  if (kWebApiGiphyFeatures.length != 1 || kWebApiGiphyFeatures.single != 'gif') {
+  if (!kWebApiGiphyFeatures.contains('gif')) {
     throw StateError(
-      'Website Giphy search only requests GIFs. '
-      'Update HttpGiphySearch before changing kWebApiGiphyFeatures.',
+      'Website Giphy search requires GIF support in kWebApiGiphyFeatures.',
     );
   }
   return 'gifs';
@@ -141,7 +180,11 @@ String _giphyWebCollection() {
 
 /// Turns a Giphy JSON payload into still-preview GIFs.
 /// Drops items that lack an https still and an https GIF.
-List<GiphyGif> parseGiphyGifPayload(Object? payload) {
+List<GiphyGif> parseGiphyGifPayload(
+  Object? payload, {
+  bool isAnimatedText = false,
+  String? defaultTitle,
+}) {
   if (payload is! Map) return const [];
   final data = payload['data'];
   if (data is! List) return const [];
@@ -155,13 +198,20 @@ List<GiphyGif> parseGiphyGifPayload(Object? payload) {
     final gif = _httpsUrl(images['fixed_height']) ?? _httpsUrl(images['downsized']);
     final id = item['id']?.toString().trim() ?? '';
     if (still == null || gif == null || id.isEmpty) continue;
+    final rawTitle = item['title']?.toString() ?? item['alt_text']?.toString() ?? '';
+    final title = rawTitle.trim().isNotEmpty
+        ? _displayTitle(rawTitle)
+        : (defaultTitle != null && defaultTitle.trim().isNotEmpty
+            ? _displayTitle(defaultTitle)
+            : (isAnimatedText ? 'Animated Text' : 'GIF'));
     gifs.add(
       GiphyGif(
         id: id,
-        title: _displayTitle(item['title']?.toString() ?? ''),
+        title: title,
         stillUrl: still,
         gifUrl: gif,
         rating: normalizeGiphyRating(item['rating']?.toString()),
+        isAnimatedText: isAnimatedText,
       ),
     );
   }
@@ -169,14 +219,19 @@ List<GiphyGif> parseGiphyGifPayload(Object? payload) {
 }
 
 /// Reflection attachment for a chosen GIF. The feed receives the GIF URL.
-CalmMeme calmMemeFromGiphy(GiphyGif gif) => CalmMeme(
-  title: gif.title,
-  icon: '🎞️',
-  subtitle: 'GIPHY · rated ${giphyRatingLabel(gif.rating)}',
-  tag: 'Memes',
-  body: gif.title,
-  imageUrl: gif.gifUrl,
-);
+CalmMeme calmMemeFromGiphy(GiphyGif gif) {
+  final subtitle = gif.isAnimatedText
+      ? 'GIPHY animated text · rated ${giphyRatingLabel(gif.rating)}'
+      : 'GIPHY · rated ${giphyRatingLabel(gif.rating)}';
+  return CalmMeme(
+    title: gif.title,
+    icon: '🎞️',
+    subtitle: subtitle,
+    tag: 'Memes',
+    body: gif.title,
+    imageUrl: gif.gifUrl,
+  );
+}
 
 String _displayTitle(String raw) {
   final trimmed = raw.trim();

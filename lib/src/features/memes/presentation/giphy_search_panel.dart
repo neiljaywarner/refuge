@@ -8,6 +8,8 @@ import '../data/giphy_search.dart';
 import '../data/giphy_surface.dart';
 import '../domain/calm_meme.dart';
 
+enum GiphyPickerMode { gifs, text }
+
 /// GIF search at the Remote Config rating ceiling.
 ///
 /// Android and iOS open the official Giphy SDK, which carries Giphy's own
@@ -25,6 +27,7 @@ class GiphySearchPanel extends ConsumerStatefulWidget {
 class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
   final TextEditingController _queryController = TextEditingController();
 
+  var _mode = GiphyPickerMode.gifs;
   var _loading = false;
   String? _error;
   List<GiphyGif> _results = const [];
@@ -100,6 +103,52 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
     }
   }
 
+  Future<void> _animateText(String text) async {
+    final client = ref.read(giphySearchProvider);
+    if (!client.isConfigured) {
+      setState(() {
+        _loading = false;
+        _error = null;
+        _results = const [];
+      });
+      return;
+    }
+
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      ++_searchGeneration;
+      setState(() {
+        _loading = false;
+        _error = null;
+        _results = const [];
+      });
+      return;
+    }
+
+    final generation = ++_searchGeneration;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _showingTrending = false;
+    });
+
+    try {
+      final results = await client.animateText(trimmed);
+      if (!mounted || generation != _searchGeneration) return;
+      setState(() {
+        _loading = false;
+        _results = results;
+      });
+    } on GiphySearchException catch (error) {
+      if (!mounted || generation != _searchGeneration) return;
+      setState(() {
+        _loading = false;
+        _error = error.message;
+        _results = const [];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final search = ref.watch(giphySearchProvider);
@@ -124,6 +173,41 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
   Widget _buildWebApi(String ratingLabel) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isTextMode = _mode == GiphyPickerMode.text;
+        final modeChips = Row(
+          children: [
+            ChoiceChip(
+              key: const Key('giphy_mode_gifs'),
+              label: const Text('GIFs', style: TextStyle(fontSize: 11)),
+              selected: !isTextMode,
+              onSelected: (selected) {
+                if (!selected || !isTextMode) return;
+                setState(() => _mode = GiphyPickerMode.gifs);
+                _search(_queryController.text);
+              },
+            ),
+            const SizedBox(width: 8),
+            ChoiceChip(
+              key: const Key('giphy_mode_text'),
+              label: const Text('Animate Text', style: TextStyle(fontSize: 11)),
+              selected: isTextMode,
+              onSelected: (selected) {
+                if (!selected || isTextMode) return;
+                setState(() => _mode = GiphyPickerMode.text);
+                if (_queryController.text.trim().isNotEmpty) {
+                  _animateText(_queryController.text);
+                } else {
+                  ++_searchGeneration;
+                  setState(() {
+                    _results = const [];
+                    _error = null;
+                    _loading = false;
+                  });
+                }
+              },
+            ),
+          ],
+        );
         final searchRow = Row(
           children: [
             Expanded(
@@ -132,26 +216,28 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
                 controller: _queryController,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'quiet, bread, chapel',
+                  hintText: isTextMode ? 'e.g. calm words' : 'quiet, bread, chapel',
                   hintStyle: const TextStyle(fontSize: 12),
                   isDense: true,
-                  prefixIcon: const Icon(Icons.search, size: 18),
+                  prefixIcon: Icon(isTextMode ? Icons.title : Icons.search, size: 18),
                   border: OutlineInputBorder(borderRadius: .circular(10)),
                 ),
-                onSubmitted: _search,
+                onSubmitted: isTextMode ? _animateText : _search,
               ),
             ),
             const SizedBox(width: 8),
             ElevatedButton(
               key: const Key('giphy_search_button'),
-              onPressed: () => _search(_queryController.text),
-              child: const Text('Search', style: TextStyle(fontSize: 12)),
+              onPressed: () => isTextMode ? _animateText(_queryController.text) : _search(_queryController.text),
+              child: Text(isTextMode ? 'Animate' : 'Search', style: const TextStyle(fontSize: 12)),
             ),
           ],
         );
         final attribution = _giphyAttribution(context);
         final stillNote = Text(
-          '$ratingLabel still previews. The GIF plays only after you attach it.',
+          isTextMode
+              ? '$ratingLabel animated text previews. Tap to attach.'
+              : '$ratingLabel still previews. The GIF plays only after you attach it.',
           key: const Key('giphy_still_motion_note'),
           style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodySmall?.color),
         );
@@ -165,6 +251,8 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
             child: Column(
               crossAxisAlignment: .start,
               children: [
+                modeChips,
+                const SizedBox(height: 6),
                 searchRow,
                 const SizedBox(height: 6),
                 stillNote,
@@ -180,6 +268,8 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
         return Column(
           crossAxisAlignment: .start,
           children: [
+            modeChips,
+            const SizedBox(height: 6),
             searchRow,
             const SizedBox(height: 6),
             stillNote,
@@ -278,6 +368,15 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
     }
 
     if (_results.isEmpty) {
+      if (_mode == GiphyPickerMode.text) {
+        return Text(
+          _queryController.text.trim().isEmpty
+              ? 'Type a phrase to see animated text styles.'
+              : 'No $ratingLabel animated text for that phrase. Try a different phrase.',
+          key: const Key('giphy_empty_results'),
+          style: const TextStyle(fontSize: 12),
+        );
+      }
       return Text(
         _showingTrending
             ? 'No quiet GIF suggestions right now.'

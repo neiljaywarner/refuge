@@ -69,12 +69,12 @@ Paste-a-URL still works if search is off or you already have a link.
 
 On **Android and iOS**, **Open Giphy** on the Attach media sheet opens Giphy’s official dialog with:
 
-| Feature | Phone (SDK) | Website (API) |
+| Feature | Phone (SDK) | Website / PWA (API & JS Parity) |
 | --- | --- | --- |
 | GIFs | Yes | Yes |
+| Animated text | Yes | Yes ([#861](https://github.com/neiljaywarner/refuge/issues/861)) |
 | Stickers | Yes | — |
 | Emoji | Yes | — |
-| Animated text | Yes | — |
 | **Clips** (short video with sound) | Yes | — |
 | Recents | Yes | — |
 

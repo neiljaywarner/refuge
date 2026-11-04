@@ -172,4 +172,7 @@ class _PatrolGiphySearch implements GiphySearch {
       gifUrl: _still,
     ),
   ];
+
+  @override
+  Future<List<GiphyGif>> animateText(String text) => search(text);
 }
