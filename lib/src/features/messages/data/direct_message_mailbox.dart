@@ -9,6 +9,7 @@ import '../../../core/config/app_flavor.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../notifications/data/direct_message_push_caller.dart';
 import '../../notifications/domain/belong_notification.dart';
+import '../../profile/data/member_directory_store.dart';
 import '../../profile/presentation/belong_members_directory_view.dart';
 import '../domain/message_recipient.dart';
 import '../domain/message_thread.dart';
@@ -79,14 +80,25 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
   InMemoryDirectMessageMailbox({
     Map<String, StoredDirectMessage>? seed,
     Map<String, Map<String, dynamic>>? seedUsers,
+    Set<String>? excludedUids,
   }) : _messages = {...?seed},
-       _users = {...?seedUsers};
+       _users = {...?seedUsers},
+       _excludedUids = {...?excludedUids};
 
   final Map<String, StoredDirectMessage> _messages;
   final Map<String, Map<String, dynamic>> _users;
+  final Set<String> _excludedUids;
 
   void seedUser(String uid, Map<String, dynamic> data) {
     _users[uid] = data;
+  }
+
+  void banUser(String uid) {
+    _excludedUids.add(uid);
+  }
+
+  void excludeUid(String uid) {
+    _excludedUids.add(uid);
   }
 
   void cacheMessage(StoredDirectMessage message) {
@@ -101,10 +113,17 @@ class InMemoryDirectMessageMailbox implements DirectMessageMailbox {
     final currentId = _currentFirebaseUser()?.uid;
     final real = <MessageRecipient>[];
     for (final entry in _users.entries) {
-      if (entry.key == currentId) continue;
-      if (entry.value['listedInDirectory'] == false) continue;
+      if (!isMemberEligibleForDirectory(
+        uid: entry.key,
+        userData: entry.value,
+        excludedUids: _excludedUids,
+        currentUserId: currentId,
+      )) {
+        continue;
+      }
       real.add(MessageRecipient.fromFirestoreUser(entry.key, entry.value));
     }
+    real.sort((a, b) => a.name.compareTo(b.name));
     if (real.isNotEmpty) return real;
     if (isProduction || !includeSamples) return real;
     return kDevFellowshipMembers.map(MessageRecipient.fromDevMember).toList();
@@ -256,10 +275,15 @@ class FirestoreDirectMessageMailbox implements DirectMessageMailbox {
       final snap = await db.collection('users').get();
       final real = <MessageRecipient>[];
       for (final doc in snap.docs) {
-        if (user != null && doc.id == user.uid) continue;
-        if (excludedIds.contains(doc.id)) continue;
         final data = doc.data();
-        if (data['listedInDirectory'] == false) continue;
+        if (!isMemberEligibleForDirectory(
+          uid: doc.id,
+          userData: data,
+          excludedUids: excludedIds,
+          currentUserId: user?.uid,
+        )) {
+          continue;
+        }
         real.add(MessageRecipient.fromFirestoreUser(doc.id, data));
       }
       real.sort((a, b) => a.name.compareTo(b.name));
