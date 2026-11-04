@@ -4,6 +4,27 @@ Notable changes are documented in this file. As of **November 1, 2026**, the Oct
 
 ---
 
+## [v0.9.9 — 1.0 Release Candidate: Auth Help & About + Bruce Usability Parity (Nov 3, 2026)]
+
+Production: https://belongonthespectrum.web.app · Dev Preview: https://dev-belongonthespectrum.web.app · Release: `0.9.9+9990`
+
+### Added
+- **Auth Screen Help & About Action**: Accessible, neurodivergent-affirming Help & About button and modal sheet available across `BelongAuthSheet`, `BelongFirebaseSignInScreen`, and `SimpleAuthScreen` (#855 / PR #856).
+- **Environment & Build Transparency**: Live dialog displays active environment badge (Pre-Prod/Dev vs Production), semantic build code (`v0.9.9+9990`), and direct cross-environment navigation button to toggle between dev preview and production web apps (#855).
+- **Sensory & Diagnostics Shortcut**: 1-tap route to complete sensory settings and `Talker` diagnostic logs from pre-login screens.
+- **Bruce Playtester Usability Refinements**:
+  - **1-Tap Prayer Sanctuary Re-Entry**: Prominent, persistent Prayer Sanctuary tile pinned at the top of Spaces directory and persistent navigation breadcrumb (#846 / PR #847).
+  - **Expanded Intent Tags**: Added `[General Chat]`, `[Fellowship]`, and `[Other]` intent tags across post composer, chips, and feed filter menus (#848 / PR #849).
+  - **"Saved for Later" Explainer**: Onboarding banner, explainer guide, and `[View Saved]` SnackBar confirmation (#850 / PR #851).
+  - **Local Feedback Receipts ("What I Entered")**: Honest, persistent history cards for submitted feedback receipts in `belong_feedback_and_voting_sheet.dart` (#852 / PR #854).
+
+### Verified
+- 253/253 core unit, widget, and feature tests green.
+- Deployed and live verified on `belongonthespectrum.web.app` and `dev-belongonthespectrum.web.app`.
+- Live Android APK verified on `emulator-5554` with visual audit screenshots.
+
+---
+
 ## [v0.9.3 — Clean Notification Bell (Oct 29, 2026)]
 
 Highlights: [`docs/release_highlights/v0.9.3.md`](docs/release_highlights/v0.9.3.md)
