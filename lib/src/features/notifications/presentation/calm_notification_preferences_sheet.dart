@@ -1,80 +1,64 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:refuge4serverpod/src/core/presentation/system_insets.dart';
-import 'package:refuge4serverpod/src/features/notifications/data/calm_local_notification_service.dart';
+import 'package:refuge4serverpod/src/core/theme/belong_colors.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/notification_permissions_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
-import 'package:refuge4serverpod/src/features/notifications/domain/notification_settings_help.dart';
+import 'package:refuge4serverpod/src/features/notifications/presentation/notification_settings_help.dart';
 
-/// Modal bottom sheet allowing members to configure unhurried digest schedules.
+/// Modal bottom sheet providing calm, non-nagging notification controls.
 class CalmNotificationPreferencesSheet extends ConsumerWidget {
   const CalmNotificationPreferencesSheet({super.key});
 
-  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => const SystemBottomInset(child: CalmNotificationPreferencesSheet()),
-  );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
     final prefs = ref.watch(calmNotificationPreferencesProvider);
     final notifier = ref.read(calmNotificationPreferencesProvider.notifier);
+    final theme = Theme.of(context);
 
-    return Material(
-      color: theme.colorScheme.surface,
-      borderRadius: const .vertical(top: .circular(24)),
+    return SafeArea(
       child: Padding(
-        padding: .only(
-          top: 16,
-          left: 20,
-          right: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: .min,
-            crossAxisAlignment: .start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header with subtle indicator pill
               Center(
                 child: Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: theme.dividerColor.withValues(alpha: 0.4),
-                    borderRadius: .circular(2),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+
               Row(
                 children: [
-                  const Text('🌿', style: TextStyle(fontSize: 26)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Calm Notification Ethics',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
+                  const Text('🌿', style: TextStyle(fontSize: 24)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Calm Notification Ethics',
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                'Belong respects your attention and sensory peace. We never send loud chimes, urgency countdowns, or anxiety-inducing red dots.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
-                  height: 1.45,
+                'No red guilt dots. No streak alarms. Zero surprise audio startles. '
+                'Choose how and when updates reach you.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.4,
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Notification Master Toggle
+              // Master Push Toggle
               SwitchListTile.adaptive(
                 key: const ValueKey('toggle-notifications-switch'),
                 contentPadding: .zero,
@@ -110,6 +94,14 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 ),
               ],
 
+              if (prefs.isWebPushUnavailable) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Web push alerts are unavailable in this browser environment. You can install Belong as a PWA or use the mobile app.',
+                  style: TextStyle(fontSize: 12, height: 1.4, color: theme.colorScheme.error),
+                ),
+              ],
+
               if (prefs.isIosWebWithoutPwa) ...[
                 const SizedBox(height: 8),
                 Container(
@@ -135,59 +127,67 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 ),
               ],
 
-              const Divider(height: 28),
+              const Divider(height: 24),
+
+              // Batched Delivery Schedules
               Text(
-                'Delivery Schedule',
+                'Batched Delivery Windows',
                 style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
-              for (final schedule in CalmDigestSchedule.values)
-                RadioListTile<CalmDigestSchedule>(
+              ...CalmDigestSchedule.values.map((schedule) {
+                final isSelected = prefs.schedule == schedule;
+                return RadioListTile<CalmDigestSchedule>(
                   key: ValueKey('schedule-radio-${schedule.name}'),
                   contentPadding: .zero,
-                  dense: true,
-                  title: Text(
-                    '${schedule.emoji} ${schedule.title}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(schedule.description, style: const TextStyle(fontSize: 11)),
                   value: schedule,
                   groupValue: prefs.schedule,
-                  onChanged: (selected) {
-                    if (selected != null) {
-                      notifier.setSchedule(selected);
-                    }
+                  onChanged: (val) {
+                    if (val != null) notifier.setSchedule(val);
                   },
-                ),
-
-              if (kDebugMode) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: Semantics(
-                    button: true,
-                    identifier: 'preview-calm-shade-notification-button',
-                    label: 'Preview shade notification debug',
-                    child: OutlinedButton(
-                      key: const ValueKey('preview-calm-shade-notification-button'),
-                      onPressed: () async {
-                        await showCalmPreviewDirectMessage(
-                          ref.read(calmLocalNotificationServiceProvider),
-                        );
-                      },
-                      child: const Text('Preview shade notification (debug)'),
+                  title: Row(
+                    children: [
+                      Text(schedule.emoji),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          schedule.title,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    schedule.description,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                ),
-              ],
+                );
+              }),
+
               const SizedBox(height: 16),
+
+              // Close / Save Action Button
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: FilledButton.tonal(
                   key: const ValueKey('save-notification-preferences-button'),
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Save & Return'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: BelongColors.sageGreen.withValues(alpha: 0.18),
+                    foregroundColor: BelongColors.sageGreenDarker,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Save & Return', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

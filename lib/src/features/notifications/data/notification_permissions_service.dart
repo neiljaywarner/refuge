@@ -108,6 +108,12 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
             : (kIsWeb ? null : null);
         if (kIsWeb && (vapidKey == null || vapidKey.isEmpty)) {
           // Honest check: If WEB_PUSH_VAPID_KEY is unset on web, push token cannot be acquired
+          state = state.copyWith(
+            enabled: false,
+            clearFcmToken: true,
+            isWebPushUnavailable: true,
+            isSystemPermissionDenied: false,
+          );
           token = null;
         } else {
           token = await messaging.getToken(vapidKey: vapidKey);
@@ -219,36 +225,57 @@ class NotificationPermissionsService extends StateNotifier<CalmNotificationPrefe
         } catch (_) {
           // Topic subscribe may fail in tests or offline harnesses.
         }
-        if (kIsWeb && const String.fromEnvironment('WEB_PUSH_VAPID_KEY').trim().isEmpty) {
-          // On Web, if VAPID is missing, report unavailable rather than returning fake enabled
+        if (kIsWeb && (token == null || token.isEmpty)) {
+          // On Web, if VAPID is missing or token could not be acquired,
+          // report unavailable rather than returning fake enabled
           state = state.copyWith(
             enabled: false,
-            isSystemPermissionDenied: true,
-            fcmToken: null,
+            clearFcmToken: true,
+            isWebPushUnavailable: true,
+            isSystemPermissionDenied: false,
           );
           return false;
         }
         state = state.copyWith(
           enabled: true,
           isSystemPermissionDenied: false,
+          isWebPushUnavailable: false,
           fcmToken: token ?? 'fcm_token_calm_digest_alpha_preview',
         );
         return true;
       } else {
-        state = state.copyWith(enabled: false, isSystemPermissionDenied: true);
+        state = state.copyWith(
+          enabled: false,
+          isSystemPermissionDenied: true,
+          isWebPushUnavailable: false,
+        );
         return false;
       }
     } catch (_) {
+      if (kIsWeb) {
+        state = state.copyWith(
+          enabled: false,
+          clearFcmToken: true,
+          isWebPushUnavailable: true,
+          isSystemPermissionDenied: false,
+        );
+        return false;
+      }
       final firebaseReady = Firebase.apps.isNotEmpty;
-      if (kIsWeb || !firebaseReady) {
+      if (!firebaseReady) {
         state = state.copyWith(
           enabled: true,
           isSystemPermissionDenied: false,
+          isWebPushUnavailable: false,
           fcmToken: 'fcm_token_calm_digest_alpha_preview',
         );
         return true;
       }
-      state = state.copyWith(enabled: false, isSystemPermissionDenied: true);
+      state = state.copyWith(
+        enabled: false,
+        isSystemPermissionDenied: true,
+        isWebPushUnavailable: false,
+      );
       return false;
     }
   }
