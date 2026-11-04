@@ -69,6 +69,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
+    String? submissionId,
   }) {
     final repo = ref.read(featureVotingRepositoryProvider);
     return repo.submitFeedback(
@@ -78,6 +79,7 @@ class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
       contactEmail: contactEmail,
       attachmentUrl: attachmentUrl,
       screenshotAttachment: screenshotAttachment,
+      submissionId: submissionId,
     );
   }
 }
@@ -187,6 +189,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
     final submittedMessage = useState<String?>(null);
     final feedbackScrollController = useScrollController();
     final localReceipts = useState<List<LocalFeedbackReceipt>>([]);
+    final currentSubmissionId = useRef<String?>(null);
 
     useEffect(() {
       LocalFeedbackReceiptStore.loadReceipts().then((items) {
@@ -702,13 +705,15 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                               'Please enter a short note so we can read your thoughts.',
                                             );
                                             return;
-                                          }
+                                              }
                                           if (contactProblem != null) {
                                             submittedMessage.value = null;
                                             return;
                                           }
                                           isSubmitting.value = true;
                                           try {
+                                            currentSubmissionId.value ??=
+                                                'feedback_${DateTime.now().millisecondsSinceEpoch}';
                                             final sentiment = selectedSentiment.value;
                                             String? attachmentUrl;
                                             final attachmentBytes = drawingAttachment.value;
@@ -734,6 +739,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                                   contactEmail: contact.isNotEmpty ? contact : null,
                                                   attachmentUrl: attachmentUrl,
                                                   screenshotAttachment: attachmentBytes,
+                                                  submissionId: currentSubmissionId.value,
                                                 );
 
                                             final hostedUpload =
@@ -798,6 +804,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
                                             feedbackController.clear();
                                             drawingAttachment.value = null;
+                                            currentSubmissionId.value = null;
                                           } on FirebaseException catch (e) {
                                             publishFeedbackResult(
                                               'Could not submit feedback to cloud: ${e.message ?? e.code}. '
@@ -859,93 +866,93 @@ class _RecentSubmissionsHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-      key: const Key('recent_submissions_history_card'),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(12),
+    key: const Key('recent_submissions_history_card'),
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      side: BorderSide(color: colorScheme.outlineVariant),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: ExpansionTile(
+      key: const Key('recent_submissions_expansion_tile'),
+      initiallyExpanded: true,
+      tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      leading: Icon(Icons.history_rounded, color: colorScheme.primary, size: 20),
+      title: Text(
+        'Your Recent Submissions (${receipts.length})',
+        style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
       ),
-      child: ExpansionTile(
-        key: const Key('recent_submissions_expansion_tile'),
-        initiallyExpanded: true,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-        childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-        leading: Icon(Icons.history_rounded, color: colorScheme.primary, size: 20),
-        title: Text(
-          'Your Recent Submissions (${receipts.length})',
-          style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          'Saved locally so you can review what you entered',
-          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-        children: receipts.map((r) {
-          final timeStr =
-              '${r.timestamp.month}/${r.timestamp.day} at ${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}';
-          return Container(
-            key: Key('feedback_receipt_${r.id}'),
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(r.sentimentEmoji, style: const TextStyle(fontSize: 14)),
+      subtitle: Text(
+        'Saved locally so you can review what you entered',
+        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+      ),
+      children: receipts.map((r) {
+        final timeStr =
+            '${r.timestamp.month}/${r.timestamp.day} at ${r.timestamp.hour.toString().padLeft(2, '0')}:${r.timestamp.minute.toString().padLeft(2, '0')}';
+        return Container(
+          key: Key('feedback_receipt_${r.id}'),
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(r.sentimentEmoji, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        r.sentimentLabel,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      if (r.rating != null) ...[
                         const SizedBox(width: 6),
                         Text(
-                          r.sentimentLabel,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          '${r.rating}★',
+                          style: const TextStyle(fontSize: 11, color: Colors.amber),
                         ),
-                        if (r.rating != null) ...[
-                          const SizedBox(width: 6),
-                          Text('${r.rating}★', style: const TextStyle(fontSize: 11, color: Colors.amber)),
-                        ],
-                        if (r.hasDrawing) ...[
-                          const SizedBox(width: 6),
-                          const Icon(Icons.draw_outlined, size: 13),
-                        ],
                       ],
-                    ),
-                    Text(
-                      timeStr,
-                      style: textTheme.bodySmall?.copyWith(
-                        fontSize: 10,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  r.message,
-                  style: textTheme.bodySmall?.copyWith(fontSize: 12),
-                ),
-                if (r.contact != null && r.contact!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                      if (r.hasDrawing) ...[
+                        const SizedBox(width: 6),
+                        const Icon(Icons.draw_outlined, size: 13),
+                      ],
+                    ],
+                  ),
                   Text(
-                    'Contact: ${r.contact}',
+                    timeStr,
                     style: textTheme.bodySmall?.copyWith(
                       fontSize: 10,
-                      fontStyle: FontStyle.italic,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 6),
+              Text(r.message, style: textTheme.bodySmall?.copyWith(fontSize: 12)),
+              if (r.contact != null && r.contact!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Contact: ${r.contact}',
+                  style: textTheme.bodySmall?.copyWith(
+                    fontSize: 10,
+                    fontStyle: FontStyle.italic,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
+            ],
+          ),
+        );
+      }).toList(),
+    ),
+  );
 }
 
 class _VoteSaveErrorBanner extends StatelessWidget {
