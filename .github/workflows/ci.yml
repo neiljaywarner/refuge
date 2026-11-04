@@ -28,7 +28,10 @@ jobs:
         run: node --test functions/test/decide.test.js functions/test/handle.test.js functions/test/transport.test.js
 
       - name: Direct message mirror function tests
-        run: node --test appwrite/functions/dm-mirror/test/handle.test.js
+        run: node --test appwrite/functions/dm-mirror/test/cert_cache.test.js appwrite/functions/dm-mirror/test/handle.test.js
+
+      - name: Direct message push function tests
+        run: node --test appwrite/functions/dm-push/test/decide.test.js appwrite/functions/dm-push/test/handle.test.js appwrite/functions/dm-push/test/cert_cache.test.js
 
       - name: Firestore rules emulator
         run: |
