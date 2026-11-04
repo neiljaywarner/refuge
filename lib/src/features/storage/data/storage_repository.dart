@@ -116,7 +116,7 @@ class FirebaseStorageRepository implements StorageRepository {
     if (!isStorageEnabled) {
       throw UnsupportedError(
         'Custom photo uploads are paused while cloud storage is provisioning. '
-        'Please select one of the calm preset avatars or a Giphy GIF.',
+        'You can continue with your initials avatar or try again later.',
       );
     }
     return _fallback.uploadAvatar(userId: userId, bytes: bytes, filename: filename);
@@ -143,8 +143,14 @@ class FirebaseStorageRepository implements StorageRepository {
   }) async => _fallback.uploadFeedbackAttachment(bytes: bytes, filename: filename);
 
   @override
-  Future<String> uploadDiagnosticLogs({required Uint8List bytes, required String filename}) async =>
-      _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
+  Future<String> uploadDiagnosticLogs({required Uint8List bytes, required String filename}) async {
+    if (!isStorageEnabled) {
+      throw UnsupportedError(
+        'Diagnostic log upload is paused while cloud storage is provisioning.',
+      );
+    }
+    return _fallback.uploadDiagnosticLogs(bytes: bytes, filename: filename);
+  }
 
   @override
   Future<void> deleteMedia(String downloadUrl) async {

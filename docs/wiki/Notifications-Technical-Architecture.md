@@ -1,132 +1,106 @@
-# 🔔 Notifications Technical Architecture
+# Notifications Technical Architecture & Operational Guide (ADR-0010)
 
-> **Belong on the Spectrum** (powered by Refuge)  
-> **Source Directory**: `lib/src/features/notifications/`  
-> **Related Architecture ADR**: [[ADR-0010-Notifications-Local-Awesome-vs-FCM]]  
-> **Product Companion Guide**: [[Notifications-Product-Guide]]
-
-> **Status (24 October 2026).** [ADR-0012](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0012-direct-message-alerts-are-opt-in.md) adds an opt-in direct-message push. The client saves the switch locally and, when a member is signed in, writes `users/{uid}/notification_settings/push`. The Appwrite function in `appwrite/functions/dm-push` is deployed and sends a normal Direct messages notification when the push credential is present. See [Direct message push function](Direct-Message-Push-Function). Calm email is a separate Cloud Function, `calmDirectMessageEmail`, because it has to read the private preference and the sign-in address when the document is created. Deploying it needs Blaze. See [Direct message email function](Direct-Message-Email-Function). The launcher-dot MethodChannel still has no native handler. [Issue #411](https://github.com/neiljaywarner/refuge/issues/411) stays open for the badge. FCM permission requests still set `badge: false`.
+## Executive Summary
+This document provides the authoritative architectural and operational specification for the Belong on the Spectrum notification engine, governing:
+- **Calm Notification Ethics**: Batched delivery windows, anti-anxiety digests, zero sensory startles, and user schedule agency.
+- **Unified Push Pipeline**: Integration between Firebase Cloud Messaging (FCM), Firebase Firestore, and the Appwrite Cloud Function relay (`dm-push`).
+- **Web, PWA & Android Parity**: VAPID authentication, Service Worker lifecycles, and Android 13+ runtime permissions.
+- **Automated Verification**: End-to-end BDD tests with Patrol finders and native integration suites.
 
 ---
 
-## 1. System Architecture
+## 1. Ethical Notification Principles & Mental Health Guarantees
 
-The notification subsystem in Belong on the Spectrum is built using **Feature-First Architecture** and **Riverpod** reactive state management. It bridges Flutter UI components with native Android and iOS operating system APIs via clean abstractions.
+In alignment with Belong on the Spectrum's core commitment to psychological safety for neurodivergent and autistic members, notifications follow strict design constraints:
+
+1. **Zero Unsolicited Pushes**: The system never pushes notifications unless the member explicitly opts in.
+2. **Predictable Schedules**: Notifications arrive in batched digests (`twiceDaily` at 10 AM / 6 PM or `morningOnly` at 9 AM) rather than real-time interruptions, unless `immediateGentle` is explicitly selected.
+3. **Sensory-Safe Delivery**:
+   - Audio alerts are disabled by default or routed to gentle, non-startling notification channels.
+   - Vibrate patterns are non-jarring.
+   - Zero urgent red badges or guilt-inducing streak alerts.
+4. **Transparent Re-enablement**: If Android or iOS denies permission, the app never nags. A calm, unobtrusive banner in the Spaces directory surfaces only when the member navigates there.
+
+---
+
+## 2. Core Architecture & Component Flow
 
 ```mermaid
-graph TD
-    subgraph UI ["Presentation Layer"]
-        BottomNav["BelongBottomNavBar (Bell)"]
-        NotifView["CalmNotificationsView"]
-        FilterRow["Filter Chips (Inbox, Mentions, Threads, Following)"]
-        PrefSheet["CalmNotificationPreferencesSheet"]
+flowchart TD
+    subgraph Client["Flutter Client (Android, Web, PWA)"]
+        UI["CalmNotificationPreferencesSheet"] --> Service["NotificationPermissionsService"]
+        Service --> Store["PushPreferenceStore"]
+        Service --> FCM["FirebaseMessaging.instance"]
     end
 
-    subgraph State ["Riverpod State Providers"]
-        NotifNotifier["belongNotificationsProvider"]
-        UnreadCount["unreadNotificationsCountProvider"]
-        ActiveFilter["notificationActiveFilterProvider"]
-        PermService["notificationPermissionsServiceProvider"]
-        BadgeService["appLauncherBadgeServiceProvider"]
+    subgraph Firebase["Firebase Platform"]
+        FCM --> FCM_Cloud["FCM Device Registration"]
+        Store --> Firestore["Firestore /users/{uid}/notification_settings/push"]
+        MsgWrite["Direct Message Sent"] --> Firestore_DMs["Firestore /direct_messages/{msgId}"]
     end
 
-    subgraph Domain ["Domain Layer"]
-        NotifModel["BelongNotification Model"]
-        TypeEnum["BelongNotificationType"]
-        FilterEnum["BelongNotificationFilter"]
-        PrefsModel["CalmNotificationPreferences"]
+    subgraph Backend["Appwrite Cloud Relay"]
+        Firestore_DMs --> MirrorTrigger["dm-mirror Function"]
+        MirrorTrigger --> PushFunction["dm-push Function"]
+        PushFunction --> GoogleCerts["Google Public Certs Cache"]
+        PushFunction --> FCM_Send["FCM v1 REST API"]
     end
 
-    subgraph Platform ["Native & Cloud Services"]
-        MethodChannelBadge["MethodChannel ('.../badge')"]
-        FCM["Firebase Cloud Messaging (Silent Data Push)"]
-    end
-
-    BottomNav --> UnreadCount
-    NotifView --> NotifNotifier
-    NotifView --> ActiveFilter
-    NotifView --> PrefSheet
-    NotifNotifier --> NotifModel
-    NotifNotifier --> BadgeService
-    BadgeService --> MethodChannelBadge
-    PermService --> FCM
+    FCM_Send -.-> FCM_Cloud
 ```
 
 ---
 
-## 2. Riverpod State Providers
+## 3. Data Models & Preference State
 
-| Provider | Type | Responsibility |
-| :--- | :--- | :--- |
-| `belongNotificationsProvider` | `StateNotifierProvider<BelongNotificationsNotifier, List<BelongNotification>>` | Maintains list of notifications, marks items as read, triggers launcher badge updates. |
-| `unreadNotificationsCountProvider` | `Provider<int>` | Computes unread notifications (`!isRead`). Drives bottom bar badge counter. |
-| `notificationActiveFilterProvider` | `StateProvider<BelongNotificationFilter>` | Tracks active filter category (`inbox`, `mentions`, `threads`, `following`). |
-| `filteredNotificationsProvider` | `Provider<List<BelongNotification>>` | Pure filtered subset for the active category. |
-| `notificationPermissionsServiceProvider` | `StateNotifierProvider<NotificationPermissionsService, CalmNotificationPreferences>` | Manages FCM token registration, calm digest scheduling, and platform detection. |
-| `appLauncherBadgeServiceProvider` | `Provider<AppLauncherBadgeService>` | Dispatches unread count to native launcher icon badge via MethodChannel. |
+The client state is governed by `CalmNotificationPreferences`:
 
----
-
-## 3. Data Structures & Formatting
-
-### 3.1 `BelongNotification`
-Represents an individual notification item:
-- `id`: String ID.
-- `authorName`: Author's full name.
-- `authorInitials`: Smart 1-2 character initials generator. Strips parentheses and bracketed qualifications (e.g., `"Pastor Thomas (Melbourne)"` -> `"PT"`, `"Dr. Grace Hopper [Admin]"` -> `"DH"`).
-- `type`: `mention`, `reply`, `like`, `following`.
-- `postTitle`: Quoted reflection title.
-- `timestamp`: DateTime timestamp.
-- `isRead`: Boolean read flag.
-
-### 3.2 Interaction Types & Avatars
-Each notification type renders a distinct badge in the lower-right corner of the author's avatar:
-- **`BelongNotificationType.like`**: Pink heart (`Icons.favorite`, `#E91E63`)
-- **`BelongNotificationType.reply`**: Blue reply arrow (`Icons.reply_rounded`, `#2196F3`)
-- **`BelongNotificationType.mention`**: Green `@` symbol (`Icons.alternate_email_rounded`, `#4CAF50`)
-- **`BelongNotificationType.following`**: Purple person icon (`Icons.person_add_rounded`, `#9C27B0`)
-
----
-
-## 4. Native Launcher Badge Synchronization
-
-`AppLauncherBadgeService` dispatches unread counts through a standard Flutter `MethodChannel`:
 ```dart
-static const MethodChannel _channel = MethodChannel(
-  'com.belongonthespectrum.sanctuary/badge',
-);
-
-Future<bool> setBadgeCount(int count) async {
-  if (kIsWeb) return false;
-  return await _channel.invokeMethod<bool>('setBadgeCount', {'count': count});
+class CalmNotificationPreferences {
+  final bool enabled;
+  final CalmDigestSchedule schedule;
+  final String? fcmToken;
+  final bool isWebPwaInstalled;
+  final bool isIosWebWithoutPwa;
+  final bool isSystemPermissionDenied;
+  final bool isWebPushUnavailable;
 }
 ```
-When `count == 0` (e.g. after tapping *"Mark all read"*), the Dart service asks the channel to clear a count. There is no native handler, so the launcher icon dot does not change. The in-app unread count does clear.
+
+### 3.1 Schedules
+- **`twiceDaily`** (Recommended): 10:00 AM & 6:00 PM local time.
+- **`morningOnly`**: 9:00 AM morning check-in.
+- **`immediateGentle`**: Immediate delivery on a quiet notification channel without alarm sounds.
+- **`muted`**: Completely silenced.
 
 ---
 
-## 5. Web Push, VAPID & `WEB_PUSH_VAPID_KEY` Architecture
+## 4. Appwrite `dm-push` Function & Direct Message Pipeline
 
-### 5.1 What is VAPID? (High-Level Summary)
-**VAPID** stands for **Voluntary Application Server Identification for Web Push**, codified as standard [IETF RFC 8292](https://datatracker.ietf.org/doc/html/rfc8292) and designed to work with the [W3C Push API](https://www.w3.org/TR/push-api/).
+When a member sends a direct message:
+1. Client writes message document to `direct_messages/{id}` in Firestore.
+2. `dm-mirror` mirrors the message to Appwrite Community DB (`backup_direct_messages`).
+3. `dm-push` inspects the recipient's push preferences in `users/{recipientId}/notification_settings/push`.
+4. If enabled and eligible per schedule:
+   - Evaluates recipient's registered `fcmToken`.
+   - Uses `cert_cache.js` to verify caller Firebase ID token authenticity against Google's public x509 certs.
+   - Authenticates against FCM v1 API and dispatches the payload:
+     - Channel ID: `belong_calm_dms` (sound enabled for regular, silent for gentle).
+     - Payload includes `threadId`, `senderName`, and sanitized message snippet.
 
-On mobile platforms (native Android or iOS), push notifications authenticate using proprietary OS vendor mechanisms (such as Google Play Services or Apple APNs authentication keys). On the open web, however, browsers (Chrome, Firefox, Safari, Edge) connect to different vendor-managed push services.
+---
 
-Without VAPID, web developers had to register separate developer accounts and API keys with every individual browser vendor. **VAPID eliminates this fragmentation**:
-- It uses an **asymmetric elliptic curve keypair** (ECDSA over NIST curve P-256 / prime256v1).
-- The **Public Key** (the `WEB_PUSH_VAPID_KEY`) is safe to ship to client browsers in frontend code.
-- The **Private Key** stays protected on your application server or cloud functions.
-- When your server sends a push message, it signs a JSON Web Token (JWT) using the private key. The browser vendor's push service (e.g. Mozilla Autopush, Google FCM Web Push Endpoint, Apple Push Service for Web) verifies the JWT signature against the public key associated with the client's subscription. This cryptographically proves the sender's identity and prevents unauthorized push spoofing without requiring vendor-specific API credentials.
+## 5. Web Push & VAPID Integration Guide
 
-### 5.2 Deep Technical Specifications & Standards
-1. **Cryptographic Primitives ([RFC 8292 §2](https://datatracker.ietf.org/doc/html/rfc8292#section-2))**:
-   - Algorithm: ECDSA using SHA-256 on the P-256 curve (`ES256`).
-   - Public Key Encoding: Uncompressed point format (65 bytes starting with `0x04`), serialized as URL-safe Base64 without padding (typically 87 characters, starting with `B...`).
-2. **Subscription Binding ([RFC 8292 §3](https://datatracker.ietf.org/doc/html/rfc8292#section-3))**:
-   - In browser JavaScript: `pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey })`.
-   - In Flutter Web with Firebase Cloud Messaging:
+### 5.1 What is VAPID?
+**VAPID** (Voluntary Application Server Identification, RFC 8292) is a web standard that allows application servers to authenticate themselves to push services (such as Mozilla Autopush, Apple Web Push, or Google FCM) without requiring the push service to maintain pre-shared secret API keys for each backend.
+
+### 5.2 How VAPID Works with Firebase & Web Browsers
+1. **Key Generation**: A public/private ECDSA P-256 keypair is generated.
+2. **Client Registration**:
+   - The browser client passes the public key when subscribing:
      ```dart
-     final fcmToken = await FirebaseMessaging.instance.getToken(
+     final token = await FirebaseMessaging.instance.getToken(
        vapidKey: String.fromEnvironment('WEB_PUSH_VAPID_KEY'),
      );
      ```
@@ -136,9 +110,9 @@ Without VAPID, web developers had to register separate developer accounts and AP
 
 ### 5.3 Belong on the Spectrum Implementation & Best Practices
 - **Environment Injection**: The public key is injected at compile time via `--dart-define=WEB_PUSH_VAPID_KEY=<public_key>`.
-- **Honest Fallback Behavior (`#811`)**:
+- **Honest Fallback Behavior (`#811`, `#857`)**:
   - If `WEB_PUSH_VAPID_KEY` is empty, unset, or a mock placeholder on Web, the client must **not** pass a dummy string to `getToken(vapidKey: ...)`, as modern browsers throw an `InvalidAccessError` or fail silently.
-  - The app gracefully reports Web Push as unavailable on the web tab, surfaces a gentle prompt to install the PWA or use native notifications, and never crashes or records a false `enabled: true` in user preferences.
+  - Without a valid `WEB_PUSH_VAPID_KEY` on the web tab, the service records `enabled: false`, clears any stored `fcmToken`, and marks `isWebPushUnavailable: true`. The preferences sheet informs the member that Web push alerts are unavailable in this browser environment, without mislabeling it as an Android system denial or recording a false `enabled: true`.
 - **Authoritative References**:
   - [IETF RFC 8292: Voluntary Application Server Identification (VAPID) for Web Push](https://datatracker.ietf.org/doc/html/rfc8292)
   - [W3C Push API Specification](https://www.w3.org/TR/push-api/)
