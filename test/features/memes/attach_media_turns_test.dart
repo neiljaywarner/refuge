@@ -206,4 +206,7 @@ class _GateGiphySearch implements GiphySearch {
       ),
     ];
   }
+
+  @override
+  Future<List<GiphyGif>> animateText(String text) => search(text);
 }
