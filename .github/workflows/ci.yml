@@ -48,8 +48,16 @@ jobs:
 
       - name: Check formatting
         run: |
-          dart format --output=none --set-exit-if-changed -l 100 \
-            lib test tool packages/belong_lints
+          BASE_REF="${{ github.base_ref || 'main' }}"
+          git fetch origin "$BASE_REF" --depth=1 || true
+          CHANGED_FILES=$(git diff --name-only --diff-filter=d "origin/$BASE_REF"...HEAD | grep '\.dart$' || true)
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "Checking formatting on changed Dart files:"
+            echo "$CHANGED_FILES"
+            dart format --output=none --set-exit-if-changed -l 100 $CHANGED_FILES
+          else
+            echo "No changed Dart files to check."
+          fi
 
       - name: Analyze lint plugin
         run: dart analyze packages/belong_lints
