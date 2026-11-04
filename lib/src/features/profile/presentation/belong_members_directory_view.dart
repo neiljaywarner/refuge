@@ -191,7 +191,7 @@ class _BelongMembersDirectoryViewState extends ConsumerState<BelongMembersDirect
         _ => true,
       };
 
-      if (isIdentityBanned(bans: bans, userId: m.name, email: '', displayName: m.name)) {
+      if (isIdentityBanned(bans: bans, userId: m.accountId ?? m.name, email: '', displayName: m.name)) {
         return false;
       }
       return matchesQuery && matchesFilter;
