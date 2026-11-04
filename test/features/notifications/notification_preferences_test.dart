@@ -44,6 +44,21 @@ void main() {
       expect(granted, isFalse);
       expect(service.state.enabled, isFalse);
     });
+
+    test(
+      'CalmNotificationPreferences copyWith supports clearFcmToken and isWebPushUnavailable',
+      () {
+        const prefs = CalmNotificationPreferences(enabled: true, fcmToken: 'existing_token');
+        final cleared = prefs.copyWith(clearFcmToken: true, isWebPushUnavailable: true);
+        expect(cleared.fcmToken, isNull);
+        expect(cleared.isWebPushUnavailable, isTrue);
+        expect(cleared.enabled, isTrue);
+
+        final kept = prefs.copyWith(enabled: false);
+        expect(kept.fcmToken, equals('existing_token'));
+        expect(kept.enabled, isFalse);
+      },
+    );
   });
 
   group('CalmNotificationPreferencesSheet Widget Tests', () {
@@ -108,6 +123,37 @@ void main() {
         $(
           RegExp('Apple iOS Requirement: Mobile Safari requires adding Belong to your Home Screen'),
         ),
+        findsOneWidget,
+      );
+    });
+
+    patrolWidgetTest('renders web push unavailable banner when applicable', ($) async {
+      $.tester.view.physicalSize = const Size(1080, 2400);
+      $.tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
+      await $.pumpWidgetAndSettle(
+        ProviderScope(
+          overrides: [
+            calmNotificationPreferencesProvider.overrideWith((ref) {
+              return NotificationPermissionsService(
+                initialPreferences: const CalmNotificationPreferences(
+                  isWebPushUnavailable: true,
+                  enabled: false,
+                ),
+              );
+            }),
+          ],
+          child: const MaterialApp(home: Scaffold(body: CalmNotificationPreferencesSheet())),
+        ),
+      );
+
+      expect($('Calm Notification Ethics'), findsOneWidget);
+      expect(
+        $(find.textContaining('Web push alerts are unavailable in this browser environment.')),
         findsOneWidget,
       );
     });

@@ -46,6 +46,7 @@ class CalmNotificationPreferences extends Equatable {
     this.isWebPwaInstalled = false,
     this.isIosWebWithoutPwa = false,
     this.isSystemPermissionDenied = false,
+    this.isWebPushUnavailable = false,
   });
 
   /// Whether member has opted into receiving push/local digests.
@@ -68,20 +69,26 @@ class CalmNotificationPreferences extends Equatable {
   /// Used to surface a gentle re-enable toggle in the Spaces drawer without nagging.
   final bool isSystemPermissionDenied;
 
+  /// Whether Web Push is unavailable in this browser environment (e.g. missing VAPID key or browser restriction).
+  final bool isWebPushUnavailable;
+
   CalmNotificationPreferences copyWith({
     bool? enabled,
     CalmDigestSchedule? schedule,
     String? fcmToken,
+    bool clearFcmToken = false,
     bool? isWebPwaInstalled,
     bool? isIosWebWithoutPwa,
     bool? isSystemPermissionDenied,
+    bool? isWebPushUnavailable,
   }) => CalmNotificationPreferences(
     enabled: enabled ?? this.enabled,
     schedule: schedule ?? this.schedule,
-    fcmToken: fcmToken ?? this.fcmToken,
+    fcmToken: clearFcmToken ? null : (fcmToken ?? this.fcmToken),
     isWebPwaInstalled: isWebPwaInstalled ?? this.isWebPwaInstalled,
     isIosWebWithoutPwa: isIosWebWithoutPwa ?? this.isIosWebWithoutPwa,
     isSystemPermissionDenied: isSystemPermissionDenied ?? this.isSystemPermissionDenied,
+    isWebPushUnavailable: isWebPushUnavailable ?? this.isWebPushUnavailable,
   );
 
   @override
@@ -92,5 +99,6 @@ class CalmNotificationPreferences extends Equatable {
     isWebPwaInstalled,
     isIosWebWithoutPwa,
     isSystemPermissionDenied,
+    isWebPushUnavailable,
   ];
 }

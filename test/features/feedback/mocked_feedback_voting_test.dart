@@ -257,6 +257,13 @@ void main() {
         $(find.textContaining('Could not submit feedback: Exception: offline')),
         findsOneWidget,
       );
+      final noteField = $.tester.widget<EditableText>(
+        find.descendant(
+          of: find.byKey(const Key('feedback_message_input')),
+          matching: find.byType(EditableText),
+        ),
+      );
+      expect(noteField.controller.text, 'The bell label is hard to see.');
     });
 
     patrolWidgetTest(
@@ -380,6 +387,7 @@ void main() {
         rating: 3,
         contactEmail: 'member@belongonthespectrum.com',
       );
+      verify(() => collection.add(any())).called(1);
       expect(repo.submittedFeedbackLog.single['message'], 'Please keep the digest quiet.');
       expect(repo.submittedFeedbackLog.single['rating'], '3');
       expect(repo.submittedFeedbackLog.single['backend'], 'firebase');

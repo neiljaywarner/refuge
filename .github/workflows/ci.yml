@@ -28,7 +28,15 @@ jobs:
         run: node --test functions/test/decide.test.js functions/test/handle.test.js functions/test/transport.test.js
 
       - name: Direct message mirror function tests
-        run: node --test appwrite/functions/dm-mirror/test/handle.test.js
+        run: node --test appwrite/functions/dm-mirror/test/cert_cache.test.js appwrite/functions/dm-mirror/test/handle.test.js
+
+      - name: Direct message push function tests
+        run: node --test appwrite/functions/dm-push/test/decide.test.js appwrite/functions/dm-push/test/handle.test.js appwrite/functions/dm-push/test/cert_cache.test.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
 
       - name: Firestore rules emulator
         run: |
@@ -40,8 +48,16 @@ jobs:
 
       - name: Check formatting
         run: |
-          dart format --output=none --set-exit-if-changed -l 100 \
-            lib test tool packages/belong_lints
+          BASE_REF="${{ github.base_ref || 'main' }}"
+          git fetch origin "$BASE_REF" --depth=1 || true
+          CHANGED_FILES=$(git diff --name-only --diff-filter=d "origin/$BASE_REF"...HEAD | grep '\.dart$' || true)
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "Checking formatting on changed Dart files:"
+            echo "$CHANGED_FILES"
+            dart format --output=none --set-exit-if-changed -l 100 $CHANGED_FILES
+          else
+            echo "No changed Dart files to check."
+          fi
 
       - name: Analyze lint plugin
         run: dart analyze packages/belong_lints

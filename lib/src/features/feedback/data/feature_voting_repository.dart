@@ -61,6 +61,7 @@ abstract interface class FeatureVotingRepository {
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
+    String? submissionId,
   });
 }
 
@@ -174,6 +175,7 @@ mixin FeatureVotingStateTransformMixin implements FeatureVotingRepository {
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
+    String? submissionId,
   }) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty) {
@@ -511,6 +513,7 @@ class FirebaseFeatureVotingRepository
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
+    String? submissionId,
   }) async {
     final result = await super.submitFeedback(
       sentiment: sentiment,
@@ -570,6 +573,10 @@ class FirebaseFeatureVotingRepository
         };
         if (writer != null) {
           createdId = await writer(docData);
+        } else if (submissionId != null && submissionId.isNotEmpty) {
+          final doc = fs!.collection(feedbackCollectionPath).doc(submissionId);
+          await doc.set(docData).timeout(const Duration(seconds: 6));
+          createdId = doc.id;
         } else {
           final created = await fs!
               .collection(feedbackCollectionPath)

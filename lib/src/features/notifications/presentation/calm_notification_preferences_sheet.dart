@@ -110,6 +110,14 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 ),
               ],
 
+              if (prefs.isWebPushUnavailable) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Web push alerts are unavailable in this browser environment. You can install Belong as a PWA or use the mobile app.',
+                  style: TextStyle(fontSize: 12, height: 1.4, color: theme.colorScheme.error),
+                ),
+              ],
+
               if (prefs.isIosWebWithoutPwa) ...[
                 const SizedBox(height: 8),
                 Container(

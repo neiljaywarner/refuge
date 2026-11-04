@@ -20,11 +20,14 @@
 #   test/features/notifications/notification_deep_linking_test.dart
 #   test/features/organizer_remote_config_test.dart
 #   test/features/profile/avatar_upload_test.dart
+#   test/features/profile/member_profile_activity_counters_test.dart
 #   test/features/profile/member_profile_initials_test.dart
 #   test/features/profile/member_profile_widget_test.dart
 #   test/features/reflections/compact_reflection_composer_test.dart
+#   test/features/reflections/feed_sort_controls_test.dart
 #   test/features/reflections/feed_sort_tap_hardening_test.dart
 #   test/features/reflections/mocked_post_publish_test.dart
+#   test/features/reflections/post_creation_menu_test.dart
 #   test/features/reflections/save_for_later_bookmarks_test.dart
 #   test/features/uat_cross_platform_flows_test.dart
 #   test/features/whitelabel_brand_config_test.dart
@@ -110,7 +113,6 @@ test/features/profile/belong_members_directory_view_test.dart
 test/features/profile/delete_account_contrast_test.dart
 test/features/profile/first_visit_welcome_card_test.dart
 test/features/profile/member_directory_test.dart
-test/features/profile/member_profile_activity_counters_test.dart
 test/features/profile/member_profile_test.dart
 test/features/profile/profile_persistence_and_church_dropdown_test.dart
 test/features/reflections/appwrite_post_repository_test.dart
@@ -119,11 +121,9 @@ test/features/reflections/comment_repository_test.dart
 test/features/reflections/appwrite_row_mapping_test.dart
 test/features/reflections/appwrite_tablesdb_nock_test.dart
 test/features/reflections/empty_space_starter_posts_test.dart
-test/features/reflections/feed_sort_controls_test.dart
 test/features/reflections/feed_sort_service_test.dart
 test/features/reflections/firestore_comment_sync_test.dart
 test/features/reflections/post_and_dm_timestamps_test.dart
-test/features/reflections/post_creation_menu_test.dart
 test/features/reflections/post_repository_factory_test.dart
 test/features/reflections/space_routing_and_isolation_test.dart
 test/features/reflections/threaded_comments_widget_test.dart

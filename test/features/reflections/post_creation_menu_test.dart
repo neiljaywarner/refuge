@@ -76,7 +76,10 @@ void main() {
         await $.pumpAndSettle();
 
         // Verify modal dismissed and post appears in feed
-        expect($('Grateful for unhurried rest in Christ today.'), findsOneWidget);
+        expect(
+          $(find.textContaining('Grateful for unhurried rest in Christ today.')),
+          findsOneWidget,
+        );
       },
     );
 

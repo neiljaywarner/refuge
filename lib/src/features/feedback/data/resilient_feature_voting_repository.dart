@@ -92,6 +92,7 @@ class ResilientFeatureVotingRepository implements FeatureVotingRepository {
     String? contactEmail,
     String? attachmentUrl,
     Uint8List? screenshotAttachment,
+    String? submissionId,
   }) => _primary.submitFeedback(
     sentiment: sentiment,
     message: message,
@@ -99,5 +100,6 @@ class ResilientFeatureVotingRepository implements FeatureVotingRepository {
     contactEmail: contactEmail,
     attachmentUrl: attachmentUrl,
     screenshotAttachment: screenshotAttachment,
+    submissionId: submissionId,
   );
 }
