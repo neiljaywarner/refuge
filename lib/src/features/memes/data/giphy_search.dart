@@ -136,10 +136,11 @@ class HttpGiphySearch implements GiphySearch {
     if (trimmed.isEmpty) return const [];
 
     final bounded = trimmed.length > 50 ? trimmed.substring(0, 50) : trimmed;
+    final ratingCeiling = _rating == 'g' ? 'g' : 'pg';
     final uri = Uri.https('api.giphy.com', '/v1/text/animate', {
       'api_key': _apiKey,
       'limit': '12',
-      'rating': _rating,
+      'rating': ratingCeiling,
       'm': bounded,
       's': bounded,
     });

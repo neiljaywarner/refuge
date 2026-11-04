@@ -351,7 +351,7 @@ void main() {
           'data': [
             {
               'id': 'anim_1',
-              'title': 'neil is cool',
+              'title': 'calm words',
               'rating': 'pg',
               'images': {
                 'fixed_height_still': {'url': 'https://media.giphy.com/text_still.gif'},
@@ -361,19 +361,20 @@ void main() {
           ],
         }),
       );
-      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key', rating: 'pg');
+      // Even if initialized with pg-13, animateText enforces the PG ceiling.
+      final search = HttpGiphySearch(httpClient: httpClient, apiKey: 'beta-key', rating: 'pg-13');
 
-      final results = await search.animateText('  neil is cool  ');
+      final results = await search.animateText('  calm words  ');
 
       expect(httpClient.uris.single.path, '/v1/text/animate');
-      expect(httpClient.uris.single.queryParameters['m'], 'neil is cool');
-      expect(httpClient.uris.single.queryParameters['s'], 'neil is cool');
+      expect(httpClient.uris.single.queryParameters['m'], 'calm words');
+      expect(httpClient.uris.single.queryParameters['s'], 'calm words');
       expect(httpClient.uris.single.queryParameters['rating'], 'pg');
       expect(httpClient.uris.single.queryParameters['limit'], '12');
 
       expect(results, hasLength(1));
       expect(results.single.id, 'anim_1');
-      expect(results.single.title, 'neil is cool');
+      expect(results.single.title, 'calm words');
       expect(results.single.isAnimatedText, isTrue);
 
       final meme = calmMemeFromGiphy(results.single);
@@ -722,7 +723,7 @@ void main() {
       expect(size.height, greaterThanOrEqualTo(48));
     });
 
-    testWidgets('web picker switches to Animate Text, types "neil is cool", and attaches animated text', (tester) async {
+    testWidgets('web picker switches to Animate Text, types "calm words", and attaches animated text', (tester) async {
       CalmMeme? picked;
       final fakeSearch = _FakeGiphySearch(
         results: const [
@@ -736,10 +737,10 @@ void main() {
         ],
         animatedTextResults: const [
           GiphyGif(
-            id: 'anim_neil',
-            title: 'neil is cool',
-            stillUrl: 'https://media.giphy.com/neil_s.gif',
-            gifUrl: 'https://media.giphy.com/neil.gif',
+            id: 'anim_calm',
+            title: 'calm words',
+            stillUrl: 'https://media.giphy.com/calm_s.gif',
+            gifUrl: 'https://media.giphy.com/calm.gif',
             rating: 'pg',
             isAnimatedText: true,
           ),
@@ -770,29 +771,29 @@ void main() {
       // In empty text mode, prompts user
       expect(find.text('Type a phrase to see animated text styles.'), findsOneWidget);
 
-      // Enter "neil is cool" and tap Animate
-      await tester.enterText(find.byKey(const Key('giphy_search_input')), 'neil is cool');
+      // Enter "calm words" and tap Animate
+      await tester.enterText(find.byKey(const Key('giphy_search_input')), 'calm words');
       await tester.tap(find.byKey(const Key('giphy_search_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(fakeSearch.lastAnimatedText, 'neil is cool');
-      expect(find.byKey(const Key('giphy_result_anim_neil')), findsOneWidget);
+      expect(fakeSearch.lastAnimatedText, 'calm words');
+      expect(find.byKey(const Key('giphy_result_anim_calm')), findsOneWidget);
       expect(
         find.descendant(
-          of: find.byKey(const Key('giphy_result_anim_neil')),
-          matching: find.text('neil is cool'),
+          of: find.byKey(const Key('giphy_result_anim_calm')),
+          matching: find.text('calm words'),
         ),
         findsOneWidget,
       );
 
       // Tap the animated text result to attach
-      await tester.tap(find.byKey(const Key('giphy_result_anim_neil')));
+      await tester.tap(find.byKey(const Key('giphy_result_anim_calm')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(picked, isNotNull);
-      expect(picked!.imageUrl, 'https://media.giphy.com/neil.gif');
+      expect(picked!.imageUrl, 'https://media.giphy.com/calm.gif');
       expect(picked!.subtitle, 'GIPHY animated text · rated PG');
     });
   });

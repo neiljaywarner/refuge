@@ -116,6 +116,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
 
     final trimmed = text.trim();
     if (trimmed.isEmpty) {
+      ++_searchGeneration;
       setState(() {
         _loading = false;
         _error = null;
@@ -196,6 +197,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
                 if (_queryController.text.trim().isNotEmpty) {
                   _animateText(_queryController.text);
                 } else {
+                  ++_searchGeneration;
                   setState(() {
                     _results = const [];
                     _error = null;
@@ -214,7 +216,7 @@ class _GiphySearchPanelState extends ConsumerState<GiphySearchPanel> {
                 controller: _queryController,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: isTextMode ? 'e.g. neil is cool' : 'quiet, bread, chapel',
+                  hintText: isTextMode ? 'e.g. calm words' : 'quiet, bread, chapel',
                   hintStyle: const TextStyle(fontSize: 12),
                   isDense: true,
                   prefixIcon: Icon(isTextMode ? Icons.title : Icons.search, size: 18),
