@@ -1,64 +1,80 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:refuge4serverpod/src/core/theme/belong_colors.dart';
+import 'package:refuge4serverpod/src/core/presentation/system_insets.dart';
+import 'package:refuge4serverpod/src/features/notifications/data/calm_local_notification_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/notification_permissions_service.dart';
 import 'package:refuge4serverpod/src/features/notifications/domain/calm_notification_preferences.dart';
-import 'package:refuge4serverpod/src/features/notifications/presentation/notification_settings_help.dart';
+import 'package:refuge4serverpod/src/features/notifications/domain/notification_settings_help.dart';
 
-/// Modal bottom sheet providing calm, non-nagging notification controls.
+/// Modal bottom sheet allowing members to configure unhurried digest schedules.
 class CalmNotificationPreferencesSheet extends ConsumerWidget {
   const CalmNotificationPreferencesSheet({super.key});
 
+  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => const SystemBottomInset(child: CalmNotificationPreferencesSheet()),
+  );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
     final prefs = ref.watch(calmNotificationPreferencesProvider);
     final notifier = ref.read(calmNotificationPreferencesProvider.notifier);
-    final theme = Theme.of(context);
 
-    return SafeArea(
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: const .vertical(top: .circular(24)),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+        padding: .only(
+          top: 16,
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
-              // Header with subtle indicator pill
               Center(
                 child: Container(
-                  width: 36,
+                  width: 40,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(2),
+                    color: theme.dividerColor.withValues(alpha: 0.4),
+                    borderRadius: .circular(2),
                   ),
                 ),
               ),
-
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  const Text('🌿', style: TextStyle(fontSize: 24)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Calm Notification Ethics',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  const Text('🌿', style: TextStyle(fontSize: 26)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Calm Notification Ethics',
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                'No red guilt dots. No streak alarms. Zero surprise audio startles. '
-                'Choose how and when updates reach you.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  height: 1.4,
+                'Belong respects your attention and sensory peace. We never send loud chimes, urgency countdowns, or anxiety-inducing red dots.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
+                  height: 1.45,
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Master Push Toggle
+              // Notification Master Toggle
               SwitchListTile.adaptive(
                 key: const ValueKey('toggle-notifications-switch'),
                 contentPadding: .zero,
@@ -127,67 +143,59 @@ class CalmNotificationPreferencesSheet extends ConsumerWidget {
                 ),
               ],
 
-              const Divider(height: 24),
-
-              // Batched Delivery Schedules
+              const Divider(height: 28),
               Text(
-                'Batched Delivery Windows',
+                'Delivery Schedule',
                 style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
-              ...CalmDigestSchedule.values.map((schedule) {
-                final isSelected = prefs.schedule == schedule;
-                return RadioListTile<CalmDigestSchedule>(
+              for (final schedule in CalmDigestSchedule.values)
+                RadioListTile<CalmDigestSchedule>(
                   key: ValueKey('schedule-radio-${schedule.name}'),
                   contentPadding: .zero,
+                  dense: true,
+                  title: Text(
+                    '${schedule.emoji} ${schedule.title}',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(schedule.description, style: const TextStyle(fontSize: 11)),
                   value: schedule,
                   groupValue: prefs.schedule,
-                  onChanged: (val) {
-                    if (val != null) notifier.setSchedule(val);
+                  onChanged: (selected) {
+                    if (selected != null) {
+                      notifier.setSchedule(selected);
+                    }
                   },
-                  title: Row(
-                    children: [
-                      Text(schedule.emoji),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          schedule.title,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  subtitle: Text(
-                    schedule.description,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurfaceVariant,
+                ),
+
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: Semantics(
+                    button: true,
+                    identifier: 'preview-calm-shade-notification-button',
+                    label: 'Preview shade notification debug',
+                    child: OutlinedButton(
+                      key: const ValueKey('preview-calm-shade-notification-button'),
+                      onPressed: () async {
+                        await showCalmPreviewDirectMessage(
+                          ref.read(calmLocalNotificationServiceProvider),
+                        );
+                      },
+                      child: const Text('Preview shade notification (debug)'),
                     ),
                   ),
-                );
-              }),
-
+                ),
+              ],
               const SizedBox(height: 16),
-
-              // Close / Save Action Button
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.tonal(
+                child: FilledButton(
                   key: const ValueKey('save-notification-preferences-button'),
                   onPressed: () => Navigator.of(context).pop(),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: BelongColors.sageGreen.withValues(alpha: 0.18),
-                    foregroundColor: BelongColors.sageGreenDarker,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: const Text('Save & Return', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Save & Return'),
                 ),
               ),
             ],
