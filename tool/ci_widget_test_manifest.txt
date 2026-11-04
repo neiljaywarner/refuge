@@ -23,6 +23,7 @@
 #   test/features/profile/member_profile_initials_test.dart
 #   test/features/profile/member_profile_widget_test.dart
 #   test/features/reflections/compact_reflection_composer_test.dart
+#   test/features/reflections/feed_sort_controls_test.dart
 #   test/features/reflections/feed_sort_tap_hardening_test.dart
 #   test/features/reflections/mocked_post_publish_test.dart
 #   test/features/reflections/post_creation_menu_test.dart
@@ -120,7 +121,6 @@ test/features/reflections/comment_repository_test.dart
 test/features/reflections/appwrite_row_mapping_test.dart
 test/features/reflections/appwrite_tablesdb_nock_test.dart
 test/features/reflections/empty_space_starter_posts_test.dart
-test/features/reflections/feed_sort_controls_test.dart
 test/features/reflections/feed_sort_service_test.dart
 test/features/reflections/firestore_comment_sync_test.dart
 test/features/reflections/post_and_dm_timestamps_test.dart
