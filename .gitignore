@@ -82,3 +82,4 @@ scratch/
 **/*.csv
 !test/fixtures/sample_anonymized_circle_export.csv
 !test/fixtures/google_play_reviews_sample.csv
+!docs/chat-transcripts/2026-11-session-token-analysis.csv
