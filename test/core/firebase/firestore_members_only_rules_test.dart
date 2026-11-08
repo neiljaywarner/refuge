@@ -127,6 +127,19 @@ void main() {
   });
 
   group('soft-launch guest re-audit', () {
+    test('preview guest invites stay closed to clients', () {
+      final invites = firestoreRules
+          .split('match /stream_call_invites/{inviteId}')
+          .last
+          .split('match /stream_call_guests')
+          .first;
+      final guests = firestoreRules.split('match /stream_call_guests/{callId}').last;
+      expect(invites, contains('allow read, write: if false'));
+      expect(guests, contains('match /sessions/{guestUserId}'));
+      expect(guests, contains('allow read, write: if false'));
+      expect(firestoreRules, isNot(contains('allow read: if true')));
+    });
+
     test('keeps guest and anonymous sessions off every fellowship path', () {
       expect(firestoreRules, isNot(contains('allow read: if true')));
       expect(firestoreRules, isNot(contains('allow write: if true')));

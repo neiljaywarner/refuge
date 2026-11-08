@@ -15,8 +15,9 @@ class const GroupCallOtherMember({required this.userId, required this.name}) {
 /// Mute, camera, leave, and the host actions for a preview group call.
 ///
 /// Everyone can turn the microphone or camera on, or leave. Leave only steps
-/// this member out. Remove and end-for-everyone are built only when [host]
-/// is true: the person who created the room, or a Stream host or admin.
+/// this person out. Remove and end-for-everyone are built only when [host]
+/// is true: a signed-in member who created the room, or a Stream host or admin.
+/// Guests do not get [host].
 class GroupCallSessionControls extends StatelessWidget {
   const GroupCallSessionControls({
     super.key,
@@ -129,7 +130,9 @@ class GroupCallSessionControls extends StatelessWidget {
     final confirmed = await _confirm(
       context,
       title: 'Remove this person?',
-      body: 'They leave this call. They can join again with the same call name.',
+      body:
+          'They leave this call. A member can join again with the call name. '
+          'A guest needs a link that still works.',
       action: 'Remove',
     );
     if (!confirmed || !context.mounted) return;

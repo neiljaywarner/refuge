@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../data/stream_guest_token_client.dart';
 import '../data/stream_token_client.dart';
 import '../data/stream_video_preview_config.dart';
 import '../domain/group_call_room.dart';
@@ -23,12 +24,27 @@ StreamTokenClient? buildLiveStreamTokenClient({http.Client? httpClient}) {
   );
 }
 
+StreamGuestTokenClient? buildLiveStreamGuestJoinClient({
+  required String inviteToken,
+  String? callId,
+  http.Client? httpClient,
+}) {
+  final endpoint = streamTokenEndpoint;
+  if (!streamVideoPreviewEnabled || endpoint == null) return null;
+  return StreamGuestTokenClient(
+    endpoint: endpoint,
+    inviteToken: inviteToken,
+    callId: callId,
+    httpClient: httpClient ?? http.Client(),
+  );
+}
+
 Future<void> pushStreamGroupCall(
   BuildContext context, {
   required GroupCallRoom room,
   required StreamCallCredentials credentials,
   required String displayName,
-  required StreamTokenClient tokenClient,
+  required GroupCallTokenSource tokenClient,
 }) async {
   await Navigator.of(context).push(
     MaterialPageRoute<void>(

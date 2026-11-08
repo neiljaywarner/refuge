@@ -13,9 +13,17 @@ class const GroupCallRoom(final String id) {
   }
 }
 
-/// The person who created the room, or a Stream host/admin, may end it
-/// or remove someone. Everyone else can only leave.
-bool canModerateGroupCall({required bool createdByMe, required Iterable<String> roles}) {
+/// A signed-in member may end the call or remove someone when they created
+/// the room, or when Stream gave them host or admin.
+///
+/// A guest cannot, even if they were first in the room or the request claims
+/// a host role. [signedInMember] is Belong sign-in, not Stream's owner flag.
+bool canModerateGroupCall({
+  required bool signedInMember,
+  required bool createdByMe,
+  required Iterable<String> roles,
+}) {
+  if (!signedInMember) return false;
   if (createdByMe) return true;
   for (final role in roles) {
     final normalized = role.toLowerCase();

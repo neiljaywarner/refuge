@@ -44,7 +44,7 @@ void main() {
     expect(left, 1);
   });
 
-  testWidgets('a member can mute, use the camera, and leave, and cannot host', (tester) async {
+  testWidgets('a guest can mute, use the camera, and leave, and cannot host', (tester) async {
     var microphone = 0;
     var camera = 0;
     var left = 0;
@@ -122,7 +122,10 @@ void main() {
     await tester.tap(find.text('Fellow Member'));
     await tester.pumpAndSettle();
     expect(
-      find.text('They leave this call. They can join again with the same call name.'),
+      find.text(
+        'They leave this call. A member can join again with the call name. '
+        'A guest needs a link that still works.',
+      ),
       findsOneWidget,
     );
 

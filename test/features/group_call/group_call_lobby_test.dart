@@ -122,7 +122,7 @@ void main() {
         isA<StreamTokenException>().having(
           (error) => error.message,
           'message',
-          'A Firebase sign-in is required to join. Guest mode cannot start a call.',
+          streamSignInRequiredMessage,
         ),
       ),
     );
@@ -148,10 +148,7 @@ void main() {
       );
     }
 
-    await expectStatus(
-      401,
-      'A Firebase sign-in is required to join. Guest mode cannot start a call.',
-    );
+    await expectStatus(401, streamSignInRequiredMessage);
     await expectStatus(503, 'Video calling is not configured on this preview yet.');
     await expectStatus(500, 'The call could not start. Try again in a moment.');
   });
@@ -216,5 +213,76 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('a member can create a guest link and revoke it', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final invite = 'b' * 43;
+    final bodies = <Map<String, dynamic>>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GroupCallLobbyPage(
+          displayName: 'Fellow Member',
+          initialCallId: 'monthly',
+          pageLocation: Uri.parse('https://preview.example/hall'),
+          tokenClientFactory: () => StreamTokenClient(
+            endpoint: Uri.parse('https://example.com/mintStreamCallToken'),
+            httpClient: MockClient((request) async {
+              final payload = jsonDecode(request.body) as Map<String, dynamic>;
+              bodies.add(payload);
+              expect(request.headers['Authorization'], 'Bearer firebase-id-token');
+              expect(request.body, isNot(contains('unit-test-stream-secret')));
+              if (payload['action'] == 'revokeInvite') {
+                return http.Response(jsonEncode({'revoked': true, 'callId': 'monthly'}), 200);
+              }
+              return http.Response(
+                jsonEncode({
+                  'inviteToken': invite,
+                  'callId': 'monthly',
+                  'expiresAt': 30,
+                  'guestLimit': 10,
+                }),
+                200,
+              );
+            }),
+            readIdToken: () async => 'firebase-id-token',
+          ),
+          onReady:
+              (
+                context, {
+                required room,
+                required credentials,
+                required displayName,
+                required tokenClient,
+              }) async {
+                fail('join should not run');
+              },
+        ),
+      ),
+    );
+
+    await tester.ensureVisible(find.byKey(const Key('group_call_invite_button')));
+    await tester.tap(find.byKey(const Key('group_call_invite_button')));
+    await tester.pumpAndSettle();
+
+    expect(bodies.single['action'], 'createInvite');
+    expect(bodies.single['callId'], 'monthly');
+    expect(find.text('https://preview.example/hall?call=monthly&invite=$invite'), findsOneWidget);
+    expect(find.textContaining('unit-test-stream-secret'), findsNothing);
+    expect(find.textContaining('10 guests'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('group_call_revoke_invite_button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Revoke this guest link?'), findsOneWidget);
+    await tester.tap(find.text('Revoke'));
+    await tester.pumpAndSettle();
+
+    expect(bodies.last['action'], 'revokeInvite');
+    expect(bodies.last['inviteToken'], invite);
+    expect(find.text('https://preview.example/hall?call=monthly&invite=$invite'), findsNothing);
+    expect(find.text('This link no longer works.'), findsOneWidget);
   });
 }
