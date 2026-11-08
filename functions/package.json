@@ -6,7 +6,7 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "test": "node --test test/decide.test.js test/handle.test.js test/transport.test.js test/stream_call.test.js"
+    "test": "node --test test/decide.test.js test/handle.test.js test/transport.test.js test/stream_call.test.js test/stream_guest.test.js"
   },
   "dependencies": {
     "firebase-admin": "^14.5.0",

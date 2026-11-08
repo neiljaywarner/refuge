@@ -14,18 +14,60 @@ function base64Url(value) {
  * The API secret is the HMAC key and is not placed in the payload.
  */
 function mintStreamUserToken({ userId, secret, nowSeconds, ttlSeconds = STREAM_TOKEN_TTL_SECONDS }) {
-  const header = base64Url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const exp = nowSeconds + ttlSeconds;
-  const payload = base64Url(
-    JSON.stringify({
+  return signStreamToken(
+    {
       user_id: userId,
       iat: nowSeconds,
-      exp,
-    }),
+      exp: nowSeconds + ttlSeconds,
+    },
+    secret,
   );
+}
+
+/**
+ * Call-scoped user token. `call_cids` grants membership on those calls only
+ * as an extra claim. Stream does not treat it as a ban on every other call,
+ * so the guest id stays temporary and the call role stays `call-member`.
+ * The role is never host, admin, or moderator.
+ */
+function mintStreamCallScopedToken({
+  userId,
+  secret,
+  nowSeconds,
+  ttlSeconds,
+  callCids,
+  role,
+}) {
+  return signStreamToken(
+    {
+      user_id: userId,
+      role,
+      call_cids: callCids,
+      iat: nowSeconds,
+      exp: nowSeconds + ttlSeconds,
+    },
+    secret,
+  );
+}
+
+/** Short-lived server JWT for the function's own Stream API calls. */
+function mintStreamServerToken({ secret, nowSeconds, ttlSeconds = 5 * 60 }) {
+  return signStreamToken(
+    {
+      server: true,
+      iat: nowSeconds,
+      exp: nowSeconds + ttlSeconds,
+    },
+    secret,
+  );
+}
+
+function signStreamToken(claims, secret) {
+  const header = base64Url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = base64Url(JSON.stringify(claims));
   const unsigned = `${header}.${payload}`;
   const signature = crypto.createHmac('sha256', secret).update(unsigned).digest('base64url');
-  return { token: `${unsigned}.${signature}`, expiresAt: exp };
+  return { token: `${unsigned}.${signature}`, expiresAt: claims.exp };
 }
 
 function verifyStreamUserToken(token, secret) {
@@ -46,5 +88,7 @@ function verifyStreamUserToken(token, secret) {
 module.exports = {
   STREAM_TOKEN_TTL_SECONDS,
   mintStreamUserToken,
+  mintStreamCallScopedToken,
+  mintStreamServerToken,
   verifyStreamUserToken,
 };

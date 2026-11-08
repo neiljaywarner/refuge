@@ -1,6 +1,7 @@
 'use strict';
 
 const { mintStreamUserToken } = require('./stream_token');
+const { handleStreamGuestAction } = require('./stream_guest');
 
 const CALL_ID = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
 const USER_ID = /^[A-Za-z0-9_-]{1,128}$/;
@@ -51,6 +52,18 @@ function applyCors(req, res) {
 
 // The Flutter SDK connects with the public API key. Some dashboards label
 // that same value as an app id. The secret is never a stand-in for either.
+function readJsonBody(req) {
+  if (typeof req.body === 'string') {
+    try {
+      const parsed = JSON.parse(req.body);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_) {
+      return {};
+    }
+  }
+  return req.body && typeof req.body === 'object' ? req.body : {};
+}
+
 function resolveApiKey(apiKey, appId) {
   const key = typeof apiKey === 'string' ? apiKey.trim() : '';
   if (key) return key;
@@ -77,6 +90,31 @@ async function handleMintStreamCallToken(req, res, deps) {
     return;
   }
 
+  const body = readJsonBody(req);
+  const action = typeof body.action === 'string' ? body.action : '';
+  // Ending a call or removing someone is not this function's job. A guest
+  // must not be able to ask for it, and neither can a forged host flag.
+  if (action === 'endCall' || action === 'removeParticipant') {
+    res.status(403).json({
+      error: 'Only a signed-in host can do that.',
+      code: 'forbidden',
+    });
+    return;
+  }
+  if (
+    action === 'createInvite' ||
+    action === 'revokeInvite' ||
+    action === 'joinGuest' ||
+    action === 'releaseGuest'
+  ) {
+    await handleStreamGuestAction({ req, res, deps, action, body });
+    return;
+  }
+  if (action) {
+    res.status(400).json({ error: 'That call action is not available.', code: 'forbidden' });
+    return;
+  }
+
   const header = req.headers.authorization || '';
   const match = /^Bearer\s+(\S+)$/.exec(header);
   if (!match) {
@@ -97,7 +135,6 @@ async function handleMintStreamCallToken(req, res, deps) {
     return;
   }
 
-  const body = req.body && typeof req.body === 'object' ? req.body : {};
   const callId = normalizeCallId(body.callId);
   if (!callId) {
     res.status(400).json({
