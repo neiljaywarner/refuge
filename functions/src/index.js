@@ -30,6 +30,9 @@ const { getAuth } = require('firebase-admin/auth');
 const { handleDirectMessageCreated } = require('./handle');
 const { parseEmailTransport } = require('./transport');
 const { handleMintStreamCallToken } = require('./stream_call');
+const { FirestoreInviteStore } = require('./stream_invite_store');
+const { prepareGuestOnCall } = require('./stream_video_api');
+const crypto = require('node:crypto');
 
 const transportSecret = defineSecret('DM_EMAIL_TRANSPORT_JSON');
 const streamApiKey = defineSecret('STREAM_API_KEY');
@@ -116,12 +119,15 @@ function readBoundSecret(secret) {
 }
 
 /**
- * Preview-only Stream Video user tokens (#872).
+ * Preview-only Stream Video tokens (#872, #904).
  *
  * The API secret stays in this function. The direct-message email function
  * does not receive it, and this function does not read direct messages.
- * IAM is public so a browser can POST. The handler still requires a Firebase
- * ID token and does not return the secret.
+ * IAM is public so a browser can POST. Member actions still require a
+ * Firebase ID token. A guest join requires an invite token instead.
+ * The response never includes the secret.
+ *
+ * Invites live in Firestore under the Admin SDK. Clients cannot read them.
  *
  * `cors: false` turns off Firebase's open CORS helper. The handler allowlists
  * Firebase Hosting and loopback itself.
@@ -131,7 +137,7 @@ exports.mintStreamCallToken = onRequest(
     secrets: [streamApiKey, streamApiSecret],
     cors: false,
     invoker: 'public',
-    timeoutSeconds: 15,
+    timeoutSeconds: 20,
     memory: '256MiB',
   },
   (req, res) =>
@@ -141,5 +147,9 @@ exports.mintStreamCallToken = onRequest(
       apiSecret: () => readBoundSecret(streamApiSecret) || process.env.STREAM_API_SECRET || '',
       appId: () => process.env.STREAM_APP_ID || '',
       nowSeconds: () => Math.floor(Date.now() / 1000),
+      store: new FirestoreInviteStore(getFirestore()),
+      prepareGuestCall: (input) => prepareGuestOnCall({ ...input, fetchImpl: fetch }),
+      randomInviteToken: () => crypto.randomBytes(32).toString('base64url'),
+      randomGuestId: () => `g${crypto.randomBytes(16).toString('hex')}`,
     }),
 );
