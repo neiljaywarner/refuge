@@ -7,18 +7,26 @@ const bool streamVideoPreviewEnabled = bool.fromEnvironment('STREAM_VIDEO_PREVIE
 
 const String _tokenEndpointDefine = String.fromEnvironment('STREAM_TOKEN_ENDPOINT');
 
-/// True when this build may show the join entry.
+/// True when this build may show the signed-in join entry.
 ///
 /// All three have to be true. [compileTimePreview] is the dart-define, so a
 /// production binary has no call UI even when Remote Config is on.
 /// [previewFeaturesEnabled] is the in-app preview switch, so a preview binary
-/// can still hide the call. [signedIn] is Firebase auth. Guest mode cannot
-/// mint a token, so the button stays hidden.
+/// can still hide the call. [signedIn] is Firebase auth. Browsing without an
+/// account does not show this button. An invite link is a separate door.
 bool groupCallEntryVisible({
   required bool compileTimePreview,
   required bool previewFeaturesEnabled,
   required bool signedIn,
 }) => compileTimePreview && previewFeaturesEnabled && signedIn;
+
+/// True when a signed-out person may open the guest name page.
+///
+/// The compile-time preview flag is required. [inviteToken] must already
+/// look like an invite. A call name on its own is not enough, and the
+/// in-app preview switch is not consulted because this person is not signed in.
+bool guestJoinEntryVisible({required bool compileTimePreview, required String? inviteToken}) =>
+    compileTimePreview && inviteToken != null;
 
 /// HTTPS token URL, or loopback HTTP for the local functions emulator.
 ///

@@ -21,7 +21,7 @@ class StreamGroupCallPage extends StatefulWidget {
 
   final StreamCallCredentials credentials;
   final String displayName;
-  final StreamTokenClient tokenClient;
+  final GroupCallTokenSource tokenClient;
 
   @override
   State<StreamGroupCallPage> createState() => _StreamGroupCallPageState();
@@ -53,14 +53,22 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       }
       // [credentials.token] is a Stream user token from mintStreamCallToken.
       // The API secret never arrives here. Stream calls [tokenLoader] when it
-      // wants another user token; that request sends the Firebase ID token
-      // again, and the function mints a new user token.
+      // wants another user token. A member sends the Firebase ID token again.
+      // A guest sends the invite token again and keeps the same seat.
+      //
+      // The function creates the call as the inviting member before a guest
+      // token is issued, so this getOrCreate does not make the guest the owner.
+      final guest = widget.credentials.isGuest;
+      final shownName = calmGroupCallName(
+        guest && widget.credentials.displayName.isNotEmpty
+            ? widget.credentials.displayName
+            : widget.displayName,
+      );
       final client = StreamVideo(
         widget.credentials.apiKey,
-        user: User.regular(
-          userId: widget.credentials.userId,
-          name: calmGroupCallName(widget.displayName),
-        ),
+        user: guest
+            ? User.guest(userId: widget.credentials.userId, name: shownName)
+            : User.regular(userId: widget.credentials.userId, name: shownName),
         userToken: widget.credentials.token,
         tokenLoader: (_) async {
           final fresh = await widget.tokenClient.mint(callId: widget.credentials.callId);
@@ -126,6 +134,9 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       await call?.leave();
     } catch (_) {}
     try {
+      await widget.tokenClient.release();
+    } catch (_) {}
+    try {
       if (StreamVideo.isInitialized()) {
         await StreamVideo.reset(disconnect: true);
       }
@@ -163,12 +174,14 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
                 callControlsWidgetBuilder: (context, call) {
                   final state = call.state.value;
                   final local = state.localParticipant;
-                  // Host controls belong to the room creator or a Stream
-                  // host/admin. Everyone else gets microphone, camera, and leave.
+                  // Host controls require a signed-in member who created the
+                  // room or has a Stream host or admin role. A guest never
+                  // sees them, even if Stream says they created the room.
                   return GroupCallSessionControls(
                     microphoneEnabled: local?.isAudioEnabled ?? false,
                     cameraEnabled: local?.isVideoEnabled ?? false,
                     host: canModerateGroupCall(
+                      signedInMember: !widget.credentials.isGuest,
                       createdByMe: state.createdByMe,
                       roles: local?.roles ?? const [],
                     ),

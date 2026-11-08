@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/group_call/data/stream_video_preview_config.dart';
+import 'package:refuge4serverpod/src/features/group_call/domain/guest_invite.dart';
 import 'package:refuge4serverpod/src/features/group_call/domain/group_call_room.dart';
 
 void main() {
@@ -14,13 +15,58 @@ void main() {
       'fellowship-hour',
     );
     expect(groupCallIdFromLocation(Uri.parse('https://preview.example/')), GroupCallRoom.defaultId);
+    final invite = 'a' * 43;
+    expect(guestInviteFromLocation(Uri.parse('https://preview.example/?call=monthly')), isNull);
+    expect(
+      guestInviteFromLocation(Uri.parse('https://preview.example/?call=monthly&invite=$invite')),
+      invite,
+    );
+    expect(guestInviteFromLocation(Uri.parse('https://preview.example/#/?invite=$invite')), invite);
+    expect(guestInviteFromLocation(Uri.parse('https://preview.example/?invite=short')), isNull);
+    expect(
+      explicitGroupCallIdFromLocation(Uri.parse('https://preview.example/?invite=$invite')),
+      isNull,
+    );
+    expect(
+      explicitGroupCallIdFromLocation(
+        Uri.parse('https://preview.example/?call=Monthly&invite=$invite'),
+      ),
+      'monthly',
+    );
+    expect(explicitGroupCallIdFromLocation(Uri.parse('https://preview.example/?call=no')), isNull);
+    final link = guestInvitePageUri(
+      page: Uri.parse('https://preview.example/hall'),
+      callId: 'monthly',
+      inviteToken: invite,
+    );
+    expect(link.toString(), 'https://preview.example/hall?call=monthly&invite=$invite');
+    expect(guestJoinEntryVisible(compileTimePreview: true, inviteToken: invite), isTrue);
+    expect(guestJoinEntryVisible(compileTimePreview: true, inviteToken: null), isFalse);
+    expect(guestJoinEntryVisible(compileTimePreview: false, inviteToken: invite), isFalse);
   });
 
-  test('only the room creator or a host can end or remove someone', () {
-    expect(canModerateGroupCall(createdByMe: true, roles: const []), isTrue);
-    expect(canModerateGroupCall(createdByMe: false, roles: const ['host']), isTrue);
-    expect(canModerateGroupCall(createdByMe: false, roles: const ['Admin']), isTrue);
-    expect(canModerateGroupCall(createdByMe: false, roles: const ['user']), isFalse);
+  test('only a signed-in host can end or remove someone', () {
+    expect(canModerateGroupCall(signedInMember: true, createdByMe: true, roles: const []), isTrue);
+    expect(
+      canModerateGroupCall(signedInMember: true, createdByMe: false, roles: const ['host']),
+      isTrue,
+    );
+    expect(
+      canModerateGroupCall(signedInMember: true, createdByMe: false, roles: const ['Admin']),
+      isTrue,
+    );
+    expect(
+      canModerateGroupCall(signedInMember: true, createdByMe: false, roles: const ['user']),
+      isFalse,
+    );
+    expect(
+      canModerateGroupCall(
+        signedInMember: false,
+        createdByMe: true,
+        roles: const ['admin', 'host'],
+      ),
+      isFalse,
+    );
   });
 
   test('preview defines never forward the Stream key or secret', () {
