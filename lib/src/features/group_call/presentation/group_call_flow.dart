@@ -8,6 +8,11 @@ import '../domain/stream_call_credentials.dart';
 import 'group_call_lobby.dart';
 import 'stream_group_call_page.dart';
 
+/// Live token client for a preview binary.
+///
+/// Null unless this build was compiled with `STREAM_VIDEO_PREVIEW` and a
+/// usable `STREAM_TOKEN_ENDPOINT`. Production builds take the null path and
+/// never send a Firebase ID token to the mint function.
 StreamTokenClient? buildLiveStreamTokenClient({http.Client? httpClient}) {
   final endpoint = streamTokenEndpoint;
   if (!streamVideoPreviewEnabled || endpoint == null) return null;

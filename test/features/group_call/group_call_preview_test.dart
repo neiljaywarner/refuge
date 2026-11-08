@@ -19,6 +19,7 @@ void main() {
   test('only the room creator or a host can end or remove someone', () {
     expect(canModerateGroupCall(createdByMe: true, roles: const []), isTrue);
     expect(canModerateGroupCall(createdByMe: false, roles: const ['host']), isTrue);
+    expect(canModerateGroupCall(createdByMe: false, roles: const ['Admin']), isTrue);
     expect(canModerateGroupCall(createdByMe: false, roles: const ['user']), isFalse);
   });
 

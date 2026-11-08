@@ -33,6 +33,13 @@ class StreamTokenClient {
     _httpClient.close();
   }
 
+  /// Asks [endpoint] for a user token.
+  ///
+  /// The `Authorization` bearer is the Firebase ID token, not a Stream secret.
+  /// The function checks that token and mints the user token. A 401 means
+  /// sign-in failed. A 503 means the function has no API key or secret yet.
+  /// Any other status becomes a generic sentence: the response body is not
+  /// shown, because a misconfigured function might echo a credential.
   Future<StreamCallCredentials> mint({required String callId}) async {
     if (_closed) {
       throw const StreamTokenException('The call could not start. Try again in a moment.');
@@ -68,6 +75,11 @@ class StreamTokenClient {
   }
 }
 
+/// Reads the mint response. `apiKey` here is Stream's public key.
+///
+/// A body that includes `apiSecret` or `secret` is refused, even when the
+/// other fields look valid, so this client never stores a secret that a
+/// broken function echoed back.
 StreamCallCredentials parseStreamTokenResponse(String body, {required String requestedCallId}) {
   final decoded = jsonDecode(body);
   if (decoded is! Map) {

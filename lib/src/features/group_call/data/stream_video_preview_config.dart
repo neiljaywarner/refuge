@@ -8,6 +8,12 @@ const bool streamVideoPreviewEnabled = bool.fromEnvironment('STREAM_VIDEO_PREVIE
 const String _tokenEndpointDefine = String.fromEnvironment('STREAM_TOKEN_ENDPOINT');
 
 /// True when this build may show the join entry.
+///
+/// All three have to be true. [compileTimePreview] is the dart-define, so a
+/// production binary has no call UI even when Remote Config is on.
+/// [previewFeaturesEnabled] is the in-app preview switch, so a preview binary
+/// can still hide the call. [signedIn] is Firebase auth. Guest mode cannot
+/// mint a token, so the button stays hidden.
 bool groupCallEntryVisible({
   required bool compileTimePreview,
   required bool previewFeaturesEnabled,
@@ -15,7 +21,10 @@ bool groupCallEntryVisible({
 }) => compileTimePreview && previewFeaturesEnabled && signedIn;
 
 /// HTTPS token URL, or loopback HTTP for the local functions emulator.
-/// Userinfo is rejected so a secret cannot hide in the URL.
+///
+/// Userinfo (`https://user:secret@host`) is rejected so a credential cannot
+/// hide in the dart-define. Any other `http://` URL is ignored so the preview
+/// binary is not pointed at a cleartext token proxy.
 Uri? parseStreamTokenEndpoint(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) return null;
