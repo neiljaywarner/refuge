@@ -142,3 +142,55 @@ test('missing auth, a bad call name, and missing credentials do not mint', async
   assert.equal(unconfigured.statusCode, 503);
   assert.equal(JSON.stringify(unconfigured.body).includes(secret), false);
 });
+
+test('a foreign origin is refused before the id token or the secret is used', async () => {
+  let verified = false;
+  const res = mockResponse();
+  await handleMintStreamCallToken(
+    {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer firebase-id-token',
+        origin: 'https://evil.example',
+      },
+      body: { callId: 'monthly' },
+    },
+    res,
+    {
+      verifyIdToken: async () => {
+        verified = true;
+        return { uid: 'member1' };
+      },
+      apiKey: () => apiKey,
+      apiSecret: () => secret,
+      nowSeconds: () => 1,
+    },
+  );
+  assert.equal(res.statusCode, 403);
+  assert.equal(verified, false);
+  assert.equal(res.headers['access-control-allow-origin'], undefined);
+  assert.equal(JSON.stringify(res.body).includes(secret), false);
+
+  const preflight = mockResponse();
+  await handleMintStreamCallToken(
+    {
+      method: 'OPTIONS',
+      headers: { origin: 'https://dev-belongonthespectrum.web.app' },
+    },
+    preflight,
+    {
+      verifyIdToken: async () => {
+        throw new Error('should not run');
+      },
+      apiKey: () => apiKey,
+      apiSecret: () => secret,
+      nowSeconds: () => 1,
+    },
+  );
+  assert.equal(preflight.statusCode, 204);
+  assert.equal(
+    preflight.headers['access-control-allow-origin'],
+    'https://dev-belongonthespectrum.web.app',
+  );
+  assert.equal(JSON.stringify(preflight.body ?? '').includes(secret), false);
+});

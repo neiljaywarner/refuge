@@ -122,6 +122,9 @@ function readBoundSecret(secret) {
  * does not receive it, and this function does not read direct messages.
  * IAM is public so a browser can POST. The handler still requires a Firebase
  * ID token and does not return the secret.
+ *
+ * `cors: false` turns off Firebase's open CORS helper. The handler allowlists
+ * Firebase Hosting and loopback itself.
  */
 exports.mintStreamCallToken = onRequest(
   {

@@ -6,6 +6,9 @@ import 'package:stream_video_flutter/stream_video_flutter.dart';
 import '../data/stream_token_client.dart';
 import '../domain/group_call_room.dart';
 import '../domain/stream_call_credentials.dart';
+import 'group_call_connection_status.dart';
+import 'group_call_member_copy.dart';
+import 'group_call_session_controls.dart';
 
 /// Active preview call. Starts muted and camera-off.
 class StreamGroupCallPage extends StatefulWidget {
@@ -48,9 +51,16 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       if (StreamVideo.isInitialized()) {
         await StreamVideo.reset(disconnect: true);
       }
+      // [credentials.token] is a Stream user token from mintStreamCallToken.
+      // The API secret never arrives here. Stream calls [tokenLoader] when it
+      // wants another user token; that request sends the Firebase ID token
+      // again, and the function mints a new user token.
       final client = StreamVideo(
         widget.credentials.apiKey,
-        user: User.regular(userId: widget.credentials.userId, name: _calmName(widget.displayName)),
+        user: User.regular(
+          userId: widget.credentials.userId,
+          name: calmGroupCallName(widget.displayName),
+        ),
         userToken: widget.credentials.token,
         tokenLoader: (_) async {
           final fresh = await widget.tokenClient.mint(callId: widget.credentials.callId);
@@ -75,6 +85,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
         _showFailure(createdFailure);
         return;
       }
+      // Both tracks stay off until the member taps microphone or camera.
       final joined = await call.join(
         connectOptions: CallConnectOptions(
           camera: TrackOption.disabled(),
@@ -127,72 +138,6 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
     if (mounted) Navigator.of(context).pop();
   }
 
-  Future<void> _endForEveryone(Call call) async {
-    final confirmed = await _confirm(
-      title: 'End the call for everyone?',
-      body: 'People still in the room will be disconnected.',
-      action: 'End call',
-    );
-    if (!confirmed || !mounted) return;
-    final result = await call.end();
-    if (_calmFailure(result) != null) {
-      _snack('Only the host can end the call.');
-      return;
-    }
-    await _leave();
-  }
-
-  Future<void> _removeSomeone(Call call) async {
-    final others = call.state.value.otherParticipants;
-    if (others.isEmpty) {
-      _snack('No one else is in the call.');
-      return;
-    }
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Remove someone'),
-        children: [
-          for (final person in others)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, person.userId),
-              child: Text(_calmName(person.name)),
-            ),
-        ],
-      ),
-    );
-    if (selected == null || !mounted) return;
-    final confirmed = await _confirm(
-      title: 'Remove this person?',
-      body: 'They leave this call. They can join again with the same call name.',
-      action: 'Remove',
-    );
-    if (!confirmed || !mounted) return;
-    final result = await call.kickUser(selected);
-    if (_calmFailure(result) != null) {
-      _snack('Only the host can remove someone.');
-    }
-  }
-
-  Future<bool> _confirm({
-    required String title,
-    required String body,
-    required String action,
-  }) async {
-    final answer = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(action)),
-        ],
-      ),
-    );
-    return answer ?? false;
-  }
-
   void _snack(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
@@ -210,80 +155,48 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: Scaffold(
         appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
         body: call == null
-            ? Center(
-                child: Padding(
-                  padding: const .all(24),
-                  child: _failure == null
-                      ? const Column(
-                          mainAxisSize: .min,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Joining with your microphone and camera off.'),
-                          ],
-                        )
-                      : Column(
-                          mainAxisSize: .min,
-                          children: [
-                            Text(_failure!, textAlign: TextAlign.center),
-                            const SizedBox(height: 16),
-                            TextButton(onPressed: _leave, child: const Text('Back')),
-                          ],
-                        ),
-                ),
-              )
+            ? GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave()))
             : StreamCallContent(
                 call: call,
                 onLeaveCallTap: _leave,
                 onBackPressed: _leave,
                 callControlsWidgetBuilder: (context, call) {
                   final state = call.state.value;
-                  final host = canModerateGroupCall(
-                    createdByMe: state.createdByMe,
-                    roles: state.localParticipant?.roles ?? const [],
-                  );
-                  return StreamCallControls(
-                    options: [
-                      Semantics(
-                        button: true,
-                        label: 'Microphone',
-                        child: ToggleMicrophoneOption(
-                          call: call,
-                          localParticipant: state.localParticipant,
-                        ),
-                      ),
-                      Semantics(
-                        button: true,
-                        label: 'Camera',
-                        child: ToggleCameraOption(
-                          call: call,
-                          localParticipant: state.localParticipant,
-                        ),
-                      ),
-                      if (host)
-                        Semantics(
-                          button: true,
-                          label: 'Remove someone',
-                          child: CallControlOption(
-                            icon: const Icon(Icons.person_remove_alt_1_rounded),
-                            onPressed: () => unawaited(_removeSomeone(call)),
-                          ),
-                        ),
-                      if (host)
-                        Semantics(
-                          button: true,
-                          label: 'End call for everyone',
-                          child: CallControlOption(
-                            icon: const Icon(Icons.stop_circle_outlined),
-                            onPressed: () => unawaited(_endForEveryone(call)),
-                          ),
-                        ),
-                      Semantics(
-                        button: true,
-                        label: 'Leave call',
-                        child: LeaveCallOption(call: call, onLeaveCallTap: _leave),
-                      ),
+                  final local = state.localParticipant;
+                  // Host controls belong to the room creator or a Stream
+                  // host/admin. Everyone else gets microphone, camera, and leave.
+                  return GroupCallSessionControls(
+                    microphoneEnabled: local?.isAudioEnabled ?? false,
+                    cameraEnabled: local?.isVideoEnabled ?? false,
+                    host: canModerateGroupCall(
+                      createdByMe: state.createdByMe,
+                      roles: local?.roles ?? const [],
+                    ),
+                    others: [
+                      for (final person in state.otherParticipants)
+                        GroupCallOtherMember(userId: person.userId, name: person.name),
                     ],
+                    onMicrophone: () {
+                      call.setMicrophoneEnabled(enabled: !(local?.isAudioEnabled ?? false));
+                    },
+                    onCamera: () {
+                      call.setCameraEnabled(enabled: !(local?.isVideoEnabled ?? false));
+                    },
+                    onLeave: _leave,
+                    onRemove: (userId) async {
+                      final result = await call.kickUser(userId);
+                      if (_calmFailure(result) != null) {
+                        _snack('Only the host can remove someone.');
+                      }
+                    },
+                    onEnd: () async {
+                      final result = await call.end();
+                      if (_calmFailure(result) != null) {
+                        _snack('Only the host can end the call.');
+                        return;
+                      }
+                      await _leave();
+                    },
                   );
                 },
               ),
@@ -292,22 +205,5 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   }
 }
 
-String _calmName(String raw) {
-  final trimmed = raw.trim();
-  if (trimmed.isEmpty || trimmed.contains('@')) return 'Fellow Member';
-  return trimmed;
-}
-
-String? _calmFailure<T>(Result<T> result) {
-  if (result.isSuccess) return null;
-  final raw = result.getErrorOrNull()?.message ?? '';
-  final lower = raw.toLowerCase();
-  if (raw.trim().isEmpty ||
-      raw.length > 160 ||
-      lower.contains('secret') ||
-      lower.contains('token') ||
-      raw.contains('eyJ')) {
-    return 'The call could not connect.';
-  }
-  return raw.trim();
-}
+String? _calmFailure<T>(Result<T> result) =>
+    result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');

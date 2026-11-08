@@ -104,4 +104,117 @@ void main() {
     expect(find.byKey(const Key('group_call_name_field')), findsOneWidget);
     expect(find.text('Group call'), findsOneWidget);
   });
+
+  test('guest mode does not call the token function', () async {
+    var called = false;
+    final client = StreamTokenClient(
+      endpoint: Uri.parse('https://example.com/mintStreamCallToken'),
+      httpClient: MockClient((request) async {
+        called = true;
+        return http.Response('{}', 200);
+      }),
+      readIdToken: () async => null,
+    );
+    addTearDown(client.close);
+    await expectLater(
+      client.mint(callId: 'monthly'),
+      throwsA(
+        isA<StreamTokenException>().having(
+          (error) => error.message,
+          'message',
+          'A Firebase sign-in is required to join. Guest mode cannot start a call.',
+        ),
+      ),
+    );
+    expect(called, isFalse);
+  });
+
+  test('mint hides a secret in an auth, setup, or other failure', () async {
+    const leaked = 'unit-test-stream-secret';
+    Future<void> expectStatus(int status, String message) async {
+      final client = StreamTokenClient(
+        endpoint: Uri.parse('https://example.com/mintStreamCallToken'),
+        httpClient: MockClient((request) async => http.Response('{"secret":"$leaked"}', status)),
+        readIdToken: () async => 'firebase-id-token',
+      );
+      addTearDown(client.close);
+      await expectLater(
+        client.mint(callId: 'monthly'),
+        throwsA(
+          isA<StreamTokenException>()
+              .having((error) => error.message, 'message', message)
+              .having((error) => error.message, 'message', isNot(contains(leaked))),
+        ),
+      );
+    }
+
+    await expectStatus(
+      401,
+      'A Firebase sign-in is required to join. Guest mode cannot start a call.',
+    );
+    await expectStatus(503, 'Video calling is not configured on this preview yet.');
+    await expectStatus(500, 'The call could not start. Try again in a moment.');
+  });
+
+  testWidgets('a too-short call name stays on the lobby', (tester) async {
+    var minted = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GroupCallLobbyPage(
+          displayName: 'Fellow Member',
+          initialCallId: 'monthly',
+          tokenClientFactory: () {
+            minted = true;
+            return null;
+          },
+          onReady: (
+            context, {
+            required room,
+            required credentials,
+            required displayName,
+            required tokenClient,
+          }) async {},
+        ),
+      ),
+    );
+    await tester.enterText(find.byKey(const Key('group_call_name_field')), 'ab');
+    await tester.tap(find.byKey(const Key('group_call_confirm_join_button')));
+    await tester.pump();
+    expect(minted, isFalse);
+    expect(
+      find.text('Use a short name like monthly. Letters, numbers, and single dashes.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a preview without a token address explains the missing endpoint', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GroupCallLobbyPage(
+          displayName: 'Fellow Member',
+          initialCallId: 'monthly',
+          tokenClientFactory: () => null,
+          onReady:
+              (
+                context, {
+                required room,
+                required credentials,
+                required displayName,
+                required tokenClient,
+              }) async {
+                fail('should not join');
+              },
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('group_call_confirm_join_button')));
+    await tester.pump();
+    expect(
+      find.text(
+        'This preview build has no token address yet. '
+        'An operator sets STREAM_TOKEN_ENDPOINT when building the preview.',
+      ),
+      findsOneWidget,
+    );
+  });
 }

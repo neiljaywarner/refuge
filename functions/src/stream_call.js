@@ -18,6 +18,10 @@ function normalizeUserId(value) {
   return USER_ID.test(trimmed) ? trimmed : '';
 }
 
+// Firebase Hosting (the dev site and preview channels) and the local
+// emulator may call this function. Any other origin is refused before the
+// Firebase ID token is checked and before the Stream secret is read, so a
+// random site cannot use a member's browser to mint a token.
 function isAllowedOrigin(origin) {
   if (typeof origin !== 'string' || origin.length === 0 || origin.length > 200) return false;
   let url;
@@ -45,6 +49,8 @@ function applyCors(req, res) {
   return true;
 }
 
+// The Flutter SDK connects with the public API key. Some dashboards label
+// that same value as an app id. The secret is never a stand-in for either.
 function resolveApiKey(apiKey, appId) {
   const key = typeof apiKey === 'string' ? apiKey.trim() : '';
   if (key) return key;
@@ -100,6 +106,8 @@ async function handleMintStreamCallToken(req, res, deps) {
     return;
   }
 
+  // Auth, origin, and the call id are settled above. Only then is the secret
+  // read, and only as the HMAC key. It is not copied into the JSON response.
   const apiKey = resolveApiKey(deps.apiKey(), deps.appId ? deps.appId() : '');
   const apiSecret = typeof deps.apiSecret() === 'string' ? deps.apiSecret().trim() : '';
   if (!apiKey || !apiSecret) {
