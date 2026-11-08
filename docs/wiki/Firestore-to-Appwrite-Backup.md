@@ -17,6 +17,10 @@ Cloud Functions and scheduled Firestore exports need the Blaze plan. This projec
 
 `dm-mirror` keeps copying a new direct message into the live table `direct_messages`. That table is a spare of today's message, not an older copy. This CLI writes `backup_direct_messages` and does not change `direct_messages`, `reflection_posts`, or `quiet_digests`.
 
+## If Appwrite Free pauses
+
+A pause of project `belongonthespectrum` stops this spare copy and the live functions `dm-push` and `dm-mirror`. Firestore, Firebase Auth, and Firebase Hosting stay up. The CLI sync fails until someone restores the project in the Appwrite Console. API and end-user traffic do not prevent that pause. The 8 November 2026 choice for a new leave-alone free backend is Supabase Free ([Leave-alone free backends](Leave-Alone-Free-Backends)). This CLI stays an Appwrite copy of Firestore. It is not a move of the live store.
+
 ## Inventory
 
 `dart run tool/firestore_appwrite_backup.dart inventory` prints this list as JSON. The table below matches that command.

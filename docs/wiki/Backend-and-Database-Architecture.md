@@ -3,7 +3,9 @@
 > **Engineering Architecture & Under-the-Hood Data Dictionary for Organizers, Mentors & Apprentices**  
 > *Tracked in Issue #93 · Living Architecture Reference*
 
-> **Live on `main` (22 October 2026).** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Host choice on 8 November 2026 ([#906](https://github.com/neiljaywarner/refuge/issues/906)).** The live member store is Firestore, with Firebase Auth and Firebase Hosting ([ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md)). Appwrite project `belongonthespectrum` hosts functions `dm-push` and `dm-mirror` and the spare/mirror path. When a new free backend must sit for days without someone opening a vendor console, prefer Supabase Free. Pause rules: [Leave-alone free backends](Leave-Alone-Free-Backends). The 22 October map below is the older pluggable-backend dictionary. It is not this decision.
+
+> **Snapshot of `main` on 22 October 2026.** That day's note said Serverpod was the default post backend, Cloud Firestore was the second copy, and Appwrite had not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 
 ---
 
