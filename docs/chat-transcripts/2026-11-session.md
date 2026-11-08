@@ -556,3 +556,68 @@ By **2026-11-08 11:46:18 AM CT**, Last spoken update: Got it — I’ll add a li
 Only two November 6 CodeRabbit updates appear in the available spoken exports: **9:05:59 AM CT** (review retriggered on [PR #786](https://github.com/neiljaywarner/refuge/pull/786)) and **10:06:20 AM CT** (no retry needed; seven findings had been filed). These are the first and last available updates, not evidence of a complete hourly series through the evening. See the analysis file for the complete available automated-turn list.
 
 On November 8 the assistant reported that five review slices, [#874](https://github.com/neiljaywarner/refuge/issues/874), [#875](https://github.com/neiljaywarner/refuge/issues/875), [#876](https://github.com/neiljaywarner/refuge/issues/876), [#877](https://github.com/neiljaywarner/refuge/issues/877), and [#878](https://github.com/neiljaywarner/refuge/issues/878), had been placed under [#872](https://github.com/neiljaywarner/refuge/issues/872). These are an experiment in smaller, testable assignments, not proof of a completed video-call feature.
+
+## Later November 8 review, replacement pull request, and live-call testing
+This addendum continues the same chat after the first archive was written. Times are Central Time (America/Chicago). Original spelling is kept. Secrets, emails, vault details, and dashboard IDs are omitted or replaced with `[redacted]`.
+
+### P85 — 2026-11-08 12:16:52 PM CT
+
+> Yes please
+
+By **2026-11-08 12:17:11 PM CT**, Last spoken update: Filing the two Major CodeRabbit findings from [#873](https://github.com/neiljaywarner/refuge/pull/873) as GitHub issues now.
+
+By **2026-11-08 12:17:48 PM CT**, Last spoken update: Filed the two Major findings as [#882](https://github.com/neiljaywarner/refuge/issues/882) (unbound request bodies can pile up before the serial queue) and [#883](https://github.com/neiljaywarner/refuge/issues/883) (only trust forwarded client addresses from a configured trusted proxy). The 17 Minor comments were not filed yet.
+
+### P86 — 2026-11-08 12:18:10 PM CT
+
+> When does throat code rabbits free tier return? How long do we have to wait? Also, please do file the 17 minor comments as subtasks under feedback review. Unless you feel like you can fix them all now which is fine. Which do you prefer?
+
+By **2026-11-08 12:18:18 PM CT**, Last spoken update: I’ll check when CodeRabbit’s free-tier review quota resets, then file those 17 Minor comments as nested review subtasks rather than try to fix them all in one pass.
+
+### P87 — 2026-11-08 12:18:58 PM CT
+
+> I want you to close the pr that is up about get streamed and reopen one with slightly more testing and documentation and comments. When code rabbits free tier review is ready. Give it 5 minutes or 2 minutes. Overlap or just be doubled. Sure that it's ready
+
+By **2026-11-08 12:19:16 PM CT**, Last spoken update: I’ll close [#879](https://github.com/neiljaywarner/refuge/pull/879) and open a replacement with a bit more testing, documentation, and comments. CodeRabbit said at 11:46 AM CT that the next free review was 38 minutes out, so about 12:24 PM CT; a 5-minute buffer meant waiting until about 12:29 PM CT.
+
+By **2026-11-08 12:30:47 PM CT**, Last spoken update: The replacement preview pull request is [#902](https://github.com/neiljaywarner/refuge/pull/902). CodeRabbit started reviewing it on its own at 12:28 PM CT, so a second review request was not posted. [#879](https://github.com/neiljaywarner/refuge/pull/879) was closed, not merged. The 17 Minor findings from #873 were filed as [#885](https://github.com/neiljaywarner/refuge/issues/885) through [#901](https://github.com/neiljaywarner/refuge/issues/901) under [#884](https://github.com/neiljaywarner/refuge/issues/884).
+
+### P88 — 2026-11-08 01:02:18 PM CT
+
+> Please make a video and test with two Android emulators via the apk and one with chrome and you can create account with yopmail to test a 3 way call and with the emulators please use ADB so that we can see where the taps are. When you use post patrol and maestro please file what you find on github and fix what you feel is easy enough And safe enough like low risk
+
+By **2026-11-08 01:02:50 PM CT**, Last spoken update: I’ll start by checking whether the GetStream preview on [#902](https://github.com/neiljaywarner/refuge/pull/902) can be built and run for a 3-way call, then set up two Android emulators (with visible ADB taps) plus Chrome.
+
+### P89 — 2026-11-08 01:04:05 PM CT
+
+> Oh and whOh and when you take the videos make sure and use marionette and or ADB etc to take a screenshot every possible time Or every half second or whatever and analyze the screenshots carefully So that you're super confident that it will work before you ask me to test it 🙂
+
+By **2026-11-08 01:04:12 PM CT**, Last spoken update: I’ll capture screenshots about every half second with ADB (and marionette where it applies), review them myself, and only ask you to try it once I’m confident the 3-way call actually works.
+
+By **2026-11-08 01:05:57 PM CT**, Last spoken update: CodeRabbit finished reviewing [#902](https://github.com/neiljaywarner/refuge/pull/902) at 12:41 PM CT with 10 comments plus 2 nits. Higher-risk notes included banned members still being able to get call credentials, microphone and camera controls that may not update after the first snapshot, and leaving while connecting possibly leaving an invisible session. The preview token function URL still returned 404, meaning it was not deployed yet.
+
+### P90 — 2026-11-08 01:16:12 PM CT
+
+> That does remind me. We want to test before and after publishing to firebase app distribution, but you can use flutter run and not even have to worry because the secret can be in a dark to find. Anyway, I'll turn on my Mac in a little bit if you need it. I thought you could use emulators on your machine? But if you don't have all the stuff then I can do it. But if you can build through GitHub or do test through firebase test lab or both that would be cool
+
+By **2026-11-08 01:16:30 PM CT**, Last spoken update: I’ll test before Firebase App Distribution with `flutter run`, then again after a distribution build. The Stream API secret should not be a dart-define, because that still gets compiled into the app binary; the safe dart-defines are the preview flag and the token-endpoint URL.
+
+By **2026-11-08 01:20:14 PM CT**, Last spoken update: The preview debug APK for [#902](https://github.com/neiljaywarner/refuge/pull/902) finished building without the Stream API key or secret. Two Android emulators were prepared on the assistant computer, and the APK was later reported installed on both. A GitHub workflow dispatch for Firebase Test Lab was not permitted with the available token; the scheduled Test Lab run on main had succeeded at 7:58 AM CT.
+
+### P91 — 2026-11-08 01:50:59 PM CT
+
+> So I gave you the API key earlier. Can you use it in the dart define and or appwrite function and or firebase rc to minto token and do a full real test mint a token. I know putting a token in a dark to find and having it be bundled in the APK is not super super secure but I think for a test we don't distribute. I think it's okay for sure like you're the only one who has it. So please do a real test and send me a video
+
+By **2026-11-08 01:51:13 PM CT**, Last spoken update: I’ll run a real token-mint test and record a video. The Stream secret will not go in Firebase Remote Config or a third Appwrite function, and it will not go in git. The current app only asks the mint function for a token; a secret dart-define would not mint by itself.
+
+### P92 — 2026-11-08 01:55:45 PM CT
+
+> Feel free to use supabase or appwrite free tier
+
+By **2026-11-08 01:55:56 PM CT**, Last spoken update: I’ll use Supabase’s free tier to mint tokens rather than a third Appwrite function, because those two Appwrite slots are already taken by the direct-message push and mirror functions.
+
+### P93 — 2026-11-08 01:56:27 PM CT
+
+> Don't forget to make atomic commits and to commit the safe sanitized history of the chat to the pool request so we can review it later
+
+By **2026-11-08 01:56:43 PM CT**, Last spoken update: I’ll add a sanitized chat history to the preview pull request as small atomic commits, with secrets, keys, emails, and vault details left out so we can review it later.
