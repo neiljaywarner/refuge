@@ -72,7 +72,7 @@ All logs pass through client-side regex sanitization before transmission:
 
 ### Appwrite session audit (not a keepalive)
 
-Soft-launch builds write one non-PII row to Appwrite table `client_session_audits` at cold start (OS, app version, platform, coarse place, UTC time). That row is for ops visibility. **It does not stop the Appwrite Free inactivity pause.** Runtime traffic does not count as Console development activity. See [Appwrite Free-tier inactivity and session audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit).
+Soft-launch builds can post one non-PII session to the admission server at cold start (OS, app version, platform, coarse place, UTC time). The phone does not write the Appwrite table. That row is for ops visibility. **It does not stop the Appwrite Free inactivity pause.** Runtime traffic does not count as Console development activity. See [Appwrite Free-tier inactivity and session audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit).
 
 ---
 

@@ -1,13 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart' hide Locale;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../logging/app_logger.dart';
-import 'appwrite_client_factory.dart';
-import 'appwrite_config.dart';
 import 'client_session_audit_snapshot.dart';
 import 'client_session_os_facts.dart';
 import 'client_session_os_reader.dart';
@@ -15,40 +14,105 @@ import 'client_session_os_reader.dart';
 /// Soft-launch default. Pass `--dart-define=CLIENT_SESSION_AUDIT=false` to skip.
 const clientSessionAuditEnabled = bool.fromEnvironment('CLIENT_SESSION_AUDIT', defaultValue: true);
 
-/// Writes one session row. Tests use a fake. Production uses TablesDB.
+/// Admission server. Empty skips the write. This is not an Appwrite function URL.
+const clientSessionAuditUrl = String.fromEnvironment('CLIENT_SESSION_AUDIT_URL', defaultValue: '');
+
+/// Writes one session row. Tests use a fake. Production posts to the admission server.
 abstract class ClientSessionAuditSink {
   Future<String?> createSession(ClientSessionAuditSnapshot snapshot);
 
   Future<void> markEnded({required String rowId, required DateTime endedAt});
 }
 
-/// TablesDB writer for `client_session_audits` using the shared Appwrite client.
-class AppwriteClientSessionAuditSink implements ClientSessionAuditSink {
-  AppwriteClientSessionAuditSink({required this.services, required this.config});
+/// HTTPS admission URL, or loopback HTTP for a local server. Anything else is ignored.
+Uri? clientSessionAuditEndpoint(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) return null;
+  final uri = Uri.tryParse(trimmed);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return null;
+  if (uri.userInfo.isNotEmpty || uri.host.contains('@')) return null;
+  if (uri.scheme == 'https') return uri;
+  final host = uri.host.toLowerCase();
+  final loopback = host == 'localhost' || host == '127.0.0.1' || host == '::1';
+  if (uri.scheme == 'http' && loopback) return uri;
+  return null;
+}
 
-  final AppwriteServices services;
-  final AppwriteConfig config;
+typedef SessionAuditPost = Future<({int status, Object? json})> Function(Map<String, Object?> body);
+
+/// Posts a sanitized snapshot to the admission server. No Appwrite API key.
+class HttpClientSessionAuditSink implements ClientSessionAuditSink {
+  HttpClientSessionAuditSink({
+    required this.endpoint,
+    this.client,
+    this.post,
+    this.timeout = const Duration(seconds: 8),
+  });
+
+  final Uri endpoint;
+  final http.Client? client;
+  final SessionAuditPost? post;
+  final Duration timeout;
+
+  http.Client? _owned;
+  String? _rowId;
+  String? _endToken;
 
   @override
   Future<String?> createSession(ClientSessionAuditSnapshot snapshot) async {
-    final row = await services.tables.createRow(
-      databaseId: config.databaseId,
-      tableId: AppwriteConfig.clientSessionAuditsTableId,
-      rowId: ID.unique(),
-      data: snapshot.toRowData(),
-    );
-    final id = row.$id.trim();
-    return id.isEmpty ? null : id;
+    final result = await _send({'action': 'start', 'row': snapshot.toRowData()});
+    if (result == null || result.status < 200 || result.status >= 300) return null;
+    final json = result.json;
+    if (json is! Map) return null;
+    final rowId = json['rowId'];
+    final token = json['endToken'];
+    if (rowId is! String || rowId.isEmpty || token is! String || token.isEmpty) return null;
+    _rowId = rowId;
+    _endToken = token;
+    return rowId;
   }
 
   @override
-  Future<void> markEnded({required String rowId, required DateTime endedAt}) =>
-      services.tables.updateRow(
-        databaseId: config.databaseId,
-        tableId: AppwriteConfig.clientSessionAuditsTableId,
-        rowId: rowId,
-        data: {'sessionEndedAt': endedAt.toUtc().toIso8601String()},
-      );
+  Future<void> markEnded({required String rowId, required DateTime endedAt}) async {
+    final token = _endToken;
+    if (token == null || token.isEmpty || _rowId != rowId) {
+      throw StateError('session audit end token missing');
+    }
+    final result = await _send({
+      'action': 'end',
+      'rowId': rowId,
+      'endToken': token,
+      'sessionEndedAt': endedAt.toUtc().toIso8601String(),
+    });
+    if (result == null || result.status < 200 || result.status >= 300) {
+      throw StateError('session audit end was refused');
+    }
+  }
+
+  Future<({int status, Object? json})?> _send(Map<String, Object?> body) async {
+    final send = post;
+    if (send != null) return send(body);
+    final httpClient = client ?? (_owned ??= http.Client());
+    try {
+      final response = await httpClient
+          .post(
+            endpoint,
+            headers: const {'Content-Type': 'application/json', 'Accept': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(timeout);
+      Object? decoded;
+      try {
+        if (response.body.trim().isNotEmpty) decoded = jsonDecode(response.body);
+      } catch (_) {
+        decoded = null;
+      }
+      return (status: response.statusCode, json: decoded);
+    } catch (error, stack) {
+      AppLogger.warning('client session audit request failed', error, stack);
+      return null;
+    }
+  }
 }
 
 /// One cold start writes one row. Later calls in the same process do nothing.
@@ -119,9 +183,10 @@ class ClientSessionAuditBinding extends WidgetsBindingObserver {
   }
 }
 
-/// Schedules a fail-soft session row after bindings. Never blocks startup.
+/// Schedules a fail-soft session post after bindings. Never blocks startup.
 ///
-/// This is ops telemetry. It does not keep an Appwrite Free project active.
+/// The phone does not write `client_session_audits`. An empty
+/// [clientSessionAuditUrl] skips the post. This does not keep Free active.
 /// See `docs/wiki/Appwrite-Free-Tier-Inactivity-and-Session-Audit.md`.
 ClientSessionAuditBinding? startClientSessionAudit({
   ClientSessionAuditController? controller,
@@ -137,11 +202,13 @@ ClientSessionAuditBinding? startClientSessionAudit({
 }
 
 ClientSessionAuditController? _liveController() {
-  final config = AppwriteConfig.fromEnvironment;
-  final services = createAppwriteServices(config);
-  if (services == null) return null;
+  final endpoint = clientSessionAuditEndpoint(clientSessionAuditUrl);
+  if (endpoint == null) {
+    AppLogger.info('client session audit skipped; admission URL is not configured');
+    return null;
+  }
   return ClientSessionAuditController(
-    sink: AppwriteClientSessionAuditSink(services: services, config: config),
+    sink: HttpClientSessionAuditSink(endpoint: endpoint),
     loadSnapshot: loadClientSessionAuditSnapshot,
   );
 }

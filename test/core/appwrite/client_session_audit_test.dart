@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:refuge4serverpod/src/core/appwrite/client_session_audit.dart';
 import 'package:refuge4serverpod/src/core/appwrite/client_session_audit_snapshot.dart';
 import 'package:refuge4serverpod/src/core/appwrite/client_session_os_facts.dart';
@@ -164,6 +166,54 @@ void main() {
     expect(snapshot.locale, 'en-US');
     expect(snapshot.toRowData().keys, everyElement(isIn(sessionAuditRowKeys)));
   });
+
+  group('admission endpoint', () {
+    test('accepts https and loopback http, and ignores other http urls', () {
+      expect(clientSessionAuditUrl, isEmpty);
+      expect(clientSessionAuditEndpoint(''), isNull);
+      expect(clientSessionAuditEndpoint('http://evil.example/session'), isNull);
+      expect(clientSessionAuditEndpoint('https://user:pass@audit.example/session'), isNull);
+      expect(clientSessionAuditEndpoint('https://audit.example/session')?.host, 'audit.example');
+      expect(clientSessionAuditEndpoint('http://127.0.0.1:8787/session')?.host, '127.0.0.1');
+      expect(clientSessionAuditEndpoint('http://localhost:8787/session'), isNotNull);
+    });
+
+    test('startup does nothing until an admission URL is compiled in', () {
+      expect(startClientSessionAudit(), isNull);
+    });
+
+    test('http sink posts the allowlisted row and does not send an API key', () async {
+      final client = _RecordingClient();
+      final sink = HttpClientSessionAuditSink(
+        endpoint: Uri.parse('https://audit.example/session'),
+        client: client,
+      );
+
+      final id = await sink.createSession(_sample());
+      expect(id, 'abc123');
+      final request = client.last!;
+      expect(request.headers['x-appwrite-key'], isNull);
+      expect(request.headers['x-appwrite-project'], isNull);
+      final body = jsonDecode(request.body) as Map<String, Object?>;
+      expect(body['action'], 'start');
+      final row = body['row'] as Map<String, Object?>;
+      expect(row.keys, everyElement(isIn(sessionAuditRowKeys)));
+
+      await sink.markEnded(rowId: 'abc123', endedAt: DateTime.utc(2026, 11, 8, 18));
+      final end = jsonDecode(client.last!.body) as Map<String, Object?>;
+      expect(end['action'], 'end');
+      expect(end['endToken'], 'tok');
+      expect(end.keys, unorderedEquals(['action', 'rowId', 'endToken', 'sessionEndedAt']));
+    });
+
+    test('a refused start returns no row id', () async {
+      final sink = HttpClientSessionAuditSink(
+        endpoint: Uri.parse('https://audit.example/session'),
+        post: (_) async => (status: 429, json: {'error': 'rate_limited'}),
+      );
+      expect(await sink.createSession(_sample()), isNull);
+    });
+  });
 }
 
 ClientSessionAuditSnapshot _sample() => buildClientSessionAuditSnapshot(
@@ -176,6 +226,17 @@ ClientSessionAuditSnapshot _sample() => buildClientSessionAuditSnapshot(
   countryCode: 'US',
   localeTag: 'en-US',
 );
+
+class _RecordingClient extends http.BaseClient {
+  http.Request? last;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    last = request as http.Request;
+    final payload = utf8.encode('{"rowId":"abc123","endToken":"tok"}');
+    return http.StreamedResponse(Stream<List<int>>.value(payload), 200);
+  }
+}
 
 class _FakeSink implements ClientSessionAuditSink {
   int creates = 0;

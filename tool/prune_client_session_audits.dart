@@ -4,9 +4,9 @@
 // comes first. Rows that will be deleted are folded into
 // `client_session_weekly_summaries` first.
 //
-// This is not an Appwrite Function. Free projects allow 2 functions, this
-// repo already has more than that, and a schedule would not run while the
-// project is paused. Run it weekly, or when the raw count passes 1600.
+// This is not an Appwrite Function. Free projects allow 2 functions.
+// dm-push and dm-mirror are the live ones. A schedule would not run while
+// the project is paused. Run it weekly, or when the raw count passes 1600.
 //
 //   export APPWRITE_API_KEY='...'   # server key, rows read + write. Do not commit.
 //   dart run tool/prune_client_session_audits.dart

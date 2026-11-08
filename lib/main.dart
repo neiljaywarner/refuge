@@ -131,8 +131,8 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
   // read the nested postRepositoryProvider override, which Riverpod rejects in
   // debug builds (red screen found while driving the Pixel, #73).
   //
-  // Non-PII session row for ops telemetry. Fail-soft and not awaited.
-  // Client writes do not keep Appwrite Free from pausing.
+  // Non-PII session post for ops telemetry. Fail-soft and not awaited.
+  // The phone does not write the Appwrite table, and the post is not a keepalive.
   startClientSessionAudit();
   runApp(
     RefugeApp(
