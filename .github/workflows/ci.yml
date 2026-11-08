@@ -25,7 +25,7 @@ jobs:
         run: node --test appwrite/functions/feedback-forward/test/format.test.js appwrite/functions/feedback-forward/test/handle.test.js
 
       - name: Calm direct-message email function tests
-        run: node --test functions/test/decide.test.js functions/test/handle.test.js functions/test/transport.test.js
+        run: node --test functions/test/decide.test.js functions/test/handle.test.js functions/test/transport.test.js functions/test/stream_call.test.js
 
       - name: Direct message mirror function tests
         run: node --test appwrite/functions/dm-mirror/test/cert_cache.test.js appwrite/functions/dm-mirror/test/handle.test.js

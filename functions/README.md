@@ -69,4 +69,27 @@ From this directory:
 npm test
 ```
 
-That runs `node --test test/decide.test.js test/handle.test.js test/transport.test.js`.
+That runs `node --test test/decide.test.js test/handle.test.js test/transport.test.js test/stream_call.test.js`.
+
+## Preview group-call tokens (#872)
+
+`mintStreamCallToken` is a separate HTTPS function. It mints a Stream Video user token for a signed-in Firebase member. It does not read or write direct messages, and it does not use `DM_EMAIL_TRANSPORT_JSON`.
+
+The API secret stays in this function. The response contains the public API key and a user token. It does not contain the secret.
+
+Set the secrets with the Firebase CLI. Do not commit them. Do not paste them into an issue, a pull request, or the wiki.
+
+```bash
+firebase functions:secrets:set STREAM_API_KEY --project belongonthespectrum
+firebase functions:secrets:set STREAM_API_SECRET --project belongonthespectrum
+```
+
+`STREAM_APP_ID` is optional. Set it as a function environment variable only when the Stream dashboard shows an app id that is different from the API key. The Flutter client connects with the API key.
+
+For the local emulator, put the same names in `functions/.secret.local`. That file is gitignored.
+
+```bash
+firebase deploy --only functions:mintStreamCallToken --project belongonthespectrum
+```
+
+Hosting deploys do not publish this function. The operator steps for the preview channel are in `docs/wiki/Stream-Video-Preview.md`.

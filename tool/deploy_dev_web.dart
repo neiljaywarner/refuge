@@ -15,6 +15,12 @@
 /// would be a later step if dev must not share Auth users with prod.
 /// `stg` and `qa` are not deployed.
 ///
+/// A shell with `STREAM_VIDEO_PREVIEW=true` also compiles the preview group
+/// call (#872). `STREAM_TOKEN_ENDPOINT` may name the token function.
+/// `STREAM_API_KEY` and `STREAM_API_SECRET` are never copied into the binary.
+/// See `docs/wiki/Stream-Video-Preview.md`. `tool/deploy_release.dart` does
+/// not read those variables, so a production release stays without the call.
+///
 /// ## One-time setup (after `firebase login`)
 ///
 /// ```bash
@@ -40,6 +46,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:refuge4serverpod/src/core/build/release_build_stamp.dart';
+import 'package:refuge4serverpod/src/features/group_call/data/stream_video_preview_config.dart';
 
 import 'firebase_test_lab_support.dart';
 
@@ -103,9 +110,11 @@ Future<void> main(List<String> args) async {
   final analyticsDefines = analyticsDartDefines(Platform.environment);
   stdout.writeln(analyticsDartDefinesLogLine(Platform.environment));
   stdout.writeln(devExamplePasswordDartDefinesLogLine(Platform.environment));
+  stdout.writeln(streamVideoPreviewDartDefinesLogLine(Platform.environment));
   final extraDefines = [
     ...analyticsDefines,
     ...devExamplePasswordDartDefines(Platform.environment),
+    ...streamVideoPreviewDartDefines(Platform.environment),
   ];
 
   if (skipBuild) {
@@ -283,8 +292,11 @@ Future<void> _writeWebVersionJson(String version, ReleaseBuildStamp stamp) async
   await out.writeAsString('${jsonEncode(payload)}\n');
 }
 
+String _printableArgs(List<String> args) =>
+    joinArgsRedactingAnalyticsDefines(args).split(' ').map(redactStreamVideoDartDefine).join(' ');
+
 Future<void> _run(String bin, List<String> args, {required bool dryRun}) async {
-  final printable = '$bin ${joinArgsRedactingAnalyticsDefines(args)}';
+  final printable = '$bin ${_printableArgs(args)}';
   stdout.writeln(dryRun ? '[dry-run] $printable' : '\$ $printable');
   if (dryRun) return;
   final r = await Process.start(bin, args, mode: ProcessStartMode.inheritStdio);
@@ -296,7 +308,7 @@ Future<void> _run(String bin, List<String> args, {required bool dryRun}) async {
 }
 
 Future<String> _runCapture(String bin, List<String> args, {required bool dryRun}) async {
-  final printable = '$bin ${joinArgsRedactingAnalyticsDefines(args)}';
+  final printable = '$bin ${_printableArgs(args)}';
   stdout.writeln(dryRun ? '[dry-run] $printable' : '\$ $printable');
   if (dryRun) return '';
   final r = await Process.run(bin, args);
