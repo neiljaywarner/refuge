@@ -22,14 +22,18 @@
  */
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onRequest } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { initializeApp, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { handleDirectMessageCreated } = require('./handle');
 const { parseEmailTransport } = require('./transport');
+const { handleMintStreamCallToken } = require('./stream_call');
 
 const transportSecret = defineSecret('DM_EMAIL_TRANSPORT_JSON');
+const streamApiKey = defineSecret('STREAM_API_KEY');
+const streamApiSecret = defineSecret('STREAM_API_SECRET');
 
 if (getApps().length === 0) initializeApp();
 
@@ -101,4 +105,38 @@ exports.calmDirectMessageEmail = onDocumentCreated(
       }),
     );
   },
+);
+
+function readBoundSecret(secret) {
+  try {
+    return secret.value() || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+/**
+ * Preview-only Stream Video user tokens (#872).
+ *
+ * The API secret stays in this function. The direct-message email function
+ * does not receive it, and this function does not read direct messages.
+ * IAM is public so a browser can POST. The handler still requires a Firebase
+ * ID token and does not return the secret.
+ */
+exports.mintStreamCallToken = onRequest(
+  {
+    secrets: [streamApiKey, streamApiSecret],
+    cors: false,
+    invoker: 'public',
+    timeoutSeconds: 15,
+    memory: '256MiB',
+  },
+  (req, res) =>
+    handleMintStreamCallToken(req, res, {
+      verifyIdToken: (token) => getAuth().verifyIdToken(token),
+      apiKey: () => readBoundSecret(streamApiKey) || process.env.STREAM_API_KEY || '',
+      apiSecret: () => readBoundSecret(streamApiSecret) || process.env.STREAM_API_SECRET || '',
+      appId: () => process.env.STREAM_APP_ID || '',
+      nowSeconds: () => Math.floor(Date.now() / 1000),
+    }),
 );
