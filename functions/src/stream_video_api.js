@@ -1,9 +1,21 @@
 'use strict';
 
 const { mintStreamServerToken } = require('./stream_token');
-const { GUEST_CALL_ROLE, HOST_CALL_ROLE, CALL_TYPE } = require('./stream_guest');
+const { HOST_CALL_ROLE, CALL_TYPE } = require('./stream_guest');
 
 const VIDEO_ORIGIN = 'https://video.stream-io-api.com';
+
+/**
+ * Role names Stream's video members API accepts.
+ * A live check rejected `call-member` (HTTP 400) and accepted `call_member`.
+ * `user` is an app-level user role, not a call membership role.
+ */
+const STREAM_CALL_MEMBER_ROLE = 'call_member';
+const ACCEPTED_STREAM_CALL_ROLES = new Set(['user', 'moderator', 'host', 'admin', 'call_member']);
+
+function acceptedStreamCallRole(role) {
+  return ACCEPTED_STREAM_CALL_ROLES.has(role);
+}
 
 /**
  * Makes sure the inviting member owns the call, then adds the guest as a
@@ -62,6 +74,9 @@ async function prepareGuestOnCall({
     return { ok: false, status: existing.status };
   }
 
+  if (!acceptedStreamCallRole(HOST_CALL_ROLE) || !acceptedStreamCallRole(STREAM_CALL_MEMBER_ROLE)) {
+    return { ok: false, status: 400 };
+  }
   const membersUrl = `${callUrl.split('?')[0]}/members?api_key=${key}`;
   const updated = await fetchFn(membersUrl, {
     method: 'POST',
@@ -69,7 +84,7 @@ async function prepareGuestOnCall({
     body: JSON.stringify({
       update_members: [
         { user_id: hostUserId, role: HOST_CALL_ROLE },
-        { user_id: guestUserId, role: GUEST_CALL_ROLE },
+        { user_id: guestUserId, role: STREAM_CALL_MEMBER_ROLE },
       ],
     }),
   });
@@ -90,4 +105,6 @@ async function discard(response) {
 
 module.exports = {
   prepareGuestOnCall,
+  acceptedStreamCallRole,
+  STREAM_CALL_MEMBER_ROLE,
 };

@@ -21,7 +21,9 @@ const JOIN_WINDOW_SECONDS = 10 * 60;
 const JOIN_MAX_ATTEMPTS = 20;
 
 /**
- * Built-in Stream call role for someone who may be in the room.
+ * App-facing label on the guest token and the join response.
+ * Stream's members API does not accept this hyphenated string.
+ * The membership written to Stream is [STREAM_CALL_MEMBER_ROLE].
  * `guest` is not a built-in call role. Host, admin, and moderator are not
  * assigned to invite joiners.
  */
