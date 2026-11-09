@@ -17,11 +17,16 @@ class StreamGroupCallPage extends StatefulWidget {
     required this.credentials,
     required this.displayName,
     required this.tokenClient,
+    @visibleForTesting this.openConnection,
   });
 
   final StreamCallCredentials credentials;
   final String displayName;
   final GroupCallTokenSource tokenClient;
+
+  /// When set, tests receive the connect plan and the page does not open Stream.
+  @visibleForTesting
+  final StreamCallOpener? openConnection;
 
   @override
   State<StreamGroupCallPage> createState() => _StreamGroupCallPageState();
@@ -47,31 +52,39 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   }
 
   Future<void> _connect() async {
+    // Guests and members both use the server user id and server user token.
+    // User.guest is the no-backend path: Stream mints a different token and
+    // may replace the id, so a guest seat would no longer match the function.
+    final plan = streamCallConnectPlan(
+      credentials: widget.credentials,
+      displayName: widget.displayName,
+    );
+    final opener = widget.openConnection;
+    if (opener != null) {
+      try {
+        await opener(plan);
+      } catch (_) {
+        _showFailure('The call could not connect.');
+      }
+      return;
+    }
     try {
       if (StreamVideo.isInitialized()) {
         await StreamVideo.reset(disconnect: true);
       }
-      // [credentials.token] is a Stream user token from mintStreamCallToken.
+      // [plan.userToken] is a Stream user token from mintStreamCallToken.
       // The API secret never arrives here. Stream calls [tokenLoader] when it
       // wants another user token. A member sends the Firebase ID token again.
       // A guest sends the invite token again and keeps the same seat.
       //
       // The function creates the call as the inviting member before a guest
       // token is issued, so this getOrCreate does not make the guest the owner.
-      final guest = widget.credentials.isGuest;
-      final shownName = calmGroupCallName(
-        guest && widget.credentials.displayName.isNotEmpty
-            ? widget.credentials.displayName
-            : widget.displayName,
-      );
       final client = StreamVideo(
-        widget.credentials.apiKey,
-        user: guest
-            ? User.guest(userId: widget.credentials.userId, name: shownName)
-            : User.regular(userId: widget.credentials.userId, name: shownName),
-        userToken: widget.credentials.token,
+        plan.apiKey,
+        user: plan.user,
+        userToken: plan.userToken,
         tokenLoader: (_) async {
-          final fresh = await widget.tokenClient.mint(callId: widget.credentials.callId);
+          final fresh = await widget.tokenClient.mint(callId: plan.callId);
           return fresh.token;
         },
         options: StreamVideoOptions(
@@ -81,7 +94,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       );
       final call = client.makeCall(
         callType: StreamCallType.defaultType(),
-        id: widget.credentials.callId,
+        id: plan.callId,
       );
       final created = await call.getOrCreate(video: true);
       final createdFailure = _calmFailure(created);
@@ -151,7 +164,8 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -166,7 +180,10 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: Scaffold(
         appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
         body: call == null
-            ? GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave()))
+            ? GroupCallConnectionStatus(
+                failure: _failure,
+                onBack: () => unawaited(_leave()),
+              )
             : StreamCallContent(
                 call: call,
                 onLeaveCallTap: _leave,
@@ -187,13 +204,20 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
                     ),
                     others: [
                       for (final person in state.otherParticipants)
-                        GroupCallOtherMember(userId: person.userId, name: person.name),
+                        GroupCallOtherMember(
+                          userId: person.userId,
+                          name: person.name,
+                        ),
                     ],
                     onMicrophone: () {
-                      call.setMicrophoneEnabled(enabled: !(local?.isAudioEnabled ?? false));
+                      call.setMicrophoneEnabled(
+                        enabled: !(local?.isAudioEnabled ?? false),
+                      );
                     },
                     onCamera: () {
-                      call.setCameraEnabled(enabled: !(local?.isVideoEnabled ?? false));
+                      call.setCameraEnabled(
+                        enabled: !(local?.isVideoEnabled ?? false),
+                      );
                     },
                     onLeave: _leave,
                     onRemove: (userId) async {
@@ -218,5 +242,47 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   }
 }
 
-String? _calmFailure<T>(Result<T> result) =>
-    result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+String? _calmFailure<T>(Result<T> result) => result.isSuccess
+    ? null
+    : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+
+/// Opens a preview call with a server-issued api key, user id, and user token.
+typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);
+
+/// What the preview call passes to Stream.
+///
+/// [user] is always [User.regular]. Its type is authenticated, including for
+/// a guest. [userToken] is the token the function minted for [user.id].
+class const StreamCallConnectPlan({
+  required this.apiKey,
+  required this.user,
+  required this.userToken,
+  required this.callId,
+}) {
+  final String apiKey;
+  final User user;
+  final String userToken;
+  final String callId;
+}
+
+/// Builds the Stream user for a guest or a member.
+///
+/// Both use [User.regular] so the server user id and [StreamCallCredentials.token]
+/// are the ones Stream keeps. [User.guest] would ask Stream for an anonymous
+/// token and could replace the id.
+StreamCallConnectPlan streamCallConnectPlan({
+  required StreamCallCredentials credentials,
+  required String displayName,
+}) => StreamCallConnectPlan(
+  apiKey: credentials.apiKey,
+  user: User.regular(
+    userId: credentials.userId,
+    name: calmGroupCallName(
+      credentials.isGuest && credentials.displayName.isNotEmpty
+          ? credentials.displayName
+          : displayName,
+    ),
+  ),
+  userToken: credentials.token,
+  callId: credentials.callId,
+);

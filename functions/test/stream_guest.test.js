@@ -480,6 +480,89 @@ test('preparing the room keeps the member as host and the guest as a call member
   assert.equal(joined.includes('/video/call/default/monthly/members'), true);
 });
 
+function seatCount(store, callId) {
+  const byCall = store.sessions.get(callId);
+  return byCall ? byCall.size : 0;
+}
+
+test('a thrown room setup releases the new seat and keeps a refreshed one', async () => {
+  const held = harness();
+  const created = await createInvite(held);
+  const joined = await post(held.deps, {
+    action: 'joinGuest',
+    inviteToken: created.inviteToken,
+    displayName: 'Alex',
+    callId: 'monthly',
+  });
+  assert.equal(joined.statusCode, 200, JSON.stringify(joined.body));
+  const userId = joined.body.userId;
+  assert.equal(seatCount(held.store, 'monthly'), 1);
+
+  const refresh = await post(
+    {
+      ...held.deps,
+      prepareGuestCall: async () => {
+        throw new Error('unit-test-stream-secret');
+      },
+    },
+    {
+      action: 'joinGuest',
+      inviteToken: created.inviteToken,
+      displayName: 'Alex',
+      callId: 'monthly',
+      guestUserId: userId,
+    },
+  );
+  assert.equal(refresh.statusCode, 503);
+  assert.equal(refresh.body.code, 'room');
+  assert.equal(refresh.body.token, undefined);
+  assert.equal(JSON.stringify(refresh.body).includes('unit-test-stream-secret'), false);
+  assert.equal(seatCount(held.store, 'monthly'), 1);
+  assert.equal(held.store.sessions.get('monthly').has(userId), true);
+
+  const thrown = harness({
+    prepareGuestCall: async () => {
+      throw new Error('unit-test-stream-secret');
+    },
+  });
+  let releases = 0;
+  const originalRelease = thrown.store.releaseGuest.bind(thrown.store);
+  thrown.store.releaseGuest = async (input) => {
+    releases += 1;
+    return originalRelease(input);
+  };
+  const invite = await createInvite(thrown);
+  for (let i = 0; i < GUEST_CAP; i += 1) {
+    const failed = await post(thrown.deps, {
+      action: 'joinGuest',
+      inviteToken: invite.inviteToken,
+      displayName: 'Alex',
+      callId: 'monthly',
+    });
+    assert.equal(failed.statusCode, 503);
+    assert.equal(failed.body.code, 'room');
+    assert.equal(failed.body.token, undefined);
+    assert.equal(JSON.stringify(failed.body).includes('unit-test-stream-secret'), false);
+  }
+  assert.equal(releases, GUEST_CAP);
+  assert.equal(seatCount(thrown.store, 'monthly'), 0);
+
+  const recovered = await post(
+    {
+      ...thrown.deps,
+      prepareGuestCall: async () => ({ ok: true }),
+    },
+    {
+      action: 'joinGuest',
+      inviteToken: invite.inviteToken,
+      displayName: 'Alex',
+      callId: 'monthly',
+    },
+  );
+  assert.equal(recovered.statusCode, 200, JSON.stringify(recovered.body));
+  assert.equal(seatCount(thrown.store, 'monthly'), 1);
+});
+
 test('a failed room setup does not hold a guest seat', async () => {
   const env = harness({
     prepareGuestCall: async () => ({ ok: false, status: 500 }),

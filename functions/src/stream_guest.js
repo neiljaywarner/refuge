@@ -333,15 +333,23 @@ async function joinGuest(req, res, deps, body) {
     return;
   }
 
-  const prepared = await deps.prepareGuestCall({
-    apiKey: secrets.apiKey,
-    apiSecret: secrets.apiSecret,
-    callId: invite.callId,
-    hostUserId: invite.createdBy,
-    guestUserId,
-    displayName,
-    nowSeconds: now,
-  });
+  // A throw is the same as { ok: false }. The new seat is released.
+  // A refresh keeps the seat the guest already holds. The error text is
+  // not returned: a Stream failure can echo a credential.
+  let prepared = null;
+  try {
+    prepared = await deps.prepareGuestCall({
+      apiKey: secrets.apiKey,
+      apiSecret: secrets.apiSecret,
+      callId: invite.callId,
+      hostUserId: invite.createdBy,
+      guestUserId,
+      displayName,
+      nowSeconds: now,
+    });
+  } catch (_) {
+    prepared = null;
+  }
   if (!prepared || prepared.ok !== true) {
     if (!refreshing) {
       await deps.store.releaseGuest({
