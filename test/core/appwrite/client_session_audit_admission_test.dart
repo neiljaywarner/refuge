@@ -17,6 +17,9 @@ void main() {
       expect(admittedStartRow({..._cleanRow(), 'city': 'tester@example.com'}, now), isNull);
       expect(admittedStartRow({..._cleanRow(), 'city': '203.0.113.10'}, now), isNull);
       expect(admittedStartRow({..._cleanRow(), 'city': '2001:db8::1'}, now), isNull);
+      expect(admittedStartRow({..._cleanRow(), 'city': 'peer 2001:db8:0:0:0:0:0:1'}, now), isNull);
+      expect(sessionAuditLooksLikeIpv6('peer 2001:db8:0:0:0:0:0:1'), isTrue);
+      expect(sessionAuditLooksLikeIpv6('Chicago'), isFalse);
       expect(admittedStartRow({..._cleanRow(), 'platform': 'Android'}, now), isNull);
       expect(admittedStartRow({..._cleanRow(), 'appVersion': 'x' * 33}, now), isNull);
       expect(
@@ -29,6 +32,48 @@ void main() {
     test('accepts a UTC offset label', () {
       final row = admittedStartRow({..._cleanRow(), 'timezone': 'UTC+00:00'}, now);
       expect(row?['timezone'], 'UTC+00:00');
+    });
+  });
+
+  group('caller identity', () {
+    test('uses the direct address unless that peer is an explicit trusted proxy', () {
+      expect(
+        sessionAuditCallerAddress(directAddress: '203.0.113.10', forwardedFor: '198.51.100.4'),
+        '203.0.113.10',
+      );
+      expect(
+        sessionAuditCallerAddress(
+          directAddress: '10.0.0.2',
+          forwardedFor: '198.51.100.1, 203.0.113.50',
+          trustedProxies: {'10.0.0.2'},
+        ),
+        '203.0.113.50',
+      );
+      final first = sessionAuditCallerAddress(
+        directAddress: '10.0.0.2',
+        forwardedFor: '203.0.113.8',
+        trustedProxies: {'10.0.0.2'},
+      );
+      final second = sessionAuditCallerAddress(
+        directAddress: '10.0.0.2',
+        forwardedFor: '203.0.113.9',
+        trustedProxies: {'10.0.0.2'},
+      );
+      expect(first, isNot(second));
+    });
+  });
+
+  group('admission slots', () {
+    test('refuses another entry while the cap is held, then accepts after leave', () {
+      expect(sessionAuditMaxInFlight, 8);
+      final slots = SessionAuditInflight(maxInFlight: 2);
+      expect(slots.tryEnter(), isTrue);
+      expect(slots.tryEnter(), isTrue);
+      expect(slots.tryEnter(), isFalse);
+      expect(slots.active, 2);
+      slots.leave();
+      expect(slots.tryEnter(), isTrue);
+      expect(slots.active, 2);
     });
   });
 

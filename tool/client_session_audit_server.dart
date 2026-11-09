@@ -36,6 +36,10 @@ AppwriteConfig.
 
 Browser posts are limited to Belong web origins plus loopback. Set
 SESSION_AUDIT_ALLOWED_ORIGINS to a comma-separated list to add more.
+
+The rate-limit identity is the direct connection address. X-Forwarded-For
+is ignored unless SESSION_AUDIT_TRUSTED_PROXIES lists that direct peer.
+At most 8 requests are admitted at once. The rest get 503 immediately.
 ''';
 
 const sessionAuditBrowserOrigins = <String>{
@@ -188,7 +192,8 @@ class AppwriteSessionAuditWriter implements SessionAuditRowWriter {
   }) async {
     final client = HttpClient();
     try {
-      final request = await client.openUrl(method, uri);
+      client.connectionTimeout = sessionAuditConnectTimeout;
+      final request = await sessionAuditWithin(client.openUrl(method, uri));
       headers.forEach(request.headers.set);
       request.add(utf8.encode(jsonEncode(body)));
       final response = await request.close().timeout(const Duration(seconds: 20));
@@ -291,6 +296,10 @@ Future<SessionAuditSocketReply> serveSessionAuditRequest({
   return SessionAuditSocketReply(status: reply.status, body: reply.body, allowOrigin: echo);
 }
 
+/// Fails if [future] is still pending when [limit] elapses.
+Future<T> sessionAuditWithin<T>(Future<T> future, {Duration? limit}) =>
+    future.timeout(limit ?? sessionAuditConnectTimeout);
+
 String? _header(Map<String, String> headers, String name) {
   for (final entry in headers.entries) {
     if (entry.key.toLowerCase() == name) return entry.value;
@@ -304,24 +313,48 @@ Future<({HttpServer server, Future<void> closed})> startSessionAuditServer({
   required SessionAuditAdmission admission,
   required List<int> callerSalt,
   Set<String>? allowedOrigins,
+  Set<String> trustedProxies = const {},
+  SessionAuditInflight? inflight,
 }) async {
   final origins = allowedOrigins ?? sessionAuditBrowserOrigins;
+  final slots = inflight ?? SessionAuditInflight();
   final server = await HttpServer.bind(address, port);
   final closed = Completer<void>();
-  var pending = Future<void>.value();
   server.listen(
     (request) {
-      pending = pending.then(
-        (_) => _dispatch(request, admission, callerSalt, origins).catchError((Object _) {
-          stderr.writeln('session audit request failed');
-        }),
+      if (!slots.tryEnter()) {
+        unawaited(_rejectBusy(request));
+        return;
+      }
+      unawaited(
+        _dispatch(
+          request,
+          admission,
+          callerSalt,
+          origins,
+          trustedProxies,
+        ).whenComplete(slots.leave),
       );
     },
     onDone: () {
       if (!closed.isCompleted) closed.complete();
     },
+    onError: (Object _) {
+      stderr.writeln('session audit request failed');
+    },
   );
   return (server: server, closed: closed.future);
+}
+
+Future<void> _rejectBusy(HttpRequest request) async {
+  try {
+    request.response.statusCode = 503;
+    request.response.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
+    request.response.write(jsonEncode(const {'error': 'unavailable'}));
+    await request.response.close();
+  } catch (_) {
+    stderr.writeln('session audit request failed');
+  }
 }
 
 Future<void> _dispatch(
@@ -329,6 +362,7 @@ Future<void> _dispatch(
   SessionAuditAdmission admission,
   List<int> callerSalt,
   Set<String> allowedOrigins,
+  Set<String> trustedProxies,
 ) async {
   SessionAuditSocketReply reply;
   try {
@@ -344,7 +378,11 @@ Future<void> _dispatch(
           'origin': request.headers.value('origin') ?? '',
         },
         body: utf8.decode(bytes),
-        remoteAddress: request.connectionInfo?.remoteAddress.address,
+        remoteAddress: sessionAuditCallerAddress(
+          directAddress: request.connectionInfo?.remoteAddress.address,
+          forwardedFor: request.headers.value('x-forwarded-for'),
+          trustedProxies: trustedProxies,
+        ),
         callerSalt: callerSalt,
         admission: admission,
         allowedOrigins: allowedOrigins,
@@ -365,7 +403,11 @@ Future<void> _dispatch(
     request.response.headers.set('Access-Control-Max-Age', '600');
   }
   if (reply.status != 204) request.response.write(jsonEncode(reply.body));
-  await request.response.close();
+  try {
+    await request.response.close();
+  } catch (_) {
+    stderr.writeln('session audit request failed');
+  }
 }
 
 Future<List<int>> _readLimited(HttpRequest request) {
@@ -380,6 +422,16 @@ Future<List<int>> _readLimited(HttpRequest request) {
 
 class _BodyTooLarge implements Exception {
   const _BodyTooLarge();
+}
+
+Set<String> sessionAuditTrustedProxiesFromEnvironment(Map<String, String> environment) {
+  final raw = environment['SESSION_AUDIT_TRUSTED_PROXIES'] ?? '';
+  final proxies = <String>{};
+  for (final item in raw.split(',')) {
+    final ip = sessionAuditNormalizeIp(item);
+    if (ip != null) proxies.add(ip);
+  }
+  return proxies;
 }
 
 Set<String> sessionAuditOriginsFromEnvironment(Map<String, String> environment) {
@@ -440,6 +492,7 @@ Future<void> main(List<String> args) async {
     admission: admission,
     callerSalt: sessionAuditCallerSalt(),
     allowedOrigins: sessionAuditOriginsFromEnvironment(Platform.environment),
+    trustedProxies: sessionAuditTrustedProxiesFromEnvironment(Platform.environment),
   );
   stdout.writeln(
     'session audit admission listening on ${bound.server.address.address}:${bound.server.port}',

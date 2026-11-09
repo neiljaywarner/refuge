@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,6 +13,49 @@ void main() {
   const secret = 'test-key-not-a-real-secret';
 
   group('server policy', () {
+    test('a trusted proxy splits budgets and an untrusted peer does not', () {
+      const proxies = {'10.0.0.2'};
+      final first = sessionAuditCallerKey(
+        sessionAuditCallerAddress(
+          directAddress: '10.0.0.2',
+          forwardedFor: '203.0.113.8',
+          trustedProxies: proxies,
+        ),
+        salt,
+      );
+      final second = sessionAuditCallerKey(
+        sessionAuditCallerAddress(
+          directAddress: '10.0.0.2',
+          forwardedFor: '203.0.113.9',
+          trustedProxies: proxies,
+        ),
+        salt,
+      );
+      final ignored = sessionAuditCallerAddress(
+        directAddress: '203.0.113.10',
+        forwardedFor: '198.51.100.4',
+        trustedProxies: proxies,
+      );
+      expect(first, isNot(second));
+      expect(first.contains('203.0.113.8'), isFalse);
+      expect(ignored, '203.0.113.10');
+      expect(sessionAuditTrustedProxiesFromEnvironment(const {}), isEmpty);
+      expect(
+        sessionAuditTrustedProxiesFromEnvironment({
+          'SESSION_AUDIT_TRUSTED_PROXIES': '10.0.0.2, not-an-ip',
+        }),
+        {'10.0.0.2'},
+      );
+    });
+
+    test('opening Appwrite is bounded when the connect never finishes', () {
+      expect(sessionAuditConnectTimeout, const Duration(seconds: 5));
+      return expect(
+        sessionAuditWithin(Completer<int>().future, limit: const Duration(milliseconds: 50)),
+        throwsA(isA<TimeoutException>()),
+      );
+    });
+
     test('hashes the caller address and keeps the raw address out of the key', () {
       final key = sessionAuditCallerKey('203.0.113.10', salt);
       expect(key.contains('203.0.113.10'), isFalse);
@@ -179,9 +223,35 @@ void main() {
     expect(blocked.status, 403);
     expect(writer.creates, 1);
   });
+
+  test('a busy admission slot refuses the next caller without waiting', () async {
+    final entered = Completer<void>();
+    final release = Completer<void>();
+    final writer = _BlockingWriter(entered: entered, release: release);
+    final bound = await startSessionAuditServer(
+      address: InternetAddress.loopbackIPv4,
+      port: 0,
+      admission: _admission(writer),
+      callerSalt: salt,
+      allowedOrigins: sessionAuditBrowserOrigins,
+      inflight: SessionAuditInflight(maxInFlight: 1),
+    );
+    addTearDown(() async {
+      if (!release.isCompleted) release.complete();
+      await bound.server.close(force: true);
+    });
+
+    final first = _post(bound.server, origin: null);
+    await entered.future.timeout(const Duration(seconds: 5));
+    final second = await _post(bound.server, origin: null);
+    expect(second.status, 503);
+    expect(writer.creates, 1);
+    release.complete();
+    expect((await first).status, 200);
+  });
 }
 
-SessionAuditAdmission _admission(_Writer writer) => SessionAuditAdmission(
+SessionAuditAdmission _admission(SessionAuditRowWriter writer) => SessionAuditAdmission(
   gate: SessionAuditRateGate(),
   tokens: _Tokens(),
   writer: writer,
@@ -203,6 +273,25 @@ class _Tokens implements SessionAuditEndTokens {
 
   @override
   bool accepts({required String rowId, required String token}) => token == issue(rowId);
+}
+
+class _BlockingWriter implements SessionAuditRowWriter {
+  _BlockingWriter({required this.entered, required this.release});
+
+  final Completer<void> entered;
+  final Completer<void> release;
+  int creates = 0;
+
+  @override
+  Future<String> createRow(Map<String, Object> data) async {
+    creates += 1;
+    if (!entered.isCompleted) entered.complete();
+    await release.future;
+    return 'row1';
+  }
+
+  @override
+  Future<void> markEnded({required String rowId, required String sessionEndedAt}) async {}
 }
 
 class _Writer implements SessionAuditRowWriter {

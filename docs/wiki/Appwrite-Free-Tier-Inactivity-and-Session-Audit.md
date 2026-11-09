@@ -93,7 +93,9 @@ Never store, log, or summarize:
 - precise GPS or a location permission prompt
 - device id, advertising id, or installation id
 
-`city` is a country code or a timezone region label. If neither is safe, the field is omitted. The client drops values that look like an email or an IPv4 address. The admission server rejects the whole request when any field is an email, an IPv4 address, an IPv6 address, an unknown key, or longer than the column max. A caller address is used only to build an in-memory rate-limit key. It is hashed with a process-local salt, it is not logged, and it is not sent to Appwrite.
+`city` is a country code or a timezone region label. If neither is safe, the field is omitted. The client drops values that look like an email or an IPv4 address. The admission server rejects the whole request when any field is an email, an IPv4 address, a compressed IPv6 address, or an expanded IPv6 address embedded in other text (such as `peer 2001:db8:0:0:0:0:0:1`). It also rejects unknown keys and values longer than the column max. These patterns are not a complete privacy filter. A free-text field can still contain a person's name. There is no name classifier.
+
+A caller address is used only to build an in-memory rate-limit key. It is hashed with a process-local salt, it is not logged by this process, and it is not sent to Appwrite. A TLS proxy in front of the process can still write the address to its own access log. Turn that log off, or redact the client address, if the promise is that IP addresses are not kept.
 
 ## Admission server
 
@@ -109,6 +111,10 @@ Before each API-key write the server allows:
 
 800 a day is about 24,800 writes in a 31-day month, under 10% of the Free 250,000 write quota, and it leaves room for messages and the weekly prune. A restart clears the counters. Hostile rows are rejected before they spend a write.
 
+At most **8** requests may be reading a body or waiting on Appwrite at once. Another arrival gets `503` immediately. It is not lined up behind a slow body. Opening the Appwrite connection is limited to **5 seconds**.
+
+The rate-limit identity is the direct TCP address this process sees. `X-Forwarded-For` is ignored unless `SESSION_AUDIT_TRUSTED_PROXIES` lists that direct address (comma-separated). Leave the variable empty for a loopback or a client that connects straight to this process. Behind one TLS reverse proxy, every phone shares the proxy's 8 writes an hour until you set the variable to the proxy address this process actually sees, and only that address. Do not trust forwarding headers from the public internet. The default bind stays `127.0.0.1`. `--public` is still required for any other host.
+
 Browser calls must come from a Belong web origin (`belongonthespectrum.web.app`, `dev-belongonthespectrum.web.app`, `belongonthespectrum.com`, and the matching firebaseapp host) or from loopback. Native apps send no `Origin` and are limited by the caller key and the project caps. Add more origins with `SESSION_AUDIT_ALLOWED_ORIGINS` (comma-separated). Do not put the API key in that list or in the app.
 
 ```bash
@@ -120,7 +126,7 @@ set +a
 dart run tool/client_session_audit_server.dart
 ```
 
-Scopes for that key: `rows.read` and `rows.write` on `belong_community_db` only. Do not reuse the `dm-push` or `dm-mirror` key. Do not commit the file, paste the key into an issue, or pass it as a flag.
+This server only creates a row (`POST`) and patches `sessionEndedAt` (`PATCH`). Those calls need the project scope `rows.write`. They do not read rows, so `rows.read` is not required here. Appwrite API-key scopes are project-wide. The console does not limit `rows.write` to `belong_community_db`. A key with that scope can write every table in the project. Create a separate key, add no extra scopes, and do not reuse the `dm-push` or `dm-mirror` key. The weekly prune lists and deletes rows, so that tool's key still needs `rows.read` and `rows.write`. Do not commit the file, paste the key into an issue, or pass it as a flag.
 
 Point a build at the server only after it is reachable over HTTPS from the phones that should report:
 
@@ -132,16 +138,17 @@ flutter build web --dart-define=CLIENT_SESSION_AUDIT_URL=https://audit.example/s
 
 ### Lock the table (required ops step)
 
-This repository cannot change the live table. Until this is done, a direct REST client can still create rows even though the app no longer does.
+This repository cannot change the live table. Shipping the server does not remove `create("any")`. Until the grants below are gone, a direct REST client can still create and update rows.
 
 1. Sign in to the [Appwrite Console](https://cloud.appwrite.io).
 2. Open organization project `belongonthespectrum` (`6adae5c40013c409e109`).
 3. Open **Databases** → `belong_community_db` → table `client_session_audits` → **Settings** → **Permissions**.
 4. Remove every client create and update permission. That includes `create("any")`, `create("guests")`, `create("users")`, `update("any")`, `update("guests")`, and `update("users")`.
-5. Leave `read("users")` only if a signed-in operator still browses rows with a user session. The admission server does not need it. The API key bypasses table permissions.
-6. Confirm the Flutter app and this repo contain no API key.
+5. Open several existing rows and clear any per-row update permission. Rows created while `create("any")` was on can carry their own update grant. An empty permission list on new writes does not rewrite those older rows.
+6. `read("users")` lets every signed-in Appwrite user read the table. That is wider than operator-only access. Console admins can read without it, and the phone uses Firebase, not an Appwrite user. Remove `read("users")` unless a specific Appwrite user must read rows from the client SDK. The admission server does not need it. The API key bypasses table permissions.
+7. Confirm the Flutter app and this repo contain no API key.
 
-Prove the guest path is closed. One request is enough. Do not loop it.
+Prove create and update separately. One request each. Do not loop them. A denied POST does not prove update is closed.
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' \
@@ -149,11 +156,17 @@ curl -s -o /dev/null -w '%{http_code}\n' \
   -H 'Content-Type: application/json' \
   -H 'X-Appwrite-Project: 6adae5c40013c409e109' \
   -d '{"rowId":"unique()","data":{"timezone":"UTC","osName":"web","appVersion":"x","platform":"web","sessionStartedAt":"2026-11-08T00:00:00.000Z"}}'
+
+curl -s -o /dev/null -w '%{http_code}\n' \
+  -X PATCH 'https://nyc.cloud.appwrite.io/v1/tablesdb/belong_community_db/tables/client_session_audits/rows/probe' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Appwrite-Project: 6adae5c40013c409e109' \
+  -d '{"data":{"sessionEndedAt":"2026-11-08T00:00:00.000Z"}}'
 ```
 
-Expect `401` or `403`. A `201` means create is still public.
+Expect `401` or `403` for both. A `201` or `200` means that call is still public. A `404` on the PATCH does not prove update is closed: a permitted caller can be told that `probe` is missing. If you see `404`, go back to the table permissions and the existing rows.
 
-The server stores new rows with an empty permission list and `rowId` `unique()`. Session end is a later PATCH of `sessionEndedAt` only, and only when the client repeats the end token the server returned. That token is an HMAC of the row id under the API key. After a key rotation, older sessions cannot set an end time. Start-only is still enough.
+The server stores new rows with an empty permission list and `rowId` `unique()`. Session end is a later PATCH of `sessionEndedAt` only, and only when the client repeats the end token the server returned. That token is an HMAC of the row id under the API key. The compare is constant-time. After a key rotation, older sessions cannot set an end time. Start-only is still enough.
 
 ## Retention
 

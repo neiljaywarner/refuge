@@ -23,6 +23,14 @@ const sessionAuditProjectDailyWindow = Duration(hours: 24);
 
 const sessionAuditMaxCallerKeys = 4096;
 
+/// Body reads and Appwrite writes in flight at once. Further requests are
+/// refused immediately so a slow body cannot queue honest callers.
+const sessionAuditMaxInFlight = 8;
+
+/// Bound for opening the Appwrite connection. A hung connect must not sit
+/// in an admission slot forever.
+const sessionAuditConnectTimeout = Duration(seconds: 5);
+
 const sessionAuditClockSkew = Duration(minutes: 5);
 
 const sessionAuditMaxEventAge = Duration(hours: 36);
@@ -51,12 +59,108 @@ const sessionAuditPlatformValues = <String>{
 
 final _rowIdPattern = RegExp(r'^[A-Za-z0-9]{1,36}$');
 
-final _fullIpv6 = RegExp(r'^(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}$', caseSensitive: false);
+/// Eight hex groups anywhere in the field. A whole-string pattern misses
+/// `peer 2001:db8:0:0:0:0:0:1`. This is not a detector for personal names.
+final _expandedIpv6 = RegExp(r'(?:[0-9a-f]{1,4}:){7}[0-9a-f]{1,4}', caseSensitive: false);
 
-/// True when [value] is an IPv6 address. The client sanitizer only drops IPv4.
+/// True when [value] contains an IPv6 address, including an expanded one
+/// embedded in other text. The client sanitizer only drops email and IPv4.
 bool sessionAuditLooksLikeIpv6(String value) {
   if (value.contains('::')) return true;
-  return _fullIpv6.hasMatch(value);
+  return _expandedIpv6.hasMatch(value);
+}
+
+final _ipv4Literal = RegExp(r'^\d{1,3}(?:\.\d{1,3}){3}$');
+final _ipv6Literal = RegExp(r'^[0-9a-f:]+$', caseSensitive: false);
+
+/// Canonical IPv4, or a trimmed IPv6 literal. Null when [raw] is not an address.
+String? sessionAuditNormalizeIp(String? raw) {
+  if (raw == null) return null;
+  var value = raw.trim().toLowerCase();
+  if (value.isEmpty) return null;
+  if (value.startsWith('[') && value.contains(']')) {
+    value = value.substring(1, value.indexOf(']'));
+  }
+  final zone = value.indexOf('%');
+  if (zone >= 0) value = value.substring(0, zone);
+  final ipv4 = _canonicalIpv4(value);
+  if (ipv4 != null) return ipv4;
+  if (!_isIpv6Literal(value)) return null;
+  return value;
+}
+
+String? _canonicalIpv4(String value) {
+  if (!_ipv4Literal.hasMatch(value)) return null;
+  final numbers = <int>[];
+  for (final part in value.split('.')) {
+    final n = int.tryParse(part);
+    if (n == null || n > 255) return null;
+    numbers.add(n);
+  }
+  return numbers.join('.');
+}
+
+bool _isIpv6Literal(String value) {
+  if (!_ipv6Literal.hasMatch(value) || !value.contains(':')) return false;
+  if (value.contains('::')) return '::'.allMatches(value).length == 1;
+  final groups = value.split(':');
+  if (groups.length != 8) return false;
+  for (final group in groups) {
+    if (group.isEmpty || group.length > 4) return false;
+  }
+  return true;
+}
+
+/// Rate-limit identity. Forwarding headers count only when the direct peer
+/// is listed in [trustedProxies]. Otherwise the header is ignored.
+String? sessionAuditCallerAddress({
+  required String? directAddress,
+  String? forwardedFor,
+  Set<String> trustedProxies = const {},
+}) {
+  final direct = sessionAuditNormalizeIp(directAddress);
+  if (direct == null) return null;
+  final trusted = <String>{};
+  for (final proxy in trustedProxies) {
+    final ip = sessionAuditNormalizeIp(proxy);
+    if (ip != null) trusted.add(ip);
+  }
+  if (!trusted.contains(direct)) return direct;
+  return _rightmostUntrustedHop(forwardedFor, trusted) ?? direct;
+}
+
+String? _rightmostUntrustedHop(String? header, Set<String> trusted) {
+  if (header == null) return null;
+  final hops = <String>[];
+  for (final part in header.split(',')) {
+    final ip = sessionAuditNormalizeIp(part);
+    if (ip != null) hops.add(ip);
+  }
+  for (var i = hops.length - 1; i >= 0; i--) {
+    if (!trusted.contains(hops[i])) return hops[i];
+  }
+  return null;
+}
+
+/// Caps how many admission requests may read a body or call Appwrite at once.
+class SessionAuditInflight {
+  SessionAuditInflight({this.maxInFlight = sessionAuditMaxInFlight});
+
+  final int maxInFlight;
+  int _active = 0;
+
+  int get active => _active;
+
+  bool tryEnter() {
+    if (maxInFlight <= 0 || _active >= maxInFlight) return false;
+    _active += 1;
+    return true;
+  }
+
+  void leave() {
+    if (_active == 0) return;
+    _active -= 1;
+  }
 }
 
 /// Accepts a value only when it is already safe to store unchanged.
