@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../data/stream_token_client.dart';
-import '../domain/group_call_room.dart';
 import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
 import 'group_call_member_copy.dart';
-import 'group_call_session_controls.dart';
+import 'group_call_reactive_controls.dart';
 
 /// Active preview call. Starts muted and camera-off.
 class StreamGroupCallPage extends StatefulWidget {
@@ -92,25 +91,15 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
           muteVideoWhenInBackground: true,
         ),
       );
-      final call = client.makeCall(
-        callType: StreamCallType.defaultType(),
-        id: plan.callId,
-      );
-      final created = await call.getOrCreate(video: true);
-      final createdFailure = _calmFailure(created);
-      if (createdFailure != null) {
-        try {
-          await call.leave();
-        } catch (_) {}
-        await _shutdown();
-        _showFailure(createdFailure);
-        return;
-      }
-      // Both tracks stay off until the member taps microphone or camera.
+      final call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
+      // getOrCreate applies the call type's camera-on default in the
+      // background, after join has asked for the camera to stay off. Join
+      // creates the room itself. The disabled options are merged after that
+      // default, and [GroupCallLiveControls] turns a late camera back off.
       final joined = await call.join(
         connectOptions: CallConnectOptions(
-          camera: TrackOption.disabled(),
-          microphone: TrackOption.disabled(),
+          camera: plan.cameraStartsEnabled ? TrackOption.enabled() : TrackOption.disabled(),
+          microphone: plan.microphoneStartsEnabled ? TrackOption.enabled() : TrackOption.disabled(),
         ),
       );
       final joinedFailure = _calmFailure(joined);
@@ -164,8 +153,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -180,71 +168,38 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: Scaffold(
         appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
         body: call == null
-            ? GroupCallConnectionStatus(
-                failure: _failure,
-                onBack: () => unawaited(_leave()),
-              )
+            ? GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave()))
             : StreamCallContent(
                 call: call,
                 onLeaveCallTap: _leave,
                 onBackPressed: _leave,
-                callControlsWidgetBuilder: (context, call) {
-                  final state = call.state.value;
-                  final local = state.localParticipant;
-                  // Host controls require a signed-in member who created the
-                  // room or has a Stream host or admin role. A guest never
-                  // sees them, even if Stream says they created the room.
-                  return GroupCallSessionControls(
-                    microphoneEnabled: local?.isAudioEnabled ?? false,
-                    cameraEnabled: local?.isVideoEnabled ?? false,
-                    host: canModerateGroupCall(
-                      signedInMember: !widget.credentials.isGuest,
-                      createdByMe: state.createdByMe,
-                      roles: local?.roles ?? const [],
-                    ),
-                    others: [
-                      for (final person in state.otherParticipants)
-                        GroupCallOtherMember(
-                          userId: person.userId,
-                          name: person.name,
-                        ),
-                    ],
-                    onMicrophone: () {
-                      call.setMicrophoneEnabled(
-                        enabled: !(local?.isAudioEnabled ?? false),
-                      );
-                    },
-                    onCamera: () {
-                      call.setCameraEnabled(
-                        enabled: !(local?.isVideoEnabled ?? false),
-                      );
-                    },
-                    onLeave: _leave,
-                    onRemove: (userId) async {
-                      final result = await call.kickUser(userId);
-                      if (_calmFailure(result) != null) {
-                        _snack('Only the host can remove someone.');
-                      }
-                    },
-                    onEnd: () async {
-                      final result = await call.end();
-                      if (_calmFailure(result) != null) {
-                        _snack('Only the host can end the call.');
-                        return;
-                      }
-                      await _leave();
-                    },
-                  );
-                },
+                callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
+                  call: call,
+                  signedInMember: !widget.credentials.isGuest,
+                  onLeave: _leave,
+                  onRemove: (userId) async {
+                    final result = await call.kickUser(userId);
+                    if (_calmFailure(result) != null) {
+                      _snack('Only the host can remove someone.');
+                    }
+                  },
+                  onEnd: () async {
+                    final result = await call.end();
+                    if (_calmFailure(result) != null) {
+                      _snack('Only the host can end the call.');
+                      return;
+                    }
+                    await _leave();
+                  },
+                ),
               ),
       ),
     );
   }
 }
 
-String? _calmFailure<T>(Result<T> result) => result.isSuccess
-    ? null
-    : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+String? _calmFailure<T>(Result<T> result) =>
+    result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
 
 /// Opens a preview call with a server-issued api key, user id, and user token.
 typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);
@@ -258,11 +213,19 @@ class const StreamCallConnectPlan({
   required this.user,
   required this.userToken,
   required this.callId,
+  required this.cameraStartsEnabled,
+  required this.microphoneStartsEnabled,
 }) {
   final String apiKey;
   final User user;
   final String userToken;
   final String callId;
+
+  /// False. The camera stays off until the person taps it.
+  final bool cameraStartsEnabled;
+
+  /// False. The microphone stays off until the person taps it.
+  final bool microphoneStartsEnabled;
 }
 
 /// Builds the Stream user for a guest or a member.
@@ -285,4 +248,6 @@ StreamCallConnectPlan streamCallConnectPlan({
   ),
   userToken: credentials.token,
   callId: credentials.callId,
+  cameraStartsEnabled: false,
+  microphoneStartsEnabled: false,
 );

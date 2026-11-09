@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_connection_status.dart';
 import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_member_copy.dart';
+import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_reactive_controls.dart';
 import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_session_controls.dart';
 
 void main() {
@@ -72,6 +73,64 @@ void main() {
     expect(microphone, 1);
     expect(camera, 1);
     expect(left, 1);
+  });
+
+  testWidgets('the camera button follows a live track and a tap uses that track', (tester) async {
+    final camera = ValueNotifier<bool>(false);
+    final microphone = ValueNotifier<bool>(false);
+    final ticks = ChangeNotifier();
+    final requested = <bool>[];
+    addTearDown(camera.dispose);
+    addTearDown(microphone.dispose);
+    addTearDown(ticks.dispose);
+
+    void changed() => ticks.notifyListeners();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GroupCallReactiveControls(
+            tracks: ticks,
+            microphoneEnabled: () => microphone.value,
+            cameraEnabled: () => camera.value,
+            onSetMicrophone: (enabled) => microphone.value = enabled,
+            onSetCamera: (enabled) {
+              requested.add(enabled);
+              camera.value = enabled;
+              changed();
+            },
+            host: false,
+            others: const [],
+            onLeave: () async {},
+            onRemove: (userId) async {},
+            onEnd: () async {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.videocam_off_rounded), findsOneWidget);
+
+    camera.value = true;
+    changed();
+    await tester.pump();
+    expect(find.byIcon(Icons.videocam_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.videocam_off_rounded), findsNothing);
+
+    await tester.tap(find.byKey(const Key('group_call_camera_button')));
+    await tester.pump();
+    expect(requested, [false]);
+    expect(find.byIcon(Icons.videocam_off_rounded), findsOneWidget);
+  });
+
+  test('a camera that turns itself on is forced back off until the person asks', () {
+    expect(previewCameraShouldForceOff(sendingVideo: true, userAskedForCamera: false), isTrue);
+    expect(previewCameraShouldForceOff(sendingVideo: true, userAskedForCamera: true), isFalse);
+    expect(previewCameraShouldForceOff(sendingVideo: false, userAskedForCamera: false), isFalse);
+    expect(
+      previewMicrophoneShouldForceOff(sendingAudio: true, userAskedForMicrophone: false),
+      isTrue,
+    );
   });
 
   testWidgets('microphone and camera icons follow the enabled tracks', (tester) async {
