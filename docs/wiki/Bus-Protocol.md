@@ -15,7 +15,7 @@ If you just learned that Neil is unreachable and you are worried about members l
 
 1. **Belong stays online automatically**: `https://belongonthespectrum.web.app/` runs on Google Firebase's free Spark tier (**\$0/month**, no credit card required). **There is no monthly server bill that will bounce and shut the site down next week.**
 2. **Everyday moderation keeps working**: Anyone already signed in with an organizer account listed in Belong's admin settings (and `rules_admins`) can continue welcoming members and removing harmful accounts right inside the app—see **[Ban a Member](Admin-Pause-and-Restore)**.
-3. **Only Appwrite extras pause after 7 days without Console development activity**: Appwrite Cloud handles closed-app phone alerts (`dm-push`), the direct-message mirror (`dm-mirror`), and the spare copy. The Free plan pauses that project after 7 days with no development activity in the Appwrite Console. Opens of Belong, and API calls, do not count. Signing in, reading spaces, posting, replying, and sending Direct Messages inside Belong stay on Firebase. See [Leave-alone free backends](Leave-Alone-Free-Backends).
+3. **Only Appwrite extras pause after 7 days without Console development activity**: Appwrite Cloud handles closed-app phone alerts (`dm-push`), the direct-message mirror (`dm-mirror`), and the spare copy. The Free plan pauses that project after 7 days with no development activity in the Appwrite Console. Opens of Belong, and API calls, do not count. Signing in, reading spaces, posting, replying, and sending Direct Messages inside Belong stay on Firebase. See [Leave-alone free backends](Leave-Alone-Free-Backends.md).
 4. **Nothing is locked in a private vault to rebuild**: Because `https://github.com/neiljaywarner/refuge` is completely open-source, any Flutter/web developer recruited by **DFW Church** or **Belong leadership** can recreate a brand-new working deployment from source in **about 90 minutes** (**Scenario 1**) even before legal account transfers finish (**Scenario 3**).
 
 ---
@@ -220,7 +220,7 @@ If you forked `neiljaywarner/refuge` to a new `belongonthespectrum` or `dfwchurc
 
 - Appwrite Cloud Free (`tier-0`) pauses after **7 days with no Console development activity**. Runtime, API, SDK, and end-user traffic do not count ([changelog, 20 February 2026](https://appwrite.io/changelog/entry/2026-02-20-1)).
 - **Impact**: Core Belong (`belongonthespectrum.web.app`, sign-in, all 8 rooms, comments, reactions, bookmarks, in-app Direct Messages, voting, and feedback) **stays on Firebase**. The pause stops `dm-push`, `dm-mirror`, and the spare/mirror path.
-- **Clean Fix**: Either deploy with `--dart-define=APPWRITE_ENDPOINT=` (zero errors, pure Firebase) or stand up a new Appwrite project from `appwrite/functions/dm-push` and `appwrite/functions/dm-mirror` and pass `--dart-define=APPWRITE_PROJECT_ID=<new-id>`. Restore the same project from the Appwrite Console when you still have that login. A new leave-alone free backend, when one is needed, prefers Supabase Free ([Leave-alone free backends](Leave-Alone-Free-Backends)). That preference is not a cutover of the live site.
+- **Clean Fix**: Either deploy with an empty `--dart-define=APPWRITE_ENDPOINT=` for a pure-Firebase build, or stand up a new Appwrite project from `appwrite/functions/dm-push` and `appwrite/functions/dm-mirror` and pass both `--dart-define=APPWRITE_ENDPOINT=<regional-api-endpoint>` and `--dart-define=APPWRITE_PROJECT_ID=<new-id>`. The client default endpoint is `https://nyc.cloud.appwrite.io/v1`. A project id alone still calls NYC, so push and mirror can fail when the new project is in another region. An empty endpoint skips Appwrite. Firestore can still accept the direct message, and the client can then log `Direct message mirror failed`. That line is the mirror diagnostic, not a Firebase write failure. Restore the same project from the Appwrite Console when you still have that login. A new leave-alone free backend, when one is needed, prefers Supabase Free ([Leave-alone free backends](Leave-Alone-Free-Backends.md)). That preference is not a cutover of the live site.
 
 ---
 
@@ -279,7 +279,7 @@ The public domain **`belongonthespectrum.com`** (`https://www.belongonthespectru
 
 **Do not waste weeks filing legal recovery tickets for these secondary free-tier developer accounts**—none of them hold irreplaceable primary community data (`ADR-0011` keeps all primary posts, profiles, votes, feedback, and messages in Firestore):
 
-- **Appwrite Cloud (`6adae5c40013c409e109`)**: Free org plan `tier-0` pauses after 7 days with no Console development activity. API traffic does not keep it awake. Disable Appwrite (`--dart-define=APPWRITE_ENDPOINT=`) or deploy a fresh Appwrite project from `appwrite/functions/` in 20 minutes (§1.8). Details: [Leave-alone free backends](Leave-Alone-Free-Backends).
+- **Appwrite Cloud (`6adae5c40013c409e109`)**: Free org plan `tier-0` pauses after 7 days with no Console development activity. API traffic does not keep it awake. Disable Appwrite (`--dart-define=APPWRITE_ENDPOINT=`) or deploy a fresh Appwrite project from `appwrite/functions/` in 20 minutes (§1.8). Details: [Leave-alone free backends](Leave-Alone-Free-Backends.md).
 - **Giphy (`developers.giphy.com`)**: Any organizer or developer can create a free Giphy app in 3 minutes and paste the new key into Firebase Remote Config (`giphy_api_key_web`, `giphy_api_key_android`).
 - **PostHog & Aptabase Analytics**: Optional `--dart-define` telemetry keys (`POSTHOG_KEY`, `APTABASE_KEY`); leaving them blank disables external analytics cleanly with zero impact on members.
 
@@ -299,5 +299,5 @@ If an urgent security or app change cannot wait 2–4 weeks for Google Support t
 - **[📣 Update the Welcome Message](Organizer-Remote-Config-Guide)** — Non-technical Firebase Remote Config steps for organizers
 - **[🚫 Ban a Member](Admin-Pause-and-Restore)** — How organizer moderation works (`admin_emails_csv` + `rules_admins/{uid}`)
 - **[🗄️ One Database Plus a Backup (ADR-0011)](Reflection-Redundancy-and-Backup)** — Why Firestore is the single source of truth
-- **[🗄️ Leave-alone free backends](Leave-Alone-Free-Backends)** — Prefer Supabase Free when a vendor console visit cannot be the keepalive. Appwrite Free still hosts `dm-push`, `dm-mirror`, and the spare copy.
+- **[🗄️ Leave-alone free backends](Leave-Alone-Free-Backends.md)** — Prefer Supabase Free when a vendor console visit cannot be the keepalive. Appwrite Free still hosts `dm-push`, `dm-mirror`, and the spare copy.
 - **[🧪 CI/CD FAQ and Troubleshooting](CI-CD-FAQ)** — GitHub Actions pipelines (`ci.yml`, `deploy.yml`, `sync-wiki.yml`)

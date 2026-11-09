@@ -19,7 +19,7 @@ Cloud Functions and scheduled Firestore exports need the Blaze plan. This projec
 
 ## If Appwrite Free pauses
 
-A pause of project `belongonthespectrum` stops this spare copy and the live functions `dm-push` and `dm-mirror`. Firestore, Firebase Auth, and Firebase Hosting stay up. The CLI sync fails until someone restores the project in the Appwrite Console. API and end-user traffic do not prevent that pause. The 8 November 2026 choice for a new leave-alone free backend is Supabase Free ([Leave-alone free backends](Leave-Alone-Free-Backends)). This CLI stays an Appwrite copy of Firestore. It is not a move of the live store.
+A pause of project `belongonthespectrum` stops this spare copy and the live functions `dm-push` and `dm-mirror`. Firestore, Firebase Auth, and Firebase Hosting stay up. A write sync cannot write `backup_*` rows until someone restores the project in the Appwrite Console. Restore does not rerun a failed sync. After the project is active again, rerun each failed collection sync while the Firestore documents are still there. `sync --dry-run` with a local `--input` file does not contact Appwrite, so that dry run can still run while the project is paused. API and end-user traffic do not prevent the pause. The 8 November 2026 choice for a new leave-alone free backend is Supabase Free ([Leave-alone free backends](Leave-Alone-Free-Backends.md)). This CLI stays an Appwrite copy of Firestore. The live store stays Firestore.
 
 ## Inventory
 

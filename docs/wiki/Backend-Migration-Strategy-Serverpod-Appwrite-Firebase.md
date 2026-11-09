@@ -6,7 +6,7 @@
 
 > **Reviewed 24 October 2026, revised the same evening for a no-card budget.** [ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md) and the [redundancy wiki](Reflection-Redundancy-and-Backup): Firestore Spark stays the live copy, Appwrite is a one-way free mirror, and a private weekly JSON file is the backup. Blaze backups wait until a credit card is acceptable.
 >
-> **Leave-alone choice, 8 November 2026 ([#906](https://github.com/neiljaywarner/refuge/issues/906)).** The grades below are the earlier migration sketch. They are not a decision to move the live feed, auth, or hosting off Firebase. For a new free backend that must keep running when nobody opens a vendor console, prefer Supabase Free. Appwrite Free pauses without Console development activity; member traffic does not count. Supabase Free can also pause, and Dashboard or app/API/database activity counts. See [Leave-alone free backends](Leave-Alone-Free-Backends).
+> **Leave-alone choice, 8 November 2026 ([#906](https://github.com/neiljaywarner/refuge/issues/906)).** The grades below are the earlier migration sketch. They are not a decision to move the live feed, auth, or hosting off Firebase. For a new free backend that must keep running when nobody opens a vendor console, prefer Supabase Free. Appwrite Free pauses without Console development activity; member traffic does not count. Supabase Free can also pause, and Dashboard or app/API/database activity counts. See [Leave-alone free backends](Leave-Alone-Free-Backends.md).
 
 ---
 

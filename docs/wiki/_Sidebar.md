@@ -29,7 +29,7 @@
 * **[⚙️ Deep Technical Breakdown: Android APK vs. Web PWA](Android-APK-vs-Web-PWA-Details)**
 * **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
 * **[🗄️ One Database Plus a Backup (ADR-0011)](Reflection-Redundancy-and-Backup)**
-* **[🗄️ Leave-alone free backends](Leave-Alone-Free-Backends)**
+* **[🗄️ Leave-alone free backends](Leave-Alone-Free-Backends.md)**
 * **[🗄️ Firestore to Appwrite backup (first pass)](Firestore-to-Appwrite-Backup)**
 * **[🔌 Serverpod Deprecation & $0/Mo Teardown Guide](Serverpod-Deprecation-and-Teardown-Guide)**
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
