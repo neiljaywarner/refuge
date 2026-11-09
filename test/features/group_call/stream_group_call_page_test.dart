@@ -29,6 +29,8 @@ void main() {
     expect(plan.userToken, guestToken);
     expect(plan.apiKey, 'public-key');
     expect(plan.callId, 'monthly');
+    expect(plan.cameraStartsEnabled, isFalse);
+    expect(plan.microphoneStartsEnabled, isFalse);
   });
 
   test('a member connects as a regular Stream user with the server token', () {
@@ -49,11 +51,11 @@ void main() {
     expect(plan.user.id, memberId);
     expect(plan.user.name, 'Fellow Member');
     expect(plan.userToken, memberToken);
+    expect(plan.cameraStartsEnabled, isFalse);
+    expect(plan.microphoneStartsEnabled, isFalse);
   });
 
-  testWidgets('the call page applies the server guest id and token', (
-    tester,
-  ) async {
+  testWidgets('the call page applies the server guest id and token', (tester) async {
     StreamCallConnectPlan? plan;
     await tester.pumpWidget(
       MaterialApp(
