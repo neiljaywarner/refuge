@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../data/stream_guest_token_client.dart';
@@ -36,6 +38,8 @@ class GroupCallGuestJoinPage extends StatefulWidget {
 class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
   final TextEditingController _name = TextEditingController();
   StreamGuestTokenClient? _active;
+  Future<void>? _joinTask;
+  Future<void>? _unusedRelease;
   bool _busy = false;
   bool _handedOff = false;
   String? _message;
@@ -43,8 +47,43 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
   @override
   void dispose() {
     _name.dispose();
-    if (!_handedOff) _active?.close();
+    final client = _active;
+    if (!_handedOff && client != null) {
+      unawaited(_releaseAfter(_joinTask, client));
+    }
     super.dispose();
+  }
+
+  /// Waits for an in-flight join, then gives the seat back.
+  ///
+  /// Closing first would drop the HTTP client before [release] can run.
+  /// The seat would stay until the token expires.
+  Future<void> _releaseAfter(
+    Future<void>? task,
+    StreamGuestTokenClient client,
+  ) async {
+    if (task != null) {
+      try {
+        await task;
+      } catch (_) {}
+    }
+    if (_handedOff) return;
+    await _releaseUnused(client);
+  }
+
+  Future<void> _releaseUnused(StreamGuestTokenClient client) {
+    final existing = _unusedRelease;
+    if (existing != null) return existing;
+    final pending = _releaseOnce(client);
+    _unusedRelease = pending;
+    return pending;
+  }
+
+  Future<void> _releaseOnce(StreamGuestTokenClient client) async {
+    try {
+      await client.release();
+    } catch (_) {}
+    client.close();
   }
 
   Future<void> _join() async {
@@ -66,16 +105,25 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
     }
     _active = client;
     _handedOff = false;
-    setState(() {
-      _busy = true;
-      _message = null;
-    });
+    _unusedRelease = null;
+    final task = _finishJoin(client, clean);
+    _joinTask = task;
+    await task;
+  }
+
+  Future<void> _finishJoin(StreamGuestTokenClient client, String clean) async {
     try {
+      setState(() {
+        _busy = true;
+        _message = null;
+      });
       final credentials = await client.join(displayName: clean);
       if (!credentials.isGuest || !mounted) return;
       final room = GroupCallRoom.tryParse(credentials.callId);
       if (room == null) {
-        setState(() => _message = 'The call could not start. Try again in a moment.');
+        setState(
+          () => _message = 'The call could not start. Try again in a moment.',
+        );
         return;
       }
       _handedOff = true;
@@ -91,9 +139,11 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
       setState(() => _message = error.message);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _message = 'The call could not start. Try again in a moment.');
+      setState(
+        () => _message = 'The call could not start. Try again in a moment.',
+      );
     } finally {
-      if (!_handedOff) client.close();
+      if (!_handedOff) await _releaseUnused(client);
       if (identical(_active, client)) _active = null;
       if (mounted) setState(() => _busy = false);
     }
@@ -111,7 +161,9 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
           padding: const .all(24),
           children: [
             Text(
-              room == null ? 'You are joining this call.' : 'You are joining $room.',
+              room == null
+                  ? 'You are joining this call.'
+                  : 'You are joining $room.',
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
