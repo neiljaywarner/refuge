@@ -27,7 +27,7 @@ function mintStreamUserToken({ userId, secret, nowSeconds, ttlSeconds = STREAM_T
 /**
  * Call-scoped user token. `call_cids` grants membership on those calls only
  * as an extra claim. Stream does not treat it as a ban on every other call,
- * so the guest id stays temporary and the call role stays `call-member`.
+ * so the guest id stays temporary. The members API role is `call_member`.
  * The role is never host, admin, or moderator.
  */
 function mintStreamCallScopedToken({

@@ -15,7 +15,11 @@ const {
   guestCallCid,
 } = require('../src/stream_guest');
 const { MemoryInviteStore } = require('../src/stream_invite_store');
-const { prepareGuestOnCall } = require('../src/stream_video_api');
+const {
+  prepareGuestOnCall,
+  acceptedStreamCallRole,
+  STREAM_CALL_MEMBER_ROLE,
+} = require('../src/stream_video_api');
 
 const secret = 'unit-test-stream-secret';
 const apiKey = 'unit-test-stream-key';
@@ -123,6 +127,7 @@ test('a guest cannot moderate even if the request claims host', () => {
   assert.equal(actorMayModerate({ actor: 'member', createdByMe: false, roles: ['user'] }), false);
   assert.equal(actorMayModerate({ actor: 'member', createdByMe: false, roles: ['moderator'] }), false);
   assert.equal(actorMayModerate({ actor: 'member', createdByMe: false, roles: ['call-member'] }), false);
+  assert.equal(actorMayModerate({ actor: 'member', createdByMe: false, roles: ['call_member'] }), false);
 });
 
 test('creating an invite returns the token once and does not store it', async () => {
@@ -461,9 +466,18 @@ test('preparing the room keeps the member as host and the guest as a call member
   assert.equal(bodies[0].users[guestId(1)].name, 'Alex');
   assert.equal(bodies[1].data.created_by_id, 'member1');
   assert.deepEqual(bodies[1].data.members, [{ user_id: 'member1', role: 'host' }]);
+  assert.equal(acceptedStreamCallRole('call_member'), true);
+  assert.equal(acceptedStreamCallRole('user'), true);
+  assert.equal(acceptedStreamCallRole('host'), true);
+  assert.equal(acceptedStreamCallRole('call-member'), false);
+  assert.equal(STREAM_CALL_MEMBER_ROLE, 'call_member');
+  const guestMember = bodies[2].update_members.find((member) => member.user_id === guestId(1));
+  assert.equal(guestMember.role, 'call_member');
+  assert.equal(acceptedStreamCallRole(guestMember.role), true);
+  assert.equal(JSON.stringify(bodies[2]).includes('call-member'), false);
   assert.deepEqual(bodies[2].update_members, [
     { user_id: 'member1', role: 'host' },
-    { user_id: guestId(1), role: 'call-member' },
+    { user_id: guestId(1), role: 'call_member' },
   ]);
   for (const call of calls) {
     assert.equal(call.url.includes(secret), false);

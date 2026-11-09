@@ -134,9 +134,9 @@ The first person in the room is not automatically the host. A guest is never the
 
 There is no 40-minute cutoff in this client. A member's user token lasts three hours (`STREAM_TOKEN_TTL_SECONDS` in `functions/src/stream_token.js`), so a one-hour call can start late. A guest's token lasts about 30 minutes and is refreshed while they stay, still scoped to that one call. If Stream asks for a fresh token, a member's app calls `mintStreamCallToken` again with the Firebase ID token. A guest's app calls it again with the invite token. The API secret still stays on the function.
 
-Stream describes guests as temporary named users. Tokens are minted on the server, with an expiry. The app uses Stream's guest user for that temporary name. The call role on the token is `call-member`, which is a built-in membership role, not host or admin. `guest` is not a built-in call role, so it is not sent as one. Call tokens add access to the named call. They do not, by themselves, ban every other call. The invite token is what decides who receives a Stream token at all.
+Stream describes guests as temporary named users. Tokens are minted on the server, with an expiry. The function adds the guest to the call as `call_member`. Stream rejects the hyphenated name `call-member`. That membership is not host or admin, so a guest cannot end the call or remove people. `guest` is not a built-in call role. Call tokens add access to the named call. They do not, by themselves, ban every other call. The invite token is what decides who receives a Stream token at all.
 
-Before a real test, confirm in the Stream dashboard that the `user` and `call-member` roles on the `default` call type cannot end the call or remove people, and that `host` and `admin` can. This function does not change those grants.
+Before a real test, confirm in the Stream dashboard that the `user` and `call_member` roles on the `default` call type cannot end the call or remove people, and that `host` and `admin` can. This function does not change those grants.
 
 A name that is empty or contains `@` is shown as "Fellow Member" for a signed-in member. A guest must type an acceptable name or the join stops. A call error that looks like a token, a secret, or a long SDK dump is replaced with "The call could not connect." The response body from a failed mint is not shown.
 
