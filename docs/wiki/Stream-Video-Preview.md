@@ -4,6 +4,27 @@ Preview-only group calls for [#872](https://github.com/neiljaywarner/refuge/issu
 
 The call is for about ten people for about an hour. People start muted with the camera off. They can unmute, turn the camera on, or leave. Nothing in this client cuts the room off at forty minutes.
 
+## Status 2026-11-09 ~1 AM CT
+
+Progress note for [#908](https://github.com/neiljaywarner/refuge/issues/908#issuecomment-6734212132). This is a preview check, not a production rollout.
+
+The dev preview site (dev-belongonthespectrum.web.app) is built from `69ff740` with `STREAM_VIDEO_PREVIEW=true`. It points at the public preview mint, a Supabase Edge Function that handles the guest actions. Invites are stored hashed in a private schema. The Stream secret stays on the server. Production is not affected.
+
+Verified so far:
+
+- A guest in Mac Chromium joined a call hosted by an emulator APK.
+- Then two real Pixel 9a phones: a signed-in APK as host, and a signed-out guest in Chrome on the dev site.
+- The guest skips Sign in.
+- The guest gets only Microphone, Camera, and Leave. The host gets Remove and End call.
+- Two-way live video works in both directions.
+- Chrome on a real Pixel renders the call. An earlier blank WebGL page was emulator-only.
+
+Audio is not proven. In a real two-phone call the second person could not hear the host. The mics looked unmuted, and nobody has confirmed that sound arrives. Next check: Mac Chrome with a fake-audio WAV file, and a Pixel running the APK. Play a tone each way, measure WebRTC inbound `audioLevel` and `totalAudioEnergy`, record the Pixel's output (for example with scrcpy), and toggle mute at least three times. Suspects: Android sending call audio to the earpiece instead of the speaker; unmute not publishing an audio track after a muted join; Chrome autoplay blocking remote audio; `RECORD_AUDIO` permission or call volume.
+
+Not yet run: the website on both Pixels, and the APK on both Pixels.
+
+TODO: Stream Video 1.7.2 pulls in `system_info2` 4.2.0, which breaks `dart2js` on web. The dev site was built with a temporary local `dependency_overrides` pin of `system_info2` 4.1.0. That pin is not in this repo.
+
 ## Invite someone who is not signed in
 
 This is the Zoom-style door. A signed-in member makes a link. Someone else opens that link, types a name, and joins. They do not create a Belong account.
