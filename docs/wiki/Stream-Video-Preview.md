@@ -19,7 +19,14 @@ Verified so far:
 - Two-way live video works in both directions.
 - Chrome on a real Pixel renders the call. An earlier blank WebGL page was emulator-only.
 
-Audio is not proven. In a real two-phone call the second person could not hear the host. The mics looked unmuted, and nobody has confirmed that sound arrives. Next check: Mac Chrome with a fake-audio WAV file, and a Pixel running the APK. Play a tone each way, measure WebRTC inbound `audioLevel` and `totalAudioEnergy`, record the Pixel's output (for example with scrcpy), and toggle mute at least three times. Suspects: Android sending call audio to the earpiece instead of the speaker; unmute not publishing an audio track after a muted join; Chrome autoplay blocking remote audio; `RECORD_AUDIO` permission or call volume.
+Audio is only partly checked. A real two-phone call still left the second person unable to hear the host. A later check used Mac Chrome with a fake 440/660 Hz mic file, the guest on the dev site, and a Pixel 9a running the `69ff740` APK. Mute was toggled three times on each side.
+
+- Web mute and unmute work on the sending side. Mac outbound audio bytes rose only while unmuted (0, then about 321k, then about 484k) and stayed flat while muted.
+- The Pixel's Android audio was in `MODE_IN_COMMUNICATION`, with output on the speaker, not the earpiece, and voice-call volume was not muted. That rules out earpiece routing.
+- Pixel to Mac: the Mac received the Pixel's audio track only after the Pixel first unmuted. Inbound energy jumped about 14 times in an unmute window while the Mac's speaker was talking near the phone. The Pixel mic reaches the web client, at a low level.
+- Mac to Pixel: a mic recording of the Pixel's speaker was clearly louder during the first unmute window (about -33 dB, against a -46 dB baseline). In the second and third unmute windows it was not clearly louder (about -50 to -73 dB).
+
+Next suspect: audio not resuming after a later unmute, on the web publisher or the Android subscriber, or playback that is simply very quiet. The next check should capture the Pixel's output directly (for example with scrcpy) instead of an acoustic mic.
 
 Not yet run: the website on both Pixels, and the APK on both Pixels.
 
