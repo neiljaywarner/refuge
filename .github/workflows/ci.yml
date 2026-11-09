@@ -33,7 +33,7 @@ jobs:
       - name: Direct message push function tests
         run: node --test appwrite/functions/dm-push/test/decide.test.js appwrite/functions/dm-push/test/handle.test.js appwrite/functions/dm-push/test/cert_cache.test.js
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
