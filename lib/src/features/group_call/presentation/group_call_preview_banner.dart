@@ -4,10 +4,16 @@ import 'group_call_flow.dart';
 
 /// Preview entry on the home screen. Hidden unless the build and preview flag allow it.
 class GroupCallPreviewBanner extends StatelessWidget {
-  const GroupCallPreviewBanner({super.key, required this.initialCallId, required this.displayName});
+  const GroupCallPreviewBanner({
+    super.key,
+    required this.initialCallId,
+    required this.displayName,
+    this.shareOrigin,
+  });
 
   final String initialCallId;
   final String displayName;
+  final Uri? shareOrigin;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +38,7 @@ class GroupCallPreviewBanner extends StatelessWidget {
                 context: context,
                 displayName: displayName,
                 initialCallId: initialCallId,
+                shareOrigin: shareOrigin,
               ),
               child: const Text('Join call'),
             ),

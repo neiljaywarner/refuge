@@ -24,6 +24,7 @@ class GroupCallLobbyPage extends StatefulWidget {
     required this.tokenClientFactory,
     required this.onReady,
     this.pageLocation,
+    this.shareOrigin,
   });
 
   final String displayName;
@@ -33,6 +34,10 @@ class GroupCallLobbyPage extends StatefulWidget {
 
   /// Page used to build the guest link. Tests pass a fixed address.
   final Uri? pageLocation;
+
+  /// https origin used when [pageLocation] is not a web address.
+  /// A phone reports `file://`, which is never shared.
+  final Uri? shareOrigin;
 
   @override
   State<GroupCallLobbyPage> createState() => _GroupCallLobbyPageState();
@@ -128,6 +133,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
       if (!mounted) return;
       final link = guestInvitePageUri(
         page: widget.pageLocation ?? Uri.base,
+        shareOrigin: widget.shareOrigin,
         callId: room.id,
         inviteToken: invite.token,
       );

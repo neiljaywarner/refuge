@@ -46,6 +46,11 @@ fun appLabelForFlavor(flavor: String): String = when (flavor) {
     else -> "Belong on the Spectrum"
 }
 
+fun guestInviteHostFor(flavor: String, preview: Boolean): String {
+    if (!preview || flavor == "prod") return "guest-invite.invalid"
+    return "$flavor-belongonthespectrum.web.app"
+}
+
 android {
     namespace = "com.belongonthespectrum.refuge"
     compileSdk = flutter.compileSdkVersion
@@ -64,6 +69,8 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["appName"] = "Belong on the Spectrum"
+        // Overridden per build type. Production never claims the dev host.
+        manifestPlaceholders["guestInviteHost"] = "guest-invite.invalid"
         // One runner for every integration_test/patrol_ftl_*.dart target.
         // clearPackageData is not baked in. Test Lab passes it with
         // --use-orchestrator only when the target file has two patrolTests.
@@ -83,6 +90,10 @@ android {
                 applicationIdSuffix = suffix
             }
             manifestPlaceholders["appName"] = appLabelForFlavor(activeFlavor)
+            manifestPlaceholders["guestInviteHost"] = guestInviteHostFor(
+                activeFlavor,
+                dartDefines["STREAM_VIDEO_PREVIEW"] == "true",
+            )
         }
         release {
             val activeFlavor = resolvedFlavor ?: "prod"
@@ -91,6 +102,10 @@ android {
                 applicationIdSuffix = suffix
             }
             manifestPlaceholders["appName"] = appLabelForFlavor(activeFlavor)
+            manifestPlaceholders["guestInviteHost"] = guestInviteHostFor(
+                activeFlavor,
+                dartDefines["STREAM_VIDEO_PREVIEW"] == "true",
+            )
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -104,6 +119,10 @@ androidComponents {
         if (activeFlavor == "prod") {
             variant.applicationId.set("com.belongonthespectrum.sanctuary")
         }
+        variant.manifestPlaceholders.put(
+            "guestInviteHost",
+            guestInviteHostFor(activeFlavor, dartDefines["STREAM_VIDEO_PREVIEW"] == "true"),
+        )
     }
 }
 

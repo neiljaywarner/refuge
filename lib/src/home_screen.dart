@@ -902,6 +902,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                             GroupCallPreviewBanner(
                               initialCallId: groupCallIdFromLocation(Uri.base),
                               displayName: profile.displayName,
+                              shareOrigin: Uri.parse(ref.watch(appFlavorProvider).websiteUrl),
                             ),
                           Expanded(child: buildActiveBottomTabBody()),
                         ],

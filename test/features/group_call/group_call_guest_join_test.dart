@@ -12,6 +12,7 @@ import 'package:refuge4serverpod/src/features/auth/presentation/auth_gate.dart';
 import 'package:refuge4serverpod/src/features/group_call/data/stream_guest_token_client.dart';
 import 'package:refuge4serverpod/src/features/group_call/data/stream_token_client.dart';
 import 'package:refuge4serverpod/src/features/group_call/domain/guest_display_name.dart';
+import 'package:refuge4serverpod/src/features/group_call/domain/guest_invite.dart';
 import 'package:refuge4serverpod/src/features/group_call/domain/stream_call_credentials.dart';
 import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_guest_join_page.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
@@ -67,9 +68,7 @@ void main() {
     );
   });
 
-  testWidgets('a guest types a name and joins without a Firebase token', (
-    tester,
-  ) async {
+  testWidgets('a guest types a name and joins without a Firebase token', (tester) async {
     Map<String, dynamic>? payload;
     String? authorization;
     StreamCallCredentials? handedOff;
@@ -118,10 +117,7 @@ void main() {
       ),
     );
 
-    await tester.enterText(
-      find.byKey(const Key('group_call_guest_name_field')),
-      '  Alex  ',
-    );
+    await tester.enterText(find.byKey(const Key('group_call_guest_name_field')), '  Alex  ');
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
     await tester.pump();
@@ -180,34 +176,24 @@ void main() {
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
     expect(called, isFalse);
-    expect(
-      find.text('Use a short name. Leave out email addresses and web links.'),
-      findsOneWidget,
-    );
+    expect(find.text('Use a short name. Leave out email addresses and web links.'), findsOneWidget);
     expect(find.textContaining(invite), findsNothing);
 
     await tester.pumpWidget(page());
-    await tester.enterText(
-      find.byKey(const Key('group_call_guest_name_field')),
-      'Alex',
-    );
+    await tester.enterText(find.byKey(const Key('group_call_guest_name_field')), 'Alex');
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
     await tester.pump();
     expect(called, isTrue);
     expect(
-      find.text(
-        'This call already has 10 guests. Try again after someone leaves.',
-      ),
+      find.text('This call already has 10 guests. Try again after someone leaves.'),
       findsOneWidget,
     );
     expect(find.textContaining('unit-test-stream-secret'), findsNothing);
     expect(find.textContaining(invite), findsNothing);
   });
 
-  testWidgets('an invite link opens the name page and a call name does not', (
-    tester,
-  ) async {
+  testWidgets('an invite link opens the name page and a call name does not', (tester) async {
     final themes = ThemeNotifier();
     addTearDown(themes.dispose);
     final repository = LocalPostRepository();
@@ -232,33 +218,57 @@ void main() {
       await tester.pump();
     }
 
-    await pump(
-      Uri.parse('https://preview.example/?call=monthly&invite=$invite'),
-      preview: true,
-    );
+    await pump(Uri.parse('https://preview.example/?call=monthly&invite=$invite'), preview: true);
     expect(find.byKey(const Key('group_call_guest_join_page')), findsOneWidget);
     expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsNothing);
     expect(find.text('You are joining monthly.'), findsOneWidget);
     expect(find.textContaining(invite), findsNothing);
 
-    await pump(
-      Uri.parse('https://preview.example/?call=monthly'),
-      preview: true,
-    );
+    await pump(Uri.parse('https://preview.example/?call=monthly'), preview: true);
     expect(find.byKey(const Key('group_call_guest_name_field')), findsNothing);
     expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
 
-    await pump(
-      Uri.parse('https://preview.example/?call=monthly&invite=$invite'),
-      preview: false,
-    );
+    await pump(Uri.parse('https://preview.example/?call=monthly&invite=$invite'), preview: false);
     expect(find.byKey(const Key('group_call_guest_join_page')), findsNothing);
     expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
   });
 
-  testWidgets('a failed handoff releases the seat before the client closes', (
-    tester,
-  ) async {
+  testWidgets('a later invite intent opens the name page without an account', (tester) async {
+    final themes = ThemeNotifier();
+    addTearDown(themes.dispose);
+    final signals = GuestInviteSignals();
+    addTearDown(signals.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(InMemoryAuthRepository()),
+          appFlavorProvider.overrideWithValue(AppFlavor.dev),
+        ],
+        child: MaterialApp(
+          home: AuthGate(
+            repository: LocalPostRepository(),
+            themeNotifier: themes,
+            groupCallPreviewCompiled: true,
+            inviteSignals: signals,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('auth_gate_sign_in_wall')), findsOneWidget);
+    expect(find.byKey(const Key('group_call_guest_join_page')), findsNothing);
+
+    signals.present(
+      Uri.parse('https://dev-belongonthespectrum.web.app/?call=monthly&invite=$invite'),
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('group_call_guest_join_page')), findsOneWidget);
+    expect(find.text('You are joining monthly.'), findsOneWidget);
+    expect(find.textContaining(invite), findsNothing);
+  });
+
+  testWidgets('a failed handoff releases the seat before the client closes', (tester) async {
     final client = _ScriptedGuestClient(
       onJoin: () async => StreamCallCredentials(
         apiKey: 'public-key',
@@ -271,37 +281,23 @@ void main() {
       ),
     );
     var handedOff = false;
-    await tester.pumpWidget(
-      _guestPage(client: client, onHandOff: () => handedOff = true),
-    );
-    await tester.enterText(
-      find.byKey(const Key('group_call_guest_name_field')),
-      'Alex',
-    );
+    await tester.pumpWidget(_guestPage(client: client, onHandOff: () => handedOff = true));
+    await tester.enterText(find.byKey(const Key('group_call_guest_name_field')), 'Alex');
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
     await tester.pump();
 
     expect(handedOff, isFalse);
     expect(client.order, ['release', 'close']);
-    expect(
-      find.text('The call could not start. Try again in a moment.'),
-      findsOneWidget,
-    );
+    expect(find.text('The call could not start. Try again in a moment.'), findsOneWidget);
   });
 
-  testWidgets('a join error releases the seat before the client closes', (
-    tester,
-  ) async {
+  testWidgets('a join error releases the seat before the client closes', (tester) async {
     final client = _ScriptedGuestClient(
-      onJoin: () async =>
-          throw const StreamTokenException('This invite link is not valid.'),
+      onJoin: () async => throw const StreamTokenException('This invite link is not valid.'),
     );
     await tester.pumpWidget(_guestPage(client: client));
-    await tester.enterText(
-      find.byKey(const Key('group_call_guest_name_field')),
-      'Alex',
-    );
+    await tester.enterText(find.byKey(const Key('group_call_guest_name_field')), 'Alex');
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
     await tester.pump();
@@ -311,9 +307,7 @@ void main() {
     expect(find.textContaining(invite), findsNothing);
   });
 
-  testWidgets('a handed-off guest join does not release the seat', (
-    tester,
-  ) async {
+  testWidgets('a handed-off guest join does not release the seat', (tester) async {
     final client = _ScriptedGuestClient(
       onJoin: () async => StreamCallCredentials(
         apiKey: 'public-key',
@@ -326,13 +320,8 @@ void main() {
       ),
     );
     var handedOff = false;
-    await tester.pumpWidget(
-      _guestPage(client: client, onHandOff: () => handedOff = true),
-    );
-    await tester.enterText(
-      find.byKey(const Key('group_call_guest_name_field')),
-      'Alex',
-    );
+    await tester.pumpWidget(_guestPage(client: client, onHandOff: () => handedOff = true));
+    await tester.enterText(find.byKey(const Key('group_call_guest_name_field')), 'Alex');
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
     await tester.pump();
@@ -355,10 +344,7 @@ void main() {
     );
 
     await tester.pumpWidget(_guestPage(client: client));
-    await tester.enterText(
-      find.byKey(const Key('group_call_guest_name_field')),
-      'Alex',
-    );
+    await tester.enterText(find.byKey(const Key('group_call_guest_name_field')), 'Alex');
     await tester.tap(find.byKey(const Key('group_call_guest_join_button')));
     await tester.pump();
 
@@ -390,10 +376,7 @@ void main() {
   });
 }
 
-Widget _guestPage({
-  required StreamGuestTokenClient client,
-  VoidCallback? onHandOff,
-}) => MaterialApp(
+Widget _guestPage({required StreamGuestTokenClient client, VoidCallback? onHandOff}) => MaterialApp(
   home: GroupCallGuestJoinPage(
     inviteToken: inviteToken,
     callId: 'monthly',

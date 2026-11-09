@@ -61,6 +61,7 @@ Future<void> openGroupCallLobby({
   required BuildContext context,
   required String displayName,
   required String initialCallId,
+  Uri? shareOrigin,
   StreamTokenClientFactory? tokenClientFactory,
   GroupCallStarter? onReady,
 }) => Navigator.of(context).push(
@@ -68,6 +69,7 @@ Future<void> openGroupCallLobby({
     builder: (context) => GroupCallLobbyPage(
       displayName: displayName,
       initialCallId: initialCallId,
+      shareOrigin: shareOrigin,
       tokenClientFactory: tokenClientFactory ?? buildLiveStreamTokenClient,
       onReady: onReady ?? pushStreamGroupCall,
     ),
