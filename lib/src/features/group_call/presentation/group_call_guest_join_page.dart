@@ -58,10 +58,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
   ///
   /// Closing first would drop the HTTP client before [release] can run.
   /// The seat would stay until the token expires.
-  Future<void> _releaseAfter(
-    Future<void>? task,
-    StreamGuestTokenClient client,
-  ) async {
+  Future<void> _releaseAfter(Future<void>? task, StreamGuestTokenClient client) async {
     if (task != null) {
       try {
         await task;
@@ -121,9 +118,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
       if (!credentials.isGuest || !mounted) return;
       final room = GroupCallRoom.tryParse(credentials.callId);
       if (room == null) {
-        setState(
-          () => _message = 'The call could not start. Try again in a moment.',
-        );
+        setState(() => _message = 'The call could not start. Try again in a moment.');
         return;
       }
       _handedOff = true;
@@ -139,9 +134,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
       setState(() => _message = error.message);
     } catch (_) {
       if (!mounted) return;
-      setState(
-        () => _message = 'The call could not start. Try again in a moment.',
-      );
+      setState(() => _message = 'The call could not start. Try again in a moment.');
     } finally {
       if (!_handedOff) await _releaseUnused(client);
       if (identical(_active, client)) _active = null;
@@ -161,9 +154,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
           padding: const .all(24),
           children: [
             Text(
-              room == null
-                  ? 'You are joining this call.'
-                  : 'You are joining $room.',
+              room == null ? 'You are joining this call.' : 'You are joining $room.',
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),

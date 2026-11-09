@@ -48,6 +48,7 @@ class AuthGate extends ConsumerStatefulWidget {
     required this.themeNotifier,
     this.groupCallPreviewCompiled = streamVideoPreviewEnabled,
     this.groupCallLocation,
+    this.inviteSignals,
     this.guestTokenClientFactory,
     this.onGuestReady,
   });
@@ -61,6 +62,10 @@ class AuthGate extends ConsumerStatefulWidget {
   /// Page address. Tests pass a fixed link. The app uses the browser address.
   final Uri? groupCallLocation;
 
+  /// Invite from a cold start or a later VIEW intent. [Uri.base] on Android
+  /// stays `file://` and is not this value.
+  final GuestInviteSignals? inviteSignals;
+
   final GuestJoinClientBuilder? guestTokenClientFactory;
 
   final GroupCallStarter? onGuestReady;
@@ -71,6 +76,30 @@ class AuthGate extends ConsumerStatefulWidget {
 
 class _AuthGateState extends ConsumerState<AuthGate> {
   AuthSession? _reloadedSession;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.inviteSignals?.addListener(_onInvite);
+  }
+
+  @override
+  void didUpdateWidget(covariant AuthGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.inviteSignals == widget.inviteSignals) return;
+    oldWidget.inviteSignals?.removeListener(_onInvite);
+    widget.inviteSignals?.addListener(_onInvite);
+  }
+
+  @override
+  void dispose() {
+    widget.inviteSignals?.removeListener(_onInvite);
+    super.dispose();
+  }
+
+  void _onInvite() {
+    if (mounted) setState(() {});
+  }
 
   /// Soft-delete lookup, cached per user id so rebuilds do not re-query.
   String? _deleteCheckUserId;
@@ -179,7 +208,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     }
 
     if (!sessionMayEnterCommunity(session)) {
-      final location = widget.groupCallLocation ?? Uri.base;
+      final location = widget.groupCallLocation ?? widget.inviteSignals?.location ?? Uri.base;
       final invite = guestInviteFromLocation(location);
       if (guestJoinEntryVisible(
         compileTimePreview: widget.groupCallPreviewCompiled,

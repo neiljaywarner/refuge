@@ -40,6 +40,25 @@ void main() {
       inviteToken: invite,
     );
     expect(link.toString(), 'https://preview.example/hall?call=monthly&invite=$invite');
+    final phoneLink = guestInvitePageUri(
+      page: Uri.parse('file:///'),
+      callId: 'monthly',
+      inviteToken: invite,
+    );
+    expect(phoneLink.scheme, 'https');
+    expect(phoneLink.host, 'dev-belongonthespectrum.web.app');
+    expect(phoneLink.queryParameters['call'], 'monthly');
+    expect(phoneLink.queryParameters['invite'], invite);
+    expect(phoneLink.toString(), isNot(contains('file:')));
+    final launched = guestInviteUriFromLaunch(
+      platformRoute: 'https://dev-belongonthespectrum.web.app/?call=monthly&invite=$invite',
+      page: Uri.parse('file:///'),
+    );
+    expect(guestInviteFromLocation(launched!), invite);
+    expect(
+      guestInviteUriFromLaunch(platformRoute: '/', page: Uri.parse('file:///?call=monthly')),
+      isNull,
+    );
     expect(guestJoinEntryVisible(compileTimePreview: true, inviteToken: invite), isTrue);
     expect(guestJoinEntryVisible(compileTimePreview: true, inviteToken: null), isFalse);
     expect(guestJoinEntryVisible(compileTimePreview: false, inviteToken: invite), isFalse);

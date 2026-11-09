@@ -15,6 +15,8 @@ How a member makes the link:
 3. Tap **Create guest link**.
 4. Select the link and send it to the people you want in the room.
 
+On the phone, that link is `https://dev-belongonthespectrum.web.app/?call=…&invite=…` (or the matching non-production site). It is not a `file://` link. Opening it on a preview build shows **Join as a guest** without an account. A production build still shows sign-in. A call name with no invite token still shows sign-in.
+
 What the link does:
 
 | Question | Answer |
@@ -118,7 +120,7 @@ An ad hoc test without signup:
 
 ## In the call
 
-The room opens with the microphone and camera off. The controls are:
+The room opens with the microphone and camera off, and they stay off until that person taps the button. Stream's default call type would turn the camera on by itself; this preview turns it back off. The camera button shows the live camera, not the state from the moment of joining. The controls are:
 
 | Control | Who sees it | What it does |
 | --- | --- | --- |
