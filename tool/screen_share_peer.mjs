@@ -115,7 +115,8 @@ async function main() {
   } finally {
     page?.server.close();
     child.kill('SIGKILL');
-    await rm(profile, { recursive: true, force: true });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await rm(profile, { recursive: true, force: true }).catch(() => {});
   }
 }
 

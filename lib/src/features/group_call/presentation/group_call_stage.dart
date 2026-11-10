@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../domain/group_call_screen_share.dart';
+import '../domain/group_call_screen_share_log.dart';
 import 'group_call_member_copy.dart';
 
 /// This device. Web and Android can publish. iOS cannot, until a broadcast
@@ -124,13 +125,33 @@ class GroupCallParticipantsArea extends StatefulWidget {
 
 class _GroupCallParticipantsAreaState extends State<GroupCallParticipantsArea> {
   StreamSubscription<CallState>? _subscription;
+  String? _viewLine;
 
   @override
   void initState() {
     super.initState();
-    _subscription = widget.call.state.valueStream.listen((_) {
+    _rememberView(widget.call.state.value);
+    _subscription = widget.call.state.valueStream.listen((next) {
+      _rememberView(next);
       if (mounted) setState(() {});
     });
+  }
+
+  void _rememberView(CallState state) {
+    final view = groupCallShareViewFromCall(
+      capabilities: state.ownCapabilities,
+      guest: widget.guest,
+      custom: state.custom,
+      platform: widget.platform ?? currentGroupCallSharePlatform(),
+      participants: state.callParticipants,
+    );
+    final line = groupCallScreenShareViewLine(
+      someoneSharing: view.someoneSharing,
+      localSharing: view.localSharing,
+    );
+    if (line == _viewLine) return;
+    _viewLine = line;
+    logGroupCallScreenShare(line);
   }
 
   @override

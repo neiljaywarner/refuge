@@ -7,6 +7,7 @@ import '../domain/group_call_909_log.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
 import '../domain/group_call_screen_share.dart';
+import '../domain/group_call_screen_share_log.dart';
 import 'group_call_screen_share_session.dart';
 import 'group_call_session_controls.dart';
 import 'group_call_stage.dart';
@@ -313,8 +314,17 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
   /// `call.hasPermission(CallPermission.screenshare)`. The button is already
   /// hidden when that grant is missing.
   Future<void> _toggleShare() async {
-    final sharing = _shareView(widget.call.state.value).localSharing;
+    final view = _shareView(widget.call.state.value);
+    final sharing = view.localSharing;
     final platform = widget.sharePlatform ?? currentGroupCallSharePlatform();
+    logGroupCallScreenShare(
+      groupCallScreenShareRequest(
+        enabled: !sharing,
+        platform: platform,
+        granted: view.canShare,
+        guest: !widget.signedInMember,
+      ),
+    );
     final result = await setGroupCallScreenShare(
       widget.call,
       enabled: !sharing,
@@ -322,6 +332,9 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
       android: platform == GroupCallSharePlatform.android
           ? widget.androidShare ?? streamAndroidShareHooks()
           : null,
+    );
+    logGroupCallScreenShare(
+      groupCallScreenShareResult(enabled: !sharing, accepted: result.isSuccess),
     );
     if (!mounted) return;
     if (result.isFailure) {
