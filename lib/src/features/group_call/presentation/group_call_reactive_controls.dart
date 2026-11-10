@@ -148,6 +148,7 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
         await widget.call.setCameraEnabled(enabled: false);
       }
       if (forceMicrophone) {
+        // TODO(#909): an external unmute is still forced back off.
         _microphoneCorrections += 1;
         await setGroupCallMicrophone(widget.call, enabled: false);
       }
