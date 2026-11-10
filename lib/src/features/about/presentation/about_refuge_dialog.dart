@@ -10,6 +10,15 @@ import '../../sensory_themes/domain/sensory_font_scale.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import 'about_build_stamp.dart';
 
+/// Dialog content width. Wide windows keep 520. A phone uses the width left
+/// after the dialog's horizontal inset so the title row does not overflow.
+double _aboutDialogWidth(double screenWidth) {
+  final available = screenWidth - 80;
+  if (available < 160) return 160;
+  if (available > 520) return 520;
+  return available;
+}
+
 /// Opens Giphy's home page from the About gratitude line.
 ///
 /// Failure stays quiet: the sentence above the link is still readable.
@@ -51,6 +60,9 @@ void showAboutRefugeDialog(
       container: true,
       label: 'About Belong',
       child: AlertDialog(
+        // The title, verse, and font chips grow with system text. Scrolling
+        // the dialog keeps them reachable instead of overflowing the screen.
+        scrollable: true,
         title: Row(
           children: [
             ClipRRect(
@@ -87,182 +99,182 @@ void showAboutRefugeDialog(
           ],
         ),
         content: SizedBox(
-          width: 520,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: .start,
-              mainAxisSize: .min,
-              children: [
-                Container(
-                  padding: const .all(10),
-                  decoration: BoxDecoration(
-                    color: isContrast
-                        ? Colors.yellow.withValues(alpha: 0.1)
-                        : primaryColor.withValues(alpha: 0.08),
-                    borderRadius: .circular(8),
-                    border: Border.all(
-                      color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
-                    ),
+          // 520 is the comfortable reading width. On a phone the dialog inset
+          // is about 80dp, so the content must shrink instead of overflowing.
+          width: _aboutDialogWidth(MediaQuery.sizeOf(ctx).width),
+          child: Column(
+            crossAxisAlignment: .start,
+            mainAxisSize: .min,
+            children: [
+              Container(
+                padding: const .all(10),
+                decoration: BoxDecoration(
+                  color: isContrast
+                      ? Colors.yellow.withValues(alpha: 0.1)
+                      : primaryColor.withValues(alpha: 0.08),
+                  borderRadius: .circular(8),
+                  border: Border.all(
+                    color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
                   ),
-                  child: Column(
-                    crossAxisAlignment: .start,
-                    children: [
-                      Text(
-                        '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
+                ),
+                child: Column(
+                  crossAxisAlignment: .start,
+                  children: [
+                    Text(
+                      '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
+                      style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
+                    ),
+                    SizedBox(height: 4),
+                    Semantics(
+                      label: 'Psalm 139:14',
+                      excludeSemantics: true,
+                      child: Text(
+                        '— Psalm 139:14',
                         style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
                       ),
-                      SizedBox(height: 4),
-                      Semantics(
-                        label: 'Psalm 139:14',
-                        excludeSemantics: true,
-                        child: Text(
-                          '— Psalm 139:14',
-                          style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Gap(12),
-                AboutBuildStamp(identity: identity, version: versionFuture),
-                const Gap(12),
-                // Dedicated High Contrast Mode Toggle (Issue #277)
-                SwitchListTile(
-                  contentPadding: .zero,
-                  dense: true,
-                  title: const Text(
-                    'High Contrast Mode',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: const Text(
-                    'Stark black & yellow palette for maximum visual clarity',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                  value: currentMode == SensoryMode.contrast,
-                  onChanged: (val) {
-                    onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
-                    Navigator.pop(ctx);
-                  },
-                ),
-                const Gap(6),
-                const Text(
-                  'Sensory Theme Palettes:',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-                const Gap(6),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: [
-                    ChoiceChip(
-                      label: const Text('☀️ Clean Slate'),
-                      selected: currentMode == SensoryMode.clean,
-                      onSelected: (_) {
-                        onSelectMode?.call(SensoryMode.clean);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                    ChoiceChip(
-                      label: const Text('🌿 Sage Botanical'),
-                      selected: currentMode == SensoryMode.sage,
-                      onSelected: (_) {
-                        onSelectMode?.call(SensoryMode.sage);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                    ChoiceChip(
-                      label: const Text('🌙 Dark'),
-                      selected: currentMode == SensoryMode.charcoal,
-                      onSelected: (_) {
-                        onSelectMode?.call(SensoryMode.charcoal);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                    ChoiceChip(
-                      label: const Text('👁️ High Contrast'),
-                      selected: currentMode == SensoryMode.contrast,
-                      onSelected: (_) {
-                        onSelectMode?.call(SensoryMode.contrast);
-                        Navigator.pop(ctx);
-                      },
                     ),
                   ],
                 ),
-                const Gap(12),
-                // Sensory Font Scaling Presets (Issue #277)
-                const Text(
-                  'Sensory Font Scaling (Visual Ergonomics):',
+              ),
+              const Gap(12),
+              AboutBuildStamp(identity: identity, version: versionFuture),
+              const Gap(12),
+              // Dedicated High Contrast Mode Toggle (Issue #277)
+              SwitchListTile(
+                contentPadding: .zero,
+                dense: true,
+                title: const Text(
+                  'High Contrast Mode',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
-                const Gap(4),
-                const Text(
-                  'Adjust typography size to relieve visual crowding and reading fatigue:',
+                subtitle: const Text(
+                  'Stark black & yellow palette for maximum visual clarity',
                   style: TextStyle(fontSize: 11),
                 ),
-                const Gap(6),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: [
-                    for (final scale in SensoryFontScale.values)
-                      ChoiceChip(
-                        label: Text('${scale.label} (${scale.percentage})'),
-                        selected: currentFontScale == scale,
-                        onSelected: (_) {
-                          onSelectFontScale?.call(scale);
-                          Navigator.pop(ctx);
-                        },
-                      ),
-                  ],
-                ),
-                const Divider(height: 20),
-                const Text(
-                  'About Belong on the Spectrum:',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-                const Gap(4),
-                const Text(
-                  '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
-                  '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
-                  '• Community announcements and guidance are updated unhurriedly by organizers.',
-                  style: TextStyle(fontSize: 11.5, height: 1.4),
-                ),
-                const Gap(8),
-                const Text(
-                  key: Key('about_giphy_line'),
-                  'GIF features are gratefully powered by GIPHY. GIPHY does not endorse Belong.',
-                  style: TextStyle(fontSize: 11.5, height: 1.4),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    key: const Key('about_giphy_link'),
-                    style: TextButton.styleFrom(
-                      padding: .zero,
-                      minimumSize: const Size(0, 32),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    onPressed: _openGiphyHome,
-                    child: const Text('giphy.com', style: TextStyle(fontSize: 11.5)),
+                value: currentMode == SensoryMode.contrast,
+                onChanged: (val) {
+                  onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
+                  Navigator.pop(ctx);
+                },
+              ),
+              const Gap(6),
+              const Text(
+                'Sensory Theme Palettes:',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const Gap(6),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: [
+                  ChoiceChip(
+                    label: const Text('☀️ Clean Slate'),
+                    selected: currentMode == SensoryMode.clean,
+                    onSelected: (_) {
+                      onSelectMode?.call(SensoryMode.clean);
+                      Navigator.pop(ctx);
+                    },
                   ),
+                  ChoiceChip(
+                    label: const Text('🌿 Sage Botanical'),
+                    selected: currentMode == SensoryMode.sage,
+                    onSelected: (_) {
+                      onSelectMode?.call(SensoryMode.sage);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('🌙 Dark'),
+                    selected: currentMode == SensoryMode.charcoal,
+                    onSelected: (_) {
+                      onSelectMode?.call(SensoryMode.charcoal);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('👁️ High Contrast'),
+                    selected: currentMode == SensoryMode.contrast,
+                    onSelected: (_) {
+                      onSelectMode?.call(SensoryMode.contrast);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
+              ),
+              const Gap(12),
+              // Sensory Font Scaling Presets (Issue #277)
+              const Text(
+                'Sensory Font Scaling (Visual Ergonomics):',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const Gap(4),
+              const Text(
+                'Adjust typography size to relieve visual crowding and reading fatigue:',
+                style: TextStyle(fontSize: 11),
+              ),
+              const Gap(6),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: [
+                  for (final scale in SensoryFontScale.values)
+                    ChoiceChip(
+                      label: Text('${scale.label} (${scale.percentage})'),
+                      selected: currentFontScale == scale,
+                      onSelected: (_) {
+                        onSelectFontScale?.call(scale);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                ],
+              ),
+              const Divider(height: 20),
+              const Text(
+                'About Belong on the Spectrum:',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const Gap(4),
+              const Text(
+                '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
+                '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
+                '• Community announcements and guidance are updated unhurriedly by organizers.',
+                style: TextStyle(fontSize: 11.5, height: 1.4),
+              ),
+              const Gap(8),
+              const Text(
+                key: Key('about_giphy_line'),
+                'GIF features are gratefully powered by GIPHY. GIPHY does not endorse Belong.',
+                style: TextStyle(fontSize: 11.5, height: 1.4),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const Key('about_giphy_link'),
+                  style: TextButton.styleFrom(
+                    padding: .zero,
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: _openGiphyHome,
+                  child: const Text('giphy.com', style: TextStyle(fontSize: 11.5)),
                 ),
-                const Divider(height: 20),
-                const Text(
-                  'Community Support & Feedback:',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-                const Gap(4),
-                // Soft launch (#495): help is in-app Vote & Feedback only.
-                // Do not add a public support address here.
-                const Text(
-                  key: Key('about_support_copy'),
-                  '• Use in-app Vote & Feedback only. Tap Vote & Feedback on the Home screen.\n'
-                  '• Share help, an idea, or a quirk there.',
-                  style: TextStyle(fontSize: 11.5, height: 1.4),
-                ),
-              ],
-            ),
+              ),
+              const Divider(height: 20),
+              const Text(
+                'Community Support & Feedback:',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const Gap(4),
+              // Soft launch (#495): help is in-app Vote & Feedback only.
+              // Do not add a public support address here.
+              const Text(
+                key: Key('about_support_copy'),
+                '• Use in-app Vote & Feedback only. Tap Vote & Feedback on the Home screen.\n'
+                '• Share help, an idea, or a quirk there.',
+                style: TextStyle(fontSize: 11.5, height: 1.4),
+              ),
+            ],
           ),
         ),
         actions: [

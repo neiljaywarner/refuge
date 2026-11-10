@@ -1,0 +1,33 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Large system text: sign-in wall stays readable"
+tags:
+  - belong
+  - accessibility
+  - large-text
+  - issue-927
+---
+# Black-box walk at a large system font (#927).
+#
+# Set the scale before this flow, then restore it after. The companion
+# script tool/run_large_text_device_checks.sh does both:
+#   adb shell settings put system font_scale 2.0
+#   adb shell wm density <about 1.15x the current density>
+# Maestro cannot change system settings itself.
+#
+# A signed-out dev build stops on the sign-in wall (#601). Home, messages,
+# feedback, and joining a call need a session. Widget tests and
+# integration_test/large_text_patrol_test.dart cover those with a local
+# repository. Call screens are not on main (PR #905).
+
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*Sign in to Belong on the Spectrum.*"
+    timeout: 45000
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
+- scrollUntilVisible:
+    element: ".*Forgot your password.*"
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*Forgot your password.*"
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
