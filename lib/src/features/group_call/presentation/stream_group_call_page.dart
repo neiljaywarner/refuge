@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
-import '../../../core/logging/app_logger.dart';
 import '../data/stream_token_client.dart';
+import '../domain/group_call_909_log.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
@@ -60,8 +60,8 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       credentials: widget.credentials,
       displayName: widget.displayName,
     );
-    AppLogger.info(
-      'group-call connect microphoneOff=${!plan.microphoneStartsEnabled} speaker=${plan.speakerStartsOn}',
+    logGroupCall909(
+      'join microphoneOff=${!plan.microphoneStartsEnabled} speakerRequested=${plan.speakerStartsOn}',
     );
     final opener = widget.openConnection;
     if (opener != null) {
