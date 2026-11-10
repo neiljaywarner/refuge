@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../domain/group_call_909_log.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
+import '../domain/group_call_screen_share.dart';
 import 'group_call_session_controls.dart';
 
 /// True when the camera is sending and the person has not asked for it.
@@ -36,6 +38,12 @@ class GroupCallReactiveControls extends StatelessWidget {
     required this.cameraEnabled,
     required this.onSetMicrophone,
     required this.onSetCamera,
+    this.canShare = false,
+    this.sharing = false,
+    this.onShare,
+    this.showGuestShare = false,
+    this.guestShareAllowed = false,
+    this.onGuestShare,
     required this.host,
     required this.others,
     required this.onLeave,
@@ -51,6 +59,12 @@ class GroupCallReactiveControls extends StatelessWidget {
   final bool Function() cameraEnabled;
   final void Function(bool enabled) onSetMicrophone;
   final void Function(bool enabled) onSetCamera;
+  final bool canShare;
+  final bool sharing;
+  final VoidCallback? onShare;
+  final bool showGuestShare;
+  final bool guestShareAllowed;
+  final ValueChanged<bool>? onGuestShare;
   final bool host;
   final List<GroupCallOtherMember> others;
   final Future<void> Function() onLeave;
@@ -70,6 +84,12 @@ class GroupCallReactiveControls extends StatelessWidget {
         others: others,
         onMicrophone: () => onSetMicrophone(!microphoneEnabled()),
         onCamera: () => onSetCamera(!cameraEnabled()),
+        canShare: canShare,
+        sharing: sharing,
+        onShare: onShare,
+        showGuestShare: showGuestShare,
+        guestShareAllowed: guestShareAllowed,
+        onGuestShare: onGuestShare,
         onLeave: onLeave,
         onRemove: onRemove,
         onEnd: onEnd,
@@ -105,6 +125,7 @@ class GroupCallLiveControls extends StatefulWidget {
     required this.onRemove,
     required this.onEnd,
     this.onResumeWebAudio = resumeGroupCallWebAudio,
+    this.sharePlatform,
   });
 
   final Call call;
@@ -115,6 +136,9 @@ class GroupCallLiveControls extends StatefulWidget {
 
   /// Runs from the "Tap to hear the room" button. Web only needs it.
   final Future<void> Function() onResumeWebAudio;
+
+  /// Overrides the device when a test needs web or Android.
+  final GroupCallSharePlatform? sharePlatform;
 
   @override
   State<GroupCallLiveControls> createState() => _GroupCallLiveControlsState();
@@ -141,7 +165,10 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     _logCallState(widget.call.state.value);
     _subscription = widget.call.state.valueStream.listen((next) {
       _logCallState(next);
-      if (mounted) _ticks.tick();
+      if (mounted) {
+        _ticks.tick();
+        setState(() {});
+      }
       unawaited(_quietUnrequestedTracks());
     });
     unawaited(_quietUnrequestedTracks());
@@ -266,10 +293,56 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     if (_remotes.allow(remotes, DateTime.now())) logGroupCall909(remotes);
   }
 
+  GroupCallShareView _shareView(CallState state) => groupCallShareViewFromCall(
+    capabilities: state.ownCapabilities,
+    guest: !widget.signedInMember,
+    custom: state.custom,
+    platform: widget.sharePlatform ?? currentGroupCallSharePlatform(),
+    participants: state.callParticipants,
+  );
+
+  /// Starts or stops this person's share.
+  ///
+  /// https://getstream.io/video/docs/flutter/guides/screensharing/
+  /// `call.setScreenShareEnabled(enabled: true)` after
+  /// `call.hasPermission(CallPermission.screenshare)`. The button is already
+  /// hidden when that grant is missing.
+  Future<void> _toggleShare() async {
+    final sharing = _shareView(widget.call.state.value).localSharing;
+    final result = await widget.call.setScreenShareEnabled(enabled: !sharing);
+    if (!mounted) return;
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Screen sharing stayed as it was. Try again.'),
+        ),
+      );
+    }
+  }
+
+  /// Writes [guestScreenShareCustomKey] on the call so every guest can see it.
+  Future<void> _allowGuests(bool allowed) async {
+    final custom = Map<String, Object>.from(widget.call.state.value.custom);
+    custom[guestScreenShareCustomKey] = allowed;
+    final result = await widget.call.update(custom: custom);
+    if (!mounted) return;
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Guests still cannot share. Try again.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.call.state.value;
     final local = state.localParticipant;
+    final share = _shareView(state);
+    final host = canModerateGroupCall(
+      signedInMember: widget.signedInMember,
+      createdByMe: state.createdByMe,
+      roles: local?.roles ?? const [],
+    );
     final controls = GroupCallReactiveControls(
       tracks: _ticks,
       microphoneEnabled: () =>
@@ -281,11 +354,13 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
         _userWantsCamera = enabled;
         unawaited(widget.call.setCameraEnabled(enabled: enabled));
       },
-      host: canModerateGroupCall(
-        signedInMember: widget.signedInMember,
-        createdByMe: state.createdByMe,
-        roles: local?.roles ?? const [],
-      ),
+      canShare: share.canShare,
+      sharing: share.localSharing,
+      onShare: () => unawaited(_toggleShare()),
+      showGuestShare: host,
+      guestShareAllowed: organizerAllowsGuestScreenShare(state.custom),
+      onGuestShare: (allowed) => unawaited(_allowGuests(allowed)),
+      host: host,
       others: [
         for (final person in state.otherParticipants)
           GroupCallOtherMember(userId: person.userId, name: person.name),
@@ -329,3 +404,16 @@ Future<Result<None>> setGroupCallMicrophone(
 /// https://getstream.io/video/docs/flutter/guides/call-and-participant-state/
 Future<void> resumeGroupCallWebAudio() =>
     RtcMediaDeviceNotifier.instance.resumeWebAudioPlayback();
+
+/// This device. Web and Android can publish. iOS cannot, until a broadcast
+/// extension exists. Tests override [GroupCallLiveControls.sharePlatform].
+///
+/// https://getstream.io/video/docs/flutter/guides/screensharing/
+GroupCallSharePlatform currentGroupCallSharePlatform() {
+  if (kIsWeb) return GroupCallSharePlatform.web;
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.android => GroupCallSharePlatform.android,
+    TargetPlatform.iOS => GroupCallSharePlatform.ios,
+    _ => GroupCallSharePlatform.other,
+  };
+}
