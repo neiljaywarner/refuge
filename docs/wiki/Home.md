@@ -68,4 +68,4 @@ You will also find **Members Section & Directory**, **Saved for Later** (private
 
 Tap **Vote & Feedback** (near Feed and Spaces). Inside that sheet, the **Share Feedback** tab is where you can write a note. Use in-app Vote & Feedback only.
 
-Contributors shipping the app: [CI/CD FAQ](CI-CD-FAQ). Deploy checklist: [Ops / Deploy readiness](Ops-Deploy-Readiness). Continuity & emergency recovery: [Bus Protocol](Bus-Protocol). Private feedback GitHub token and Appwrite secrets: [Feedback forward function](Feedback-Forward-Function).
+Contributors shipping the app: [CI/CD FAQ](CI-CD-FAQ). Deploy checklist: [Ops / Deploy readiness](Ops-Deploy-Readiness). Leave-alone free backend (prefer Supabase Free when a console visit cannot be the keepalive): [Leave-alone free backends](Leave-Alone-Free-Backends.md). Continuity & emergency recovery: [Bus Protocol](Bus-Protocol). Private feedback GitHub token and Appwrite secrets: [Feedback forward function](Feedback-Forward-Function).

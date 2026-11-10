@@ -61,3 +61,13 @@ Firebase Hosting, Cloud Messaging, Analytics, and Remote Config stay on Firebase
 ## 5. Follow-through for direct messages (1 November 2026)
 
 Direct messages use the same rule. Firestore collection `direct_messages` is the copy the app reads and writes. The Appwrite function `dm-mirror` checks the Firebase ID token and writes the same fields with an API key that stays on the function. The phone does not write the table. If the function fails, the sender still has the Firestore message. Reflection tables stay disabled. Guest create and guest update stay off. This mirror is not a backup of an older copy.
+
+## 6. Leave-alone free backend (8 November 2026)
+
+This note does not change sections 1–5. Firestore on Spark remains the live member store. Firebase Auth and Firebase Hosting stay. Appwrite remains the function host for `dm-push` and `dm-mirror`, and the spare/mirror path.
+
+When a new free backend has to keep running for days without a person opening a vendor console, prefer Supabase Free. Appwrite Free pauses after 7 days with no Console development activity, and member traffic does not count. Supabase Free can also pause, after too little activity over 7 days, but Dashboard visits and app, API, and database requests count. It is not "the free tier that does not pause."
+
+The projects checked that day, and the vendor links, are in [Leave-alone free backends](../wiki/Leave-Alone-Free-Backends.md). Issue [#906](https://github.com/neiljaywarner/refuge/issues/906). No client, function, or schema moves to Supabase in this decision.
+
+Related, not closed by that note: [#781](https://github.com/neiljaywarner/refuge/issues/781), [#786](https://github.com/neiljaywarner/refuge/pull/786), [#789](https://github.com/neiljaywarner/refuge/issues/789), [#792](https://github.com/neiljaywarner/refuge/issues/792), [#873](https://github.com/neiljaywarner/refuge/pull/873).
