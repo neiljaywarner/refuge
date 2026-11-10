@@ -57,12 +57,30 @@ void main() {
     ]);
     expect(room.requests.map((request) => request.stopTrackOnMute), [
       null,
+      false,
       null,
+      false,
       null,
-      null,
-      null,
-      null,
+      false,
     ]);
+  });
+
+  testWidgets('mute keeps the Android track alive', (tester) async {
+    final room = _Room()..beginWithMicrophoneOn();
+    addTearDown(room.close);
+    await room.pump(tester);
+    await tester.pump();
+
+    expect(room.requests.first.enabled, isFalse);
+    expect(room.requests.first.stopTrackOnMute, isFalse);
+
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+
+    expect(room.requests.last.enabled, isFalse);
+    expect(room.requests.last.stopTrackOnMute, isFalse);
   });
 }
 
@@ -102,6 +120,11 @@ class _Room {
   late final _states = _Hold(_callState());
   bool _audio = false;
   final bool _webPlaybackBlocked = false;
+
+  void beginWithMicrophoneOn() {
+    _audio = true;
+    _states.publish(_callState());
+  }
 
   void muteFromOutside() {
     _audio = false;

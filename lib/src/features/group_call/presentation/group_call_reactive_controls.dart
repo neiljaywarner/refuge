@@ -10,8 +10,10 @@ import 'group_call_session_controls.dart';
 ///
 /// Stream's default call type turns the camera on. A preview join must undo
 /// that until the camera button is tapped.
-bool previewCameraShouldForceOff({required bool sendingVideo, required bool userAskedForCamera}) =>
-    sendingVideo && !userAskedForCamera;
+bool previewCameraShouldForceOff({
+  required bool sendingVideo,
+  required bool userAskedForCamera,
+}) => sendingVideo && !userAskedForCamera;
 
 /// True when the microphone is sending and the person has not asked for it.
 bool previewMicrophoneShouldForceOff({
@@ -147,7 +149,7 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
       }
       if (forceMicrophone) {
         _microphoneCorrections += 1;
-        await widget.call.setMicrophoneEnabled(enabled: false);
+        await setGroupCallMicrophone(widget.call, enabled: false);
       }
     } finally {
       _holding = false;
@@ -160,11 +162,13 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     final local = state.localParticipant;
     return GroupCallReactiveControls(
       tracks: _ticks,
-      microphoneEnabled: () => widget.call.state.value.localParticipant?.isAudioEnabled ?? false,
-      cameraEnabled: () => widget.call.state.value.localParticipant?.isVideoEnabled ?? false,
+      microphoneEnabled: () =>
+          widget.call.state.value.localParticipant?.isAudioEnabled ?? false,
+      cameraEnabled: () =>
+          widget.call.state.value.localParticipant?.isVideoEnabled ?? false,
       onSetMicrophone: (enabled) {
         _userWantsMicrophone = enabled;
-        unawaited(widget.call.setMicrophoneEnabled(enabled: enabled));
+        unawaited(setGroupCallMicrophone(widget.call, enabled: enabled));
       },
       onSetCamera: (enabled) {
         _userWantsCamera = enabled;
@@ -189,3 +193,21 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
 class _Tick extends ChangeNotifier {
   void tick() => notifyListeners();
 }
+
+/// Turns the preview microphone on or off without dropping the Android track.
+///
+/// Stream stops and releases the capture when stopTrackOnMute is left at its
+/// default (`true`). The next unmute then opens the microphone again, which
+/// matches audio the other person heard only after the first unmute. `false`
+/// keeps the track and sends silence. The microphone-in-use indicator stays
+/// on while muted.
+///
+/// https://getstream.io/video/docs/flutter/
+/// https://getstream.io/video/docs/flutter/guides/camera-and-microphone/microphone-and-audio/
+Future<Result<None>> setGroupCallMicrophone(
+  Call call, {
+  required bool enabled,
+}) => call.setMicrophoneEnabled(
+  enabled: enabled,
+  stopTrackOnMute: enabled ? null : false,
+);
