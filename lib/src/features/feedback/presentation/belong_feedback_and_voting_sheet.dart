@@ -226,68 +226,88 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
       },
       child: Column(
         children: [
-          Padding(
-            padding: const .fromLTRB(20, 4, 20, 8),
-            child: Row(
+          // The title and tabs grow with system text. Cap them and scroll so
+          // the voting list below still has room on a phone (#927). At the
+          // default size this is the same column as before.
+          _FeedbackSheetHeader(
+            textScale: MediaQuery.textScalerOf(context).scale(1),
+            maxHeight: MediaQuery.sizeOf(context).height * 0.34,
+            child: Column(
+              mainAxisSize: .min,
               children: [
-                Icon(Icons.how_to_vote_outlined, color: colorScheme.primary),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: .start,
+                Padding(
+                  padding: const .fromLTRB(20, 4, 20, 8),
+                  child: Row(
                     children: [
-                      Text(
-                        'Belong Roadmap & Feedback',
-                        style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      Icon(Icons.how_to_vote_outlined, color: colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: .start,
+                          children: [
+                            Text(
+                              'Belong Roadmap & Feedback',
+                              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '1-tap feature voting + literal, low-pressure feedback',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(
-                        '1-tap feature voting + literal, low-pressure feedback',
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                      IconButton(
+                        key: const Key('close_feedback_sheet_button'),
+                        tooltip: 'Close',
+                        onPressed: () async {
+                          if (isSubmitting.value) return;
+                          if (hasUnsavedDraft) {
+                            final shouldDiscard = await confirmDiscardDraft(context);
+                            if (shouldDiscard && context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        icon: const Icon(Icons.close),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  key: const Key('close_feedback_sheet_button'),
-                  tooltip: 'Close',
-                  onPressed: () async {
-                    if (isSubmitting.value) return;
-                    if (hasUnsavedDraft) {
-                      final shouldDiscard = await confirmDiscardDraft(context);
-                      if (shouldDiscard && context.mounted) {
-                        Navigator.of(context).pop();
-                      }
-                    } else {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  icon: const Icon(Icons.close),
+                TabBar(
+                  controller: tabController,
+                  // At large type the two labels no longer share a phone width.
+                  // Scrolling keeps each label intact instead of overflowing.
+                  isScrollable: MediaQuery.textScalerOf(context).scale(1) > 1.15,
+                  tabAlignment: MediaQuery.textScalerOf(context).scale(1) > 1.15
+                      ? TabAlignment.start
+                      : TabAlignment.fill,
+                  tabs: [
+                    Tab(
+                      key: const Key('tab_feature_voting'),
+                      child: _webLabeledButton(
+                        label: 'Vote on Features',
+                        identifier: 'tab_vote_on_features',
+                        onTap: () => tabController.animateTo(0),
+                        child: const Text('Vote on Features'),
+                      ),
+                    ),
+                    Tab(
+                      key: const Key('tab_private_feedback'),
+                      child: _webLabeledButton(
+                        label: 'Share Feedback',
+                        identifier: 'tab_share_feedback',
+                        onTap: () => tabController.animateTo(1),
+                        child: const Text('Share Feedback'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          TabBar(
-            controller: tabController,
-            tabs: [
-              Tab(
-                key: const Key('tab_feature_voting'),
-                child: _webLabeledButton(
-                  label: 'Vote on Features',
-                  identifier: 'tab_vote_on_features',
-                  onTap: () => tabController.animateTo(0),
-                  child: const Text('Vote on Features'),
-                ),
-              ),
-              Tab(
-                key: const Key('tab_private_feedback'),
-                child: _webLabeledButton(
-                  label: 'Share Feedback',
-                  identifier: 'tab_share_feedback',
-                  onTap: () => tabController.animateTo(1),
-                  child: const Text('Share Feedback'),
-                ),
-              ),
-            ],
           ),
           Expanded(
             child: TabBarView(
@@ -705,7 +725,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                                               'Please enter a short note so we can read your thoughts.',
                                             );
                                             return;
-                                              }
+                                          }
                                           if (contactProblem != null) {
                                             submittedMessage.value = null;
                                             return;
@@ -983,6 +1003,28 @@ class _VoteSaveErrorBanner extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Scrolls the feedback title and tabs only when system text is large.
+class _FeedbackSheetHeader extends StatelessWidget {
+  const _FeedbackSheetHeader({
+    required this.textScale,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  final double textScale;
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (textScale <= 1.15) return child;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: SingleChildScrollView(child: child),
     );
   }
 }
