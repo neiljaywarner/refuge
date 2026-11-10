@@ -242,22 +242,33 @@ class RefugeHomeScreen extends HookConsumerWidget {
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 768;
 
+          final textScale = MediaQuery.textScalerOf(context).scale(1);
+          final spaceNav = SpaceNavigationBar(
+            selectedSpace: selectedSpace.value,
+            onSelectSpace: selectSpace,
+            onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+            activeFilter: activeFilter.value,
+            onSelectFilter: (tone) {
+              activeFilter.value = tone;
+            },
+            activeSort: activeSort.value,
+            onSelectSort: (sort) {
+              activeSort.value = sort;
+            },
+            isContrast: isContrast,
+          );
+          // Large type makes the room title and filters taller than the feed.
+          // Scroll that header instead of overflowing the column (#927).
+          final header = textScale > 1.15
+              ? ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.45),
+                  child: SingleChildScrollView(child: spaceNav),
+                )
+              : spaceNav;
+
           return Column(
             children: [
-              SpaceNavigationBar(
-                selectedSpace: selectedSpace.value,
-                onSelectSpace: selectSpace,
-                onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-                activeFilter: activeFilter.value,
-                onSelectFilter: (tone) {
-                  activeFilter.value = tone;
-                },
-                activeSort: activeSort.value,
-                onSelectSort: (sort) {
-                  activeSort.value = sort;
-                },
-                isContrast: isContrast,
-              ),
+              header,
               if (selectedSpace.value == 'saved_for_later')
                 Container(
                   margin: const .symmetric(horizontal: 14.0, vertical: 4.0),
@@ -487,9 +498,22 @@ class RefugeHomeScreen extends HookConsumerWidget {
       }
     }
 
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final grownToolbar = textScale * 26 + 18;
+    // Two title lines (15 and 11) plus padding. The bar grows with system
+    // text instead of clipping the wordmark (#927).
+    final toolbarHeight = textScale <= 1 || grownToolbar < kToolbarHeight
+        ? kToolbarHeight
+        : grownToolbar;
+    // The amber flavor chip needs about 40dp. On a phone it collides with the
+    // logo and the 48dp actions, including at the default font size.
+    final showFlavorChip =
+        flavor.environmentTag != null && textScale < 1.3 && MediaQuery.sizeOf(context).width >= 520;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
+        toolbarHeight: toolbarHeight,
         titleSpacing: 8,
         title: InkWell(
           key: const Key('belong_app_bar_title_tap_target'),
@@ -513,9 +537,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
           child: Padding(
             padding: const .symmetric(horizontal: 4, vertical: 2),
             child: Row(
-              mainAxisSize: .min,
               children: [
-                if (flavor.environmentTag != null) ...[
+                // The DEV chip plus four 48dp actions overflow a phone once
+                // text is large. The chip stays at the default size. The
+                // sign-in wall still names the flavor.
+                if (showFlavorChip) ...[
                   FlavorEnvironmentChip(tag: flavor.environmentTag!),
                   const SizedBox(width: 6),
                 ],
@@ -530,13 +556,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Flexible(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: .start,
                     mainAxisSize: .min,
                     children: [
                       Row(
-                        mainAxisSize: .min,
                         children: [
                           Flexible(
                             child: Semantics(
@@ -563,7 +588,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
                         ],
                       ),
                       Row(
-                        mainAxisSize: .min,
                         children: [
                           Container(
                             width: 7,
@@ -794,19 +818,32 @@ class RefugeHomeScreen extends HookConsumerWidget {
           ),
           if (!profile.isSignedIn)
             Padding(
-              padding: const .symmetric(vertical: 8, horizontal: 4),
+              padding: const .symmetric(horizontal: 4),
               child: FilledButton.tonalIcon(
                 key: const Key('home_top_bar_sign_in_button'),
                 style: FilledButton.styleFrom(
+                  minimumSize: const Size(48, 48),
                   padding: const .symmetric(horizontal: 10, vertical: 0),
-                  visualDensity: VisualDensity.compact,
                 ),
                 onPressed: () => SimpleAuthScreen.show(context),
                 icon: const Icon(Icons.login_rounded, size: 15),
-                label: const Text(
-                  'Sign In',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
+                // Past 1.5x the word no longer fits beside four 48dp actions
+                // on a phone. The visible label ellipsizes. Semantics keep
+                // the full "Sign In" from the text.
+                label: textScale < 1.2
+                    ? const Text(
+                        'Sign In',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      )
+                    : SizedBox(
+                        width: textScale >= 2 ? 48 : 64,
+                        child: const Text(
+                          'Sign In',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
               ),
             )
           else

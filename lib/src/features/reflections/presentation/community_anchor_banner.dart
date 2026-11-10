@@ -75,16 +75,18 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                         ),
                         if (showDomainInline) ...[
                           const Gap(4),
-                          Text(
-                            '• ${flavor.shortDomainLabel}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isContrast
-                                  ? Colors.white70
-                                  : Theme.of(context).textTheme.bodySmall?.color
-                                        ?.withValues(alpha: 0.7),
+                          Flexible(
+                            child: Text(
+                              '• ${flavor.shortDomainLabel}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isContrast
+                                    ? Colors.white70
+                                    : Theme.of(context).textTheme.bodySmall?.color
+                                          ?.withValues(alpha: 0.7),
+                              ),
                             ),
                           ),
                         ],
@@ -107,26 +109,27 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                 ),
               ),
               const Gap(6),
-              Semantics(
-                identifier: 'banner_learn_more_button',
-                label: 'Learn more about Belong community principles',
-                button: true,
-                child: TextButton(
-                  onPressed: () => showAboutRefugeDialog(
-                    context,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                  ),
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const .symmetric(horizontal: 6, vertical: 2),
-                  ),
-                  child: Text(
-                    'About',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.bold,
-                      color: isContrast ? Colors.yellow : primaryColor,
+              Flexible(
+                child: Semantics(
+                  identifier: 'banner_learn_more_button',
+                  label: 'Learn more about Belong community principles',
+                  button: true,
+                  child: TextButton(
+                    onPressed: () => showAboutRefugeDialog(
+                      context,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                    ),
+                    style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                    child: Text(
+                      'About',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: isContrast ? Colors.yellow : primaryColor,
+                      ),
                     ),
                   ),
                 ),
