@@ -656,7 +656,12 @@ Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {
   fill('pray', 'prayingCount');
   fill('standing', 'standingWithCount');
   fill('peace', 'peaceCount');
-  fill('encouraged', 'encouragedCount');
+  // encouragedCount is shared by Encouraged and Relate. Once the reactions
+  // map names one of them, copying the column onto the other invents a count
+  // whose who-reacted list is empty.
+  if (!reactions.containsKey('encouraged') && !reactions.containsKey('relatable')) {
+    fill('encouraged', 'encouragedCount');
+  }
   return Post(
     id: id,
     authorName: data['authorName'] as String? ?? 'Fellowship Member',

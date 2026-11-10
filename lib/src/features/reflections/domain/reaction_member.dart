@@ -53,3 +53,30 @@ class ReactionMember {
   @override
   int get hashCode => Object.hash(userId, displayName, avatarUrl);
 }
+
+/// Keeps names from [known] when [counts] still say that reaction happened
+/// and [incoming] has nobody listed for it.
+///
+/// Cloud rows store a count without the member list. A later snapshot must
+/// not turn "1 Relate" into an empty who-reacted sheet.
+Map<String, List<ReactionMember>> retainKnownReactors({
+  required Map<String, int> counts,
+  required Map<String, List<ReactionMember>> incoming,
+  required Map<String, List<ReactionMember>> known,
+}) {
+  if (known.isEmpty) return incoming;
+  final merged = <String, List<ReactionMember>>{
+    for (final entry in incoming.entries) entry.key: List<ReactionMember>.from(entry.value),
+  };
+  var changed = false;
+  for (final entry in known.entries) {
+    if (entry.value.isEmpty) continue;
+    final have = merged[entry.key];
+    if (have != null && have.isNotEmpty) continue;
+    if ((counts[entry.key] ?? 0) <= 0) continue;
+    merged[entry.key] = List<ReactionMember>.from(entry.value);
+    changed = true;
+  }
+  if (!changed) return incoming;
+  return merged;
+}
