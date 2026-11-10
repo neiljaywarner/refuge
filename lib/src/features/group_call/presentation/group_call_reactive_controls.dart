@@ -7,6 +7,7 @@ import '../domain/group_call_909_log.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
 import '../domain/group_call_screen_share.dart';
+import 'group_call_screen_share_session.dart';
 import 'group_call_session_controls.dart';
 import 'group_call_stage.dart';
 
@@ -126,6 +127,7 @@ class GroupCallLiveControls extends StatefulWidget {
     required this.onEnd,
     this.onResumeWebAudio = resumeGroupCallWebAudio,
     this.sharePlatform,
+    this.androidShare,
   });
 
   final Call call;
@@ -139,6 +141,9 @@ class GroupCallLiveControls extends StatefulWidget {
 
   /// Overrides the device when a test needs web or Android.
   final GroupCallSharePlatform? sharePlatform;
+
+  /// Android consent and foreground service. Null uses Stream's service.
+  final GroupCallAndroidShareHooks? androidShare;
 
   @override
   State<GroupCallLiveControls> createState() => _GroupCallLiveControlsState();
@@ -309,7 +314,15 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
   /// hidden when that grant is missing.
   Future<void> _toggleShare() async {
     final sharing = _shareView(widget.call.state.value).localSharing;
-    final result = await widget.call.setScreenShareEnabled(enabled: !sharing);
+    final platform = widget.sharePlatform ?? currentGroupCallSharePlatform();
+    final result = await setGroupCallScreenShare(
+      widget.call,
+      enabled: !sharing,
+      platform: platform,
+      android: platform == GroupCallSharePlatform.android
+          ? widget.androidShare ?? streamAndroidShareHooks()
+          : null,
+    );
     if (!mounted) return;
     if (result.isFailure) {
       ScaffoldMessenger.of(context).showSnackBar(
