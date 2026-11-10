@@ -83,6 +83,55 @@ void main() {
     expect(room.requests.last.stopTrackOnMute, isFalse);
   });
 
+  testWidgets('a muted join publishes the microphone on the first unmute', (
+    tester,
+  ) async {
+    final room = _Room();
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    expect(room.requests, isEmpty);
+    expect(find.byIcon(Icons.mic_off_rounded), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+
+    expect(room.requests, hasLength(1));
+    expect(room.requests.single.enabled, isTrue);
+    expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+  });
+
+  testWidgets('a blocked web listener can tap to hear the room', (
+    tester,
+  ) async {
+    final room = _Room();
+    var resumed = 0;
+    addTearDown(room.close);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GroupCallLiveControls(
+            call: room.call,
+            signedInMember: false,
+            onLeave: () async {},
+            onRemove: (userId) async {},
+            onEnd: () async {},
+            onResumeWebAudio: () async => resumed++,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Tap to hear the room'), findsNothing);
+    room.blockWebPlayback();
+    await tester.pump();
+
+    expect(find.text('Tap to hear the room'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('group_call_hear_room')));
+    await tester.pump();
+    expect(resumed, 1);
+  });
+
   testWidgets('a failed microphone change leaves the icon and says so', (
     tester,
   ) async {
@@ -149,10 +198,15 @@ class _Room {
   final requests = <_MicRequest>[];
   late final _states = _Hold(_callState());
   bool _audio = false;
-  final bool _webPlaybackBlocked = false;
+  bool _webPlaybackBlocked = false;
   bool _failNext = false;
 
   void failNextMicrophoneChange() => _failNext = true;
+
+  void blockWebPlayback() {
+    _webPlaybackBlocked = true;
+    _states.publish(_callState());
+  }
 
   void beginWithMicrophoneOn() {
     _audio = true;

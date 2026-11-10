@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
+import '../../../core/logging/app_logger.dart';
 import '../data/stream_token_client.dart';
+import '../domain/group_call_audio_checks.dart';
 import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
 import 'group_call_member_copy.dart';
@@ -58,6 +60,9 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       credentials: widget.credentials,
       displayName: widget.displayName,
     );
+    AppLogger.info(
+      'group-call connect microphoneOff=${!plan.microphoneStartsEnabled} speaker=${plan.speakerStartsOn}',
+    );
     final opener = widget.openConnection;
     if (opener != null) {
       try {
@@ -91,15 +96,19 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
           muteVideoWhenInBackground: true,
         ),
       );
-      final call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
+      final call = client.makeCall(
+        callType: StreamCallType.defaultType(),
+        id: plan.callId,
+      );
       // getOrCreate applies the call type's camera-on default in the
       // background, after join has asked for the camera to stay off. Join
       // creates the room itself. The disabled options are merged after that
       // default, and [GroupCallLiveControls] turns a late camera back off.
       final joined = await call.join(
-        connectOptions: CallConnectOptions(
-          camera: plan.cameraStartsEnabled ? TrackOption.enabled() : TrackOption.disabled(),
-          microphone: plan.microphoneStartsEnabled ? TrackOption.enabled() : TrackOption.disabled(),
+        connectOptions: previewCallConnectOptions(
+          cameraStartsEnabled: plan.cameraStartsEnabled,
+          microphoneStartsEnabled: plan.microphoneStartsEnabled,
+          speakerStartsOn: plan.speakerStartsOn,
         ),
       );
       final joinedFailure = _calmFailure(joined);
@@ -153,7 +162,8 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -168,38 +178,43 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: Scaffold(
         appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
         body: call == null
-            ? GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave()))
+            ? GroupCallConnectionStatus(
+                failure: _failure,
+                onBack: () => unawaited(_leave()),
+              )
             : StreamCallContent(
                 call: call,
                 onLeaveCallTap: _leave,
                 onBackPressed: _leave,
-                callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
-                  call: call,
-                  signedInMember: !widget.credentials.isGuest,
-                  onLeave: _leave,
-                  onRemove: (userId) async {
-                    final result = await call.kickUser(userId);
-                    if (_calmFailure(result) != null) {
-                      _snack('Only the host can remove someone.');
-                    }
-                  },
-                  onEnd: () async {
-                    final result = await call.end();
-                    if (_calmFailure(result) != null) {
-                      _snack('Only the host can end the call.');
-                      return;
-                    }
-                    await _leave();
-                  },
-                ),
+                callControlsWidgetBuilder: (context, call) =>
+                    GroupCallLiveControls(
+                      call: call,
+                      signedInMember: !widget.credentials.isGuest,
+                      onLeave: _leave,
+                      onRemove: (userId) async {
+                        final result = await call.kickUser(userId);
+                        if (_calmFailure(result) != null) {
+                          _snack('Only the host can remove someone.');
+                        }
+                      },
+                      onEnd: () async {
+                        final result = await call.end();
+                        if (_calmFailure(result) != null) {
+                          _snack('Only the host can end the call.');
+                          return;
+                        }
+                        await _leave();
+                      },
+                    ),
               ),
       ),
     );
   }
 }
 
-String? _calmFailure<T>(Result<T> result) =>
-    result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+String? _calmFailure<T>(Result<T> result) => result.isSuccess
+    ? null
+    : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
 
 /// Opens a preview call with a server-issued api key, user id, and user token.
 typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);
@@ -215,6 +230,7 @@ class const StreamCallConnectPlan({
   required this.callId,
   required this.cameraStartsEnabled,
   required this.microphoneStartsEnabled,
+  required this.speakerStartsOn,
 }) {
   final String apiKey;
   final User user;
@@ -225,7 +241,11 @@ class const StreamCallConnectPlan({
   final bool cameraStartsEnabled;
 
   /// False. The microphone stays off until the person taps it.
+  /// A disabled microphone does not publish a track. The first unmute does.
   final bool microphoneStartsEnabled;
+
+  /// True. The loudspeaker stays requested. Omitting it merges speaker off.
+  final bool speakerStartsOn;
 }
 
 /// Builds the Stream user for a guest or a member.
@@ -250,4 +270,5 @@ StreamCallConnectPlan streamCallConnectPlan({
   callId: credentials.callId,
   cameraStartsEnabled: false,
   microphoneStartsEnabled: false,
+  speakerStartsOn: true,
 );

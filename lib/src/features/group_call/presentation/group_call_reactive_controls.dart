@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
+import '../../../core/logging/app_logger.dart';
+import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
 import 'group_call_session_controls.dart';
 
@@ -39,6 +41,8 @@ class GroupCallReactiveControls extends StatelessWidget {
     required this.onLeave,
     required this.onRemove,
     required this.onEnd,
+    this.webPlaybackBlocked,
+    this.onResumeWebAudio,
   });
 
   /// Fires when the local microphone or camera changes under the controls.
@@ -52,21 +56,37 @@ class GroupCallReactiveControls extends StatelessWidget {
   final Future<void> Function() onLeave;
   final Future<void> Function(String userId) onRemove;
   final Future<void> Function() onEnd;
+  final bool Function()? webPlaybackBlocked;
+  final Future<void> Function()? onResumeWebAudio;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: tracks,
-    builder: (context, _) => GroupCallSessionControls(
-      microphoneEnabled: microphoneEnabled(),
-      cameraEnabled: cameraEnabled(),
-      host: host,
-      others: others,
-      onMicrophone: () => onSetMicrophone(!microphoneEnabled()),
-      onCamera: () => onSetCamera(!cameraEnabled()),
-      onLeave: onLeave,
-      onRemove: onRemove,
-      onEnd: onEnd,
-    ),
+    builder: (context, _) {
+      final session = GroupCallSessionControls(
+        microphoneEnabled: microphoneEnabled(),
+        cameraEnabled: cameraEnabled(),
+        host: host,
+        others: others,
+        onMicrophone: () => onSetMicrophone(!microphoneEnabled()),
+        onCamera: () => onSetCamera(!cameraEnabled()),
+        onLeave: onLeave,
+        onRemove: onRemove,
+        onEnd: onEnd,
+      );
+      if (webPlaybackBlocked?.call() != true) return session;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextButton(
+            key: const Key('group_call_hear_room'),
+            onPressed: () => unawaited(onResumeWebAudio!.call()),
+            child: const Text('Tap to hear the room'),
+          ),
+          session,
+        ],
+      );
+    },
   );
 }
 
@@ -84,6 +104,7 @@ class GroupCallLiveControls extends StatefulWidget {
     required this.onLeave,
     required this.onRemove,
     required this.onEnd,
+    this.onResumeWebAudio = resumeGroupCallWebAudio,
   });
 
   final Call call;
@@ -91,6 +112,9 @@ class GroupCallLiveControls extends StatefulWidget {
   final Future<void> Function() onLeave;
   final Future<void> Function(String userId) onRemove;
   final Future<void> Function() onEnd;
+
+  /// Runs from the "Tap to hear the room" button. Web only needs it.
+  final Future<void> Function() onResumeWebAudio;
 
   @override
   State<GroupCallLiveControls> createState() => _GroupCallLiveControlsState();
@@ -104,11 +128,14 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
   bool _holding = false;
   int _cameraCorrections = 0;
   int _microphoneCorrections = 0;
+  bool _loggedWebAudioBlock = false;
 
   @override
   void initState() {
     super.initState();
-    _subscription = widget.call.state.valueStream.listen((_) {
+    _noteWebPlayback(widget.call.state.value);
+    _subscription = widget.call.state.valueStream.listen((next) {
+      _noteWebPlayback(next);
       if (mounted) _ticks.tick();
       unawaited(_quietUnrequestedTracks());
     });
@@ -162,6 +189,7 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     _userWantsMicrophone = enabled;
     final result = await setGroupCallMicrophone(widget.call, enabled: enabled);
     if (!mounted) return;
+    _noteMicrophone(enabled, accepted: result.isSuccess);
     if (result.isFailure) {
       _userWantsMicrophone = askedBefore;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -172,11 +200,38 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     }
   }
 
+  void _noteMicrophone(bool enabled, {required bool accepted}) {
+    if (!enabled) return;
+    final state = widget.call.state.value;
+    final canSend = capabilitiesIncludeSendAudio(state.ownCapabilities);
+    final published = state.localParticipant?.isAudioEnabled ?? false;
+    AppLogger.info(
+      'group-call microphone published=$published sendAudio=$canSend accepted=$accepted',
+    );
+    if (!canSend) {
+      AppLogger.warning('group-call unmute is missing send-audio');
+    }
+    if (accepted && !published) {
+      AppLogger.warning('group-call unmute did not publish a microphone track');
+    }
+  }
+
+  void _noteWebPlayback(CallState next) {
+    if (_loggedWebAudioBlock) return;
+    if (!webListenerNeedsATap(
+      playbackBlocked: next.isWebAudioPlaybackBlocked,
+    )) {
+      return;
+    }
+    _loggedWebAudioBlock = true;
+    AppLogger.warning('group-call web audio is blocked until a tap');
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.call.state.value;
     final local = state.localParticipant;
-    return GroupCallReactiveControls(
+    final controls = GroupCallReactiveControls(
       tracks: _ticks,
       microphoneEnabled: () =>
           widget.call.state.value.localParticipant?.isAudioEnabled ?? false,
@@ -199,7 +254,12 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
       onLeave: widget.onLeave,
       onRemove: widget.onRemove,
       onEnd: widget.onEnd,
+      webPlaybackBlocked: () => webListenerNeedsATap(
+        playbackBlocked: widget.call.state.value.isWebAudioPlaybackBlocked,
+      ),
+      onResumeWebAudio: widget.onResumeWebAudio,
     );
+    return controls;
   }
 }
 
@@ -224,3 +284,9 @@ Future<Result<None>> setGroupCallMicrophone(
   enabled: enabled,
   stopTrackOnMute: enabled ? null : false,
 );
+
+/// Unblocks a browser's remote audio element from the hear-room tap.
+///
+/// https://getstream.io/video/docs/flutter/guides/call-and-participant-state/
+Future<void> resumeGroupCallWebAudio() =>
+    RtcMediaDeviceNotifier.instance.resumeWebAudioPlayback();
