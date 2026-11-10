@@ -14,6 +14,14 @@ void main() {
       await tester.pump();
       session.check();
       expectMinTapTarget(tester, save);
+      if (scale == 1) {
+        final authorName = find.text('David M. (UK)');
+        final rows = find.ancestor(of: authorName, matching: find.byType(Row));
+        final outer = tester.getSize(rows.at(1));
+        // The author row is only as wide as its contents, so a tone tag can
+        // share the line when the card has room. It must not fill the phone.
+        expect(outer.width, lessThan(largeTextPhoneSurface.width * 0.75));
+      }
       final discussion = find.byKey(const Key('discussion_button_1'));
       await tester.ensureVisible(discussion);
       await tester.pump();
@@ -28,6 +36,10 @@ void main() {
       expect(find.byKey(const Key('threaded_discussion_sheet_title')), findsOneWidget);
       expect(find.text('Discussion & Replies'), findsOneWidget);
       expectMinTapTarget(tester, find.byKey(const Key('close_discussion_sheet_button')));
+      if (scale == 1) {
+        final author = tester.getSize(find.text('Pastor Thomas (Melbourne)'));
+        expect(author.height, lessThan(24));
+      }
     }
   });
 }

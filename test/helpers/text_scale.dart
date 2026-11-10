@@ -36,6 +36,8 @@ final class TextScaleSession {
 
 /// Pumps [widget] at [scale] on a phone surface and fails on any overflow.
 ///
+/// Overflow capture stays in place until the test tears down, so a later
+/// [TextScaleSession.check] still sees overflows from the next interaction.
 /// [shell] wraps the pumped tree (a provider scope, for example). When
 /// [wrapMaterialApp] is true and [widget] is not already a [MaterialApp], the
 /// helper supplies one and applies [scale] both on the test platform
@@ -92,7 +94,6 @@ Future<TextScaleSession> pumpWithTextScale(
   // the previous scale does not cover the next scale.
   await tester.pumpWidget(KeyedSubtree(key: UniqueKey(), child: built));
   await settleLargeText(tester);
-  FlutterError.onError = previousOnError;
   final session = TextScaleSession(overflows: overflows, scale: scale);
   session.check();
   return session;

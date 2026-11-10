@@ -3,8 +3,9 @@
 # large-text Patrol test and Maestro flow, then restore both settings.
 #
 # Needs one adb device (emulator or phone). Does not deploy or change
-# production config. Exits 2 when adb has no device, so a desktop-only run
-# can record that the device checks did not execute.
+# production config. Exits 2 when adb has no device, or when neither Patrol
+# nor Maestro can run, so a desktop-only run can record that the device
+# checks did not execute.
 set -u
 
 if ! command -v adb >/dev/null 2>&1; then
@@ -23,7 +24,11 @@ previous_override="$(printf '%s\n' "$density_text" | sed -n 's/.*Override densit
 physical_density="$(printf '%s\n' "$density_text" | sed -n 's/.*Physical density:[[:space:]]*//p' | head -n 1)"
 
 restore() {
-  adb shell settings put system font_scale "${previous_font:-1.0}" >/dev/null
+  if [ -z "$previous_font" ] || [ "$previous_font" = "null" ]; then
+    adb shell settings delete system font_scale >/dev/null
+  else
+    adb shell settings put system font_scale "$previous_font" >/dev/null
+  fi
   if [ -n "$previous_override" ]; then
     adb shell wm density "$previous_override" >/dev/null
   else
@@ -39,16 +44,23 @@ if [ -n "$physical_density" ]; then
 fi
 
 status=0
+ran=0
 if command -v patrol >/dev/null 2>&1; then
+  ran=1
   patrol test --target integration_test/large_text_patrol_test.dart || status=$?
 else
   echo "patrol CLI is not on PATH. Skipping the Patrol target."
 fi
 
 if command -v maestro >/dev/null 2>&1; then
+  ran=1
   maestro test .maestro/large_text_sign_in_flow.yaml || status=$?
 else
   echo "maestro is not on PATH. Skipping the Maestro flow."
 fi
 
+if [ "$ran" -eq 0 ]; then
+  echo "Neither patrol nor maestro is available. Large-text device checks did not run."
+  exit 2
+fi
 exit "$status"

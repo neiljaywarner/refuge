@@ -13,6 +13,12 @@ void main() {
       expectMinTapTarget(tester, find.byKey(const Key('add_new_message_button')));
       await openFirstMessageThread(tester, session);
       expect(find.text('Marty & Community Team'), findsWidgets);
+      final title = tester.widget<Text>(
+        find.descendant(of: find.byType(AppBar), matching: find.text('Marty & Community Team')),
+      );
+      expect(title.maxLines, 1);
+      final subject = tester.widget<Text>(find.text('Welcome to Belong Fellowship'));
+      expect(subject.maxLines, 1);
       expectMinTapTarget(tester, find.byKey(const Key('back-to-messages-list')));
     }
   });

@@ -488,7 +488,9 @@ class _CommentTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Flexible(
+              // Flexible would take half the row. The time keeps its own width, capped.
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.3),
                 child: Text(
                   _formatTimeAgo(comment.timestamp),
                   maxLines: 1,

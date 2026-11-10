@@ -37,6 +37,25 @@ void main() {
     expect('$error', contains('overflowed'));
   });
 
+  testWidgets('overflows after the pump stay on the session until teardown', (tester) async {
+    final session = await pumpWithTextScale(
+      tester,
+      const Scaffold(body: Text('ok', key: Key('ok'))),
+      scale: 2,
+    );
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SizedBox(width: 30, child: Row(children: [Text('this line is far too wide')])),
+        ),
+      ),
+    );
+
+    expect(session.overflows, isNotEmpty);
+    expect(() => session.check(), throwsA(isA<TestFailure>()));
+  });
+
   testWidgets('a control under 48dp fails the tap-target check', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(

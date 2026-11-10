@@ -554,12 +554,14 @@ class BelongMessagesView extends HookConsumerWidget {
                   Text(
                     thread.displayTitle,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (thread.subject != null)
                     Text(
                       thread.subject!,
                       style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                 ],

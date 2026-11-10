@@ -819,32 +819,41 @@ class RefugeHomeScreen extends HookConsumerWidget {
           if (!profile.isSignedIn)
             Padding(
               padding: const .symmetric(horizontal: 4),
-              child: FilledButton.tonalIcon(
-                key: const Key('home_top_bar_sign_in_button'),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(48, 48),
-                  padding: const .symmetric(horizontal: 10, vertical: 0),
-                ),
-                onPressed: () => SimpleAuthScreen.show(context),
-                icon: const Icon(Icons.login_rounded, size: 15),
-                // Past 1.5x the word no longer fits beside four 48dp actions
-                // on a phone. The visible label ellipsizes. Semantics keep
-                // the full "Sign In" from the text.
-                label: textScale < 1.2
-                    ? const Text(
-                        'Sign In',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                      )
-                    : SizedBox(
-                        width: textScale >= 2 ? 48 : 64,
-                        child: const Text(
-                          'Sign In',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
+              // Below 1.2 the word fits beside the other 48dp actions. Up to 2
+              // it ellipsizes in a capped width. At 2 and above that cap leaves
+              // no readable letters, so the control is the icon. The tooltip is
+              // the accessible Sign In name.
+              child: textScale >= 2
+                  ? IconButton.filledTonal(
+                      key: const Key('home_top_bar_sign_in_button'),
+                      tooltip: 'Sign In',
+                      style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+                      onPressed: () => SimpleAuthScreen.show(context),
+                      icon: const Icon(Icons.login_rounded, semanticLabel: 'Sign In'),
+                    )
+                  : FilledButton.tonalIcon(
+                      key: const Key('home_top_bar_sign_in_button'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        padding: const .symmetric(horizontal: 10, vertical: 0),
                       ),
-              ),
+                      onPressed: () => SimpleAuthScreen.show(context),
+                      icon: const Icon(Icons.login_rounded, size: 15),
+                      label: textScale < 1.2
+                          ? const Text(
+                              'Sign In',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            )
+                          : const SizedBox(
+                              width: 64,
+                              child: Text(
+                                'Sign In',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                    ),
             )
           else
             Padding(

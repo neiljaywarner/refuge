@@ -213,6 +213,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
 
     final hasUnsavedDraft =
         feedbackController.text.trim().isNotEmpty || drawingAttachment.value != null;
+    final isLargeText = MediaQuery.textScalerOf(context).scale(1) > _largeTextScaleThreshold;
 
     return PopScope(
       canPop: !hasUnsavedDraft && !isSubmitting.value,
@@ -230,7 +231,7 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
           // the voting list below still has room on a phone (#927). At the
           // default size this is the same column as before.
           _FeedbackSheetHeader(
-            textScale: MediaQuery.textScalerOf(context).scale(1),
+            isLargeText: isLargeText,
             maxHeight: MediaQuery.sizeOf(context).height * 0.34,
             child: Column(
               mainAxisSize: .min,
@@ -281,10 +282,8 @@ class BelongFeedbackAndVotingSheet extends HookConsumerWidget {
                   controller: tabController,
                   // At large type the two labels no longer share a phone width.
                   // Scrolling keeps each label intact instead of overflowing.
-                  isScrollable: MediaQuery.textScalerOf(context).scale(1) > 1.15,
-                  tabAlignment: MediaQuery.textScalerOf(context).scale(1) > 1.15
-                      ? TabAlignment.start
-                      : TabAlignment.fill,
+                  isScrollable: isLargeText,
+                  tabAlignment: isLargeText ? .start : .fill,
                   tabs: [
                     Tab(
                       key: const Key('tab_feature_voting'),
@@ -1007,21 +1006,25 @@ class _VoteSaveErrorBanner extends StatelessWidget {
   }
 }
 
+/// Text scale above which the feedback header scrolls and the tabs stop sharing
+/// the width. The header and the tabs both use this cutoff.
+const double _largeTextScaleThreshold = 1.15;
+
 /// Scrolls the feedback title and tabs only when system text is large.
 class _FeedbackSheetHeader extends StatelessWidget {
   const _FeedbackSheetHeader({
-    required this.textScale,
+    required this.isLargeText,
     required this.maxHeight,
     required this.child,
   });
 
-  final double textScale;
+  final bool isLargeText;
   final double maxHeight;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    if (textScale <= 1.15) return child;
+    if (!isLargeText) return child;
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
       child: SingleChildScrollView(child: child),

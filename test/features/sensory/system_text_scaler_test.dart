@@ -26,4 +26,25 @@ void main() {
     );
     expect(combined.scale(10), closeTo(13, 0.01));
   });
+
+  test('clamp keeps a large factor inside the requested product bounds', () {
+    final combined = composeSystemAndSensoryScaler(
+      system: const TextScaler.linear(2),
+      sensoryFactor: 4,
+    );
+    expect(combined.scale(10), 80);
+
+    final clamped = combined.clamp(minScaleFactor: 1, maxScaleFactor: 3);
+    expect(clamped.scale(10), closeTo(30, 0.001));
+    expect(clamped.scale(16), closeTo(48, 0.001));
+
+    final unbounded = combined.clamp(maxScaleFactor: double.infinity);
+    expect(unbounded.scale(10), 80);
+
+    final raised = composeSystemAndSensoryScaler(
+      system: const TextScaler.linear(1),
+      sensoryFactor: 0.5,
+    ).clamp(minScaleFactor: 2, maxScaleFactor: 8);
+    expect(raised.scale(10), closeTo(20, 0.001));
+  });
 }

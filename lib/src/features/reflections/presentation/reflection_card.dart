@@ -83,6 +83,8 @@ class ReflectionCard extends ConsumerWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Row(
+                // max would fill the Wrap and push the tone tag onto the next line.
+                mainAxisSize: .min,
                 children: [
                   Flexible(
                     child: InkWell(
