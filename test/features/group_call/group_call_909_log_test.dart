@@ -3,6 +3,12 @@ import 'package:refuge4serverpod/src/features/group_call/domain/group_call_909_l
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 void main() {
+  test('[#909] logs stay on for a preview release and off for production', () {
+    expect(groupCall909LogsEnabled(debugMode: false, preview: true), isTrue);
+    expect(groupCall909LogsEnabled(debugMode: true, preview: false), isTrue);
+    expect(groupCall909LogsEnabled(debugMode: false, preview: false), isFalse);
+  });
+
   test('[#909] lines stay grepable and drop emails, tokens, and device names', () {
     final line = groupCall909Line(
       '${groupCall909Output(deviceId: 'bt-1', deviceLabel: "member@belongonthespectrum.com buds", external: true, speakerRequested: true)} '

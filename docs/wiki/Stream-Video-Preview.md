@@ -45,7 +45,7 @@ Not proven: two people hearing each other. Same-room echo cancellation is still 
 
 ### How to grep the [#909] logs
 
-Debug builds only. Each line starts with `[#909]`. They carry booleans and buckets (speaker, earpiece, external, other). They do not include names, emails, tokens, or device names.
+Debug builds, and a preview binary compiled with `STREAM_VIDEO_PREVIEW`. A production release stays quiet. Each line starts with `[#909]`. They carry booleans and buckets (speaker, earpiece, external, other). They do not include names, emails, tokens, or device names.
 
 ```bash
 adb logcat | grep '\[#909\]'

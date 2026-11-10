@@ -2,16 +2,29 @@ import 'package:flutter/foundation.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../../../core/logging/app_logger.dart';
+import '../data/stream_video_preview_config.dart';
 
 /// Debug log for [#909](https://github.com/neiljaywarner/refuge/issues/909).
 ///
-/// Release builds stay quiet. The line starts with `[#909]` so
-/// `adb logcat` can grep it. Names, emails, tokens, and raw device
-/// labels are not written.
+/// Printed in debug builds and in a preview binary (`STREAM_VIDEO_PREVIEW`).
+/// A production release stays quiet. The line starts with `[#909]` so
+/// `adb logcat` or the browser console can grep it. Names, emails, tokens,
+/// and raw device labels are not written.
 void logGroupCall909(String detail) {
-  if (!kDebugMode) return;
+  if (!groupCall909LogsEnabled(
+    debugMode: kDebugMode,
+    preview: streamVideoPreviewEnabled,
+  )) {
+    return;
+  }
   AppLogger.debug(groupCall909Line(detail));
 }
+
+/// True for a debug run or a preview build. Production release is false.
+bool groupCall909LogsEnabled({
+  required bool debugMode,
+  required bool preview,
+}) => debugMode || preview;
 
 /// Prefixes [detail] and strips an email or a JWT if one was passed in.
 String groupCall909Line(String detail) {
