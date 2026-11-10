@@ -9,22 +9,51 @@ void main() {
     expect(GroupCallRoom.tryParse('fellowship hour')?.id, 'fellowship-hour');
     expect(GroupCallRoom.tryParse('ab'), isNull);
     expect(GroupCallRoom.tryParse('bad--name'), isNull);
-    expect(groupCallIdFromLocation(Uri.parse('https://preview.example/?call=Monthly')), 'monthly');
     expect(
-      groupCallIdFromLocation(Uri.parse('https://preview.example/#/?call=fellowship-hour')),
+      groupCallIdFromLocation(
+        Uri.parse('https://preview.example/?call=Monthly'),
+      ),
+      'monthly',
+    );
+    expect(
+      groupCallIdFromLocation(
+        Uri.parse('https://preview.example/#/?call=fellowship-hour'),
+      ),
       'fellowship-hour',
     );
-    expect(groupCallIdFromLocation(Uri.parse('https://preview.example/')), GroupCallRoom.defaultId);
-    final invite = 'a' * 43;
-    expect(guestInviteFromLocation(Uri.parse('https://preview.example/?call=monthly')), isNull);
     expect(
-      guestInviteFromLocation(Uri.parse('https://preview.example/?call=monthly&invite=$invite')),
+      groupCallIdFromLocation(Uri.parse('https://preview.example/')),
+      GroupCallRoom.defaultId,
+    );
+    final invite = 'a' * 43;
+    expect(
+      guestInviteFromLocation(
+        Uri.parse('https://preview.example/?call=monthly'),
+      ),
+      isNull,
+    );
+    expect(
+      guestInviteFromLocation(
+        Uri.parse('https://preview.example/?call=monthly&invite=$invite'),
+      ),
       invite,
     );
-    expect(guestInviteFromLocation(Uri.parse('https://preview.example/#/?invite=$invite')), invite);
-    expect(guestInviteFromLocation(Uri.parse('https://preview.example/?invite=short')), isNull);
     expect(
-      explicitGroupCallIdFromLocation(Uri.parse('https://preview.example/?invite=$invite')),
+      guestInviteFromLocation(
+        Uri.parse('https://preview.example/#/?invite=$invite'),
+      ),
+      invite,
+    );
+    expect(
+      guestInviteFromLocation(
+        Uri.parse('https://preview.example/?invite=short'),
+      ),
+      isNull,
+    );
+    expect(
+      explicitGroupCallIdFromLocation(
+        Uri.parse('https://preview.example/?invite=$invite'),
+      ),
       isNull,
     );
     expect(
@@ -33,13 +62,21 @@ void main() {
       ),
       'monthly',
     );
-    expect(explicitGroupCallIdFromLocation(Uri.parse('https://preview.example/?call=no')), isNull);
+    expect(
+      explicitGroupCallIdFromLocation(
+        Uri.parse('https://preview.example/?call=no'),
+      ),
+      isNull,
+    );
     final link = guestInvitePageUri(
       page: Uri.parse('https://preview.example/hall'),
       callId: 'monthly',
       inviteToken: invite,
     );
-    expect(link.toString(), 'https://preview.example/hall?call=monthly&invite=$invite');
+    expect(
+      link.toString(),
+      'https://preview.example/hall?call=monthly&invite=$invite',
+    );
     final phoneLink = guestInvitePageUri(
       page: Uri.parse('file:///'),
       callId: 'monthly',
@@ -51,31 +88,63 @@ void main() {
     expect(phoneLink.queryParameters['invite'], invite);
     expect(phoneLink.toString(), isNot(contains('file:')));
     final launched = guestInviteUriFromLaunch(
-      platformRoute: 'https://dev-belongonthespectrum.web.app/?call=monthly&invite=$invite',
+      platformRoute:
+          'https://dev-belongonthespectrum.web.app/?call=monthly&invite=$invite',
       page: Uri.parse('file:///'),
     );
     expect(guestInviteFromLocation(launched!), invite);
     expect(
-      guestInviteUriFromLaunch(platformRoute: '/', page: Uri.parse('file:///?call=monthly')),
+      guestInviteUriFromLaunch(
+        platformRoute: '/',
+        page: Uri.parse('file:///?call=monthly'),
+      ),
       isNull,
     );
-    expect(guestJoinEntryVisible(compileTimePreview: true, inviteToken: invite), isTrue);
-    expect(guestJoinEntryVisible(compileTimePreview: true, inviteToken: null), isFalse);
-    expect(guestJoinEntryVisible(compileTimePreview: false, inviteToken: invite), isFalse);
+    expect(
+      guestJoinEntryVisible(compileTimePreview: true, inviteToken: invite),
+      isTrue,
+    );
+    expect(
+      guestJoinEntryVisible(compileTimePreview: true, inviteToken: null),
+      isFalse,
+    );
+    expect(
+      guestJoinEntryVisible(compileTimePreview: false, inviteToken: invite),
+      isFalse,
+    );
   });
 
   test('only a signed-in host can end or remove someone', () {
-    expect(canModerateGroupCall(signedInMember: true, createdByMe: true, roles: const []), isTrue);
     expect(
-      canModerateGroupCall(signedInMember: true, createdByMe: false, roles: const ['host']),
+      canModerateGroupCall(
+        signedInMember: true,
+        createdByMe: true,
+        roles: const [],
+      ),
       isTrue,
     );
     expect(
-      canModerateGroupCall(signedInMember: true, createdByMe: false, roles: const ['Admin']),
+      canModerateGroupCall(
+        signedInMember: true,
+        createdByMe: false,
+        roles: const ['host'],
+      ),
       isTrue,
     );
     expect(
-      canModerateGroupCall(signedInMember: true, createdByMe: false, roles: const ['user']),
+      canModerateGroupCall(
+        signedInMember: true,
+        createdByMe: false,
+        roles: const ['Admin'],
+      ),
+      isTrue,
+    );
+    expect(
+      canModerateGroupCall(
+        signedInMember: true,
+        createdByMe: false,
+        roles: const ['user'],
+      ),
       isFalse,
     );
     expect(
@@ -112,10 +181,33 @@ void main() {
       isEmpty,
     );
     expect(parseStreamTokenEndpoint('http://example.com/token'), isNull);
-    expect(parseStreamTokenEndpoint('https://user:secret@example.com/token'), isNull);
+    expect(
+      parseStreamTokenEndpoint('https://user:secret@example.com/token'),
+      isNull,
+    );
     expect(parseStreamTokenEndpoint('http://127.0.0.1:5001/token'), isNotNull);
     expect(
-      redactStreamVideoDartDefine('--dart-define=STREAM_TOKEN_ENDPOINT=$endpoint'),
+      groupCallPatrolMintReady(
+        previewEnabled: false,
+        tokenEndpoint: Uri.parse('https://example.com'),
+      ),
+      isFalse,
+    );
+    expect(
+      groupCallPatrolMintReady(previewEnabled: true, tokenEndpoint: null),
+      isFalse,
+    );
+    expect(
+      groupCallPatrolMintReady(
+        previewEnabled: true,
+        tokenEndpoint: Uri.parse('https://example.com'),
+      ),
+      isTrue,
+    );
+    expect(
+      redactStreamVideoDartDefine(
+        '--dart-define=STREAM_TOKEN_ENDPOINT=$endpoint',
+      ),
       '--dart-define=STREAM_TOKEN_ENDPOINT=<redacted>',
     );
     expect(
@@ -126,7 +218,11 @@ void main() {
 
   test('the group call stays hidden until the preview build, the flag, and sign-in agree', () {
     expect(
-      groupCallEntryVisible(compileTimePreview: true, previewFeaturesEnabled: true, signedIn: true),
+      groupCallEntryVisible(
+        compileTimePreview: true,
+        previewFeaturesEnabled: true,
+        signedIn: true,
+      ),
       isTrue,
     );
     expect(
