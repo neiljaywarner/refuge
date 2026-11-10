@@ -77,98 +77,114 @@ class ReflectionCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: .start,
         children: [
-          Row(
-            mainAxisAlignment: .spaceBetween,
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Flexible(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: InkWell(
-                        key: Key('author_tap_target_${post.id}'),
-                        borderRadius: .circular(4),
-                        onTap: () =>
-                            OtherMemberProfileDialog.show(context, authorName: post.authorName),
-                        child: Padding(
-                          padding: const .symmetric(vertical: 2, horizontal: 2),
-                          child: Row(
-                            mainAxisSize: .min,
-                            children: [
-                              CircleAvatar(
-                                radius: 10,
-                                backgroundColor: isContrast
-                                    ? Colors.yellow
-                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                                child: Text(
-                                  getInitials(post.authorName),
-                                  style: text.caption.copyWith(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: isContrast
-                                        ? Colors.black
-                                        : Theme.of(context).colorScheme.primary,
-                                  ),
+              Row(
+                children: [
+                  Flexible(
+                    child: InkWell(
+                      key: Key('author_tap_target_${post.id}'),
+                      borderRadius: .circular(4),
+                      onTap: () =>
+                          OtherMemberProfileDialog.show(context, authorName: post.authorName),
+                      child: Padding(
+                        padding: const .symmetric(vertical: 2, horizontal: 2),
+                        child: Row(
+                          mainAxisSize: .min,
+                          children: [
+                            CircleAvatar(
+                              radius: 10,
+                              backgroundColor: isContrast
+                                  ? Colors.yellow
+                                  : Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                              child: Text(
+                                getInitials(post.authorName),
+                                style: text.caption.copyWith(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: isContrast
+                                      ? Colors.black
+                                      : Theme.of(context).colorScheme.primary,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  post.authorName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: text.emphasis,
-                                ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                post.authorName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: text.emphasis,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
                       post.formattedDate(),
                       key: Key('post_timestamp_${post.id}'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: text.caption,
                     ),
-                    if (post.publishStatus == PostPublishStatus.pending) ...[
-                      const SizedBox(width: 6),
-                      Text(
+                  ),
+                  if (post.publishStatus == PostPublishStatus.pending) ...[
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
                         'Waiting to share',
                         key: Key('post_pending_${post.id}'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: text.caption,
                       ),
-                    ],
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisSize: .min,
-                children: [
-                  Container(
-                    padding: const .symmetric(horizontal: 8.0, vertical: 3.0),
-                    decoration: BoxDecoration(
-                      color: isMeme
-                          ? Colors.amber.withValues(alpha: 0.2)
-                          : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                      borderRadius: .circular(6.0),
                     ),
-                    child: Text(
-                      post.toneTag,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                  ],
+                ],
+              ),
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 80),
+                    child: Container(
+                      padding: const .symmetric(horizontal: 8.0, vertical: 3.0),
+                      decoration: BoxDecoration(
                         color: isMeme
-                            ? Colors.amber.shade800
-                            : Theme.of(context).colorScheme.primary,
+                            ? Colors.amber.withValues(alpha: 0.2)
+                            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                        borderRadius: .circular(6.0),
+                      ),
+                      child: Text(
+                        post.toneTag,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: isMeme
+                              ? Colors.amber.shade800
+                              : Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
                   IconButton(
                     key: Key('save_post_button_${post.id}'),
-                    visualDensity: VisualDensity.compact,
-                    padding: .zero,
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                      padding: .zero,
+                    ),
                     tooltip: post.isSaved ? 'Remove from Saved' : 'Save for Later (Private)',
                     onPressed: () async {
                       final wasSaved = post.isSaved;
@@ -213,7 +229,10 @@ class ReflectionCard extends ConsumerWidget {
                                     messenger.hideCurrentSnackBar();
                                     onNavigateToSaved!();
                                   },
-                                  child: const Text('View Saved', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  child: const Text(
+                                    'View Saved',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ],
                             ],
@@ -364,7 +383,7 @@ class ReflectionCard extends ConsumerWidget {
                     return OutlinedButton.icon(
                       key: Key('discussion_button_${post.id}'),
                       style: OutlinedButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
+                        minimumSize: const Size(48, 48),
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       onPressed:
@@ -415,7 +434,7 @@ class ReflectionCard extends ConsumerWidget {
                   : (isContrast ? Colors.white : theme.dividerColor),
               width: hasReacted ? 1.5 : 1.0,
             ),
-            visualDensity: VisualDensity.compact,
+            minimumSize: const Size(48, 48),
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
           onPressed: () => onAddReaction(type),

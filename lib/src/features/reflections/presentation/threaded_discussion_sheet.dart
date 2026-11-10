@@ -154,18 +154,22 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Container(
-                            padding: const .symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                              borderRadius: .circular(4),
-                            ),
-                            child: Text(
-                              post.toneTag,
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
+                          Flexible(
+                            child: Container(
+                              padding: const .symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                borderRadius: .circular(4),
+                              ),
+                              child: Text(
+                                post.toneTag,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
                           ),
@@ -467,14 +471,11 @@ class _CommentTile extends StatelessWidget {
                     ),
                     if (comment.toneTag != null) ...[
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const .symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: .circular(4),
-                        ),
+                      Flexible(
                         child: Text(
                           comment.toneTag!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
@@ -487,9 +488,13 @@ class _CommentTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Text(
-                _formatTimeAgo(comment.timestamp),
-                style: TextStyle(fontSize: 10, color: theme.textTheme.bodySmall?.color),
+              Flexible(
+                child: Text(
+                  _formatTimeAgo(comment.timestamp),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10, color: theme.textTheme.bodySmall?.color),
+                ),
               ),
             ],
           ),
