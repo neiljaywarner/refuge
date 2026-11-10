@@ -43,6 +43,30 @@ What this branch changes:
 
 Not proven: two people hearing each other. Same-room echo cancellation is still a suspect. The Android output device can still be the earpiece even when the speaker flag is on. No production deploy.
 
+### How to grep the [#909] logs
+
+Debug builds only. Each line starts with `[#909]`. They carry booleans and buckets (speaker, earpiece, external, other). They do not include names, emails, tokens, or device names.
+
+```bash
+adb logcat | grep '\[#909\]'
+```
+
+A microphone tap logs `mic request` and `mic result`, with `enabled`, `muted`, and `trackPresent` before and after. `publish` and `unpublish` mark when the local audio track appears or disappears. `webAudioPlaybackBlocked` is the browser autoplay flag. `ownCapabilities` is the grant list, including whether `send-audio` is present. `audioOutput` and `speakerphone` log on join and when the output changes. Remote `audioTracks`, `speaking`, and `audioLevel` log when they change, and at most once every two seconds when they stay the same.
+
+### Patrol mic check on an emulator
+
+`integration_test/patrol_group_call_mic_test.dart` skips unless the binary was built with the preview flag and a token endpoint. CI does not pass those, so it does not need a secret. The Gherkin scenario "Three mute and unmute cycles keep the track alive" is the headless check that the local audio track is still present after mute.
+
+```bash
+patrol test -t integration_test/patrol_group_call_mic_test.dart \
+  --dart-define=FLAVOR=dev \
+  --dart-define=ENABLE_SERVERPOD=false \
+  --dart-define=STREAM_VIDEO_PREVIEW=true \
+  --dart-define=STREAM_TOKEN_ENDPOINT='https://us-central1-belongonthespectrum.cloudfunctions.net/mintStreamCallToken'
+```
+
+Use the same token endpoint as the preview build above. If a mic or camera dialog is showing, the test grants it. If **Join call** is hidden, the test skips: that screen needs a signed-in preview session or a guest link, and neither is stored in the repo.
+
 Not yet run: the website on both Pixels, and the APK on both Pixels.
 
 TODO: Stream Video 1.7.2 pulls in `system_info2` 4.2.0, which breaks `dart2js` on web. The dev site was built with a temporary local `dependency_overrides` pin of `system_info2` 4.1.0. That pin is not in this repo.
