@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
@@ -105,6 +106,7 @@ class GroupCallLiveControls extends StatefulWidget {
     required this.onRemove,
     required this.onEnd,
     this.onResumeWebAudio = resumeGroupCallWebAudio,
+    this.webMicrophone = kIsWeb,
   });
 
   final Call call;
@@ -115,6 +117,9 @@ class GroupCallLiveControls extends StatefulWidget {
 
   /// Runs from the "Tap to hear the room" button. Web only needs it.
   final Future<void> Function() onResumeWebAudio;
+
+  /// Web mutes by stopping the capture. Android keeps the track.
+  final bool webMicrophone;
 
   @override
   State<GroupCallLiveControls> createState() => _GroupCallLiveControlsState();
@@ -182,7 +187,11 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
       if (forceMicrophone) {
         // TODO(#909): an external unmute is still forced back off.
         _microphoneCorrections += 1;
-        await setGroupCallMicrophone(widget.call, enabled: false);
+        await setGroupCallMicrophone(
+          widget.call,
+          enabled: false,
+          web: widget.webMicrophone,
+        );
       }
     } finally {
       _holding = false;
@@ -196,7 +205,11 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     logGroupCall909(
       'mic request enabled=$enabled ${groupCall909LocalAudio(before)}',
     );
-    final result = await setGroupCallMicrophone(widget.call, enabled: enabled);
+    final result = await setGroupCallMicrophone(
+      widget.call,
+      enabled: enabled,
+      web: widget.webMicrophone,
+    );
     if (!mounted) return;
     final after = widget.call.state.value.localParticipant;
     logGroupCall909(
@@ -306,22 +319,27 @@ class _Tick extends ChangeNotifier {
   void tick() => notifyListeners();
 }
 
-/// Turns the preview microphone on or off without dropping the Android track.
+/// Turns the preview microphone on or off.
 ///
-/// Stream stops and releases the capture when stopTrackOnMute is left at its
-/// default (`true`). The next unmute then opens the microphone again, which
-/// matches audio the other person heard only after the first unmute. `false`
-/// keeps the track and sends silence. The microphone-in-use indicator stays
-/// on while muted.
+/// Android keeps the capture while muted (`stopTrackOnMute: false`). The
+/// default (`true`) was releasing the track, so the next unmute had to open
+/// the microphone again. Web does the opposite: a muted tab was still
+/// sending silence and leaving the browser microphone indicator on, so a
+/// web mute stops the track. The following unmute passes `enabled: true`,
+/// which is what publishes the track again.
 ///
 /// https://getstream.io/video/docs/flutter/
 /// https://getstream.io/video/docs/flutter/guides/camera-and-microphone/microphone-and-audio/
+bool? groupCallStopTrackOnMute({required bool enabled, required bool web}) =>
+    enabled ? null : web;
+
 Future<Result<None>> setGroupCallMicrophone(
   Call call, {
   required bool enabled,
+  bool web = kIsWeb,
 }) => call.setMicrophoneEnabled(
   enabled: enabled,
-  stopTrackOnMute: enabled ? null : false,
+  stopTrackOnMute: groupCallStopTrackOnMute(enabled: enabled, web: web),
 );
 
 /// Unblocks a browser's remote audio element from the hear-room tap.

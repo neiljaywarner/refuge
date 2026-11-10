@@ -83,6 +83,38 @@ void main() {
     expect(room.requests.last.stopTrackOnMute, isFalse);
   });
 
+  test('web mute stops the track and android keeps it', () {
+    expect(groupCallStopTrackOnMute(enabled: false, web: true), isTrue);
+    expect(groupCallStopTrackOnMute(enabled: false, web: false), isFalse);
+    expect(groupCallStopTrackOnMute(enabled: true, web: true), isNull);
+  });
+
+  testWidgets('unmute after a web mute still publishes', (tester) async {
+    final room = _Room();
+    addTearDown(room.close);
+    await room.pump(tester, webMicrophone: true);
+
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+
+    expect(room.requests.map((request) => request.enabled), [
+      true,
+      false,
+      true,
+    ]);
+    expect(room.requests.map((request) => request.stopTrackOnMute), [
+      null,
+      true,
+      null,
+    ]);
+    expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+    expect(room.requests.last.enabled, isTrue);
+  });
+
   testWidgets('a muted join publishes the microphone on the first unmute', (
     tester,
   ) async {
@@ -218,19 +250,21 @@ class _Room {
     _states.publish(_callState());
   }
 
-  Future<void> pump(WidgetTester tester) => tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: GroupCallLiveControls(
-          call: call,
-          signedInMember: false,
-          onLeave: () async {},
-          onRemove: (userId) async {},
-          onEnd: () async {},
+  Future<void> pump(WidgetTester tester, {bool webMicrophone = false}) =>
+      tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GroupCallLiveControls(
+              call: call,
+              signedInMember: false,
+              onLeave: () async {},
+              onRemove: (userId) async {},
+              onEnd: () async {},
+              webMicrophone: webMicrophone,
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 
   Future<void> close() => _states.close();
 
