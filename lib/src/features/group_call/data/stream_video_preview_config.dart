@@ -3,9 +3,13 @@
 /// Production release builds leave this off. A preview build turns it on
 /// with `--dart-define=STREAM_VIDEO_PREVIEW=true`. The API secret is not a
 /// dart-define and is not read here.
-const bool streamVideoPreviewEnabled = bool.fromEnvironment('STREAM_VIDEO_PREVIEW');
+const bool streamVideoPreviewEnabled = bool.fromEnvironment(
+  'STREAM_VIDEO_PREVIEW',
+);
 
-const String _tokenEndpointDefine = String.fromEnvironment('STREAM_TOKEN_ENDPOINT');
+const String _tokenEndpointDefine = String.fromEnvironment(
+  'STREAM_TOKEN_ENDPOINT',
+);
 
 /// True when this build may show the signed-in join entry.
 ///
@@ -25,8 +29,10 @@ bool groupCallEntryVisible({
 /// The compile-time preview flag is required. [inviteToken] must already
 /// look like an invite. A call name on its own is not enough, and the
 /// in-app preview switch is not consulted because this person is not signed in.
-bool guestJoinEntryVisible({required bool compileTimePreview, required String? inviteToken}) =>
-    compileTimePreview && inviteToken != null;
+bool guestJoinEntryVisible({
+  required bool compileTimePreview,
+  required String? inviteToken,
+}) => compileTimePreview && inviteToken != null;
 
 /// HTTPS token URL, or loopback HTTP for the local functions emulator.
 ///
@@ -46,6 +52,15 @@ Uri? parseStreamTokenEndpoint(String raw) {
 
 Uri? get streamTokenEndpoint => parseStreamTokenEndpoint(_tokenEndpointDefine);
 
+/// True when a device test may open the preview mint.
+///
+/// Both values come from dart-defines. A missing flag or endpoint skips
+/// the Patrol mic test, including CI, and no secret is read here.
+bool groupCallPatrolMintReady({
+  required bool previewEnabled,
+  required Uri? tokenEndpoint,
+}) => previewEnabled && tokenEndpoint != null;
+
 /// Dart-defines for a dev preview build. Ignores [STREAM_API_KEY] and
 /// [STREAM_API_SECRET] even when they are present in the environment.
 List<String> streamVideoPreviewDartDefines(Map<String, String> environment) {
@@ -53,7 +68,9 @@ List<String> streamVideoPreviewDartDefines(Map<String, String> environment) {
     return const [];
   }
   final defines = <String>['--dart-define=STREAM_VIDEO_PREVIEW=true'];
-  final endpoint = parseStreamTokenEndpoint(environment['STREAM_TOKEN_ENDPOINT'] ?? '');
+  final endpoint = parseStreamTokenEndpoint(
+    environment['STREAM_TOKEN_ENDPOINT'] ?? '',
+  );
   if (endpoint != null) {
     defines.add('--dart-define=STREAM_TOKEN_ENDPOINT=$endpoint');
   }
