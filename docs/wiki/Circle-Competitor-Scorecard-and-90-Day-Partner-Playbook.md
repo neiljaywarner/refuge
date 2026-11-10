@@ -2,10 +2,10 @@
 
 > **Prepared for:** November 2026 Co-Builder / Business Partner Strategy Session  
 > **Platform Hierarchy:**  
-> - **Refuge Platform:** The white-label all-in-one Circle.so + Zoom + Courses competitor at half the price (\$49/mo).  
+> - **Refuge Platform:** The white-label all-in-one Circle.so (\$89–\$199/mo) + Zoom (\$18/mo) + Courses competitor at half the price (\$49/mo).  
 > - **Live Demo 1 — Community #1 on Refuge (`Belong on the Spectrum`):** [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app) & [`https://dev-belongonthespectrum.web.app`](https://dev-belongonthespectrum.web.app)  
 > - **Live Demo 2 — Our Courses, Workbooks & Directus Non-Tech CMS Codebase (`Course Demo POC`):** [`https://coursedemo-auxano-poc.web.app`](https://coursedemo-auxano-poc.web.app)  
-> - **Live Demo 3 — Built-In "Zoom-Style" Live Video Rooms (`GetStream` in Refuge):** [Stream Video Preview Guide](Stream-Video-Preview) (`PR #905`)
+> - **Live Demo 3 — Built-In "Zoom-Style" Live Video Rooms (`GetStream` in Refuge):** [PR #905 Stream Video Preview](https://github.com/neiljaywarner/refuge/pull/905)
 
 ![Refuge Platform — Circle.so Competitor & Partnership Infographic](images/business-partner-infographic.svg)
 
@@ -22,7 +22,7 @@ Why do churches, ministries, coaching guilds, and care communities pay **Circle.
 | **1. Community Spaces, Feed, Directory, DMs & Push** | Discussion spaces, member directory, DMs, mobile/web notifications | **Live in Production (`v0.9.9`)**: 8+ rooms, 1-tap Prayer Sanctuary, compulsory intent tags (`[Comfort Only]`, `[Prayer Request]`, `[Fellowship]`), care reactions, private bookmarks, opt-in DMs, Giphy, 4 sensory palettes. Left Circle Oct 31! | **92%** | 35% | **32.20%** | Minor multi-organization switcher polish |
 | **2. Video Courses, Workbooks & Non-Technical Authoring** | Course modules, hosted video lessons, downloadable handouts | **Live POC (`coursedemo-auxano-poc.web.app`)**: HD video streaming via **Mux**, recording playlist switcher, interactive disciple workbooks saved to Postgres, and **Directus** web admin where non-tech leaders drag-and-drop `.mp4` files in one tab. | **65%** | 25% | **16.25%** | Embed the `Courses` tab inside the main app shell + host Directus on a \$5/mo cloud VM |
 | **3. Built-In Live Video Rooms ("Zoom Replacement")** | Circle Live Rooms / Zoom links for small groups & cohorts | **Working Preview (`PR #905` via GetStream)**: Up to 10-person video/audio calls, **no 40-minute cutoff**, calm muted/camera-off defaults, and **1-tap Guest Invite Links** (join by typing a name—no account required). | **70%** | 20% | **14.00%** | Fix 2-way audio unmute state bug (`#909`/`#919`) + add scheduled meeting calendar links (`#903`) |
-| **4. Migration, Moderation & Safety** | CSV imports, member bans, admin controls | **Working Tools**: Circle.so CSV Importer (`tool/import_circle_csv.dart`), admin ban rules (`#804`), Remote Config banners, and automated SQL backups. | **55%** | 10% | **5.50%** | Self-serve "Create New Organization" onboarding screen |
+| **4. Migration, Moderation & Safety** | CSV imports, member bans, admin controls | **Working Tools**: Circle.so CSV Audit/Parser CLI (`tool/import_circle_csv.dart`), admin ban rules (`#804`), Remote Config banners, and automated SQL backups. | **55%** | 10% | **5.50%** | Extend CSV CLI from audit to Firestore batch writer + self-serve "Create New Org" screen |
 | **5. Stripe Billing & Subscriptions** | Org SaaS billing & paid member paywalls | **Web/PWA Architecture Ready**: Zero 30% Apple App Store commission; ready for standard Stripe Hosted Checkout. | **25%** | 10% | **2.50%** | 1 Stripe Checkout link + 1 webhook function (~3 days of work) |
 | **HOLISTIC TOTAL** | **\$1,250 – \$2,600+/year** | **\$49/mo (\$588/yr) — Half the Price, 10x Calmer** | **~70.5%** | **100%** | **`70.45%`** | **~3–4 weeks of low-cost AI-assisted glue work** |
 
@@ -31,9 +31,9 @@ In software, the hardest 70% is **proving the architecture and user experience a
 1. **Can non-technical pastors, teachers, and ministry leaders add courses and videos without a programmer?**
    - **Solved via Directus + Mux:** **Directus** is an open-source, visual web dashboard that sits directly on top of our PostgreSQL database. Instead of building a complicated custom "Teacher Studio" from scratch, we plugged Directus into **Mux** (the gold-standard video streaming engine). A non-technical leader opens Directus in their browser, types the lesson title and handout, drags an `.mp4` video onto the page, and switches the dropdown from `Draft` to `Published`. Seconds later, it streams in HD on every phone and computer.
 2. **Can small groups, prayer circles, and classes meet live on video without paying for Zoom or forcing guests to create accounts?**
-   - **Solved via GetStream Video:** Our built-in group video rooms let a member tap **Create Guest Link** and text it to a friend or visitor. The guest clicks the link, types their first name, and joins the video room right in their browser or phone—starting calmly with mic and camera off until they tap to unmute, with **no 40-minute limit** and **66,000 free participant-minutes per month** included on GetStream's free tier.
-3. **Can we charge \$49/month (half of Circle's \$99/mo Professional tier) and still make software-grade margins?**
-   - **Yes — >90% Gross Margins:** Because we run on modern serverless tiers (Firebase, Supabase Postgres, Mux, GetStream) and deliver via Web/PWA (zero 30% Apple/Google App Store tax), our hard infrastructure cost for a 100-member church or ministry is **under \$3/month**. At **\$49/month** (plus **\$1,500–\$5,000** for white-glove setup and training), every single customer is immediately profitable.
+   - **Solved via GetStream Video (Preview):** Our built-in group video rooms let a member tap **Create Guest Link** and text it to a friend or visitor. The guest clicks the link, types their first name, and joins the video room right in their browser or phone—starting calmly with mic and camera off until they tap to unmute, with **no 40-minute limit** and **33,000–66,000 free participant-minutes per month** included on GetStream's monthly credit.
+3. **Can we charge \$49/month (half of Circle's \$89–\$199/mo tiers) and still make software-grade margins?**
+   - **Yes — 82% to 94% Gross Margins:** Within our Firebase, Supabase Postgres, Mux (100k free delivery mins/mo), and GetStream monthly credits, our hard infrastructure cost for an early 100-member church or ministry is **under \$3/month (~94% gross margin)**. Even past the free tier at steady-state paid usage (e.g., four 1-hour calls of 10 people/month = 2,400 participant-minutes × \$0.003/min = \$7.20 + ~\$1.50 DB/Mux storage = **~\$8.70/month**), a **\$49/month** plan still yields an **82%+ software gross margin** before adding **\$1,500–\$5,000** white-glove setup fees.
 
 ---
 
