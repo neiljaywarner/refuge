@@ -82,6 +82,32 @@ void main() {
     expect(room.requests.last.enabled, isFalse);
     expect(room.requests.last.stopTrackOnMute, isFalse);
   });
+
+  testWidgets('a failed microphone change leaves the icon and says so', (
+    tester,
+  ) async {
+    final room = _Room();
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+    expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+
+    room.failNextMicrophoneChange();
+    await tester.tap(find.byKey(const Key('group_call_microphone_button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.mic_off_rounded), findsNothing);
+    expect(
+      find.text('The microphone stayed as it was. Try again.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('microphone unavailable'), findsNothing);
+    expect(find.textContaining('token'), findsNothing);
+  });
 }
 
 class _MockCall extends Mock implements Call {}
@@ -109,6 +135,10 @@ class _Room {
       requests.add(
         _MicRequest(enabled: enabled, stopTrackOnMute: stopTrackOnMute),
       );
+      if (_failNext) {
+        _failNext = false;
+        return Result<None>.error('microphone unavailable');
+      }
       _audio = enabled;
       _states.publish(_callState());
       return const Result.success(none);
@@ -120,6 +150,9 @@ class _Room {
   late final _states = _Hold(_callState());
   bool _audio = false;
   final bool _webPlaybackBlocked = false;
+  bool _failNext = false;
+
+  void failNextMicrophoneChange() => _failNext = true;
 
   void beginWithMicrophoneOn() {
     _audio = true;
