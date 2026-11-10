@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
-import '../../../core/logging/app_logger.dart';
+import '../domain/group_call_909_log.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
 import 'group_call_session_controls.dart';
@@ -128,14 +128,19 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
   bool _holding = false;
   int _cameraCorrections = 0;
   int _microphoneCorrections = 0;
-  bool _loggedWebAudioBlock = false;
+  bool? _webBlocked;
+  bool _localTrackPresent = false;
+  String? _localLine;
+  String? _outputLine;
+  String? _capabilityLine;
+  final GroupCall909Throttle _remotes = GroupCall909Throttle();
 
   @override
   void initState() {
     super.initState();
-    _noteWebPlayback(widget.call.state.value);
+    _logCallState(widget.call.state.value);
     _subscription = widget.call.state.valueStream.listen((next) {
-      _noteWebPlayback(next);
+      _logCallState(next);
       if (mounted) _ticks.tick();
       unawaited(_quietUnrequestedTracks());
     });
@@ -187,9 +192,29 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
   Future<void> _applyMicrophone(bool enabled) async {
     final askedBefore = _userWantsMicrophone;
     _userWantsMicrophone = enabled;
+    final before = widget.call.state.value.localParticipant;
+    logGroupCall909(
+      'mic request enabled=$enabled ${groupCall909LocalAudio(before)}',
+    );
     final result = await setGroupCallMicrophone(widget.call, enabled: enabled);
     if (!mounted) return;
-    _noteMicrophone(enabled, accepted: result.isSuccess);
+    final after = widget.call.state.value.localParticipant;
+    logGroupCall909(
+      'mic result enabled=$enabled accepted=${result.isSuccess} ${groupCall909LocalAudio(after)}',
+    );
+    final publish = groupCall909PublishChange(
+      beforePresent: before?.audioTrack != null,
+      afterPresent: after?.audioTrack != null,
+      afterEnabled: after?.isAudioEnabled ?? false,
+    );
+    if (publish != null) logGroupCall909(publish);
+    if (!result.isSuccess &&
+        enabled &&
+        !capabilitiesIncludeSendAudio(
+          widget.call.state.value.ownCapabilities,
+        )) {
+      logGroupCall909('mic result missing send-audio');
+    }
     if (result.isFailure) {
       _userWantsMicrophone = askedBefore;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -200,31 +225,45 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     }
   }
 
-  void _noteMicrophone(bool enabled, {required bool accepted}) {
-    if (!enabled) return;
-    final state = widget.call.state.value;
-    final canSend = capabilitiesIncludeSendAudio(state.ownCapabilities);
-    final published = state.localParticipant?.isAudioEnabled ?? false;
-    AppLogger.info(
-      'group-call microphone published=$published sendAudio=$canSend accepted=$accepted',
-    );
-    if (!canSend) {
-      AppLogger.warning('group-call unmute is missing send-audio');
+  void _logCallState(CallState next) {
+    final blocked = next.isWebAudioPlaybackBlocked;
+    if (_webBlocked != blocked) {
+      _webBlocked = blocked;
+      logGroupCall909('webAudioPlaybackBlocked=$blocked');
     }
-    if (accepted && !published) {
-      AppLogger.warning('group-call unmute did not publish a microphone track');
-    }
-  }
 
-  void _noteWebPlayback(CallState next) {
-    if (_loggedWebAudioBlock) return;
-    if (!webListenerNeedsATap(
-      playbackBlocked: next.isWebAudioPlaybackBlocked,
-    )) {
-      return;
+    final present = next.localParticipant?.audioTrack != null;
+    final publish = groupCall909PublishChange(
+      beforePresent: _localTrackPresent,
+      afterPresent: present,
+      afterEnabled: next.localParticipant?.isAudioEnabled ?? false,
+    );
+    _localTrackPresent = present;
+    if (publish != null) logGroupCall909(publish);
+    final localLine = groupCall909LocalAudio(next.localParticipant);
+    if (localLine != _localLine) {
+      _localLine = localLine;
+      logGroupCall909(localLine);
     }
-    _loggedWebAudioBlock = true;
-    AppLogger.warning('group-call web audio is blocked until a tap');
+
+    final output = groupCall909Output(
+      deviceId: next.audioOutputDevice?.id,
+      deviceLabel: next.audioOutputDevice?.label,
+      external: next.audioOutputDevice?.isExternal ?? false,
+    );
+    if (output != _outputLine) {
+      _outputLine = output;
+      logGroupCall909(output);
+    }
+
+    final capabilities = groupCall909Capabilities(next.ownCapabilities);
+    if (capabilities != _capabilityLine) {
+      _capabilityLine = capabilities;
+      logGroupCall909(capabilities);
+    }
+
+    final remotes = groupCall909Remotes(next.otherParticipants);
+    if (_remotes.allow(remotes, DateTime.now())) logGroupCall909(remotes);
   }
 
   @override
