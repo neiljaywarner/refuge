@@ -156,6 +156,21 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     }
   }
 
+  Future<void> _applyMicrophone(bool enabled) async {
+    final askedBefore = _userWantsMicrophone;
+    _userWantsMicrophone = enabled;
+    final result = await setGroupCallMicrophone(widget.call, enabled: enabled);
+    if (!mounted) return;
+    if (result.isFailure) {
+      _userWantsMicrophone = askedBefore;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('The microphone stayed as it was. Try again.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.call.state.value;
@@ -166,10 +181,7 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
           widget.call.state.value.localParticipant?.isAudioEnabled ?? false,
       cameraEnabled: () =>
           widget.call.state.value.localParticipant?.isVideoEnabled ?? false,
-      onSetMicrophone: (enabled) {
-        _userWantsMicrophone = enabled;
-        unawaited(setGroupCallMicrophone(widget.call, enabled: enabled));
-      },
+      onSetMicrophone: (enabled) => unawaited(_applyMicrophone(enabled)),
       onSetCamera: (enabled) {
         _userWantsCamera = enabled;
         unawaited(widget.call.setCameraEnabled(enabled: enabled));
