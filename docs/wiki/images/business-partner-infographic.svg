@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1160" width="900" height="1160" role="img" aria-labelledby="title desc">
-  <title id="title">Refuge Digital COmmunity — Business &amp; Partnership Infographic</title>
-  <desc id="desc">Visual summary of the problem, calm solution, three 37signals principles, and commercial partnership opportunity.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1380" width="960" height="1380" role="img" aria-labelledby="title desc">
+  <title id="title">Refuge Platform — The Calm Circle.so + Zoom Competitor at Half the Price</title>
+  <desc id="desc">Executive summary of the Refuge Platform: 70.5% holistic Circle.so parity scorecard across 5 pillars, 3 live demos (Belong Community #1, Directus/Mux Course Demo POC, and GetStream Zoom-style video rooms), half-price unit economics, and 90-day non-technical partner roadmap.</desc>
   <defs>
     <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="110%">
       <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1E293B" flood-opacity="0.07"/>
@@ -8,138 +8,145 @@
   </defs>
 
   <!-- Warm Cream Editorial Paper Background -->
-  <rect width="900" height="1160" fill="#FAF7F2"/>
+  <rect width="960" height="1380" fill="#FAF7F2"/>
 
-  <!-- Header -->
-  <text x="450" y="86" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" letter-spacing="0.5" fill="#1E293B">REFUGE APP</text>
-  <text x="450" y="128" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#334155">Starts as Ministry. Grows into a Calm Community Business.</text>
+  <!-- Top Header Banner -->
+  <text x="480" y="68" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="42" font-weight="800" letter-spacing="0.8" fill="#244D3B">REFUGE PLATFORM</text>
+  <text x="480" y="106" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#334155">The Calm, White-Label Circle.so + Zoom + Courses Competitor at Half the Price</text>
 
-  <!-- Card 1: The Problem -->
-  <rect x="44" y="166" width="394" height="360" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
-  <text x="241" y="214" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="800" fill="#1E293B">1. THE PROBLEM</text>
+  <!-- Status Pill -->
+  <rect x="170" y="124" width="620" height="36" rx="18" fill="#E8EFEA" stroke="#5B7F67" stroke-width="1.5"/>
+  <text x="480" y="148" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="800" letter-spacing="0.5" fill="#244D3B">70% HOLISTICALLY BUILT • 100% HARD TECH RISK RETIRED • 3 DEMOS LIVE</text>
+
+  <!-- Card 1: The Market Problem -->
+  <rect x="44" y="182" width="424" height="310" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
+  <text x="256" y="224" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="800" fill="#1E293B">1. THE MARKET PROBLEM</text>
 
   <!-- Bell + Bill Illustration -->
-  <g transform="translate(135, 240)">
-    <!-- Bell -->
-    <path d="M46 18 C30 18 20 30 20 48 L14 64 L78 64 L72 48 C72 30 62 18 46 18 Z" fill="#688B72" stroke="#1E293B" stroke-width="2.5"/>
-    <circle cx="46" cy="70" r="6" fill="#1E293B"/>
-    <!-- Bill Document -->
-    <g transform="translate(115, 6)">
-      <rect x="0" y="0" width="78" height="96" rx="6" fill="#F8FAFC" stroke="#1E293B" stroke-width="2.5"/>
-      <text x="39" y="25" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="800" fill="#1E293B">BILL</text>
-      <line x1="14" y1="38" x2="64" y2="38" stroke="#64748B" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="14" y1="50" x2="54" y2="50" stroke="#64748B" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="14" y1="62" x2="60" y2="62" stroke="#64748B" stroke-width="2.5" stroke-linecap="round"/>
-      <text x="39" y="84" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="800" fill="#B45309">$1,500/yr</text>
+  <g transform="translate(150, 242)">
+    <path d="M42 14 C28 14 18 25 18 42 L12 56 L72 56 L66 42 C66 25 56 14 42 14 Z" fill="#688B72" stroke="#1E293B" stroke-width="2.5"/>
+    <circle cx="42" cy="62" r="5.5" fill="#1E293B"/>
+    <g transform="translate(112, 2)">
+      <rect x="0" y="0" width="84" height="78" rx="6" fill="#F8FAFC" stroke="#1E293B" stroke-width="2.5"/>
+      <text x="42" y="22" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#1E293B">CIRCLE+ZOOM</text>
+      <line x1="14" y1="33" x2="70" y2="33" stroke="#64748B" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="14" y1="44" x2="58" y2="44" stroke="#64748B" stroke-width="2.2" stroke-linecap="round"/>
+      <text x="42" y="66" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="800" fill="#B45309">$1.4k–$3k/yr</text>
     </g>
-    <!-- Amber Strike X over Bell -->
-    <line x1="4" y1="8" x2="90" y2="86" stroke="#C87D32" stroke-width="4" stroke-linecap="round"/>
-    <line x1="90" y1="8" x2="4" y2="86" stroke="#C87D32" stroke-width="4" stroke-linecap="round"/>
+    <line x1="6" y1="6" x2="80" y2="70" stroke="#C87D32" stroke-width="4" stroke-linecap="round"/>
+    <line x1="80" y1="6" x2="6" y2="70" stroke="#C87D32" stroke-width="4" stroke-linecap="round"/>
   </g>
 
-  <text x="241" y="396" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18.5" fill="#1E293B">
-    <tspan x="241" dy="0">Facebook &amp; Discord overwhelm</tspan>
-    <tspan x="241" dy="27">sensitive people. Circle &amp;</tspan>
-    <tspan x="241" dy="27">(verify?)church suites may cost $1,000–</tspan>
-    <tspan x="241" dy="27">$10,000/yr for noisy clutter.</tspan>
+  <text x="256" y="362" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16.5" fill="#334155">
+    <tspan x="256" dy="0" font-weight="700">Facebook &amp; Discord:</tspan><tspan> Ads, outrage &amp; noise.</tspan>
+    <tspan x="256" dy="25" font-weight="700">Circle.so + Zoom:</tspan><tspan> $1,400–$3,000/yr across</tspan>
+    <tspan x="256" dy="23">separate logins &amp; bloated creator menus.</tspan>
+    <tspan x="256" dy="25" font-weight="700">Church Suites:</tspan><tspan> $2.4k–$10k/yr built for Sunday</tspan>
+    <tspan x="256" dy="23">bulletins, not warm weekday fellowship.</tspan>
   </text>
 
-  <!-- Card 2: The Calm Solution -->
-  <rect x="462" y="166" width="394" height="360" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
-  <text x="659" y="214" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="800" fill="#1E293B">2. THE CALM SOLUTION</text>
+  <!-- Card 2: The Refuge Platform (3 Live Proof Points) -->
+  <rect x="492" y="182" width="424" height="310" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
+  <text x="704" y="224" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="800" fill="#1E293B">2. REFUGE: 3 WORKING DEMOS</text>
 
-  <!-- Tea + Laptop + Warm Chat Bubble Illustration -->
-  <g transform="translate(548, 244)">
-    <!-- Warm Chat Bubble -->
-    <rect x="132" y="0" width="66" height="44" rx="10" fill="#D4955A" stroke="#1E293B" stroke-width="2.5"/>
-    <polygon points="146,44 158,44 144,55" fill="#D4955A" stroke="#1E293B" stroke-width="2.5"/>
-    <path d="M150 22 Q154 16 158 22" fill="none" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round"/>
-    <path d="M172 22 Q176 16 180 22" fill="none" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round"/>
-    <path d="M158 31 Q165 37 172 31" fill="none" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round"/>
-
-    <!-- Warm Tea Mug -->
-    <rect x="40" y="34" width="36" height="32" rx="6" fill="#C87D32" stroke="#1E293B" stroke-width="2.5"/>
-    <path d="M76 42 C86 42 86 58 76 58" fill="none" stroke="#1E293B" stroke-width="2.5"/>
-    <path d="M52 24 Q55 15 52 8" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
-    <path d="M64 24 Q67 15 64 8" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
-
-    <!-- Sage Laptop -->
-    <polygon points="116,58 206,58 196,98 106,98" fill="#5B7F67" stroke="#1E293B" stroke-width="2.5"/>
-    <circle cx="156" cy="78" r="5" fill="#FAF7F2"/>
-    <line x1="16" y1="98" x2="216" y2="98" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Tea + Laptop + Video/Course Illustration -->
+  <g transform="translate(592, 240)">
+    <rect x="128" y="0" width="70" height="42" rx="10" fill="#D4AE65" stroke="#1E293B" stroke-width="2.5"/>
+    <polygon points="142,42 154,42 140,52" fill="#D4AE65" stroke="#1E293B" stroke-width="2.5"/>
+    <polygon points="156,13 156,29 172,21" fill="#1E293B"/>
+    <rect x="32" y="30" width="34" height="30" rx="6" fill="#C87D32" stroke="#1E293B" stroke-width="2.5"/>
+    <path d="M66 37 C75 37 75 52 66 52" fill="none" stroke="#1E293B" stroke-width="2.5"/>
+    <path d="M43 22 Q46 13 43 7" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+    <path d="M55 22 Q58 13 55 7" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+    <polygon points="108,52 198,52 188,86 98,86" fill="#244D3B" stroke="#1E293B" stroke-width="2.5"/>
+    <circle cx="148" cy="69" r="4.5" fill="#FAF7F2"/>
+    <line x1="12" y1="86" x2="208" y2="86" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>
   </g>
 
-  <text x="659" y="396" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18.5" fill="#1E293B">
-    <tspan x="659" dy="0">A quiet, ad-free online home</tspan>
-    <tspan x="659" dy="27">for neurodivergent adults,</tspan>
-    <tspan x="659" dy="27">families &amp; churches. Live now as</tspan>
-    <tspan x="659" dy="27">our church leaves Circle by Oct 31.</tspan>
+  <text x="704" y="362" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16.5" fill="#334155">
+    <tspan x="704" dy="0" font-weight="700">1. Community #1 (Belong):</tspan><tspan> Live (left Circle Oct 31!).</tspan>
+    <tspan x="704" dy="25" font-weight="700">2. Courses + Directus CMS:</tspan><tspan> Non-tech leaders</tspan>
+    <tspan x="704" dy="23">drag-and-drop video lessons in 1 browser tab.</tspan>
+    <tspan x="704" dy="25" font-weight="700">3. Built-In "Zoom" Rooms:</tspan><tspan> GetStream 1-tap</tspan>
+    <tspan x="704" dy="23">guest links, no account needed, no 40m cutoff.</tspan>
   </text>
 
-  <!-- Card 3: Built the 37signals Way -->
-  <rect x="44" y="554" width="812" height="236" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
-  <text x="450" y="602" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="800" fill="#1E293B">3. BUILT THE 37SIGNALS WAY</text>
+  <!-- Card 3: 70% Circle.so Parity Scorecard -->
+  <rect x="44" y="514" width="872" height="412" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
+  <text x="480" y="556" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#1E293B">3. REFUGE VS. CIRCLE.SO: 70.5% HOLISTIC PARITY SCORECARD</text>
+  <text x="480" y="582" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" fill="#475569">All 5 pillars are proven in our own code; the remaining ~30% is fast, low-cost integration glue.</text>
 
-  <line x1="315" y1="628" x2="315" y2="762" stroke="#E2E8F0" stroke-width="2"/>
-  <line x1="585" y1="628" x2="585" y2="762" stroke="#E2E8F0" stroke-width="2"/>
+  <!-- Bar 1: Community -->
+  <text x="76" y="620" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1E293B">Pillar 1: Spaces, Feed, Directory, DMs &amp; Push Alerts (35% weight)</text>
+  <text x="884" y="620" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="800" fill="#244D3B">92% DONE • LIVE IN PROD</text>
+  <rect x="76" y="630" width="808" height="18" rx="9" fill="#E2E8F0"/>
+  <rect x="76" y="630" width="743" height="18" rx="9" fill="#244D3B"/>
 
-  <!-- Pillar 1 -->
-  <text x="180" y="666" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="800" fill="#1E293B">Pick a Fight</text>
-  <text x="180" y="708" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18.5" fill="#334155">
-    <tspan x="180" dy="0">Calm belonging</tspan>
-    <tspan x="180" dy="26">over attention traps</tspan>
+  <!-- Bar 2: Live Video / Zoom -->
+  <text x="76" y="682" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1E293B">Pillar 2: Built-In "Zoom" Video Rooms &amp; Guest Links via GetStream (20% weight)</text>
+  <text x="884" y="682" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="800" fill="#244D3B">70% DONE • PREVIEW PR #905</text>
+  <rect x="76" y="692" width="808" height="18" rx="9" fill="#E2E8F0"/>
+  <rect x="76" y="692" width="566" height="18" rx="9" fill="#5B7F67"/>
+
+  <!-- Bar 3: Courses + Directus + Mux -->
+  <text x="76" y="744" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1E293B">Pillar 3: Video Courses, Workbooks &amp; Directus Non-Tech CMS (25% weight)</text>
+  <text x="884" y="744" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="800" fill="#244D3B">65% DONE • LIVE POC APP</text>
+  <rect x="76" y="754" width="808" height="18" rx="9" fill="#E2E8F0"/>
+  <rect x="76" y="754" width="525" height="18" rx="9" fill="#5B7F67"/>
+
+  <!-- Bar 4: Admin & Migration -->
+  <text x="76" y="806" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1E293B">Pillar 4: Circle CSV Migration, Moderation &amp; White-Label Config (10% weight)</text>
+  <text x="884" y="806" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="800" fill="#B45309">55% DONE • TOOLS READY</text>
+  <rect x="76" y="816" width="808" height="18" rx="9" fill="#E2E8F0"/>
+  <rect x="76" y="816" width="444" height="18" rx="9" fill="#D4AE65"/>
+
+  <!-- Bar 5: Stripe Billing -->
+  <text x="76" y="868" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1E293B">Pillar 5: Stripe Self-Serve Checkout &amp; Member Paywalls (10% weight)</text>
+  <text x="884" y="868" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="800" fill="#B45309">25% DONE • 3-DAY WEBHOOK</text>
+  <rect x="76" y="878" width="808" height="18" rx="9" fill="#E2E8F0"/>
+  <rect x="76" y="878" width="202" height="18" rx="9" fill="#D4AE65"/>
+
+  <!-- Card 4: Economics & 90-Day Non-Technical Partner Playbook -->
+  <rect x="44" y="948" width="872" height="364" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
+  <text x="480" y="990" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#1E293B">4. HALF-PRICE ECONOMICS &amp; 90-DAY CO-BUILDER PLAYBOOK</text>
+
+  <line x1="334" y1="1014" x2="334" y2="1286" stroke="#E2E8F0" stroke-width="2"/>
+  <line x1="626" y1="1014" x2="626" y2="1286" stroke="#E2E8F0" stroke-width="2"/>
+
+  <!-- Column 1: Unit Economics -->
+  <text x="189" y="1042" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#244D3B">$49/mo + Setup</text>
+  <text x="189" y="1074" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#334155">
+    <tspan x="189" dy="0" font-weight="700">50% Less Than Circle+Zoom</tspan>
+    <tspan x="189" dy="24">($49/mo vs $117–$217/mo)</tspan>
+    <tspan x="189" dy="28" font-weight="700">$1,500–$5,000 White-Glove</tspan>
+    <tspan x="189" dy="24">Setup, Migration &amp; Training</tspan>
+    <tspan x="189" dy="28" font-weight="700">&lt;$3/mo Unit Cost (&gt;90% Margin)</tspan>
+    <tspan x="189" dy="24">Web/PWA = 0% App Store Tax</tspan>
   </text>
 
-  <!-- Pillar 2 -->
-  <text x="450" y="654" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="800" fill="#1E293B">
-    <tspan x="450" dy="0">Half, Not</tspan>
-    <tspan x="450" dy="28">Half-Baked</tspan>
-  </text>
-  <text x="450" y="718" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18.5" fill="#334155">
-    <tspan x="450" dy="0">Core rooms done</tspan>
-    <tspan x="450" dy="26">remarkably well</tspan>
-  </text>
-
-  <!-- Pillar 3 -->
-  <text x="720" y="654" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="800" fill="#1E293B">
-    <tspan x="720" dy="0">Embrace</tspan>
-    <tspan x="720" dy="28">Constraints</tspan>
-  </text>
-  <text x="720" y="718" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18.5" fill="#334155">
-    <tspan x="720" dy="0">Near-$0 overhead,</tspan>
-    <tspan x="720" dy="26">no App Store tax</tspan>
+  <!-- Column 2: Dual-Track Demo -->
+  <text x="480" y="1042" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#244D3B">1 Demo = 2 Tracks</text>
+  <text x="480" y="1074" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#334155">
+    <tspan x="480" dy="0" font-weight="700">Track A: Paying Customers</tspan>
+    <tspan x="480" dy="24">Churches, Ministries, Coaching</tspan>
+    <tspan x="480" dy="22">Guilds &amp; Care Non-Profits</tspan>
+    <tspan x="480" dy="28" font-weight="700">Track B: Capital &amp; Grants</tspan>
+    <tspan x="480" dy="24">Faith/Disability Grants, Angel</tspan>
+    <tspan x="480" dy="22">Investors &amp; Values-Aligned Seed</tspan>
   </text>
 
-  <!-- Card 4: The Business & Partnership -->
-  <rect x="44" y="818" width="812" height="254" rx="18" fill="#FFFFFF" stroke="#E7E2D8" stroke-width="1.5" filter="url(#cardShadow)"/>
-  <text x="450" y="866" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="800" fill="#1E293B">4. THE BUSINESS &amp; PARTNERSHIP</text>
-
-  <line x1="315" y1="892" x2="315" y2="1042" stroke="#E2E8F0" stroke-width="2"/>
-  <line x1="585" y1="892" x2="585" y2="1042" stroke="#E2E8F0" stroke-width="2"/>
-
-  <!-- Column 1 -->
-  <text x="180" y="922" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#1E293B">Who Needs It</text>
-  <text x="180" y="958" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" fill="#334155">
-    <tspan x="180" dy="0">Churches,</tspan>
-    <tspan x="180" dy="25">Disability Non-Profits</tspan>
-    <tspan x="180" dy="25">&amp; Support Groups</tspan>
+  <!-- Column 3: 90-Day Non-Tech Partner Plan -->
+  <text x="771" y="1042" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="800" fill="#244D3B">90-Day Partner Role</text>
+  <text x="771" y="1074" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#334155">
+    <tspan x="771" dy="0" font-weight="700">Mo 1: Package &amp; Content</tspan>
+    <tspan x="771" dy="24">15 Leader Interviews + Build</tspan>
+    <tspan x="771" dy="22">Flagship Courses in Directus</tspan>
+    <tspan x="771" dy="28" font-weight="700">Mo 2: Founding 5 Cohort</tspan>
+    <tspan x="771" dy="24">Close 3–5 Orgs ($1.5k + $49/mo)</tspan>
+    <tspan x="771" dy="28" font-weight="700">Mo 3: Case Studies &amp; Scale</tspan>
+    <tspan x="771" dy="24">Pitch Networks, Grants &amp; Seed</tspan>
   </text>
 
-  <!-- Column 2 -->
-  <text x="450" y="922" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="800" fill="#5B7F67">$19–$77/mo</text>
-  <text x="450" y="958" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" fill="#334155">
-    <tspan x="450" dy="0">Hosted Spaces •</tspan>
-    <tspan x="450" dy="25">$1.5k–$5k White-</tspan>
-    <tspan x="450" dy="25">Glove Setup</tspan>
-  </text>
-
-  <!-- Column 3 -->
-  <text x="720" y="914" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#1E293B">
-    <tspan x="720" dy="0">Zero-Pressure</tspan>
-    <tspan x="720" dy="26">Partnership</tspan>
-  </text>
-  <text x="720" y="976" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" fill="#334155">
-    <tspan x="720" dy="0">Advise, Co-Build,</tspan>
-    <tspan x="720" dy="25">or Take the Lead</tspan>
-  </text>
+  <!-- Footer -->
+  <text x="480" y="1348" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#475569">Refuge Platform • Community #1: belongonthespectrum.web.app • Courses POC: coursedemo-auxano-poc.web.app</text>
 </svg>
