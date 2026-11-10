@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
@@ -9,6 +8,7 @@ import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
 import '../domain/group_call_screen_share.dart';
 import 'group_call_session_controls.dart';
+import 'group_call_stage.dart';
 
 /// True when the camera is sending and the person has not asked for it.
 ///
@@ -404,16 +404,3 @@ Future<Result<None>> setGroupCallMicrophone(
 /// https://getstream.io/video/docs/flutter/guides/call-and-participant-state/
 Future<void> resumeGroupCallWebAudio() =>
     RtcMediaDeviceNotifier.instance.resumeWebAudioPlayback();
-
-/// This device. Web and Android can publish. iOS cannot, until a broadcast
-/// extension exists. Tests override [GroupCallLiveControls.sharePlatform].
-///
-/// https://getstream.io/video/docs/flutter/guides/screensharing/
-GroupCallSharePlatform currentGroupCallSharePlatform() {
-  if (kIsWeb) return GroupCallSharePlatform.web;
-  return switch (defaultTargetPlatform) {
-    TargetPlatform.android => GroupCallSharePlatform.android,
-    TargetPlatform.iOS => GroupCallSharePlatform.ios,
-    _ => GroupCallSharePlatform.other,
-  };
-}
