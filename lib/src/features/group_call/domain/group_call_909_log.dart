@@ -71,10 +71,13 @@ String groupCall909Remotes(Iterable<CallParticipantState> others) {
   for (final person in others) {
     if (person.audioTrack != null) tracks += 1;
     if (person.isSpeaking) speaking += 1;
-    level += person.audioLevel;
+    // A muted track can keep the last audioLevel (often about 0.20) after
+    // the sound has already stopped. Count energy only while audio is on.
+    if (person.isAudioEnabled) level += person.audioLevel;
   }
   final rounded = (level * 100).round() / 100;
-  return 'remotes audioTracks=$tracks speaking=$speaking audioLevel=$rounded';
+  final shown = rounded == 0 ? '0' : '$rounded';
+  return 'remotes audioTracks=$tracks speaking=$speaking audioLevel=$shown';
 }
 
 /// Publish or unpublish when the local audio track appears or disappears.

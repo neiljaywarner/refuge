@@ -79,6 +79,27 @@ void main() {
     expect(line, 'remotes audioTracks=1 speaking=1 audioLevel=0.13');
     expect(line.contains('@'), isFalse);
     expect(line.contains('remote-track'), isFalse);
+
+    final muted = CallParticipantState(
+      userId: 'other-2',
+      roles: const [],
+      name: 'Fellow Member',
+      // ignore: deprecated_member_use
+      custom: const {},
+      sessionId: 'session-3',
+      trackIdPrefix: 'muted-track',
+      isSpeaking: false,
+      audioLevel: 0.20,
+      publishedTracks: {SfuTrackType.audio: TrackState.remote(muted: true)},
+    );
+    expect(
+      groupCall909Remotes([muted]),
+      'remotes audioTracks=1 speaking=0 audioLevel=0',
+    );
+    expect(
+      groupCall909Remotes([remote, muted]),
+      'remotes audioTracks=2 speaking=1 audioLevel=0.13',
+    );
   });
 
   test('a repeated remote line waits two seconds', () {
