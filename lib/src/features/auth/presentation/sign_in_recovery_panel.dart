@@ -31,6 +31,7 @@ class SignInRecoveryPanel extends StatelessWidget {
         children: [
           TextButton(
             key: const Key('sign_in_forgot_password'),
+            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
             onPressed: onForgotPassword,
             child: const Text(VerifyEmailCopy.forgotPasswordButton),
           ),
