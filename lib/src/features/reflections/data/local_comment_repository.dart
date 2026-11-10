@@ -170,7 +170,15 @@ class LocalCommentRepository implements CommentRepository {
         _store.add(comment);
         changed = true;
       } else if (!_sameComment(_store[index], comment)) {
-        _store[index] = comment;
+        final local = _store[index];
+        final members = retainKnownReactors(
+          counts: comment.reactions,
+          incoming: comment.reactionMembers,
+          known: local.reactionMembers,
+        );
+        _store[index] = identical(members, comment.reactionMembers)
+            ? comment
+            : comment.copyWith(reactionMembers: members);
         changed = true;
       }
     }

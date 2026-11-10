@@ -1,4 +1,5 @@
 import '../domain/post.dart';
+import '../domain/reaction_member.dart';
 
 List<Post> mergePosts(List<Post> base, List<Post> overlay) {
   final byId = <String, Post>{for (final post in base) post.id: post};
@@ -15,10 +16,26 @@ List<Post> mergePosts(List<Post> base, List<Post> overlay) {
 /// Also preserves `isSaved` if either copy is marked saved.
 Post preferPost(Post current, Post incoming) {
   final saved = current.isSaved || incoming.isSaved;
-  Post finish(Post winner) => winner.isSaved == saved ? winner : winner.copyWith(isSaved: saved);
-  if (incoming.timestamp.isAfter(current.timestamp)) return finish(incoming);
-  if (current.timestamp.isAfter(incoming.timestamp)) return finish(current);
+  Post finish(Post winner, Post other) {
+    final members = retainKnownReactors(
+      counts: winner.reactions,
+      incoming: winner.reactionMembers,
+      known: other.reactionMembers,
+    );
+    final withMembers = identical(members, winner.reactionMembers)
+        ? winner
+        : winner.copyWith(reactionMembers: members);
+    return withMembers.isSaved == saved ? withMembers : withMembers.copyWith(isSaved: saved);
+  }
+
+  if (incoming.timestamp.isAfter(current.timestamp)) {
+    return finish(incoming, current);
+  }
+  if (current.timestamp.isAfter(incoming.timestamp)) {
+    return finish(current, incoming);
+  }
   final currentScore = current.reactions.values.fold<int>(0, (total, value) => total + value);
   final incomingScore = incoming.reactions.values.fold<int>(0, (total, value) => total + value);
-  return finish(incomingScore >= currentScore ? incoming : current);
+  if (incomingScore >= currentScore) return finish(incoming, current);
+  return finish(current, incoming);
 }
