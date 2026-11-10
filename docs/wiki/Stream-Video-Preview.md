@@ -28,6 +28,21 @@ Audio is only partly checked. A real two-phone call still left the second person
 
 Next suspect: audio not resuming after a later unmute, on the web publisher or the Android subscriber, or playback that is simply very quiet. The next check should capture the Pixel's output directly (for example with scrcpy) instead of an acoustic mic.
 
+## Status 2026-11-10 (#909)
+
+Resume note for [#909](https://github.com/neiljaywarner/refuge/issues/909). This does not deploy anything. The two-phone call may have had no audio at all, including the first unmute. The earlier "first window was louder" reading used a mic in the room, so it is not proof that remote audio arrived.
+
+What this branch changes:
+
+- Mute passes `stopTrackOnMute: false`, so Android does not release the capture on mute. The microphone-in-use indicator stays on while muted. Docs: [Flutter video](https://getstream.io/video/docs/flutter/) and [microphone](https://getstream.io/video/docs/flutter/guides/camera-and-microphone/microphone-and-audio/).
+- A failed microphone change leaves the icon where it is and says "The microphone stayed as it was. Try again."
+- Join still starts with the microphone off. That does not create a track. The first unmute is the publish. An external unmute is still forced back off until the person asks.
+- The join asks for the loudspeaker. A connect request that omits that flag merges speaker off over the call type.
+- If the browser blocks the remote audio element, the call shows "Tap to hear the room". That calls `resumeWebAudioPlayback`. Android does not use this flag. Docs: [call state](https://getstream.io/video/docs/flutter/guides/call-and-participant-state/).
+- The guest membership role stays `call_member`. Hearing them requires `send-audio` on that role for the `default` call type. This client cannot read the dashboard. A debug join logs whether `send-audio` is present, with no ids and no tokens. Docs: [permissions](https://getstream.io/video/docs/flutter/guides/permissions-and-moderation/).
+
+Not proven: two people hearing each other. Same-room echo cancellation is still a suspect. The Android output device can still be the earpiece even when the speaker flag is on. No production deploy.
+
 Not yet run: the website on both Pixels, and the APK on both Pixels.
 
 TODO: Stream Video 1.7.2 pulls in `system_info2` 4.2.0, which breaks `dart2js` on web. The dev site was built with a temporary local `dependency_overrides` pin of `system_info2` 4.1.0. That pin is not in this repo.
