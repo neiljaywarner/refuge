@@ -23,7 +23,9 @@ String? sanitizeAuditText(String? value, {required int max}) {
     return null;
   }
   if (trimmed.length <= max) return trimmed;
-  return trimmed.substring(0, max);
+  final cut = trimmed.substring(0, max).trimRight();
+  if (cut.isEmpty) return null;
+  return cut;
 }
 
 /// `DateTime.timeZoneName`, or a UTC offset when the name is blank.

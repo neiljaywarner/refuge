@@ -113,7 +113,9 @@ Before each API-key write the server allows:
 
 At most **8** requests may be reading a body or waiting on Appwrite at once. Another arrival gets `503` immediately. It is not lined up behind a slow body. Opening the Appwrite connection is limited to **5 seconds**.
 
-The rate-limit identity is the direct TCP address this process sees. `X-Forwarded-For` is ignored unless `SESSION_AUDIT_TRUSTED_PROXIES` lists that direct address (comma-separated). Leave the variable empty for a loopback or a client that connects straight to this process. Behind one TLS reverse proxy, every phone shares the proxy's 8 writes an hour until you set the variable to the proxy address this process actually sees, and only that address. Do not trust forwarding headers from the public internet. The default bind stays `127.0.0.1`. `--public` is still required for any other host.
+The rate-limit identity is the direct TCP address this process sees. `X-Forwarded-For` is ignored unless `SESSION_AUDIT_TRUSTED_PROXIES` lists that direct address (comma-separated). Leave the variable empty for a loopback or a client that connects straight to this process. Behind one TLS reverse proxy, every phone shares the proxy's 8 writes an hour until you set the variable to the proxy address this process actually sees. List only addresses this process accepts connections from. Do not trust forwarding headers from the public internet.
+
+The proxy must append the client address of the TCP connection it accepted, or replace `X-Forwarded-For` with that address. Send a bare IP and no port. This process walks from the right and skips trusted hops, so the rightmost remaining address is the caller. A proxy that copies the incoming header unchanged lets the caller choose a new identity on every request. `::ffff:10.0.0.2` is the same address as `10.0.0.2`. The default bind stays `127.0.0.1`. `--public` is still required for any other host.
 
 Browser calls must come from a Belong web origin (`belongonthespectrum.web.app`, `dev-belongonthespectrum.web.app`, `belongonthespectrum.com`, and the matching firebaseapp host) or from loopback. Native apps send no `Origin` and are limited by the caller key and the project caps. Add more origins with `SESSION_AUDIT_ALLOWED_ORIGINS` (comma-separated). Do not put the API key in that list or in the app.
 
@@ -185,12 +187,15 @@ A crash after the summary write and before the deletes can add the same rows aga
 ### Runbook
 
 ```bash
-export APPWRITE_API_KEY='server-key-with-row-read-and-write'
+# Same .env.session-audit file as the admission server. Mode 600.
+set -a
+. ./.env.session-audit
+set +a
 dart run tool/prune_client_session_audits.dart --example
 dart run tool/prune_client_session_audits.dart
 dart run tool/prune_client_session_audits.dart --apply
 ```
 
-`--example` uses synthetic rows and does not call Appwrite. The default mode is a dry run. `--apply` writes, then deletes. The key stays in the environment. Do not commit it, paste it into an issue, or pass it as a flag.
+`--example` uses synthetic rows and does not call Appwrite. The default mode is a dry run. `--apply` writes, then deletes. Load the key from the file above so it is not typed into the shell. Do not commit it, paste it into an issue, or pass it as a flag.
 
 Do this on a schedule a person owns (weekly), in addition to the weekly Console visit. The script is not deployed as a Function, for the Free function cap above and because a paused project would not run it.

@@ -249,6 +249,58 @@ void main() {
     release.complete();
     expect((await first).status, 200);
   });
+
+  test('a stalled body does not block a caller that still has a slot', () async {
+    final writer = _Writer();
+    final slots = SessionAuditInflight(maxInFlight: 2);
+    final bound = await startSessionAuditServer(
+      address: InternetAddress.loopbackIPv4,
+      port: 0,
+      admission: _admission(writer),
+      callerSalt: salt,
+      allowedOrigins: sessionAuditBrowserOrigins,
+      inflight: slots,
+    );
+    final held = await _stallBody(bound.server);
+    addTearDown(() async {
+      held.client.close(force: true);
+      await bound.server.close(force: true);
+    });
+
+    await _waitUntil(() => slots.active == 1);
+    final ok = await _post(bound.server, origin: null);
+    expect(ok.status, 200);
+    expect(writer.creates, 1);
+    expect(slots.active, greaterThanOrEqualTo(1));
+  });
+
+  test('a stalled body releases its slot after the read deadline', () async {
+    final slots = SessionAuditInflight(maxInFlight: 1);
+    final bound = await startSessionAuditServer(
+      address: InternetAddress.loopbackIPv4,
+      port: 0,
+      admission: _admission(_Writer()),
+      callerSalt: salt,
+      allowedOrigins: sessionAuditBrowserOrigins,
+      inflight: slots,
+    );
+    final held = await _stallBody(bound.server);
+    addTearDown(() async {
+      held.client.close(force: true);
+      await bound.server.close(force: true);
+    });
+
+    await _waitUntil(() => slots.active == 1);
+    final started = DateTime.now();
+    final blocked = await _post(bound.server, origin: null);
+    expect(blocked.status, 503);
+    expect(DateTime.now().difference(started), lessThan(const Duration(seconds: 1)));
+
+    await _waitUntil(
+      () => slots.active == 0,
+      timeout: sessionAuditBodyReadTimeout + const Duration(seconds: 3),
+    );
+  });
 }
 
 SessionAuditAdmission _admission(SessionAuditRowWriter writer) => SessionAuditAdmission(
@@ -327,6 +379,28 @@ class _Capture {
     this.body = body;
     return (status: 201, json: {'\$id': 'abc123'});
   }
+}
+
+Future<void> _waitUntil(
+  bool Function() ready, {
+  Duration timeout = const Duration(seconds: 2),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (!ready()) {
+    if (DateTime.now().isAfter(deadline)) fail('condition was not met');
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+  }
+}
+
+Future<({HttpClient client, HttpClientRequest request})> _stallBody(HttpServer server) async {
+  final client = HttpClient();
+  final request = await client.post(server.address.address, server.port, '/');
+  request.persistentConnection = false;
+  request.contentLength = 32;
+  request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
+  request.add(utf8.encode('{'));
+  await request.flush();
+  return (client: client, request: request);
 }
 
 Future<({int status, Map<String, Object?> json})> _post(

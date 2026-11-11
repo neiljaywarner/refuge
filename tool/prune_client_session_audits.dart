@@ -8,7 +8,7 @@
 // dm-push and dm-mirror are the live ones. A schedule would not run while
 // the project is paused. Run it weekly, or when the raw count passes 1600.
 //
-//   export APPWRITE_API_KEY='...'   # server key, rows read + write. Do not commit.
+//   # APPWRITE_API_KEY in the environment. Do not commit it or pass it as a flag.
 //   dart run tool/prune_client_session_audits.dart
 //   dart run tool/prune_client_session_audits.dart --apply
 //   dart run tool/prune_client_session_audits.dart --example
@@ -148,12 +148,14 @@ class AppwriteSessionAuditStore implements SessionAuditRetentionStore {
     required this.projectId,
     required this.databaseId,
     required this.apiKey,
+    this.requestDeadline = const Duration(seconds: 30),
   });
 
   final String endpoint;
   final String projectId;
   final String databaseId;
   final String apiKey;
+  final Duration requestDeadline;
 
   static const _pageSize = 100;
   static const _maxPages = 40;
@@ -248,15 +250,15 @@ class AppwriteSessionAuditStore implements SessionAuditRetentionStore {
   Future<Map<String, Object?>> _send(String method, Uri uri, {Object? body}) async {
     final client = HttpClient();
     try {
-      final request = await client.openUrl(method, uri);
+      final request = await client.openUrl(method, uri).timeout(requestDeadline);
       request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
       request.headers.set('X-Appwrite-Project', projectId);
       request.headers.set('X-Appwrite-Key', apiKey);
       if (body != null) {
         request.add(utf8.encode(jsonEncode(body)));
       }
-      final response = await request.close().timeout(const Duration(seconds: 30));
-      final text = await response.transform(utf8.decoder).join();
+      final response = await request.close().timeout(requestDeadline);
+      final text = await response.transform(utf8.decoder).join().timeout(requestDeadline);
       if (response.statusCode >= 300) {
         throw _AppwriteStatus(response.statusCode, _clip(text, 180));
       }

@@ -69,6 +69,13 @@ void main() {
     test('a UTC timestamp reports the UTC zone name', () {
       expect(auditTimezoneLabel(DateTime.utc(2026, 11, 2)), 'UTC');
     });
+
+    test('trims a space left on the truncation boundary', () {
+      final version = sanitizeAuditText('${'n' * 63} trailing', max: 64);
+      expect(version, 'n' * 63);
+      expect(version, isNot(endsWith(' ')));
+      expect(sanitizeAuditText('14', max: 64), '14');
+    });
   });
 
   group('session audit controller', () {

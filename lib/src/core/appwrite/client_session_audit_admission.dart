@@ -83,10 +83,19 @@ String? sessionAuditNormalizeIp(String? raw) {
   }
   final zone = value.indexOf('%');
   if (zone >= 0) value = value.substring(0, zone);
+  final mapped = _mappedIpv4(value);
+  if (mapped != null) return mapped;
   final ipv4 = _canonicalIpv4(value);
   if (ipv4 != null) return ipv4;
   if (!_isIpv6Literal(value)) return null;
   return value;
+}
+
+/// `::ffff:10.0.0.2` is the IPv4 address a dual-stack socket reports.
+String? _mappedIpv4(String value) {
+  const prefix = '::ffff:';
+  if (!value.startsWith(prefix)) return null;
+  return _canonicalIpv4(value.substring(prefix.length));
 }
 
 String? _canonicalIpv4(String value) {

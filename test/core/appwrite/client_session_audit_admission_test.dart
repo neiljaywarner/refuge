@@ -27,6 +27,7 @@ void main() {
         isNull,
       );
       expect(admittedStartRow({..._cleanRow(), 'timezone': 1}, now), isNull);
+      expect(admittedStartRow({..._cleanRow(), 'osVersion': '14 '}, now), isNull);
     });
 
     test('accepts a UTC offset label', () {
@@ -60,6 +61,31 @@ void main() {
         trustedProxies: {'10.0.0.2'},
       );
       expect(first, isNot(second));
+      expect(
+        sessionAuditCallerAddress(
+          directAddress: '::ffff:10.0.0.2',
+          forwardedFor: '198.51.100.9, 203.0.113.8',
+          trustedProxies: {'10.0.0.2'},
+        ),
+        '203.0.113.8',
+      );
+      expect(
+        sessionAuditCallerAddress(
+          directAddress: '::ffff:10.0.0.2',
+          forwardedFor: '203.0.113.8',
+          trustedProxies: {'::ffff:10.0.0.2'},
+        ),
+        '203.0.113.8',
+      );
+      expect(
+        sessionAuditCallerAddress(
+          directAddress: '::ffff:203.0.113.10',
+          forwardedFor: '198.51.100.4',
+          trustedProxies: {'10.0.0.2'},
+        ),
+        '203.0.113.10',
+      );
+      expect(sessionAuditNormalizeIp('[::ffff:10.0.0.2]'), '10.0.0.2');
     });
   });
 

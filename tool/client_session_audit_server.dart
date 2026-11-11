@@ -6,7 +6,7 @@
 // already use them. Do not deploy this as a third Appwrite function, and do
 // not add the route to those functions.
 //
-//   export APPWRITE_API_KEY='...'   # rows.read and rows.write. Do not commit.
+//   # APPWRITE_API_KEY in the environment. Do not commit it or pass it as a flag.
 //   dart run tool/client_session_audit_server.dart
 //   dart run tool/client_session_audit_server.dart --public --host=0.0.0.0 --port=8787
 //
@@ -39,8 +39,13 @@ SESSION_AUDIT_ALLOWED_ORIGINS to a comma-separated list to add more.
 
 The rate-limit identity is the direct connection address. X-Forwarded-For
 is ignored unless SESSION_AUDIT_TRUSTED_PROXIES lists that direct peer.
+The proxy must append the client address it accepted, or replace the header
+with that bare IP. Do not copy the client header through unchanged.
 At most 8 requests are admitted at once. The rest get 503 immediately.
 ''';
+
+/// How long a request may sit while its body is still arriving.
+const sessionAuditBodyReadTimeout = Duration(seconds: 5);
 
 const sessionAuditBrowserOrigins = <String>{
   'https://belongonthespectrum.web.app',
@@ -333,7 +338,9 @@ Future<({HttpServer server, Future<void> closed})> startSessionAuditServer({
           callerSalt,
           origins,
           trustedProxies,
-        ).whenComplete(slots.leave),
+        ).whenComplete(slots.leave).catchError((Object _) {
+          stderr.writeln('session audit request failed');
+        }),
       );
     },
     onDone: () {
@@ -404,7 +411,7 @@ Future<void> _dispatch(
   }
   if (reply.status != 204) request.response.write(jsonEncode(reply.body));
   try {
-    await request.response.close();
+    await request.response.close().timeout(sessionAuditBodyReadTimeout);
   } catch (_) {
     stderr.writeln('session audit request failed');
   }
@@ -412,12 +419,36 @@ Future<void> _dispatch(
 
 Future<List<int>> _readLimited(HttpRequest request) {
   final builder = BytesBuilder(copy: false);
-  final future = request.fold<BytesBuilder>(builder, (buffer, chunk) {
-    if (buffer.length + chunk.length > sessionAuditMaxBodyBytes) throw const _BodyTooLarge();
-    buffer.add(chunk);
-    return buffer;
+  final completer = Completer<List<int>>();
+  late final StreamSubscription<Uint8List> subscription;
+  final timer = Timer(sessionAuditBodyReadTimeout, () {
+    unawaited(subscription.cancel());
+    if (!completer.isCompleted) {
+      completer.completeError(TimeoutException('session audit body'));
+    }
   });
-  return future.timeout(const Duration(seconds: 5)).then((buffer) => buffer.takeBytes());
+  subscription = request.listen(
+    (chunk) {
+      if (completer.isCompleted) return;
+      if (builder.length + chunk.length > sessionAuditMaxBodyBytes) {
+        timer.cancel();
+        unawaited(subscription.cancel());
+        completer.completeError(const _BodyTooLarge());
+        return;
+      }
+      builder.add(chunk);
+    },
+    onError: (Object error, StackTrace stack) {
+      timer.cancel();
+      if (!completer.isCompleted) completer.completeError(error, stack);
+    },
+    onDone: () {
+      timer.cancel();
+      if (!completer.isCompleted) completer.complete(builder.takeBytes());
+    },
+    cancelOnError: true,
+  );
+  return completer.future;
 }
 
 class _BodyTooLarge implements Exception {
