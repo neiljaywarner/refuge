@@ -59,10 +59,11 @@ class CommunityAnchorBanner extends HookConsumerWidget {
               color: isContrast ? Colors.yellow : primaryColor,
             ),
           );
+          final wrapWelcome = textScale > 1.3;
           final message = Text(
             remoteConfig.welcomeMessage,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            maxLines: wrapWelcome ? null : 2,
+            overflow: wrapWelcome ? TextOverflow.clip : TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 11.5,
               height: 1.25,

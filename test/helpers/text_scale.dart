@@ -49,6 +49,7 @@ Future<TextScaleSession> pumpWithTextScale(
   required double scale,
   bool wrapMaterialApp = true,
   Size surface = largeTextPhoneSurface,
+  double devicePixelRatio = 1,
   Widget Function(Widget child)? shell,
 }) async {
   final overflows = <FlutterErrorDetails>[];
@@ -62,7 +63,7 @@ Future<TextScaleSession> pumpWithTextScale(
   };
   addTearDown(() => FlutterError.onError = previousOnError);
 
-  tester.view.devicePixelRatio = 1;
+  tester.view.devicePixelRatio = devicePixelRatio;
   tester.view.physicalSize = surface;
   final dispatcher = tester.platformDispatcher;
   dispatcher.textScaleFactorTestValue = scale;

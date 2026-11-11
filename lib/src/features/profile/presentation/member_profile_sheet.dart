@@ -290,29 +290,37 @@ class MemberProfileDialog extends HookConsumerWidget {
                 crossAxisAlignment: .start,
                 children: [
                   Expanded(
-                    child: TextField(
-                      key: const Key('profile_display_name_field'),
-                      controller: firstNameController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'First Name',
-                        hintText: 'First name',
-                        isDense: true,
-                        border: OutlineInputBorder(),
+                    child: _WrappingFieldLabel(
+                      label: 'First Name',
+                      largeText: largeText,
+                      child: TextField(
+                        key: const Key('profile_display_name_field'),
+                        controller: firstNameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          labelText: largeText ? null : 'First Name',
+                          hintText: 'First name',
+                          isDense: true,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      key: const Key('profile_last_name_field'),
-                      controller: lastNameController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Last Name',
-                        hintText: 'Last name',
-                        isDense: true,
-                        border: OutlineInputBorder(),
+                    child: _WrappingFieldLabel(
+                      label: 'Last Name',
+                      largeText: largeText,
+                      child: TextField(
+                        key: const Key('profile_last_name_field'),
+                        controller: lastNameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          labelText: largeText ? null : 'Last Name',
+                          hintText: 'Last name',
+                          isDense: true,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ),
@@ -320,15 +328,19 @@ class MemberProfileDialog extends HookConsumerWidget {
               ),
               if (!profile.isSignedIn || profile.email.isEmpty) ...[
                 const SizedBox(height: 12),
-                TextField(
-                  key: const Key('profile_email_field'),
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address',
-                    helperText: 'For notifications and account recovery',
-                    isDense: true,
-                    border: OutlineInputBorder(),
+                _WrappingFieldLabel(
+                  label: 'Email Address',
+                  largeText: largeText,
+                  child: TextField(
+                    key: const Key('profile_email_field'),
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: largeText ? null : 'Email Address',
+                      helperText: 'For notifications and account recovery',
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ],
@@ -433,15 +445,19 @@ class MemberProfileDialog extends HookConsumerWidget {
                 ),
               ],
               const SizedBox(height: 14),
-              TextField(
-                key: const Key('profile_bio_field'),
-                controller: bioController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Bio / Note to Fellowship',
-                  hintText: 'A quiet sentence about yourself',
-                  isDense: true,
-                  border: OutlineInputBorder(),
+              _WrappingFieldLabel(
+                label: 'Bio / Note to Fellowship',
+                largeText: largeText,
+                child: TextField(
+                  key: const Key('profile_bio_field'),
+                  controller: bioController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    labelText: largeText ? null : 'Bio / Note to Fellowship',
+                    hintText: 'A quiet sentence about yourself',
+                    isDense: true,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -530,6 +546,25 @@ class MemberProfileDialog extends HookConsumerWidget {
         ),
       ),
       actions: largeText ? null : [?signOutButton, cancelButton, saveButton],
+    );
+  }
+}
+
+/// Floating field labels ellipsize to "First N…" at large text. Above the
+/// field they can wrap to as many lines as the words need.
+class _WrappingFieldLabel extends StatelessWidget {
+  const _WrappingFieldLabel({required this.label, required this.largeText, required this.child});
+
+  final String label;
+  final bool largeText;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!largeText) return child;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [Text(label), const SizedBox(height: 4), child],
     );
   }
 }

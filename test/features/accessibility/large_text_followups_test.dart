@@ -232,6 +232,12 @@ void main() {
     await settleLargeText(tester);
     session.check();
 
+    for (final label in ['First Name', 'Last Name', 'Bio / Note to Fellowship']) {
+      final text = tester.widget<Text>(find.text(label));
+      expect(text.maxLines, isNull, reason: label);
+      expect(text.overflow, isNot(TextOverflow.ellipsis), reason: label);
+    }
+
     final sheet = find.byKey(const Key('profile_sheet_scroll'));
     expect(sheet, findsOneWidget);
 
@@ -283,7 +289,9 @@ void main() {
     oneLine.dispose();
 
     final message = find.textContaining('peaceful sanctuary');
-    expect(tester.widget<Text>(message).maxLines, greaterThanOrEqualTo(2));
+    final messageText = tester.widget<Text>(message);
+    expect(messageText.maxLines, anyOf(isNull, greaterThan(2)));
+    expect(messageText.overflow, isNot(TextOverflow.ellipsis));
     expect(tester.getSize(message).width, greaterThan(tester.getSize(banner).width * 0.75));
 
     final composer = find.byKey(const Key('reflection_composer_input'));
@@ -301,5 +309,74 @@ void main() {
     final hint = find.textContaining('Share an unhurried thought');
     expect(tester.widget<Text>(hint).maxLines, 2);
     expect(tester.getSize(hint).height, greaterThan(28));
+  });
+
+  testWidgets('feed scroll view keeps most of a phone at text scale 2', (tester) async {
+    const physical = Size(1080, 2424);
+    const dpr = 2.625;
+    final session = await pumpHomeAtScale(tester, 2, surface: physical, devicePixelRatio: dpr);
+
+    final feed = find.byKey(const Key('home_feed_scroll'));
+    expect(feed, findsOneWidget);
+    final banner = find.byKey(const Key('organizer_message_banner'));
+    final before = tester.getTopLeft(banner).dy;
+    await tester.drag(feed, const Offset(0, -120));
+    await tester.pump();
+    session.check();
+
+    final viewport = tester.getRect(feed);
+    final screenHeight = physical.height / dpr;
+    expect(viewport.height, greaterThanOrEqualTo(screenHeight * 0.60));
+    expect(tester.getTopLeft(banner).dy, lessThan(before - 40));
+
+    final scrollable = find.descendant(
+      of: feed,
+      matching: find.byWidgetPredicate(
+        (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      ),
+    );
+    final position = tester.state<ScrollableState>(scrollable.first).position;
+    position.jumpTo(position.maxScrollExtent);
+    await tester.pump();
+    session.check();
+
+    final reactions = find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> && key.value.startsWith('reaction_button_');
+    });
+    expect(reactions, findsWidgets);
+    var lowest = tester.getRect(reactions.at(0));
+    for (var i = 1; i < reactions.evaluate().length; i++) {
+      final rect = tester.getRect(reactions.at(i));
+      if (rect.bottom > lowest.bottom) lowest = rect;
+    }
+    final navTop = tester.getRect(find.byKey(const Key('belong_bottom_nav_bar'))).top;
+    expect(lowest.bottom, lessThanOrEqualTo(navTop - 8));
+  });
+
+  testWidgets('post author names wrap to two lines at text scale 2', (tester) async {
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: ReflectionCard(
+          post: Post(
+            id: 'author-post',
+            authorName: 'Ban And Uma',
+            spaceKey: 'prayer',
+            toneTag: '[Fellowship]',
+            content: 'A short note.',
+            timestamp: DateTime.utc(2026, 1, 1),
+            reactions: const {},
+          ),
+          isContrast: false,
+          onAddReaction: (_) {},
+        ),
+      ),
+      scale: 2,
+      shell: (child) => ProviderScope(child: child),
+    );
+    final name = tester.widget<Text>(find.text('Ban And Uma'));
+    expect(name.maxLines, 2);
+    session.check();
   });
 }

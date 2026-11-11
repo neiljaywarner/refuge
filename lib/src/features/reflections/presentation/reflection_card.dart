@@ -118,7 +118,7 @@ class ReflectionCard extends ConsumerWidget {
                             Flexible(
                               child: Text(
                                 post.authorName,
-                                maxLines: 1,
+                                maxLines: MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 2 : 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: text.emphasis,
                               ),
