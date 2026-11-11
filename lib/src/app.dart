@@ -12,6 +12,7 @@ import 'features/group_call/domain/guest_invite.dart';
 import 'features/messages/presentation/direct_message_arrival_banner.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
+import 'features/sensory_themes/domain/system_text_scaler.dart';
 import 'features/sensory_themes/domain/sensory_mode.dart';
 import 'features/sensory_themes/presentation/sensory_theme_controller.dart';
 import 'home_screen.dart';
@@ -127,8 +128,16 @@ class _RefugeAppContent extends ConsumerWidget {
         final activeScale = themeNotifier.fontScale != SensoryFontScale.standard
             ? themeNotifier.fontScale
             : riverpodFontScale;
-        final repaired = SystemInsets.repairPadding(MediaQuery.of(context))
-            .copyWith(textScaler: TextScaler.linear(activeScale.scaleFactor));
+        final media = SystemInsets.repairPadding(MediaQuery.of(context));
+        // Keep the operating-system Font size and multiply the in-app sensory
+        // preset. Replacing the scaler with the preset alone clamped system
+        // text back to 1.0 whenever the member had not picked a preset (#927).
+        final repaired = media.copyWith(
+          textScaler: composeSystemAndSensoryScaler(
+            system: media.textScaler,
+            sensoryFactor: activeScale.scaleFactor,
+          ),
+        );
         final theme = Theme.of(context);
         return MediaQuery(
           data: repaired,

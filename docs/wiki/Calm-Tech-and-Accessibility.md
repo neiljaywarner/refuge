@@ -44,3 +44,17 @@ Sensory processing differences often make bright white backgrounds or harsh satu
 * **Autism & Faith Memes**: Dedicated space for humor that normalizes neurodivergent experiences within the Christian church.
 * **No Unbounded Viewports or Layout Shifts**: Designed with stable layout builders and responsive constraints to prevent disorienting jumps or unexpected scrolls.
 * **Large Touch Targets**: All action buttons and chips provide a minimum tap target of `48x48` dp, satisfying mobile accessibility guidelines.
+
+## Large system text
+
+Belong keeps the operating-system Font size. The in-app sensory preset (Standard, Comfort, Spacious, Max Clarity) multiplies that size. It does not replace it. A widget that cannot grow may clamp itself and should say why. Nothing clamps the whole app back to 100%.
+
+Widget checks use a phone-sized surface at text scales 1.0, 1.3, 2.0, and 3.0. `pumpWithTextScale` in `test/helpers/text_scale.dart` fails the test when Flutter reports an overflow. The scenarios live in `test/features/accessibility/large_text.feature`. `bdd_widget_test` is not a dependency yet (#926), so `large_text_bdd_test.dart` runs the steps by hand.
+
+On an Android emulator or phone:
+
+```bash
+bash tool/run_large_text_device_checks.sh
+```
+
+That sets `font_scale` to 2.0 and a slightly larger display density, runs `integration_test/large_text_patrol_test.dart` and `.maestro/large_text_sign_in_flow.yaml`, then restores both settings. The Maestro flow checks the signed-out sign-in wall. The Patrol test walks home, messages, and feedback on a local feed. Group-call screens are not on `main` (PR #905). Cover the lobby, guest join form, in-call controls, and participant grid after that branch merges.

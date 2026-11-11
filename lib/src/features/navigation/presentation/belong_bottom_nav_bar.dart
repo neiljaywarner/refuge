@@ -61,10 +61,13 @@ class BelongBottomNavBar extends HookConsumerWidget {
       ),
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
-        child: SizedBox(
-          height: 64,
+        // A fixed 64dp bar clipped the labels once system text grew (#927).
+        // The bar stays at least 64dp and grows with the labels. Each item
+        // still fills its quarter of the width so the tap target stays large.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 64),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               for (final tab in BelongBottomTab.values)
                 Expanded(
@@ -171,34 +174,43 @@ class _BottomNavItem extends StatelessWidget {
             key: Key('bottom_nav_tab_${tab.name}'),
             borderRadius: BorderRadius.circular(12),
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedContainer(
-                    duration: animationDuration,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
-                    decoration: pillDecoration,
-                    child: iconWidget,
-                  ),
-                  const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      tab.label,
-                      key: Key('bottom_nav_label_${tab.name}'),
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                        color: currentColor,
-                        letterSpacing: 0.1,
+            child: SizedBox(
+              width: double.infinity,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 48),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: animationDuration,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                        decoration: pillDecoration,
+                        child: iconWidget,
                       ),
-                    ),
+                      const SizedBox(height: 2),
+                      // FittedBox used to shrink the label back down, which hid
+                      // the member's font size. Two lines keep it large. A word
+                      // that still cannot fit a quarter of a phone ellipsizes;
+                      // the semantics label above keeps the full word.
+                      Text(
+                        tab.label,
+                        key: Key('bottom_nav_label_${tab.name}'),
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: currentColor,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
