@@ -34,18 +34,22 @@ bool guestJoinEntryVisible({
   required String? inviteToken,
 }) => compileTimePreview && inviteToken != null;
 
-/// HTTPS token URL, or loopback HTTP for the local functions emulator.
+/// HTTPS token URL, or loopback HTTP for a local mint.
 ///
 /// Userinfo (`https://user:secret@host`) is rejected so a credential cannot
 /// hide in the dart-define. Any other `http://` URL is ignored so the preview
-/// binary is not pointed at a cleartext token proxy.
+/// binary is not pointed at a cleartext token proxy. `10.0.2.2` is the
+/// Android emulator's alias for the host loopback, so a debug APK can reach
+/// the same local mint as web on `127.0.0.1`.
 Uri? parseStreamTokenEndpoint(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) return null;
   final uri = Uri.tryParse(trimmed);
   if (uri == null || !uri.hasScheme || uri.userInfo.isNotEmpty) return null;
   if (uri.scheme == 'https' && uri.host.isNotEmpty) return uri;
-  final loopback = uri.host == 'localhost' || uri.host == '127.0.0.1';
+  final loopback = uri.host == 'localhost' ||
+      uri.host == '127.0.0.1' ||
+      uri.host == '10.0.2.2';
   if (uri.scheme == 'http' && loopback) return uri;
   return null;
 }
