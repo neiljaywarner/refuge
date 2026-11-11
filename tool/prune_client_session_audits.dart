@@ -158,14 +158,16 @@ class AppwriteSessionAuditStore implements SessionAuditRetentionStore {
   final Duration requestDeadline;
 
   static const _pageSize = 100;
-  static const _maxPages = 40;
+
+  /// Safety ceiling. A full page at this count means the listing is incomplete,
+  /// so the command fails instead of planning deletes from a partial read.
+  static const _maxPages = 500;
 
   @override
-  Future<List<RawSessionAuditRow>> listRawSessions() async {
-    final rows = <RawSessionAuditRow>[];
-    final seen = <String>{};
-    String? cursor;
-    for (var page = 0; page < _maxPages; page++) {
+  Future<List<RawSessionAuditRow>> listRawSessions() => collectSessionAuditPages(
+    pageSize: _pageSize,
+    maxPages: _maxPages,
+    fetch: (cursor) async {
       final queries = <String>[
         jsonEncode({
           'method': 'limit',
@@ -179,18 +181,9 @@ class AppwriteSessionAuditStore implements SessionAuditRetentionStore {
           }),
       ];
       final body = await _send('GET', _rows(AppwriteConfig.clientSessionAuditsTableId, queries));
-      final batch = parseRawSessionRows(body);
-      if (batch.isEmpty) break;
-      for (final row in batch) {
-        if (seen.add(row.id)) rows.add(row);
-      }
-      if (batch.length < _pageSize) break;
-      final next = batch.last.id;
-      if (next == cursor) break;
-      cursor = next;
-    }
-    return rows;
-  }
+      return parseRawSessionRows(body);
+    },
+  );
 
   @override
   Future<WeeklySessionSummary?> readSummary(String rowId) async {
@@ -280,6 +273,38 @@ class _AppwriteStatus implements Exception {
 
   @override
   String toString() => 'Appwrite HTTP $statusCode $body';
+}
+
+/// Reads every page. A full page at [maxPages] throws so a partial list is not pruned.
+Future<List<RawSessionAuditRow>> collectSessionAuditPages({
+  required Future<List<RawSessionAuditRow>> Function(String? cursor) fetch,
+  required int pageSize,
+  required int maxPages,
+}) async {
+  final rows = <RawSessionAuditRow>[];
+  final seen = <String>{};
+  String? cursor;
+  for (var page = 0; page < maxPages; page++) {
+    final batch = await fetch(cursor);
+    if (batch.isEmpty) return rows;
+    for (final row in batch) {
+      if (seen.add(row.id)) rows.add(row);
+    }
+    if (batch.length < pageSize) return rows;
+    final next = batch.last.id;
+    if (next == cursor) return rows;
+    cursor = next;
+  }
+  throw SessionAuditListingTruncated(maxPages);
+}
+
+class SessionAuditListingTruncated implements Exception {
+  const SessionAuditListingTruncated(this.pages);
+
+  final int pages;
+
+  @override
+  String toString() => 'session audit listing exceeded $pages pages; refusing to plan deletes';
 }
 
 String _clip(String value, int max) {

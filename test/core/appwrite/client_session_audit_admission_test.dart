@@ -255,6 +255,19 @@ void main() {
       expect(writer.ends, 1);
       expect(writer.endedAt, '2026-11-08T17:04:00.000Z');
 
+      final again = await admission.handle(
+        body: {
+          'action': 'end',
+          'rowId': 'row1',
+          'endToken': 'tok-row1',
+          'sessionEndedAt': '2026-11-08T17:04:30.000Z',
+        },
+        callerKey: 'caller-a',
+      );
+      expect(again.status, 200);
+      expect(writer.ends, 1);
+      expect(writer.endedAt, '2026-11-08T17:04:00.000Z');
+
       final forged = await admission.handle(
         body: {
           'action': 'end',

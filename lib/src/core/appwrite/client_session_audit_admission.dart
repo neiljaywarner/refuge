@@ -325,6 +325,7 @@ class SessionAuditAdmission {
   final SessionAuditEndTokens tokens;
   final SessionAuditRowWriter? writer;
   final DateTime Function() _clock;
+  final Set<String> _completedEnds = {};
 
   Future<SessionAuditHttpReply> handle({required Object? body, required String callerKey}) async {
     final now = _clock().toUtc();
@@ -379,11 +380,15 @@ class SessionAuditAdmission {
     if (!tokens.accepts(rowId: rowId, token: token)) return _rejected();
     final canonical = canonicalAuditTimestamp(ended, now);
     if (canonical == null) return _rejected();
+    if (_completedEnds.contains(rowId)) {
+      return const SessionAuditHttpReply(status: 200, body: {'ok': true});
+    }
     final writer = this.writer;
     if (writer == null) return _unavailable(503);
     if (!gate.tryConsume(callerKey, now: now)) return _rateLimited();
     try {
       await writer.markEnded(rowId: rowId, sessionEndedAt: canonical);
+      _completedEnds.add(rowId);
       return const SessionAuditHttpReply(status: 200, body: {'ok': true});
     } catch (_) {
       return _unavailable(502);

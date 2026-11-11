@@ -130,6 +130,7 @@ class ClientSessionAuditController {
   bool _startRequested = false;
   bool _endRequested = false;
   bool _endWritten = false;
+  DateTime? _endAt;
   String? _rowId;
 
   Future<void> recordStart() async {
@@ -152,15 +153,17 @@ class ClientSessionAuditController {
 
   Future<void> recordEnd() async {
     _endRequested = true;
+    _endAt ??= _clock().toUtc();
     await _writeEnd();
   }
 
   Future<void> _writeEnd() async {
     final rowId = _rowId;
-    if (_endWritten || rowId == null) return;
+    final endedAt = _endAt;
+    if (_endWritten || rowId == null || endedAt == null) return;
     _endWritten = true;
     try {
-      await sink.markEnded(rowId: rowId, endedAt: _clock().toUtc());
+      await sink.markEnded(rowId: rowId, endedAt: endedAt);
       AppLogger.info('client session audit end recorded');
     } catch (error, stack) {
       _endWritten = false;
@@ -177,7 +180,9 @@ class ClientSessionAuditBinding extends WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
       unawaited(controller.recordEnd());
     }
   }
@@ -221,7 +226,7 @@ Future<ClientSessionAuditSnapshot> loadClientSessionAuditSnapshot({
   bool? isWeb,
 }) async {
   final clock = now ?? DateTime.now;
-  final instant = clock().toUtc();
+  final instant = clock();
   final version = await (loadVersion ?? _packageVersion)();
   final os = (readOs ?? readClientSessionOsFacts)();
   final web = isWeb ?? kIsWeb;

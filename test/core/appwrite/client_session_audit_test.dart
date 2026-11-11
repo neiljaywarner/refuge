@@ -29,6 +29,7 @@ void main() {
       expect(snapshot.locale, 'en-US');
       expect(snapshot.platform, 'android');
       expect(snapshot.osVersion, hasLength(64));
+      expect(sanitizeAuditText('${'x' * 63} yyyyy', max: 64), 'x' * 63);
 
       final row = snapshot.toRowData();
       expect(row.keys, everyElement(isIn(sessionAuditRowKeys)));
@@ -105,6 +106,26 @@ void main() {
       expect(sink.creates, 2);
     });
 
+    test('keeps the pause time when the start write finishes later', () async {
+      var ticks = 0;
+      final times = [DateTime.utc(2026, 11, 2, 16), DateTime.utc(2026, 11, 2, 16, 5)];
+      final gate = Completer<ClientSessionAuditSnapshot>();
+      final active = ClientSessionAuditController(
+        sink: sink,
+        loadSnapshot: () => gate.future,
+        clock: () {
+          final time = times[ticks];
+          if (ticks < times.length - 1) ticks += 1;
+          return time;
+        },
+      );
+      final pending = active.recordStart();
+      await active.recordEnd();
+      gate.complete(_sample());
+      await pending;
+      expect(sink.endedAt, DateTime.utc(2026, 11, 2, 16));
+    });
+
     test('records the end after a pause that happened during the write', () async {
       final gate = Completer<ClientSessionAuditSnapshot>();
       final active = controller(load: () => gate.future);
@@ -147,6 +168,16 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.detached);
       await tester.pump();
       expect(sink.ends, 1);
+
+      final hidden = controller();
+      final hiddenBinding = startClientSessionAudit(controller: hidden);
+      addTearDown(() {
+        if (hiddenBinding != null) WidgetsBinding.instance.removeObserver(hiddenBinding);
+      });
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.pump();
+      expect(sink.ends, 2);
     });
 
     test('disabled startup does not write', () {
@@ -165,6 +196,8 @@ void main() {
     );
 
     expect(snapshot.platform, 'android');
+    expect(snapshot.timezone, auditTimezoneLabel(DateTime.utc(2026, 11, 2, 15)));
+    expect(snapshot.sessionStartedAt, DateTime.utc(2026, 11, 2, 15));
     expect(snapshot.osName, 'android');
     expect(snapshot.osVersion, '14');
     expect(snapshot.appVersion, '0.9.2');
@@ -172,6 +205,17 @@ void main() {
     expect(snapshot.city, 'US');
     expect(snapshot.locale, 'en-US');
     expect(snapshot.toRowData().keys, everyElement(isIn(sessionAuditRowKeys)));
+
+    final local = DateTime(2026, 11, 2, 15);
+    final zoned = await loadClientSessionAuditSnapshot(
+      now: () => local,
+      loadVersion: () async => (version: '0.9.2', build: null),
+      readOs: () => const ClientSessionOsFacts(osName: 'android', osVersion: '14'),
+      locale: const Locale('en', 'US'),
+      isWeb: false,
+    );
+    expect(zoned.timezone, auditTimezoneLabel(local));
+    expect(zoned.sessionStartedAt, local.toUtc());
   });
 
   group('admission endpoint', () {

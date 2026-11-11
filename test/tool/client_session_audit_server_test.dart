@@ -224,6 +224,38 @@ void main() {
     expect(writer.creates, 1);
   });
 
+  test('an unfinished body does not queue the next caller', () async {
+    final slots = _SignalingInflight();
+    final writer = _Writer();
+    final bound = await startSessionAuditServer(
+      address: InternetAddress.loopbackIPv4,
+      port: 0,
+      admission: _admission(writer),
+      callerSalt: salt,
+      allowedOrigins: sessionAuditBrowserOrigins,
+      inflight: slots,
+    );
+    final stall = await Socket.connect(bound.server.address, bound.server.port);
+    addTearDown(() async {
+      stall.destroy();
+      await bound.server.close(force: true);
+    });
+
+    stall.write(
+      'POST / HTTP/1.1\r\n'
+      'Host: 127.0.0.1\r\n'
+      'Content-Type: application/json\r\n'
+      'Content-Length: 32\r\n'
+      '\r\n',
+    );
+    await stall.flush();
+    await slots.entered.future.timeout(const Duration(seconds: 5));
+
+    final second = await _post(bound.server, origin: null).timeout(const Duration(seconds: 2));
+    expect(second.status, 503);
+    expect(writer.creates, 0);
+  });
+
   test('a busy admission slot refuses the next caller without waiting', () async {
     final entered = Completer<void>();
     final release = Completer<void>();
@@ -325,6 +357,19 @@ class _Tokens implements SessionAuditEndTokens {
 
   @override
   bool accepts({required String rowId, required String token}) => token == issue(rowId);
+}
+
+class _SignalingInflight extends SessionAuditInflight {
+  _SignalingInflight() : super(maxInFlight: 1);
+
+  final entered = Completer<void>();
+
+  @override
+  bool tryEnter() {
+    final admitted = super.tryEnter();
+    if (admitted && !entered.isCompleted) entered.complete();
+    return admitted;
+  }
 }
 
 class _BlockingWriter implements SessionAuditRowWriter {
