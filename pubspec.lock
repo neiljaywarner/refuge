@@ -1992,13 +1992,13 @@ packages:
     source: hosted
     version: "3.6.1"
   system_info2:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: system_info2
-      sha256: "2d5e586c5e6b569d2e3afab1e61542d8fc0603be2d6ee671e573c041541a1541"
+      sha256: b937736ecfa63c45b10dde1ceb6bb30e5c0c340e14c441df024150679d65ac43
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.0"
+    version: "4.1.0"
   talker:
     dependency: transitive
     description:
