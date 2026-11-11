@@ -1,3 +1,39 @@
+# Belong on the Spectrum — what's new since v0.9.9
+
+Production is still **v0.9.9**. These notes describe what is on `main` and the dev site, in plain language, for the next production release. The technical list is [`CHANGELOG.md`](CHANGELOG.md). The same words, ready for the deploy highlights file, are in [`docs/release_highlights/unreleased-since-v0.9.9.md`](docs/release_highlights/unreleased-since-v0.9.9.md). The release checklist is [#937](https://github.com/neiljaywarner/refuge/issues/937).
+
+## For members
+
+- **Your phone's text size now changes Belong.** A larger system font grows the type in the app, together with the text size you pick in sensory settings. Sign-in, home, messages, and feedback were checked at several sizes. A few tight spots are still open: the feed can feel short, and some rows can clip on a phone. Call screens will get the same check after video calling lands.
+- **Relate shows who actually related.** Press and hold Relate when one person has related, and you see that person. This covers posts and comments.
+- **Animated text on a post.** In the attach sheet, choose Animate Text, type a short phrase, and attach a styled text GIF. It works on the website, the Android web app, and an iPhone home-screen app. The result stays PG, motion stays calm, and the GIPHY credit stays visible.
+- **A cleaner list of people you can message.** Someone who has left the member directory, or whose account is closed or banned, no longer shows up as a message recipient.
+- **Honest notification settings on the web.** When the browser cannot offer push, the notification sheet says so.
+- **Feedback is stored once.** If a feedback note is sent again after a hiccup, Belong keeps a single copy of that note.
+
+## For organizers and contributors
+
+These do not change what members see in the app.
+
+- The partner wiki now shows Refuge as the platform and Belong as the first community, with a Circle.so scorecard and a 90-day playbook.
+- When a free backend has to keep running with very little attention, the docs now prefer Supabase Free, because ordinary visits and requests count. The live member store is still Firestore.
+- A sanitized November working-chat archive is in `docs/chat-transcripts/` for apprentices. It is not product documentation.
+- Continuous integration now uses a newer Java setup action.
+
+Video calling, guest join, and screen sharing are still open pull requests. They are preview-only. A production build keeps the sign-in wall.
+
+### Paste-ready "what's new"
+
+Larger phone text now changes Belong's type, together with the in-app size. Press and hold Relate to see who related. You can attach animated text from GIPHY on the website and the home-screen app. The message list skips people who left the directory or whose accounts are closed. On the web, notification settings say when push is unavailable.
+
+There is no Play Store or App Store listing file in this repository. Listings are still pending.
+
+---
+
+## Historical: Sanctuary v0.1.0 hackathon prototype
+
+The rest of this file is the Serverpod hackathon prototype note. It is not the current Belong release.
+
 # 🕊️ Sanctuary v0.1.0 — Belong on the Spectrum
 ### *Official Prototype Release for the Serverpod Hackathon 2026*
 **Anchor Community**: [Belong on the Spectrum](https://www.belongonthespectrum.com/)  

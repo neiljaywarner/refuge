@@ -1,6 +1,48 @@
 # Changelog & Release Roadmap (`Belong on the Spectrum` / `refuge`)
 
-Notable changes are documented in this file. As of **November 1, 2026**, the October 24–31 overlap window is past. The short list still open for a solid 1.0 is [issue #765](https://github.com/neiljaywarner/refuge/issues/765) and [`docs/solid_1.0_checklist.md`](docs/solid_1.0_checklist.md). Entries below are history, not a claim that those versions are what production is serving today.
+Notable changes are documented in this file. As of **November 1, 2026**, the October 24–31 overlap window is past. The short list still open for a solid 1.0 is [issue #765](https://github.com/neiljaywarner/refuge/issues/765) and [`docs/solid_1.0_checklist.md`](docs/solid_1.0_checklist.md). Entries below v0.9.9 are history.
+
+A public read of production `version.json` on **11 November 2026** reports **v0.9.9** (`dc99aaa56e3c9bcec4368e161f1149490bed7376`, flavor `prod`, built `2026-11-04T05:53:43.552Z`). The dev site the same day reports `3af3d5a2e108bba7aa55dc157df67054ce90b865` (current `main`, flavor `dev`). Member-facing notes: [`docs/release_highlights/unreleased-since-v0.9.9.md`](docs/release_highlights/unreleased-since-v0.9.9.md). Release checklist: [#937](https://github.com/neiljaywarner/refuge/issues/937).
+
+---
+
+## [Unreleased — on main since v0.9.9 (11 November 2026)]
+
+Not in production. Ten commits after tag `v0.9.9` (`dc99aaa`). Last GitHub Release is still the pre-release `v0.9.3` (2026-10-29). Tags `v0.9.4`–`v0.9.9` exist and are not GitHub Releases. No Play Store or App Store "what's new" file exists in this repo.
+
+### Added
+
+- **Giphy animated text** on Web, Android WebAPK, and iOS PWA (`HttpGiphySearch.animateText` → Giphy `/v1/text/animate`, `m`/`s` params, PG ceiling, 12-item limit, 50-character cap). `GiphyPickerMode` chips on `GiphySearchPanel`. Attached subtitle `GIPHY animated text · rated PG`. Unit tests, widget tests, and `.maestro/web/attach_media_animated_text_web.yaml`. (#861 / PR #862)
+
+### Fixed
+
+- **System text scale is multiplied with the sensory preset, with no clamp.** Sign-in, home, reflections, messages, sensory settings, and feedback stay on a 390×844 surface at scales 1.0, 1.3, 2.0, and 3.0. `pumpWithTextScale` fails on overflow. Gherkin: `test/features/accessibility/large_text.feature`. Device leftovers (crushed feed viewport, row clipping, mid-word nav labels, truncated app bar) are [#932](https://github.com/neiljaywarner/refuge/issues/932). Call-UI coverage at scale 2.0 is [#935](https://github.com/neiljaywarner/refuge/issues/935), after video calling merges. (#927 / PR #934)
+- **Who-reacted stays in sync when the Relate count is 1.** `preferPost` keeps known reactors when a later cloud row is count-only and the count is still positive. The Firestore reader no longer invents an Encouraged count of 1 with an empty member list when the reactions map already says Relate (`encouragedCount` is the shared column). Comment merge keeps the relating member the same way. (#931 / PR #933)
+- **DM recipient picker uses `isMemberEligibleForDirectory`.** Hidden when `listedInDirectory` is false, the uid is banned or soft-deleted, or the uid is in the excluded set. The signed-in member is omitted. (#813)
+- **CodeRabbit follow-up hardening** (#857):
+  - `uploadDiagnosticLogs` is guarded in `FirebaseStorageRepository`.
+  - Notifications: `clearFcmToken`, an honest web fallback, and an `isWebPushUnavailable` banner. Sheet layout restored.
+  - `dm-mirror` and `dm-push` cert cache: in-flight loads coalesce, `no-store` is respected, unknown `kid` has a cooldown.
+  - Feedback retry dedupes Firestore writes on `submissionId`.
+  - CI: Java 21 for the Firebase emulator, format check scoped to changed Dart files, and `post_creation_menu_test`, `feed_sort_controls_test`, and `member_profile_activity_counters_test` excluded from the widget manifest.
+
+### Tests
+
+- Giphy REST client coverage for the iOS PWA and web GIF picker (`test/features/memes/giphy_search_test.dart` only). (#836)
+
+### Docs
+
+- Partner infographic (`docs/wiki/images/business-partner-infographic.svg`), `docs/wiki/Business-Partner-Overview.md`, and `docs/wiki/Circle-Competitor-Scorecard-and-90-Day-Partner-Playbook.md`. (#922 / PR #923)
+- Leave-alone free backends: prefer Supabase Free because dashboard visits and API or database requests count. A quiet Free project can still pause. Appwrite Free pauses after 7 days without Console development activity, and runtime traffic does not count. The live member store stays Firestore. New page `docs/wiki/Leave-Alone-Free-Backends.md`. (#906 / PR #907)
+- Sanitized November 2026 working-chat archive in `docs/chat-transcripts/` (`README.md`, session notes, token-analysis markdown and the allow-listed CSV). Not product documentation. No `raw/` folder. `.gitignore` still blocks other CSVs. (#880 / PR #881)
+
+### CI
+
+- `actions/setup-java` bumped from 4 to 6 in the github-actions group. (PR #921)
+
+### Not in this cut
+
+Open on purpose: preview GetStream calls and guest join ([#905](https://github.com/neiljaywarner/refuge/pull/905), dev-gated, guest join off in a production build), session-audit admission ([#873](https://github.com/neiljaywarner/refuge/pull/873) for [#863](https://github.com/neiljaywarner/refuge/issues/863)), and screen sharing stacked on #905 ([#930](https://github.com/neiljaywarner/refuge/pull/930)).
 
 ---
 

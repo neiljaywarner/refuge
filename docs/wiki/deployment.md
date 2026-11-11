@@ -52,6 +52,17 @@ dart run tool/deploy_release.dart --version vX.Y.Z --distribute-android
 
 [https://onthespectrum.web.app/](https://onthespectrum.web.app/) is not a Belong host (Firebase Site Not Found). The October overlap window is past. A fresh non-DEV production deploy is still open: [`docs/solid_1.0_checklist.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/solid_1.0_checklist.md) and [#765](https://github.com/neiljaywarner/refuge/issues/765).
 
+### Live version.json (11 November 2026)
+
+A public GET of the version file, not a deploy:
+
+| Host | release_tag | git_sha | flavor | built (UTC) |
+| :--- | :--- | :--- | :--- | :--- |
+| Production | `v0.9.9` | `dc99aaa56e3c9bcec4368e161f1149490bed7376` | `prod` | `2026-11-04T05:53:43.552Z` |
+| Dev | `ci-3af3d5a` | `3af3d5a2e108bba7aa55dc157df67054ce90b865` | `dev` | `2026-11-10T12:55:04.423Z` |
+
+The production SHA is the `v0.9.9` git tag. The dev SHA is `main`. Member-facing notes for the gap: [`docs/release_highlights/unreleased-since-v0.9.9.md`](../release_highlights/unreleased-since-v0.9.9.md). Checklist: [#937](https://github.com/neiljaywarner/refuge/issues/937). The last **GitHub Release** is still the pre-release `v0.9.3` (2026-10-29). The October snapshot below still says the runbook's last recorded production deploy is v0.9.2. That sentence is the runbook's own history. The table above is the live read.
+
 ## Snapshot from 22 October 2026
 
 Checked against `origin/main` during the overlap week. This section does not record a new production deploy. The last production deploy this runbook records is **v0.9.2** on 2026-10-28. That is not a claim about which build strangers see today. The production host remains [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/).
