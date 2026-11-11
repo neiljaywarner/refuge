@@ -12,6 +12,11 @@ import '../data/direct_message_providers.dart';
 import '../domain/message_recipient.dart';
 import '../domain/message_thread.dart';
 
+/// Space under the conversation list so the last row can scroll clear of the
+/// bottom tab bar and the system navigation bar (#932).
+double _messagesListBottomClearance(BuildContext context) =>
+    24 + SystemInsets.navigationBar(MediaQuery.of(context));
+
 /// Direct Messages View featuring calm, asynchronous communication (Issue #288, #330, #818).
 /// Supports message searching, thread list with avatars, dates, subjects,
 /// and "Who's Here" compose modal with multi-recipient selection and named groups.
@@ -405,7 +410,9 @@ class BelongMessagesView extends HookConsumerWidget {
                     ),
                   )
                 : ListView.separated(
-                    padding: const .symmetric(horizontal: 12, vertical: 4),
+                    // The tab bar meets this list. Bottom space lets the last
+                    // conversation scroll fully clear of it (#932).
+                    padding: .fromLTRB(12, 4, 12, _messagesListBottomClearance(context)),
                     itemCount: filteredThreads.length,
                     separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
                     itemBuilder: (context, index) {

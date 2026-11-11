@@ -27,6 +27,9 @@ class CommunityAnchorBanner extends HookConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final largeText = textScale > 1.15;
+
     return Container(
       key: const Key('organizer_message_banner'),
       margin: const .fromLTRB(12, 6, 12, 2),
@@ -40,19 +43,57 @@ class CommunityAnchorBanner extends HookConsumerWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final showDomainInline = constraints.maxWidth >= 460;
+          final showDomainInline = !largeText && constraints.maxWidth >= 460;
+          final titleLines = largeText ? 2 : 1;
+          final aboutButton = _BannerAboutButton(
+            primaryColor: primaryColor,
+            isContrast: isContrast,
+          );
+          final title = Text(
+            remoteConfig.welcomeTitle,
+            maxLines: titleLines,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isContrast ? Colors.yellow : primaryColor,
+            ),
+          );
+          final message = Text(
+            remoteConfig.welcomeMessage,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.5,
+              height: 1.25,
+              color: isContrast ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
+            ),
+          );
+          // At large text the About button used to keep the welcome lines on
+          // one truncated row. Stacking gives those two lines the width to wrap.
+          if (largeText) {
+            // The mark and About button stay off the text row so the welcome
+            // title and message can each use two full-width lines.
+            return Column(
+              crossAxisAlignment: .start,
+              children: [
+                Row(
+                  children: [
+                    _BannerMark(primaryColor: primaryColor, isContrast: isContrast),
+                    const Spacer(),
+                    aboutButton,
+                  ],
+                ),
+                const Gap(4),
+                title,
+                const Gap(2),
+                message,
+              ],
+            );
+          }
           return Row(
             children: [
-              Container(
-                padding: const .all(5),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isContrast
-                      ? Colors.yellow.withValues(alpha: 0.2)
-                      : primaryColor.withValues(alpha: 0.15),
-                ),
-                child: const Text('♾️', style: TextStyle(fontSize: 14)),
-              ),
+              _BannerMark(primaryColor: primaryColor, isContrast: isContrast),
               const Gap(8),
               Expanded(
                 child: Column(
@@ -61,18 +102,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Flexible(
-                          child: Text(
-                            remoteConfig.welcomeTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: isContrast ? Colors.yellow : primaryColor,
-                            ),
-                          ),
-                        ),
+                        Flexible(child: title),
                         if (showDomainInline) ...[
                           const Gap(4),
                           // A second Flexible would take half this row. The
@@ -96,18 +126,7 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                       ],
                     ),
                     const Gap(1),
-                    Text(
-                      remoteConfig.welcomeMessage,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        height: 1.25,
-                        color: isContrast
-                            ? Colors.white
-                            : Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                    ),
+                    message,
                   ],
                 ),
               ),
@@ -116,33 +135,63 @@ class CommunityAnchorBanner extends HookConsumerWidget {
               // welcome text in half. The button keeps its own width, capped.
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.4),
-                child: Semantics(
-                  identifier: 'banner_learn_more_button',
-                  label: 'Learn more about Belong community principles',
-                  button: true,
-                  child: TextButton(
-                    onPressed: () => showAboutRefugeDialog(
-                      context,
-                      primaryColor: primaryColor,
-                      isContrast: isContrast,
-                    ),
-                    style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-                    child: Text(
-                      'About',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.yellow : primaryColor,
-                      ),
-                    ),
-                  ),
-                ),
+                child: aboutButton,
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _BannerMark extends StatelessWidget {
+  const _BannerMark({required this.primaryColor, required this.isContrast});
+
+  final Color primaryColor;
+  final bool isContrast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const .all(5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isContrast
+            ? Colors.yellow.withValues(alpha: 0.2)
+            : primaryColor.withValues(alpha: 0.15),
+      ),
+      child: const Text('♾️', style: TextStyle(fontSize: 14)),
+    );
+  }
+}
+
+class _BannerAboutButton extends StatelessWidget {
+  const _BannerAboutButton({required this.primaryColor, required this.isContrast});
+
+  final Color primaryColor;
+  final bool isContrast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      identifier: 'banner_learn_more_button',
+      label: 'Learn more about Belong community principles',
+      button: true,
+      child: TextButton(
+        onPressed: () =>
+            showAboutRefugeDialog(context, primaryColor: primaryColor, isContrast: isContrast),
+        style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+        child: Text(
+          'About',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.bold,
+            color: isContrast ? Colors.yellow : primaryColor,
+          ),
+        ),
       ),
     );
   }

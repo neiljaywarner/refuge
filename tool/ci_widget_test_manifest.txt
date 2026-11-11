@@ -152,6 +152,7 @@ test/features/sensory/system_text_scaler_test.dart
 test/features/accessibility/system_text_scale_app_test.dart
 test/features/accessibility/large_text_sign_in_test.dart
 test/features/accessibility/large_text_home_test.dart
+test/features/accessibility/large_text_followups_test.dart
 test/features/accessibility/large_text_post_detail_test.dart
 test/features/accessibility/large_text_messages_test.dart
 test/features/accessibility/large_text_settings_test.dart

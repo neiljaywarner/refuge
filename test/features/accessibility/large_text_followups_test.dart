@@ -1,0 +1,305 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:refuge4serverpod/src/features/messages/domain/message_thread.dart';
+import 'package:refuge4serverpod/src/features/messages/presentation/belong_messages_view.dart';
+import 'package:refuge4serverpod/src/features/navigation/presentation/belong_bottom_nav_bar.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
+import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
+import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
+import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
+
+import '../../helpers/text_scale.dart';
+import 'large_text_surfaces.dart';
+
+bool _isWordChar(String char) {
+  final code = char.codeUnitAt(0);
+  return (code >= 0x30 && code <= 0x39) ||
+      (code >= 0x41 && code <= 0x5A) ||
+      (code >= 0x61 && code <= 0x7A);
+}
+
+/// Lines painted for [finder], using the same width, scaler, and wrap rules.
+List<String> paintedLines(WidgetTester tester, Finder finder) {
+  final text = tester.widget<Text>(finder);
+  final width = tester.getSize(finder).width;
+  final plain = text.data ?? text.textSpan?.toPlainText() ?? '';
+  final painter = TextPainter(
+    text: TextSpan(text: plain, style: text.style),
+    textAlign: text.textAlign ?? TextAlign.start,
+    textDirection: TextDirection.ltr,
+    textScaler: MediaQuery.textScalerOf(tester.element(finder)),
+    maxLines: text.maxLines,
+    ellipsis: text.overflow == TextOverflow.ellipsis ? '\u2026' : null,
+  )..layout(maxWidth: width);
+  final lines = <String>[];
+  var offset = 0;
+  for (var guard = 0; guard < 40 && offset < plain.length; guard++) {
+    final range = painter.getLineBoundary(TextPosition(offset: offset));
+    if (range.end <= offset) break;
+    lines.add(plain.substring(range.start, range.end));
+    offset = range.end;
+  }
+  return lines;
+}
+
+void expectNoMidWordWrap(WidgetTester tester, Finder finder) {
+  final text = tester.widget<Text>(finder);
+  final plain = text.data ?? text.textSpan?.toPlainText() ?? '';
+  final box = tester.renderObject<RenderBox>(finder);
+  final maxWidth = box.constraints.maxWidth.isFinite ? box.constraints.maxWidth : box.size.width;
+  final painter = TextPainter(
+    text: TextSpan(text: plain, style: text.style),
+    textAlign: text.textAlign ?? TextAlign.start,
+    textDirection: TextDirection.ltr,
+    textScaler: MediaQuery.textScalerOf(tester.element(finder)),
+    maxLines: text.maxLines,
+    ellipsis: text.overflow == TextOverflow.ellipsis ? '\u2026' : null,
+  )..layout(maxWidth: maxWidth);
+  final lineCount = painter.computeLineMetrics().length;
+  var offset = 0;
+  for (var i = 0; i < lineCount && offset < plain.length; i++) {
+    final range = painter.getLineBoundary(TextPosition(offset: offset));
+    if (range.end <= offset) break;
+    final end = range.end;
+    final wraps = i < lineCount - 1 && end < plain.length;
+    if (wraps) {
+      expect(
+        _isWordChar(plain[end - 1]) && _isWordChar(plain[end]),
+        isFalse,
+        reason: 'line broke mid-word at $end in ${plain.codeUnits}',
+      );
+    }
+    offset = end;
+  }
+  painter.dispose();
+}
+
+class _SignedInProfileNotifier extends MemberProfileNotifier {
+  @override
+  MemberProfile build() => const MemberProfile(
+    displayName: 'Signed In Tester',
+    email: 'tester@example.com',
+    bio: 'A quiet note',
+    comfortBadges: [],
+    isSignedIn: true,
+  );
+}
+
+void main() {
+  testWidgets('bottom nav labels do not wrap mid-word at text scale 2', (tester) async {
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: const SizedBox.shrink(),
+        bottomNavigationBar: BelongBottomNavBar(
+          currentTab: BelongBottomTab.home,
+          isContrast: false,
+          onSelectTab: (_) {},
+        ),
+      ),
+      scale: 2,
+      shell: (child) => ProviderScope(child: child),
+    );
+
+    for (final tab in BelongBottomTab.values) {
+      final label = find.byKey(Key('bottom_nav_label_${tab.name}'));
+      expect(label, findsOneWidget);
+      final text = tester.widget<Text>(label);
+      expect(text.maxLines, 1, reason: '${tab.label} should stay on one line');
+      expect(text.softWrap, isFalse);
+      expect(text.overflow, TextOverflow.ellipsis);
+      expectNoMidWordWrap(tester, label);
+      expect(find.byTooltip(tab.label), findsWidgets);
+    }
+    session.check();
+  });
+
+  testWidgets('post body keeps web.app intact at text scale 2', (tester) async {
+    const url = 'https://belongonthespectrum.web.app/start';
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: SingleChildScrollView(
+          child: ReflectionCard(
+            post: Post(
+              id: 'url-post',
+              authorName: 'Fellow Member',
+              spaceKey: 'prayer',
+              toneTag: '[Fellowship]',
+              content: 'The notes live at $url for anyone who wants them.',
+              timestamp: DateTime.utc(2026, 1, 1),
+              reactions: const {},
+            ),
+            isContrast: false,
+            onAddReaction: (_) {},
+          ),
+        ),
+      ),
+      scale: 2,
+      shell: (child) => ProviderScope(child: child),
+    );
+
+    final body = find.descendant(
+      of: find.byKey(const Key('post_body_url-post')),
+      matching: find.byType(Text),
+    );
+    expect(body, findsOneWidget);
+    expectNoMidWordWrap(tester, body);
+    final lines = paintedLines(tester, body).map((line) => line.replaceAll('\u200B', '')).toList();
+    expect(lines.any((line) => line.contains('web')), isTrue, reason: 'lines=$lines');
+    expect(lines.any((line) => line.contains('app')), isTrue, reason: 'lines=$lines');
+    expect(tester.widget<Text>(body).semanticsLabel, contains('web.app'));
+    session.check();
+  });
+
+  testWidgets('last conversation scrolls clear of the bottom nav at text scale 2', (tester) async {
+    tester.view.viewPadding = const FakeViewPadding(bottom: 48);
+    tester.view.padding = const FakeViewPadding(bottom: 48);
+    addTearDown(() {
+      tester.view.resetViewPadding();
+      tester.view.resetPadding();
+    });
+
+    final threads = List<MessageThread>.generate(
+      8,
+      (index) => MessageThread(
+        id: 'thread-$index',
+        participantName: 'Member $index',
+        avatarInitials: 'M$index',
+        subject: 'A calm note $index',
+        previewSnippet: 'The last line of this conversation should clear the tab bar.',
+        lastActivity: DateTime.utc(2026, 1, 1).add(Duration(minutes: index)),
+      ),
+    );
+
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: BelongMessagesView(initialThreads: threads),
+        bottomNavigationBar: BelongBottomNavBar(
+          currentTab: BelongBottomTab.msgs,
+          isContrast: false,
+          onSelectTab: (_) {},
+        ),
+      ),
+      scale: 2,
+      shell: (child) => ProviderScope(child: child),
+    );
+
+    final last = find.byKey(const Key('thread-thread-7'));
+    final list = find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable));
+    expect(list, findsOneWidget);
+    await tester.scrollUntilVisible(last, 400, scrollable: list);
+    final position = tester.state<ScrollableState>(list).position;
+    position.jumpTo(position.maxScrollExtent);
+    await tester.pump();
+    session.check();
+
+    final tileBottom = tester.getRect(last).bottom;
+    final navTop = tester.getRect(find.byKey(const Key('belong_bottom_nav_bar'))).top;
+    expect(tileBottom, lessThanOrEqualTo(navTop - 8));
+  });
+
+  testWidgets('profile sheet scrolls and stacks actions at text scale 2', (tester) async {
+    tester.view.viewPadding = const FakeViewPadding(bottom: 48, top: 24);
+    tester.view.padding = const FakeViewPadding(bottom: 48, top: 24);
+    addTearDown(() {
+      tester.view.resetViewPadding();
+      tester.view.resetPadding();
+    });
+
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: Builder(
+          builder: (context) => Center(
+            child: TextButton(
+              key: const Key('open_profile_sheet'),
+              onPressed: () => MemberProfileDialog.show(context),
+              child: const Text('Open profile'),
+            ),
+          ),
+        ),
+      ),
+      scale: 2,
+      shell: (child) => ProviderScope(
+        overrides: [memberProfileProvider.overrideWith(_SignedInProfileNotifier.new)],
+        child: child,
+      ),
+    );
+    await tester.tap(find.byKey(const Key('open_profile_sheet')));
+    await settleLargeText(tester);
+    session.check();
+
+    final sheet = find.byKey(const Key('profile_sheet_scroll'));
+    expect(sheet, findsOneWidget);
+
+    Future<void> reveal(Finder finder) async {
+      await tester.scrollUntilVisible(
+        finder,
+        160,
+        scrollable: find.descendant(of: sheet, matching: find.byType(Scrollable)).first,
+      );
+      await tester.pump();
+      session.check();
+      final rect = tester.getRect(finder);
+      expect(rect.top, greaterThanOrEqualTo(-0.5));
+      expect(rect.bottom, lessThanOrEqualTo(largeTextPhoneSurface.height + 0.5));
+    }
+
+    await reveal(find.byKey(const Key('preview_mode_switch')));
+    expect(tester.getSize(find.byKey(const Key('preview_mode_switch'))).height, greaterThan(24));
+
+    final saveFinder = find.byKey(const Key('profile_save_sign_in_button'));
+    final cancelFinder = find.byKey(const Key('profile_cancel_button'));
+    final signOutFinder = find.byKey(const Key('profile_sign_out_button'));
+    await reveal(signOutFinder);
+    final save = tester.getRect(saveFinder);
+    final cancel = tester.getRect(cancelFinder);
+    final signOut = tester.getRect(signOutFinder);
+    expect(save.width, greaterThan(180));
+    expect((save.width - cancel.width).abs(), lessThan(8));
+    expect((save.width - signOut.width).abs(), lessThan(8));
+    expect(save.bottom, lessThanOrEqualTo(cancel.top));
+    expect(cancel.bottom, lessThanOrEqualTo(signOut.top));
+    expect(cancel.top - save.bottom, greaterThanOrEqualTo(4));
+  });
+
+  testWidgets('welcome card and composer hint wrap to two lines at text scale 2', (tester) async {
+    final session = await pumpHomeAtScale(tester, 2);
+    final banner = find.byKey(const Key('organizer_message_banner'));
+    final title = find.text('Welcome to Belong on the Spectrum');
+    final titleText = tester.widget<Text>(title);
+    expect(titleText.maxLines, 2);
+    final titleWidth = tester.getSize(title).width;
+    final oneLine = TextPainter(
+      text: TextSpan(text: 'Welcome to Belong on the Spectrum', style: titleText.style),
+      textDirection: TextDirection.ltr,
+      textScaler: const TextScaler.linear(2),
+      maxLines: 1,
+    )..layout(maxWidth: titleWidth);
+    expect(tester.getSize(title).height, greaterThan(oneLine.height + 2));
+    oneLine.dispose();
+
+    final message = find.textContaining('peaceful sanctuary');
+    expect(tester.widget<Text>(message).maxLines, greaterThanOrEqualTo(2));
+    expect(tester.getSize(message).width, greaterThan(tester.getSize(banner).width * 0.75));
+
+    final composer = find.byKey(const Key('reflection_composer_input'));
+    await tester.scrollUntilVisible(
+      composer,
+      300,
+      scrollable: find
+          .descendant(of: find.byType(CustomScrollView), matching: find.byType(Scrollable))
+          .first,
+    );
+    await tester.pump();
+    session.check();
+    final field = tester.widget<TextField>(composer);
+    expect(field.maxLines, 2);
+    final hint = find.textContaining('Share an unhurried thought');
+    expect(tester.widget<Text>(hint).maxLines, 2);
+    expect(tester.getSize(hint).height, greaterThan(28));
+  });
+}

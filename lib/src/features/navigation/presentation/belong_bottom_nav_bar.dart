@@ -191,14 +191,15 @@ class _BottomNavItem extends StatelessWidget {
                         child: iconWidget,
                       ),
                       const SizedBox(height: 2),
-                      // FittedBox used to shrink the label back down, which hid
-                      // the member's font size. Two lines keep it large. A word
-                      // that still cannot fit a quarter of a phone ellipsizes;
-                      // the semantics label above keeps the full word.
+                      // Two lines split "Notifications" into "Notificat" /
+                      // "ions" once the word is wider than the tab (#932).
+                      // One line ellipsizes instead. The tooltip and the
+                      // semantics label above still say the whole word.
                       Text(
                         tab.label,
                         key: Key('bottom_nav_label_${tab.name}'),
-                        maxLines: 2,
+                        maxLines: 1,
+                        softWrap: false,
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

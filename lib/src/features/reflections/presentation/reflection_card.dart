@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/community_analytics_service.dart';
+import '../../../core/presentation/unbroken_body_text.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
 import '../../fellowship_spaces/domain/fellowship_space.dart';
@@ -316,7 +317,11 @@ class ReflectionCard extends ConsumerWidget {
           Semantics(
             container: true,
             label: post.content,
-            child: Text(post.content, style: const TextStyle(fontSize: 13, height: 1.45)),
+            child: UnbrokenBodyText(
+              key: Key('post_body_${post.id}'),
+              text: post.content,
+              style: const TextStyle(fontSize: 13, height: 1.45),
+            ),
           ),
           if (ReflectionPostMedia.isRenderableUrl(post.imageUrl)) ...[
             const SizedBox(height: 10),

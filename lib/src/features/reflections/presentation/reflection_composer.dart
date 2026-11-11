@@ -174,6 +174,11 @@ class ReflectionComposer extends HookWidget {
     final hasActiveImage =
         customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // The collapsed hint is one line and turns into "Share an unhurried…".
+    // Two lines keep the sentence readable when system text is large (#932).
+    final collapsedHintLines = textScale > 1.15 ? 2 : 1;
+
     if (!isExpanded.value) {
       return Container(
         key: const Key('reflection_composer_card'),
@@ -197,6 +202,8 @@ class ReflectionComposer extends HookWidget {
                 child: TextField(
                   key: const Key('reflection_composer_input'),
                   controller: contentController,
+                  minLines: 1,
+                  maxLines: collapsedHintLines,
                   onTap: () {
                     isExpanded.value = true;
                   },

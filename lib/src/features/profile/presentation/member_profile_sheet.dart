@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/preview_mode_provider.dart';
+import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/presentation/delete_my_account_dialog.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../domain/member_profile.dart';
@@ -124,8 +125,91 @@ class MemberProfileDialog extends HookConsumerWidget {
     ];
 
     final liveAuth = _liveFirebaseAuthWithUser();
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // Above this, the pinned Sign Out / Cancel / Save row stacks and eats the
+    // dialog, leaving Experimental Preview Features below the fold (#932).
+    final largeText = textScale > 1.15;
+    final available = MediaQuery.sizeOf(context).width - 80;
+    final sheetWidth = available < 380 ? available.clamp(220.0, 380.0) : 380.0;
+
+    Future<void> signOut() async {
+      await ref.read(memberProfileProvider.notifier).signOut();
+      if (context.mounted) Navigator.of(context).pop();
+    }
+
+    void cancel() => Navigator.of(context).pop();
+
+    void saveProfile() {
+      final affiliation = churchAffiliationController.text.trim();
+      if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
+        validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
+        return;
+      }
+
+      final combinedName = [
+        firstNameController.text.trim(),
+        lastNameController.text.trim(),
+      ].where((part) => part.isNotEmpty).join(' ');
+      final effectiveName = combinedName.isNotEmpty ? combinedName : profile.displayName;
+      final effectiveBio = bioController.text.trim().isNotEmpty
+          ? bioController.text.trim()
+          : profile.bio;
+
+      ref
+          .read(memberProfileProvider.notifier)
+          .signIn(
+            displayName: effectiveName,
+            email: emailController.text.trim().isNotEmpty
+                ? emailController.text.trim()
+                : profile.email,
+            bio: effectiveBio,
+            icocChurchAffiliation: affiliation,
+          );
+      Navigator.of(context).pop();
+    }
+
+    final signOutButton = profile.isSignedIn
+        ? TextButton(
+            key: const Key('profile_sign_out_button'),
+            style: TextButton.styleFrom(
+              visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
+              minimumSize: largeText ? const Size(48, 48) : null,
+            ),
+            onPressed: signOut,
+            child: const Text('Sign Out'),
+          )
+        : null;
+    final cancelButton = TextButton(
+      key: const Key('profile_cancel_button'),
+      style: TextButton.styleFrom(
+        visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
+        minimumSize: largeText ? const Size(48, 48) : null,
+      ),
+      onPressed: cancel,
+      child: const Text('Cancel'),
+    );
+    final saveButton = FilledButton(
+      key: const Key('profile_save_sign_in_button'),
+      style: FilledButton.styleFrom(
+        visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
+        minimumSize: largeText ? const Size(48, 48) : null,
+      ),
+      onPressed: saveProfile,
+      child: Text(profile.isSignedIn ? 'Save Profile' : 'Save & Sign In'),
+    );
+    Widget stretch(Widget child) => Row(children: [Expanded(child: child)]);
+    final stackedActions = Column(
+      crossAxisAlignment: .stretch,
+      children: [
+        stretch(saveButton),
+        const SizedBox(height: 8),
+        stretch(cancelButton),
+        if (signOutButton != null) ...[const SizedBox(height: 8), stretch(signOutButton)],
+      ],
+    );
 
     return AlertDialog(
+      insetPadding: SystemInsets.dialogInsetPadding(MediaQuery.of(context)),
       titlePadding: const .fromLTRB(20, 20, 20, 12),
       contentPadding: const .fromLTRB(20, 4, 20, 12),
       actionsPadding: const .fromLTRB(16, 0, 16, 12),
@@ -170,11 +254,12 @@ class MemberProfileDialog extends HookConsumerWidget {
         ],
       ),
       content: SizedBox(
-        width: 380,
+        width: sheetWidth,
         child: SingleChildScrollView(
+          key: largeText ? const Key('profile_sheet_scroll') : null,
           child: Column(
             mainAxisSize: .min,
-            crossAxisAlignment: .start,
+            crossAxisAlignment: largeText ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
             children: [
               if (validationError.value != null) ...[
                 Container(
@@ -367,7 +452,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   return SwitchListTile.adaptive(
                     key: const Key('preview_mode_switch'),
                     contentPadding: .zero,
-                    dense: true,
+                    dense: !largeText,
                     title: const Text(
                       '🧪 Experimental Preview Features',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
@@ -439,60 +524,12 @@ class MemberProfileDialog extends HookConsumerWidget {
                     ),
                   ),
               ],
+              if (largeText) ...[const SizedBox(height: 16), stackedActions],
             ],
           ),
         ),
       ),
-      actions: [
-        if (profile.isSignedIn)
-          TextButton(
-            key: const Key('profile_sign_out_button'),
-            style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-            onPressed: () async {
-              await ref.read(memberProfileProvider.notifier).signOut();
-              if (context.mounted) Navigator.of(context).pop();
-            },
-            child: const Text('Sign Out'),
-          ),
-        TextButton(
-          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          key: const Key('profile_save_sign_in_button'),
-          style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
-          onPressed: () {
-            final affiliation = churchAffiliationController.text.trim();
-            if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
-              validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
-              return;
-            }
-
-            final combinedName = [
-              firstNameController.text.trim(),
-              lastNameController.text.trim(),
-            ].where((part) => part.isNotEmpty).join(' ');
-            final effectiveName = combinedName.isNotEmpty ? combinedName : profile.displayName;
-            final effectiveBio = bioController.text.trim().isNotEmpty
-                ? bioController.text.trim()
-                : profile.bio;
-
-            ref
-                .read(memberProfileProvider.notifier)
-                .signIn(
-                  displayName: effectiveName,
-                  email: emailController.text.trim().isNotEmpty
-                      ? emailController.text.trim()
-                      : profile.email,
-                  bio: effectiveBio,
-                  icocChurchAffiliation: affiliation,
-                );
-            Navigator.of(context).pop();
-          },
-          child: Text(profile.isSignedIn ? 'Save Profile' : 'Save & Sign In'),
-        ),
-      ],
+      actions: largeText ? null : [?signOutButton, cancelButton, saveButton],
     );
   }
 }
