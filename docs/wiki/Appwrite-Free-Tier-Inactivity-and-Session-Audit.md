@@ -156,8 +156,8 @@ This repository cannot change the live table. Shipping the server does not remov
 2. Open organization project `belongonthespectrum` (`6adae5c40013c409e109`).
 3. Open **Databases** → `belong_community_db` → table `client_session_audits` → **Settings** → **Permissions**.
 4. Remove every client create and update permission. That includes `create("any")`, `create("guests")`, `create("users")`, `update("any")`, `update("guests")`, and `update("users")`.
-5. Open several existing rows and clear any per-row update permission. Rows created while `create("any")` was on can carry their own update grant. An empty permission list on new writes does not rewrite those older rows.
-6. `read("users")` lets every signed-in Appwrite user read the table. That is wider than operator-only access. Console admins can read without it, and the phone uses Firebase, not an Appwrite user. Remove `read("users")` unless a specific Appwrite user must read rows from the client SDK. The admission server does not need it. The API key bypasses table permissions.
+5. Open several existing rows and clear client update permissions, plus any read grant that is not an operator user or team. Rows created while `create("any")` was on can carry their own update grant. An empty permission list on new writes does not rewrite those older rows.
+6. Remove `read("users")`. It lets every signed-in Appwrite user read the raw rows. Console admins can read without it, and the phone uses Firebase, not an Appwrite user. If an operator must read from the client SDK, grant `read` only to that operator user or team. The admission server does not need a client read grant. The API key bypasses table permissions.
 7. Confirm the Flutter app and this repo contain no API key.
 
 Prove create and update separately. One request each. Do not loop them. A denied POST does not prove update is closed.
@@ -178,7 +178,7 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 
 Expect `401` or `403` for both. A `201` or `200` means that call is still public. A `404` on the PATCH does not prove update is closed: a permitted caller can be told that `probe` is missing. If you see `404`, go back to the table permissions and the existing rows.
 
-The server stores new rows with an empty permission list and `rowId` `unique()`. Session end is a later PATCH of `sessionEndedAt` only, and only when the client repeats the end token the server returned. That token is an HMAC of the row id under the API key. The compare is constant-time. After a key rotation, older sessions cannot set an end time. Start-only is still enough.
+The server stores new rows with an empty permission list and `rowId` `unique()`. To end a session, the client sends a JSON POST to the admission endpoint with `action` `end`, `rowId`, `endToken`, and `sessionEndedAt`. The server then PATCHes only `sessionEndedAt` in Appwrite. The end token is an HMAC of the row id under the API key. The compare is constant-time. After a key rotation, older sessions cannot set an end time. Start-only is still enough.
 
 ## Retention
 
