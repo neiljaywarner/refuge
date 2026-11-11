@@ -21,16 +21,19 @@ A year of soft-launch friendlies on Free needs one of these:
 
 When Free pauses the project:
 
-- Data is kept. Rows, files, and users are not deleted by the pause.
+- The pause itself does not delete rows, files, or users.
 - Users cannot use the project (auth, database, storage, functions) until it is restored.
 - Background work stops: backups, cron, and scheduled functions.
+- A Free project that stays paused for **90 days** is deleted, including its resources ([changelog 2026-06-29](https://appwrite.io/changelog/entry/2026-06-29)). Appwrite emails the organization before that deletion. Pro and Enterprise are not deleted for inactivity.
 
-Restore:
+Restore before that 90th day. After it, the project and its rows are already gone.
 
 1. Sign in to the [Appwrite Console](https://cloud.appwrite.io).
 2. Open organization project `belongonthespectrum`.
-3. Choose **Restore**. The project becomes active immediately. Data is still there.
+3. Choose **Restore**. The project becomes active immediately, and the data is still there only if the 90 days have not elapsed.
 4. Background jobs start again only after the restore.
+
+If you will not restore in time, upgrade the organization to a paid plan before the 90 days end.
 
 If a limit is hit (bandwidth, storage, users, executions, or database writes), Free freezes the affected capability until the next billing cycle or an upgrade. That is separate from the 7-day pause. Check the organization **Usage** tab. Current ceilings are on the [pricing page](https://appwrite.io/pricing). Database writes on Free are **250,000 per month** ([reads and writes](https://appwrite.io/docs/advanced/billing/database-reads-and-writes)). As of the [2026-01-08 changelog](https://appwrite.io/changelog/entry/2026-01-08), Free allows **2 functions per project**. The live functions are `dm-push` and `dm-mirror`. `feedback-forward` was removed, and that slot is already taken. Do not add a third function. A schedule would also sit idle while the project is paused.
 
@@ -135,7 +138,7 @@ set +a
 dart run tool/client_session_audit_server.dart
 ```
 
-This server only creates a row (`POST`) and patches `sessionEndedAt` (`PATCH`). Those calls need the project scope `rows.write`. They do not read rows, so `rows.read` is not required here. Appwrite API-key scopes are project-wide. The console does not limit `rows.write` to `belong_community_db`. A key with that scope can write every table in the project. Create a separate key, add no extra scopes, and do not reuse the `dm-push` or `dm-mirror` key. The weekly prune lists and deletes rows, so that tool's key still needs `rows.read` and `rows.write`. Do not commit the file, paste the key into an issue, or pass it as a flag.
+This server only creates a row (`POST`) and patches `sessionEndedAt` (`PATCH`). Those calls need the project scope `rows.write`. They do not read rows, so `rows.read` is not required here. Appwrite API-key scopes are project-wide. The console does not limit `rows.write` to `belong_community_db`. A key with that scope can write every table in the project. Create a separate key, add no extra scopes, and do not reuse the `dm-push` or `dm-mirror` key. The weekly prune lists and deletes rows, so that tool's key still needs `rows.read` and `rows.write`. Put it in `.env.session-audit-prune`, not in `.env.session-audit`. The admission key cannot list rows. Do not commit either file, paste a key into an issue, or pass it as a flag.
 
 Point a build at the server only after it is reachable over HTTPS from the phones that should report:
 
@@ -189,22 +192,30 @@ Every week, or when the raw count passes **1600**, run the tool below. It:
 
 Rows newer than 8 weeks are kept while the table is at or under 2000, even if the count is over 1600. Over 1600 is the signal to run the tool before the cap, not a lower cap. Two thousand short rows are trivial next to Free storage limits.
 
-A crash after the summary write and before the deletes can add the same rows again on the next `--apply`. Check the week row, then rerun. The tool does not delete a week whose summary write failed.
+A failed summary write leaves that week's raw rows in place and does not change the summary. `--apply` again is safe for that week.
+
+A summary write that succeeds, followed by a failed raw-row delete, is different. The week row `week-YYYY-MM-DD` already includes the leftover row in `sessionCount`, the platform, OS, app version, and city counts, and `rawRowsSummarized`. Do not run `--apply` again until that row is reconciled. Another `--apply` merges the leftover row in a second time.
+
+Reconcile before any retry:
+
+- Delete the leftover raw row in the Console and leave the week summary as it is. That row needs no further `--apply`.
+- Or subtract the leftover row from `sessionCount`, the matching count JSON, and `rawRowsSummarized`, and only then run `--apply` so the merge adds it once.
 
 ### Runbook
 
 ```bash
-# Same gitignored .env.session-audit file as the admission server.
+# .env.session-audit-prune is gitignored by `.env.*`.
 # Mode 600. One line: APPWRITE_API_KEY=...
+# rows.read and rows.write. Not the admission key.
 # Do not type the key into the shell.
 set -a
-. ./.env.session-audit
+. ./.env.session-audit-prune
 set +a
 dart run tool/prune_client_session_audits.dart --example
 dart run tool/prune_client_session_audits.dart
 dart run tool/prune_client_session_audits.dart --apply
 ```
 
-`--example` uses synthetic rows and does not call Appwrite. The default mode is a dry run. `--apply` writes, then deletes. Load the key from the file above so it is not typed into the shell. Do not commit it, paste it into an issue, or pass it as a flag. The listing reads every page. If it is still full after 500 pages, the command stops and does not delete.
+`--example` uses synthetic rows and does not call Appwrite. The default mode is a dry run. `--apply` writes, then deletes. Load the prune key from the file above so it is not typed into the shell and so the write-only admission key is not used for the listing. Do not commit it, paste it into an issue, or pass it as a flag. The listing reads every page. If it is still full after 500 pages, the command stops and does not delete.
 
 Do this on a schedule a person owns (weekly), in addition to the weekly Console visit. The script is not deployed as a Function, for the Free function cap above and because a paused project would not run it.

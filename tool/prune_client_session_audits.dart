@@ -8,7 +8,8 @@
 // dm-push and dm-mirror are the live ones. A schedule would not run while
 // the project is paused. Run it weekly, or when the raw count passes 1600.
 //
-//   # APPWRITE_API_KEY in the environment. Do not commit it or pass it as a flag.
+//   # APPWRITE_API_KEY from .env.session-audit-prune (rows.read and rows.write).
+//   # Do not reuse the admission key, commit the file, or pass the key as a flag.
 //   dart run tool/prune_client_session_audits.dart
 //   dart run tool/prune_client_session_audits.dart --apply
 //   dart run tool/prune_client_session_audits.dart --example
@@ -27,9 +28,11 @@ Summarize and prune client_session_audits.
   dart run tool/prune_client_session_audits.dart [--apply] [--now=<ISO-8601>]
   dart run tool/prune_client_session_audits.dart --example
 
-Reads APPWRITE_API_KEY from the environment. Endpoint, project, and database
-come from AppwriteConfig (override with APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID,
-and APPWRITE_DATABASE_ID dart-defines when you compile the script).
+Reads APPWRITE_API_KEY from the environment. Use .env.session-audit-prune.
+That key needs rows.read and rows.write. Do not reuse the admission key.
+Endpoint, project, and database come from AppwriteConfig (override with
+APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, and APPWRITE_DATABASE_ID dart-defines
+when you compile the script).
 
 Without --apply, prints the plan and does not write. --example uses synthetic
 rows and does not call Appwrite.
