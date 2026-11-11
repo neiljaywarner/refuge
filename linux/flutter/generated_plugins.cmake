@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   desktop_webview_auth
   desktop_webview_window
   file_selector_linux
+  stream_webrtc_flutter
   url_launcher_linux
   window_to_front
 )

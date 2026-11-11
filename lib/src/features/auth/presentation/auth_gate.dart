@@ -15,6 +15,11 @@ import '../../profile/presentation/first_visit_welcome_card.dart';
 import '../../reflections/data/post_repository.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 import '../../../home_screen.dart';
+import '../../group_call/data/stream_video_preview_config.dart';
+import '../../group_call/domain/guest_invite.dart';
+import '../../group_call/presentation/group_call_flow.dart';
+import '../../group_call/presentation/group_call_guest_join_page.dart';
+import '../../group_call/presentation/group_call_lobby.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_access_policy.dart';
 import '../domain/auth_session.dart';
@@ -37,10 +42,33 @@ import 'verify_email_copy.dart';
 ///
 /// Reads [authRepositoryProvider], not [memberProfileProvider].
 class AuthGate extends ConsumerStatefulWidget {
-  const AuthGate({super.key, required this.repository, required this.themeNotifier});
+  const AuthGate({
+    super.key,
+    required this.repository,
+    required this.themeNotifier,
+    this.groupCallPreviewCompiled = streamVideoPreviewEnabled,
+    this.groupCallLocation,
+    this.inviteSignals,
+    this.guestTokenClientFactory,
+    this.onGuestReady,
+  });
 
   final PostRepository repository;
   final ThemeNotifier themeNotifier;
+
+  /// Preview compile flag. Tests pass true. Production builds leave it false.
+  final bool groupCallPreviewCompiled;
+
+  /// Page address. Tests pass a fixed link. The app uses the browser address.
+  final Uri? groupCallLocation;
+
+  /// Invite from a cold start or a later VIEW intent. [Uri.base] on Android
+  /// stays `file://` and is not this value.
+  final GuestInviteSignals? inviteSignals;
+
+  final GuestJoinClientBuilder? guestTokenClientFactory;
+
+  final GroupCallStarter? onGuestReady;
 
   @override
   ConsumerState<AuthGate> createState() => _AuthGateState();
@@ -48,6 +76,30 @@ class AuthGate extends ConsumerStatefulWidget {
 
 class _AuthGateState extends ConsumerState<AuthGate> {
   AuthSession? _reloadedSession;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.inviteSignals?.addListener(_onInvite);
+  }
+
+  @override
+  void didUpdateWidget(covariant AuthGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.inviteSignals == widget.inviteSignals) return;
+    oldWidget.inviteSignals?.removeListener(_onInvite);
+    widget.inviteSignals?.addListener(_onInvite);
+  }
+
+  @override
+  void dispose() {
+    widget.inviteSignals?.removeListener(_onInvite);
+    super.dispose();
+  }
+
+  void _onInvite() {
+    if (mounted) setState(() {});
+  }
 
   /// Soft-delete lookup, cached per user id so rebuilds do not re-query.
   String? _deleteCheckUserId;
@@ -156,6 +208,23 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     }
 
     if (!sessionMayEnterCommunity(session)) {
+      final location = widget.groupCallLocation ?? widget.inviteSignals?.location ?? Uri.base;
+      final invite = guestInviteFromLocation(location);
+      if (guestJoinEntryVisible(
+        compileTimePreview: widget.groupCallPreviewCompiled,
+        inviteToken: invite,
+      )) {
+        final callId = explicitGroupCallIdFromLocation(location);
+        final builder = widget.guestTokenClientFactory;
+        return GroupCallGuestJoinPage(
+          inviteToken: invite!,
+          callId: callId,
+          tokenClientFactory: () =>
+              builder?.call(inviteToken: invite, callId: callId) ??
+              buildLiveStreamGuestJoinClient(inviteToken: invite, callId: callId),
+          onReady: widget.onGuestReady ?? pushStreamGroupCall,
+        );
+      }
       return KeyedSubtree(
         key: const Key('auth_gate_sign_in_wall'),
         child: SimpleSignInScreen(firebaseReady: Firebase.apps.isNotEmpty),

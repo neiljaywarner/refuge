@@ -55,6 +55,14 @@ test/core/logging/app_logger_test.dart
 test/core/observability/serverpod_telemetry_backup_test.dart
 test/core/presentation/coming_soon_view_test.dart
 test/core/preview_mode_test.dart
+test/features/group_call/group_call_lobby_test.dart
+test/features/group_call/group_call_preview_test.dart
+test/features/group_call/group_call_guest_join_test.dart
+test/features/group_call/group_call_controls_test.dart
+test/features/group_call/group_call_909_log_test.dart
+test/features/group_call/group_call_session_lifecycle_test.dart
+test/features/group_call/macos_call_entitlements_test.dart
+test/features/group_call/stream_group_call_page_test.dart
 test/core/theme/belong_text_styles_test.dart
 test/features/about/about_build_stamp_test.dart
 test/features/admin/admin_member_banning_widget_test.dart

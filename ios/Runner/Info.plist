@@ -27,7 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Belong uses the camera so you can take a profile photo or attach a calm photo reflection.</string>
+	<string>Belong uses the camera for an optional profile photo, a photo reflection, or a preview group call. The call starts with the camera off.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Belong uses the microphone only after you unmute on a preview group call. The call starts muted.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Belong lets you choose a photo from your library for your avatar or community reflections.</string>
 	<key>UIApplicationSceneManifest</key>

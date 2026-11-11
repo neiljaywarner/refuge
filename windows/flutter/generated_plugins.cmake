@@ -4,7 +4,9 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
+  battery_plus
   cloud_firestore
+  connectivity_plus
   desktop_webview_auth
   desktop_webview_window
   file_selector_windows
@@ -14,6 +16,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_remote_config
   permission_handler_windows
   share_plus
+  stream_webrtc_flutter
   url_launcher_windows
   window_to_front
 )
