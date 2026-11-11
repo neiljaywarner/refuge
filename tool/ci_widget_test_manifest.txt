@@ -37,6 +37,12 @@
 #   test/widget_test.dart
 
 test/core/appwrite/appwrite_config_test.dart
+test/core/appwrite/client_session_audit_test.dart
+test/core/appwrite/client_session_audit_admission_test.dart
+test/tool/client_session_audit_server_test.dart
+test/tool/prune_client_session_audits_deadline_test.dart
+test/tool/prune_client_session_audits_test.dart
+test/tool/session_audit_wiki_test.dart
 test/core/build/build_identity_test.dart
 test/core/geometry/point_test.dart
 test/core/config/app_flavor_hosting_urls_test.dart

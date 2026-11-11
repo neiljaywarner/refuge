@@ -44,3 +44,9 @@ Every feature module exposes 4 pluggable adapters verified by the exact same Uni
 2. **`Serverpod*Repository`**: Rollback only. A build must set both `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`.
 3. **`Appwrite*Repository`**: Default post backend as of [#212](https://github.com/neiljaywarner/refuge/issues/212). Uses project `6adae5c40013c409e109` unless `APPWRITE_ENDPOINT` is passed empty.
 4. **`Firebase*Repository`**: Cloud Firestore remains the second copy of posts. Firebase Auth remains the session. Analytics stays where a build is configured.
+
+---
+
+## 4. Appwrite Free pause is not fixed by client traffic
+
+A Free project with no **Console development activity** for 7 days is paused. API and SDK traffic, including session-audit rows, does not count. Year-long friendlies on Free need a weekly Console visit, or Pro. The runbook, table schema, and retention numbers are in [Appwrite Free-tier inactivity and session audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit).

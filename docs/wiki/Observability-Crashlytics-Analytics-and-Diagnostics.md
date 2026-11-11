@@ -70,6 +70,10 @@ All logs pass through client-side regex sanitization before transmission:
 - Auth session tokens and headers are replaced with `[SCRUBBED_SECRET]`.
 - Complies strictly with community privacy rules (`.agents/rules/open_public_repo_zero_pii.md`).
 
+### Appwrite session audit (not a keepalive)
+
+Soft-launch builds can post one non-PII session to the admission server at cold start (OS, app version, platform, coarse place, UTC time). The phone does not write the Appwrite table. That row is for ops visibility. **It does not stop the Appwrite Free inactivity pause.** Runtime traffic does not count as Console development activity. See [Appwrite Free-tier inactivity and session audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit).
+
 ---
 
 ## 📊 Post-October 31 Telemetry Architecture Analysis (Issue #293)

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
 import 'src/app.dart';
+import 'src/core/appwrite/client_session_audit.dart';
 import 'src/features/notifications/data/fcm_background_handler.dart';
 import 'src/features/notifications/data/fcm_messaging_service.dart';
 import 'src/core/config/app_flavor.dart';
@@ -129,6 +130,10 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
   // ProviderScope: root-scoped providers (e.g. quietDigestProvider) would then
   // read the nested postRepositoryProvider override, which Riverpod rejects in
   // debug builds (red screen found while driving the Pixel, #73).
+  //
+  // Non-PII session post for ops telemetry. Fail-soft and not awaited.
+  // The phone does not write the Appwrite table, and the post is not a keepalive.
+  startClientSessionAudit();
   runApp(
     RefugeApp(
       repository: PostRepositoryFactory.create(flavor: flavor),
