@@ -144,3 +144,14 @@ test/tool/firestore_appwrite_backup_test.dart
 test/tool/generate_belong_icons_test.dart
 test/tool/import_circle_csv_test.dart
 test/features/notifications/prod_notifications_start_empty_test.dart
+test/helpers/text_scale_test.dart
+test/features/sensory/system_text_scaler_test.dart
+test/features/accessibility/system_text_scale_app_test.dart
+test/features/accessibility/large_text_sign_in_test.dart
+test/features/accessibility/large_text_home_test.dart
+test/features/accessibility/large_text_post_detail_test.dart
+test/features/accessibility/large_text_messages_test.dart
+test/features/accessibility/large_text_settings_test.dart
+test/features/accessibility/large_text_feedback_test.dart
+test/features/accessibility/large_text_video_call_test.dart
+test/features/accessibility/large_text_bdd_test.dart
