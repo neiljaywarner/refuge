@@ -2,6 +2,7 @@
 
 const { mintStreamUserToken } = require('./stream_token');
 const { handleStreamGuestAction } = require('./stream_guest');
+const { decideMember } = require('./stream_member');
 
 const CALL_ID = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
 const USER_ID = /^[A-Za-z0-9_-]{1,128}$/;
@@ -104,6 +105,7 @@ async function handleMintStreamCallToken(req, res, deps) {
   if (
     action === 'createInvite' ||
     action === 'revokeInvite' ||
+    action === 'revokeMyInvites' ||
     action === 'joinGuest' ||
     action === 'releaseGuest'
   ) {
@@ -115,23 +117,14 @@ async function handleMintStreamCallToken(req, res, deps) {
     return;
   }
 
-  const header = req.headers.authorization || '';
-  const match = /^Bearer\s+(\S+)$/.exec(header);
-  if (!match) {
-    res.status(401).json({ error: 'Sign in is required.' });
+  const member = await decideMember(req, deps);
+  if (!member.ok) {
+    res.status(member.status).json({ error: member.error, code: member.code });
     return;
   }
-
-  let decoded;
-  try {
-    decoded = await deps.verifyIdToken(match[1]);
-  } catch (_) {
-    res.status(401).json({ error: 'Sign in is required.' });
-    return;
-  }
-  const userId = normalizeUserId(decoded && decoded.uid);
+  const userId = normalizeUserId(member.userId);
   if (!userId) {
-    res.status(401).json({ error: 'Sign in is required.' });
+    res.status(401).json({ error: 'Sign in is required.', code: 'auth' });
     return;
   }
 

@@ -20,6 +20,7 @@ import 'package:refuge4serverpod/src/features/sensory_themes/presentation/sensor
 
 void main() {
   const invite = 'ccccccccccccccccccccccccccccccccccccccccccc';
+  const seatKey = 'sssssssssssssssssssssssssssssssssssssssssss';
 
   test('guest names match the server checks', () {
     expect(sanitizeGuestDisplayName('  Alex   R  '), 'Alex R');
@@ -95,6 +96,7 @@ void main() {
                   'callRole': 'call-member',
                   'displayName': 'Alex',
                   'canModerate': false,
+                  'seatKey': seatKey,
                 }),
                 200,
               );
@@ -361,6 +363,7 @@ void main() {
           'callRole': 'call-member',
           'displayName': 'Alex',
           'canModerate': false,
+          'seatKey': seatKey,
         }),
         200,
       ),
@@ -371,6 +374,7 @@ void main() {
     expect(bodies.map((body) => body['action']), ['joinGuest', 'releaseGuest']);
     expect(bodies.last['guestUserId'], userId);
     expect(bodies.last['inviteToken'], invite);
+    expect(bodies.last['seatKey'], seatKey);
     expect(client.order, ['release', 'close']);
     expect(jsonEncode(bodies).contains('unit-test-stream-secret'), isFalse);
   });

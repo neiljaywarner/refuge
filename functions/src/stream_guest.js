@@ -3,6 +3,7 @@
 const crypto = require('node:crypto');
 
 const { mintStreamCallScopedToken, verifyStreamUserToken } = require('./stream_token');
+const { decideMember } = require('./stream_member');
 
 /** About one day. The link can be revoked sooner. */
 const INVITE_TTL_SECONDS = 24 * 60 * 60;
@@ -19,6 +20,20 @@ const GUEST_CAP = 10;
 
 const JOIN_WINDOW_SECONDS = 10 * 60;
 const JOIN_MAX_ATTEMPTS = 20;
+
+/**
+ * A seat is only reserved for a minute until Stream accepts the guest.
+ * If preparation is killed at the function deadline, the seat opens again
+ * with this window instead of the full half-hour pass.
+ */
+const GUEST_PENDING_TTL_SECONDS = 60;
+
+/** Leaves time inside the 20s function limit to release a seat. */
+const PREPARE_TIMEOUT_MS = 12 * 1000;
+
+/** Unknown invite tokens, before the per-link counter and the invite read. */
+const REQUEST_WINDOW_SECONDS = 10 * 60;
+const REQUEST_MAX_ATTEMPTS = 60;
 
 /**
  * App-facing label on the guest token and the join response.
@@ -45,6 +60,45 @@ function inviteTokenLooksValid(token) {
 
 function guestUserIdLooksValid(userId) {
   return typeof userId === 'string' && GUEST_USER_ID.test(userId);
+}
+
+/** 32 bytes of base64url, same shape as an invite token. Not a Stream secret. */
+function seatKeyLooksValid(seatKey) {
+  return typeof seatKey === 'string' && INVITE_TOKEN.test(seatKey);
+}
+
+function hashSeatKey(seatKey) {
+  return crypto.createHash('sha256').update(seatKey, 'utf8').digest('hex');
+}
+
+function requestBucket(req) {
+  const ip = req && typeof req.ip === 'string' ? req.ip.trim() : '';
+  return crypto.createHash('sha256').update(ip || 'unknown', 'utf8').digest('hex');
+}
+
+function settleWithin(work, ms) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      resolve({ ok: false, timedOut: true });
+    }, ms);
+    Promise.resolve()
+      .then(work)
+      .then((value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch(() => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(null);
+      });
+  });
 }
 
 function guestCallCid(callId) {
@@ -129,18 +183,13 @@ function readSecrets(deps) {
   return { apiKey: key, apiSecret };
 }
 
-async function requireMember(req, deps) {
-  const header = req.headers.authorization || '';
-  const match = /^Bearer\s+(\S+)$/.exec(header);
-  if (!match) return null;
-  try {
-    const decoded = await deps.verifyIdToken(match[1]);
-    const userId = decoded && typeof decoded.uid === 'string' ? decoded.uid.trim() : '';
-    if (!/^[A-Za-z0-9_-]{1,128}$/.test(userId)) return null;
-    return userId;
-  } catch (_) {
+async function requireMember(req, res, deps) {
+  const decision = await decideMember(req, deps);
+  if (!decision.ok) {
+    jsonError(res, decision.status, decision.code, decision.error);
     return null;
   }
+  return decision.userId;
 }
 
 function logGuest(event, fields) {
@@ -156,6 +205,10 @@ async function handleStreamGuestAction({ req, res, deps, action, body }) {
     await revokeInvite(req, res, deps, body);
     return;
   }
+  if (action === 'revokeMyInvites') {
+    await revokeMyInvites(req, res, deps, body);
+    return;
+  }
   if (action === 'joinGuest') {
     await joinGuest(req, res, deps, body);
     return;
@@ -168,11 +221,8 @@ async function handleStreamGuestAction({ req, res, deps, action, body }) {
 }
 
 async function createInvite(req, res, deps, body) {
-  const userId = await requireMember(req, deps);
-  if (!userId) {
-    jsonError(res, 401, 'auth', 'Sign in is required.');
-    return;
-  }
+  const userId = await requireMember(req, res, deps);
+  if (!userId) return;
   const { normalizeCallId } = require('./stream_call');
   const callId = normalizeCallId(body.callId);
   if (!callId) {
@@ -218,11 +268,8 @@ async function createInvite(req, res, deps, body) {
 }
 
 async function revokeInvite(req, res, deps, body) {
-  const userId = await requireMember(req, deps);
-  if (!userId) {
-    jsonError(res, 401, 'auth', 'Sign in is required.');
-    return;
-  }
+  const userId = await requireMember(req, res, deps);
+  if (!userId) return;
   const inviteToken = body.inviteToken;
   if (!inviteTokenLooksValid(inviteToken) || !deps.store) {
     jsonError(res, 404, 'not-found', 'This invite link is not valid.');
@@ -244,9 +291,54 @@ async function revokeInvite(req, res, deps, body) {
   res.status(200).json({ revoked: true, callId: invite.callId });
 }
 
+async function revokeMyInvites(req, res, deps, body) {
+  const userId = await requireMember(req, res, deps);
+  if (!userId) return;
+  const { normalizeCallId } = require('./stream_call');
+  const callId = normalizeCallId(body.callId);
+  if (!callId || !deps.store || typeof deps.store.revokeInvitesByCreator !== 'function') {
+    jsonError(res, 400, 'call', 'Choose a short call name using letters, numbers, and dashes.');
+    return;
+  }
+  const revoked = await deps.store.revokeInvitesByCreator({
+    createdBy: userId,
+    callId,
+    revokedAt: deps.nowSeconds(),
+  });
+  logGuest('revokeStreamGuestInvites', { ok: true, callId, revoked });
+  res.status(200).json({ revoked, callId });
+}
+
+async function noteGuestRequest(req, res, deps) {
+  if (!deps.store || typeof deps.store.noteRequestAttempt !== 'function') {
+    jsonError(res, 503, 'unconfigured', 'Video calling is not configured on this preview.');
+    return false;
+  }
+  const attempt = await deps.store.noteRequestAttempt(requestBucket(req), deps.nowSeconds(), {
+    windowSeconds: REQUEST_WINDOW_SECONDS,
+    maxAttempts: REQUEST_MAX_ATTEMPTS,
+  });
+  if (attempt.limited) {
+    logGuest('streamGuestRequest', { ok: false, reason: 'rate' });
+    jsonError(res, 429, 'rate', 'Too many join attempts. Wait a few minutes and try the link again.');
+    return false;
+  }
+  return true;
+}
+
+function seatMatches(existing, tokenHash, seatKey) {
+  if (!existing || existing.inviteHash !== tokenHash) return false;
+  if (!seatKeyLooksValid(seatKey) || typeof existing.sessionHash !== 'string') return false;
+  const actual = Buffer.from(hashSeatKey(seatKey), 'hex');
+  const wanted = Buffer.from(existing.sessionHash, 'hex');
+  if (actual.length !== wanted.length) return false;
+  return crypto.timingSafeEqual(actual, wanted);
+}
+
 async function joinGuest(req, res, deps, body) {
+  if (!(await noteGuestRequest(req, res, deps))) return;
   const inviteToken = body.inviteToken;
-  if (!inviteTokenLooksValid(inviteToken) || !deps.store) {
+  if (!inviteTokenLooksValid(inviteToken)) {
     jsonError(res, 404, 'not-found', 'This invite link is not valid.');
     return;
   }
@@ -263,14 +355,15 @@ async function joinGuest(req, res, deps, body) {
   const live = !isRevoked(invite) && now < invite.expiresAt;
   const callOk = !requestedCallId || requestedCallId === invite.callId;
   const suppliedGuestId = body.guestUserId;
+  const suppliedSeatKey = body.seatKey;
   const existing =
     live && callOk && displayName && guestUserIdLooksValid(suppliedGuestId)
       ? await deps.store.findSession({ callId: invite.callId, guestUserId: suppliedGuestId })
       : null;
-  const refreshing =
-    existing && existing.inviteHash === tokenHash && existing.expiresAt > now;
+  const reclaiming = seatMatches(existing, tokenHash, suppliedSeatKey);
+  const activeSeat = Boolean(reclaiming && existing.expiresAt > now);
 
-  if (!refreshing) {
+  if (!activeSeat) {
     const attempt = await deps.store.noteJoinAttempt(tokenHash, now, {
       windowSeconds: JOIN_WINDOW_SECONDS,
       maxAttempts: JOIN_MAX_ATTEMPTS,
@@ -302,6 +395,12 @@ async function joinGuest(req, res, deps, body) {
     jsonError(res, 400, 'name', 'Use a short name. Leave out email addresses and web links.');
     return;
   }
+  // The invite link is shared. It is not enough to refresh or replace a seat.
+  if (guestUserIdLooksValid(suppliedGuestId) && !reclaiming) {
+    logGuest('joinStreamGuest', { ok: false, reason: 'seat', callId: invite.callId });
+    jsonError(res, 403, 'seat', 'This invite link is not valid for that seat. Open the link again.');
+    return;
+  }
 
   // A client may ask to join as a host. The request is ignored.
   const secrets = readSecrets(deps);
@@ -310,12 +409,25 @@ async function joinGuest(req, res, deps, body) {
     jsonError(res, 503, 'unconfigured', 'Video calling is not configured on this preview.');
     return;
   }
-  if (typeof deps.randomGuestId !== 'function') {
+  if (typeof deps.randomGuestId !== 'function' || typeof deps.randomSeatKey !== 'function') {
     jsonError(res, 503, 'unconfigured', 'Video calling is not configured on this preview.');
     return;
   }
 
-  const guestUserId = refreshing ? suppliedGuestId : deps.randomGuestId();
+  let seatKey = null;
+  let sessionHash = null;
+  if (reclaiming) {
+    sessionHash = existing.sessionHash;
+  } else {
+    seatKey = deps.randomSeatKey();
+    if (!seatKeyLooksValid(seatKey)) {
+      jsonError(res, 503, 'unconfigured', 'Video calling is not configured on this preview.');
+      return;
+    }
+    sessionHash = hashSeatKey(seatKey);
+  }
+
+  const guestUserId = reclaiming ? suppliedGuestId : deps.randomGuestId();
   if (!guestUserIdLooksValid(guestUserId)) {
     jsonError(res, 503, 'unconfigured', 'Video calling is not configured on this preview.');
     return;
@@ -325,8 +437,9 @@ async function joinGuest(req, res, deps, body) {
     callId: invite.callId,
     guestUserId,
     inviteHash: tokenHash,
+    sessionHash,
     nowSeconds: now,
-    ttlSeconds: GUEST_TOKEN_TTL_SECONDS,
+    ttlSeconds: activeSeat ? GUEST_TOKEN_TTL_SECONDS : GUEST_PENDING_TTL_SECONDS,
     limit: GUEST_CAP,
   });
   if (!claim.ok) {
@@ -335,34 +448,48 @@ async function joinGuest(req, res, deps, body) {
     return;
   }
 
-  // A throw is the same as { ok: false }. The new seat is released.
-  // A refresh keeps the seat the guest already holds. The error text is
-  // not returned: a Stream failure can echo a credential.
-  let prepared = null;
-  try {
-    prepared = await deps.prepareGuestCall({
-      apiKey: secrets.apiKey,
-      apiSecret: secrets.apiSecret,
+  const releaseClaim = () =>
+    deps.store.releaseGuest({
       callId: invite.callId,
-      hostUserId: invite.createdBy,
       guestUserId,
-      displayName,
-      nowSeconds: now,
+      inviteHash: tokenHash,
+      sessionHash,
     });
-  } catch (_) {
-    prepared = null;
-  }
-  if (!prepared || prepared.ok !== true) {
-    if (!refreshing) {
-      await deps.store.releaseGuest({
+
+  // A throw or a stall is the same as { ok: false }. A new seat is released.
+  // An active refresh keeps the seat the guest already holds. The error text
+  // is not returned: a Stream failure can echo a credential.
+  const timeoutMs =
+    typeof deps.prepareTimeoutMs === 'number' ? deps.prepareTimeoutMs : PREPARE_TIMEOUT_MS;
+  const prepared = await settleWithin(
+    () =>
+      deps.prepareGuestCall({
+        apiKey: secrets.apiKey,
+        apiSecret: secrets.apiSecret,
         callId: invite.callId,
+        hostUserId: invite.createdBy,
         guestUserId,
-        inviteHash: tokenHash,
-      });
-    }
+        displayName,
+        nowSeconds: now,
+      }),
+    timeoutMs,
+  );
+  if (!prepared || prepared.ok !== true) {
+    if (!activeSeat) await releaseClaim();
     logGuest('joinStreamGuest', { ok: false, reason: 'room', callId: invite.callId });
     jsonError(res, 503, 'room', 'The call could not be prepared. Try again in a moment.');
     return;
+  }
+  if (!activeSeat) {
+    await deps.store.claimGuest({
+      callId: invite.callId,
+      guestUserId,
+      inviteHash: tokenHash,
+      sessionHash,
+      nowSeconds: now,
+      ttlSeconds: GUEST_TOKEN_TTL_SECONDS,
+      limit: GUEST_CAP,
+    });
   }
 
   const minted = mintStreamCallScopedToken({
@@ -390,13 +517,14 @@ async function joinGuest(req, res, deps, body) {
       roles: ['admin', 'host', payload.role],
     })
   ) {
+    if (!activeSeat) await releaseClaim();
     jsonError(res, 503, 'room', 'The call could not be prepared. Try again in a moment.');
     return;
   }
 
   logGuest('joinStreamGuest', { ok: true, callId: invite.callId, renewed: claim.renewed === true });
   res.set('Cache-Control', 'no-store');
-  res.status(200).json({
+  const response = {
     apiKey: secrets.apiKey,
     token: minted.token,
     userId: guestUserId,
@@ -406,12 +534,15 @@ async function joinGuest(req, res, deps, body) {
     actor: 'guest',
     callRole: GUEST_CALL_ROLE,
     canModerate: false,
-  });
+  };
+  if (seatKey) response.seatKey = seatKey;
+  res.status(200).json(response);
 }
 
 async function releaseGuest(req, res, deps, body) {
+  if (!(await noteGuestRequest(req, res, deps))) return;
   const inviteToken = body.inviteToken;
-  if (!inviteTokenLooksValid(inviteToken) || !deps.store) {
+  if (!inviteTokenLooksValid(inviteToken)) {
     jsonError(res, 404, 'not-found', 'This invite link is not valid.');
     return;
   }
@@ -421,7 +552,8 @@ async function releaseGuest(req, res, deps, body) {
     return;
   }
   const guestUserId = body.guestUserId;
-  if (!guestUserIdLooksValid(guestUserId)) {
+  const seatKey = body.seatKey;
+  if (!guestUserIdLooksValid(guestUserId) || !seatKeyLooksValid(seatKey)) {
     res.status(200).json({ released: false });
     return;
   }
@@ -429,6 +561,7 @@ async function releaseGuest(req, res, deps, body) {
     callId: invite.callId,
     guestUserId,
     inviteHash: hashInviteToken(inviteToken),
+    sessionHash: hashSeatKey(seatKey),
   });
   logGuest('releaseStreamGuest', { ok: true, callId: invite.callId, released: released === true });
   res.status(200).json({ released: released === true });
@@ -441,9 +574,12 @@ function isRevoked(invite) {
 module.exports = {
   INVITE_TTL_SECONDS,
   GUEST_TOKEN_TTL_SECONDS,
+  GUEST_PENDING_TTL_SECONDS,
   GUEST_CAP,
   JOIN_WINDOW_SECONDS,
   JOIN_MAX_ATTEMPTS,
+  REQUEST_WINDOW_SECONDS,
+  REQUEST_MAX_ATTEMPTS,
   GUEST_CALL_ROLE,
   HOST_CALL_ROLE,
   CALL_TYPE,

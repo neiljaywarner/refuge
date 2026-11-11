@@ -78,6 +78,16 @@ class StreamTokenClient implements GroupCallTokenSource {
     return parseGuestInviteResponse(response.body);
   }
 
+  /// Revokes every link this member created for [callId], including ones
+  /// this screen no longer has. The raw tokens are not returned.
+  Future<void> revokeMyGuestInvites({required String callId}) async {
+    final response = await _authorizedPost({'action': 'revokeMyInvites', 'callId': callId});
+    if (response.statusCode != 200) throw _memberFailure(response.statusCode);
+    if (_bodyContainsSecret(response.body)) {
+      throw const StreamTokenException(streamTokenUnavailableMessage);
+    }
+  }
+
   /// Revokes a link this member created. The token is not shown if this fails.
   Future<void> revokeGuestInvite({required String inviteToken}) async {
     final response = await _authorizedPost({'action': 'revokeInvite', 'inviteToken': inviteToken});
@@ -109,6 +119,9 @@ class StreamTokenClient implements GroupCallTokenSource {
 
 StreamTokenException _memberFailure(int statusCode) {
   if (statusCode == 401) return const StreamTokenException(streamSignInRequiredMessage);
+  if (statusCode == 403) {
+    return const StreamTokenException('This account cannot join a call.');
+  }
   if (statusCode == 503) return const StreamTokenException(streamVideoUnconfiguredMessage);
   return const StreamTokenException(streamTokenUnavailableMessage);
 }
@@ -157,6 +170,14 @@ StreamCallCredentials parseStreamTokenResponse(String body, {required String req
     if (requestedCallId.isNotEmpty && responseCallId != requestedCallId) {
       throw const StreamTokenException('This invite link is for a different call.');
     }
+    final rawSeat = decoded['seatKey'];
+    var seatKey = '';
+    if (rawSeat != null) {
+      if (rawSeat is! String || !inviteTokenLooksValid(rawSeat)) {
+        throw const StreamTokenException(streamTokenUnavailableMessage);
+      }
+      seatKey = rawSeat;
+    }
     return StreamCallCredentials(
       apiKey: apiKey.trim(),
       token: token,
@@ -165,6 +186,7 @@ StreamCallCredentials parseStreamTokenResponse(String body, {required String req
       expiresAt: expiresAt is int ? expiresAt : 0,
       role: 'guest',
       displayName: clean,
+      seatKey: seatKey,
     );
   }
   return StreamCallCredentials(

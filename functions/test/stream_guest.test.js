@@ -7,17 +7,22 @@ const { verifyStreamUserToken } = require('../src/stream_token');
 const { handleMintStreamCallToken } = require('../src/stream_call');
 const {
   GUEST_CAP,
+  GUEST_PENDING_TTL_SECONDS,
   GUEST_TOKEN_TTL_SECONDS,
   INVITE_TTL_SECONDS,
   JOIN_MAX_ATTEMPTS,
+  REQUEST_MAX_ATTEMPTS,
   actorMayModerate,
   sanitizeGuestDisplayName,
   guestCallCid,
 } = require('../src/stream_guest');
+const { memberBanActive, memberUserId } = require('../src/stream_member');
 const { MemoryInviteStore } = require('../src/stream_invite_store');
 const {
   prepareGuestOnCall,
   acceptedStreamCallRole,
+  inviterCallAuthority,
+  guestMembershipUpdate,
   STREAM_CALL_MEMBER_ROLE,
 } = require('../src/stream_video_api');
 
@@ -67,6 +72,7 @@ function harness(overrides = {}) {
     appId: () => '',
     nowSeconds: () => state.now,
     store,
+    banActive: overrides.banActive || (async () => false),
     prepareGuestCall: overrides.prepareGuestCall || (async (input) => {
       prepared.push(input);
       return { ok: true };
@@ -76,6 +82,8 @@ function harness(overrides = {}) {
       guestCounter += 1;
       return guestId(guestCounter);
     },
+    randomSeatKey: () => token('s'),
+    prepareTimeoutMs: overrides.prepareTimeoutMs,
   };
   return { store, prepared, state, deps };
 }
@@ -246,7 +254,8 @@ test('the guest cap is concurrent across invites and frees on release or expiry'
       callId: 'monthly',
     });
     assert.equal(res.statusCode, 200, JSON.stringify(res.body));
-    ids.push(res.body.userId);
+    ids.push({ userId: res.body.userId, seatKey: res.body.seatKey });
+    assert.equal(env.store.serialized().includes(res.body.seatKey), false);
   }
 
   const blocked = await post(env.deps, {
@@ -264,10 +273,12 @@ test('the guest cap is concurrent across invites and frees on release or expiry'
     inviteToken: first.inviteToken,
     displayName: 'Guest 1',
     callId: 'monthly',
-    guestUserId: ids[0],
+    guestUserId: ids[0].userId,
+    seatKey: ids[0].seatKey,
   });
   assert.equal(refreshed.statusCode, 200);
-  assert.equal(refreshed.body.userId, ids[0]);
+  assert.equal(refreshed.body.userId, ids[0].userId);
+  assert.equal(refreshed.body.seatKey, undefined);
 
   const stillBlocked = await post(env.deps, {
     action: 'joinGuest',
@@ -280,7 +291,8 @@ test('the guest cap is concurrent across invites and frees on release or expiry'
   const released = await post(env.deps, {
     action: 'releaseGuest',
     inviteToken: first.inviteToken,
-    guestUserId: ids[1],
+    guestUserId: ids[1].userId,
+    seatKey: ids[1].seatKey,
   });
   assert.equal(released.statusCode, 200);
   assert.equal(released.body.released, true);
@@ -461,7 +473,7 @@ test('preparing the room keeps the member as host and the guest as a call member
   const writes = calls.filter((call) => call.options.body);
   assert.equal(writes.length, 3);
   const bodies = writes.map((call) => JSON.parse(call.options.body));
-  assert.equal(bodies[0].users.member1.role, 'user');
+  assert.equal(Object.hasOwn(bodies[0].users.member1, 'role'), false);
   assert.equal(bodies[0].users[guestId(1)].role, 'user');
   assert.equal(bodies[0].users[guestId(1)].name, 'Alex');
   assert.equal(bodies[1].data.created_by_id, 'member1');
@@ -510,6 +522,7 @@ test('a thrown room setup releases the new seat and keeps a refreshed one', asyn
   });
   assert.equal(joined.statusCode, 200, JSON.stringify(joined.body));
   const userId = joined.body.userId;
+  const seatKey = joined.body.seatKey;
   assert.equal(seatCount(held.store, 'monthly'), 1);
 
   const refresh = await post(
@@ -525,6 +538,7 @@ test('a thrown room setup releases the new seat and keeps a refreshed one', asyn
       displayName: 'Alex',
       callId: 'monthly',
       guestUserId: userId,
+      seatKey,
     },
   );
   assert.equal(refresh.statusCode, 503);
@@ -605,3 +619,255 @@ test('a failed room setup does not hold a guest seat', async () => {
   );
   assert.equal(retry.statusCode, 200);
 });
+
+test('anonymous and banned members cannot mint or create an invite', async () => {
+  assert.equal(memberUserId({ uid: 'anon1', firebase: { sign_in_provider: 'anonymous' } }), '');
+  assert.equal(memberUserId({ uid: 'member1', firebase: { sign_in_provider: 'password' } }), 'member1');
+  assert.equal(
+    await memberBanActive(fakeDb({ 'banned_uids/member1': { banned: true } }), 'member1'),
+    true,
+  );
+  assert.equal(
+    await memberBanActive(
+      fakeDb({ 'soft_deleted_users/member2': { softDeleted: true, userId: 'member2' } }),
+      'member2',
+    ),
+    true,
+  );
+  assert.equal(await memberBanActive(fakeDb({}), 'member3'), false);
+
+  const anonymous = harness({
+    verifyIdToken: async () => ({ uid: 'anon1', firebase: { sign_in_provider: 'anonymous' } }),
+  });
+  anonymous.deps.apiSecret = () => {
+    throw new Error('secret should stay unread');
+  };
+  const anonInvite = await post(
+    anonymous.deps,
+    { action: 'createInvite', callId: 'monthly' },
+    { authorization: 'Bearer firebase-id-token' },
+  );
+  assert.equal(anonInvite.statusCode, 401);
+  assert.equal(anonInvite.body.code, 'auth');
+
+  const banned = harness({ banActive: async () => true });
+  banned.deps.apiSecret = () => {
+    throw new Error('secret should stay unread');
+  };
+  const bannedInvite = await post(
+    banned.deps,
+    { action: 'createInvite', callId: 'monthly' },
+    { authorization: 'Bearer firebase-id-token' },
+  );
+  assert.equal(bannedInvite.statusCode, 403);
+  assert.equal(bannedInvite.body.code, 'forbidden');
+  const bannedMint = await post(
+    banned.deps,
+    { callId: 'monthly' },
+    { authorization: 'Bearer firebase-id-token' },
+  );
+  assert.equal(bannedMint.statusCode, 403);
+  assert.equal(JSON.stringify(bannedInvite.body).includes(secret), false);
+});
+
+test('a seat key is required to refresh or release that guest', async () => {
+  const env = harness();
+  const created = await createInvite(env);
+  const joined = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: created.inviteToken,
+    displayName: 'Alex',
+    callId: 'monthly',
+  });
+  assert.equal(joined.statusCode, 200);
+  const userId = joined.body.userId;
+  const seatKey = joined.body.seatKey;
+  assert.equal(seatKeyLooks(seatKey), true);
+  assert.equal(env.store.serialized().includes(seatKey), false);
+
+  const stolen = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: created.inviteToken,
+    displayName: 'Alex',
+    callId: 'monthly',
+    guestUserId: userId,
+  });
+  assert.equal(stolen.statusCode, 403);
+  assert.equal(stolen.body.code, 'seat');
+  assert.equal(stolen.body.token, undefined);
+
+  const wrongRelease = await post(env.deps, {
+    action: 'releaseGuest',
+    inviteToken: created.inviteToken,
+    guestUserId: userId,
+    seatKey: token('z'),
+  });
+  assert.equal(wrongRelease.body.released, false);
+  assert.equal(seatCount(env.store, 'monthly'), 1);
+
+  env.state.now += GUEST_TOKEN_TTL_SECONDS;
+  const reclaimed = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: created.inviteToken,
+    displayName: 'Alex',
+    callId: 'monthly',
+    guestUserId: userId,
+    seatKey,
+  });
+  assert.equal(reclaimed.statusCode, 200, JSON.stringify(reclaimed.body));
+  assert.equal(reclaimed.body.userId, userId);
+  const session = await env.store.findSession({ callId: 'monthly', guestUserId: userId });
+  assert.equal(session.expiresAt, env.state.now + GUEST_TOKEN_TTL_SECONDS);
+});
+
+test('a stalled room setup does not keep a half-hour seat', async () => {
+  const env = harness({
+    prepareTimeoutMs: 20,
+    prepareGuestCall: () => new Promise(() => {}),
+  });
+  const created = await createInvite(env);
+  const failed = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: created.inviteToken,
+    displayName: 'Alex',
+    callId: 'monthly',
+  });
+  assert.equal(failed.statusCode, 503);
+  assert.equal(failed.body.code, 'room');
+  assert.equal(seatCount(env.store, 'monthly'), 0);
+  assert.equal(GUEST_PENDING_TTL_SECONDS < GUEST_TOKEN_TTL_SECONDS, true);
+});
+
+test('unknown invite tokens are limited before the invite lookup', async () => {
+  const env = harness();
+  let lookups = 0;
+  const original = env.store.getInvite.bind(env.store);
+  env.store.getInvite = async (tokenHash) => {
+    lookups += 1;
+    return original(tokenHash);
+  };
+  for (let i = 0; i < REQUEST_MAX_ATTEMPTS; i += 1) {
+    const res = await post(env.deps, {
+      action: 'joinGuest',
+      inviteToken: token('z'),
+      displayName: 'Alex',
+      callId: 'monthly',
+    });
+    assert.equal(res.statusCode, 404);
+  }
+  const blocked = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: token('y'),
+    displayName: 'Alex',
+    callId: 'monthly',
+  });
+  assert.equal(blocked.statusCode, 429);
+  assert.equal(blocked.body.code, 'rate');
+  assert.equal(lookups, REQUEST_MAX_ATTEMPTS);
+});
+
+test('a member can revoke every link they made for a call', async () => {
+  const env = harness();
+  const first = await createInvite(env, 'monthly', token('a'));
+  env.deps.randomInviteToken = () => token('b');
+  const second = await post(
+    env.deps,
+    { action: 'createInvite', callId: 'monthly' },
+    { authorization: 'Bearer firebase-id-token' },
+  );
+  assert.equal(second.statusCode, 200);
+  env.deps.randomInviteToken = () => token('c');
+  const otherCall = await createInvite(env, 'other-room', token('c'));
+
+  const revoked = await post(
+    env.deps,
+    { action: 'revokeMyInvites', callId: 'monthly' },
+    { authorization: 'Bearer firebase-id-token' },
+  );
+  assert.equal(revoked.statusCode, 200);
+  assert.equal(revoked.body.revoked, 2);
+  assert.equal(revoked.body.inviteToken, undefined);
+
+  const closed = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: first.inviteToken,
+    displayName: 'Alex',
+    callId: 'monthly',
+  });
+  assert.equal(closed.statusCode, 410);
+  const other = await post(env.deps, {
+    action: 'joinGuest',
+    inviteToken: otherCall.inviteToken,
+    displayName: 'Alex',
+    callId: 'other-room',
+  });
+  assert.equal(other.statusCode, 200);
+});
+
+test('preparing an existing call does not grant host to a non-owner', async () => {
+  assert.equal(inviterCallAuthority({ call: { created_by: { id: 'member2' } } }, 'member1').ok, false);
+  assert.equal(
+    inviterCallAuthority(
+      { call: { created_by: { id: 'member2' } }, members: [{ user_id: 'member1', role: 'admin' }] },
+      'member1',
+    ).ok,
+    true,
+  );
+  assert.deepEqual(
+    guestMembershipUpdate({ hostUserId: 'member1', guestUserId: guestId(1), existingRole: 'admin' }),
+    [{ user_id: guestId(1), role: 'call_member' }],
+  );
+
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    calls.push({ url, options });
+    if (options.method === 'GET') {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ call: { created_by: { id: 'member2' } }, members: [] }),
+      };
+    }
+    return { ok: true, status: 200, text: async () => '' };
+  };
+  const refused = await prepareGuestOnCall({
+    fetchImpl,
+    apiKey,
+    apiSecret: secret,
+    callId: 'monthly',
+    hostUserId: 'member1',
+    guestUserId: guestId(1),
+    displayName: 'Alex',
+    nowSeconds: 1_700_000_000,
+  });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.status, 403);
+  assert.equal(calls.some((call) => call.options.method === 'POST'), false);
+  assert.equal(JSON.stringify(calls).includes(secret), false);
+});
+
+function seatKeyLooks(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9_-]{43}$/.test(value);
+}
+
+function fakeDb(docs) {
+  return {
+    collection(name) {
+      return {
+        doc(id) {
+          return {
+            async get() {
+              const data = docs[`${name}/${id}`];
+              return {
+                exists: data != null,
+                data() {
+                  return data;
+                },
+              };
+            },
+          };
+        },
+      };
+    },
+  };
+}

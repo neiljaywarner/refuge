@@ -274,7 +274,7 @@ void main() {
     expect(find.textContaining('unit-test-stream-secret'), findsNothing);
     expect(find.textContaining('10 guests'), findsWidgets);
 
-    await tester.tap(find.byKey(const Key('group_call_revoke_invite_button')));
+    await tester.tap(find.byKey(Key('group_call_revoke_invite_$invite')));
     await tester.pumpAndSettle();
     expect(find.text('Revoke this guest link?'), findsOneWidget);
     await tester.tap(find.text('Revoke'));
@@ -284,5 +284,82 @@ void main() {
     expect(bodies.last['inviteToken'], invite);
     expect(find.text('https://preview.example/hall?call=monthly&invite=$invite'), findsNothing);
     expect(find.text('This link no longer works.'), findsOneWidget);
+  });
+
+  testWidgets('a second guest link stays listed until the member revokes the call', (tester) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final bodies = <Map<String, dynamic>>[];
+    var created = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GroupCallLobbyPage(
+          displayName: 'Fellow Member',
+          initialCallId: 'monthly',
+          pageLocation: Uri.parse('https://preview.example/hall'),
+          tokenClientFactory: () => StreamTokenClient(
+            endpoint: Uri.parse('https://example.com/mintStreamCallToken'),
+            httpClient: MockClient((request) async {
+              final payload = jsonDecode(request.body) as Map<String, dynamic>;
+              bodies.add(payload);
+              if (payload['action'] == 'revokeMyInvites') {
+                return http.Response(jsonEncode({'revoked': 2, 'callId': 'monthly'}), 200);
+              }
+              created += 1;
+              final invite = created == 1 ? 'b' * 43 : 'c' * 43;
+              return http.Response(
+                jsonEncode({
+                  'inviteToken': invite,
+                  'callId': 'monthly',
+                  'expiresAt': 30,
+                  'guestLimit': 10,
+                }),
+                200,
+              );
+            }),
+            readIdToken: () async => 'firebase-id-token',
+          ),
+          onReady: (
+            context, {
+            required room,
+            required credentials,
+            required displayName,
+            required tokenClient,
+          }) async {},
+        ),
+      ),
+    );
+
+    final inviteButton = find.byKey(const Key('group_call_invite_button'));
+    await tester.ensureVisible(inviteButton);
+    await tester.tap(inviteButton);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(inviteButton);
+    await tester.tap(inviteButton);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('https://preview.example/hall?call=monthly&invite=${'b' * 43}'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('https://preview.example/hall?call=monthly&invite=${'c' * 43}'),
+      findsOneWidget,
+    );
+
+    final revokeAll = find.byKey(const Key('group_call_revoke_my_links_button'));
+    await tester.ensureVisible(revokeAll);
+    await tester.tap(revokeAll);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Revoke'));
+    await tester.pumpAndSettle();
+
+    expect(bodies.last['action'], 'revokeMyInvites');
+    expect(bodies.last['callId'], 'monthly');
+    expect(bodies.last.containsKey('inviteToken'), isFalse);
+    expect(find.textContaining('invite='), findsNothing);
+    expect(find.text('Your guest links for this call no longer work.'), findsOneWidget);
   });
 }

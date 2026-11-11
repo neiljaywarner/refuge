@@ -10,6 +10,7 @@ class const StreamCallCredentials({
   required this.expiresAt,
   this.role = 'member',
   this.displayName = '',
+  this.seatKey = '',
 }) {
   final String apiKey;
   final String token;
@@ -20,6 +21,9 @@ class const StreamCallCredentials({
   /// `member` for a Firebase sign-in, or `guest` for an invite join.
   final String role;
   final String displayName;
+
+  /// Guest seat credential. Empty for a member. Not a Stream API secret.
+  final String seatKey;
 
   bool get isGuest => role == 'guest';
 }

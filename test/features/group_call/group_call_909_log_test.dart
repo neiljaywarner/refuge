@@ -18,6 +18,8 @@ void main() {
     expect(line, startsWith('[#909] '));
     expect(line.contains('@'), isFalse);
     expect(line.contains('eyJ'), isFalse);
+    expect(line.contains('.aaa'), isFalse);
+    expect(line.contains('.bbb'), isFalse);
     expect(line.contains('buds'), isFalse);
     expect(line, contains('audioOutput=external'));
     expect(line, contains('speakerRequested=true'));
@@ -42,29 +44,18 @@ void main() {
     expect(line, 'localAudio enabled=false muted=true trackPresent=true');
     expect(line.contains('track-secret'), isFalse);
     expect(
-      groupCall909PublishChange(
-        beforePresent: false,
-        afterPresent: true,
-        afterEnabled: true,
-      ),
+      groupCall909PublishChange(beforePresent: false, afterPresent: true, afterEnabled: true),
       'publish localAudio enabled=true',
     );
     expect(
-      groupCall909PublishChange(
-        beforePresent: true,
-        afterPresent: false,
-        afterEnabled: false,
-      ),
+      groupCall909PublishChange(beforePresent: true, afterPresent: false, afterEnabled: false),
       'unpublish localAudio',
     );
   });
 
   test('capabilities and remotes omit names', () {
     expect(
-      groupCall909Capabilities(const [
-        CallPermission.sendVideo,
-        CallPermission.sendAudio,
-      ]),
+      groupCall909Capabilities(const [CallPermission.sendVideo, CallPermission.sendAudio]),
       'ownCapabilities=send-audio,send-video',
     );
 
@@ -98,10 +89,7 @@ void main() {
       audioLevel: 0.20,
       publishedTracks: {SfuTrackType.audio: TrackState.remote(muted: true)},
     );
-    expect(
-      groupCall909Remotes([muted]),
-      'remotes audioTracks=1 speaking=0 audioLevel=0',
-    );
+    expect(groupCall909Remotes([muted]), 'remotes audioTracks=1 speaking=0 audioLevel=0');
     expect(
       groupCall909Remotes([remote, muted]),
       'remotes audioTracks=2 speaking=1 audioLevel=0.13',
@@ -113,26 +101,10 @@ void main() {
     final start = DateTime.utc(2026, 11, 10);
 
     expect(throttle.allow('remotes audioTracks=1', start), isTrue);
+    expect(throttle.allow('remotes audioTracks=1', start.add(const Duration(seconds: 1))), isFalse);
+    expect(throttle.allow('remotes audioTracks=0', start.add(const Duration(seconds: 1))), isTrue);
     expect(
-      throttle.allow(
-        'remotes audioTracks=1',
-        start.add(const Duration(seconds: 1)),
-      ),
-      isFalse,
-    );
-    expect(
-      throttle.allow(
-        'remotes audioTracks=0',
-        start.add(const Duration(seconds: 1)),
-      ),
-      isTrue,
-    );
-    expect(
-      throttle.allow(
-        'remotes audioTracks=0',
-        start.add(const Duration(seconds: 3)),
-        force: true,
-      ),
+      throttle.allow('remotes audioTracks=0', start.add(const Duration(seconds: 3)), force: true),
       isTrue,
     );
   });

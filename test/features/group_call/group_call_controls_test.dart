@@ -131,6 +131,14 @@ void main() {
       previewMicrophoneShouldForceOff(sendingAudio: true, userAskedForMicrophone: false),
       isTrue,
     );
+    final cappedCamera = previewTrackFixes(
+      forceCamera: true,
+      forceMicrophone: true,
+      cameraCorrections: 5,
+      microphoneCorrections: 0,
+    );
+    expect(cappedCamera.fixCamera, isFalse);
+    expect(cappedCamera.fixMicrophone, isTrue);
   });
 
   testWidgets('microphone and camera icons follow the enabled tracks', (tester) async {

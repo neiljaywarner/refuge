@@ -36,8 +36,9 @@ void main() {
     final join = $('Join call');
     if (!join.exists) {
       markTestSkipped(
-        'Join call is hidden. Sign in on a preview build, or open a guest '
-        'link, then run this test again.',
+        'Join call is hidden. This harness uses a guest profile and does '
+        'not open a guest link. The mute cycles are in '
+        'test/features/group_call/group_call_mic.feature.',
       );
       return;
     }

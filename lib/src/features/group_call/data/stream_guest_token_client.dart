@@ -23,6 +23,7 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
   final String? callId;
   final http.Client _httpClient;
   String? _guestUserId;
+  String? _seatKey;
   String _displayName = '';
   bool _closed = false;
 
@@ -42,7 +43,11 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
       );
     }
     final credentials = await _request(displayName: clean, guestUserId: null);
+    if (credentials.seatKey.isEmpty) {
+      throw const StreamTokenException(streamTokenUnavailableMessage);
+    }
     _guestUserId = credentials.userId;
+    _seatKey = credentials.seatKey;
     _displayName = credentials.displayName;
     return credentials;
   }
@@ -56,14 +61,15 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
     if (_displayName.isEmpty) {
       throw const StreamTokenException(streamTokenUnavailableMessage);
     }
-    return _request(displayName: _displayName, guestUserId: _guestUserId);
+    return _request(displayName: _displayName, guestUserId: _guestUserId, seatKey: _seatKey);
   }
 
   /// Gives the seat back. A failure still lets the person leave the screen.
   @override
   Future<void> release() async {
     final guestUserId = _guestUserId;
-    if (_closed || guestUserId == null) return;
+    final seatKey = _seatKey;
+    if (_closed || guestUserId == null || seatKey == null) return;
     try {
       await _httpClient.post(
         endpoint,
@@ -72,6 +78,7 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
           'action': 'releaseGuest',
           'inviteToken': inviteToken,
           'guestUserId': guestUserId,
+          'seatKey': seatKey,
         }),
       );
     } catch (_) {
@@ -82,6 +89,7 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
   Future<StreamCallCredentials> _request({
     required String displayName,
     required String? guestUserId,
+    String? seatKey,
   }) async {
     if (_closed) throw const StreamTokenException(streamTokenUnavailableMessage);
     final payload = <String, Object?>{
@@ -92,6 +100,7 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
     final room = callId;
     if (room != null) payload['callId'] = room;
     if (guestUserId != null) payload['guestUserId'] = guestUserId;
+    if (seatKey != null) payload['seatKey'] = seatKey;
     final http.Response response;
     try {
       response = await _httpClient.post(
@@ -122,6 +131,7 @@ String _guestFailure(int statusCode, String body) {
     'expired' || 'revoked' => 'This invite link has expired or was revoked.',
     'cap' => 'This call already has 10 guests. Try again after someone leaves.',
     'mismatch' => 'This invite link is for a different call.',
+    'seat' => 'This invite link is not valid for that seat. Open the link again.',
     'rate' => 'Too many join attempts. Wait a few minutes and try the link again.',
     'unconfigured' => streamVideoUnconfiguredMessage,
     'room' => 'The call could not be prepared. Try again in a moment.',

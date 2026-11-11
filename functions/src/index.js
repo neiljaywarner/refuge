@@ -32,6 +32,7 @@ const { parseEmailTransport } = require('./transport');
 const { handleMintStreamCallToken } = require('./stream_call');
 const { FirestoreInviteStore } = require('./stream_invite_store');
 const { prepareGuestOnCall } = require('./stream_video_api');
+const { memberBanActive } = require('./stream_member');
 const crypto = require('node:crypto');
 
 const transportSecret = defineSecret('DM_EMAIL_TRANSPORT_JSON');
@@ -124,7 +125,9 @@ function readBoundSecret(secret) {
  * The API secret stays in this function. The direct-message email function
  * does not receive it, and this function does not read direct messages.
  * IAM is public so a browser can POST. Member actions still require a
- * Firebase ID token. A guest join requires an invite token instead.
+ * Firebase ID token, and they reject anonymous sessions and banned
+ * accounts. A guest join requires an invite token. Refreshing or releasing
+ * a guest seat also requires the seat key from that join.
  * The response never includes the secret.
  *
  * Invites live in Firestore under the Admin SDK. Clients cannot read them.
@@ -143,6 +146,7 @@ exports.mintStreamCallToken = onRequest(
   (req, res) =>
     handleMintStreamCallToken(req, res, {
       verifyIdToken: (token) => getAuth().verifyIdToken(token),
+      banActive: (uid) => memberBanActive(getFirestore(), uid),
       apiKey: () => readBoundSecret(streamApiKey) || process.env.STREAM_API_KEY || '',
       apiSecret: () => readBoundSecret(streamApiSecret) || process.env.STREAM_API_SECRET || '',
       appId: () => process.env.STREAM_APP_ID || '',
@@ -151,5 +155,6 @@ exports.mintStreamCallToken = onRequest(
       prepareGuestCall: (input) => prepareGuestOnCall({ ...input, fetchImpl: fetch }),
       randomInviteToken: () => crypto.randomBytes(32).toString('base64url'),
       randomGuestId: () => `g${crypto.randomBytes(16).toString('hex')}`,
+      randomSeatKey: () => crypto.randomBytes(32).toString('base64url'),
     }),
 );

@@ -137,6 +137,7 @@ void main() {
       expect(invites, contains('allow read, write: if false'));
       expect(guests, contains('match /sessions/{guestUserId}'));
       expect(guests, contains('allow read, write: if false'));
+      expect(firestoreRules, contains('match /stream_guest_request_limits/{bucket}'));
       expect(firestoreRules, isNot(contains('allow read: if true')));
     });
 

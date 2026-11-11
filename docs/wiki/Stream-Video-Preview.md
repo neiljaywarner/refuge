@@ -65,7 +65,7 @@ patrol test -t integration_test/patrol_group_call_mic_test.dart \
   --dart-define=STREAM_TOKEN_ENDPOINT='https://us-central1-belongonthespectrum.cloudfunctions.net/mintStreamCallToken'
 ```
 
-Use the same token endpoint as the preview build above. If a mic or camera dialog is showing, the test grants it. If **Join call** is hidden, the test skips: that screen needs a signed-in preview session or a guest link, and neither is stored in the repo.
+Use the same token endpoint as the preview build above. If a mic or camera dialog is showing, the test grants it. This Patrol file pumps a guest profile with sign-in turned off (`pumpDevReadOnlyHome`). The home **Join call** button stays hidden, and this harness does not open a guest link. Signing in on the device, or pasting a link, does not move this test onto the microphone control. The mute cycles that run without a device are the Gherkin scenario "Three mute and unmute cycles keep the track alive" in `test/features/group_call/group_call_mic.feature`.
 
 Not yet run: the website on both Pixels, and the APK on both Pixels.
 
@@ -97,7 +97,7 @@ What the link does:
 
 Treat the link like a Zoom link. Anyone who has it can try to join until it expires or is revoked. Do not post it in a public place.
 
-A guest who is already inside keeps their seat for about 30 minutes at a time. The app refreshes that pass while they stay. If they close the tab without leaving, the seat stays taken until that pass runs out. Revoking the link stops new people and stops a refresh. It does not instantly hang up someone who is already connected. Their pass simply is not renewed.
+A guest who is already inside keeps their seat for about 30 minutes at a time. The app refreshes that pass while they stay, using a seat key returned with the join. The invite link alone cannot refresh or free someone else's seat. If they close the tab without leaving, the seat stays taken until that pass runs out. Revoking the link stops new people and stops a refresh. It does not instantly hang up someone who is already connected. Their pass simply is not renewed.
 
 The app asks again if someone tries to join too many times on one link (about 20 tries in 10 minutes). A name has to be short. It cannot be an email address, a web link, or a name with odd hidden characters.
 
@@ -123,6 +123,8 @@ The secret is not a dart-define. The phone and the web app cannot mint tokens. G
 ## Configure the function
 
 From a shell, after `firebase login`. The CLI prompts for each value. Nothing is written into the repo. Do this only when an operator is ready. This document does not run the deploy.
+
+These commands set secrets and deploy `mintStreamCallToken` in the Firebase project shared with production. They do not publish the production website, and they do not create an isolated preview backend.
 
 ```bash
 firebase functions:secrets:set STREAM_API_KEY --project belongonthespectrum
@@ -199,7 +201,7 @@ The room opens with the microphone and camera off, and they stay off until that 
 
 The first person in the room is not automatically the host. A guest is never the host, even if they arrive first. The function creates the room for the member who made the link and adds the guest as a call member, not as a host, admin, or moderator.
 
-There is no 40-minute cutoff in this client. A member's user token lasts three hours (`STREAM_TOKEN_TTL_SECONDS` in `functions/src/stream_token.js`), so a one-hour call can start late. A guest's token lasts about 30 minutes and is refreshed while they stay, still scoped to that one call. If Stream asks for a fresh token, a member's app calls `mintStreamCallToken` again with the Firebase ID token. A guest's app calls it again with the invite token. The API secret still stays on the function.
+There is no 40-minute cutoff in this client. A member's user token lasts three hours (`STREAM_TOKEN_TTL_SECONDS` in `functions/src/stream_token.js`), so a one-hour call can start late. A guest's token lasts about 30 minutes and is refreshed while they stay. The token names that call. That claim grants access to it and does not, by itself, prohibit other calls. If Stream asks for a fresh token, a member's app calls `mintStreamCallToken` again with the Firebase ID token. A guest's app calls it again with the invite token. The API secret still stays on the function.
 
 Stream describes guests as temporary named users. Tokens are minted on the server, with an expiry. The function adds the guest to the call as `call_member`. Stream rejects the hyphenated name `call-member`. That membership is not host or admin, so a guest cannot end the call or remove people. `guest` is not a built-in call role. Call tokens add access to the named call. They do not, by themselves, ban every other call. The invite token is what decides who receives a Stream token at all.
 

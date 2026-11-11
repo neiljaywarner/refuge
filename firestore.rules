@@ -378,5 +378,10 @@ service cloud.firestore {
         allow read, write: if false;
       }
     }
+
+    // Per-address join limiter. The document id is a hash. Clients cannot read it.
+    match /stream_guest_request_limits/{bucket} {
+      allow read, write: if false;
+    }
   }
 }

@@ -49,8 +49,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
   bool _busy = false;
   bool _handedOff = false;
   String? _message;
-  String? _inviteLink;
-  String? _inviteToken;
+  final List<_GuestLink> _links = [];
   int? _guestLimit;
 
   @override
@@ -138,8 +137,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
         inviteToken: invite.token,
       );
       setState(() {
-        _inviteLink = link.toString();
-        _inviteToken = invite.token;
+        _links.add(_GuestLink(token: invite.token, url: link.toString()));
         _guestLimit = invite.guestLimit;
       });
     } on StreamTokenException catch (error) {
@@ -154,9 +152,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
     }
   }
 
-  Future<void> _revokeInvite() async {
-    final token = _inviteToken;
-    if (token == null) return;
+  Future<void> _revokeInvite(_GuestLink link) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -173,12 +169,55 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
     if (client == null) return;
     setState(() => _busy = true);
     try {
-      await client.revokeGuestInvite(inviteToken: token);
+      await client.revokeGuestInvite(inviteToken: link.token);
       if (!mounted) return;
       setState(() {
-        _inviteLink = null;
-        _inviteToken = null;
+        _links.remove(link);
         _message = 'This link no longer works.';
+      });
+    } on StreamTokenException catch (error) {
+      if (!mounted) return;
+      setState(() => _message = error.message);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _message = 'The link could not be revoked. Try again in a moment.');
+    } finally {
+      client.close();
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _revokeMyLinks() async {
+    final room = GroupCallRoom.tryParse(_name.text);
+    if (room == null) {
+      setState(() {
+        _message = 'Use a short name like monthly. Letters, numbers, and single dashes.';
+      });
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Revoke your guest links?'),
+        content: const Text(
+          'Every link you made for this call stops working, including ones from earlier.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Revoke')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final client = widget.tokenClientFactory();
+    if (client == null) return;
+    setState(() => _busy = true);
+    try {
+      await client.revokeMyGuestInvites(callId: room.id);
+      if (!mounted) return;
+      setState(() {
+        _links.clear();
+        _message = 'Your guest links for this call no longer work.';
       });
     } on StreamTokenException catch (error) {
       if (!mounted) return;
@@ -232,6 +271,10 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
               onPressed: _busy ? null : _join,
               child: Text(_busy ? 'Joining…' : 'Join call'),
             ),
+            if (_message != null) ...[
+              const SizedBox(height: 16),
+              Text(_message!, style: theme.textTheme.bodyMedium),
+            ],
             const SizedBox(height: 28),
             Text(
               'Invite someone who does not have an account. '
@@ -246,9 +289,15 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
               onPressed: _busy ? null : _createInvite,
               child: const Text('Create guest link'),
             ),
-            if (_inviteLink != null) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              key: const Key('group_call_revoke_my_links_button'),
+              onPressed: _busy ? null : _revokeMyLinks,
+              child: const Text('Revoke my guest links for this call'),
+            ),
+            for (final link in _links) ...[
               const SizedBox(height: 12),
-              SelectableText(_inviteLink!, key: const Key('group_call_invite_link')),
+              SelectableText(link.url, key: Key('group_call_invite_link_${link.token}')),
               const SizedBox(height: 8),
               Text(
                 'Select the link to copy it. '
@@ -258,18 +307,19 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
               ),
               const SizedBox(height: 8),
               TextButton(
-                key: const Key('group_call_revoke_invite_button'),
-                onPressed: _busy ? null : _revokeInvite,
+                key: Key('group_call_revoke_invite_${link.token}'),
+                onPressed: _busy ? null : () => _revokeInvite(link),
                 child: const Text('Revoke link'),
               ),
-            ],
-            if (_message != null) ...[
-              const SizedBox(height: 16),
-              Text(_message!, style: theme.textTheme.bodyMedium),
             ],
           ],
         ),
       ),
     );
   }
+}
+
+class const _GuestLink({required this.token, required this.url}) {
+  final String token;
+  final String url;
 }

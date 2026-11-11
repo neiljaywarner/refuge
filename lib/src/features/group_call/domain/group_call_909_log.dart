@@ -11,26 +11,21 @@ import '../data/stream_video_preview_config.dart';
 /// `adb logcat` or the browser console can grep it. Names, emails, tokens,
 /// and raw device labels are not written.
 void logGroupCall909(String detail) {
-  if (!groupCall909LogsEnabled(
-    debugMode: kDebugMode,
-    preview: streamVideoPreviewEnabled,
-  )) {
+  if (!groupCall909LogsEnabled(debugMode: kDebugMode, preview: streamVideoPreviewEnabled)) {
     return;
   }
   AppLogger.debug(groupCall909Line(detail));
 }
 
 /// True for a debug run or a preview build. Production release is false.
-bool groupCall909LogsEnabled({
-  required bool debugMode,
-  required bool preview,
-}) => debugMode || preview;
+bool groupCall909LogsEnabled({required bool debugMode, required bool preview}) =>
+    debugMode || preview;
 
 /// Prefixes [detail] and strips an email or a JWT if one was passed in.
 String groupCall909Line(String detail) {
   final cleaned = detail
       .replaceAll(RegExp(r'\S+@\S+'), 'redacted')
-      .replaceAll(RegExp(r'eyJ[A-Za-z0-9_-]+'), 'redacted');
+      .replaceAll(RegExp(r'eyJ[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]*)*'), 'redacted');
   return '[#909] $cleaned';
 }
 
@@ -45,8 +40,7 @@ String groupCall909LocalAudio(CallParticipantState? local) {
 
 /// `send-audio` and the other grants, by name only.
 String groupCall909Capabilities(Iterable<CallPermission> capabilities) {
-  final names = [for (final permission in capabilities) permission.alias]
-    ..sort();
+  final names = [for (final permission in capabilities) permission.alias]..sort();
   return 'ownCapabilities=${names.join(',')}';
 }
 
@@ -70,9 +64,7 @@ String groupCall909Output({
       : deviceId == null
       ? 'unset'
       : 'other';
-  final requested = speakerRequested == null
-      ? ''
-      : ' speakerRequested=$speakerRequested';
+  final requested = speakerRequested == null ? '' : ' speakerRequested=$speakerRequested';
   return 'audioOutput=$bucket speakerphone=${bucket == 'speaker'}$requested';
 }
 
@@ -117,8 +109,7 @@ class GroupCall909Throttle {
     bool force = false,
     Duration gap = const Duration(seconds: 2),
   }) {
-    final due =
-        force || _line != line || _at == null || now.difference(_at!) >= gap;
+    final due = force || _line != line || _at == null || now.difference(_at!) >= gap;
     if (!due) return false;
     _line = line;
     _at = now;

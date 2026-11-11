@@ -6,6 +6,7 @@ import 'package:stream_video_flutter/stream_video_flutter.dart';
 import '../data/stream_token_client.dart';
 import '../domain/group_call_909_log.dart';
 import '../domain/group_call_audio_checks.dart';
+import '../domain/group_call_session_lifecycle.dart';
 import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
 import 'group_call_member_copy.dart';
@@ -34,9 +35,9 @@ class StreamGroupCallPage extends StatefulWidget {
 }
 
 class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
+  final GroupCallSessionLifecycle _life = GroupCallSessionLifecycle();
   Call? _call;
   String? _failure;
-  bool _shutDown = false;
   bool _alive = true;
 
   @override
@@ -52,7 +53,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
     super.dispose();
   }
 
-  Future<void> _connect() async {
+  Future<void> _connect() {
     // Guests and members both use the server user id and server user token.
     // User.guest is the no-backend path: Stream mints a different token and
     // may replace the id, so a guest seat would no longer match the function.
@@ -65,70 +66,81 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
     );
     final opener = widget.openConnection;
     if (opener != null) {
-      try {
-        await opener(plan);
-      } catch (_) {
-        _showFailure('The call could not connect.');
-      }
-      return;
-    }
-    try {
-      if (StreamVideo.isInitialized()) {
-        await StreamVideo.reset(disconnect: true);
-      }
-      // [plan.userToken] is a Stream user token from mintStreamCallToken.
-      // The API secret never arrives here. Stream calls [tokenLoader] when it
-      // wants another user token. A member sends the Firebase ID token again.
-      // A guest sends the invite token again and keeps the same seat.
-      //
-      // The function creates the call as the inviting member before a guest
-      // token is issued, so this getOrCreate does not make the guest the owner.
-      final client = StreamVideo(
-        plan.apiKey,
-        user: plan.user,
-        userToken: plan.userToken,
-        tokenLoader: (_) async {
-          final fresh = await widget.tokenClient.mint(callId: plan.callId);
-          return fresh.token;
+      return _life.connect(
+        join: () async {
+          await opener(plan);
+          return true;
         },
-        options: StreamVideoOptions(
-          muteAudioWhenInBackground: true,
-          muteVideoWhenInBackground: true,
-        ),
+        leave: () async {},
+        onReady: () {},
+        onFailure: () async {
+          if (!_life.shutDown) await _life.releaseOnce(_releaseResources);
+          _showFailure('The call could not connect.');
+        },
       );
-      final call = client.makeCall(
-        callType: StreamCallType.defaultType(),
-        id: plan.callId,
-      );
-      // getOrCreate applies the call type's camera-on default in the
-      // background, after join has asked for the camera to stay off. Join
-      // creates the room itself. The disabled options are merged after that
-      // default, and [GroupCallLiveControls] turns a late camera back off.
-      final joined = await call.join(
-        connectOptions: previewCallConnectOptions(
-          cameraStartsEnabled: plan.cameraStartsEnabled,
-          microphoneStartsEnabled: plan.microphoneStartsEnabled,
-          speakerStartsOn: plan.speakerStartsOn,
-        ),
-      );
-      final joinedFailure = _calmFailure(joined);
-      if (joinedFailure != null) {
-        try {
-          await call.leave();
-        } catch (_) {}
-        await _shutdown();
-        _showFailure(joinedFailure);
-        return;
-      }
-      if (!_alive) {
-        await _shutdown();
-        return;
-      }
-      setState(() => _call = call);
-    } catch (_) {
-      await _shutdown();
-      _showFailure('The call could not connect.');
     }
+    Call? call;
+    var failure = 'The call could not connect.';
+    return _life.connect(
+      join: () async {
+        if (StreamVideo.isInitialized()) {
+          await StreamVideo.reset(disconnect: true);
+        }
+        // [plan.userToken] is a Stream user token from mintStreamCallToken.
+        // The API secret never arrives here. Stream calls [tokenLoader] when it
+        // wants another user token. A member sends the Firebase ID token again.
+        // A guest sends the invite token again and keeps the same seat.
+        //
+        // The function creates the call as the inviting member before a guest
+        // token is issued, so this getOrCreate does not make the guest the owner.
+        final client = StreamVideo(
+          plan.apiKey,
+          user: plan.user,
+          userToken: plan.userToken,
+          tokenLoader: (_) async {
+            final fresh = await widget.tokenClient.mint(callId: plan.callId);
+            return fresh.token;
+          },
+          options: StreamVideoOptions(
+            muteAudioWhenInBackground: true,
+            muteVideoWhenInBackground: true,
+          ),
+        );
+        call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
+        // getOrCreate applies the call type's camera-on default in the
+        // background, after join has asked for the camera to stay off. Join
+        // creates the room itself. The disabled options are merged after that
+        // default, and [GroupCallLiveControls] turns a late camera back off.
+        final joined = await call!.join(
+          connectOptions: previewCallConnectOptions(
+            cameraStartsEnabled: plan.cameraStartsEnabled,
+            microphoneStartsEnabled: plan.microphoneStartsEnabled,
+            speakerStartsOn: plan.speakerStartsOn,
+          ),
+        );
+        final joinedFailure = _calmFailure(joined);
+        if (joinedFailure != null) {
+          failure = joinedFailure;
+          return false;
+        }
+        return true;
+      },
+      leave: () async {
+        final leaving = call;
+        call = null;
+        try {
+          await leaving?.leave();
+        } catch (_) {}
+      },
+      onReady: () {
+        _call = call;
+        if (_alive && mounted) setState(() {});
+      },
+      onFailure: () async {
+        if (!_life.shutDown) await _life.releaseOnce(_releaseResources);
+        _showFailure(failure);
+      },
+    );
   }
 
   void _showFailure(String message) {
@@ -136,14 +148,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
     setState(() => _failure = message);
   }
 
-  Future<void> _shutdown() async {
-    if (_shutDown) return;
-    _shutDown = true;
-    final call = _call;
-    _call = null;
-    try {
-      await call?.leave();
-    } catch (_) {}
+  Future<void> _releaseResources() async {
     try {
       await widget.tokenClient.release();
     } catch (_) {}
@@ -155,6 +160,17 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
     widget.tokenClient.close();
   }
 
+  Future<void> _shutdown() => _life.shutdown(
+    leave: () async {
+      final call = _call;
+      _call = null;
+      try {
+        await call?.leave();
+      } catch (_) {}
+    },
+    release: _releaseResources,
+  );
+
   Future<void> _leave() async {
     await _shutdown();
     if (mounted) Navigator.of(context).pop();
@@ -162,8 +178,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -178,43 +193,38 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: Scaffold(
         appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
         body: call == null
-            ? GroupCallConnectionStatus(
-                failure: _failure,
-                onBack: () => unawaited(_leave()),
-              )
+            ? GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave()))
             : StreamCallContent(
                 call: call,
                 onLeaveCallTap: _leave,
                 onBackPressed: _leave,
-                callControlsWidgetBuilder: (context, call) =>
-                    GroupCallLiveControls(
-                      call: call,
-                      signedInMember: !widget.credentials.isGuest,
-                      onLeave: _leave,
-                      onRemove: (userId) async {
-                        final result = await call.kickUser(userId);
-                        if (_calmFailure(result) != null) {
-                          _snack('Only the host can remove someone.');
-                        }
-                      },
-                      onEnd: () async {
-                        final result = await call.end();
-                        if (_calmFailure(result) != null) {
-                          _snack('Only the host can end the call.');
-                          return;
-                        }
-                        await _leave();
-                      },
-                    ),
+                callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
+                  call: call,
+                  signedInMember: !widget.credentials.isGuest,
+                  onLeave: _leave,
+                  onRemove: (userId) async {
+                    final result = await call.kickUser(userId);
+                    if (_calmFailure(result) != null) {
+                      _snack('Only the host can remove someone.');
+                    }
+                  },
+                  onEnd: () async {
+                    final result = await call.end();
+                    if (_calmFailure(result) != null) {
+                      _snack('Only the host can end the call.');
+                      return;
+                    }
+                    await _leave();
+                  },
+                ),
               ),
       ),
     );
   }
 }
 
-String? _calmFailure<T>(Result<T> result) => result.isSuccess
-    ? null
-    : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+String? _calmFailure<T>(Result<T> result) =>
+    result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
 
 /// Opens a preview call with a server-issued api key, user id, and user token.
 typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);

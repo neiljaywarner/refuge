@@ -1,6 +1,16 @@
 'use strict';
 
+const crypto = require('node:crypto');
+
 const { advanceJoinAttempt, decideGuestClaim } = require('./stream_guest');
+
+function sameHash(left, right) {
+  if (typeof left !== 'string' || typeof right !== 'string' || left.length !== right.length) {
+    return false;
+  }
+  if (left.length === 0) return false;
+  return crypto.timingSafeEqual(Buffer.from(left), Buffer.from(right));
+}
 
 /**
  * In-memory invite book. Tests use this. Production uses
@@ -11,6 +21,7 @@ class MemoryInviteStore {
   constructor() {
     this.invites = new Map();
     this.sessions = new Map();
+    this.requests = new Map();
   }
 
   async putInvite(record) {
@@ -27,6 +38,27 @@ class MemoryInviteStore {
     if (!row) return false;
     row.revokedAt = revokedAt;
     return true;
+  }
+
+  async revokeInvitesByCreator({ createdBy, callId, revokedAt }) {
+    let count = 0;
+    for (const row of this.invites.values()) {
+      if (row.createdBy !== createdBy || row.callId !== callId) continue;
+      if (typeof row.revokedAt === 'number') continue;
+      row.revokedAt = revokedAt;
+      count += 1;
+    }
+    return count;
+  }
+
+  async noteRequestAttempt(key, nowSeconds, limits) {
+    const row = this.requests.get(key) || { attemptWindowStart: 0, attemptCount: 0 };
+    const next = advanceJoinAttempt(row, nowSeconds, limits);
+    this.requests.set(key, {
+      attemptWindowStart: next.attemptWindowStart,
+      attemptCount: next.attemptCount,
+    });
+    return { limited: next.limited };
   }
 
   async noteJoinAttempt(tokenHash, nowSeconds, limits) {
@@ -57,15 +89,18 @@ class MemoryInviteStore {
     byCall.set(decision.guestUserId, {
       inviteHash: input.inviteHash,
       expiresAt: decision.expiresAt,
+      sessionHash: input.sessionHash,
     });
     return decision;
   }
 
-  async releaseGuest({ callId, guestUserId, inviteHash }) {
+  async releaseGuest({ callId, guestUserId, inviteHash, sessionHash }) {
     const byCall = this.sessions.get(callId);
     if (!byCall) return false;
     const row = byCall.get(guestUserId);
-    if (!row || row.inviteHash !== inviteHash) return false;
+    if (!row || !sameHash(row.inviteHash, inviteHash) || !sameHash(row.sessionHash, sessionHash)) {
+      return false;
+    }
     byCall.delete(guestUserId);
     return true;
   }
@@ -118,6 +153,42 @@ class FirestoreInviteStore {
     return true;
   }
 
+  async revokeInvitesByCreator({ createdBy, callId, revokedAt }) {
+    const snap = await this.invites()
+      .where('createdBy', '==', createdBy)
+      .where('callId', '==', callId)
+      .get();
+    const pending = snap.docs.filter((doc) => typeof doc.data().revokedAt !== 'number');
+    let count = 0;
+    for (let i = 0; i < pending.length; i += 400) {
+      const batch = this.db.batch();
+      const slice = pending.slice(i, i + 400);
+      for (const doc of slice) {
+        batch.update(doc.ref, { revokedAt });
+        count += 1;
+      }
+      if (slice.length > 0) await batch.commit();
+    }
+    return count;
+  }
+
+  async noteRequestAttempt(key, nowSeconds, limits) {
+    const ref = this.db.collection('stream_guest_request_limits').doc(key);
+    return this.db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const next = advanceJoinAttempt(snap.exists ? snap.data() || {} : {}, nowSeconds, limits);
+      tx.set(
+        ref,
+        {
+          attemptWindowStart: next.attemptWindowStart,
+          attemptCount: next.attemptCount,
+        },
+        { merge: true },
+      );
+      return { limited: next.limited };
+    });
+  }
+
   async noteJoinAttempt(tokenHash, nowSeconds, limits) {
     const ref = this.invites().doc(tokenHash);
     return this.db.runTransaction(async (tx) => {
@@ -148,16 +219,20 @@ class FirestoreInviteStore {
       tx.set(col.doc(decision.guestUserId), {
         inviteHash: input.inviteHash,
         expiresAt: decision.expiresAt,
+        sessionHash: input.sessionHash,
       });
       return decision;
     });
   }
 
-  async releaseGuest({ callId, guestUserId, inviteHash }) {
+  async releaseGuest({ callId, guestUserId, inviteHash, sessionHash }) {
     const ref = this.sessions(callId).doc(guestUserId);
     const snap = await ref.get();
     if (!snap.exists) return false;
-    if (snap.data().inviteHash !== inviteHash) return false;
+    const data = snap.data() || {};
+    if (!sameHash(data.inviteHash, inviteHash) || !sameHash(data.sessionHash, sessionHash)) {
+      return false;
+    }
     await ref.delete();
     return true;
   }
