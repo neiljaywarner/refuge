@@ -17,6 +17,8 @@ void main() {
     expect(AppwriteConfig.fromEnvironment.isConfigured, isTrue);
     expect(AppwriteConfig.fromEnvironment.endpoint, AppwriteConfig.belongEndpoint);
     expect(AppwriteConfig.fromEnvironment.projectId, AppwriteConfig.belongProjectId);
+    expect(AppwriteConfig.clientSessionAuditsTableId, 'client_session_audits');
+    expect(AppwriteConfig.clientSessionWeeklySummariesTableId, 'client_session_weekly_summaries');
     final services = createAppwriteServices(AppwriteConfig.fromEnvironment);
     expect(services, isNotNull);
     expect(services!.tables, isNotNull);
