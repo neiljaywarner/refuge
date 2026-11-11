@@ -11,6 +11,7 @@ import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
 import 'group_call_member_copy.dart';
 import 'group_call_reactive_controls.dart';
+import 'group_call_stage.dart';
 
 /// Active preview call. Starts muted and camera-off.
 class StreamGroupCallPage extends StatefulWidget {
@@ -198,6 +199,8 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
                 call: call,
                 onLeaveCallTap: _leave,
                 onBackPressed: _leave,
+                callParticipantsWidgetBuilder: (context, call) =>
+                    GroupCallParticipantsArea(call: call, guest: widget.credentials.isGuest),
                 callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
                   call: call,
                   signedInMember: !widget.credentials.isGuest,
