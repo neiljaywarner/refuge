@@ -363,5 +363,25 @@ service cloud.firestore {
         && docId == request.resource.data.flavor + '_' + request.auth.uid;
       allow delete: if false;
     }
+
+    // Preview guest invites (#904). The function writes these with the Admin
+    // SDK. The document id is a hash of the invite token. Clients cannot
+    // list or read the token, the hash, or who is in the call.
+    match /stream_call_invites/{inviteId} {
+      allow read, write: if false;
+    }
+
+    match /stream_call_guests/{callId} {
+      allow read, write: if false;
+
+      match /sessions/{guestUserId} {
+        allow read, write: if false;
+      }
+    }
+
+    // Per-address join limiter. The document id is a hash. Clients cannot read it.
+    match /stream_guest_request_limits/{bucket} {
+      allow read, write: if false;
+    }
   }
 }

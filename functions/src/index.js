@@ -22,14 +22,22 @@
  */
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onRequest } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { initializeApp, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { handleDirectMessageCreated } = require('./handle');
 const { parseEmailTransport } = require('./transport');
+const { handleMintStreamCallToken } = require('./stream_call');
+const { FirestoreInviteStore } = require('./stream_invite_store');
+const { prepareGuestOnCall } = require('./stream_video_api');
+const { memberBanActive } = require('./stream_member');
+const crypto = require('node:crypto');
 
 const transportSecret = defineSecret('DM_EMAIL_TRANSPORT_JSON');
+const streamApiKey = defineSecret('STREAM_API_KEY');
+const streamApiSecret = defineSecret('STREAM_API_SECRET');
 
 if (getApps().length === 0) initializeApp();
 
@@ -101,4 +109,52 @@ exports.calmDirectMessageEmail = onDocumentCreated(
       }),
     );
   },
+);
+
+function readBoundSecret(secret) {
+  try {
+    return secret.value() || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+/**
+ * Preview-only Stream Video tokens (#872, #904).
+ *
+ * The API secret stays in this function. The direct-message email function
+ * does not receive it, and this function does not read direct messages.
+ * IAM is public so a browser can POST. Member actions still require a
+ * Firebase ID token, and they reject anonymous sessions and banned
+ * accounts. A guest join requires an invite token. Refreshing or releasing
+ * a guest seat also requires the seat key from that join.
+ * The response never includes the secret.
+ *
+ * Invites live in Firestore under the Admin SDK. Clients cannot read them.
+ *
+ * `cors: false` turns off Firebase's open CORS helper. The handler allowlists
+ * Firebase Hosting and loopback itself.
+ */
+exports.mintStreamCallToken = onRequest(
+  {
+    secrets: [streamApiKey, streamApiSecret],
+    cors: false,
+    invoker: 'public',
+    timeoutSeconds: 20,
+    memory: '256MiB',
+  },
+  (req, res) =>
+    handleMintStreamCallToken(req, res, {
+      verifyIdToken: (token) => getAuth().verifyIdToken(token),
+      banActive: (uid) => memberBanActive(getFirestore(), uid),
+      apiKey: () => readBoundSecret(streamApiKey) || process.env.STREAM_API_KEY || '',
+      apiSecret: () => readBoundSecret(streamApiSecret) || process.env.STREAM_API_SECRET || '',
+      appId: () => process.env.STREAM_APP_ID || '',
+      nowSeconds: () => Math.floor(Date.now() / 1000),
+      store: new FirestoreInviteStore(getFirestore()),
+      prepareGuestCall: (input) => prepareGuestOnCall({ ...input, fetchImpl: fetch }),
+      randomInviteToken: () => crypto.randomBytes(32).toString('base64url'),
+      randomGuestId: () => `g${crypto.randomBytes(16).toString('hex')}`,
+      randomSeatKey: () => crypto.randomBytes(32).toString('base64url'),
+    }),
 );

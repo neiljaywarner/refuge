@@ -24,8 +24,10 @@ jobs:
       - name: Feedback forward function tests
         run: node --test appwrite/functions/feedback-forward/test/format.test.js appwrite/functions/feedback-forward/test/handle.test.js
 
-      - name: Calm direct-message email function tests
-        run: node --test functions/test/decide.test.js functions/test/handle.test.js functions/test/transport.test.js
+      # functions/ holds the direct-message email handler and the Stream
+      # preview token handler. This step does not deploy either one.
+      - name: Cloud Functions unit tests
+        run: node --test functions/test/decide.test.js functions/test/handle.test.js functions/test/transport.test.js functions/test/stream_call.test.js functions/test/stream_guest.test.js
 
       - name: Direct message mirror function tests
         run: node --test appwrite/functions/dm-mirror/test/cert_cache.test.js appwrite/functions/dm-mirror/test/handle.test.js

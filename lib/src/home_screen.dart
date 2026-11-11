@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'core/config/app_flavor.dart';
 import 'core/firebase/community_analytics_service.dart';
+import 'core/config/preview_mode_provider.dart';
 import 'core/presentation/flavor_environment_chip.dart';
 import 'core/theme/belong_text_styles.dart';
 import 'core/firebase/organizer_remote_config_service.dart';
@@ -19,6 +20,9 @@ import 'features/auth/presentation/unverified_email_banner.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
 import 'features/feedback/presentation/feedback_drawing_canvas.dart';
+import 'features/group_call/data/stream_video_preview_config.dart';
+import 'features/group_call/domain/group_call_room.dart';
+import 'features/group_call/presentation/group_call_preview_banner.dart';
 import 'features/fellowship_spaces/domain/fellowship_space.dart';
 import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
 import 'features/messages/presentation/belong_messages_view.dart';
@@ -936,6 +940,16 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       child: Column(
                         children: [
                           const UnverifiedEmailBanner(),
+                          if (groupCallEntryVisible(
+                            compileTimePreview: streamVideoPreviewEnabled,
+                            previewFeaturesEnabled: ref.watch(previewFeaturesEnabledProvider),
+                            signedIn: profile.isSignedIn,
+                          ))
+                            GroupCallPreviewBanner(
+                              initialCallId: groupCallIdFromLocation(Uri.base),
+                              displayName: profile.displayName,
+                              shareOrigin: Uri.parse(ref.watch(appFlavorProvider).websiteUrl),
+                            ),
                           Expanded(child: buildActiveBottomTabBody()),
                         ],
                       ),

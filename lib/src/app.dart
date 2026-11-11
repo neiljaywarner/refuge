@@ -7,6 +7,8 @@ import 'constants/app_theme.dart';
 import 'core/config/app_flavor.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/auth/presentation/auth_gate.dart';
+import 'features/group_call/data/stream_video_preview_config.dart';
+import 'features/group_call/domain/guest_invite.dart';
 import 'features/messages/presentation/direct_message_arrival_banner.dart';
 import 'features/reflections/data/post_repository.dart';
 import 'features/sensory_themes/domain/sensory_font_scale.dart';
@@ -39,13 +41,42 @@ class RefugeApp extends StatefulWidget {
 /// Backward-compatible alias for SanctuaryApp.
 typedef SanctuaryApp = RefugeApp;
 
-class _RefugeAppState extends State<RefugeApp> {
+class _RefugeAppState extends State<RefugeApp> with WidgetsBindingObserver {
   late final ThemeNotifier _themeNotifier = ThemeNotifier()..setMode(widget.initialTheme);
+  final GuestInviteSignals _inviteSignals = GuestInviteSignals();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (streamVideoPreviewEnabled) {
+      _inviteSignals.present(
+        guestInviteUriFromLaunch(
+          platformRoute: WidgetsBinding.instance.platformDispatcher.defaultRouteName,
+          page: Uri.base,
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _inviteSignals.dispose();
     _themeNotifier.dispose();
     super.dispose();
+  }
+
+  /// A preview invite is handled here, before MaterialApp turns the URL into
+  /// a missing named route. Other routes are left alone. Production builds
+  /// leave [streamVideoPreviewEnabled] false, so this returns false.
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation routeInformation) {
+    if (!streamVideoPreviewEnabled) return Future<bool>.value(false);
+    final uri = routeInformation.uri;
+    if (guestInviteFromLocation(uri) == null) return Future<bool>.value(false);
+    _inviteSignals.present(uri);
+    return Future<bool>.value(true);
   }
 
   @override
@@ -63,6 +94,7 @@ class _RefugeAppState extends State<RefugeApp> {
         themeNotifier: _themeNotifier,
         homeOverride: widget.homeOverride,
         enforceSignIn: widget.enforceSignIn,
+        inviteSignals: _inviteSignals,
       ),
     ),
   );
@@ -73,12 +105,14 @@ class _RefugeAppContent extends ConsumerWidget {
   final ThemeNotifier themeNotifier;
   final Widget? homeOverride;
   final bool enforceSignIn;
+  final GuestInviteSignals inviteSignals;
 
   const _RefugeAppContent({
     required this.repository,
     required this.themeNotifier,
     this.homeOverride,
     required this.enforceSignIn,
+    required this.inviteSignals,
   });
 
   @override
@@ -126,7 +160,11 @@ class _RefugeAppContent extends ConsumerWidget {
       home:
           homeOverride ??
           (enforceSignIn
-              ? AuthGate(repository: repository, themeNotifier: themeNotifier)
+              ? AuthGate(
+                  repository: repository,
+                  themeNotifier: themeNotifier,
+                  inviteSignals: inviteSignals,
+                )
               : RefugeHomeScreen(repository: repository, themeNotifier: themeNotifier)),
     );
   }

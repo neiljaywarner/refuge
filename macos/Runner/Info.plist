@@ -24,6 +24,10 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>$(PRODUCT_COPYRIGHT)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Belong uses the camera for an optional profile photo or a preview group call. The call starts with the camera off.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Belong uses the microphone only after you unmute on a preview group call. The call starts muted.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
