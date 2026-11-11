@@ -4,6 +4,8 @@
 > **Reviewed change**: [PR #546](https://github.com/neiljaywarner/refuge/pull/546) for [issue #212](https://github.com/neiljaywarner/refuge/issues/212)
 > **Live site**: [belongonthespectrum.web.app](https://belongonthespectrum.web.app)
 
+The phone reads and writes reflections in Cloud Firestore. Production uses `reflections`. The dev site uses `reflections_dev`. The default build does not call the Appwrite table `reflection_posts`. That table stays disabled. Do not register a web origin or create that table to make the feed load. Live member notes stay in Firestore.
+
 This page answers a practical question: after dropping the $5 Serverpod database, should reflections live in two clouds at once, or in one cloud with a backup feature made for restore?
 
 ## What "redundancy" was trying to do

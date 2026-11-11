@@ -147,9 +147,10 @@ class AppwriteReflectionMirror implements ReflectionMirror {
 
 /// Reflection store that replaces Serverpod Cloud.
 ///
-/// Each write goes to Appwrite and Cloud Firestore. The local cache is what
-/// the screen reads first, so a cloud timeout never blanks the feed. Sign-in
-/// stays on Firebase Auth.
+/// Cloud Firestore is the live copy. The on-device list is what the screen
+/// reads first, so a cloud timeout does not blank the feed. Appwrite
+/// `reflection_posts` is not contacted unless a [ReflectionMirror] or
+/// [AppwriteServices] is passed in. Sign-in stays on Firebase Auth.
 enum CloudWrite { skipped, ok, failed }
 
 class AppwritePostRepository implements PostRepository, AccountScopedCache {
@@ -176,6 +177,12 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
 
   bool get isLiveConnected => _isLiveConnected;
 
+  /// True when this repository will call the Appwrite reflection table.
+  ///
+  /// The default build leaves this false. Firestore is the live store.
+  /// ADR-0011 keeps `reflection_posts` disabled, so the phone does not write it.
+  bool get mirrorsReflections => _mirror != null;
+
   String get collectionName => isDevMode ? 'reflections_dev' : 'reflections';
 
   FirebaseFirestore? get firestore {
@@ -200,9 +207,11 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
   }
 
   static ReflectionMirror? _mirrorFrom(AppwriteServices? services) {
-    final resolved = services ?? createAppwriteServices(AppwriteConfig.fromEnvironment);
-    if (resolved == null) return null;
-    return AppwriteReflectionMirror(resolved, AppwriteConfig.fromEnvironment);
+    // Do not open the live Appwrite project from the default build. The
+    // reflection table is disabled (ADR-0011) and is not in the database the
+    // phone can see. Callers that still want the spare copy pass [services].
+    if (services == null) return null;
+    return AppwriteReflectionMirror(services, AppwriteConfig.fromEnvironment);
   }
 
   /// Reloads private bookmarks and the pending outbox for [accountId].
@@ -315,6 +324,8 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
     required String displayName,
     String? avatarUrl,
   }) async {
+    final before = _fallback.findPost(postId);
+    final turningOff = before?.hasMemberReacted(reactionType, userId) ?? false;
     await _fallback.toggleReaction(
       postId: postId,
       reactionType: reactionType,
@@ -323,21 +334,37 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
       avatarUrl: avatarUrl,
     );
     final column = reactionColumn(reactionType);
+    if (column == null) return;
+    final delta = turningOff ? -1 : 1;
+
+    Future<void> rollBack() => _fallback.toggleReaction(
+      postId: postId,
+      reactionType: reactionType,
+      userId: userId,
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+    );
+
     final fs = firestore;
-    if (fs != null && column != null) {
+    if (fs != null) {
       try {
         await fs
             .collection(collectionName)
             .doc(postId)
-            .set(firestoreReactionIncrement(reactionType, column), SetOptions(merge: true))
+            .update(firestoreReactionDelta(reactionType, column, delta))
             .timeout(const Duration(seconds: 2));
         _isLiveConnected = true;
       } catch (error, stack) {
-        talker.handle(error, stack, 'Firestore reaction mirror failed');
+        talker.handle(error, stack, 'Firestore reaction write failed');
+        if (before != null) await rollBack();
+        return;
       }
     }
+
+    // Spare copy only. A failure here must not undo a Firestore toggle, and a
+    // toggle-off must not send another +1.
     final mirror = _mirror;
-    if (mirror != null && column != null) {
+    if (mirror != null && delta > 0) {
       try {
         await mirror
             .incrementReaction(postId: postId, column: column)
@@ -345,6 +372,7 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
         _isLiveConnected = true;
       } catch (error, stack) {
         talker.handle(error, stack, 'Appwrite reaction mirror failed');
+        if (fs == null && before != null) await rollBack();
       }
     }
   }
@@ -635,6 +663,18 @@ Map<String, dynamic> firestoreReflectionData(Post post, {String? authorId}) => {
 Map<String, dynamic> firestoreReactionIncrement(String reactionType, String column) => {
   column: FieldValue.increment(1),
   'reactions': {reactionType: FieldValue.increment(1)},
+};
+
+/// Update payload for a toggle. [delta] is `1` when the member turns the
+/// reaction on and `-1` when they turn it off.
+///
+/// The reactions map is what the feed displays. Rules allow that map to move
+/// in either direction. The summary column only increases, because the live
+/// rules reject a lower column value. A toggle-off therefore leaves the
+/// column where it is and corrects the map.
+Map<String, dynamic> firestoreReactionDelta(String reactionType, String column, int delta) => {
+  'reactions.$reactionType': FieldValue.increment(delta),
+  if (delta > 0) column: FieldValue.increment(delta),
 };
 
 Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {

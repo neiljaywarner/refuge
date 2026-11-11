@@ -78,6 +78,13 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   /// Whether [postId] is currently marked as saved by the member.
   bool isPostSaved(String postId) => _savedPostIds.contains(postId);
 
+  /// The in-memory row for [postId], if the feed has already loaded it.
+  Post? findPost(String postId) {
+    final index = _store.indexWhere((post) => post.id == postId);
+    if (index == -1) return null;
+    return _store[index];
+  }
+
   /// Drops in-memory bookmarks and reloads the bucket for [accountId].
   ///
   /// The same account is a no-op so an auth rebuild does not flicker the feed.

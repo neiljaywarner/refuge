@@ -4,7 +4,7 @@
 > **Status**: Living Engineering Architecture & Data Dictionary  
 > **Target Audiences**: Organizers, Mentors, Student Apprentices, Backend Engineers  
 
-> **Live on `main` (22 October 2026).** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Live reflections (11 November 2026).** The feed reads and writes Cloud Firestore. Production uses `reflections`. The dev site uses `reflections_dev`. The default build does not call Appwrite table `reflection_posts` (ADR-0011; that table stays disabled). Serverpod runs only when `BACKEND=serverpod` and `ENABLE_SERVERPOD=true` are both set. Deploy workflows pass `FLAVOR`, `ENABLE_SERVERPOD=false` on the dev site, and the release stamp. They do not pass `BACKEND` or `APPWRITE_*`. Firebase Auth is unchanged. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 
 ---
 
@@ -12,9 +12,9 @@
 
 **Belong on the Spectrum** (powered by **Refuge / Sanctuary**) is built with a **pluggable multi-backend architecture** (ADR-0009). The frontend consumes repositories (`PostRepository`, `FeatureVotingRepository`, `AuthRepository`) through Riverpod providers, allowing seamless operation across:
 
-1. **Serverpod RPC & PostgreSQL** (default post backend on `main`).
-2. **Cloud Firestore / Firebase** (second copy of posts, plus profiles, votes, and feedback notes).
-3. **Appwrite** (on `main` via [PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`; off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set; [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed).
+1. **Cloud Firestore / Firebase** (live reflections, profiles, votes, and feedback notes).
+2. **Serverpod RPC & PostgreSQL** (only when `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`).
+3. **Appwrite** (functions such as the direct-message mirror; the reflection table stays disabled).
 4. **Deterministic In-Memory Repositories** (Local dev, BDD widget tests, and CI/CD with zero cloud dependencies).
 
 ```
@@ -32,7 +32,7 @@
             ▼                       ▼                         ▼
 ┌──────────────────────┐  ┌───────────────────┐  ┌───────────────────────┐
 │   Serverpod RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
-│   (Default posts)    │  │ (Second copy)     │  │ Appwrite opt-in only  │
+│   (opt-in only)      │  │ (Live reflections)│  │ Appwrite not used     │
 └──────────────────────┘  └───────────────────┘  └───────────────────────┘
 ```
 
