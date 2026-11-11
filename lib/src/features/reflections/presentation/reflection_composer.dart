@@ -175,9 +175,9 @@ class ReflectionComposer extends HookWidget {
         customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
     final textScale = MediaQuery.textScalerOf(context).scale(1);
-    // The collapsed hint is one line and turns into "Share an unhurried…".
-    // Two lines keep the sentence readable when system text is large (#932).
-    final collapsedHintLines = textScale > 1.15 ? 2 : 1;
+    // Above 1.3 the space name ("#Prayer Sanctuary") needs more than two
+    // lines. Null max lines lets the hint wrap instead of ellipsizing (#932).
+    final int? collapsedHintLines = textScale > 1.3 ? null : (textScale > 1.15 ? 2 : 1);
 
     if (!isExpanded.value) {
       return Container(

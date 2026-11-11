@@ -334,78 +334,75 @@ class ReflectionCard extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
+          // A horizontal row clips Encouraged and Relatable at text scale 2.
+          // Wrap keeps every chip inside the card (#932).
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _buildReactionButton(
+                context: context,
+                type: 'pray',
+                emoji: '🙏',
+                label: 'Praying',
+                hasReacted: hasPrayed,
+                count: post.countForReaction('pray'),
+                key: Key('reaction_button_pray_${post.id}'),
+              ),
+              _buildReactionButton(
+                context: context,
+                type: 'peace',
+                emoji: '🤍',
+                label: 'Support',
+                hasReacted: hasSupported,
+                count: post.countForReaction('peace'),
+                key: Key('reaction_button_peace_${post.id}'),
+              ),
+              if (post.reactions.containsKey('encouraged') ||
+                  post.reactions.containsKey('relatable') ||
+                  post.reactionMembers.containsKey('encouraged') ||
+                  post.reactionMembers.containsKey('relatable')) ...[
                 _buildReactionButton(
                   context: context,
-                  type: 'pray',
-                  emoji: '🙏',
-                  label: 'Praying',
-                  hasReacted: hasPrayed,
-                  count: post.countForReaction('pray'),
-                  key: Key('reaction_button_pray_${post.id}'),
+                  type: 'encouraged',
+                  emoji: '🌱',
+                  label: 'Encouraged',
+                  hasReacted: hasEncouraged,
+                  count: post.countForReaction('encouraged'),
+                  key: Key('reaction_button_encouraged_${post.id}'),
                 ),
-                const SizedBox(width: 8),
                 _buildReactionButton(
                   context: context,
-                  type: 'peace',
-                  emoji: '🤍',
-                  label: 'Support',
-                  hasReacted: hasSupported,
-                  count: post.countForReaction('peace'),
-                  key: Key('reaction_button_peace_${post.id}'),
-                ),
-                if (post.reactions.containsKey('encouraged') ||
-                    post.reactions.containsKey('relatable') ||
-                    post.reactionMembers.containsKey('encouraged') ||
-                    post.reactionMembers.containsKey('relatable')) ...[
-                  const SizedBox(width: 8),
-                  _buildReactionButton(
-                    context: context,
-                    type: 'encouraged',
-                    emoji: '🌱',
-                    label: 'Encouraged',
-                    hasReacted: hasEncouraged,
-                    count: post.countForReaction('encouraged'),
-                    key: Key('reaction_button_encouraged_${post.id}'),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildReactionButton(
-                    context: context,
-                    type: 'relatable',
-                    emoji: '😄',
-                    label: 'Relatable',
-                    hasReacted: hasRelated,
-                    count: post.countForReaction('relatable'),
-                    key: Key('reaction_button_relatable_${post.id}'),
-                  ),
-                ],
-                const SizedBox(width: 8),
-                Builder(
-                  builder: (ctx) {
-                    final countAsync = ref.watch(postCommentCountStreamProvider(post.id));
-                    final count = countAsync.value ?? 0;
-                    return OutlinedButton.icon(
-                      key: Key('discussion_button_${post.id}'),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(48, 48),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      onPressed:
-                          onOpenDiscussion ??
-                          () => ThreadedDiscussionSheet.show(context, post: post),
-                      icon: const Text('💬', style: TextStyle(fontSize: 12)),
-                      label: Text(
-                        count == 1 ? '1 Reply' : (count > 1 ? '$count Replies' : 'Reply'),
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    );
-                  },
+                  type: 'relatable',
+                  emoji: '😄',
+                  label: 'Relatable',
+                  hasReacted: hasRelated,
+                  count: post.countForReaction('relatable'),
+                  key: Key('reaction_button_relatable_${post.id}'),
                 ),
               ],
-            ),
+              Builder(
+                builder: (ctx) {
+                  final countAsync = ref.watch(postCommentCountStreamProvider(post.id));
+                  final count = countAsync.value ?? 0;
+                  return OutlinedButton.icon(
+                    key: Key('discussion_button_${post.id}'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                    onPressed:
+                        onOpenDiscussion ?? () => ThreadedDiscussionSheet.show(context, post: post),
+                    icon: const Text('💬', style: TextStyle(fontSize: 12)),
+                    label: Text(
+                      count == 1 ? '1 Reply' : (count > 1 ? '$count Replies' : 'Reply'),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

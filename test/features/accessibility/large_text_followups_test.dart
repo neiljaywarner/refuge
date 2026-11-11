@@ -305,9 +305,12 @@ void main() {
     await tester.pump();
     session.check();
     final field = tester.widget<TextField>(composer);
-    expect(field.maxLines, 2);
+    expect(field.maxLines, isNull);
     final hint = find.textContaining('Share an unhurried thought');
-    expect(tester.widget<Text>(hint).maxLines, 2);
+    final hintText = tester.widget<Text>(hint);
+    expect(hintText.maxLines, isNull);
+    expect(hintText.overflow, isNot(TextOverflow.ellipsis));
+    expect(hintText.data, contains('Prayer Sanctuary'));
     expect(tester.getSize(hint).height, greaterThan(28));
   });
 
@@ -352,6 +355,47 @@ void main() {
     }
     final navTop = tester.getRect(find.byKey(const Key('belong_bottom_nav_bar'))).top;
     expect(lowest.bottom, lessThanOrEqualTo(navTop - 8));
+  });
+
+  testWidgets('reaction chips stay inside the card at text scale 2', (tester) async {
+    const physical = Size(1080, 2424);
+    const dpr = 2.625;
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: SingleChildScrollView(
+          child: ReflectionCard(
+            post: Post(
+              id: 'react-post',
+              authorName: 'Fellow Member',
+              spaceKey: 'prayer',
+              toneTag: '[Fellowship]',
+              content: 'A note with every reaction chip.',
+              timestamp: DateTime.utc(2026, 1, 1),
+              reactions: const {'pray': 1, 'peace': 2, 'encouraged': 0, 'relatable': 3},
+            ),
+            isContrast: false,
+            onAddReaction: (_) {},
+          ),
+        ),
+      ),
+      scale: 2,
+      surface: physical,
+      devicePixelRatio: dpr,
+      shell: (child) => ProviderScope(child: child),
+    );
+
+    final card = tester.getRect(find.byKey(const Key('reflection_card_react-post')));
+    for (final type in ['pray', 'peace', 'encouraged', 'relatable']) {
+      final chip = tester.getRect(find.byKey(Key('reaction_button_${type}_react-post')));
+      expect(chip.left, greaterThanOrEqualTo(card.left - 0.5), reason: type);
+      expect(chip.right, lessThanOrEqualTo(card.right + 0.5), reason: type);
+      expect(chip.top, greaterThanOrEqualTo(card.top - 0.5), reason: type);
+      expect(chip.bottom, lessThanOrEqualTo(card.bottom + 0.5), reason: type);
+    }
+    expect(find.textContaining('Encouraged'), findsOneWidget);
+    expect(find.textContaining('Relatable'), findsOneWidget);
+    session.check();
   });
 
   testWidgets('post author names wrap to two lines at text scale 2', (tester) async {
