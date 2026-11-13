@@ -67,7 +67,6 @@ TextPainter _painterForRenderedText(WidgetTester tester, Finder finder) {
     strutStyle: paragraph.strutStyle,
     textWidthBasis: paragraph.textWidthBasis,
     textHeightBehavior: paragraph.textHeightBehavior,
-    hyphens: paragraph.hyphens,
   )..layout(maxWidth: maxWidth);
 }
 
