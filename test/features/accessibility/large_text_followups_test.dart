@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/messages/domain/message_thread.dart';
@@ -25,19 +26,55 @@ bool _isWordChar(String char) {
       (code >= 0x61 && code <= 0x7A);
 }
 
-/// Lines painted for [finder], using the same width, scaler, and wrap rules.
+/// A painter for the paragraph that is actually on screen.
+///
+/// [RenderParagraph.getLineBoundary] is not public, so this copies the mounted
+/// span. That span already includes [DefaultTextStyle], accessibility bold,
+/// and text-spacing overrides.
+RenderParagraph _renderedParagraph(WidgetTester tester, Finder finder) {
+  final element = tester.element(finder);
+  if (element.renderObject is RenderParagraph) {
+    return element.renderObject! as RenderParagraph;
+  }
+  RenderParagraph? found;
+  void walk(Element child) {
+    if (found != null) return;
+    if (child.renderObject is RenderParagraph) {
+      found = child.renderObject! as RenderParagraph;
+      return;
+    }
+    child.visitChildren(walk);
+  }
+
+  element.visitChildren(walk);
+  return found!;
+}
+
+TextPainter _painterForRenderedText(WidgetTester tester, Finder finder) {
+  final paragraph = _renderedParagraph(tester, finder);
+  final constraint = paragraph.constraints.maxWidth;
+  final maxWidth = !paragraph.softWrap
+      ? double.infinity
+      : (constraint.isFinite ? constraint : paragraph.size.width);
+  return TextPainter(
+    text: paragraph.text,
+    textAlign: paragraph.textAlign,
+    textDirection: paragraph.textDirection,
+    textScaler: paragraph.textScaler,
+    maxLines: paragraph.maxLines,
+    ellipsis: paragraph.overflow == TextOverflow.ellipsis ? '\u2026' : null,
+    locale: paragraph.locale,
+    strutStyle: paragraph.strutStyle,
+    textWidthBasis: paragraph.textWidthBasis,
+    textHeightBehavior: paragraph.textHeightBehavior,
+    hyphens: paragraph.hyphens,
+  )..layout(maxWidth: maxWidth);
+}
+
+/// Lines painted for [finder], using the rendered paragraph's style and width.
 List<String> paintedLines(WidgetTester tester, Finder finder) {
-  final text = tester.widget<Text>(finder);
-  final width = tester.getSize(finder).width;
-  final plain = text.data ?? text.textSpan?.toPlainText() ?? '';
-  final painter = TextPainter(
-    text: TextSpan(text: plain, style: text.style),
-    textAlign: text.textAlign ?? TextAlign.start,
-    textDirection: TextDirection.ltr,
-    textScaler: MediaQuery.textScalerOf(tester.element(finder)),
-    maxLines: text.maxLines,
-    ellipsis: text.overflow == TextOverflow.ellipsis ? '\u2026' : null,
-  )..layout(maxWidth: width);
+  final painter = _painterForRenderedText(tester, finder);
+  final plain = painter.text?.toPlainText() ?? '';
   final lines = <String>[];
   var offset = 0;
   for (var guard = 0; guard < 40 && offset < plain.length; guard++) {
@@ -46,22 +83,13 @@ List<String> paintedLines(WidgetTester tester, Finder finder) {
     lines.add(plain.substring(range.start, range.end));
     offset = range.end;
   }
+  painter.dispose();
   return lines;
 }
 
 void expectNoMidWordWrap(WidgetTester tester, Finder finder) {
-  final text = tester.widget<Text>(finder);
-  final plain = text.data ?? text.textSpan?.toPlainText() ?? '';
-  final box = tester.renderObject<RenderBox>(finder);
-  final maxWidth = box.constraints.maxWidth.isFinite ? box.constraints.maxWidth : box.size.width;
-  final painter = TextPainter(
-    text: TextSpan(text: plain, style: text.style),
-    textAlign: text.textAlign ?? TextAlign.start,
-    textDirection: TextDirection.ltr,
-    textScaler: MediaQuery.textScalerOf(tester.element(finder)),
-    maxLines: text.maxLines,
-    ellipsis: text.overflow == TextOverflow.ellipsis ? '\u2026' : null,
-  )..layout(maxWidth: maxWidth);
+  final painter = _painterForRenderedText(tester, finder);
+  final plain = painter.text?.toPlainText() ?? '';
   final lineCount = painter.computeLineMetrics().length;
   var offset = 0;
   for (var i = 0; i < lineCount && offset < plain.length; i++) {
@@ -187,6 +215,39 @@ void main() {
     expect(lines.any((line) => line.contains('web')), isTrue, reason: 'lines=$lines');
     expect(lines.any((line) => line.contains('app')), isTrue, reason: 'lines=$lines');
     expect(tester.widget<Text>(body).semanticsLabel, contains('web.app'));
+    session.check();
+  });
+
+  testWidgets('line helper uses the rendered letter spacing at text scale 2', (tester) async {
+    const word = 'Note';
+    final session = await pumpWithTextScale(
+      tester,
+      const Scaffold(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 220,
+              child: DefaultTextStyle(
+                style: TextStyle(fontSize: 20),
+                child: Text(word, key: Key('tight_note'), style: TextStyle(fontSize: 20)),
+              ),
+            ),
+            SizedBox(
+              width: 220,
+              child: DefaultTextStyle(
+                style: TextStyle(fontSize: 20, letterSpacing: 40),
+                child: Text(word, key: Key('spaced_note'), style: TextStyle(fontSize: 20)),
+              ),
+            ),
+          ],
+        ),
+      ),
+      scale: 2,
+    );
+
+    expect(paintedLines(tester, find.byKey(const Key('tight_note'))).length, 1);
+    expect(paintedLines(tester, find.byKey(const Key('spaced_note'))).length, greaterThan(1));
     session.check();
   });
 
