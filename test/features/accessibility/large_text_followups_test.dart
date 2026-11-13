@@ -87,6 +87,17 @@ class _SignedInProfileNotifier extends MemberProfileNotifier {
   );
 }
 
+class _NamedFieldsProfile extends MemberProfileNotifier {
+  @override
+  MemberProfile build() => const MemberProfile(
+    displayName: 'Signed In Tester',
+    email: '',
+    bio: 'A quiet note',
+    comfortBadges: [],
+    isSignedIn: true,
+  );
+}
+
 void main() {
   testWidgets('bottom nav labels do not wrap mid-word at text scale 2', (tester) async {
     final session = await pumpWithTextScale(
@@ -377,6 +388,51 @@ void main() {
     expect(save.bottom, lessThanOrEqualTo(cancel.top));
     expect(cancel.bottom, lessThanOrEqualTo(signOut.top));
     expect(cancel.top - save.bottom, greaterThanOrEqualTo(4));
+  });
+
+  testWidgets('large-text profile fields keep their accessible names at text scale 2', (
+    tester,
+  ) async {
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: Builder(
+          builder: (context) => Center(
+            child: TextButton(
+              key: const Key('open_profile_sheet'),
+              onPressed: () => MemberProfileDialog.show(context),
+              child: const Text('Open profile'),
+            ),
+          ),
+        ),
+      ),
+      scale: 2,
+      shell: (child) => ProviderScope(
+        overrides: [memberProfileProvider.overrideWith(_NamedFieldsProfile.new)],
+        child: child,
+      ),
+    );
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.tap(find.byKey(const Key('open_profile_sheet')));
+      await settleLargeText(tester);
+      session.check();
+
+      const fields = {
+        'profile_display_name_field': 'First Name',
+        'profile_last_name_field': 'Last Name',
+        'profile_email_field': 'Email Address',
+        'profile_bio_field': 'Bio / Note to Fellowship',
+      };
+      for (final entry in fields.entries) {
+        expect(find.text(entry.value), findsOneWidget, reason: entry.key);
+        final node = tester.getSemantics(find.byKey(Key(entry.key)));
+        expect(node.label, contains(entry.value), reason: entry.key);
+        expect(find.bySemanticsLabel(entry.value), findsOneWidget, reason: entry.key);
+      }
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('welcome card and composer hint wrap to two lines at text scale 2', (tester) async {

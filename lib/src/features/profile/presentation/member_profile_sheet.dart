@@ -564,7 +564,11 @@ class _WrappingFieldLabel extends StatelessWidget {
     if (!largeText) return child;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Text(label), const SizedBox(height: 4), child],
+      children: [
+        ExcludeSemantics(child: Text(label)),
+        const SizedBox(height: 4),
+        Semantics(label: label, child: child),
+      ],
     );
   }
 }
