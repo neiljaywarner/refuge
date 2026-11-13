@@ -23,6 +23,8 @@ The marketing site [https://www.belongonthespectrum.com/](https://www.belongonth
 
 The last production deploy this repository’s runbook records is **v0.9.2** on 2026-10-28. That note is not a claim about which build is live today.
 
+Footnote, 11 November 2026: a public read of production `version.json` reports **v0.9.9** (`dc99aaa56e3c9bcec4368e161f1149490bed7376`, flavor `prod`, built 4 November 2026). The dev site reports `3af3d5a2e108bba7aa55dc157df67054ce90b865`. Notes for the commits after v0.9.9: [`docs/release_highlights/unreleased-since-v0.9.9.md`](release_highlights/unreleased-since-v0.9.9.md). This footnote does not check the boxes above.
+
 ### B. Open pull requests and worktrees
 
 Close, fix CI, or close with a reason. The November 1 afternoon list is on [#765](https://github.com/neiljaywarner/refuge/issues/765) (including [#764](https://github.com/neiljaywarner/refuge/pull/764), [#763](https://github.com/neiljaywarner/refuge/pull/763), [#757](https://github.com/neiljaywarner/refuge/pull/757), [#754](https://github.com/neiljaywarner/refuge/pull/754), [#747](https://github.com/neiljaywarner/refuge/pull/747), [#746](https://github.com/neiljaywarner/refuge/pull/746), [#734](https://github.com/neiljaywarner/refuge/pull/734)). Then prune worktrees and agent branches whose pull requests are merged or abandoned.
