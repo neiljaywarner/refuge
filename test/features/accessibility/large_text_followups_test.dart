@@ -227,6 +227,39 @@ void main() {
     session.check();
   });
 
+  testWidgets('body measurement uses inherited spacing and bold text at text scale 2', (
+    tester,
+  ) async {
+    const word = 'Note';
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(boldText: true),
+            child: const DefaultTextStyle(
+              style: TextStyle(fontSize: 14, letterSpacing: 80),
+              child: SingleChildScrollView(
+                child: SizedBox(
+                  width: 200,
+                  child: UnbrokenBodyText(text: word, style: TextStyle(fontSize: 14, height: 1.2)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      scale: 2,
+    );
+
+    final text = tester.widget<Text>(find.byType(Text));
+    expect(text.style?.fontWeight, FontWeight.bold);
+    expect(text.style?.letterSpacing, 80);
+    expect(text.data!.replaceAll('\u200B', ''), word);
+    expect(text.data, contains('\u200B'));
+    session.check();
+  });
+
   testWidgets('last conversation scrolls clear of the bottom nav at text scale 2', (tester) async {
     tester.view.viewPadding = const FakeViewPadding(bottom: 48);
     tester.view.padding = const FakeViewPadding(bottom: 48);

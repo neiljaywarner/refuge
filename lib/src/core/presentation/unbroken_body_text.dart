@@ -106,7 +106,7 @@ class UnbrokenBodyText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolved = style ?? DefaultTextStyle.of(context).style;
+    final resolved = _resolvedBodyStyle(context, style);
     return LayoutBuilder(
       builder: (context, constraints) {
         final display = fitUnbrokenText(
@@ -127,4 +127,21 @@ class UnbrokenBodyText extends StatelessWidget {
       },
     );
   }
+}
+
+/// The style [Text] paints: inherited [DefaultTextStyle], accessibility bold,
+/// and any text-spacing overrides. Measurement uses this same value.
+TextStyle _resolvedBodyStyle(BuildContext context, TextStyle? style) {
+  final defaults = DefaultTextStyle.of(context).style;
+  var resolved = style == null || style.inherit ? defaults.merge(style) : style;
+  if (MediaQuery.boldTextOf(context)) {
+    resolved = resolved.merge(const TextStyle(fontWeight: FontWeight.bold));
+  }
+  final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
+  final letterSpacing = MediaQuery.maybeLetterSpacingOverrideOf(context);
+  final wordSpacing = MediaQuery.maybeWordSpacingOverrideOf(context);
+  if (lineHeight == null && letterSpacing == null && wordSpacing == null) return resolved;
+  return resolved.merge(
+    TextStyle(height: lineHeight, letterSpacing: letterSpacing, wordSpacing: wordSpacing),
+  );
 }
