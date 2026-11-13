@@ -267,11 +267,50 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
           return Builder(
             builder: (context) {
+              // The feed scroll view carries this chrome (#932). Build it before
+              // the post stream resolves so a loading or failed feed can still
+              // open Spaces or another room.
+              final navigationSlivers = <Widget>[
+                if (remoteConfig.bannerEnabled)
+                  SliverToBoxAdapter(
+                    child: CommunityAnchorBanner(
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                    ),
+                  ),
+                SliverToBoxAdapter(
+                  child: _BelongSubHeaderBar(
+                    activeSubView: homeSubView.value,
+                    onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                    onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
+                  ),
+                ),
+                SliverToBoxAdapter(child: spaceNav),
+              ];
+
+              // SliverFillRemaining gets no space once the room header is taller
+              // than the phone, which is the large-text case. A box sliver keeps
+              // the status in the scroll view, under the navigation.
+              Widget feedStatus(Widget child) => CustomScrollView(
+                key: const Key('home_feed_scroll'),
+                slivers: [
+                  ...navigationSlivers,
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const .all(24),
+                      child: Center(child: child),
+                    ),
+                  ),
+                ],
+              );
+
               if (postsSnapshot.hasError) {
-                return Center(child: Text('Error loading reflections: ${postsSnapshot.error}'));
+                return feedStatus(Text('Error loading reflections: ${postsSnapshot.error}'));
               }
               if (!postsSnapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
+                return feedStatus(const CircularProgressIndicator());
               }
 
               final allPosts = postsSnapshot.data!;
@@ -295,23 +334,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   !ref.watch(isCurrentMemberBannedProvider);
 
               final feedSlivers = <Widget>[
-                if (remoteConfig.bannerEnabled)
-                  SliverToBoxAdapter(
-                    child: CommunityAnchorBanner(
-                      primaryColor: primaryColor,
-                      isContrast: isContrast,
-                    ),
-                  ),
-                SliverToBoxAdapter(
-                  child: _BelongSubHeaderBar(
-                    activeSubView: homeSubView.value,
-                    onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
-                    onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                  ),
-                ),
-                SliverToBoxAdapter(child: spaceNav),
+                ...navigationSlivers,
                 if (selectedSpace.value == 'saved_for_later')
                   SliverToBoxAdapter(
                     child: Container(

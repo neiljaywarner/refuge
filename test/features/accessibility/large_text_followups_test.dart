@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -6,7 +8,10 @@ import 'package:refuge4serverpod/src/features/messages/presentation/belong_messa
 import 'package:refuge4serverpod/src/features/navigation/presentation/belong_bottom_nav_bar.dart';
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
+import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
+import 'package:refuge4serverpod/src/features/reflections/data/post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
+import 'package:refuge4serverpod/src/home_screen.dart';
 import 'package:refuge4serverpod/src/core/presentation/unbroken_body_text.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
 
@@ -85,6 +90,26 @@ class _SignedInProfileNotifier extends MemberProfileNotifier {
     comfortBadges: [],
     isSignedIn: true,
   );
+}
+
+class _FailingFeed extends LocalPostRepository {
+  _FailingFeed() : super(initialPosts: const []);
+
+  final _posts = StreamController<List<Post>>();
+
+  @override
+  Stream<List<Post>> watchPosts({required String spaceKey}) => _posts.stream;
+
+  void fail() => _posts.addError(StateError('feed unavailable'));
+}
+
+class _PendingFeed extends LocalPostRepository {
+  _PendingFeed() : super(initialPosts: const []);
+
+  final _posts = StreamController<List<Post>>();
+
+  @override
+  Stream<List<Post>> watchPosts({required String spaceKey}) => _posts.stream;
 }
 
 class _NamedFieldsProfile extends MemberProfileNotifier {
@@ -559,6 +584,58 @@ void main() {
     expect(find.textContaining('Encouraged'), findsOneWidget);
     expect(find.textContaining('Relatable'), findsOneWidget);
     session.check();
+  });
+
+  Future<TextScaleSession> pumpFeed(WidgetTester tester, PostRepository repository) =>
+      pumpWithTextScale(
+        tester,
+        RefugeHomeScreen(repository: repository),
+        scale: 2,
+        shell: (child) => ProviderScope(
+          overrides: [postRepositoryProvider.overrideWithValue(repository)],
+          child: child,
+        ),
+      );
+
+  testWidgets('failed and loading feeds keep space navigation at text scale 2', (tester) async {
+    final failing = _FailingFeed();
+    final failed = await pumpFeed(tester, failing);
+    failing.fail();
+    await tester.pump();
+    expect(find.byKey(const Key('home_feed_scroll')), findsOneWidget);
+    expect(find.byKey(const Key('subnav_spaces_tab')), findsOneWidget);
+    expect(find.byKey(const Key('space_room_header')), findsOneWidget);
+    final feedScroll = find.descendant(
+      of: find.byKey(const Key('home_feed_scroll')),
+      matching: find.byType(Scrollable),
+    );
+    final error = find.textContaining('Error loading reflections');
+    await tester.scrollUntilVisible(error, 400, scrollable: feedScroll.first);
+    expect(error, findsOneWidget);
+    expect(tester.getSize(error).height, greaterThan(0));
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('subnav_spaces_tab')),
+      -400,
+      scrollable: feedScroll.first,
+    );
+    await tester.tap(find.byKey(const Key('subnav_spaces_tab')));
+    await settleLargeText(tester);
+    failed.check();
+    expect(find.byKey(const Key('belong_spaces_directory_list')), findsOneWidget);
+
+    final pending = await pumpFeed(tester, _PendingFeed());
+    final pendingScroll = find.descendant(
+      of: find.byKey(const Key('home_feed_scroll')),
+      matching: find.byType(Scrollable),
+    );
+    final spinner = find.byType(CircularProgressIndicator);
+    expect(find.byKey(const Key('subnav_feed_tab')), findsOneWidget);
+    expect(find.byKey(const Key('subnav_spaces_tab')), findsOneWidget);
+    expect(find.byKey(const Key('space_room_header')), findsOneWidget);
+    expect(find.textContaining('Error loading reflections'), findsNothing);
+    await tester.scrollUntilVisible(spinner, 400, scrollable: pendingScroll.first);
+    expect(spinner, findsOneWidget);
+    pending.check();
   });
 
   testWidgets('post author names wrap to two lines at text scale 2', (tester) async {
