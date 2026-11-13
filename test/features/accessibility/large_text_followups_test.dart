@@ -7,6 +7,7 @@ import 'package:refuge4serverpod/src/features/navigation/presentation/belong_bot
 import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
+import 'package:refuge4serverpod/src/core/presentation/unbroken_body_text.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
 
 import '../../helpers/text_scale.dart';
@@ -150,6 +151,79 @@ void main() {
     expect(lines.any((line) => line.contains('web')), isTrue, reason: 'lines=$lines');
     expect(lines.any((line) => line.contains('app')), isTrue, reason: 'lines=$lines');
     expect(tester.widget<Text>(body).semanticsLabel, contains('web.app'));
+    session.check();
+  });
+
+  testWidgets('space-free body text stays complete at text scale 2', (tester) async {
+    const japanese = 'これはスペースのない日本語の段落です。省略記号で本文を消してはいけません。';
+    const slug = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const linked = 'Notes: https://example.com/$slug/end';
+    final session = await pumpWithTextScale(
+      tester,
+      const Scaffold(
+        body: SingleChildScrollView(
+          child: SizedBox(
+            width: 160,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                UnbrokenBodyText(
+                  key: Key('space_free_japanese'),
+                  text: japanese,
+                  style: TextStyle(fontSize: 13, height: 1.45),
+                ),
+                UnbrokenBodyText(
+                  key: Key('space_free_url'),
+                  text: linked,
+                  style: TextStyle(fontSize: 13, height: 1.45),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      scale: 2,
+    );
+
+    void expectComplete(String key, String original) {
+      final finder = find.descendant(of: find.byKey(Key(key)), matching: find.byType(Text));
+      final text = tester.widget<Text>(finder);
+      expect(text.data, isNot(contains('\u2026')), reason: key);
+      expect(text.semanticsLabel, original, reason: key);
+      expect(text.data!.replaceAll('\u200B', ''), original, reason: key);
+      expect(tester.getSize(finder).height, greaterThan(48), reason: key);
+    }
+
+    expectComplete('space_free_japanese', japanese);
+    expectComplete('space_free_url', linked);
+    session.check();
+  });
+
+  testWidgets('wide emoji tokens wrap on grapheme boundaries at text scale 2', (tester) async {
+    const family = '👩‍👧‍👦';
+    final body = family * 8;
+    final session = await pumpWithTextScale(
+      tester,
+      Scaffold(
+        body: SingleChildScrollView(
+          child: SizedBox(
+            width: 48,
+            child: UnbrokenBodyText(text: body, style: const TextStyle(fontSize: 13, height: 1.45)),
+          ),
+        ),
+      ),
+      scale: 2,
+    );
+
+    final finder = find.byType(Text);
+    final text = tester.widget<Text>(finder);
+    expect(text.semanticsLabel, body);
+    expect(text.data!.replaceAll('\u200B', ''), body);
+    expect(text.data, contains('\u200B'));
+    for (final piece in text.data!.split('\u200B')) {
+      if (piece.isEmpty) continue;
+      expect(piece.characters.length, 1, reason: piece);
+    }
     session.check();
   });
 

@@ -24,8 +24,9 @@ String insertUrlSoftBreaks(String text) => text.replaceAllMapped(_urlPattern, (m
   return buffer.toString();
 });
 
-/// [text] with URL soft breaks, and any token wider than [maxWidth] ellipsized
-/// so the line breaker never has to split a word.
+/// [text] with URL soft breaks. A token wider than [maxWidth] keeps every
+/// character and may wrap after a grapheme, so a space-free paragraph or a
+/// long URL segment is not replaced by an ellipsis.
 String fitUnbrokenText(
   String text, {
   required double maxWidth,
@@ -39,16 +40,14 @@ String fitUnbrokenText(
   final segments = broken.split('\u200B');
   final buffer = StringBuffer();
   for (var i = 0; i < segments.length; i++) {
-    buffer.write(
-      _ellipsizeWideWords(segments[i], painter: painter, style: style, maxWidth: maxWidth),
-    );
+    buffer.write(_fitWideWords(segments[i], painter: painter, style: style, maxWidth: maxWidth));
     if (i != segments.length - 1) buffer.write('\u200B');
   }
   painter.dispose();
   return buffer.toString();
 }
 
-String _ellipsizeWideWords(
+String _fitWideWords(
   String segment, {
   required TextPainter painter,
   required TextStyle style,
@@ -63,12 +62,14 @@ String _ellipsizeWideWords(
       buffer.write(part);
       continue;
     }
-    buffer.write(_ellipsizeToken(part, painter: painter, style: style, maxWidth: maxWidth));
+    buffer.write(_fitToken(part, painter: painter, style: style, maxWidth: maxWidth));
   }
   return buffer.toString();
 }
 
-String _ellipsizeToken(
+/// Keeps [token] when it fits. Otherwise inserts a wrap opportunity after each
+/// grapheme so a surrogate pair or joined emoji is never sliced in half.
+String _fitToken(
   String token, {
   required TextPainter painter,
   required TextStyle style,
@@ -77,27 +78,14 @@ String _ellipsizeToken(
   painter.text = TextSpan(text: token, style: style);
   painter.layout();
   if (painter.width <= maxWidth) return token;
-
-  var low = 0;
-  var high = token.length;
-  var best = '\u2026';
-  while (low <= high) {
-    final mid = (low + high) >> 1;
-    final candidate = mid == 0 ? '\u2026' : '${token.substring(0, mid)}\u2026';
-    painter.text = TextSpan(text: candidate, style: style);
-    painter.layout();
-    if (painter.width <= maxWidth) {
-      best = candidate;
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
-  return best;
+  final graphemes = token.characters;
+  if (graphemes.length <= 1) return token;
+  return graphemes.join('\u200B');
 }
 
-/// Body copy that wraps on spaces and URL punctuation, never inside a word.
+/// Body copy that wraps on spaces and URL punctuation.
 ///
+/// A token with no punctuation still wraps, and every character stays visible.
 /// Screen readers hear [text]. The painted string may contain zero-width
 /// breaks so `web.app` stays intact on each side of the dot (#932).
 class UnbrokenBodyText extends StatelessWidget {
