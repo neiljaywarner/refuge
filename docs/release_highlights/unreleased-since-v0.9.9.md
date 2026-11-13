@@ -7,7 +7,7 @@ Nothing here is a store listing yet. Play Store and App Store pages are still pe
 ## For members
 
 - **Your phone's text size now changes Belong.** A larger system font grows the type in the app, together with the text size you pick in sensory settings. Sign-in, home, messages, and feedback were checked at several sizes. A few tight spots are still open: the feed can feel short, and some rows can clip on a phone ([#932](https://github.com/neiljaywarner/refuge/issues/932)). Call screens will get the same check after video calling lands ([#935](https://github.com/neiljaywarner/refuge/issues/935)).
-- **Relate shows who actually related.** Press and hold Relate when one person has related, and you see that person. This covers posts and comments ([#933](https://github.com/neiljaywarner/refuge/pull/933)).
+- **Relate keeps a name this device already knows.** Press and hold Relate, and a person who related on this device stays listed when a later update only has the count. A phone opening the post for the first time, with only that count, can still show an empty list. This covers posts and comments ([#933](https://github.com/neiljaywarner/refuge/pull/933)).
 - **Animated text on a post.** In the attach sheet, choose Animate Text, type a short phrase, and attach a styled text GIF. It works on the website, the Android web app, and an iPhone home-screen app. The result stays PG, motion stays calm, and the GIPHY credit stays visible ([#862](https://github.com/neiljaywarner/refuge/pull/862)).
 - **A cleaner list of people you can message.** Someone who has left the member directory, or whose account is closed or banned, no longer shows up as a message recipient ([#813](https://github.com/neiljaywarner/refuge/issues/813)).
 - **Honest notification settings on the web.** When the browser cannot offer push, the notification sheet says so ([#857](https://github.com/neiljaywarner/refuge/issues/857)).
@@ -24,7 +24,7 @@ These do not change what members see in the app.
 
 ## Paste-ready "what's new"
 
-Larger phone text now changes Belong's type, together with the in-app size. Press and hold Relate to see who related. You can attach animated text from GIPHY on the website and the home-screen app. The message list skips people who left the directory or whose accounts are closed. On the web, notification settings say when push is unavailable.
+Larger phone text now changes Belong's type, together with the in-app size. Press and hold Relate to see a name this device already saved. A first visit that only has the count can still be blank. You can attach animated text from GIPHY on the website and the home-screen app. The message list skips people who left the directory or whose accounts are closed. On the web, notification settings say when push is unavailable.
 
 ## Not in this batch
 
