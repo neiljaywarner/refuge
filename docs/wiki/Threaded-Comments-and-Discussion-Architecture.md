@@ -30,9 +30,9 @@ flowchart TD
     subgraph Storage ["CommentRepository Seam"]
         Repo["CommentRepository"]
         Local["LocalCommentRepository (In-Memory Broadcast)"]
-        Serverpod["ServerpodCommentRepository (WebSocket / RPC)"]
+        Firebase["FirebaseCommentRepository (WebSocket / RPC)"]
         Repo -.-> Local
-        Repo -.-> Serverpod
+        Repo -.-> Firebase
     end
 
     subgraph State ["Riverpod State Pipeline"]

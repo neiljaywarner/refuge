@@ -42,7 +42,7 @@
 | **3** | **Agent Operations & GitHub MCP Velocity** | **A** | **96 / 100** | **98 / 100** | **A+** | **100% Zero Terminal Push Prompts**; all 53 PRs created, reviewed, and squash-merged via GitHub MCP API (`push_files`, `create_pull_request`, `merge_pull_request`); strict `1 Issue = 1 Worktree = 1 PR` hygiene; CodeRabbit wait protocol (90–180s) verified. | 1. Maintain zero race conditions with CodeRabbit by enforcing 90–180s wait window on 100% of PRs.<br>2. Automate local branch and worktree pruning after squash-merges.<br>3. Expand GitHub Actions CI matrix to test on macOS, Ubuntu, and Windows runners in parallel. |
 | **4** | **UX, Calm-Tech & Neurodivergent Flow** | **B+** | **87 / 100** | **90 / 100** | **A-** | 4 WCAG AAA sensory themes (Clean Slate, Sage Botanical, Monastic Dark, High Contrast); Scripture anchor (Psalm 139:14); single-avatar AppBar state (PR #240); Google Password Manager autofill hints (PR #241); calm notification digest preferences (PR #244); calm meme engine with low-motion rules. | 1. Execute Issue #239: Feed simplification ("When in doubt, leave it out") to reduce visual density on small screens.<br>2. Add tactile haptic feedback preferences toggle (`HapticFeedback.lightImpact` on reaction affirmations, with zero-haptic calm mode; Issue #252).<br>3. Verify custom text-scale factors (up to 200% dynamic font scaling) without RenderFlex overflow. |
 | **5** | **PWA & Mobile Web Installation** | **A-** | **90 / 100** | **93 / 100** | **A** | Web Push service worker (`web/firebase-messaging-sw.js`); W3C manifest; zero-PII screenshots in `doc/screenshots/`; responsive design tested on Chrome and mobile viewports. | 1. Test full offline service worker caching on Chromium with network throttling (offline mode).<br>2. Add custom PWA install prompt banner ("Add Belong to Home Screen" bottom toast with calm dismiss; Issue #253).<br>3. Complete Lighthouse PWA audit achieving 100/100 PWA score. |
-| **6** | **Backend Persistence & Cloud Verification** | **B** | **82 / 100** | **85 / 100** | **B+** | Real production `google-services.json` (Project #207506875171); live Firebase Auth (user `tester+alpha@belongonthespectrum.com`); Firestore sync; Firebase Analytics collection hooks; Serverpod 4 dual-redundancy. | 1. Verify real-time Cloud Firestore snapshot synchronization across two independent browser sessions / emulators (Issue #254).<br>2. Implement automated retry with exponential backoff for Firestore and Serverpod network timeouts.<br>3. Add multi-tenant space scoping security rules audit in `firestore.rules`. |
+| **6** | **Backend Persistence & Cloud Verification** | **B** | **82 / 100** | **85 / 100** | **B+** | Real production `google-services.json` (Project #207506875171); live Firebase Auth (user `tester+alpha@belongonthespectrum.com`); Firestore sync; Firebase Analytics collection hooks; the retired backend dual-redundancy. | 1. Verify real-time Cloud Firestore snapshot synchronization across two independent browser sessions / emulators (Issue #254).<br>2. Implement automated retry with exponential backoff for Firestore and Firebase network timeouts.<br>3. Add multi-tenant space scoping security rules audit in `firestore.rules`. |
 
 ---
 
@@ -131,7 +131,7 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 | **#220** | #219 | docs(agents): document Maestro MCP server tools and establish Maestro device automation skill and rules | ✅ Verified |
 | **#218** | #217 | refactor(ui): Modernize UI syntax with constructor dot-shorthands and Gap spacing | ✅ 175 tests green |
 | **#216** | #215 | docs(visual): add visual verification asset catalog and audit index | ✅ Verified |
-| **#214** | #213 | feat(reflections): gate local repos behind dev mode, eliminate hardcoded mock data in prod, and add Serverpod + Firestore dual redundancy | ✅ Verified |
+| **#214** | #213 | feat(reflections): gate local repos behind dev mode, eliminate hardcoded mock data in prod, and add Firebase + Firestore dual redundancy | ✅ Verified |
 | **#211** | #210 | fix(analytics): expose dispatchedEventsForTesting alias on CommunityAnalyticsService | ✅ Verified |
 | **#209** | #208 | feat(branding): rename application from Sanctuary to Refuge across code, UI, and test suites | ✅ Verified |
 | **#207** | #206 | docs(wiki): add Antigravity multi-agent incident triage and fan-out guide | ✅ Verified |
@@ -160,7 +160,7 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 | **#108** | #107 | chore(rules): Add AGENTS.md, GEMINI.md, and .cursorrules for zero-PII and MCP server prioritization | ✅ Verified |
 | **#106** | #105 | docs(architecture): Add ADR-0010 Calm Notifications Architecture & Multi-Tier Test Coverage Plan | ✅ Verified |
 | **#104** | #103 | docs: Add Marionette MCP server & CLI driving guide and capture script | ✅ Verified |
-| **#100** | #99 | docs(wiki): Document Firebase & Serverpod dual observability and track engineering lessons learned | ✅ Verified |
+| **#100** | #99 | docs(wiki): Document Firebase & Firebase dual observability and track engineering lessons learned | ✅ Verified |
 | **#98** | #41 | feat(migration): Circle.so CSV Data Migration Importer CLI & Parser | ✅ 82 tests green |
 | **#97** | #96 | fix(main): Provide bootstrapBelongApp backward compatibility and resolve unused imports | ✅ 71 tests green |
 | **#95** | #95 | fix(main): Restore reflection presentation re-exports and SanctuaryApp overrides | ✅ Verified |
@@ -176,7 +176,7 @@ All screenshots are captured with **0 terminal permission prompts** using Maestr
 | **#71** | #69 | fix(android): remove unused firebase_in_app_messaging so release APK builds | ✅ Release APK verified |
 | **#68** | #65 | chore(release): truthful release notes from merged PRs, Android App Distribution to pre-alpha-testers | ✅ Build 2 delivered |
 | **#62** | #26 | feat(auth): Stage 1 Any Auth session, pluggable AuthRepository adapters | ✅ 48 tests green |
-| **#61** | #52 | feat(voting): Feature Voting clean repository seam (InMemory, Serverpod, Appwrite, Firebase) | ✅ 37 tests green |
+| **#61** | #52 | feat(voting): Feature Voting clean repository seam (InMemory, Firebase, Appwrite, Firebase) | ✅ 37 tests green |
 | **#60** | #56 | feat(deploy): Minimum pure-Dart deployment pipeline (`tool/deploy_release.dart`), DEPLOYMENT.md | ✅ Live Web PWA deployed |
 
 ---

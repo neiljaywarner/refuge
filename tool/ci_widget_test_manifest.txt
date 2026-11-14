@@ -52,7 +52,7 @@ test/core/firebase/firestore_members_only_rules_test.dart
 test/core/firebase/community_analytics_service_test.dart
 test/core/firebase/firebase_initializer_and_error_hooks_test.dart
 test/core/logging/app_logger_test.dart
-test/core/observability/serverpod_telemetry_backup_test.dart
+test/core/observability/local_telemetry_ring_test.dart
 test/core/presentation/coming_soon_view_test.dart
 test/core/preview_mode_test.dart
 test/features/group_call/group_call_lobby_test.dart
@@ -167,3 +167,5 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+test/core/config/no_serverpod_backend_test.dart
+test/tool/no_serverpod_references_test.dart

@@ -60,7 +60,7 @@ A microphone tap logs `mic request` and `mic result`, with `enabled`, `muted`, a
 ```bash
 patrol test -t integration_test/patrol_group_call_mic_test.dart \
   --dart-define=FLAVOR=dev \
-  --dart-define=ENABLE_SERVERPOD=false \
+   \
   --dart-define=STREAM_VIDEO_PREVIEW=true \
   --dart-define=STREAM_TOKEN_ENDPOINT='https://us-central1-belongonthespectrum.cloudfunctions.net/mintStreamCallToken'
 ```
@@ -167,7 +167,7 @@ A channel-only build, which does not run `deploy_release.dart` and does not publ
 ```bash
 flutter build web -t lib/main_dev.dart \
   --dart-define=FLAVOR=dev \
-  --dart-define=ENABLE_SERVERPOD=false \
+   \
   --dart-define=STREAM_VIDEO_PREVIEW=true \
   --dart-define=STREAM_TOKEN_ENDPOINT="$STREAM_TOKEN_ENDPOINT"
 firebase hosting:channel:deploy stream-video \

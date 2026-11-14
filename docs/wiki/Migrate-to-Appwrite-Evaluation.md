@@ -1,7 +1,7 @@
 # ⚖️ Backend & Auth Evaluation: Why 1-Tap Google Sign-In + Appwrite Fits Between Alpha & Beta (Historical Archive)
 
 > [!NOTE]
-> **Historical Archive Document**: This document records our early backend evaluation between Alpha and Beta. For active multi-backend architecture, see [`Backend-Migration-Strategy-Serverpod-Appwrite-Firebase`](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase) and [`Backend-and-Database-Architecture`](Backend-and-Database-Architecture). The 8 November 2026 leave-alone choice is Supabase Free, not a return to this page's Appwrite recommendation. See [Leave-alone free backends](Leave-Alone-Free-Backends.md). Firestore remains the live member store.
+> **Historical Archive Document**: This document records our early backend evaluation between Alpha and Beta. For active multi-backend architecture, see [`Backend-Migration-Strategy-Appwrite-Firebase`](Backend-Migration-Strategy-Appwrite-Firebase) and [`Backend-and-Database-Architecture`](Backend-and-Database-Architecture). The 8 November 2026 leave-alone choice is Supabase Free, not a return to this page's Appwrite recommendation. See [Leave-alone free backends](Leave-Alone-Free-Backends.md). Firestore remains the live member store.
 
 *Last Updated: October 18, 2026 (`2026-10-18T20:01:00-05:00`)*
 *Canonical Repo Document: [`docs/migrate_to_appwrite.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/migrate_to_appwrite.md)*
@@ -33,6 +33,6 @@
 | Capability | Stage 1 Alpha Stack | Appwrite (`appwrite.io`) + Firebase Analytics/Remote Config | Winner for Beta & `1.0` |
 | :--- | :--- | :--- | :--- |
 | **Sign-In UX for Members** | Email/Password (requires password memory / reset links) | **1-Tap Google & Apple Sign-In (`createOAuth2Session`)** | 🏆 **1-Tap Google/Apple Sign-In** |
-| **Monthly Hosting Cost** | ~$5/month (Serverpod Cloud mini) | **$0/month** on Appwrite Cloud Free Tier (75,000 MAU) | 🏆 **Appwrite ($0/mo)** |
+| **Monthly Hosting Cost** | ~$5/month (Firebase mini) | **$0/month** on Appwrite Cloud Free Tier (75,000 MAU) | 🏆 **Appwrite ($0/mo)** |
 | **Realtime Feed & Direct Messages** | Custom streaming endpoints | **Zero-boilerplate Realtime subscriptions** | 🏆 **Appwrite** |
 | **FCM Push, Analytics & Remote Config** | Native Firebase | Appwrite Messaging **natively bridges FCM/APNs** while **Firebase Analytics & Remote Config** stay active | 🤝 **Best of Both Worlds** |

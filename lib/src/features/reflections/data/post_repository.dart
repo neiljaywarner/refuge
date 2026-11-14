@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/post.dart';
 
-/// Abstract contract decoupling the UI from local SQLite, in-memory, or Serverpod WebSockets.
+/// Abstract contract decoupling the UI from local storage, in-memory data, or Firestore.
 abstract class PostRepository {
   Future<List<Post>> getPosts({required String spaceKey});
   Future<Post> createPost(Post post);

@@ -95,7 +95,7 @@ Production: https://belongonthespectrum.web.app · Highlights: [`docs/release_hi
 
 ### Changed
 - Sign-in is required. Firestore has no guest or anonymous access. Production requires email verification (#575, #605, #668).
-- Serverpod Cloud is off. Firebase Auth and Firestore are the backend (#546).
+- Firebase is off. Firebase Auth and Firestore are the backend (#546).
 - Main deploys the dev site only. Production deploys only on a release (#586).
 - Feedback Firestore write is bounded by a 6 s timeout. Appwrite MCP config added (#655 / PR #658).
 

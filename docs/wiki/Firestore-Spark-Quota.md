@@ -1,4 +1,4 @@
-# 🛡️ Firestore Spark Quota Ceilings, Zero-Billing Guarantee & Serverpod Scale Architecture
+# 🛡️ Firestore Spark Quota Ceilings, Zero-Billing Guarantee & Firebase Scale Architecture
 
 > **Repository**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)  
 > **Audience**: Community Organizers, Pastoral Leadership, Engineers & System Architects  
@@ -13,9 +13,9 @@
 > **Answer**: **You can NEVER be charged money (\$0.00 financial liability guaranteed).**  
 > Because no credit card is linked to Firebase Project `belongonthespectrum` (Project #`207506875171`), Google Cloud strictly enforces hard quota stops. If the app reaches **50,000 document reads in a day**, the Firestore API returns `RESOURCE_EXHAUSTED` (HTTP 429). The Flutter app's local offline cache (`persistenceEnabled`) continues serving already-fetched reflections, spaces, and comments seamlessly without crashing. Quotas reset automatically at **midnight Pacific Time (00:00 PST / 02:00 CDT)**.
 
-### Question 2: *"If we're using Serverpod and Firebase Firestore, is everything in Serverpod fine where if our scale is high, we're fine because everything is in Serverpod with no meaningful limits?"*
+### Question 2: *"If we're using Firebase and Firebase Firestore, is everything in Firebase fine where if our scale is high, we're fine because everything is in Firebase with no meaningful limits?"*
 > **Answer**: **YES, 100%!**  
-> Serverpod runs on top of a standard **PostgreSQL** relational database. Unlike cloud serverless document databases that charge per read and impose daily micro-quotas, **PostgreSQL has ZERO per-read or per-write limits**. A single \$5–\$20/mo virtual private server (VPS) or Serverpod Cloud cluster handles **millions of queries per day** through RAM buffers (`shared_buffers`) with zero incremental cost. Core domain records, authentication verification, and WebSocket streaming in Serverpod scale indefinitely with no artificial daily ceiling.
+> Firebase runs on top of a standard **PostgreSQL** relational database. Unlike cloud serverless document databases that charge per read and impose daily micro-quotas, **PostgreSQL has ZERO per-read or per-write limits**. A single \$5–\$20/mo virtual private server (VPS) or Firebase cluster handles **millions of queries per day** through RAM buffers (`shared_buffers`) with zero incremental cost. Core domain records, authentication verification, and WebSocket streaming in Firebase scale indefinitely with no artificial daily ceiling.
 
 ### Question 3: *"When and how should we switch to Appwrite?"*
 > **Answer**: **We switch to Appwrite when community size exceeds ~300 active daily disciples, or when full self-hosted data sovereignty is required.**  
@@ -49,7 +49,7 @@
 
 ---
 
-## 3. Serverpod + PostgreSQL: Architectural Scale Sovereignty
+## 3. Firebase + PostgreSQL: Architectural Scale Sovereignty
 
 ```
                                   Belong Client (Flutter)
@@ -57,7 +57,7 @@
                        ┌─────────────────────┴─────────────────────┐
                        ▼                                           ▼
              [ Real-Time Comments ]                      [ Core Domain & Auth ]
-              Cloud Firestore (Spark)                     Serverpod + PostgreSQL
+              Cloud Firestore (Spark)                     Firebase + PostgreSQL
            (50,000 reads/day free tier)                 (UNLIMITED reads & writes)
                        │                                           │
                        ▼                                           ▼
@@ -67,14 +67,14 @@
         • $0.00 charged (Zero risk)                 • Zero per-read micro-charges
 ```
 
-### Why Serverpod Eliminates Cloud Scale Limits:
+### Why Firebase Eliminates Cloud Scale Limits:
 1. **Relational PostgreSQL Engine**:
    - Queries execute against indexed memory tables and connection pools.
    - 10,000 requests vs 1,000,000 requests cost exactly the same: **$0.00**.
 2. **Binary WebSockets vs Document Polling**:
-   - Serverpod uses direct streaming binary WebSockets for live notifications and session updates. It does not re-read documents on every screen transition.
+   - Firebase uses direct streaming binary WebSockets for live notifications and session updates. It does not re-read documents on every screen transition.
 3. **Self-Hosted Autonomy**:
-   - The Serverpod server runs in Docker on any standard server (DigitalOcean, AWS, Hetzner, or home lab), insulated from cloud vendor pricing changes.
+   - The Firebase server runs in Docker on any standard server (DigitalOcean, AWS, Hetzner, or home lab), insulated from cloud vendor pricing changes.
 
 ---
 
@@ -133,6 +133,6 @@ dart run tool/check_firestore_quota.dart --members=50
 
 With this verification, audit report, and diagnostic CLI in place:
 1. **Financial safety is 100% verified** ($0.00 risk, zero credit card on file).
-2. **Scale headroom is confirmed** (Serverpod PostgreSQL handles heavy scale with zero limits).
+2. **Scale headroom is confirmed** (Firebase PostgreSQL handles heavy scale with zero limits).
 3. **The Appwrite transition plan is documented** and ready to execute when membership reaches the 300+ threshold.
 4. **"Verify multi-day Firestore quota ceilings" is fully resolved and retired from active concern!**

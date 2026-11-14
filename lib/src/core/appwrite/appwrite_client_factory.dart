@@ -22,7 +22,7 @@ class AppwriteServices {
 }
 
 /// Returns null when Appwrite is not configured. Callers then keep Firestore
-/// and the local reflection cache, and still do not call Serverpod.
+/// and the local reflection cache.
 AppwriteServices? createAppwriteServices(AppwriteConfig config) {
   if (!config.isConfigured) return null;
   final client = Client().setEndpoint(config.endpoint.trim()).setProject(config.projectId.trim());

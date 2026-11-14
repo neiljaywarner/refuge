@@ -5,27 +5,27 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.dart';
 import 'package:refuge4serverpod/src/core/logging/app_logger.dart' as app_log;
-import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
+import 'package:refuge4serverpod/src/core/observability/local_telemetry_ring.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 /// Unified error handling and observability service delivering triple-destination
 /// error reporting across:
 /// 1. Firebase Crashlytics (unhandled fatal and handled non-fatal exceptions)
 /// 2. Firebase Analytics (`app_error` event with sanitized categorization)
-/// 3. Serverpod / Local Diagnostics buffer for offline/developer visibility
+/// 3. Local diagnostics buffer for offline/developer visibility
 ///
 /// Designed with strict Zero-PII principles (scrubs emails, tokens, and names).
 class ErrorReporterService {
   ErrorReporterService({
     required this.flavor,
     required this.analyticsService,
-    this.serverpodBackup,
+    this.localTelemetryRing,
     Talker? talkerInstance,
   }) : talker = talkerInstance ?? app_log.talker;
 
   final AppFlavor flavor;
   final CommunityAnalyticsService analyticsService;
-  final ServerpodTelemetryBackup? serverpodBackup;
+  final LocalTelemetryRing? localTelemetryRing;
   final Talker talker;
 
   /// In-memory ring buffer of reported errors for UI diagnostics and test inspection.
@@ -87,9 +87,9 @@ class ErrorReporterService {
       }
     }
 
-    // 4. Serverpod backup telemetry ring buffer
+    // 4. Local telemetry ring buffer
     try {
-      await serverpodBackup?.recordErrorReport(
+      await localTelemetryRing?.recordErrorReport(
         exception,
         stack,
         reason: reason,
@@ -97,7 +97,7 @@ class ErrorReporterService {
         context: sanitizedContext,
       );
     } catch (_) {
-      // Serverpod backup failures must never interrupt app execution.
+      // Local telemetry failures must never interrupt app execution.
     }
   }
 
@@ -130,10 +130,10 @@ extension on String {
 final errorReporterServiceProvider = Provider<ErrorReporterService>((ref) {
   final flavor = ref.watch(appFlavorProvider);
   final analytics = ref.watch(communityAnalyticsServiceProvider);
-  final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
+  final localTelemetryRing = ref.watch(localTelemetryRingProvider);
   return ErrorReporterService(
     flavor: flavor,
     analyticsService: analytics,
-    serverpodBackup: serverpodBackup,
+    localTelemetryRing: localTelemetryRing,
   );
 });
