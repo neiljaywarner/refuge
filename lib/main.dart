@@ -44,7 +44,6 @@ export 'src/features/profile/presentation/member_profile_sheet.dart';
 export 'src/features/reflections/data/local_post_repository.dart';
 export 'src/features/reflections/data/post_repository.dart';
 export 'src/features/reflections/data/post_repository_factory.dart';
-export 'src/features/reflections/data/serverpod_post_repository.dart';
 export 'src/features/reflections/domain/post.dart';
 export 'src/features/reflections/presentation/community_anchor_banner.dart';
 export 'src/features/reflections/presentation/quiet_digest_banner.dart';

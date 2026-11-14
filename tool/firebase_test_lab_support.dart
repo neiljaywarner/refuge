@@ -32,7 +32,6 @@ List<String> devFlutterApkBuildArgs({String target = devMainEntrypoint}) => [
   '-t',
   target,
   '--dart-define=FLAVOR=dev',
-  '--dart-define=ENABLE_SERVERPOD=false',
 ];
 
 /// `flutter build apk --release` arguments for CI / App Distribution dev APKs.
@@ -43,7 +42,7 @@ List<String> devReleaseFlutterApkBuildArgs({
   'apk',
   targetFile: devMainEntrypoint,
   flavor: 'dev',
-  extraDefines: ['--dart-define=ENABLE_SERVERPOD=false', ...extraDefines],
+  extraDefines: extraDefines,
 );
 
 /// Candidate release dev APK paths (Flutter vs legacy Gradle output).
@@ -72,7 +71,6 @@ List<String> patrolBuildAndroidArgs({required String target}) => [
   '-t',
   target,
   '--dart-define=FLAVOR=dev',
-  '--dart-define=ENABLE_SERVERPOD=false',
   '--no-uninstall',
 ];
 

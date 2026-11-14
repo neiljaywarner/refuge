@@ -31,7 +31,7 @@ For neurodivergent adults (particularly autistic individuals and ADHDers), aggre
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                        │
 │   [Cloud Backend]                                                                     │
-│   (Appwrite Realtime / Firestore / Serverpod)                                         │
+│   (Appwrite Realtime / Firestore / Firebase)                                         │
 │          │                                                                             │
 │          ▼ Silent Background Push (Data-Only Payload)                                 │
 │   [Firebase Cloud Messaging (FCM)]                                                     │
@@ -57,7 +57,7 @@ For neurodivergent adults (particularly autistic individuals and ADHDers), aggre
 | **Calm Batching Control** | ✅ 100% controlled on device (zero server cron needed) | ❌ Requires server-side batching database & cron jobs | ✅ Device buffers incoming payloads and fires digest at exact local quiet window |
 | **Sensory Customization** | ✅ Rich calm cards, custom soft icons, no jarring sounds | ⚠️ Limited by standard OS notification templates | ✅ Full `awesome_notifications` layout & action buttons |
 | **Offline Resilience** | ✅ Works completely offline for scheduled event reminders | ❌ Requires internet connection for all alerts | ✅ Scheduled local reminders work offline; cloud updates sync when online |
-| **Backend Cost & Lock-in** | ✅ $0 (works with Appwrite, Serverpod, or Firestore) | ⚠️ Requires FCM / Apple APNs configuration | ✅ FCM free tier ($0) for transport; backend-agnostic payload |
+| **Backend Cost & Lock-in** | ✅ $0 (works with Appwrite, Firebase, or Firestore) | ⚠️ Requires FCM / Apple APNs configuration | ✅ FCM free tier ($0) for transport; backend-agnostic payload |
 
 ---
 

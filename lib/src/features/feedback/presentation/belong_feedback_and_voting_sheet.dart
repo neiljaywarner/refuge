@@ -20,7 +20,7 @@ import '../domain/optional_feedback_contact.dart';
 import 'feedback_drawing_canvas.dart';
 
 /// State notifier managing community feature votes via the pluggable
-/// [FeatureVotingRepository] (`InMemory`, `Serverpod`, `Appwrite`, or `Firebase`).
+/// [FeatureVotingRepository] (`InMemory`, `Appwrite`, or `Firebase`).
 class FeatureVotingNotifier extends Notifier<List<VotableFeatureItem>> {
   StreamSubscription<List<VotableFeatureItem>>? _subscription;
 

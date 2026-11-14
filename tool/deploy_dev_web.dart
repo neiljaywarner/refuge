@@ -128,7 +128,7 @@ Future<void> main(List<String> args) async {
       exit(65);
     }
   } else {
-    // Dev and prod share one Firebase project and one Serverpod host.
+    // Dev and prod share one Firebase project.
     // The public dev site must stay on the local post repository so a
     // visitor cannot publish into the live community.
     await _run(_bin('flutter'), [
@@ -138,7 +138,6 @@ Future<void> main(List<String> args) async {
         flavor: 'dev',
         extraDefines: extraDefines,
       ),
-      '--dart-define=ENABLE_SERVERPOD=false',
     ], dryRun: dryRun);
     if (!dryRun) {
       await _writeWebVersionJson(version, stamp);

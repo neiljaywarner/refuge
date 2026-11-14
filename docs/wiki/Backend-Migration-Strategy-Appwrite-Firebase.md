@@ -1,4 +1,4 @@
-# ⚖️ Backend Migration Strategy: Grading Serverpod, Appwrite & Firebase Hybrid (`v1.0` – `v2.0`)
+# ⚖️ Backend Migration Strategy: Grading Firebase, Appwrite & Firebase Hybrid (`v1.0` – `v2.0`)
 
 > **Companion ADR**: [`ADR-0009: Piece-by-Piece vs. One-Shot Backend Migration`](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md)
 > **Live Web / PWA**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
@@ -27,7 +27,7 @@ When building **Belong on the Spectrum**, we do **not** have to choose an "all-o
 
 ## 2. Piece-by-Piece (`Strangler Fig`) vs. One-Shot (`Big Bang`) Grading Matrix
 
-Because all data access in `lib/src/features/` sits behind **Riverpod Repository Interfaces** (`FeatureVotingRepository`, `AuthRepository`), we can switch from Serverpod to Appwrite either **Piece-by-Piece** or **All-at-Once**:
+Because all data access in `lib/src/features/` sits behind **Riverpod Repository Interfaces** (`FeatureVotingRepository`, `AuthRepository`), we can switch from Firebase to Appwrite either **Piece-by-Piece** or **All-at-Once**:
 
 | Migration Approach | Grade | Speed | Safety | Verdict |
 | :--- | :---: | :---: | :---: | :--- |
@@ -41,7 +41,7 @@ Because all data access in `lib/src/features/` sits behind **Riverpod Repository
 
 Every feature module exposes 4 pluggable adapters verified by the exact same Unit, Widget BDD (`patrolWidgetTest`), Integration, and Maestro E2E tests:
 1. **`InMemory*Repository`**: Deterministic offline/test adapter.
-2. **`Serverpod*Repository`**: Rollback only. A build must set both `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`.
+2. **Firestore** stays the live community store. There is no second cloud socket to turn back on.
 3. **`Appwrite*Repository`**: Default post backend as of [#212](https://github.com/neiljaywarner/refuge/issues/212). Uses project `6adae5c40013c409e109` unless `APPWRITE_ENDPOINT` is passed empty.
 4. **`Firebase*Repository`**: Cloud Firestore remains the second copy of posts. Firebase Auth remains the session. Analytics stays where a build is configured.
 

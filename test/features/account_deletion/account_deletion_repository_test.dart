@@ -152,7 +152,7 @@ void main() {
     test('a later container stays signed out', () {
       final container = ProviderContainer(
         overrides: [
-          authBackendTargetProvider.overrideWithValue(BackendTarget.serverpod),
+          authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
           accountDeletionRepositoryProvider.overrideWithValue(
             AccountDeletionRepository(sinks: [InMemoryAccountDeletionSink()], flavor: 'dev'),
           ),

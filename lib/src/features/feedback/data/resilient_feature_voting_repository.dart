@@ -8,8 +8,8 @@ import 'feature_voting_repository.dart';
 
 /// Production voting adapter: Firestore is canonical; mirrors are optional.
 ///
-/// Members always get optimistic thumb feedback. A down Appwrite endpoint,
-/// Serverpod Cloud, or transient Firestore error must not blank the board.
+/// Members always get optimistic thumb feedback. A down Appwrite endpoint
+/// or a transient Firestore error must not blank the board.
 class ResilientFeatureVotingRepository implements FeatureVotingRepository {
   ResilientFeatureVotingRepository({
     required this.target,
@@ -61,7 +61,7 @@ class ResilientFeatureVotingRepository implements FeatureVotingRepository {
       return;
     }
 
-    if (!isAppwriteFeatureVotingMirrorEnabled && !isServerpodFeatureVotingMirrorEnabled) {
+    if (!isAppwriteFeatureVotingMirrorEnabled) {
       return;
     }
 
@@ -70,7 +70,7 @@ class ResilientFeatureVotingRepository implements FeatureVotingRepository {
       // a server-held API key path lands in #735 backup/mirror config.
       AppLogger.debug(
         'feature_voting_mirror_skipped featureId=$featureId votes=${item.votes} '
-        'appwrite=$isAppwriteFeatureVotingMirrorEnabled serverpod=$isServerpodFeatureVotingMirrorEnabled',
+        'appwrite=$isAppwriteFeatureVotingMirrorEnabled',
       );
     } catch (_) {
       // Swallow — resilience over telemetry.

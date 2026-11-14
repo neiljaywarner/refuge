@@ -1,5 +1,5 @@
 name: refuge4serverpod
-description: "Sanctuary (Refuge) - Calm-tech digital community platform for Belong on the Spectrum built with Serverpod 4."
+description: "Sanctuary (Refuge) - Calm-tech digital community platform for Belong on the Spectrum. Live data stays on Firebase."
 publish_to: 'none'
 
 version: 0.9.9+9990
@@ -19,9 +19,6 @@ dependencies:
   hooks_riverpod: ^2.6.1
   flutter_hooks: ^0.21.3+1
   talker_flutter: ^5.1.20
-  serverpod_client: ^4.0.4
-  sanctuary_server_client:
-    path: sanctuary_server/sanctuary_server_client
   firebase_core: ^5.0.0
   firebase_analytics: ^13.0.0
   firebase_remote_config: ^7.0.0

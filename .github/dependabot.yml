@@ -22,28 +22,6 @@ updates:
         update-types:
           - minor
           - patch
-  - package-ecosystem: pub
-    directory: "/sanctuary_server/sanctuary_server_client"
-    schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 2
-    groups:
-      serverpod-client-minor-and-patch:
-        update-types:
-          - minor
-          - patch
-  - package-ecosystem: pub
-    directory: "/sanctuary_server/sanctuary_server_server"
-    schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 2
-    groups:
-      serverpod-server-minor-and-patch:
-        update-types:
-          - minor
-          - patch
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

@@ -2,14 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/firebase/community_analytics_service.dart';
 import 'package:refuge4serverpod/src/core/observability/error_reporter_service.dart';
-import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
+import 'package:refuge4serverpod/src/core/observability/local_telemetry_ring.dart';
 
 void main() {
-  group('ServerpodTelemetryBackup Unit Tests', () {
-    late ServerpodTelemetryBackup backup;
+  group('LocalTelemetryRing Unit Tests', () {
+    late LocalTelemetryRing backup;
 
     setUp(() {
-      backup = ServerpodTelemetryBackup(flavor: AppFlavor.dev, maxBufferSize: 5);
+      backup = LocalTelemetryRing(flavor: AppFlavor.dev, maxBufferSize: 5);
     });
 
     test('records analytics events into ring buffer with timestamp and flavor', () async {
@@ -28,7 +28,7 @@ void main() {
       await backup.recordErrorReport(
         Exception('Network timed out'),
         StackTrace.current,
-        reason: 'Serverpod connection reset',
+        reason: 'connection reset',
         fatal: false,
       );
 
@@ -37,7 +37,7 @@ void main() {
       expect(handledRecord.kind, TelemetryKind.error);
       expect(handledRecord.name, contains('Network timed out'));
       expect(handledRecord.isFatal, isFalse);
-      expect(handledRecord.parameters['reason'], 'Serverpod connection reset');
+      expect(handledRecord.parameters['reason'], 'connection reset');
 
       await backup.recordErrorReport(
         StateError('Critical crash'),
@@ -87,21 +87,21 @@ void main() {
   });
 
   group('Dual-Dispatch Integration Tests with ErrorReporter & CommunityAnalytics', () {
-    late ServerpodTelemetryBackup backup;
+    late LocalTelemetryRing backup;
     late CommunityAnalyticsService analytics;
     late ErrorReporterService errorReporter;
 
     setUp(() {
-      backup = ServerpodTelemetryBackup(flavor: AppFlavor.dev);
-      analytics = CommunityAnalyticsService(flavor: AppFlavor.dev, serverpodBackup: backup);
+      backup = LocalTelemetryRing(flavor: AppFlavor.dev);
+      analytics = CommunityAnalyticsService(flavor: AppFlavor.dev, localTelemetryRing: backup);
       errorReporter = ErrorReporterService(
         flavor: AppFlavor.dev,
         analyticsService: analytics,
-        serverpodBackup: backup,
+        localTelemetryRing: backup,
       );
     });
 
-    test('logging an analytics event automatically populates Serverpod backup buffer', () async {
+    test('logging an analytics event automatically populates the local backup buffer', () async {
       await analytics.logVoteCast('custom_soundscapes');
 
       expect(backup.recentRecords.length, 1);
@@ -110,7 +110,7 @@ void main() {
       expect(record.parameters['feature_id'], 'custom_soundscapes');
     });
 
-    test('recording an error automatically dual-dispatches to Serverpod backup buffer', () async {
+    test('recording an error automatically dual-dispatches to the local backup buffer', () async {
       await errorReporter.recordError(
         Exception('Sync failure'),
         StackTrace.current,

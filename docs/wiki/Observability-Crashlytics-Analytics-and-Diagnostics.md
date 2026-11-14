@@ -1,9 +1,9 @@
-# 📡 Observability: Firebase Crashlytics, Analytics & Serverpod Diagnostics
+# 📡 Observability: Firebase Crashlytics, Analytics & Firebase Diagnostics
 
 > **Audience**: Maintainers, Mentors, Contributors & Community Organizers  
 > **Repository Link**: [`docs/OBSERVABILITY_AND_ANALYTICS.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/OBSERVABILITY_AND_ANALYTICS.md)  
 > **Source Code**: [`lib/src/core/observability/error_reporter_service.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/error_reporter_service.dart)  
-> **Backup Service**: [`lib/src/core/observability/serverpod_telemetry_backup.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/serverpod_telemetry_backup.dart)  
+> **Backup Service**: [`lib/src/core/observability/Firebase_telemetry_backup.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/Firebase_telemetry_backup.dart)  
 > **Review Script**: [`tool/review_telemetry.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/review_telemetry.dart)
 
 ---
@@ -15,7 +15,7 @@ When deploying a community application for autistic and neurodivergent adults, *
 - By providing **triple-destination observability**, telemetry is never lost:
   1. **Firebase Crashlytics**: Native crash symbolication & fatal error aggregation.
   2. **Firebase Analytics**: Sane default user journey & conversion funnel tracking (`app_error`, `space_viewed`, `sensory_theme_changed`, `vote_cast`).
-  3. **Serverpod & Local Ring Buffer**: Continuous fallback telemetry stream with FIFO eviction and local offline inspection via `tool/review_telemetry.dart`.
+  3. **Firebase & Local Ring Buffer**: Continuous fallback telemetry stream with FIFO eviction and local offline inspection via `tool/review_telemetry.dart`.
 
 ---
 
@@ -32,7 +32,7 @@ Outputs:
 - Simulated handled exceptions and fatal crash reports.
 - Formatted ring buffer dump with timestamps, parameter maps, and sanitized stack traces.
 
-### 2. Live Serverpod & Local Diagnostics
+### 2. Live Firebase & Local Diagnostics
 When running the Flutter app locally or in dev mode:
 ```bash
 flutter run -t lib/main_dev.dart
@@ -40,8 +40,8 @@ flutter run -t lib/main_dev.dart
 Watch the console stream for real-time tags:
 - 🚨 `[ErrorReporter FATAL]`: Indicates an unhandled Flutter or asynchronous exception.
 - ⚠️ `[ErrorReporter HANDLED]`: Indicates a handled exception gracefully recovered from.
-- 📡 `[Serverpod Backup Analytics]`: Mirrored user journey events.
-- 🚨 `[Serverpod Backup Crash]`: Mirrored crash payloads.
+- 📡 `[Firebase Backup Analytics]`: Mirrored user journey events.
+- 🚨 `[Firebase Backup Crash]`: Mirrored crash payloads.
 
 ### 3. Firebase Console Inspection
 1. Open the [Firebase Console](https://console.firebase.google.com/project/belongonthespectrum/overview).
@@ -54,13 +54,13 @@ Watch the console stream for real-time tags:
    - Monitor conversion funnels: `space_viewed`, `sensory_theme_changed`, `vote_cast`, `feedback_intent_selected`, `reflection_published`.
 
 ### 4. On-Device 7-Tap Observability Easter Egg
-To verify Crashlytics and Serverpod error reporting directly on physical hardware (e.g. Google Pixel 9a):
+To verify Crashlytics and Firebase error reporting directly on physical hardware (e.g. Google Pixel 9a):
 1. Launch Belong on the Spectrum.
 2. Rapidly tap the **Belong logo in the top app bar 7 times**.
 3. An administrative dialog opens with buttons to:
    - Trigger a **Handled NFE (Non-Fatal Exception)**.
    - Trigger a **Fatal Crash** test.
-   - View the active in-memory Talker & Serverpod ring buffer logs.
+   - View the active in-memory Talker & Firebase ring buffer logs.
 
 ---
 
@@ -91,24 +91,24 @@ Soft-launch builds can post one non-PII session to the admission server at cold 
    - **Action**: PostHog is a candidate collector when `POSTHOG_KEY` is passed at build time. As of 22 October 2026 the app does not send product events unless `POSTHOG_KEY` or `POSTHOG_BELONG_PROJECT_TOKEN` is set. A smoke event was ingested. Product conversion analytics are not live ([#410](https://github.com/neiljaywarner/refuge/issues/410)).
 3. **Appwrite Functions Role Assessment**:
    - **What are Appwrite Functions?** Appwrite Functions are containerized serverless runtimes (similar to AWS Lambda or Google Cloud Functions) executing code snippets (Node, Dart, Python, PHP, Ruby) triggered by HTTP requests, cron schedules, or database events.
-   - **Why Serverpod Already Fulfills This Role**: Belong on the Spectrum is built natively with **Serverpod** as its backend architecture. Serverpod endpoints, database models, and streaming sockets are written in 100% typed Dart. Deploying Appwrite Functions strictly as a secondary log ingestion webhook would introduce operational fragmentation, double maintenance, and redundant container overhead.
-   - **Conclusion**: We will not introduce Appwrite Functions for error logging. Instead, Serverpod's PostgreSQL `error_log` table and client ring buffer will remain our self-hosted, zero-quota telemetry fallback.
+   - **Why Firebase Already Fulfills This Role**: Belong on the Spectrum is built natively with **Firebase** as its backend architecture. Firebase endpoints, database models, and streaming sockets are written in 100% typed Dart. Deploying Appwrite Functions strictly as a secondary log ingestion webhook would introduce operational fragmentation, double maintenance, and redundant container overhead.
+   - **Conclusion**: We will not introduce Appwrite Functions for error logging. Instead, Firebase's PostgreSQL `error_log` table and client ring buffer will remain our self-hosted, zero-quota telemetry fallback.
 
 ### Technology Comparison Matrix
 
-| Capability | Firebase Crashlytics | Firebase Analytics | PostHog | Appwrite Functions | Serverpod Backup (Existing) |
+| Capability | Firebase Crashlytics | Firebase Analytics | PostHog | Appwrite Functions | Firebase Backup (Existing) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Primary Focus** | Native fatal & non-fatal crash symbolication | High-level user journeys & Google Ads/Play attribution | Product funnels, session analytics, feature flags | Serverless event-driven compute | Typed Dart RPC, ORM, streaming & ring buffers |
-| **Pricing & Quota** | **100% Free** on Spark plan (no event ingestion limits) | **100% Free** (unlimited reporting, 500 event types) | **1M events/mo free**; self-hostable | Depends on compute; self-hostable | **Included in Serverpod VPS** ($5-10/mo flat) |
+| **Pricing & Quota** | **100% Free** on Spark plan (no event ingestion limits) | **100% Free** (unlimited reporting, 500 event types) | **1M events/mo free**; self-hostable | Depends on compute; self-hostable | **Included in Firebase VPS** ($5-10/mo flat) |
 | **Mobile Symbolication** | **Superior** (NDK, ProGuard, dSYM automated uploads) | N/A | Basic JS/Flutter sourcemaps (requires manual API) | None (must build custom symbolicator) | Dart stack trace string preservation |
 | **Privacy / PII** | Closed cloud; relies on client scrubbing | Closed cloud | Open-source, GDPR-compliant, EU or self-hosted | Open-source, self-hosted | 100% owned PostgreSQL database |
-| **Recommended Verdict** | **Keep as primary crash reporter** | **Keep as passive baseline** | **Adopt for feature & sensory analytics** | **Defer / Unnecessary with Serverpod** | **Retain as offline & server fallback** |
+| **Recommended Verdict** | **Keep as primary crash reporter** | **Keep as passive baseline** | **Adopt for feature & sensory analytics** | **Defer / Unnecessary with Firebase** | **Retain as offline & server fallback** |
 
 ---
 
 ## 🚀 Post-October 31 Implementation Roadmap
 - [x] Client-side Talker ring buffer with PII regex scrubbing ([`error_reporter_service.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/error_reporter_service.dart)).
-- [x] Passive dual-reporting to Serverpod backup stream ([`serverpod_telemetry_backup.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/serverpod_telemetry_backup.dart)).
+- [x] Passive dual-reporting to Firebase backup stream ([`Firebase_telemetry_backup.dart`](https://github.com/neiljaywarner/refuge/blob/main/lib/src/core/observability/Firebase_telemetry_backup.dart)).
 - [x] Dedicated CLI inspection utility ([`tool/review_telemetry.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/review_telemetry.dart)).
 - [ ] Connect PostHog Flutter SDK (`posthog_flutter`) using `--dart-define=POSTHOG_KEY=...` for production sensory usage tracking.
-- [ ] Evaluate long-term archiving of Serverpod error buffer into self-hosted Grafana / Loki if community member count exceeds 10,000 active members.
+- [ ] Evaluate long-term archiving of Firebase error buffer into self-hosted Grafana / Loki if community member count exceeds 10,000 active members.

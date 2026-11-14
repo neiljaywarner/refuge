@@ -145,7 +145,7 @@ class AppwriteReflectionMirror implements ReflectionMirror {
   Post? _postFromRow(models.Row row) => postFromAppwritePayload({...row.data, r'$id': row.$id});
 }
 
-/// Reflection store that replaces Serverpod Cloud.
+/// Reflection store. Firestore is the live copy. Appwrite is the optional mirror.
 ///
 /// Each write goes to Appwrite and Cloud Firestore. The local cache is what
 /// the screen reads first, so a cloud timeout never blanks the feed. Sign-in

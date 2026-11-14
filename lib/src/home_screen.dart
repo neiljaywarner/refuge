@@ -37,7 +37,6 @@ import 'features/profile/presentation/belong_members_directory_view.dart';
 import 'features/profile/presentation/member_profile_sheet.dart';
 import 'features/reflections/data/appwrite_post_repository.dart';
 import 'features/reflections/data/post_repository.dart';
-import 'features/reflections/data/serverpod_post_repository.dart';
 import 'features/reflections/domain/feed_sort_option.dart';
 import 'features/reflections/domain/feed_sort_service.dart';
 import 'features/reflections/domain/post.dart';
@@ -130,7 +129,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final isContrast = currentMode == SensoryMode.contrast;
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isLiveFeed = switch (activeRepository) {
-      ServerpodPostRepository(:final isLiveConnected) => isLiveConnected,
       AppwritePostRepository(:final isLiveConnected) => isLiveConnected,
       _ => false,
     };

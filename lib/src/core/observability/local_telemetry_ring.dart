@@ -56,13 +56,13 @@ class TelemetryRecord {
   );
 }
 
-/// Backup observability service delivering continuous telemetry to Serverpod and local diagnostics.
+/// Backup observability service delivering continuous telemetry to a local diagnostic ring.
 ///
 /// Ensures that even if Firebase Analytics or Crashlytics is blocked, offline, or unconfigured,
 /// critical user journeys, conversion milestones, and error occurrences are safely preserved
-/// in Serverpod / local ring buffers with Zero-PII scrubbing.
-class ServerpodTelemetryBackup {
-  ServerpodTelemetryBackup({required this.flavor, this.maxBufferSize = 100});
+/// in a local ring buffer with Zero-PII scrubbing.
+class LocalTelemetryRing {
+  LocalTelemetryRing({required this.flavor, this.maxBufferSize = 100});
 
   final AppFlavor flavor;
   final int maxBufferSize;
@@ -82,8 +82,8 @@ class ServerpodTelemetryBackup {
     );
 
     _addToBuffer(record);
-    talker.info('📡 [Serverpod Backup Analytics] $eventName: $parameters');
-    debugPrint('📡 [Serverpod Backup Analytics] $eventName: $parameters');
+    talker.info('📡 [Local telemetry Analytics] $eventName: $parameters');
+    debugPrint('📡 [Local telemetry Analytics] $eventName: $parameters');
   }
 
   /// Backs up an error or crash report.
@@ -113,9 +113,9 @@ class ServerpodTelemetryBackup {
 
     _addToBuffer(record);
     if (fatal) {
-      talker.critical('🚨 [Serverpod Backup Crash] $exception (Reason: $reason)');
+      talker.critical('🚨 [Local telemetry Crash] $exception (Reason: $reason)');
     } else {
-      talker.warning('⚠️ [Serverpod Backup Handled] $exception (Reason: $reason)');
+      talker.warning('⚠️ [Local telemetry Handled] $exception (Reason: $reason)');
     }
   }
 
@@ -130,8 +130,8 @@ class ServerpodTelemetryBackup {
   void clear() => _ringBuffer.clear();
 }
 
-/// Global provider for [ServerpodTelemetryBackup].
-final serverpodTelemetryBackupProvider = Provider<ServerpodTelemetryBackup>((ref) {
+/// Global provider for [LocalTelemetryRing].
+final localTelemetryRingProvider = Provider<LocalTelemetryRing>((ref) {
   final flavor = ref.watch(appFlavorProvider);
-  return ServerpodTelemetryBackup(flavor: flavor);
+  return LocalTelemetryRing(flavor: flavor);
 });
