@@ -167,3 +167,13 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+
+# Messages and notification redirect coverage
+test/features/messages/direct_message_banner_test.dart
+test/features/messages/direct_message_directory_filtering_test.dart
+test/features/messages/member_notification_store_test.dart
+test/features/messages/message_recipient_test.dart
+test/features/messages/notification_home_redirect_test.dart
+test/features/notifications/direct_message_push_policy_test.dart
+test/features/notifications/notification_settings_help_test.dart
+test/features/notifications/present_incoming_push_test.dart
