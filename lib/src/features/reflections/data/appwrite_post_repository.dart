@@ -11,6 +11,7 @@ import '../../../core/appwrite/appwrite_config.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../admin/data/authored_document_erase.dart';
 import '../domain/post.dart';
+import 'care_reaction_marks.dart';
 import 'local_account_scope.dart';
 import 'local_post_repository.dart';
 import 'pending_post_outbox.dart';
@@ -164,12 +165,14 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
   }) : _fallback = fallback ?? LocalPostRepository(isDevMode: isDevMode),
        _mirror = mirror ?? _mirrorFrom(services),
        _outbox =
-           outbox ?? PendingPostOutbox(environment: reflectionEnvironment(isDevMode: isDevMode));
+           outbox ?? PendingPostOutbox(environment: reflectionEnvironment(isDevMode: isDevMode)),
+       _marks = CareReactionMarks(environment: reflectionEnvironment(isDevMode: isDevMode));
 
   final LocalPostRepository _fallback;
   final FirebaseFirestore? customFirestore;
   final ReflectionMirror? _mirror;
   final PendingPostOutbox _outbox;
+  final CareReactionMarks _marks;
   final bool isDevMode;
   bool _isLiveConnected = false;
   String? _adoptedAccount;
@@ -324,47 +327,73 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
     required String displayName,
     String? avatarUrl,
   }) async {
-    final before = _fallback.findPost(postId);
-    final turningOff = before?.hasMemberReacted(reactionType, userId) ?? false;
-    await _fallback.toggleReaction(
-      postId: postId,
-      reactionType: reactionType,
-      userId: userId,
-      displayName: displayName,
-      avatarUrl: avatarUrl,
-    );
     final column = reactionColumn(reactionType);
     if (column == null) return;
-    final delta = turningOff ? -1 : 1;
 
-    Future<void> rollBack() => _fallback.toggleReaction(
+    var before = _fallback.findPost(postId);
+    if (before == null) {
+      final loaded = await _readPostById(postId);
+      if (loaded == null) return;
+      _fallback.absorbCloudPosts([loaded]);
+      before = _fallback.findPost(postId);
+      if (before == null) return;
+    }
+
+    final marked = await _marks.contains(
+      firestore: firestore,
+      accountId: userId,
+      postId: postId,
+      type: reactionType,
+    );
+    final turningOff = before.hasMemberReacted(reactionType, userId) || marked;
+    _fallback.setReactionActive(
       postId: postId,
       reactionType: reactionType,
       userId: userId,
       displayName: displayName,
       avatarUrl: avatarUrl,
+      active: !turningOff,
+    );
+
+    void rollBack() => _fallback.setReactionActive(
+      postId: postId,
+      reactionType: reactionType,
+      userId: userId,
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+      active: turningOff,
     );
 
     final fs = firestore;
     if (fs != null) {
       try {
-        await fs
-            .collection(collectionName)
-            .doc(postId)
-            .update(firestoreReactionDelta(reactionType, column, delta))
-            .timeout(const Duration(seconds: 2));
+        await _commitReactionCount(
+          firestore: fs,
+          postId: postId,
+          reactionType: reactionType,
+          column: column,
+          delta: turningOff ? -1 : 1,
+        );
         _isLiveConnected = true;
       } catch (error, stack) {
         talker.handle(error, stack, 'Firestore reaction write failed');
-        if (before != null) await rollBack();
+        rollBack();
         return;
       }
     }
 
+    await _marks.record(
+      firestore: fs,
+      accountId: userId,
+      postId: postId,
+      type: reactionType,
+      active: !turningOff,
+    );
+
     // Spare copy only. A failure here must not undo a Firestore toggle, and a
     // toggle-off must not send another +1.
     final mirror = _mirror;
-    if (mirror != null && delta > 0) {
+    if (mirror != null && !turningOff) {
       try {
         await mirror
             .incrementReaction(postId: postId, column: column)
@@ -372,9 +401,60 @@ class AppwritePostRepository implements PostRepository, AccountScopedCache {
         _isLiveConnected = true;
       } catch (error, stack) {
         talker.handle(error, stack, 'Appwrite reaction mirror failed');
-        if (fs == null && before != null) await rollBack();
+        if (fs == null) {
+          rollBack();
+          await _marks.record(
+            firestore: fs,
+            accountId: userId,
+            postId: postId,
+            type: reactionType,
+            active: false,
+          );
+        }
       }
     }
+  }
+
+  Future<Post?> _readPostById(String postId) async {
+    final fs = firestore;
+    if (fs == null) return null;
+    try {
+      final snap = await fs
+          .collection(collectionName)
+          .doc(postId)
+          .get()
+          .timeout(const Duration(seconds: 2));
+      if (!snap.exists) return null;
+      final data = snap.data();
+      if (data == null) return null;
+      return postFromFirestore(postId, data, data['spaceKey'] as String? ?? 'general_chat');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Applies [delta] to the reaction map. A toggle-off reads the stored count
+  /// first and does not write when that count is already zero, so the map
+  /// cannot go negative. The summary column still only increases.
+  Future<void> _commitReactionCount({
+    required FirebaseFirestore firestore,
+    required String postId,
+    required String reactionType,
+    required String column,
+    required int delta,
+  }) {
+    final ref = firestore.collection(collectionName).doc(postId);
+    return firestore
+        .runTransaction((transaction) async {
+          final snap = await transaction.get(ref);
+          if (!snap.exists) {
+            throw StateError('Reflection $postId is not in Firestore');
+          }
+          final current = _storedReactionCount(snap.data(), reactionType);
+          if (delta < 0 && current <= 0) return;
+          transaction.update(ref, firestoreReactionDelta(reactionType, column, delta));
+        })
+        .timeout(const Duration(seconds: 2));
   }
 
   @override
@@ -676,6 +756,15 @@ Map<String, dynamic> firestoreReactionDelta(String reactionType, String column, 
   'reactions.$reactionType': FieldValue.increment(delta),
   if (delta > 0) column: FieldValue.increment(delta),
 };
+
+int _storedReactionCount(Map<String, dynamic>? data, String reactionType) {
+  final stored = data?['reactions'];
+  if (stored is Map) {
+    final value = stored[reactionType];
+    if (value is num) return value.toInt();
+  }
+  return 0;
+}
 
 Post postFromFirestore(String id, Map<String, dynamic> data, String spaceKey) {
   final reactions = <String, int>{};

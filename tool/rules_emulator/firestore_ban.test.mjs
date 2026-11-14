@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { after, before, describe, test } from 'node:test';
 
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, increment, setDoc, updateDoc } from 'firebase/firestore';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const rules = readFileSync(resolve(root, 'firestore.rules'), 'utf8');
@@ -104,6 +104,42 @@ describe('firestore ban rules', () => {
         displayName: 'Fellow Member',
       }),
     );
+  });
+
+  test('a non-author can lower a reaction count without lowering the summary column', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'reflections/post-react'), {
+        authorId: 'member-uid',
+        authorName: 'Fellow Member',
+        content: 'A quiet note',
+        spaceKey: 'prayer',
+        prayingCount: 1,
+        reactions: { pray: 1 },
+      });
+    });
+    const db = dbFor('other-uid', member);
+    await assertSucceeds(
+      updateDoc(doc(db, 'reflections/post-react'), {
+        'reactions.pray': increment(-1),
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(db, 'reflections/post-react'), {
+        prayingCount: increment(-1),
+        'reactions.pray': increment(-1),
+      }),
+    );
+  });
+
+  test('a member can record their own care reaction and another member cannot', async () => {
+    const owner = dbFor('member-uid', member);
+    await assertSucceeds(
+      setDoc(doc(owner, 'users/member-uid/care_reactions/dev_post-react'), {
+        types: ['relatable'],
+      }),
+    );
+    const stranger = dbFor('stranger-uid', member);
+    await assertFails(getDoc(doc(stranger, 'users/member-uid/care_reactions/dev_post-react')));
   });
 
   test('a rules admin can record a uid ban', async () => {
