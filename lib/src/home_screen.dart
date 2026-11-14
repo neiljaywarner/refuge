@@ -607,14 +607,26 @@ class RefugeHomeScreen extends HookConsumerWidget {
               welcomeTitle: remoteConfig.welcomeTitle,
               welcomeMessage: remoteConfig.welcomeMessage,
               gatheringSummary: quietDigestSnapshot.data,
-              onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
-              onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-              onSelectSpace: selectSpace,
+              onSelectFeed: () {
+                activeBottomTab.value = BelongBottomTab.home;
+                homeSubView.value = BelongHomeSubView.feed;
+              },
+              onSelectSpaces: () {
+                activeBottomTab.value = BelongBottomTab.home;
+                homeSubView.value = BelongHomeSubView.spaces;
+              },
+              onSelectSpace: (spaceKey) {
+                activeBottomTab.value = BelongBottomTab.home;
+                selectSpace(spaceKey);
+              },
               onSelectFilter: selectFilter,
               onSelectSort: selectSort,
               onOpenVote: openVoteAndFeedback,
               onOpenAbout: openAbout,
-              onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+              onBackToSpaces: () {
+                activeBottomTab.value = BelongBottomTab.home;
+                homeSubView.value = BelongHomeSubView.spaces;
+              },
             )
           : null,
       floatingActionButton: showShareThought

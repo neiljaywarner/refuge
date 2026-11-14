@@ -22,6 +22,11 @@ void main() {
           await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
           await settleLargeText(tester);
           await tester.ensureVisible(find.byKey(const Key('open_feedback_and_voting_button')));
+          await tester.pump();
+          // The drawer covers the app bar's semantics. Close it before the
+          // Sign In checks below read that bar.
+          tester.state<ScaffoldState>(find.byType(Scaffold)).closeDrawer();
+          await settleLargeText(tester);
         } else {
           final feedScroll = find.descendant(
             of: find.byKey(const Key('home_feed_scroll')),

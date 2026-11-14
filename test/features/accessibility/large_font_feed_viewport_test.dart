@@ -115,6 +115,19 @@ void main() {
     }
   });
 
+  testWidgets('drawer Spaces from Messages opens the home directory', (tester) async {
+    final session = await _pumpHome(tester, 2);
+    await tester.tap(find.byKey(const Key('bottom_nav_tab_msgs')));
+    await settleLargeText(tester);
+    await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
+    await settleLargeText(tester);
+    await tester.tap(find.byKey(const Key('subnav_spaces_tab')));
+    await settleLargeText(tester);
+    expect(find.byKey(const Key('belong_spaces_directory_list')), findsOneWidget);
+    expect(find.text('Direct Messages'), findsNothing);
+    session.check();
+  });
+
   testWidgets('the large-text composer owns the phone', (tester) async {
     for (final scale in <double>[1.5, 2.0]) {
       final session = await _pumpHome(tester, scale);

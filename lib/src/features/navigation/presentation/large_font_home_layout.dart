@@ -247,18 +247,21 @@ Future<void> showLargeFontComposer({
           icon: const Icon(Icons.close_rounded),
         ),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          key: const Key('large_font_composer_surface'),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: ReflectionComposer(
-              selectedSpace: selectedSpace,
-              primaryColor: primaryColor,
-              isContrast: isContrast,
-              isImagePost: isImagePost,
-              isModal: true,
-              onSubmit: onSubmit,
+      body: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            key: const Key('large_font_composer_surface'),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: ReflectionComposer(
+                selectedSpace: selectedSpace,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                isImagePost: isImagePost,
+                isModal: true,
+                onSubmit: onSubmit,
+              ),
             ),
           ),
         ),
