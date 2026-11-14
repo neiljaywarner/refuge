@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
+import '../domain/group_call_analytics.dart';
+import '../domain/group_call_room.dart';
 import '../domain/guest_display_name.dart';
 import '../domain/guest_invite.dart';
-import '../domain/group_call_room.dart';
 import '../domain/stream_call_credentials.dart';
 
 // Public constructor names stay httpClient and readIdToken.
@@ -65,35 +66,56 @@ class StreamTokenClient implements GroupCallTokenSource {
   /// Any other status becomes a generic sentence: the response body is not
   /// shown, because a misconfigured function might echo a credential.
   @override
-  Future<StreamCallCredentials> mint({required String callId}) async {
+  Future<StreamCallCredentials> mint({required String callId}) => _guard('mint', () async {
     final response = await _authorizedPost({'callId': callId});
     if (response.statusCode != 200) throw _memberFailure(response.statusCode);
     return parseStreamTokenResponse(response.body, requestedCallId: callId);
-  }
+  });
 
   /// Creates a one-day guest link for [callId]. The token is returned once.
-  Future<GuestInvite> createGuestInvite({required String callId}) async {
-    final response = await _authorizedPost({'action': 'createInvite', 'callId': callId});
-    if (response.statusCode != 200) throw _memberFailure(response.statusCode);
-    return parseGuestInviteResponse(response.body);
-  }
+  Future<GuestInvite> createGuestInvite({required String callId}) =>
+      _guard('create_invite', () async {
+        final response = await _authorizedPost({'action': 'createInvite', 'callId': callId});
+        if (response.statusCode != 200) throw _memberFailure(response.statusCode);
+        return parseGuestInviteResponse(response.body);
+      });
 
   /// Revokes every link this member created for [callId], including ones
   /// this screen no longer has. The raw tokens are not returned.
-  Future<void> revokeMyGuestInvites({required String callId}) async {
-    final response = await _authorizedPost({'action': 'revokeMyInvites', 'callId': callId});
-    if (response.statusCode != 200) throw _memberFailure(response.statusCode);
-    if (_bodyContainsSecret(response.body)) {
-      throw const StreamTokenException(streamTokenUnavailableMessage);
-    }
-  }
+  Future<void> revokeMyGuestInvites({required String callId}) =>
+      _guard('revoke_my_invites', () async {
+        final response = await _authorizedPost({'action': 'revokeMyInvites', 'callId': callId});
+        if (response.statusCode != 200) throw _memberFailure(response.statusCode);
+        if (_bodyContainsSecret(response.body)) {
+          throw const StreamTokenException(streamTokenUnavailableMessage);
+        }
+      });
 
   /// Revokes a link this member created. The token is not shown if this fails.
-  Future<void> revokeGuestInvite({required String inviteToken}) async {
-    final response = await _authorizedPost({'action': 'revokeInvite', 'inviteToken': inviteToken});
-    if (response.statusCode != 200) throw _memberFailure(response.statusCode);
-    if (_bodyContainsSecret(response.body)) {
-      throw const StreamTokenException(streamTokenUnavailableMessage);
+  Future<void> revokeGuestInvite({required String inviteToken}) =>
+      _guard('revoke_invite', () async {
+        final response = await _authorizedPost({
+          'action': 'revokeInvite',
+          'inviteToken': inviteToken,
+        });
+        if (response.statusCode != 200) throw _memberFailure(response.statusCode);
+        if (_bodyContainsSecret(response.body)) {
+          throw const StreamTokenException(streamTokenUnavailableMessage);
+        }
+      });
+
+  /// Reports a handled mint or invite failure, then rethrows the same sentence.
+  Future<T> _guard<T>(String action, Future<T> Function() body) async {
+    try {
+      return await body();
+    } on StreamTokenException catch (error, stack) {
+      await GroupCallTelemetry.current?.failed(
+        role: 'member',
+        action: action,
+        failureReason: callFailureReasonForMessage(error.message),
+        stack: stack,
+      );
+      rethrow;
     }
   }
 

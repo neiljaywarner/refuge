@@ -412,6 +412,11 @@ function log(event: string, fields: Record<string, unknown>) {
   console.info(JSON.stringify({ event, ...fields }));
 }
 
+// Auth rejections carry no bearer token, user id, invite token, or secret.
+function logAuthRejection(event: string) {
+  log(event, { ok: false, reason: "auth", status: 401 });
+}
+
 function readSecrets(deps: Deps) {
   const apiKey = (deps.apiKey() ?? "").trim();
   const apiSecret = (deps.apiSecret() ?? "").trim();
@@ -461,7 +466,10 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
 
   // No action: the unchanged signed-in member mint.
   const userId = await requireMember(req, deps);
-  if (!userId) return json(401, { error: "Sign in is required." });
+  if (!userId) {
+    logAuthRejection("mintStreamCallToken");
+    return json(401, { error: "Sign in is required." });
+  }
   const callId = normalizeCallId(body.callId);
   if (!callId) return json(400, { error: "Choose a short call name using letters, numbers, and dashes." });
   const { apiKey, apiSecret } = readSecrets(deps);
@@ -481,7 +489,10 @@ const NOT_VALID = "This invite link is not valid.";
 
 async function createInvite(req: Request, deps: Deps, body: Body, err: ErrFn, json: JsonFn) {
   const userId = await requireMember(req, deps);
-  if (!userId) return err(401, "auth", "Sign in is required.");
+  if (!userId) {
+    logAuthRejection("createStreamGuestInvite");
+    return err(401, "auth", "Sign in is required.");
+  }
   const callId = normalizeCallId(body.callId);
   if (!callId) return err(400, "call", "Choose a short call name using letters, numbers, and dashes.");
   const secrets = readSecrets(deps);
@@ -509,7 +520,10 @@ async function createInvite(req: Request, deps: Deps, body: Body, err: ErrFn, js
 
 async function revokeInvite(req: Request, deps: Deps, body: Body, err: ErrFn, json: JsonFn) {
   const userId = await requireMember(req, deps);
-  if (!userId) return err(401, "auth", "Sign in is required.");
+  if (!userId) {
+    logAuthRejection("revokeStreamGuestInvite");
+    return err(401, "auth", "Sign in is required.");
+  }
   const inviteToken = body.inviteToken;
   if (!inviteTokenLooksValid(inviteToken) || !deps.store) return err(404, "not-found", NOT_VALID);
   const tokenHash = await sha256Hex(inviteToken);

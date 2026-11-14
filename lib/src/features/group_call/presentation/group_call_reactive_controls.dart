@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../domain/group_call_909_log.dart';
+import '../domain/group_call_analytics.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_room.dart';
 import 'group_call_session_controls.dart';
@@ -239,10 +240,51 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     }
     if (result.isFailure) {
       _userWantsMicrophone = askedBefore;
+      unawaited(
+        reportCallMediaFailure(
+          signedInMember: widget.signedInMember,
+          failureReason: 'microphone_unavailable',
+        ),
+      );
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('The microphone stayed as it was. Try again.')));
+      return;
     }
+    unawaited(
+      reportCallMediaToggle(
+        signedInMember: widget.signedInMember,
+        medium: 'microphone',
+        enabled: enabled,
+      ),
+    );
+  }
+
+  Future<void> _applyCamera(bool enabled) async {
+    _userWantsCamera = enabled;
+    try {
+      final result = await widget.call.setCameraEnabled(enabled: enabled);
+      if (result.isFailure) {
+        await reportCallMediaFailure(
+          signedInMember: widget.signedInMember,
+          failureReason: 'camera_unavailable',
+        );
+        return;
+      }
+    } catch (_, stack) {
+      await GroupCallTelemetry.current?.failed(
+        role: widget.signedInMember ? 'member' : 'guest',
+        action: 'camera',
+        failureReason: 'camera_unavailable',
+        stack: stack,
+      );
+      return;
+    }
+    await reportCallMediaToggle(
+      signedInMember: widget.signedInMember,
+      medium: 'camera',
+      enabled: enabled,
+    );
   }
 
   void _logCallState(CallState next) {
@@ -295,10 +337,7 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
       microphoneEnabled: () => widget.call.state.value.localParticipant?.isAudioEnabled ?? false,
       cameraEnabled: () => widget.call.state.value.localParticipant?.isVideoEnabled ?? false,
       onSetMicrophone: (enabled) => unawaited(_applyMicrophone(enabled)),
-      onSetCamera: (enabled) {
-        _userWantsCamera = enabled;
-        unawaited(widget.call.setCameraEnabled(enabled: enabled));
-      },
+      onSetCamera: (enabled) => unawaited(_applyCamera(enabled)),
       host: canModerateGroupCall(
         signedInMember: widget.signedInMember,
         createdByMe: state.createdByMe,
