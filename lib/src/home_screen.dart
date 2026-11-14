@@ -28,6 +28,7 @@ import 'features/fellowship_spaces/presentation/belong_spaces_directory_view.dar
 import 'features/messages/presentation/belong_messages_view.dart';
 import 'features/messages/presentation/calm_notifications_view.dart';
 import 'features/navigation/presentation/belong_bottom_nav_bar.dart';
+import 'features/navigation/presentation/large_font_home_layout.dart';
 import 'features/notifications/presentation/notifications_controller.dart';
 import 'features/notifications/data/member_notification_store.dart';
 import 'features/observability/presentation/observability_easter_egg_dialog.dart';
@@ -86,6 +87,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final highlightedPostId = useState<String?>(null);
     final easterEggTapCount = useState<int>(0);
     final easterEggLastTap = useState<DateTime?>(null);
+    final scaffoldKey = useMemoized(GlobalKey<ScaffoldState>.new);
 
     // Deep-link navigation handler for in-app or push notifications (#330)
     ref.listen<NotificationNavigationTarget?>(notificationNavigationTargetProvider, (_, target) {
@@ -147,6 +149,35 @@ class RefugeHomeScreen extends HookConsumerWidget {
       homeSubView.value = BelongHomeSubView.feed;
       activeComingSoonItem.value = null;
       analytics.logSpaceViewed(spaceKey);
+      scaffoldKey.currentState?.closeDrawer();
+    }
+
+    void selectFilter(String tone) {
+      activeFilter.value = tone;
+      scaffoldKey.currentState?.closeDrawer();
+    }
+
+    void selectSort(FeedSortOption sort) {
+      activeSort.value = sort;
+      scaffoldKey.currentState?.closeDrawer();
+    }
+
+    Future<void> openVoteAndFeedback() async {
+      final bytes = await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
+      if (context.mounted) {
+        BelongFeedbackAndVotingSheet.show(context, screenshotBytes: bytes);
+      }
+    }
+
+    void openAbout() {
+      showAboutRefugeDialog(
+        context,
+        primaryColor: primaryColor,
+        isContrast: isContrast,
+        currentMode: currentMode,
+        onSelectMode: setSensoryMode,
+        onOpenFeedback: openVoteAndFeedback,
+      );
     }
 
     Future<PostPublishStatus> submitPost({
@@ -244,23 +275,23 @@ class RefugeHomeScreen extends HookConsumerWidget {
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 768;
 
+          final textScale = MediaQuery.textScalerOf(context).scale(1);
+          final largeFont = useLargeFontHomeLayout(textScale);
           final spaceNav = SpaceNavigationBar(
             selectedSpace: selectedSpace.value,
             onSelectSpace: selectSpace,
             onBackToSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
             activeFilter: activeFilter.value,
-            onSelectFilter: (tone) {
-              activeFilter.value = tone;
-            },
+            onSelectFilter: selectFilter,
             activeSort: activeSort.value,
-            onSelectSort: (sort) {
-              activeSort.value = sort;
-            },
+            onSelectSort: selectSort,
             isContrast: isContrast,
           );
           // Welcome, Vote & Feedback, the room header, and the composer used
           // to stay pinned and leave the posts a sliver above the tab bar.
-          // They scroll with the feed at every text size (#932).
+          // They scroll with the feed at a normal text size (#932). Above
+          // about 1.3 they move into the home menu so the first reflection
+          // starts near the top (#951).
           final bottomClearance = 24 + SystemInsets.navigationBar(MediaQuery.of(context));
 
           return Builder(
@@ -269,23 +300,24 @@ class RefugeHomeScreen extends HookConsumerWidget {
               // the post stream resolves so a loading or failed feed can still
               // open Spaces or another room.
               final navigationSlivers = <Widget>[
-                if (remoteConfig.bannerEnabled)
+                if (!largeFont && remoteConfig.bannerEnabled)
                   SliverToBoxAdapter(
                     child: CommunityAnchorBanner(
                       primaryColor: primaryColor,
                       isContrast: isContrast,
                     ),
                   ),
-                SliverToBoxAdapter(
-                  child: _BelongSubHeaderBar(
-                    activeSubView: homeSubView.value,
-                    onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
-                    onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
+                if (!largeFont)
+                  SliverToBoxAdapter(
+                    child: _BelongSubHeaderBar(
+                      activeSubView: homeSubView.value,
+                      onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                      onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                    ),
                   ),
-                ),
-                SliverToBoxAdapter(child: spaceNav),
+                if (!largeFont) SliverToBoxAdapter(child: spaceNav),
               ];
 
               // SliverFillRemaining gets no space once the room header is taller
@@ -356,6 +388,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
                           Expanded(
                             child: Text(
                               'Your private bookmarks sanctuary. Only you can see reflections saved here.',
+                              maxLines: largeFont ? 2 : null,
+                              overflow: largeFont ? TextOverflow.ellipsis : null,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isContrast
@@ -368,7 +402,8 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                if (quietDigestSnapshot.hasData &&
+                if (!largeFont &&
+                    quietDigestSnapshot.hasData &&
                     quietDigestSnapshot.data != null &&
                     quietDigestSnapshot.data!.isNotEmpty)
                   SliverToBoxAdapter(
@@ -378,7 +413,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       isContrast: isContrast,
                     ),
                   ),
-                if (showInlineComposer)
+                if (!largeFont && showInlineComposer)
                   SliverToBoxAdapter(
                     child: ReflectionComposer(
                       selectedSpace: selectedSpace.value,
@@ -484,7 +519,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
         case BelongBottomTab.home:
           // The feed scroll view carries the welcome card and Vote & Feedback.
           // Other home pages keep that chrome pinned so Spaces stays reachable.
-          final pinChrome = homeSubView.value != BelongHomeSubView.feed;
+          // Large text keeps both in the drawer so the page itself stays the feed
+          // or the directory (#951).
+          final largeFont = useLargeFontHomeLayout(MediaQuery.textScalerOf(context).scale(1));
+          final pinChrome = !largeFont && homeSubView.value != BelongHomeSubView.feed;
           return Column(
             children: [
               if (pinChrome && remoteConfig.bannerEnabled)
@@ -531,6 +569,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     }
 
     final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final largeFont = useLargeFontHomeLayout(textScale);
     final grownToolbar = textScale * 26 + 18;
     // Two title lines (15 and 11) plus padding. The bar grows with system
     // text instead of clipping the wordmark (#927).
@@ -542,11 +581,83 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final showFlavorChip =
         flavor.environmentTag != null && textScale < 1.3 && MediaQuery.sizeOf(context).width >= 520;
 
+    final showShareThought =
+        largeFont &&
+        activeBottomTab.value == BelongBottomTab.home &&
+        homeSubView.value == BelongHomeSubView.feed &&
+        selectedSpace.value != 'saved_for_later' &&
+        !ref.watch(isCurrentMemberBannedProvider) &&
+        (kIsWeb || MediaQuery.sizeOf(context).width < 768);
+
     return Scaffold(
+      key: scaffoldKey,
+      drawer: largeFont
+          ? LargeFontHomeDrawer(
+              spaceTitle: getBelongSpaceInfo(selectedSpace.value).title,
+              selectedSpace: selectedSpace.value,
+              feedSelected: homeSubView.value == BelongHomeSubView.feed,
+              spacesSelected: homeSubView.value == BelongHomeSubView.spaces,
+              activeFilter: activeFilter.value,
+              activeSort: activeSort.value,
+              isContrast: isContrast,
+              primaryColor: primaryColor,
+              showWelcome: remoteConfig.bannerEnabled,
+              welcomeTitle: remoteConfig.welcomeTitle,
+              welcomeMessage: remoteConfig.welcomeMessage,
+              gatheringSummary: quietDigestSnapshot.data,
+              onSelectFeed: () {
+                activeBottomTab.value = BelongBottomTab.home;
+                homeSubView.value = BelongHomeSubView.feed;
+              },
+              onSelectSpaces: () {
+                activeBottomTab.value = BelongBottomTab.home;
+                homeSubView.value = BelongHomeSubView.spaces;
+              },
+              onSelectSpace: (spaceKey) {
+                activeBottomTab.value = BelongBottomTab.home;
+                selectSpace(spaceKey);
+              },
+              onSelectFilter: selectFilter,
+              onSelectSort: selectSort,
+              onOpenVote: openVoteAndFeedback,
+              onOpenAbout: openAbout,
+              onBackToSpaces: () {
+                activeBottomTab.value = BelongBottomTab.home;
+                homeSubView.value = BelongHomeSubView.spaces;
+              },
+            )
+          : null,
+      floatingActionButton: showShareThought
+          ? LargeFontShareThoughtButton(
+              onPressed: () => showLargeFontComposer(
+                context: context,
+                selectedSpace: selectedSpace.value,
+                primaryColor: primaryColor,
+                isContrast: isContrast,
+                onSubmit: submitPost,
+              ),
+            )
+          : null,
       appBar: AppBar(
         elevation: 0.5,
         toolbarHeight: toolbarHeight,
         titleSpacing: 8,
+        automaticallyImplyLeading: false,
+        leading: largeFont
+            ? Semantics(
+                button: true,
+                label: 'Open navigation menu, ${getBelongSpaceInfo(selectedSpace.value).title}',
+                excludeSemantics: true,
+                onTap: () => scaffoldKey.currentState?.openDrawer(),
+                child: IconButton(
+                  key: const Key('large_font_open_drawer_button'),
+                  tooltip: 'Open navigation menu',
+                  style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+                  onPressed: () => scaffoldKey.currentState?.openDrawer(),
+                  icon: const Icon(Icons.menu_rounded),
+                ),
+              )
+            : null,
         title: InkWell(
           key: const Key('belong_app_bar_title_tap_target'),
           excludeFromSemantics: true,
@@ -637,7 +748,11 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               container: true,
                               explicitChildNodes: true,
                               child: Text(
-                                'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
+                                largeFont
+                                    ? '${getBelongSpaceInfo(selectedSpace.value).title} • '
+                                          '${isLiveFeed ? "Live" : "Resilient"}'
+                                    : 'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 11,
@@ -692,27 +807,18 @@ class RefugeHomeScreen extends HookConsumerWidget {
               ],
             ),
           ),
-          Semantics(
-            identifier: 'about_belong_info_button',
-            child: IconButton(
-              tooltip: kIsWeb ? '' : 'About Belong',
-              icon: const Icon(Icons.info_outline_rounded, size: 18),
-              visualDensity: VisualDensity.compact,
-              onPressed: () => showAboutRefugeDialog(
-                context,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-                currentMode: currentMode,
-                onSelectMode: setSensoryMode,
-                onOpenFeedback: () async {
-                  final bytes = await captureRepaintBoundary(rootFeedbackRepaintBoundaryKey);
-                  if (context.mounted) {
-                    BelongFeedbackAndVotingSheet.show(context, screenshotBytes: bytes);
-                  }
-                },
+          // About moves into the home menu at large text. The icon plus the
+          // menu button overflow a phone-width bar by a pixel or two.
+          if (!largeFont)
+            Semantics(
+              identifier: 'about_belong_info_button',
+              child: IconButton(
+                tooltip: kIsWeb ? '' : 'About Belong',
+                icon: const Icon(Icons.info_outline_rounded, size: 18),
+                visualDensity: VisualDensity.compact,
+                onPressed: openAbout,
               ),
             ),
-          ),
           Padding(
             padding: const .symmetric(horizontal: 2.0),
             child: Semantics(
@@ -730,6 +836,19 @@ class RefugeHomeScreen extends HookConsumerWidget {
                 ),
                 onSelected: (action) {
                   if (ref.read(isCurrentMemberBannedProvider)) return;
+                  if (largeFont) {
+                    showLargeFontComposer(
+                      context: context,
+                      selectedSpace: selectedSpace.value == 'saved_for_later'
+                          ? 'general_chat'
+                          : selectedSpace.value,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      isImagePost: action == 'create_image_post',
+                      onSubmit: submitPost,
+                    );
+                    return;
+                  }
                   if (action == 'create_post') {
                     _showCreatePostModal(
                       context: context,

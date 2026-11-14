@@ -174,6 +174,22 @@ name: "Notification Deep Link Flow"
 
 ---
 
+## Preview call mint
+
+The Supabase function `mint-stream-call-token` is not part of the Flutter
+test job. Its Deno tests stub Stream and do not need a key or a secret:
+
+```bash
+deno test supabase/functions/mint-stream-call-token/member_call_test.ts \
+  supabase/functions/mint-stream-call-token/seatkey_test.ts
+```
+
+What those tests cover, and how to read a live 401 or a missing share
+button, is in the
+[mint README](../supabase/functions/mint-stream-call-token/README.md).
+The join-button and in-call checks that do run from this repo are listed on
+[preview group video call](wiki/Stream-Video-Preview.md).
+
 ## 📋 5. Manual Testing Home & Sensory Audit Checklist
 
 Located in `docs/manual_testing/`:
