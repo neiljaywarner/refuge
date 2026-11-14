@@ -310,6 +310,79 @@ class CommunityAnalyticsService {
     isSaved ? 'post_saved' : 'post_unsaved',
     parameters: {'post_id': postId, 'space_key': spaceKey, 'is_undo': isUndo},
   );
+
+  /// Closed reasons for [logCallFailed]. Anything else is recorded as `unavailable`.
+  static const Set<String> callFailureReasons = {
+    'sign_in_required',
+    'forbidden',
+    'unconfigured',
+    'unavailable',
+    'invalid_invite',
+    'expired',
+    'full',
+    'mismatch',
+    'seat',
+    'rate_limited',
+    'invalid_name',
+    'connect_failed',
+    'microphone_unavailable',
+    'camera_unavailable',
+    'invite_failed',
+  };
+
+  /// Preview call joined. [role] is `guest` or `member`.
+  ///
+  /// `platform` is added by [logEvent]. `surface` is `web` or `native`.
+  /// The event never carries a token, email, invite code, invite URL, or name.
+  Future<void> logCallJoined({required String role}) =>
+      logEvent('call_joined', parameters: _callEventProperties({'role': _callRole(role)}));
+
+  /// Preview call left. [durationSeconds] is how long the room stayed open.
+  Future<void> logCallLeft({required String role, required int durationSeconds}) {
+    final seconds = durationSeconds < 0 ? 0 : durationSeconds;
+    return logEvent(
+      'call_left',
+      parameters: _callEventProperties({
+        'role': _callRole(role),
+        'duration_seconds': seconds > 86400 ? 86400 : seconds,
+      }),
+    );
+  }
+
+  /// Preview call failed. [failureReason] must be one of [callFailureReasons].
+  Future<void> logCallFailed({required String role, required String failureReason}) => logEvent(
+    'call_failed',
+    parameters: _callEventProperties({
+      'role': _callRole(role),
+      'failure_reason': callFailureReasons.contains(failureReason) ? failureReason : 'unavailable',
+    }),
+  );
+
+  /// Microphone or camera turned on or off by the person in the call.
+  ///
+  /// An unknown [medium] is dropped so a free-text value cannot be recorded.
+  Future<void> logCallMediaToggled({
+    required String role,
+    required String medium,
+    required bool enabled,
+  }) {
+    if (medium != 'camera' && medium != 'microphone') return Future<void>.value();
+    return logEvent(
+      'call_media_toggled',
+      parameters: _callEventProperties({
+        'role': _callRole(role),
+        'medium': medium,
+        'enabled': enabled,
+      }),
+    );
+  }
+
+  static String _callRole(String role) => role == 'guest' ? 'guest' : 'member';
+
+  Map<String, Object> _callEventProperties(Map<String, Object> fields) => {
+    ...fields,
+    'surface': kIsWeb ? 'web' : 'native',
+  };
 }
 
 final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((ref) {

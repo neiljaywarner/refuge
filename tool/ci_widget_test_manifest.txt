@@ -55,6 +55,7 @@ test/core/logging/app_logger_test.dart
 test/core/observability/local_telemetry_ring_test.dart
 test/core/presentation/coming_soon_view_test.dart
 test/core/preview_mode_test.dart
+test/features/group_call/group_call_analytics_test.dart
 test/features/group_call/group_call_lobby_test.dart
 test/features/group_call/group_call_preview_test.dart
 test/features/group_call/group_call_guest_join_test.dart
