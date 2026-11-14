@@ -4,7 +4,7 @@
 > **Status**: Living Engineering Architecture & Data Dictionary  
 > **Target Audiences**: Organizers, Mentors, Student Apprentices, Backend Engineers  
 
-> **Live on `main`.** Cloud Firestore is the live community store. Firebase Auth, Hosting, and Cloud Functions stay. The default reflection repository also keeps an Appwrite mirror when `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`). [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Live reflections.** The feed reads and writes Cloud Firestore. Production uses `reflections`. The dev site uses `reflections_dev`. The default build does not call Appwrite table `reflection_posts` (ADR-0011; that table stays disabled). Deploy workflows pass `FLAVOR` and the release stamp. They do not pass `BACKEND` or `APPWRITE_*`. Firebase Auth, Hosting, and Cloud Functions stay. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 
 ---
 
@@ -12,9 +12,9 @@
 
 **Belong on the Spectrum** (powered by **Refuge / Sanctuary**) is built with a **pluggable multi-backend architecture** (ADR-0009). The frontend consumes repositories (`PostRepository`, `FeatureVotingRepository`, `AuthRepository`) through Riverpod providers, allowing seamless operation across:
 
-1. **Cloud Firestore** (live posts, profiles, votes, and feedback notes).
+1. **Cloud Firestore** (live reflections, profiles, votes, and feedback notes).
 2. **Firebase Auth, Hosting, and Cloud Functions** (sign-in and the deployed web app).
-3. **Appwrite** (on `main` via [PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`; off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set; [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed).
+3. **Appwrite** (direct-message mirror and other functions; the reflection table `reflection_posts` stays disabled).
 4. **Deterministic In-Memory Repositories** (Local dev, BDD widget tests, and CI/CD with zero cloud dependencies).
 
 ```
@@ -31,8 +31,8 @@
             │                       │                         │
             ▼                       ▼                         ▼
 ┌──────────────────────┐  ┌───────────────────┐  ┌───────────────────────┐
-│   Firebase RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
-│   (Default posts)    │  │ (Second copy)     │  │ Appwrite opt-in only  │
+│   Firebase Auth      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
+│   and Hosting        │  │ (Live reflections)│  │ Appwrite not for feed │
 └──────────────────────┘  └───────────────────┘  └───────────────────────┘
 ```
 

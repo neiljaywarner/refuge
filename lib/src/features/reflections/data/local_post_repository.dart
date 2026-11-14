@@ -78,6 +78,13 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   /// Whether [postId] is currently marked as saved by the member.
   bool isPostSaved(String postId) => _savedPostIds.contains(postId);
 
+  /// The in-memory row for [postId], if the feed has already loaded it.
+  Post? findPost(String postId) {
+    final index = _store.indexWhere((post) => post.id == postId);
+    if (index == -1) return null;
+    return _store[index];
+  }
+
   /// Drops in-memory bookmarks and reloads the bucket for [accountId].
   ///
   /// The same account is a no-op so an auth rebuild does not flicker the feed.
@@ -419,6 +426,56 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
       );
       _notify();
     }
+  }
+
+  /// Sets whether [userId] currently holds [reactionType], without flipping.
+  ///
+  /// Turning a reaction off lowers the stored count by one even when the
+  /// member list was empty, which is how a cloud row looks after a restart.
+  /// The count does not drop below zero.
+  void setReactionActive({
+    required String postId,
+    required String reactionType,
+    required String userId,
+    required String displayName,
+    required bool active,
+    String? avatarUrl,
+  }) {
+    final index = _store.indexWhere((post) => post.id == postId);
+    if (index == -1) return;
+    final post = _store[index];
+    final currentMembers = List<ReactionMember>.from(
+      post.reactionMembers[reactionType] ?? const [],
+    );
+    final existingIndex = currentMembers.indexWhere((member) => member.userId == userId);
+    final counts = Map<String, int>.from(post.reactions);
+    final members = Map<String, List<ReactionMember>>.from(post.reactionMembers);
+    var changed = false;
+
+    if (active) {
+      if (existingIndex == -1) {
+        currentMembers.add(
+          ReactionMember(
+            userId: userId,
+            displayName: displayName,
+            avatarUrl: avatarUrl,
+            timestamp: DateTime.now(),
+          ),
+        );
+        counts[reactionType] = (counts[reactionType] ?? 0) + 1;
+        changed = true;
+      }
+    } else if (existingIndex != -1 || (counts[reactionType] ?? 0) > 0) {
+      if (existingIndex != -1) currentMembers.removeAt(existingIndex);
+      final currentCount = counts[reactionType] ?? 0;
+      if (currentCount > 0) counts[reactionType] = currentCount - 1;
+      changed = true;
+    }
+
+    if (!changed) return;
+    members[reactionType] = currentMembers;
+    _store[index] = post.copyWith(reactions: counts, reactionMembers: members);
+    _notify();
   }
 
   @override

@@ -4,9 +4,10 @@ import 'appwrite_config.dart';
 
 /// Appwrite services created only after [AppwriteConfig.isConfigured] is true.
 ///
-/// The feed writes reflections here and keeps a second copy in Cloud Firestore.
-/// [Account] is available for a later auth migration. Sign-in still uses
-/// Firebase Auth.
+/// Direct messages and other function calls use this client. The reflection
+/// feed does not: Firestore is the live reflection store, and
+/// `reflection_posts` stays disabled (ADR-0011). [Account] is available for a
+/// later auth migration. Sign-in still uses Firebase Auth.
 class AppwriteServices {
   AppwriteServices(this.client)
     : account = Account(client),
