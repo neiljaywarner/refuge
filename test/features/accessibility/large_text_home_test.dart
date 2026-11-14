@@ -17,7 +17,17 @@ void main() {
         expect(find.byKey(const Key('bottom_nav_tab_home')), findsOneWidget);
         expect(find.bySemanticsLabel(RegExp('Home tab')), findsOneWidget);
 
-        await tester.ensureVisible(find.byKey(const Key('open_feedback_and_voting_button')));
+        final feedScroll = find.descendant(
+          of: find.byKey(const Key('home_feed_scroll')),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+          ),
+        );
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('open_feedback_and_voting_button')),
+          240,
+          scrollable: feedScroll.first,
+        );
         await tester.pump();
         session.check();
         expectMinTapTarget(tester, find.byKey(const Key('bottom_nav_tab_home')));
@@ -31,6 +41,16 @@ void main() {
           expect(find.descendant(of: signIn, matching: find.text('Sign In')), findsOneWidget);
         }
         if (scale == 1) {
+          // Vote & Feedback now lives in the feed scroll, so bringing it on
+          // screen moves the welcome card up. Measure the card from the top.
+          final feedScroll = find.descendant(
+            of: find.byKey(const Key('home_feed_scroll')),
+            matching: find.byWidgetPredicate(
+              (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+            ),
+          );
+          tester.state<ScrollableState>(feedScroll.first).position.jumpTo(0);
+          await tester.pump();
           final banner = tester.getSize(find.byKey(const Key('organizer_message_banner')));
           final message = tester.getSize(find.textContaining('peaceful sanctuary'));
           expect(message.width, greaterThan(banner.width * 0.55));
