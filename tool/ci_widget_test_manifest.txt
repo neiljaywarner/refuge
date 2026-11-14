@@ -167,3 +167,19 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+
+# Repository and service coverage
+test/core/appwrite/client_session_audit_retention_test.dart
+test/core/config/other_site_info_button_test.dart
+test/features/account_deletion/account_deletion_repository_test.dart
+test/features/account_deletion/account_deletion_sink_errors_test.dart
+test/features/account_deletion/account_return_widget_test.dart
+test/features/account_deletion/delete_my_account_widget_test.dart
+test/features/account_deletion/soft_delete_sign_in_guard_test.dart
+test/features/admin/ban_standing_test.dart
+test/features/admin/circle_ban_test.dart
+test/features/feedback/belong_feedback_star_sentiment_test.dart
+test/features/feedback/local_feedback_receipt_test.dart
+test/features/feedback/resilient_feature_voting_test.dart
+test/features/profile/profile_storage_io_isolation_test.dart
+test/features/reflections/serverpod_post_repository_firestore_test.dart
