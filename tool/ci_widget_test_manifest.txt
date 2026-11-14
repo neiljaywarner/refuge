@@ -167,3 +167,9 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+
+# Auth redirect and guest skip coverage
+test/features/auth/auth_access_policy_test.dart
+test/features/auth/auth_gate_guest_and_skip_test.dart
+test/features/auth/auth_help_and_about_sheet_test.dart
+test/features/auth/sign_in_recovery_panel_test.dart
