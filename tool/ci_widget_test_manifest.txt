@@ -167,3 +167,6 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+
+# Large-font layout helper coverage
+test/features/feedback/screenshot_frame_test.dart
