@@ -167,3 +167,16 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+
+# Feed and composer coverage
+test/features/reflections/comment_model_test.dart
+test/features/reflections/composer_open_close_test.dart
+test/features/reflections/expanded_intent_tags_test.dart
+test/features/reflections/feed_sort_row_widget_test.dart
+test/features/reflections/reaction_details_sheet_widget_test.dart
+test/features/reflections/reaction_member_merge_test.dart
+test/features/reflections/reaction_toggle_and_attribution_test.dart
+test/features/reflections/reflection_composer_escape_test.dart
+test/features/reflections/reflection_post_media_test.dart
+test/features/reflections/saved_for_later_functional_audit_test.dart
+test/features/search/community_search_tag_match_test.dart
