@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,38 @@ class _MockFirebaseOptions extends Mock implements FirebaseOptions {}
 class _MockUser extends Mock implements fb.User {}
 
 const _church = 'I am not a member of an ICOC church';
+
+class _HoldCloudStore implements MemberProfileCloudStore {
+  _HoldCloudStore(this.inner);
+
+  final MemoryMemberProfileCloudStore inner;
+  final Completer<void> gate = Completer<void>();
+
+  @override
+  Future<void> merge(String uid, MemberProfileCloudFields fields) => inner.merge(uid, fields);
+
+  @override
+  Future<MemberProfileCloudFields?> load(String uid) async {
+    await gate.future;
+    return inner.load(uid);
+  }
+}
+
+void _stubFirebaseUser(_MockFirebaseAuth auth, _MockUser user) {
+  final app = _MockFirebaseApp();
+  final options = _MockFirebaseOptions();
+  when(() => options.apiKey).thenReturn('belong-test-api-key-0123456789');
+  when(() => app.options).thenReturn(options);
+  when(() => auth.app).thenReturn(app);
+  when(() => user.uid).thenReturn('uid-member');
+  when(() => user.email).thenReturn('member@belongonthespectrum.com');
+  when(() => user.displayName).thenReturn('David M.');
+  when(() => user.isAnonymous).thenReturn(false);
+  when(() => user.emailVerified).thenReturn(true);
+  when(() => user.photoURL).thenReturn(null);
+  when(() => user.updateDisplayName(any())).thenAnswer((_) async {});
+  when(() => auth.signOut()).thenAnswer((_) async {});
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -122,6 +156,68 @@ void main() {
     },
   );
 
+  test('restoring church does not write Auth default bio back to users/{uid}', () async {
+    cloud.documents['uid-member'] = {
+      'bio': 'Quiet walks and prayer.',
+      'comfortBadges': const ['Literal communication appreciated'],
+      'icocChurchAffiliation': _church,
+      'previewFeaturesEnabled': true,
+    };
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    _stubFirebaseUser(auth, user);
+    when(() => auth.currentUser).thenReturn(user);
+    when(() => auth.authStateChanges())
+        .thenAnswer((_) => Stream<fb.User?>.fromFuture(Future<fb.User?>.value(user)));
+
+    final reloaded = ProviderContainer(
+      overrides: previewOverrides(
+        repository: FirebaseAuthRepository(firebaseAuth: auth, flavor: AppFlavor.dev),
+      ),
+    );
+    addTearDown(reloaded.dispose);
+
+    await reloaded.read(memberProfileProvider.notifier).cloudHydration;
+
+    expect(reloaded.read(memberProfileProvider).icocChurchAffiliation, _church);
+    expect(cloud.documents['uid-member']?['bio'], 'Quiet walks and prayer.');
+    expect(cloud.documents['uid-member']?['comfortBadges'], ['Literal communication appreciated']);
+  });
+
+  test('hydration runs when auth signs in after the profile built as a guest', () async {
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    final sessions = StreamController<fb.User?>.broadcast();
+    addTearDown(sessions.close);
+    _stubFirebaseUser(auth, user);
+    when(() => auth.currentUser).thenReturn(null);
+    when(() => auth.authStateChanges()).thenAnswer((_) => sessions.stream);
+    cloud.documents['uid-member'] = {
+      'icocChurchAffiliation': _church,
+      'previewFeaturesEnabled': true,
+    };
+
+    final container = ProviderContainer(
+      overrides: previewOverrides(
+        repository: FirebaseAuthRepository(firebaseAuth: auth, flavor: AppFlavor.dev),
+      ),
+    );
+    addTearDown(container.dispose);
+
+    expect(container.read(memberProfileProvider).isSignedIn, isFalse);
+    await container.read(memberProfileProvider.notifier).cloudHydration;
+
+    when(() => auth.currentUser).thenReturn(user);
+    sessions.add(user);
+    // Broadcast auth events are delivered on a later microtask, which is when
+    // the signed-in hydration flight replaces the guest one.
+    await Future<void>.delayed(Duration.zero);
+    await container.read(memberProfileProvider.notifier).cloudHydration;
+
+    expect(container.read(memberProfileProvider).icocChurchAffiliation, _church);
+    expect(container.read(previewFeaturesEnabledProvider), isTrue);
+  });
+
   patrolWidgetTest('preview switch saves without a church answer and stays on after reload', (
     $,
   ) async {
@@ -173,5 +269,64 @@ void main() {
     final tile = $.tester.widget<SwitchListTile>(find.byKey(const Key('preview_mode_switch')));
     expect(tile.value, isTrue);
     expect(find.text(_church), findsNothing);
+  });
+
+  patrolWidgetTest('an open profile dialog shows the church answer when cloud restore finishes', (
+    $,
+  ) async {
+    $.tester.view.devicePixelRatio = 1.0;
+    $.tester.view.physicalSize = const Size(1200, 2400);
+    addTearDown(() {
+      $.tester.view.resetPhysicalSize();
+      $.tester.view.resetDevicePixelRatio();
+    });
+
+    final held = _HoldCloudStore(cloud);
+    held.inner.documents['uid-member'] = {'icocChurchAffiliation': _church};
+    ProfileStorageService.cloudStore = held;
+
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    _stubFirebaseUser(auth, user);
+    when(() => auth.currentUser).thenReturn(user);
+    when(() => auth.authStateChanges())
+        .thenAnswer((_) => Stream<fb.User?>.fromFuture(Future<fb.User?>.value(user)));
+
+    final container = ProviderContainer(
+      overrides: previewOverrides(
+        repository: FirebaseAuthRepository(firebaseAuth: auth, flavor: AppFlavor.dev),
+      ),
+    );
+    addTearDown(container.dispose);
+    container.read(memberProfileProvider);
+
+    await $.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Scaffold(body: MemberProfileDialog())),
+      ),
+    );
+    await $.pump();
+
+    expect(find.byKey(const Key('profile_church_affiliation_dropdown')), findsOneWidget);
+    expect(
+      $.tester
+          .widget<TextFormField>(find.byKey(const Key('profile_church_affiliation_dropdown')))
+          .controller!
+          .text,
+      isEmpty,
+    );
+
+    held.gate.complete();
+    await container.read(memberProfileProvider.notifier).cloudHydration;
+    await $.pump();
+
+    expect(
+      $.tester
+          .widget<TextFormField>(find.byKey(const Key('profile_church_affiliation_dropdown')))
+          .controller!
+          .text,
+      _church,
+    );
   });
 }

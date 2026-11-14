@@ -141,6 +141,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   static MemberProfile? _persistedProfile;
   Future<void>? _publishFlight;
   Future<void> _cloudFlight = Future<void>.value();
+  bool _disposed = false;
 
   /// Completes after a reload has read `users/{uid}` for church and preview.
   Future<void> get cloudHydration => _cloudFlight;
@@ -206,6 +207,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
 
   @override
   MemberProfile build() {
+    _disposed = false;
     if (_explicitlySignedOut) {
       _persistedProfile = null;
     } else {
@@ -244,6 +246,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         state = _profileFor(session);
         _persistedProfile = state;
         _publishDirectory(state);
+        _scheduleHydration(state);
       } else if (_persistedProfile != null && _persistedProfile!.isSignedIn) {
         state = _persistedProfile!;
       } else {
@@ -251,11 +254,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       }
     });
     ref.onDispose(() {
+      _disposed = true;
       _sub?.cancel();
     });
-
-    var disposed = false;
-    ref.onDispose(() => disposed = true);
 
     final session = repo.currentSession();
     final MemberProfile initial;
@@ -270,15 +271,22 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     } else {
       initial = const MemberProfile.guest();
     }
-    _cloudFlight = _hydrateCloud(initial, () => disposed);
+    _scheduleHydration(initial);
     return initial;
+  }
+
+  /// Reads `users/{uid}` after the member becomes signed in, including when
+  /// [build] first ran as a guest and Auth signed in later.
+  void _scheduleHydration(MemberProfile profile) {
+    if (_disposed) return;
+    _cloudFlight = _hydrateCloud(profile, () => _disposed);
   }
 
   /// Restores the preview switch from local storage, then fills church and
   /// preview from `users/{uid}` when this device does not already have them.
   Future<void> _hydrateCloud(MemberProfile initial, bool Function() disposed) async {
     await Future<void>.value();
-    if (disposed()) return;
+    if (disposed() || _explicitlySignedOut) return;
     _applyStoredPreview();
     if (!initial.isSignedIn || initial.userId.isEmpty || initial.userId == 'guest') {
       return;
@@ -289,13 +297,15 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     } catch (_) {
       return;
     }
-    if (disposed() || cloud == null) return;
+    if (disposed() || _explicitlySignedOut || cloud == null) return;
     if (state.userId != initial.userId || !state.isSignedIn) return;
 
     final cloudChurch = _presentChurch(cloud.icocChurchAffiliation);
     if (_presentChurch(state.icocChurchAffiliation) == null && cloudChurch != null) {
       state = state.copyWith(icocChurchAffiliation: cloudChurch);
       _persistedProfile = state;
+      // Local only. Auth fills bio and badges with defaults, and a cloud merge
+      // here would replace the member's saved copy of those fields.
       ProfileStorageService.instance.save(
         displayName: state.displayName,
         email: state.email,
@@ -304,6 +314,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         icocChurchAffiliation: state.icocChurchAffiliation,
         comfortBadges: state.comfortBadges,
         avatarUrl: state.avatarUrl,
+        syncCloud: false,
       );
     }
     if (disposed()) return;
@@ -429,6 +440,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
         avatarUrl: state.avatarUrl,
       );
       _publishDirectory(state);
+      _scheduleHydration(state);
     } else {
       _persistedProfile = null;
       ProfileStorageService.instance.clear();

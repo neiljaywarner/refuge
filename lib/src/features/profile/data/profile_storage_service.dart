@@ -47,6 +47,7 @@ class ProfileStorageService {
     List<String>? comfortBadges,
     String? avatarUrl,
     bool? previewFeaturesEnabled,
+    bool syncCloud = true,
   }) {
     final data = Map<String, dynamic>.from(load() ?? <String, dynamic>{});
     final keepSkip = data[skippedFirstVisitWelcomeKey] == true;
@@ -81,6 +82,7 @@ class ProfileStorageService {
       userId: userId,
       bio: bio,
       avatarUrl: avatarUrl,
+      syncCloud: syncCloud,
     );
   }
 
@@ -104,6 +106,7 @@ class ProfileStorageService {
     required String? userId,
     required String? bio,
     required String? avatarUrl,
+    required bool syncCloud,
   }) {
     try {
       final user = fb_auth.FirebaseAuth.instance.currentUser;
@@ -115,6 +118,7 @@ class ProfileStorageService {
       }
     } catch (_) {}
 
+    if (!syncCloud) return;
     final uid = _cloudUid(userId ?? data['userId'] as String?);
     if (uid == null) return;
     final preview = data[previewFeaturesEnabledKey];

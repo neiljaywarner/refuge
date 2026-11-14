@@ -117,6 +117,16 @@ class MemberProfileDialog extends HookConsumerWidget {
       text: profile.icocChurchAffiliation ?? '',
     );
     final selectedAffiliation = useState<String?>(profile.icocChurchAffiliation);
+    useEffect(() {
+      final restored = profile.icocChurchAffiliation;
+      if (restored != null &&
+          restored.trim().isNotEmpty &&
+          churchAffiliationController.text.trim().isEmpty) {
+        churchAffiliationController.text = restored;
+        selectedAffiliation.value = restored;
+      }
+      return null;
+    }, [profile.icocChurchAffiliation]);
     final validationError = useState<String?>(null);
 
     final allAffiliationOptions = [
