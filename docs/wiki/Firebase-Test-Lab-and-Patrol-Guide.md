@@ -1,5 +1,7 @@
 # 🧪 Firebase Test Lab & Patrol Integration Guide (`Firebase-Test-Lab-and-Patrol-Guide`)
 
+Local Chrome and emulator commands, and the fact that Patrol cannot open the hosted site, are in [Patrol UI tests](Patrol-UI-Tests). This page is the Test Lab upload.
+
 > **Related Issues**: [#136](https://github.com/neiljaywarner/refuge/issues/136), [#572](https://github.com/neiljaywarner/refuge/issues/572), [#573](https://github.com/neiljaywarner/refuge/issues/573), [#649](https://github.com/neiljaywarner/refuge/issues/649)  
 > **Runner**: [`tool/run_firebase_test_lab.dart`](https://github.com/neiljaywarner/refuge/blob/main/tool/run_firebase_test_lab.dart)  
 > **Workflow**: [`.github/workflows/firebase-test-lab-daily.yml`](https://github.com/neiljaywarner/refuge/blob/main/.github/workflows/firebase-test-lab-daily.yml)  

@@ -42,6 +42,7 @@
 * **[⏸️ Appwrite Free Pause and Session Audit](Appwrite-Free-Tier-Inactivity-and-Session-Audit)**
 * **[🧪 QA, Device Driving & Beta Testing](QA-and-Beta-Testing-Guide)**
 * **[🎥 Maestro UI Tests](Maestro-UI-Tests)**
+* **[🧪 Patrol UI Tests](Patrol-UI-Tests)**
 * **[📱 Real Device Driving & Maestro Automation](https://github.com/neiljaywarner/refuge/blob/main/docs/real_device_driving_and_automation.md)**
 * **[📋 Comprehensive Test Cases & QA Matrix](Test-Cases)**
 * **[🧪 Firebase Test Lab & Patrol Integration Guide](Firebase-Test-Lab-and-Patrol-Guide)**
