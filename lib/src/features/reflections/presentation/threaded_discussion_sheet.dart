@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/presentation/system_insets.dart';
+import '../../../core/presentation/unbroken_body_text.dart';
 import '../../admin/data/admin_banning_repository.dart';
 import '../../admin/domain/ban_standing.dart';
 import '../../admin/presentation/account_paused_banner.dart';
@@ -176,8 +177,8 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        post.content,
+                      UnbrokenBodyText(
+                        text: post.content,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -504,7 +505,10 @@ class _CommentTile extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Comment Content
-          Text(comment.content, style: const TextStyle(fontSize: 12.5, height: 1.4)),
+          UnbrokenBodyText(
+            text: comment.content,
+            style: const TextStyle(fontSize: 12.5, height: 1.4),
+          ),
 
           const SizedBox(height: 8),
 

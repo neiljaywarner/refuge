@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/preview_mode_provider.dart';
+import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/presentation/delete_my_account_dialog.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../domain/member_profile.dart';
@@ -124,8 +125,91 @@ class MemberProfileDialog extends HookConsumerWidget {
     ];
 
     final liveAuth = _liveFirebaseAuthWithUser();
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // Above this, the pinned Sign Out / Cancel / Save row stacks and eats the
+    // dialog, leaving Experimental Preview Features below the fold (#932).
+    final largeText = textScale > 1.15;
+    final available = MediaQuery.sizeOf(context).width - 80;
+    final sheetWidth = available < 380 ? available.clamp(220.0, 380.0) : 380.0;
+
+    Future<void> signOut() async {
+      await ref.read(memberProfileProvider.notifier).signOut();
+      if (context.mounted) Navigator.of(context).pop();
+    }
+
+    void cancel() => Navigator.of(context).pop();
+
+    void saveProfile() {
+      final affiliation = churchAffiliationController.text.trim();
+      if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
+        validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
+        return;
+      }
+
+      final combinedName = [
+        firstNameController.text.trim(),
+        lastNameController.text.trim(),
+      ].where((part) => part.isNotEmpty).join(' ');
+      final effectiveName = combinedName.isNotEmpty ? combinedName : profile.displayName;
+      final effectiveBio = bioController.text.trim().isNotEmpty
+          ? bioController.text.trim()
+          : profile.bio;
+
+      ref
+          .read(memberProfileProvider.notifier)
+          .signIn(
+            displayName: effectiveName,
+            email: emailController.text.trim().isNotEmpty
+                ? emailController.text.trim()
+                : profile.email,
+            bio: effectiveBio,
+            icocChurchAffiliation: affiliation,
+          );
+      Navigator.of(context).pop();
+    }
+
+    final signOutButton = profile.isSignedIn
+        ? TextButton(
+            key: const Key('profile_sign_out_button'),
+            style: TextButton.styleFrom(
+              visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
+              minimumSize: largeText ? const Size(48, 48) : null,
+            ),
+            onPressed: signOut,
+            child: const Text('Sign Out'),
+          )
+        : null;
+    final cancelButton = TextButton(
+      key: const Key('profile_cancel_button'),
+      style: TextButton.styleFrom(
+        visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
+        minimumSize: largeText ? const Size(48, 48) : null,
+      ),
+      onPressed: cancel,
+      child: const Text('Cancel'),
+    );
+    final saveButton = FilledButton(
+      key: const Key('profile_save_sign_in_button'),
+      style: FilledButton.styleFrom(
+        visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
+        minimumSize: largeText ? const Size(48, 48) : null,
+      ),
+      onPressed: saveProfile,
+      child: Text(profile.isSignedIn ? 'Save Profile' : 'Save & Sign In'),
+    );
+    Widget stretch(Widget child) => Row(children: [Expanded(child: child)]);
+    final stackedActions = Column(
+      crossAxisAlignment: .stretch,
+      children: [
+        stretch(saveButton),
+        const SizedBox(height: 8),
+        stretch(cancelButton),
+        if (signOutButton != null) ...[const SizedBox(height: 8), stretch(signOutButton)],
+      ],
+    );
 
     return AlertDialog(
+      insetPadding: SystemInsets.dialogInsetPadding(MediaQuery.of(context)),
       titlePadding: const .fromLTRB(20, 20, 20, 12),
       contentPadding: const .fromLTRB(20, 4, 20, 12),
       actionsPadding: const .fromLTRB(16, 0, 16, 12),
@@ -170,11 +254,12 @@ class MemberProfileDialog extends HookConsumerWidget {
         ],
       ),
       content: SizedBox(
-        width: 380,
+        width: sheetWidth,
         child: SingleChildScrollView(
+          key: largeText ? const Key('profile_sheet_scroll') : null,
           child: Column(
             mainAxisSize: .min,
-            crossAxisAlignment: .start,
+            crossAxisAlignment: largeText ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
             children: [
               if (validationError.value != null) ...[
                 Container(
@@ -205,29 +290,37 @@ class MemberProfileDialog extends HookConsumerWidget {
                 crossAxisAlignment: .start,
                 children: [
                   Expanded(
-                    child: TextField(
-                      key: const Key('profile_display_name_field'),
-                      controller: firstNameController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'First Name',
-                        hintText: 'First name',
-                        isDense: true,
-                        border: OutlineInputBorder(),
+                    child: _WrappingFieldLabel(
+                      label: 'First Name',
+                      largeText: largeText,
+                      child: TextField(
+                        key: const Key('profile_display_name_field'),
+                        controller: firstNameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          labelText: largeText ? null : 'First Name',
+                          hintText: 'First name',
+                          isDense: true,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      key: const Key('profile_last_name_field'),
-                      controller: lastNameController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Last Name',
-                        hintText: 'Last name',
-                        isDense: true,
-                        border: OutlineInputBorder(),
+                    child: _WrappingFieldLabel(
+                      label: 'Last Name',
+                      largeText: largeText,
+                      child: TextField(
+                        key: const Key('profile_last_name_field'),
+                        controller: lastNameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          labelText: largeText ? null : 'Last Name',
+                          hintText: 'Last name',
+                          isDense: true,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ),
@@ -235,15 +328,19 @@ class MemberProfileDialog extends HookConsumerWidget {
               ),
               if (!profile.isSignedIn || profile.email.isEmpty) ...[
                 const SizedBox(height: 12),
-                TextField(
-                  key: const Key('profile_email_field'),
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address',
-                    helperText: 'For notifications and account recovery',
-                    isDense: true,
-                    border: OutlineInputBorder(),
+                _WrappingFieldLabel(
+                  label: 'Email Address',
+                  largeText: largeText,
+                  child: TextField(
+                    key: const Key('profile_email_field'),
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: largeText ? null : 'Email Address',
+                      helperText: 'For notifications and account recovery',
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ],
@@ -348,15 +445,19 @@ class MemberProfileDialog extends HookConsumerWidget {
                 ),
               ],
               const SizedBox(height: 14),
-              TextField(
-                key: const Key('profile_bio_field'),
-                controller: bioController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Bio / Note to Fellowship',
-                  hintText: 'A quiet sentence about yourself',
-                  isDense: true,
-                  border: OutlineInputBorder(),
+              _WrappingFieldLabel(
+                label: 'Bio / Note to Fellowship',
+                largeText: largeText,
+                child: TextField(
+                  key: const Key('profile_bio_field'),
+                  controller: bioController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    labelText: largeText ? null : 'Bio / Note to Fellowship',
+                    hintText: 'A quiet sentence about yourself',
+                    isDense: true,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -367,7 +468,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                   return SwitchListTile.adaptive(
                     key: const Key('preview_mode_switch'),
                     contentPadding: .zero,
-                    dense: true,
+                    dense: !largeText,
                     title: const Text(
                       '🧪 Experimental Preview Features',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
@@ -439,59 +540,34 @@ class MemberProfileDialog extends HookConsumerWidget {
                     ),
                   ),
               ],
+              if (largeText) ...[const SizedBox(height: 16), stackedActions],
             ],
           ),
         ),
       ),
-      actions: [
-        if (profile.isSignedIn)
-          TextButton(
-            key: const Key('profile_sign_out_button'),
-            style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-            onPressed: () async {
-              await ref.read(memberProfileProvider.notifier).signOut();
-              if (context.mounted) Navigator.of(context).pop();
-            },
-            child: const Text('Sign Out'),
-          ),
-        TextButton(
-          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          key: const Key('profile_save_sign_in_button'),
-          style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
-          onPressed: () {
-            final affiliation = churchAffiliationController.text.trim();
-            if (brand.enableFellowshipAffiliationField && affiliation.isEmpty) {
-              validationError.value = 'Please select which ICOC church you attend, or choose "I am not a member of an ICOC church".';
-              return;
-            }
+      actions: largeText ? null : [?signOutButton, cancelButton, saveButton],
+    );
+  }
+}
 
-            final combinedName = [
-              firstNameController.text.trim(),
-              lastNameController.text.trim(),
-            ].where((part) => part.isNotEmpty).join(' ');
-            final effectiveName = combinedName.isNotEmpty ? combinedName : profile.displayName;
-            final effectiveBio = bioController.text.trim().isNotEmpty
-                ? bioController.text.trim()
-                : profile.bio;
+/// Floating field labels ellipsize to "First N…" at large text. Above the
+/// field they can wrap to as many lines as the words need.
+class _WrappingFieldLabel extends StatelessWidget {
+  const _WrappingFieldLabel({required this.label, required this.largeText, required this.child});
 
-            ref
-                .read(memberProfileProvider.notifier)
-                .signIn(
-                  displayName: effectiveName,
-                  email: emailController.text.trim().isNotEmpty
-                      ? emailController.text.trim()
-                      : profile.email,
-                  bio: effectiveBio,
-                  icocChurchAffiliation: affiliation,
-                );
-            Navigator.of(context).pop();
-          },
-          child: Text(profile.isSignedIn ? 'Save Profile' : 'Save & Sign In'),
-        ),
+  final String label;
+  final bool largeText;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!largeText) return child;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ExcludeSemantics(child: Text(label)),
+        const SizedBox(height: 4),
+        Semantics(label: label, child: child),
       ],
     );
   }

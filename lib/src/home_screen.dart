@@ -246,7 +246,6 @@ class RefugeHomeScreen extends HookConsumerWidget {
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 768;
 
-          final textScale = MediaQuery.textScalerOf(context).scale(1);
           final spaceNav = SpaceNavigationBar(
             selectedSpace: selectedSpace.value,
             onSelectSpace: selectSpace,
@@ -261,195 +260,222 @@ class RefugeHomeScreen extends HookConsumerWidget {
             },
             isContrast: isContrast,
           );
-          // Large type makes the room title and filters taller than the feed.
-          // Scroll that header instead of overflowing the column (#927).
-          final header = textScale > 1.15
-              ? ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.45),
-                  child: SingleChildScrollView(child: spaceNav),
-                )
-              : spaceNav;
+          // Welcome, Vote & Feedback, the room header, and the composer used
+          // to stay pinned and leave the posts a sliver above the tab bar.
+          // They scroll with the feed at every text size (#932).
+          final bottomClearance = 24 + SystemInsets.navigationBar(MediaQuery.of(context));
 
-          return Column(
-            children: [
-              header,
-              if (selectedSpace.value == 'saved_for_later')
-                Container(
-                  margin: const .symmetric(horizontal: 14.0, vertical: 4.0),
-                  padding: const .symmetric(horizontal: 12.0, vertical: 8.0),
-                  decoration: BoxDecoration(
-                    color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
-                    borderRadius: .circular(10.0),
-                    border: Border.all(
-                      color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.3),
+          return Builder(
+            builder: (context) {
+              // The feed scroll view carries this chrome (#932). Build it before
+              // the post stream resolves so a loading or failed feed can still
+              // open Spaces or another room.
+              final navigationSlivers = <Widget>[
+                if (remoteConfig.bannerEnabled)
+                  SliverToBoxAdapter(
+                    child: CommunityAnchorBanner(
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.bookmark_added_rounded,
-                        size: 16,
-                        color: isContrast ? Colors.yellow : primaryColor,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Your private bookmarks sanctuary. Only you can see reflections saved here.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isContrast
-                                ? Colors.white
-                                : Theme.of(context).textTheme.bodySmall?.color,
-                          ),
-                        ),
-                      ),
-                    ],
+                SliverToBoxAdapter(
+                  child: _BelongSubHeaderBar(
+                    activeSubView: homeSubView.value,
+                    onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                    onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+                    primaryColor: primaryColor,
+                    isContrast: isContrast,
                   ),
                 ),
-              Expanded(
-                child: Builder(
-                  builder: (context) {
-                    if (postsSnapshot.hasError) {
-                      return Center(
-                        child: Text('Error loading reflections: ${postsSnapshot.error}'),
-                      );
-                    }
-                    if (!postsSnapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                SliverToBoxAdapter(child: spaceNav),
+              ];
 
-                    final allPosts = postsSnapshot.data!;
-                    final posts = FeedQuery.apply(
-                      posts: allPosts,
-                      toneFilter: activeFilter.value,
-                      sort: activeSort.value,
-                      signedIn: profile.isSignedIn,
-                      latestActivityByPost: activityTimestampsAsync.valueOrNull,
-                      commentCounts: commentCountsAsync.valueOrNull,
-                      userInterests: FeedQuery.interestsFrom(
-                        comfortBadges: profile.comfortBadges,
-                        bio: profile.bio,
-                        tagline: profile.tagline,
+              // SliverFillRemaining gets no space once the room header is taller
+              // than the phone, which is the large-text case. A box sliver keeps
+              // the status in the scroll view, under the navigation.
+              Widget feedStatus(Widget child) => CustomScrollView(
+                key: const Key('home_feed_scroll'),
+                slivers: [
+                  ...navigationSlivers,
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const .all(24),
+                      child: Center(child: child),
+                    ),
+                  ),
+                ],
+              );
+
+              if (postsSnapshot.hasError) {
+                return feedStatus(Text('Error loading reflections: ${postsSnapshot.error}'));
+              }
+              if (!postsSnapshot.hasData) {
+                return feedStatus(const CircularProgressIndicator());
+              }
+
+              final allPosts = postsSnapshot.data!;
+              final posts = FeedQuery.apply(
+                posts: allPosts,
+                toneFilter: activeFilter.value,
+                sort: activeSort.value,
+                signedIn: profile.isSignedIn,
+                latestActivityByPost: activityTimestampsAsync.valueOrNull,
+                commentCounts: commentCountsAsync.valueOrNull,
+                userInterests: FeedQuery.interestsFrom(
+                  comfortBadges: profile.comfortBadges,
+                  bio: profile.bio,
+                  tagline: profile.tagline,
+                ),
+              );
+
+              final showInlineComposer =
+                  (kIsWeb || !isDesktop) &&
+                  selectedSpace.value != 'saved_for_later' &&
+                  !ref.watch(isCurrentMemberBannedProvider);
+
+              final feedSlivers = <Widget>[
+                ...navigationSlivers,
+                if (selectedSpace.value == 'saved_for_later')
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const .symmetric(horizontal: 14.0, vertical: 4.0),
+                      padding: const .symmetric(horizontal: 12.0, vertical: 8.0),
+                      decoration: BoxDecoration(
+                        color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
+                        borderRadius: .circular(10.0),
+                        border: Border.all(
+                          color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.3),
+                        ),
                       ),
-                    );
-
-                    final showInlineComposer =
-                        (kIsWeb || !isDesktop) &&
-                        selectedSpace.value != 'saved_for_later' &&
-                        !ref.watch(isCurrentMemberBannedProvider);
-
-                    final feedSlivers = <Widget>[
-                      if (quietDigestSnapshot.hasData &&
-                          quietDigestSnapshot.data != null &&
-                          quietDigestSnapshot.data!.isNotEmpty)
-                        SliverToBoxAdapter(
-                          child: QuietDigestBanner(
-                            primaryColor: primaryColor,
-                            legacyMessage: quietDigestSnapshot.data,
-                            isContrast: isContrast,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.bookmark_added_rounded,
+                            size: 16,
+                            color: isContrast ? Colors.yellow : primaryColor,
                           ),
-                        ),
-                      if (showInlineComposer)
-                        SliverToBoxAdapter(
-                          child: ReflectionComposer(
-                            selectedSpace: selectedSpace.value,
-                            primaryColor: primaryColor,
-                            isContrast: isContrast,
-                            onSubmit:
-                                ({
-                                  required String content,
-                                  required String toneTag,
-                                  String? specialInterestTag,
-                                  String? imageUrl,
-                                }) => submitPost(
-                                  content: content,
-                                  toneTag: toneTag,
-                                  specialInterestTag: specialInterestTag,
-                                  imageUrl: imageUrl,
-                                ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Your private bookmarks sanctuary. Only you can see reflections saved here.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isContrast
+                                    ? Colors.white
+                                    : Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                            ),
                           ),
-                        ),
-                    ];
+                        ],
+                      ),
+                    ),
+                  ),
+                if (quietDigestSnapshot.hasData &&
+                    quietDigestSnapshot.data != null &&
+                    quietDigestSnapshot.data!.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: QuietDigestBanner(
+                      primaryColor: primaryColor,
+                      legacyMessage: quietDigestSnapshot.data,
+                      isContrast: isContrast,
+                    ),
+                  ),
+                if (showInlineComposer)
+                  SliverToBoxAdapter(
+                    child: ReflectionComposer(
+                      selectedSpace: selectedSpace.value,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      onSubmit:
+                          ({
+                            required String content,
+                            required String toneTag,
+                            String? specialInterestTag,
+                            String? imageUrl,
+                          }) => submitPost(
+                            content: content,
+                            toneTag: toneTag,
+                            specialInterestTag: specialInterestTag,
+                            imageUrl: imageUrl,
+                          ),
+                    ),
+                  ),
+              ];
 
-                    if (posts.isEmpty) {
-                      feedSlivers.add(
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: selectedSpace.value == 'saved_for_later'
-                              ? Center(
-                                  child: Padding(
-                                    padding: const .all(24.0),
-                                    child: Column(
-                                      mainAxisSize: .min,
-                                      children: [
-                                        Icon(
-                                          Icons.bookmark_border_rounded,
-                                          size: 40,
-                                          color: Theme.of(context).disabledColor,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'No saved reflections yet.\n\nTap the bookmark icon (🔖) on any reflection in Prayer Sanctuary or Community Spaces to save it here for private reading.',
-                                          key: const Key('saved_for_later_empty_explainer'),
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 12.5,
-                                            height: 1.4,
-                                            color: Theme.of(context).textTheme.bodySmall?.color
-                                                ?.withValues(alpha: 0.75),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+              if (posts.isEmpty) {
+                feedSlivers.add(
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: selectedSpace.value == 'saved_for_later'
+                        ? Center(
+                            child: Padding(
+                              padding: const .all(24.0),
+                              child: Column(
+                                mainAxisSize: .min,
+                                children: [
+                                  Icon(
+                                    Icons.bookmark_border_rounded,
+                                    size: 40,
+                                    color: Theme.of(context).disabledColor,
                                   ),
-                                )
-                              : Center(
-                                  child: Text(
-                                    profile.isSignedIn
-                                        ? 'No community reflections yet in this space.'
-                                        : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
-                                    key: const Key('empty_reflections_placeholder'),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No saved reflections yet.\n\nTap the bookmark icon (🔖) on any reflection in Prayer Sanctuary or Community Spaces to save it here for private reading.',
+                                    key: const Key('saved_for_later_empty_explainer'),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 12.5,
+                                      height: 1.4,
                                       color: Theme.of(context).textTheme.bodySmall?.color
-                                          ?.withValues(alpha: 0.6),
+                                          ?.withValues(alpha: 0.75),
                                     ),
                                   ),
-                                ),
-                        ),
-                      );
-                    } else {
-                      feedSlivers.add(
-                        SliverPadding(
-                          padding: const .only(left: 12.0, right: 12.0, top: 8.0, bottom: 48.0),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate((context, index) {
-                              final p = posts[index];
-                              return ReflectionCard(
-                                post: p,
-                                isContrast: isContrast,
-                                isHighlighted: highlightedPostId.value == p.id,
-                                onNavigateToSaved: () => selectSpace('saved_for_later'),
-                                onAddReaction: (reactionType) => activeRepository.toggleReaction(
-                                  postId: p.id,
-                                  reactionType: reactionType,
-                                  userId: profile.userId,
-                                  displayName: profile.displayName,
-                                  avatarUrl: profile.avatarUrl,
-                                ),
-                              );
-                            }, childCount: posts.length),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              profile.isSignedIn ? 'No community reflections yet in this space.' : 'Space is quiet right now.\nBe the first to share an unhurried thought.',
+                              key: const Key('empty_reflections_placeholder'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).textTheme.bodySmall?.color
+                                    ?.withValues(alpha: 0.6),
+                              ),
+                            ),
                           ),
-                        ),
-                      );
-                    }
+                  ),
+                );
+              } else {
+                feedSlivers.add(
+                  SliverPadding(
+                    padding: .only(left: 12.0, right: 12.0, top: 8.0, bottom: bottomClearance),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final p = posts[index];
+                        return ReflectionCard(
+                          post: p,
+                          isContrast: isContrast,
+                          isHighlighted: highlightedPostId.value == p.id,
+                          onNavigateToSaved: () => selectSpace('saved_for_later'),
+                          onAddReaction: (reactionType) => activeRepository.toggleReaction(
+                            postId: p.id,
+                            reactionType: reactionType,
+                            userId: profile.userId,
+                            displayName: profile.displayName,
+                            avatarUrl: profile.avatarUrl,
+                          ),
+                        );
+                      }, childCount: posts.length),
+                    ),
+                  ),
+                );
+              }
 
-                    return CustomScrollView(slivers: feedSlivers);
-                  },
-                ),
-              ),
-            ],
+              return CustomScrollView(key: const Key('home_feed_scroll'), slivers: feedSlivers);
+            },
           );
         },
       );
@@ -458,17 +484,21 @@ class RefugeHomeScreen extends HookConsumerWidget {
     Widget buildActiveBottomTabBody() {
       switch (activeBottomTab.value) {
         case BelongBottomTab.home:
+          // The feed scroll view carries the welcome card and Vote & Feedback.
+          // Other home pages keep that chrome pinned so Spaces stays reachable.
+          final pinChrome = homeSubView.value != BelongHomeSubView.feed;
           return Column(
             children: [
-              if (remoteConfig.bannerEnabled)
+              if (pinChrome && remoteConfig.bannerEnabled)
                 CommunityAnchorBanner(primaryColor: primaryColor, isContrast: isContrast),
-              _BelongSubHeaderBar(
-                activeSubView: homeSubView.value,
-                onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
-                onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
-                primaryColor: primaryColor,
-                isContrast: isContrast,
-              ),
+              if (pinChrome)
+                _BelongSubHeaderBar(
+                  activeSubView: homeSubView.value,
+                  onSelectFeed: () => homeSubView.value = BelongHomeSubView.feed,
+                  onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
+                  primaryColor: primaryColor,
+                  isContrast: isContrast,
+                ),
               Expanded(child: buildHomeBody()),
             ],
           );
