@@ -151,10 +151,15 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
             plan.apiKey,
             user: plan.user,
             userToken: plan.userToken,
-            tokenLoader: (_) async {
-              final fresh = await widget.tokenClient.mint(callId: plan.callId);
-              return fresh.token;
-            },
+            tokenLoader: (_) => loadReplacementCallToken(
+              mint: () => widget.tokenClient.mint(callId: plan.callId),
+              onTokenFailure: (message) {
+                // Stream turns a loader error into Result.failure, so the
+                // catch below does not run. The client already recorded it.
+                tokenFailure = true;
+                failure = message;
+              },
+            ),
             options: StreamVideoOptions(
               muteAudioWhenInBackground: true,
               muteVideoWhenInBackground: true,
@@ -174,8 +179,10 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
           );
           final joinedFailure = _calmFailure(joined);
           if (joinedFailure != null) {
-            failure = joinedFailure;
-            await _reportConnectFailed();
+            if (!tokenFailure) {
+              failure = joinedFailure;
+              await _reportConnectFailed();
+            }
             return false;
           }
           return true;
@@ -294,6 +301,24 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
 
 String? _calmFailure<T>(Result<T> result) =>
     result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+
+/// Asks the token client for a replacement user token.
+///
+/// [onTokenFailure] runs before the exception is rethrown. Stream catches that
+/// exception and reports join as a failed result, so the page can skip a second
+/// `connect_failed` event. The message is the calm sentence, not the response.
+Future<String> loadReplacementCallToken({
+  required Future<StreamCallCredentials> Function() mint,
+  required void Function(String message) onTokenFailure,
+}) async {
+  try {
+    final fresh = await mint();
+    return fresh.token;
+  } on StreamTokenException catch (error) {
+    onTokenFailure(error.message);
+    rethrow;
+  }
+}
 
 /// Opens a preview call with a server-issued api key, user id, and user token.
 typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);

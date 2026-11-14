@@ -197,6 +197,76 @@ void main() {
     expect(blob, isNot(contains('Fellow Member')));
   });
 
+  test('a malformed token body and a thrown reader stay unavailable', () async {
+    const leakedBody = 'not-json unit-test-stream-secret eyJhbGciOiJIUzI1NiJ9.aaa.bbb';
+    final member = StreamTokenClient(
+      endpoint: Uri.parse('https://example.com/mint'),
+      httpClient: MockClient((request) async => http.Response(leakedBody, 200)),
+      readIdToken: () async => 'firebase-id-token',
+    );
+    addTearDown(member.close);
+    await expectLater(
+      member.mint(callId: 'monthly'),
+      throwsA(
+        isA<StreamTokenException>().having(
+          (error) => error.message,
+          'message',
+          streamTokenUnavailableMessage,
+        ),
+      ),
+    );
+
+    const leakedReader = 'reader-failed eyJhbGciOiJIUzI1NiJ9.ccc.ddd';
+    final reader = StreamTokenClient(
+      endpoint: Uri.parse('https://example.com/mint'),
+      httpClient: MockClient((request) async => http.Response('{}', 200)),
+      readIdToken: () async => throw StateError(leakedReader),
+    );
+    addTearDown(reader.close);
+    await expectLater(reader.mint(callId: 'monthly'), throwsA(isA<StreamTokenException>()));
+
+    const inviteToken = 'ddddddddddddddddddddddddddddddddddddddddddd';
+    final guest = StreamGuestTokenClient(
+      endpoint: Uri.parse('https://example.com/mint'),
+      inviteToken: inviteToken,
+      httpClient: MockClient((request) async => http.Response(leakedBody, 200)),
+    );
+    addTearDown(guest.close);
+    await expectLater(
+      guest.join(displayName: 'Fellow Member'),
+      throwsA(isA<StreamTokenException>()),
+    );
+
+    final reasons = analytics.recordedEventsForTesting
+        .where((event) => event['name'] == 'call_failed')
+        .map((event) => event['failure_reason']);
+    expect(reasons, ['unavailable', 'unavailable', 'unavailable']);
+    expect(
+      analytics.recordedEventsForTesting.where((event) => event['name'] == 'app_error'),
+      hasLength(3),
+    );
+    final blob = '${analytics.recordedEventsForTesting} ${errors.recordedErrorsForTesting}';
+    expect(blob, isNot(contains(leakedBody)));
+    expect(blob, isNot(contains('unit-test-stream-secret')));
+    expect(blob, isNot(contains('eyJ')));
+    expect(blob, isNot(contains(leakedReader)));
+    expect(blob, isNot(contains(inviteToken)));
+    expect(blob, isNot(contains('Fellow Member')));
+  });
+
+  test('a refresh failure is marked before Stream hides the exception', () async {
+    var marked = '';
+    await expectLater(
+      loadReplacementCallToken(
+        mint: () async => throw const StreamTokenException(streamSignInRequiredMessage),
+        onTokenFailure: (message) => marked = message,
+      ),
+      throwsA(isA<StreamTokenException>()),
+    );
+    expect(marked, streamSignInRequiredMessage);
+    expect(analytics.recordedEventsForTesting, isEmpty);
+  });
+
   test('media helpers record the toggle and a failure without a display name', () async {
     await reportCallMediaToggle(signedInMember: false, medium: 'microphone', enabled: true);
     await reportCallMediaFailure(signedInMember: true, failureReason: 'camera_unavailable');

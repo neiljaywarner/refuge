@@ -66,6 +66,10 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
     return _request(displayName: _displayName, guestUserId: _guestUserId, seatKey: _seatKey);
   });
 
+  /// Reports a handled guest failure, then rethrows a calm sentence.
+  ///
+  /// A malformed body throws [FormatException]. That message can quote the
+  /// response, so it is recorded as `unavailable` and is not copied into the event.
   Future<T> _guard<T>(String action, Future<T> Function() body) async {
     try {
       return await body();
@@ -77,6 +81,14 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
         stack: stack,
       );
       rethrow;
+    } on FormatException catch (_, stack) {
+      await GroupCallTelemetry.current?.failed(
+        role: 'guest',
+        action: action,
+        failureReason: 'unavailable',
+        stack: stack,
+      );
+      throw const StreamTokenException(streamTokenUnavailableMessage);
     }
   }
 
