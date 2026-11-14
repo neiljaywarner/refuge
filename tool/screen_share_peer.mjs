@@ -13,9 +13,16 @@
 //
 // Usage: node tool/screen_share_peer.mjs
 // Exit 0 prints {"ok":true,"bytesReceived":N}. Exit 1 prints the reason.
+//
+// Chrome 157 binds DevTools to 127.0.0.1. When that port is already taken it
+// logs "bind() failed: Address already in use" and listens on [::1] instead.
+// Polling only http://127.0.0.1:9333/json then fails with
+// "TypeError: fetch failed" and the byte check never runs. Port 0 makes
+// Chrome pick a free port. This script connects to the host in
+// "DevTools listening on ws://...", and tries [::1] as well as 127.0.0.1.
 
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -69,12 +76,14 @@ run()
 
 async function main() {
   const profile = await mkdtemp(join(tmpdir(), 'screenshare-'));
-  const port = 9333;
+  const observed = { devtoolsWs: '', stderr: '', exited: null, spawnError: null };
   const child = spawn(
     chrome,
     [
       '--headless=new',
-      `--remote-debugging-port=${port}`,
+      // 0 asks Chrome for an unused port. A fixed port races anything else
+      // on the machine and falls back to an IPv6-only listener.
+      '--remote-debugging-port=0',
       `--user-data-dir=${profile}`,
       '--use-fake-ui-for-media-stream',
       '--auto-select-desktop-capture-source=Entire screen',
@@ -85,12 +94,25 @@ async function main() {
       '--no-first-run',
       'about:blank',
     ],
-    { stdio: 'ignore' },
+    { detached: true, stdio: ['ignore', 'ignore', 'pipe'] },
   );
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (text) => {
+    observed.stderr = (observed.stderr + text).slice(-2000);
+    const match = `${text}\n${observed.stderr}`.match(/DevTools listening on (ws:\/\/\S+)/);
+    if (match) observed.devtoolsWs = match[1];
+  });
+  child.stderr.on('error', () => {});
+  child.once('exit', (code, signal) => {
+    observed.exited = signal ? `signal ${signal}` : `code ${code}`;
+  });
+  child.once('error', (error) => {
+    observed.spawnError = error;
+  });
   let page;
   try {
     page = await serveBlankPage();
-    const target = await waitForPage(port);
+    const target = await waitForPage(profile, observed);
     const result = await evaluate(
       target.webSocketDebuggerUrl,
       `http://127.0.0.1:${page.port}/`,
@@ -114,28 +136,88 @@ async function main() {
     console.log(JSON.stringify({ ok: true, bytesReceived: value.bytesReceived }));
   } finally {
     page?.server.close();
-    child.kill('SIGKILL');
+    stopChrome(child);
     await new Promise((resolve) => setTimeout(resolve, 200));
     await rm(profile, { recursive: true, force: true }).catch(() => {});
   }
 }
 
-async function waitForPage(port) {
-  const deadline = Date.now() + 10000;
-  let last = '';
-  while (Date.now() < deadline) {
+function stopChrome(child) {
+  if (!child.pid) return;
+  try {
+    process.kill(-child.pid, 'SIGKILL');
+  } catch {
     try {
-      const response = await fetch(`http://127.0.0.1:${port}/json`);
-      const pages = await response.json();
-      const page = pages.find((item) => item.type === 'page' && item.webSocketDebuggerUrl);
-      if (page) return page;
-      last = JSON.stringify(pages);
-    } catch (error) {
-      last = String(error);
+      child.kill('SIGKILL');
+    } catch {
+      // The browser has already exited.
+    }
+  }
+}
+
+async function waitForPage(profile, observed) {
+  const deadline = Date.now() + 15000;
+  let last = 'devtools port not announced yet';
+  while (Date.now() < deadline) {
+    if (observed.spawnError) {
+      throw new Error(`chrome did not start: ${describeError(observed.spawnError)}`);
+    }
+    if (observed.exited) {
+      throw new Error(`chrome exited before a page opened: ${observed.exited}; ${stderrTail(observed)}`);
+    }
+    for (const url of await devToolsJsonUrls(profile, observed)) {
+      try {
+        const response = await fetch(url, { signal: AbortSignal.timeout(1000) });
+        if (!response.ok) {
+          last = `${url} status ${response.status}`;
+          continue;
+        }
+        const pages = await response.json();
+        const page = pages.find((item) => item.type === 'page' && item.webSocketDebuggerUrl);
+        if (page) return page;
+        last = JSON.stringify(pages);
+      } catch (error) {
+        last = `${url} ${describeError(error)}`;
+      }
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  throw new Error(`chrome did not open a page: ${last}`);
+  throw new Error(`chrome did not open a page: ${last}; ${stderrTail(observed)}`);
+}
+
+async function devToolsJsonUrls(profile, observed) {
+  const urls = [];
+  if (observed.devtoolsWs) urls.push(jsonListUrl(observed.devtoolsWs));
+  try {
+    const text = await readFile(join(profile, 'DevToolsActivePort'), 'utf8');
+    const port = text.split('\n')[0].trim();
+    if (/^\d+$/.test(port)) {
+      urls.push(`http://127.0.0.1:${port}/json`, `http://[::1]:${port}/json`);
+    }
+  } catch {
+    // Chrome writes this file after the listening line. Either source is enough.
+  }
+  return [...new Set(urls)];
+}
+
+function jsonListUrl(webSocketUrl) {
+  const url = new URL(webSocketUrl);
+  url.protocol = 'http:';
+  url.pathname = '/json';
+  url.search = '';
+  url.hash = '';
+  return url.toString();
+}
+
+function describeError(error) {
+  const cause = error?.cause;
+  const detail = cause?.code || cause?.message || (cause ? String(cause) : '');
+  return detail ? `${error} (${detail})` : String(error);
+}
+
+function stderrTail(observed) {
+  const text = observed.stderr.replace(/\s+/g, ' ').trim();
+  return text.slice(-400);
 }
 
 function serveBlankPage() {
@@ -153,6 +235,14 @@ function evaluate(url, pageUrl, expression) {
     const socket = new WebSocket(url);
     let id = 0;
     const pending = new Map();
+    const timer = setTimeout(() => {
+      socket.close();
+      reject(new Error('chrome evaluate timed out'));
+    }, 12000);
+    const finish = (callback, value) => {
+      clearTimeout(timer);
+      callback(value);
+    };
     socket.addEventListener('open', async () => {
       await send('Page.enable');
       await send('Runtime.enable');
@@ -164,10 +254,10 @@ function evaluate(url, pageUrl, expression) {
         returnByValue: true,
       }).then((value) => {
         socket.close();
-        resolve(value);
+        finish(resolve, value);
       }, (error) => {
         socket.close();
-        reject(error);
+        finish(reject, error);
       });
     });
     socket.addEventListener('message', (event) => {
@@ -179,7 +269,7 @@ function evaluate(url, pageUrl, expression) {
         else done(message.result);
       }
     });
-    socket.addEventListener('error', () => reject(new Error('chrome socket failed')));
+    socket.addEventListener('error', () => finish(reject, new Error('chrome socket failed')));
     function send(method, params) {
       const next = ++id;
       socket.send(JSON.stringify({ id: next, method, params }));
