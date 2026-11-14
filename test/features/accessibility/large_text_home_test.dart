@@ -17,17 +17,29 @@ void main() {
         expect(find.byKey(const Key('bottom_nav_tab_home')), findsOneWidget);
         expect(find.bySemanticsLabel(RegExp('Home tab')), findsOneWidget);
 
-        final feedScroll = find.descendant(
-          of: find.byKey(const Key('home_feed_scroll')),
-          matching: find.byWidgetPredicate(
-            (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
-          ),
-        );
-        await tester.scrollUntilVisible(
-          find.byKey(const Key('open_feedback_and_voting_button')),
-          240,
-          scrollable: feedScroll.first,
-        );
+        if (scale > 1.3) {
+          // Vote & Feedback lives in the home menu once text is this large.
+          await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
+          await settleLargeText(tester);
+          await tester.ensureVisible(find.byKey(const Key('open_feedback_and_voting_button')));
+          await tester.pump();
+          // The drawer covers the app bar's semantics. Close it before the
+          // Sign In checks below read that bar.
+          tester.state<ScaffoldState>(find.byType(Scaffold)).closeDrawer();
+          await settleLargeText(tester);
+        } else {
+          final feedScroll = find.descendant(
+            of: find.byKey(const Key('home_feed_scroll')),
+            matching: find.byWidgetPredicate(
+              (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+            ),
+          );
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('open_feedback_and_voting_button')),
+            240,
+            scrollable: feedScroll.first,
+          );
+        }
         await tester.pump();
         session.check();
         expectMinTapTarget(tester, find.byKey(const Key('bottom_nav_tab_home')));

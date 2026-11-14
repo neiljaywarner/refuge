@@ -23,6 +23,10 @@ class SpaceNavigationBar extends ConsumerWidget {
   final ValueChanged<FeedSortOption>? onSelectSort;
   final bool? isContrast;
 
+  /// When set, the room, filter, and sort controls are at least this tall.
+  /// Large-text drawers pass 48 so the targets stay tappable (#951).
+  final double? minControlHeight;
+
   const SpaceNavigationBar({
     super.key,
     required this.selectedSpace,
@@ -33,6 +37,7 @@ class SpaceNavigationBar extends ConsumerWidget {
     this.activeSort = FeedSortOption.latest,
     this.onSelectSort,
     this.isContrast,
+    this.minControlHeight,
   });
 
   @override
@@ -75,6 +80,7 @@ class SpaceNavigationBar extends ConsumerWidget {
             primary: primary,
             effectiveContrast: effectiveContrast,
             spaceInfo: spaceInfo,
+            minControlHeight: minControlHeight,
           );
           final filter = _filterControl(
             context: context,
@@ -84,6 +90,7 @@ class SpaceNavigationBar extends ConsumerWidget {
             effectiveContrast: effectiveContrast,
             showPrefix: showPrefix,
             maxLabelWidth: maxFilterLabelWidth,
+            minControlHeight: minControlHeight,
           );
           final sort = _sortControl(
             context: context,
@@ -93,6 +100,7 @@ class SpaceNavigationBar extends ConsumerWidget {
             effectiveContrast: effectiveContrast,
             showPrefix: showPrefix,
             maxLabelWidth: maxSortLabelWidth,
+            minControlHeight: minControlHeight,
           );
           final prayerReentry = selectedSpace != 'prayer'
               ? _returnToPrayerSanctuaryButton(context, ref, theme, primary, effectiveContrast)
@@ -274,6 +282,7 @@ class SpaceNavigationBar extends ConsumerWidget {
     required Color primary,
     required bool effectiveContrast,
     required BelongSpaceInfo spaceInfo,
+    double? minControlHeight,
   }) => Align(
     alignment: Alignment.centerLeft,
     child: Semantics(
@@ -329,7 +338,7 @@ class SpaceNavigationBar extends ConsumerWidget {
           );
         }).toList(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: minControlHeight == null ? 3 : 16),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -373,6 +382,7 @@ class SpaceNavigationBar extends ConsumerWidget {
     required bool effectiveContrast,
     required bool showPrefix,
     required double maxLabelWidth,
+    double? minControlHeight,
   }) {
     if (onSelectFilter == null) return null;
     final isFiltered = activeFilter != 'All';
@@ -441,6 +451,7 @@ class SpaceNavigationBar extends ConsumerWidget {
           isContrast: effectiveContrast,
           primary: primary,
           maxLabelWidth: maxLabelWidth,
+          minHeight: minControlHeight,
         ),
       ),
     );
@@ -454,6 +465,7 @@ class SpaceNavigationBar extends ConsumerWidget {
     required bool effectiveContrast,
     required bool showPrefix,
     required double maxLabelWidth,
+    double? minControlHeight,
   }) {
     if (onSelectSort == null) return null;
     return Semantics(
@@ -538,6 +550,7 @@ class SpaceNavigationBar extends ConsumerWidget {
           isContrast: effectiveContrast,
           primary: primary,
           maxLabelWidth: maxLabelWidth,
+          minHeight: minControlHeight,
         ),
       ),
     );
@@ -553,6 +566,7 @@ class _CompactPopupPill extends StatelessWidget {
     required this.isContrast,
     required this.primary,
     required this.maxLabelWidth,
+    this.minHeight,
     this.labelKey,
   });
 
@@ -563,6 +577,7 @@ class _CompactPopupPill extends StatelessWidget {
   final bool isContrast;
   final Color primary;
   final double maxLabelWidth;
+  final double? minHeight;
   final Key? labelKey;
 
   @override
@@ -590,14 +605,15 @@ class _CompactPopupPill extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Horizontal padding, icon, gap, and dropdown. The label uses whatever
-        // room is left so a bounded phone row ellipsizes instead of overflowing.
-        const chrome = 54.0;
+        // Horizontal padding, icon, gap, dropdown, and the 1px border on
+        // each side. The label uses whatever room is left so a bounded
+        // phone row ellipsizes instead of overflowing.
+        const chrome = 56.0;
         final bounded = constraints.maxWidth.isFinite;
         final room = bounded ? constraints.maxWidth - chrome : maxLabelWidth;
         final labelMax = room < maxLabelWidth ? (room < 36 ? 36.0 : room) : maxLabelWidth;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: minHeight == null ? 6 : 16),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(8),
