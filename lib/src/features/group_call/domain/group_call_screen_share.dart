@@ -70,6 +70,13 @@ bool groupCallPlatformCanPublish(GroupCallSharePlatform platform) =>
 /// A person may share when Stream granted `screenshare`, this platform can
 /// publish, and a guest also has the organizer's allow flag.
 ///
+/// A signed-in host (`host`, the same check as Remove and End) keeps the button on
+/// web and Android even when [CallState.ownCapabilities] does not list
+/// `screenshare`. Remove and End already use that host check. The capability
+/// list is a separate snapshot and can be empty or stale after join, while
+/// the call type still grants `screenshare` to host. iOS and desktop stay
+/// off. A non-host still needs the grant. A guest also needs the allow flag.
+///
 /// https://getstream.io/video/docs/flutter/guides/screensharing/
 /// (`call.hasPermission(CallPermission.screenshare)`)
 bool groupCallCanShare({
@@ -77,9 +84,11 @@ bool groupCallCanShare({
   required bool guest,
   required bool organizerAllowsGuests,
   required GroupCallSharePlatform platform,
+  bool host = false,
 }) {
-  if (!screenshareGranted) return false;
   if (!groupCallPlatformCanPublish(platform)) return false;
+  if (host && !guest) return true;
+  if (!screenshareGranted) return false;
   if (guest && !organizerAllowsGuests) return false;
   return true;
 }
@@ -134,6 +143,7 @@ GroupCallShareView groupCallShareView({
   required bool organizerAllowsGuests,
   required GroupCallSharePlatform platform,
   required Iterable<GroupCallShareParticipant> participants,
+  bool host = false,
 }) {
   final people = participants.toList(growable: false);
   final presenter = groupCallPresenter(people);
@@ -143,6 +153,7 @@ GroupCallShareView groupCallShareView({
       guest: guest,
       organizerAllowsGuests: organizerAllowsGuests,
       platform: platform,
+      host: host,
     ),
     localSharing: presenter?.local ?? false,
     presenter: presenter,
@@ -152,16 +163,20 @@ GroupCallShareView groupCallShareView({
 /// Builds the share view from a live [CallState].
 ///
 /// [guest] is Belong sign-in, not a Stream role. [platform] is this device.
+/// [host] is true when this signed-in person created the room or has a host
+/// role. That is the same check as Remove and End.
 GroupCallShareView groupCallShareViewFromCall({
   required Iterable<CallPermission> capabilities,
   required bool guest,
   required Map<String, Object> custom,
   required GroupCallSharePlatform platform,
   required Iterable<CallParticipantState> participants,
+  bool host = false,
 }) => groupCallShareView(
   screenshareGranted: capabilitiesIncludeScreenshare(capabilities),
   guest: guest,
   organizerAllowsGuests: organizerAllowsGuestScreenShare(custom),
   platform: platform,
+  host: host,
   participants: [for (final person in participants) groupCallShareParticipant(person)],
 );

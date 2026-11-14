@@ -319,13 +319,22 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     if (_remotes.allow(remotes, DateTime.now())) logGroupCall909(remotes);
   }
 
-  GroupCallShareView _shareView(CallState state) => groupCallShareViewFromCall(
-    capabilities: state.ownCapabilities,
-    guest: !widget.signedInMember,
-    custom: state.custom,
-    platform: widget.sharePlatform ?? currentGroupCallSharePlatform(),
-    participants: state.callParticipants,
-  );
+  GroupCallShareView _shareView(CallState state) {
+    final local = state.localParticipant;
+    final host = canModerateGroupCall(
+      signedInMember: widget.signedInMember,
+      createdByMe: state.createdByMe,
+      roles: local?.roles ?? const [],
+    );
+    return groupCallShareViewFromCall(
+      capabilities: state.ownCapabilities,
+      guest: !widget.signedInMember,
+      custom: state.custom,
+      platform: widget.sharePlatform ?? currentGroupCallSharePlatform(),
+      participants: state.callParticipants,
+      host: host,
+    );
+  }
 
   /// Starts or stops this person's share.
   ///

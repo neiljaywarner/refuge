@@ -103,6 +103,50 @@ void main() {
     expect(find.textContaining('token'), findsNothing);
   });
 
+  testWidgets('a signed-in host on web sees Share screen when screenshare is granted', (
+    tester,
+  ) async {
+    final room = _Room(
+      host: true,
+      grants: const [CallPermission.screenshare, CallPermission.sendAudio],
+    );
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    expect(find.byKey(const Key('group_call_share_button')), findsOneWidget);
+    expect(find.bySemanticsLabel('Share screen'), findsOneWidget);
+    expect(find.byIcon(Icons.screen_share_rounded), findsOneWidget);
+    expect(find.byKey(const Key('group_call_end_button')), findsOneWidget);
+  });
+
+  testWidgets('a signed-in host on web still sees Share screen when ownCapabilities omit it', (
+    tester,
+  ) async {
+    final room = _Room(
+      host: true,
+      grants: const [CallPermission.sendAudio, CallPermission.endCall],
+    );
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    expect(find.byKey(const Key('group_call_end_button')), findsOneWidget);
+    expect(find.byKey(const Key('group_call_share_button')), findsOneWidget);
+    expect(find.bySemanticsLabel('Share screen'), findsOneWidget);
+  });
+
+  testWidgets('a signed-in host on iOS does not see Share screen', (tester) async {
+    final room = _Room(
+      host: true,
+      grants: const [CallPermission.screenshare],
+      platform: GroupCallSharePlatform.ios,
+    );
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    expect(find.byKey(const Key('group_call_end_button')), findsOneWidget);
+    expect(find.byKey(const Key('group_call_share_button')), findsNothing);
+  });
+
   testWidgets('the host can allow guests to share', (tester) async {
     final room = _Room(host: true, grants: const [CallPermission.screenshare]);
     addTearDown(room.close);

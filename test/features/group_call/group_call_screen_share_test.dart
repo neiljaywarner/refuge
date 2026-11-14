@@ -30,6 +30,49 @@ void main() {
     );
   });
 
+  test('a signed-in host on web keeps Share even without screenshare in ownCapabilities', () {
+    expect(
+      groupCallCanShare(
+        screenshareGranted: false,
+        guest: false,
+        organizerAllowsGuests: false,
+        platform: GroupCallSharePlatform.web,
+        host: true,
+      ),
+      isTrue,
+    );
+    expect(
+      groupCallCanShare(
+        screenshareGranted: true,
+        guest: false,
+        organizerAllowsGuests: false,
+        platform: GroupCallSharePlatform.web,
+        host: true,
+      ),
+      isTrue,
+    );
+    expect(
+      groupCallCanShare(
+        screenshareGranted: true,
+        guest: false,
+        organizerAllowsGuests: false,
+        platform: GroupCallSharePlatform.ios,
+        host: true,
+      ),
+      isFalse,
+    );
+    expect(
+      groupCallCanShare(
+        screenshareGranted: true,
+        guest: false,
+        organizerAllowsGuests: false,
+        platform: GroupCallSharePlatform.other,
+        host: true,
+      ),
+      isFalse,
+    );
+  });
+
   test('a missing screenshare grant hides sharing on every platform', () {
     for (final platform in GroupCallSharePlatform.values) {
       expect(
