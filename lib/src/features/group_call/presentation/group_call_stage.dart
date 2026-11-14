@@ -160,15 +160,9 @@ class _GroupCallParticipantsAreaState extends State<GroupCallParticipantsArea> {
     );
     final grid = widget.gridBuilder?.call(widget.call) ?? StreamCallParticipants(call: widget.call);
     final presenter = view.presenter;
-    CallParticipantState? sharing;
-    if (presenter != null) {
-      for (final person in state.callParticipants) {
-        if (person.userId == presenter.userId && person.isLocal == presenter.local) {
-          sharing = person;
-          break;
-        }
-      }
-    }
+    final sharing = presenter == null
+        ? null
+        : groupCallPresenterParticipant(presenter: presenter, participants: state.callParticipants);
     final tile = presenter == null
         ? null
         : widget.tileBuilder?.call(widget.call, presenter) ??

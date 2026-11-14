@@ -336,10 +336,11 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
   Future<void> _toggleShare() async {
     final view = _shareView(widget.call.state.value);
     final sharing = view.localSharing;
+    final turningOn = !sharing;
     final platform = widget.sharePlatform ?? currentGroupCallSharePlatform();
     logGroupCallScreenShare(
       groupCallScreenShareRequest(
-        enabled: !sharing,
+        enabled: turningOn,
         platform: platform,
         granted: view.canShare,
         guest: !widget.signedInMember,
@@ -347,14 +348,15 @@ class _GroupCallLiveControlsState extends State<GroupCallLiveControls> {
     );
     final result = await setGroupCallScreenShare(
       widget.call,
-      enabled: !sharing,
+      enabled: turningOn,
       platform: platform,
       android: platform == GroupCallSharePlatform.android
           ? widget.androidShare ?? streamAndroidShareHooks()
           : null,
+      stillAllowed: turningOn ? () => _shareView(widget.call.state.value).canShare : null,
     );
     logGroupCallScreenShare(
-      groupCallScreenShareResult(enabled: !sharing, accepted: result.isSuccess),
+      groupCallScreenShareResult(enabled: turningOn, accepted: result.isSuccess),
     );
     if (!mounted) return;
     if (result.isFailure) {

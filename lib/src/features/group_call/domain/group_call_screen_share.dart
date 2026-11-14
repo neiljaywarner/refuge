@@ -96,6 +96,23 @@ GroupCallShareParticipant groupCallShareParticipant(CallParticipantState person)
       screenShareEnabled: person.isScreenShareEnabled,
     );
 
+/// The session that is actually publishing [presenter]'s screen-share track.
+///
+/// Two sessions can share a user id. The first session with that id may not
+/// be the one [groupCallPresenter] selected.
+CallParticipantState? groupCallPresenterParticipant({
+  required GroupCallPresenter presenter,
+  required Iterable<CallParticipantState> participants,
+}) {
+  for (final person in participants) {
+    if (person.userId != presenter.userId) continue;
+    if (person.isLocal != presenter.local) continue;
+    if (!person.isScreenShareEnabled) continue;
+    return person;
+  }
+  return null;
+}
+
 /// The local sharer wins. Otherwise the first remote sharer in [people].
 GroupCallPresenter? groupCallPresenter(Iterable<GroupCallShareParticipant> people) {
   GroupCallShareParticipant? remote;

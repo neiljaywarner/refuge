@@ -12,6 +12,9 @@ void main() {
     expect(line, startsWith('[#screenshare] '));
     expect(line.contains('@'), isFalse);
     expect(line.contains('eyJ'), isFalse);
+    expect(line.contains('hbGci'), isFalse);
+    expect(line.contains('aaa'), isFalse);
+    expect(line.contains('bbb'), isFalse);
     expect(line, contains('platform=web'));
     expect(line, contains('granted=true'));
     expect(line, contains('guest=false'));

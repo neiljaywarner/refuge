@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:refuge4serverpod/src/features/group_call/domain/group_call_screen_share.dart';
 import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_reactive_controls.dart';
+import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_screen_share_session.dart';
 import 'package:refuge4serverpod/src/features/group_call/presentation/group_call_session_controls.dart';
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
@@ -15,6 +16,16 @@ void main() {
     );
     expect(find.byKey(const Key('group_call_share_button')), findsNothing);
     expect(find.byIcon(Icons.screen_share_rounded), findsNothing);
+  });
+
+  testWidgets('an active share can still be stopped after eligibility is removed', (tester) async {
+    var shares = 0;
+    await tester.pumpWidget(_session(canShare: false, sharing: true, onShare: () => shares++));
+
+    expect(find.byIcon(Icons.stop_screen_share_rounded), findsOneWidget);
+    expect(find.bySemanticsLabel('Stop sharing'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('group_call_share_button')));
+    expect(shares, 1);
   });
 
   testWidgets('the share button asks to start, then to stop', (tester) async {
@@ -105,6 +116,82 @@ void main() {
 
     expect(room.guestShareUpdates, [true]);
     expect(room.custom[guestScreenShareCustomKey], isTrue);
+    expect(find.text('Guests still cannot share. Try again.'), findsNothing);
+  });
+
+  testWidgets('a failed guest-share update does not commit and stays calm', (tester) async {
+    final room = _Room(
+      host: true,
+      grants: const [CallPermission.screenshare],
+      failGuestUpdate: true,
+    );
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    await tester.tap(find.byKey(const Key('group_call_guest_share_switch')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(room.guestShareUpdates, isEmpty);
+    expect(room.custom.containsKey(guestScreenShareCustomKey), isFalse);
+    expect(find.text('Guests still cannot share. Try again.'), findsOneWidget);
+    expect(find.textContaining('metadata'), findsNothing);
+  });
+
+  testWidgets('a guest who is sharing can stop after the host disallows it', (tester) async {
+    final room = _Room(
+      guest: true,
+      grants: const [CallPermission.screenshare],
+      guestShareAllowed: true,
+    );
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    await tester.tap(find.byKey(const Key('group_call_share_button')));
+    await tester.pump();
+    expect(find.byIcon(Icons.stop_screen_share_rounded), findsOneWidget);
+
+    room.disallowGuests();
+    await tester.pump();
+
+    expect(find.byIcon(Icons.stop_screen_share_rounded), findsOneWidget);
+    await tester.tap(find.byKey(const Key('group_call_share_button')));
+    await tester.pump();
+    expect(room.shareRequests, [true, false]);
+  });
+
+  testWidgets('Android share does not start if the host disallows it during consent', (
+    tester,
+  ) async {
+    final events = <String>[];
+    final room = _Room(
+      guest: true,
+      grants: const [CallPermission.screenshare],
+      guestShareAllowed: true,
+      platform: GroupCallSharePlatform.android,
+    );
+    room.androidShare = GroupCallAndroidShareHooks(
+      requestConsent: (call) async {
+        events.add('consent');
+        room.disallowGuests();
+        return true;
+      },
+      startNotification: (call) async {
+        events.add('start');
+        return true;
+      },
+      stopNotification: (callCid) async => events.add('stop'),
+    );
+    addTearDown(room.close);
+    await room.pump(tester);
+
+    await tester.tap(find.byKey(const Key('group_call_share_button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(room.shareRequests, isEmpty);
+    expect(events, ['consent']);
+    expect(find.text('Screen sharing stayed as it was. Try again.'), findsOneWidget);
   });
 }
 
@@ -129,12 +216,16 @@ Widget _session({required bool canShare, required bool sharing, required VoidCal
 
 class _MockCall extends Mock implements Call {}
 
+class _UnusedCallMetadata extends Fake implements CallMetadata {}
+
 class _Room {
   _Room({
     this.guest = false,
     this.host = false,
     this.member = false,
     this.guestShareAllowed = false,
+    this.failGuestUpdate = false,
+    this.platform = GroupCallSharePlatform.web,
     required this.grants,
   }) {
     when(() => call.state).thenReturn(_states);
@@ -155,13 +246,16 @@ class _Room {
       return const Result.success(none);
     });
     when(() => call.update(custom: any(named: 'custom'))).thenAnswer((invocation) async {
+      if (failGuestUpdate) {
+        return Result<CallMetadata>.error('metadata unused');
+      }
       final next = invocation.namedArguments[#custom]! as Map<String, Object>;
       guestShareUpdates.add(next[guestScreenShareCustomKey] == true);
       custom
         ..clear()
         ..addAll(next);
       _states.publish(_callState());
-      return Result<CallMetadata>.error('metadata unused');
+      return Result.success(_UnusedCallMetadata());
     });
   }
 
@@ -170,6 +264,9 @@ class _Room {
   final bool host;
   final bool member;
   final bool guestShareAllowed;
+  final bool failGuestUpdate;
+  final GroupCallSharePlatform platform;
+  GroupCallAndroidShareHooks? androidShare;
   final List<CallPermission> grants;
   final shareRequests = <bool>[];
   final guestShareUpdates = <bool>[];
@@ -180,13 +277,19 @@ class _Room {
 
   void failNextShare() => _failNext = true;
 
+  void disallowGuests() {
+    custom[guestScreenShareCustomKey] = false;
+    _states.publish(_callState());
+  }
+
   Future<void> pump(WidgetTester tester) => tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
         body: GroupCallLiveControls(
           call: call,
           signedInMember: member || (host && !guest),
-          sharePlatform: GroupCallSharePlatform.web,
+          sharePlatform: platform,
+          androidShare: androidShare,
           onLeave: () async {},
           onRemove: (userId) async {},
           onEnd: () async {},

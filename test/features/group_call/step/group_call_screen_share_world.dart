@@ -10,6 +10,8 @@ import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 class _MockCall extends Mock implements Call {}
 
+class _UnusedCallMetadata extends Fake implements CallMetadata {}
+
 /// Shared call double for the screen-share Gherkin steps.
 class GroupCallScreenShareWorld {
   GroupCallScreenShareWorld({
@@ -38,7 +40,7 @@ class GroupCallScreenShareWorld {
         ..clear()
         ..addAll(next);
       _states.publish(_callState());
-      return Result<CallMetadata>.error('metadata unused');
+      return Result.success(_UnusedCallMetadata());
     });
   }
 

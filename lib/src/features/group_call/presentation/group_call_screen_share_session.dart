@@ -28,6 +28,22 @@ class GroupCallAndroidShareHooks {
   final Future<void> Function(String callCid) stopNotification;
 }
 
+/// Registers Android notification handlers for one [StreamVideo] client.
+///
+/// [StreamBackgroundService.init] is what stops the track when the person
+/// taps Stop on the screen-share notification, and what stops the service
+/// when capture ends outside the app. Web and iOS do not use that service.
+/// Call this after the preview client is created, and before a share starts.
+///
+/// https://getstream.io/video/docs/flutter/advanced/background-modes/
+void prepareGroupCallScreenShare({
+  required GroupCallSharePlatform platform,
+  required void Function() registerAndroidHandlers,
+}) {
+  if (platform != GroupCallSharePlatform.android) return;
+  registerAndroidHandlers();
+}
+
 /// Hooks that call Stream's Android screen-share service.
 ///
 /// https://getstream.io/video/docs/flutter/guides/screensharing/
@@ -53,13 +69,14 @@ Future<Result<None>> setGroupCallScreenShare(
   required bool enabled,
   required GroupCallSharePlatform platform,
   GroupCallAndroidShareHooks? android,
+  bool Function()? stillAllowed,
 }) async {
   if (platform == GroupCallSharePlatform.android) {
     final hooks = android;
     if (hooks == null) {
       return Result.error('Screen sharing is not available on this device.');
     }
-    return _setAndroidShare(call, enabled: enabled, hooks: hooks);
+    return _setAndroidShare(call, enabled: enabled, hooks: hooks, stillAllowed: stillAllowed);
   }
   if (platform != GroupCallSharePlatform.web) {
     return Result.error('Screen sharing is not available on this device.');
@@ -74,6 +91,7 @@ Future<Result<None>> _setAndroidShare(
   Call call, {
   required bool enabled,
   required GroupCallAndroidShareHooks hooks,
+  bool Function()? stillAllowed,
 }) async {
   if (!enabled) {
     final result = await call.setScreenShareEnabled(enabled: false);
@@ -83,7 +101,16 @@ Future<Result<None>> _setAndroidShare(
   if (!await hooks.requestConsent(call)) {
     return Result.error('Screen sharing stayed as it was.');
   }
+  // The host can turn guest sharing off while the system dialog is open.
+  // Stopping does not use this check.
+  if (stillAllowed != null && !stillAllowed()) {
+    return Result.error('Screen sharing stayed as it was.');
+  }
   if (!await hooks.startNotification(call)) {
+    return Result.error('Screen sharing stayed as it was.');
+  }
+  if (stillAllowed != null && !stillAllowed()) {
+    await hooks.stopNotification(call.callCid.value);
     return Result.error('Screen sharing stayed as it was.');
   }
   final result = await call.setScreenShareEnabled(enabled: true);

@@ -115,6 +115,92 @@ void main() {
     expect(events, ['stop']);
   });
 
+  test('Android registers screen-share handlers and other platforms do not', () {
+    var calls = 0;
+    prepareGroupCallScreenShare(
+      platform: GroupCallSharePlatform.android,
+      registerAndroidHandlers: () => calls++,
+    );
+    prepareGroupCallScreenShare(
+      platform: GroupCallSharePlatform.web,
+      registerAndroidHandlers: () => calls++,
+    );
+    prepareGroupCallScreenShare(
+      platform: GroupCallSharePlatform.ios,
+      registerAndroidHandlers: () => calls++,
+    );
+
+    expect(calls, 1);
+  });
+
+  test('Android does not start capture if sharing is no longer allowed', () async {
+    final call = _MockCall();
+    final events = <String>[];
+    final hooks = GroupCallAndroidShareHooks(
+      requestConsent: (call) async {
+        events.add('consent');
+        return true;
+      },
+      startNotification: (call) async {
+        events.add('start');
+        return true;
+      },
+      stopNotification: (callCid) async => events.add('stop'),
+    );
+
+    final result = await setGroupCallScreenShare(
+      call,
+      enabled: true,
+      platform: GroupCallSharePlatform.android,
+      android: hooks,
+      stillAllowed: () => false,
+    );
+
+    expect(result.isFailure, isTrue);
+    expect(events, ['consent']);
+    verifyNever(
+      () => call.setScreenShareEnabled(
+        enabled: any(named: 'enabled'),
+        constraints: any(named: 'constraints'),
+      ),
+    );
+  });
+
+  test('Android stops the service if sharing is revoked before capture', () async {
+    final call = _MockCall();
+    when(() => call.callCid).thenReturn(StreamCallCid(cid: 'default:monthly'));
+    var checks = 0;
+    final events = <String>[];
+    final hooks = GroupCallAndroidShareHooks(
+      requestConsent: (call) async {
+        events.add('consent');
+        return true;
+      },
+      startNotification: (call) async {
+        events.add('start');
+        return true;
+      },
+      stopNotification: (callCid) async => events.add('stop:$callCid'),
+    );
+
+    final result = await setGroupCallScreenShare(
+      call,
+      enabled: true,
+      platform: GroupCallSharePlatform.android,
+      android: hooks,
+      stillAllowed: () => ++checks == 1,
+    );
+
+    expect(result.isFailure, isTrue);
+    expect(events, ['consent', 'start', 'stop:default:monthly']);
+    verifyNever(
+      () => call.setScreenShareEnabled(
+        enabled: any(named: 'enabled'),
+        constraints: any(named: 'constraints'),
+      ),
+    );
+  });
+
   test('a cancelled Android dialog does not start the service', () async {
     final call = _MockCall();
     final events = <String>[];

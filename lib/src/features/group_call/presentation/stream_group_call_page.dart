@@ -11,6 +11,7 @@ import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
 import 'group_call_member_copy.dart';
 import 'group_call_reactive_controls.dart';
+import 'group_call_screen_share_session.dart';
 import 'group_call_stage.dart';
 
 /// Active preview call. Starts muted and camera-off.
@@ -118,6 +119,10 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
             muteVideoWhenInBackground: true,
           ),
         );
+        prepareGroupCallScreenShare(
+          platform: currentGroupCallSharePlatform(),
+          registerAndroidHandlers: () => StreamBackgroundService.init(client),
+        );
         call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
         // getOrCreate applies the call type's camera-on default in the
         // background, after join has asked for the camera to stay off. Join
@@ -205,10 +210,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: call == null
           ? Scaffold(
               appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
-              body: GroupCallConnectionStatus(
-                failure: _failure,
-                onBack: () => unawaited(_leave()),
-              ),
+              body: GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave())),
             )
           : StreamCallContent(
               call: call,

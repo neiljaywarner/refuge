@@ -43,21 +43,32 @@ void main() {
     await join.tap();
     await _grantRuntimeDialogs($);
 
+    // Home opens the lobby. The lobby confirms with the same "Join call" label.
+    final confirm = $(const Key('group_call_confirm_join_button'));
+    await confirm.waitUntilVisible();
+    await confirm.tap();
+    await _grantRuntimeDialogs($);
+
+    final mic = $(const Key('group_call_microphone_button'));
+    await mic.waitUntilVisible();
+
     final share = $(const Key('group_call_share_button'));
     if (!share.exists) {
       markTestSkipped(
-        'Share is hidden. Stream did not grant screenshare, or this person '
-        'is a guest and the host has not allowed it.',
+        'The call is open, and Share is hidden. Stream did not grant '
+        'screenshare, or this guest harness is still waiting for the host.',
       );
       return;
     }
 
     await share.tap();
     await _acceptCaptureDialog($);
-    expect($(const Key('group_call_share_button')), findsOneWidget);
+    await $('Stop sharing').waitUntilVisible();
+    expect($('You are sharing'), findsOneWidget);
 
-    await share.tap();
-    expect($(const Key('group_call_share_button')), findsOneWidget);
+    await $('Stop sharing').tap();
+    await $('Share screen').waitUntilVisible();
+    expect($('You are sharing'), findsNothing);
   });
 }
 
@@ -71,14 +82,18 @@ Future<void> _grantRuntimeDialogs(PatrolIntegrationTester $) async {
 
 /// The MediaProjection sheet is outside the Flutter tree. Labels vary by
 /// Android version: "Entire screen", then "Start" or "Start now".
+/// "Share screen" is last because that is also the in-app button label.
 Future<void> _acceptCaptureDialog(PatrolIntegrationTester $) async {
-  const labels = ['Entire screen', 'Share screen', 'Start now', 'Start'];
+  const labels = ['Entire screen', 'Start now', 'Start', 'Share screen'];
+  var accepted = false;
   for (final label in labels) {
     try {
       await $.platform.android.tap(
         AndroidSelector(text: label),
         timeout: const Duration(seconds: 2),
       );
+      accepted = true;
     } catch (_) {}
   }
+  expect(accepted, isTrue, reason: 'The capture dialog had no Start or Start now.');
 }

@@ -48,8 +48,9 @@ class GroupCallSessionControls extends StatelessWidget {
   final Future<void> Function(String userId) onRemove;
   final Future<void> Function() onEnd;
 
-  /// False hides the share button. A guest stays false until the organizer
-  /// allows it and Stream grants `screenshare`.
+  /// False hides the share button unless this person is already sharing.
+  /// A guest stays false until the organizer allows it and Stream grants
+  /// `screenshare`. Stopping stays available after that allow is removed.
   final bool canShare;
 
   /// True while this person's screen-share track is on.
@@ -83,7 +84,7 @@ class GroupCallSessionControls extends StatelessWidget {
             onPressed: onCamera,
           ),
         ),
-        if (canShare)
+        if (canShare || sharing)
           Semantics(
             button: true,
             label: sharing ? 'Stop sharing' : 'Share screen',

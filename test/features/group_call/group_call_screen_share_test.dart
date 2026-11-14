@@ -199,6 +199,33 @@ void main() {
     expect(view.localSharing, isTrue);
   });
 
+  test('a second session with the same user id is the one on the share tile', () {
+    final idle = _participant(userId: 'guest-2', local: false);
+    final sharing = CallParticipantState(
+      userId: 'guest-2',
+      roles: const [],
+      name: 'Alex',
+      // ignore: deprecated_member_use
+      custom: const {},
+      sessionId: 'session-guest-2-b',
+      trackIdPrefix: 'guest-2-b',
+      publishedTracks: {SfuTrackType.screenShare: TrackState.remote()},
+    );
+    final presenter = groupCallPresenter([
+      groupCallShareParticipant(idle),
+      groupCallShareParticipant(sharing),
+    ]);
+
+    final match = groupCallPresenterParticipant(
+      presenter: presenter!,
+      participants: [idle, sharing],
+    );
+
+    expect(presenter.userId, 'guest-2');
+    expect(match?.sessionId, 'session-guest-2-b');
+    expect(match?.isScreenShareEnabled, isTrue);
+  });
+
   test('guest screen share stays off unless the call custom flag is true', () {
     expect(organizerAllowsGuestScreenShare(const {}), isFalse);
     expect(organizerAllowsGuestScreenShare(const {guestScreenShareCustomKey: false}), isFalse);

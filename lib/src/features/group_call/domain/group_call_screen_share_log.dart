@@ -13,10 +13,13 @@ void logGroupCallScreenShare(String detail) {
 }
 
 /// Prefixes [detail] and strips an email or a JWT if one was passed in.
+///
+/// A JWT is three base64url segments. Matching only the `eyJ` header would
+/// leave the payload and signature in the log.
 String groupCallScreenShareLine(String detail) {
   final cleaned = detail
       .replaceAll(RegExp(r'\S+@\S+'), 'redacted')
-      .replaceAll(RegExp(r'eyJ[A-Za-z0-9_-]+'), 'redacted');
+      .replaceAll(RegExp(r'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'), 'redacted');
   return '[#screenshare] $cleaned';
 }
 
