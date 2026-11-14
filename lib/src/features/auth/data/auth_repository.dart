@@ -17,7 +17,7 @@ export 'auth_backend_target.dart';
 
 /// Pluggable authentication repository interface supporting:
 /// - Firebase Authentication (Production Email/Password & Passwordless Magic Link)
-/// - Serverpod & Appwrite hybrid migration seams (ADR-0009)
+/// - Appwrite hybrid migration seams (ADR-0009)
 /// - In-Memory Auth (Deterministic, zero-network unit & widget testing)
 abstract interface class AuthRepository {
   BackendTarget get target;
@@ -707,13 +707,6 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 }
 
-class ServerpodAuthRepository extends InMemoryAuthRepository {
-  ServerpodAuthRepository({super.isAccountSoftDeleted});
-
-  @override
-  BackendTarget get target => BackendTarget.serverpod;
-}
-
 class AppwriteAuthRepository extends InMemoryAuthRepository {
   AppwriteAuthRepository({super.isAccountSoftDeleted});
 
@@ -728,7 +721,6 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final blockSignIn = ref.watch(accountDeletionRepositoryProvider).isSignInBlocked;
   return switch (target) {
     BackendTarget.inMemory => InMemoryAuthRepository(isAccountSoftDeleted: blockSignIn),
-    BackendTarget.serverpod => ServerpodAuthRepository(isAccountSoftDeleted: blockSignIn),
     BackendTarget.appwrite => AppwriteAuthRepository(isAccountSoftDeleted: blockSignIn),
     BackendTarget.firebase => FirebaseAuthRepository(
       flavor: flavor,

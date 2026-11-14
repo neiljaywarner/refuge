@@ -47,7 +47,7 @@ Completing these six 2-minute steps eliminates 95% of emergency paperwork before
 | **Auth & Primary Database** | `firestore.rules`, `firestore.indexes.json` | **Yes** | Create a new free **Firebase Spark** project (`\$0/mo`), enable Email/Password Auth, create `(default)` Firestore DB, and deploy rules. |
 | **Storage Rules (Optional Media)** | `storage.rules` | Optional | Presets + Giphy GIFs work with **zero** Cloud Storage bucket. Only enable Firebase Blaze (with a \$5 budget alert) if you want custom binary photo uploads (`storage.rules`). |
 | **Organizer Welcome & Giphy Config** | Keys documented in §1.5 below + `config/remote_config/backup_mirroring.json` | **Yes** | Paste the 7 non-secret parameters + organizer email list into Firebase Remote Config Console. |
-| **Legacy Serverpod Code** | `sanctuary_server/` | **No (Off)** | `ENABLE_SERVERPOD` defaults to `false` across all build scripts. Ignore completely. |
+| **Legacy Firebase Code** | `refuge/` | **No (Off)** | `` defaults to `false` across all build scripts. Ignore completely. |
 | **Appwrite Push & Mirror** | `appwrite/functions/dm-push/`, `appwrite/functions/dm-mirror/` | **No (Optional)** | Pass `--dart-define=APPWRITE_ENDPOINT=` on Day 1 to run **100% pure Firebase** (in-app DMs still work via Firestore!). Optionally stand up a free Appwrite project later (§1.8). |
 
 ### 1.2 Prerequisites (15 Minutes)
@@ -129,7 +129,7 @@ Deploy live Production Web PWA (pure-Firebase mode, zero Appwrite dependency):
 ```bash
 flutter build web --release \
   --dart-define=FLAVOR=prod \
-  --dart-define=ENABLE_SERVERPOD=false \
+   \
   --dart-define=APPWRITE_ENDPOINT= \
   --dart-define=APP_VERSION=v1.0.0
 
@@ -140,7 +140,7 @@ Build shareable Android Release APK:
 ```bash
 flutter build apk --release \
   --dart-define=FLAVOR=prod \
-  --dart-define=ENABLE_SERVERPOD=false \
+   \
   --dart-define=APPWRITE_ENDPOINT=
 ```
 The signed APK is output at `build/app/outputs/flutter-apk/app-release.apk`.

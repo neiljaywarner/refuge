@@ -26,4 +26,4 @@ Living docs stay at the root and under `docs/wiki/`. This folder is a shelf, not
 | `inapp-feedback_completion_and_feature_voting_plan_and_STATUS.md` | Voting plan from Oct 24 |
 | `status.md` | Save-for-later plan for issue 669 |
 | `visual_catalog.md` | Earlier catalog; the living one is `docs/wiki/visual_catalog.md` |
-| `serverpod_integration.md` | Hackathon Serverpod notes |
+| `Firebase_integration.md` | Hackathon Firebase notes |

@@ -12,7 +12,7 @@ As an unhurried Christian fellowship app tailored specifically for autistic and 
 
 Because Belong operates with lean developer resources, traditional manual QA is insufficient. Adopting Antigravity's autonomous testing paradigms provides:
 1. **Zero-Overhead Nightly Protection**: Regressions are identified, diagnosed, and repaired in git branches while developers sleep.
-2. **Deep Race Condition Immunity**: Automated multi-cycle stress runs detect subtle async state teardown races in Riverpod and Serverpod WebSocket streams before members experience them.
+2. **Deep Race Condition Immunity**: Automated multi-cycle stress runs detect subtle async state teardown races in Riverpod and Firebase WebSocket streams before members experience them.
 3. **Continuous Cross-Platform Parity**: Headless Chrome browser agents inspect live Web PWA deployments (`https://belongonthespectrum.web.app`) for WCAG AAA compliance alongside physical Pixel 9a testing.
 
 ---
@@ -46,7 +46,7 @@ Because Belong operates with lean developer resources, traditional manual QA is 
 
 ### 2. Autonomous Flakiness & State-Teardown Race Hunter
 
-- **Problem**: Riverpod providers combined with Serverpod WebSocket feeds and Firebase Auth listeners can occasionally flake if stream subscriptions aren't synchronously cancelled during test widget disposal.
+- **Problem**: Riverpod providers combined with Firebase WebSocket feeds and Firebase Auth listeners can occasionally flake if stream subscriptions aren't synchronously cancelled during test widget disposal.
 - **Solution (`tool/stress_test.dart`)**:
   - The agent executes high-concurrency loops (50–100 consecutive runs with varying thread seeds) to surface timing-dependent leaks.
   - Automatically converts brittle `sleep(...)` calls into deterministic reactive wait predicates (`await tester.pumpAndSettle()`, `await expectLater()`).

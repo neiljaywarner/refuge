@@ -4,7 +4,7 @@
 > **Status**: Living Engineering Architecture & Data Dictionary  
 > **Target Audiences**: Organizers, Mentors, Student Apprentices, Backend Engineers  
 
-> **Live reflections (11 November 2026).** The feed reads and writes Cloud Firestore. Production uses `reflections`. The dev site uses `reflections_dev`. The default build does not call Appwrite table `reflection_posts` (ADR-0011; that table stays disabled). Serverpod runs only when `BACKEND=serverpod` and `ENABLE_SERVERPOD=true` are both set. Deploy workflows pass `FLAVOR`, `ENABLE_SERVERPOD=false` on the dev site, and the release stamp. They do not pass `BACKEND` or `APPWRITE_*`. Firebase Auth is unchanged. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Live reflections.** The feed reads and writes Cloud Firestore. Production uses `reflections`. The dev site uses `reflections_dev`. The default build does not call Appwrite table `reflection_posts` (ADR-0011; that table stays disabled). Deploy workflows pass `FLAVOR` and the release stamp. They do not pass `BACKEND` or `APPWRITE_*`. Firebase Auth, Hosting, and Cloud Functions stay. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 
 ---
 
@@ -12,9 +12,9 @@
 
 **Belong on the Spectrum** (powered by **Refuge / Sanctuary**) is built with a **pluggable multi-backend architecture** (ADR-0009). The frontend consumes repositories (`PostRepository`, `FeatureVotingRepository`, `AuthRepository`) through Riverpod providers, allowing seamless operation across:
 
-1. **Cloud Firestore / Firebase** (live reflections, profiles, votes, and feedback notes).
-2. **Serverpod RPC & PostgreSQL** (only when `BACKEND=serverpod` and `ENABLE_SERVERPOD=true`).
-3. **Appwrite** (functions such as the direct-message mirror; the reflection table stays disabled).
+1. **Cloud Firestore** (live reflections, profiles, votes, and feedback notes).
+2. **Firebase Auth, Hosting, and Cloud Functions** (sign-in and the deployed web app).
+3. **Appwrite** (direct-message mirror and other functions; the reflection table `reflection_posts` stays disabled).
 4. **Deterministic In-Memory Repositories** (Local dev, BDD widget tests, and CI/CD with zero cloud dependencies).
 
 ```
@@ -31,8 +31,8 @@
             │                       │                         │
             ▼                       ▼                         ▼
 ┌──────────────────────┐  ┌───────────────────┐  ┌───────────────────────┐
-│   Serverpod RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
-│   (opt-in only)      │  │ (Live reflections)│  │ Appwrite not used     │
+│   Firebase Auth      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
+│   and Hosting        │  │ (Live reflections)│  │ Appwrite not for feed │
 └──────────────────────┘  └───────────────────┘  └───────────────────────┘
 ```
 
@@ -45,8 +45,8 @@
 | **Firestore Database** | Firebase Console -> Project `belong-on-the-spectrum` -> *Firestore Database* | Live user profiles, reflections, feature votes, and feedback |
 | **Firebase Remote Config** | Firebase Console -> *Remote Config* -> Parameters | Live organizer welcome banner, community guidelines markdown, dynamic announcements |
 | **Crashlytics & Errors** | Firebase Console -> *Crashlytics* & `Talker` diagnostics | Unhandled exceptions and handled errors scrubbed of PII (`ErrorReporterService`) |
-| **Serverpod Endpoints** | `refuge4serverpod_server/lib/src/endpoints/` | Dart Serverpod endpoints (`post_endpoint.dart`, `feature_endpoint.dart`) |
-| **Serverpod Models** | `refuge4serverpod_server/lib/src/models/` | YAML schema definitions (`*.spy.yaml`) compiled to typed Dart entities |
+| **Firebase Endpoints** | `refuge4serverpod_server/lib/src/endpoints/` | Dart Firebase endpoints (`post_endpoint.dart`, `feature_endpoint.dart`) |
+| **Firebase Models** | `refuge4serverpod_server/lib/src/models/` | YAML schema definitions (`*.spy.yaml`) compiled to typed Dart entities |
 | **Frontend Repositories** | `lib/src/features/*/data/` | Pluggable client adapters implementing repository interfaces |
 | **Domain Models** | `lib/src/features/*/domain/` | Immutable business logic (`MemberProfile`, `Post`, `CommunityBrandConfig`) |
 

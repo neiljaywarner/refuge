@@ -20,6 +20,7 @@ class StreamGroupCallPage extends StatefulWidget {
     required this.displayName,
     required this.tokenClient,
     @visibleForTesting this.openConnection,
+    @visibleForTesting this.initialCall,
   });
 
   final StreamCallCredentials credentials;
@@ -29,6 +30,10 @@ class StreamGroupCallPage extends StatefulWidget {
   /// When set, tests receive the connect plan and the page does not open Stream.
   @visibleForTesting
   final StreamCallOpener? openConnection;
+
+  /// When set, tests supply an active call directly without network connection.
+  @visibleForTesting
+  final Call? initialCall;
 
   @override
   State<StreamGroupCallPage> createState() => _StreamGroupCallPageState();
@@ -43,13 +48,19 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialCall != null) {
+      _call = widget.initialCall;
+      return;
+    }
     unawaited(_connect());
   }
 
   @override
   void dispose() {
     _alive = false;
-    unawaited(_shutdown());
+    if (widget.initialCall == null) {
+      unawaited(_shutdown());
+    }
     super.dispose();
   }
 
@@ -190,35 +201,44 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
         if (didPop) return;
         unawaited(_leave());
       },
-      child: Scaffold(
-        appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
-        body: call == null
-            ? GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave()))
-            : StreamCallContent(
-                call: call,
-                onLeaveCallTap: _leave,
-                onBackPressed: _leave,
-                callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
-                  call: call,
-                  signedInMember: !widget.credentials.isGuest,
-                  onLeave: _leave,
-                  onRemove: (userId) async {
-                    final result = await call.kickUser(userId);
-                    if (_calmFailure(result) != null) {
-                      _snack('Only the host can remove someone.');
-                    }
-                  },
-                  onEnd: () async {
-                    final result = await call.end();
-                    if (_calmFailure(result) != null) {
-                      _snack('Only the host can end the call.');
-                      return;
-                    }
-                    await _leave();
-                  },
-                ),
+      child: call == null
+          ? Scaffold(
+              appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
+              body: GroupCallConnectionStatus(
+                failure: _failure,
+                onBack: () => unawaited(_leave()),
               ),
-      ),
+            )
+          : StreamCallContent(
+              call: call,
+              onLeaveCallTap: _leave,
+              onBackPressed: _leave,
+              callAppBarWidgetBuilder: (context, call) => CallAppBar(
+                call: call,
+                onBackPressed: _leave,
+                onLeaveCallTap: _leave,
+                title: Text('Call ${widget.credentials.callId}'),
+              ),
+              callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
+                call: call,
+                signedInMember: !widget.credentials.isGuest,
+                onLeave: _leave,
+                onRemove: (userId) async {
+                  final result = await call.kickUser(userId);
+                  if (_calmFailure(result) != null) {
+                    _snack('Only the host can remove someone.');
+                  }
+                },
+                onEnd: () async {
+                  final result = await call.end();
+                  if (_calmFailure(result) != null) {
+                    _snack('Only the host can end the call.');
+                    return;
+                  }
+                  await _leave();
+                },
+              ),
+            ),
     );
   }
 }

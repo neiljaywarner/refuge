@@ -138,7 +138,6 @@ Future<void> main(List<String> args) async {
         flavor: 'dev',
         extraDefines: extraDefines,
       ),
-      '--dart-define=ENABLE_SERVERPOD=false',
     ], dryRun: dryRun);
     if (!dryRun) {
       await _writeWebVersionJson(version, stamp);

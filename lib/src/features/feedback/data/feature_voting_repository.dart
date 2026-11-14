@@ -21,10 +21,9 @@ import 'vote_storage_service.dart';
 ///
 /// Evaluated in ADR-0009 (`docs/adr/0009-piece-by-piece-vs-one-shot-appwrite-firebase-hybrid.md`):
 /// allows either **Piece-by-Piece (Strangler Fig)** or **One-Shot** switching
-/// between Serverpod, Appwrite, and Firebase with a 1-line provider override.
+/// between Appwrite and Firebase with a 1-line provider override.
 enum BackendTarget {
   inMemory('In-Memory / Offline Deterministic'),
-  serverpod('Serverpod Alpha Backend'),
   appwrite('Appwrite Core (Collections + Realtime)'),
   firebase('Firebase Edge (Firestore + Analytics)');
 
@@ -273,20 +272,7 @@ class InMemoryFeatureVotingRepository
   BackendTarget get target => BackendTarget.inMemory;
 }
 
-/// 2. Serverpod Adapter (`v0.6.0` – `v0.8.0-alpha` default with offline resilience).
-class ServerpodFeatureVotingRepository
-    with FeatureVotingStateTransformMixin
-    implements FeatureVotingRepository {
-  ServerpodFeatureVotingRepository({this.gitHubClient});
-
-  @override
-  final GitHubFeedbackClient? gitHubClient;
-
-  @override
-  BackendTarget get target => BackendTarget.serverpod;
-}
-
-/// 3. Appwrite Core Adapter (`v0.9.0-beta` -> `v2.0` target per ADR-0009).
+/// 2. Appwrite Core Adapter (`v0.9.0-beta` -> `v2.0` target per ADR-0009).
 class AppwriteFeatureVotingRepository
     with FeatureVotingStateTransformMixin
     implements FeatureVotingRepository {
@@ -646,9 +632,7 @@ final featureVotingRepositoryProvider = Provider<FeatureVotingRepository>((ref) 
   final votePersistBus = ref.watch(votePersistFailureBusProvider);
   return switch (target) {
     BackendTarget.inMemory => InMemoryFeatureVotingRepository(gitHubClient: gitHubClient),
-    BackendTarget.serverpod ||
-    BackendTarget.appwrite ||
-    BackendTarget.firebase => ResilientFeatureVotingRepository(
+    BackendTarget.appwrite || BackendTarget.firebase => ResilientFeatureVotingRepository(
       target: target,
       primary: FirebaseFeatureVotingRepository(
         gitHubClient: gitHubClient,

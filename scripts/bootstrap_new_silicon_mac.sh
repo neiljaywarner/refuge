@@ -55,17 +55,15 @@ fi
 # 7. Link Java 17 for Android / Gradle / Maestro
 sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk || true
 
-# 8. Install Global CLIs (Serverpod, Scloud, Firebase, Maestro)
-echo "--> Activating Serverpod, Scloud, Firebase, and Maestro CLIs..."
+# 8. Install Global CLIs (Firebase, Maestro)
+echo "--> Activating Firebase and Maestro CLIs..."
 export PATH="$HOME/.pub-cache/bin:/opt/homebrew/bin:$PATH"
-dart pub global activate serverpod_cli
-dart pub global activate serverpod_cloud_cli
 npm install -g firebase-tools
 curl -Ls "https://get.maestro.mobile.dev" | bash || true
 
 # 9. Clone refuge4serverpod & Restore Untracked Secrets
 mkdir -p "$HOME/AndroidStudioProjects"
-REPO_DIR="$HOME/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon"
+REPO_DIR="$HOME/AndroidStudioProjects/refuge"
 if [ ! -d "$REPO_DIR/.git" ]; then
   echo "--> Cloning neiljaywarner/refuge4serverpod..."
   git clone https://github.com/neiljaywarner/refuge4serverpod.git "$REPO_DIR"

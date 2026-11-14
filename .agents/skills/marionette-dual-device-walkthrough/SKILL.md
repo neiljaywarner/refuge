@@ -5,7 +5,7 @@ description: Automated end-to-end multi-device interaction, verification, and vi
 
 # Marionette Dual-Device Live Walkthrough Skill
 
-This skill documents and automates multi-device end-to-end walkthroughs for Flutter applications connecting to real-time backends (such as Serverpod Cloud). It combines Marionette MCP interactive tools with native ADB screen recording and logcat inspection.
+This skill documents and automates multi-device end-to-end walkthroughs for Flutter applications connecting to real-time backends (such as Firebase). It combines Marionette MCP interactive tools with native ADB screen recording and logcat inspection.
 
 ## 1. Marionette MCP Server Tool Reference
 
@@ -44,8 +44,8 @@ When coordinating two physical devices (e.g., Device A on left, Device B on righ
 3. Pass runtime backend definitions:
    ```bash
    flutter build apk --release \
-     --dart-define=BACKEND=serverpod \
-     --dart-define=SERVERPOD_URL=https://refuge4serverpod.api.serverpod.space/
+      \
+     --dart-define==the live Firebase Hosting site
    ```
 
 ### Step 2: Staggered Interaction Scripting
@@ -81,4 +81,4 @@ In real-time multi-user apps, stagger actions across the two devices:
 
 ### Step 4: Verification & Logging
 - Capture adb screencap at every milestone: `adb exec-out screencap -p > stepN.png`
-- Stream logcat to verify Serverpod RPC calls (`onSucceededCall`, `onFailedCall`) and WebSocket streaming events (`session.messages.createStream`).
+- Stream logcat to verify Firebase RPC calls (`onSucceededCall`, `onFailedCall`) and WebSocket streaming events (`session.messages.createStream`).

@@ -302,7 +302,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // 7. Reflection mirror kept while Serverpod Cloud is turned off (#212).
+    // 7. Reflection mirror kept on Firestore (#212).
     match /reflections/{postId} {
       allow read: if isSignedInMember();
       allow create: if isSignedInMember() && createsAsSelf();

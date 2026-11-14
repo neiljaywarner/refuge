@@ -23,12 +23,19 @@ Future<TextScaleSession> pumpSignInAtScale(WidgetTester tester, double scale) =>
   shell: _scope,
 );
 
-Future<TextScaleSession> pumpHomeAtScale(WidgetTester tester, double scale) {
+Future<TextScaleSession> pumpHomeAtScale(
+  WidgetTester tester,
+  double scale, {
+  Size surface = largeTextPhoneSurface,
+  double devicePixelRatio = 1,
+}) {
   final repository = LocalPostRepository();
   return pumpWithTextScale(
     tester,
     RefugeHomeScreen(repository: repository),
     scale: scale,
+    surface: surface,
+    devicePixelRatio: devicePixelRatio,
     shell: (child) =>
         _scope(child, overrides: [postRepositoryProvider.overrideWithValue(repository)]),
   );

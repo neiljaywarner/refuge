@@ -21,7 +21,7 @@
 ## 📌 Executive Summary (What Was Accomplished)
 
 1. **Firebase Authentication with Email/Password & Passwordless Magic Link (#119, PR #120)**:
-   - Built rock-solid, calm, neurodivergent-friendly authentication engine (`firebase_auth`) backed by Firebase Cloud Storage (`StorageRepository`) and Serverpod.
+   - Built rock-solid, calm, neurodivergent-friendly authentication engine (`firebase_auth`) backed by Firebase Cloud Storage (`StorageRepository`) and Firebase.
    - Dual-mode sign-in: Regular Email & Password (`signInWithPassword`, `registerWithPassword`) + Passwordless 1-Click Magic Link (`sendMagicLink`, `signInWithMagicLink`).
    - Neurodivergent-friendly `BelongAuthSheet` modal dialog with tabs for Sign In, Registration, and Magic Link, with reassuring `AuthException` error translations (no scary raw error codes).
    - Preserves Marty the Organizer's required ICOC church affiliation selection with non-member option.
@@ -39,7 +39,7 @@
    - Validation banner blocking profile save if affiliation is omitted.
 
 4. **Dual Observability Documented & Verified (`#84`, `#90`, `#99`, PR `#100`)**:
-   - Dual-channel telemetry across **Firebase Crashlytics & Analytics** (cloud) and **Serverpod & Talker Diagnostic Buffer** (100% offline fallback).
+   - Dual-channel telemetry across **Firebase Crashlytics & Analytics** (cloud) and **Firebase & Talker Diagnostic Buffer** (100% offline fallback).
    - Automated PII regex scrubbing for email addresses and secret tokens.
    - Complete guides published in `docs/OBSERVABILITY_AND_ANALYTICS.md` and Wiki.
 
@@ -84,7 +84,7 @@
 | **#108** | #107 | chore(rules): Add AGENTS.md, GEMINI.md, and .cursorrules for zero-PII and MCP server prioritization | ✅ Verified |
 | **#106** | #105 | docs(architecture): Add ADR-0010 Calm Notifications Architecture & Multi-Tier Test Coverage Plan | ✅ Verified |
 | **#104** | #103 | docs: Add Marionette MCP server & CLI driving guide and capture script | ✅ Verified |
-| **#100** | #99 | docs(wiki): Document Firebase & Serverpod dual observability and track engineering lessons learned | ✅ Verified |
+| **#100** | #99 | docs(wiki): Document Firebase & Firebase dual observability and track engineering lessons learned | ✅ Verified |
 | **#98** | #41 | feat(migration): Circle.so CSV Data Migration Importer CLI & Parser | ✅ 82 tests passing |
 | **#97** | #96 | fix(main): Provide bootstrapBelongApp backward compatibility and resolve unused imports | ✅ 71 tests passing |
 | **#95** | #95 | fix(main): Restore reflection presentation re-exports and SanctuaryApp overrides | ✅ Verified |
@@ -100,7 +100,7 @@
 | **#71** | #69 | fix(android): remove unused firebase_in_app_messaging so release APK builds | ✅ Release APK verified |
 | **#68** | #65 | chore(release): truthful release notes from merged PRs, Android App Distribution to pre-alpha-testers | ✅ Build 2 delivered |
 | **#62** | #26 | feat(auth): Stage 1 Any Auth session, pluggable AuthRepository adapters | ✅ 48 tests passing |
-| **#61** | #52 | feat(voting): Feature Voting clean repository seam (InMemory, Serverpod, Appwrite, Firebase) | ✅ 37 tests passing |
+| **#61** | #52 | feat(voting): Feature Voting clean repository seam (InMemory, Firebase, Appwrite, Firebase) | ✅ 37 tests passing |
 | **#60** | #56 | feat(deploy): Minimum pure-Dart deployment pipeline (`tool/deploy_release.dart`), DEPLOYMENT.md | ✅ Live Web PWA deployed |
 
 ---

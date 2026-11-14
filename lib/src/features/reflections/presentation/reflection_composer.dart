@@ -174,6 +174,11 @@ class ReflectionComposer extends HookWidget {
     final hasActiveImage =
         customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // Above 1.3 the space name ("#Prayer Sanctuary") needs more than two
+    // lines. Null max lines lets the hint wrap instead of ellipsizing (#932).
+    final int? collapsedHintLines = textScale > 1.3 ? null : (textScale > 1.15 ? 2 : 1);
+
     if (!isExpanded.value) {
       return Container(
         key: const Key('reflection_composer_card'),
@@ -197,6 +202,8 @@ class ReflectionComposer extends HookWidget {
                 child: TextField(
                   key: const Key('reflection_composer_input'),
                   controller: contentController,
+                  minLines: 1,
+                  maxLines: collapsedHintLines,
                   onTap: () {
                     isExpanded.value = true;
                   },

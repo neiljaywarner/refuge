@@ -1,7 +1,15 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/main.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  const pathProvider = MethodChannel('plugins.flutter.io/path_provider');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    pathProvider,
+    (call) async => '.',
+  );
+
   group('Post Model & Repository Unit Tests', () {
     test('Post copyWith modifies fields immutably', () {
       final now = DateTime.now();
@@ -56,8 +64,8 @@ void main() {
       expect(updatedPrayCount, equals(initialPrayCount + 1));
     });
 
-    test('ServerpodPostRepository operates resiliently with fallback', () async {
-      final repo = ServerpodPostRepository(serverUrl: 'http://localhost:9999/');
+    test('LocalPostRepository keeps a created post in the space feed', () async {
+      final repo = LocalPostRepository();
       final posts = await repo.getPosts(spaceKey: 'prayer');
       expect(posts, isNotEmpty);
 

@@ -1,7 +1,7 @@
 # 🚀 Belong on the Spectrum — Release & Deployment Guide (`deployment.md`)
 
 *File: `docs/wiki/deployment.md`*  
-*Target Platforms: Web PWA, Android Native (Google Play / App Distribution), Serverpod Backend*
+*Target Platforms: Web PWA, Android Native (Google Play / App Distribution), Firebase Backend*
 
 Friendlies deploy checklist (rules, calm DM email, dm-mirror, Crashlytics, Giphy): **[Ops / Deploy readiness (1 Nov 2026)](Ops-Deploy-Readiness)**.
 
@@ -52,11 +52,22 @@ dart run tool/deploy_release.dart --version vX.Y.Z --distribute-android
 
 [https://onthespectrum.web.app/](https://onthespectrum.web.app/) is not a Belong host (Firebase Site Not Found). The October overlap window is past. A fresh non-DEV production deploy is still open: [`docs/solid_1.0_checklist.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/solid_1.0_checklist.md) and [#765](https://github.com/neiljaywarner/refuge/issues/765).
 
+### Live version.json (11 November 2026)
+
+A public GET of the version file, not a deploy:
+
+| Host | release_tag | git_sha | flavor | built (UTC) |
+| :--- | :--- | :--- | :--- | :--- |
+| Production | `v0.9.9` | `dc99aaa56e3c9bcec4368e161f1149490bed7376` | `prod` | `2026-11-04T05:53:43.552Z` |
+| Dev | `ci-3af3d5a` | `3af3d5a2e108bba7aa55dc157df67054ce90b865` | `dev` | `2026-11-10T12:55:04.423Z` |
+
+The production SHA is the `v0.9.9` git tag. The dev SHA is `main`. Member-facing notes for the gap: [`docs/release_highlights/unreleased-since-v0.9.9.md`](../release_highlights/unreleased-since-v0.9.9.md). Checklist: [#937](https://github.com/neiljaywarner/refuge/issues/937). The last **GitHub Release** is still the pre-release `v0.9.3` (2026-10-29). The October snapshot below still says the runbook's last recorded production deploy is v0.9.2. That sentence is the runbook's own history. The table above is the live read.
+
 ## Snapshot from 22 October 2026
 
 Checked against `origin/main` during the overlap week. This section does not record a new production deploy. The last production deploy this runbook records is **v0.9.2** on 2026-10-28. That is not a claim about which build strangers see today. The production host remains [https://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/).
 
-- **Posts.** Serverpod is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
+- **Posts.** Firebase is still the default post backend. Cloud Firestore is still the second copy. Appwrite has not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed.
 - **Android debug compile.** `android/app/build.gradle.kts` on `main` sets `jvmTarget` to `org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17`. That change is on `main` via [PR #413](https://github.com/neiljaywarner/refuge/pull/413). This note does not record a new debug build from the docs pass.
 - **PostHog and Aptabase.** Debug, release, and web build paths forward `POSTHOG_KEY` and `APTABASE_KEY` from the environment or GitHub Actions secrets. Tokens are not committed. [Issue #410](https://github.com/neiljaywarner/refuge/issues/410) is the ingest check. Session replay stays off until [#367](https://github.com/neiljaywarner/refuge/issues/367).
 - **Feedback drawings.** Notes are saved in Firestore member_feedback with a clipboard handoff for organizers. The sheet does not say a note was filed on belong_feedback. The app does not embed an API token and does not create a GitHub issue by itself. Drawings stay with the note and are not presented as https://storage.belongonthespectrum.com uploads. [Issue #407](https://github.com/neiljaywarner/refuge/issues/407) is open.
@@ -85,8 +96,8 @@ flowchart TD
     Pipeline --> GitHubRelease[GitHub Release Tag & Release Notes]
     
     subgraph Multi-Environment Flavors
-        DevEnv[Dev Flavor: reflections_dev collection & Dev Serverpod]
-        ProdEnv[Prod Flavor: reflections collection & Prod Serverpod]
+        DevEnv[Dev Flavor: reflections_dev collection & Dev Firebase]
+        ProdEnv[Prod Flavor: reflections collection & Prod Firebase]
     end
 ```
 
@@ -96,10 +107,10 @@ flowchart TD
 
 To ensure development, automated test suites, and CI/CD runs **never pollute production community reflections or notification streams**, the codebase strictly enforces flavor separation via `--dart-define=FLAVOR=...`:
 
-| Flavor | Environment | Web app (Firebase Hosting) | Database Collection | Serverpod URL | Target Audience |
+| Flavor | Environment | Web app (Firebase Hosting) | Database Collection | Firebase URL | Target Audience |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`dev`** | Development & CI | `https://dev-belongonthespectrum.web.app/` | `reflections_dev` | `https://refuge4serverpod.api.serverpod.space/` (or local `http://10.0.2.2:8080/`) | Automated BDD tests, local emulators, continuous integration |
-| **`prod`** | Production | `https://belongonthespectrum.web.app/` | `reflections` | `https://refuge4serverpod.api.serverpod.space/` | Real community members & churches |
+| **`dev`** | Development & CI | `https://dev-belongonthespectrum.web.app/` | `reflections_dev` | `the live Firebase Hosting site` (or local `http://10.0.2.2:8080/`) | Automated BDD tests, local emulators, continuous integration |
+| **`prod`** | Production | `https://belongonthespectrum.web.app/` | `reflections` | `the live Firebase Hosting site` | Real community members & churches |
 
 `stg` / `qa` remain enum hooks only ([#40](https://github.com/neiljaywarner/refuge/issues/40)); they are not deployed yet. The marketing site `https://www.belongonthespectrum.com/` is separate from the Flutter web app origin.
 
@@ -219,9 +230,9 @@ Before running a production deployment:
    ```bash
    flutter test
    ```
-3. **Verify Serverpod Backend Status**:
+3. **Verify Firebase Backend Status**:
    ```bash
-   curl -I https://refuge4serverpod.api.serverpod.space/
+   curl -I the live Firebase Hosting site
    ```
 4. **Inspect Firebase Hosting Preview Channel**:
    Navigate to the temporary preview channel URL output by `deploy_release.dart` (e.g. `https://belongonthespectrum--v0-8-0-alpha-xyz.web.app`) and verify navigation, sensory themes, and offline caching.
@@ -241,5 +252,5 @@ firebase hosting:channel:list
 firebase hosting:clone belongonthespectrum:<PREVIOUS_VERSION_CHANNEL> belongonthespectrum:live
 ```
 
-### Serverpod Reconnect Fallback
-The client code is built with resilient dual-cloud fallback: if Serverpod is unreachable, the app automatically fails over to Cloud Firestore (`reflections` collection) and local in-memory storage, ensuring zero blackouts for active community members.
+### Firebase Reconnect Fallback
+The client code is built with resilient dual-cloud fallback: if Firebase is unreachable, the app automatically fails over to Cloud Firestore (`reflections` collection) and local in-memory storage, ensuring zero blackouts for active community members.

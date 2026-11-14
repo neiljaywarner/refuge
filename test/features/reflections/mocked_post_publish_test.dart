@@ -6,13 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:refuge4serverpod/main.dart';
-import 'package:sanctuary_server_client/sanctuary_server_client.dart' as sp;
 
 class MockPostRepository extends Mock implements PostRepository {}
-
-class MockServerpodClient extends Mock implements sp.Client {}
-
-class MockReflectionEndpoint extends Mock implements sp.EndpointReflection {}
 
 class _ImageHttpOverrides extends HttpOverrides {
   @override
@@ -27,7 +22,9 @@ class _ImageHttpClient extends Fake implements HttpClient {
   Future<HttpClientRequest> openUrl(String method, Uri url) async => _ImageRequest();
 
   @override
-  set badCertificateCallback(bool Function(X509Certificate cert, String host, int port)? callback) {}
+  set badCertificateCallback(
+    bool Function(X509Certificate cert, String host, int port)? callback,
+  ) {}
 }
 
 class _ImageHeaders extends Fake implements HttpHeaders {
@@ -154,29 +151,6 @@ void main() {
         content: 'placeholder',
         timestamp: DateTime.utc(2026, 1, 1),
         reactions: const {},
-      ),
-    );
-    registerFallbackValue(
-      sp.ReflectionPost(
-        authorName: 'Fellow Member',
-        spaceKey: 'prayer',
-        intentTag: '[Prayer Request]',
-        content: 'placeholder',
-        createdAt: DateTime.utc(2026, 1, 1),
-        prayingCount: 0,
-        standingWithCount: 0,
-        peaceCount: 0,
-        encouragedCount: 0,
-      ),
-    );
-    registerFallbackValue(
-      sp.QuietDigest(
-        spaceKey: 'prayer',
-        totalReflections: 0,
-        totalCareAffirmations: 0,
-        predominantIntent: '[Prayer Request]',
-        summaryMessage: 'placeholder',
-        generatedAt: DateTime.utc(2026, 1, 1),
       ),
     );
   });
@@ -318,151 +292,5 @@ void main() {
         expect(published.imageUrl, 'https://example.com/calm.png');
       },
     );
-  });
-
-  group('ServerpodPostRepository with a mocked client', () {
-    late MockServerpodClient client;
-    late MockReflectionEndpoint endpoint;
-
-    setUp(() {
-      client = MockServerpodClient();
-      endpoint = MockReflectionEndpoint();
-      when(() => client.reflection).thenReturn(endpoint);
-    });
-
-    sp.ReflectionPost samplePost({
-      int? id,
-      String content = 'A quiet word.',
-      DateTime? createdAt,
-    }) => sp.ReflectionPost(
-      id: id,
-      authorName: 'Fellow Member',
-      spaceKey: 'study',
-      intentTag: '[Bible Deep Dive]',
-      specialInterestTag: 'Mark',
-      content: content,
-      createdAt: createdAt ?? DateTime.utc(2026, 10, 1),
-      prayingCount: 1,
-      standingWithCount: 0,
-      peaceCount: 2,
-      encouragedCount: 3,
-    );
-
-    ServerpodPostRepository buildRepo() => ServerpodPostRepository(
-      client: client,
-      fallback: LocalPostRepository(isDevMode: false),
-      isDevMode: false,
-    );
-
-    test('publishReflection success stores the server id and marks the client live', () async {
-      when(() => endpoint.publishReflection(any())).thenAnswer((invocation) async {
-        final sent = invocation.positionalArguments.single as sp.ReflectionPost;
-        return samplePost(id: 42, content: sent.content);
-      });
-
-      final repo = buildRepo();
-      final created = await repo.createPost(
-        Post(
-          id: 'local-1',
-          authorName: 'Fellow Member',
-          spaceKey: 'study',
-          toneTag: '[Bible Deep Dive]',
-          specialInterestTag: 'Mark',
-          content: 'A quiet word.',
-          timestamp: DateTime.utc(2026, 10, 1),
-          reactions: const {'pray': 1, 'peace': 2, 'encouraged': 3, 'standing': 0},
-        ),
-      );
-
-      expect(created.id, '42');
-      expect(repo.isLiveConnected, isTrue);
-      verify(() => endpoint.publishReflection(any())).called(1);
-    });
-
-    test('publishReflection failure falls back to the local store', () async {
-      when(() => endpoint.publishReflection(any())).thenThrow(Exception('serverpod down'));
-      final repo = buildRepo();
-      final created = await repo.createPost(
-        Post(
-          id: 'local-2',
-          authorName: 'Fellow Member',
-          spaceKey: 'prayer',
-          toneTag: '[Prayer Request]',
-          content: 'Praying for a calm week.',
-          timestamp: DateTime.utc(2026, 10, 2),
-          reactions: const {},
-        ),
-      );
-
-      expect(created.id, 'local-2');
-      expect(repo.isLiveConnected, isFalse);
-      final stored = await repo.getPosts(spaceKey: 'prayer');
-      expect(stored.single.content, 'Praying for a calm week.');
-    });
-
-    test('watchSpace maps live rows and quiet digest uses the mocked summary', () async {
-      final updates = StreamController<sp.ReflectionPost>(sync: true);
-      when(() => endpoint.watchSpace('study')).thenAnswer((_) => updates.stream);
-      when(() => endpoint.getQuietDigest('memes')).thenAnswer(
-        (_) async => sp.QuietDigest(
-          spaceKey: 'prayer',
-          totalReflections: 3,
-          totalCareAffirmations: 8,
-          predominantIntent: '[Prayer Request]',
-          summaryMessage: 'Three reflections gathered in peace.',
-          generatedAt: DateTime.utc(2026, 10, 3),
-        ),
-      );
-
-      final repo = buildRepo();
-      final seen = <List<Post>>[];
-      final subscription = repo.watchPosts(spaceKey: 'study').listen(seen.add);
-      await Future<void>.value();
-
-      updates.add(
-        samplePost(id: 7, content: 'First reading.', createdAt: DateTime.utc(2026, 10, 1, 9)),
-      );
-      updates.add(
-        samplePost(id: 7, content: 'Revised reading.', createdAt: DateTime.utc(2026, 10, 1, 10)),
-      );
-      updates.add(
-        samplePost(id: 8, content: 'A second note.', createdAt: DateTime.utc(2026, 10, 1, 11)),
-      );
-      for (var i = 0; i < 8; i++) {
-        await Future<void>.value();
-      }
-
-      final nonCanonical = seen.last
-          .where((post) => !post.id.startsWith('canonical-'))
-          .toList();
-      expect(nonCanonical.map((post) => post.content).toList(), [
-        'A second note.',
-        'Revised reading.',
-      ]);
-      expect(nonCanonical.first.id, '8');
-      expect(repo.isLiveConnected, isTrue);
-
-      final digest = await repo.getQuietDigest(spaceKey: 'memes');
-      expect(digest, 'Three reflections gathered in peace.');
-      verify(() => endpoint.getQuietDigest('memes')).called(1);
-      subscription.cancel();
-    });
-
-    test('affirmCare is sent for numeric ids and skipped for local ids', () async {
-      when(() => endpoint.affirmCare(any(), any())).thenAnswer((_) async => samplePost(id: 15));
-      when(() => endpoint.getQuietDigest(any())).thenThrow(Exception('timeout'));
-
-      final repo = buildRepo();
-      await repo.addReaction(postId: '15', reactionType: 'pray');
-      verify(() => endpoint.affirmCare(15, 'praying')).called(1);
-      expect(repo.isLiveConnected, isTrue);
-
-      await repo.addReaction(postId: 'local-9', reactionType: 'peace');
-      verifyNever(() => endpoint.affirmCare(any(), 'peace'));
-
-      final digest = await repo.getQuietDigest(spaceKey: 'special_interests');
-      expect(digest, 'A quiet, unhurried space awaiting the first community reflection.');
-      expect(repo.isLiveConnected, isFalse);
-    });
   });
 }

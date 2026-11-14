@@ -4,7 +4,6 @@ import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/appwrite_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/post_repository_factory.dart';
-import 'package:refuge4serverpod/src/features/reflections/data/serverpod_post_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +18,6 @@ void main() {
       final repo = PostRepositoryFactory.create(flavor: AppFlavor.dev);
 
       switch (configuredBackendMode) {
-        case BackendMode.serverpod:
-          expect(repo, isA<ServerpodPostRepository>());
-          expect((repo as ServerpodPostRepository).isDevMode, isTrue);
-          break;
         case BackendMode.appwrite:
           expect(repo, isA<AppwritePostRepository>());
           expect((repo as AppwritePostRepository).isDevMode, isTrue);
@@ -39,10 +34,6 @@ void main() {
       final repo = PostRepositoryFactory.create(flavor: AppFlavor.prod);
 
       switch (configuredBackendMode) {
-        case BackendMode.serverpod:
-          expect(repo, isA<ServerpodPostRepository>());
-          expect((repo as ServerpodPostRepository).isDevMode, isFalse);
-          break;
         case BackendMode.appwrite:
           expect(repo, isA<AppwritePostRepository>());
           expect((repo as AppwritePostRepository).isDevMode, isFalse);
@@ -55,9 +46,8 @@ void main() {
       }
     });
 
-    test('BackendMode enum contains all migration targets', () {
+    test('BackendMode enum contains the live migration targets', () {
       expect(BackendMode.values, contains(BackendMode.local));
-      expect(BackendMode.values, contains(BackendMode.serverpod));
       expect(BackendMode.values, contains(BackendMode.sqlite));
       expect(BackendMode.values, contains(BackendMode.appwrite));
     });
