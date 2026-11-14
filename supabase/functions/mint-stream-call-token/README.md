@@ -9,3 +9,9 @@ from this repo or a dart-define. Guest join has no JWT, so the function keeps
 
 A first-time `joinGuest` returns a seat key. Only the SHA-256 hash of that
 key is stored. Refresh and release require the same key.
+
+A signed-in mint (no `action`) also gets or creates the `default` call and
+adds the caller. The creator, or someone who is already host, is `host`. An
+existing admin stays `admin`. Everyone else is `call_member`, which can share
+a screen. The token response is unchanged. Logs stay free of tokens, secrets,
+and email addresses.

@@ -62,6 +62,18 @@ export interface PrepareInput {
   apiKey: string; apiSecret: string; callId: string; hostUserId: string;
   guestUserId: string; displayName: string; nowSeconds: number;
 }
+export interface MemberPrepareInput {
+  apiKey: string;
+  apiSecret: string;
+  callId: string;
+  userId: string;
+  nowSeconds: number;
+}
+export interface MemberPrepareResult {
+  ok: boolean;
+  status?: number;
+  role?: string;
+}
 export interface Deps {
   apiKey(): string;
   apiSecret(): string;
@@ -73,6 +85,8 @@ export interface Deps {
   randomSeatKey(): string;
   prepareTimeoutMs?: number;
   prepareGuestCall(input: PrepareInput): Promise<{ ok: boolean; status?: number }>;
+  /** Defaults to prepareMemberOnCall when omitted. */
+  prepareMemberCall?(input: MemberPrepareInput): Promise<MemberPrepareResult>;
 }
 
 // ---------- pure helpers ----------
@@ -405,6 +419,168 @@ async function discard(r: Response) {
   }
 }
 
+async function readJson(response: Response): Promise<Record<string, unknown> | null> {
+  let text = "";
+  try {
+    text = await response.text();
+  } catch {
+    return null;
+  }
+  if (!text) return null;
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function createdByIdOf(created: unknown): string {
+  if (typeof created === "string") return created;
+  const obj = asRecord(created);
+  if (!obj) return "";
+  if (typeof obj.id === "string") return obj.id;
+  if (typeof obj.user_id === "string") return obj.user_id;
+  return "";
+}
+
+function callOwnerId(body: Record<string, unknown> | null): string {
+  if (!body) return "";
+  const call = asRecord(body.call) ?? body;
+  return createdByIdOf(call.created_by);
+}
+
+function memberUserId(member: Record<string, unknown>): string {
+  if (typeof member.user_id === "string") return member.user_id;
+  const user = asRecord(member.user);
+  return user && typeof user.id === "string" ? user.id : "";
+}
+
+function membershipRole(body: Record<string, unknown>, userId: string): string {
+  const lists: unknown[] = [];
+  if (Array.isArray(body.members)) lists.push(body.members);
+  const call = asRecord(body.call);
+  if (call && Array.isArray(call.members)) lists.push(call.members);
+  for (const list of lists) {
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      const member = asRecord(item);
+      if (!member || memberUserId(member) !== userId) continue;
+      return typeof member.role === "string" ? member.role.toLowerCase() : "";
+    }
+  }
+  return "";
+}
+
+/**
+ * Call role for a signed-in member.
+ * Host when they created the call or are already host.
+ * Admin stays admin so a dashboard admin is not demoted.
+ * Everyone else is call_member, which can share a screen on the default call type.
+ */
+export function memberCallRole(
+  { userId, createdById, existingRole }: { userId: string; createdById: string; existingRole: string },
+): string {
+  const role = existingRole.trim().toLowerCase();
+  if (role === "admin") return "admin";
+  if (createdById !== "" && createdById === userId) return HOST_CALL_ROLE;
+  if (role === HOST_CALL_ROLE) return HOST_CALL_ROLE;
+  return STREAM_CALL_MEMBER_ROLE;
+}
+
+function requestCreatedCall(status: number, body: Record<string, unknown> | null, userId: string): boolean {
+  if (body && body.created === false) return false;
+  const owner = callOwnerId(body);
+  if (owner !== "" && owner !== userId) return false;
+  if (body && body.created === true) return true;
+  if (owner === userId) return true;
+  return status === 201;
+}
+
+/**
+ * Ensures the call exists (Stream get-or-create, call type `default`) and
+ * upserts the signed-in member. GET first so an existing call does not get a
+ * new owner. The user record has an id only: no role, name, or email.
+ * Response bodies are read and never logged.
+ */
+export async function prepareMemberOnCall(
+  input: MemberPrepareInput,
+  fetchFn: typeof fetch = fetch,
+): Promise<MemberPrepareResult> {
+  const { apiKey, apiSecret, callId, userId, nowSeconds } = input;
+  if (!ACCEPTED_STREAM_CALL_ROLES.has(HOST_CALL_ROLE) || !ACCEPTED_STREAM_CALL_ROLES.has(STREAM_CALL_MEMBER_ROLE)) {
+    return { ok: false, status: 400 };
+  }
+  const server = await mintStreamServerToken(apiSecret, nowSeconds);
+  const headers = { Authorization: server.token, "stream-auth-type": "jwt", "Content-Type": "application/json" };
+  const key = encodeURIComponent(apiKey);
+  const users = await fetchFn(`${VIDEO_ORIGIN}/api/v2/users?api_key=${key}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ users: { [userId]: { id: userId } } }),
+  });
+  await readJson(users);
+  if (!users.ok) return { ok: false, status: users.status };
+
+  const callPath = `${VIDEO_ORIGIN}/api/v2/video/call/${CALL_TYPE}/${encodeURIComponent(callId)}`;
+  const callUrl = `${callPath}?api_key=${key}`;
+  const existing = await fetchFn(`${callUrl}&members_limit=100`, { method: "GET", headers });
+  const existingBody = await readJson(existing);
+
+  let createdById = "";
+  let existingRole = "";
+  if (existing.status === 404) {
+    const created = await fetchFn(callUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        data: {
+          created_by_id: userId,
+          members: [{ user_id: userId, role: HOST_CALL_ROLE }],
+        },
+      }),
+    });
+    const createdBody = await readJson(created);
+    if (!created.ok) return { ok: false, status: created.status };
+    const owner = callOwnerId(createdBody);
+    const echoed = createdBody ? membershipRole(createdBody, userId) : "";
+    if (requestCreatedCall(created.status, createdBody, userId)) {
+      createdById = owner || userId;
+      existingRole = echoed || HOST_CALL_ROLE;
+    } else {
+      createdById = owner;
+      // The create body asked for host. A lost race must not keep that echo.
+      existingRole = echoed === HOST_CALL_ROLE ? "" : echoed;
+    }
+  } else if (!existing.ok) {
+    return { ok: false, status: existing.status };
+  } else if (!existingBody) {
+    return { ok: false, status: 502 };
+  } else {
+    createdById = callOwnerId(existingBody);
+    existingRole = membershipRole(existingBody, userId);
+  }
+
+  const role = memberCallRole({ userId, createdById, existingRole });
+  if (!ACCEPTED_STREAM_CALL_ROLES.has(role)) return { ok: false, status: 400 };
+  const updated = await fetchFn(`${callPath}/members?api_key=${key}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ update_members: [{ user_id: userId, role }] }),
+  });
+  await readJson(updated);
+  if (!updated.ok) return { ok: false, status: updated.status };
+  return { ok: true, role };
+}
+
 // ---------- handler (port of stream_call.js + stream_guest.js) ----------
 type Body = Record<string, unknown>;
 
@@ -459,7 +635,9 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (action === "releaseGuest") return await releaseGuest(deps, body, err, json);
   if (action) return err(400, "forbidden", "That call action is not available.");
 
-  // No action: the unchanged signed-in member mint.
+  // No action: signed-in member mint. A user token alone leaves the caller as
+  // Stream's guest role, which cannot share a screen. The call id is already
+  // on this request. Ensure the call exists and upsert this member first.
   const userId = await requireMember(req, deps);
   if (!userId) return json(401, { error: "Sign in is required." });
   const callId = normalizeCallId(body.callId);
@@ -469,8 +647,27 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     log("mintStreamCallToken", { ok: false, reason: "not-configured" });
     return json(503, { error: "Video calling is not configured on this preview." });
   }
-  const minted = await mintStreamUserToken(userId, apiSecret, deps.nowSeconds());
-  log("mintStreamCallToken", { ok: true, callId });
+  const nowSeconds = deps.nowSeconds();
+  const timeoutMs = typeof deps.prepareTimeoutMs === "number" ? deps.prepareTimeoutMs : PREPARE_TIMEOUT_MS;
+  const prepare = deps.prepareMemberCall ?? prepareMemberOnCall;
+  const prepared = await settleWithin(
+    () => prepare({ apiKey, apiSecret, callId, userId, nowSeconds }),
+    timeoutMs,
+  );
+  if (!prepared || prepared.ok !== true) {
+    log("mintStreamCallToken", { ok: false, reason: "room", callId });
+    const denied = Boolean(prepared && "status" in prepared && prepared.status === 403);
+    return json(denied ? 403 : 502, {
+      error: denied
+        ? "This account cannot join a call."
+        : "The call could not start. Try again in a moment.",
+    });
+  }
+  const minted = await mintStreamUserToken(userId, apiSecret, nowSeconds);
+  const role = typeof prepared.role === "string" && ACCEPTED_STREAM_CALL_ROLES.has(prepared.role)
+    ? prepared.role
+    : "";
+  log("mintStreamCallToken", role ? { ok: true, callId, role } : { ok: true, callId });
   return json(200, { apiKey, token: minted.token, userId, callId, expiresAt: minted.expiresAt });
 }
 
