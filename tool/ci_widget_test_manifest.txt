@@ -167,3 +167,9 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+
+# Call and guest coverage
+test/features/group_call/group_call_audio_checks_test.dart
+test/features/group_call/group_call_mic_bdd_test.dart
+test/features/group_call/preview_track_mute_test.dart
+test/features/group_call/stream_guest_seat_test.dart
