@@ -2,6 +2,8 @@
 
 Preview-only group calls for [#872](https://github.com/neiljaywarner/refuge/issues/872) and guest links for [#904](https://github.com/neiljaywarner/refuge/issues/904). Both sit under [#871](https://github.com/neiljaywarner/refuge/issues/871). This is not a production rollout. `tool/deploy_release.dart` does not turn the call on, and this page does not deploy anything.
 
+The preview token function is [`mint-stream-call-token`](../../supabase/functions/mint-stream-call-token/README.md). That page covers who calls it, the `call_member` upsert, log lines, and the screen-share grant check. As of 14 Nov 2026, Stream call type `default` includes `host` grants with screenshare. The function still does not assign `host`.
+
 The call is for about ten people for about an hour. People start muted with the camera off. They can unmute, turn the camera on, or leave. Nothing in this client cuts the room off at forty minutes.
 
 ## Status 2026-11-09 ~1 AM CT
@@ -228,6 +230,7 @@ The signed-in join button needs all three gates. One closed gate is enough to hi
 | "Video calling is not configured on this preview yet." | `mintStreamCallToken` has no `STREAM_API_KEY` or `STREAM_API_SECRET` (HTTP 503). |
 | "The call could not be prepared." | The function could not create the room or set the guest as a call member. The seat is released. Try again in a moment. |
 | "The call could not start. Try again in a moment." | Any other failure. The app does not show the response body. |
+| No screen share button | Call type `default` grants for `host`, `call_member`, and `guest`. Details, including the 14 Nov 2026 `host` grant change, are in the [mint README](../../supabase/functions/mint-stream-call-token/README.md). |
 
 The function answers browsers on `*.web.app`, `*.firebaseapp.com`, and loopback only. Another origin is refused before the ID token is checked and before the secret is read. The deploy log says whether the token endpoint was set. It does not print the endpoint, the invite token, or any secret.
 
