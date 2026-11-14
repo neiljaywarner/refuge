@@ -281,7 +281,7 @@ Source: dev''');
       expect(devDeploy, contains('https://dev-belongonthespectrum.web.app'));
       expect(devDeploy, contains("targetFile: 'lib/main_dev.dart'"));
       expect(devDeploy, contains("flavor: 'dev'"));
-      expect(devDeploy, contains('--dart-define=ENABLE_SERVERPOD=false'));
+      expect(devDeploy, isNot(contains('ENABLE_SERVERPOD')));
       expect(devDeploy, contains('analyticsDartDefines(Platform.environment)'));
       expect(devDeploy, contains('devExamplePasswordDartDefines(Platform.environment)'));
       expect(devDeploy, contains('joinArgsRedactingAnalyticsDefines'));

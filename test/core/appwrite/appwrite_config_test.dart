@@ -13,7 +13,7 @@ void main() {
     (call) async => '.',
   );
 
-  test('default config uses Appwrite and does not select Serverpod', () {
+  test('default config uses Appwrite', () {
     expect(AppwriteConfig.fromEnvironment.isConfigured, isTrue);
     expect(AppwriteConfig.fromEnvironment.endpoint, AppwriteConfig.belongEndpoint);
     expect(AppwriteConfig.fromEnvironment.projectId, AppwriteConfig.belongProjectId);

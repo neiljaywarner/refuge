@@ -9,7 +9,7 @@ This document provides a comprehensive technical evaluation of session replay an
 
 | Platform | Free Tier Quotas | Mobile (Android/iOS) | Flutter Web | Privacy / PII Masking | Setup Complexity | Self-Hostable |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Built-in Cloud Storage + Talker** | 5 GB Storage / Unlimited logs (Firebase Spark) | Full Native support | Full Web support | Built-in regex redactor (emails, tokens) | **Zero (Already active)** | Yes (Firebase / Serverpod) |
+| **Built-in Cloud Storage + Talker** | 5 GB Storage / Unlimited logs (Firebase Spark) | Full Native support | Full Web support | Built-in regex redactor (emails, tokens) | **Zero (Already active)** | Yes (Firebase / Firebase) |
 | **PostHog** (`posthog_flutter`) | **1,000,000 events/mo** + **5,000 replays/mo** | Android & iOS | Web (DOM replay) | Automatic input & text masking | Low (Configured via `--dart-define`) | Yes (Open-source) |
 | **Sentry** (`sentry_flutter`) | **5,000 errors/mo** + **50 replays/mo** | Full Mobile Canvas / Wireframe | Full Web | Strict visual masking & opt-in capture | Low (DSN configuration) | Yes (Self-hosted Sentry) |
 | **LogRocket** (`logrocket_flutter`) | 1,000 sessions/mo | Web + Android | Web only | Redaction by default | Medium | No (SaaS only) |

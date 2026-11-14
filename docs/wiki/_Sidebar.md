@@ -27,11 +27,11 @@
 * **[🐛 Bug Reporting & In-App Feedback SDK Evaluation](Bug-Reporting-SDKs-Evaluation)**
 * **[🎨 Circle Post Creation Pattern & Calm Improvements](Circle-Post-Creation-Pattern-Improvement)**
 * **[⚙️ Deep Technical Breakdown: Android APK vs. Web PWA](Android-APK-vs-Web-PWA-Details)**
-* **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)**
+* **[⚖️ Backend Strategy: Appwrite Core + Firebase Edge (ADR-0009)](Backend-Migration-Strategy-Appwrite-Firebase)**
 * **[🗄️ One Database Plus a Backup (ADR-0011)](Reflection-Redundancy-and-Backup)**
 * **[🗄️ Leave-alone free backends](Leave-Alone-Free-Backends.md)**
 * **[🗄️ Firestore to Appwrite backup (first pass)](Firestore-to-Appwrite-Backup)**
-* **[🔌 Serverpod Deprecation & $0/Mo Teardown Guide](Serverpod-Deprecation-and-Teardown-Guide)**
+* **[🔌 Firestore Spark quota](Firestore-Spark-Quota)**
 * **[🔔 Calm Notifications Architecture (ADR-0010)](ADR-0010-Notifications-Local-Awesome-vs-FCM)**
 * **[💬 Direct Message Alerts (ADR-0012)](ADR-0012-Direct-Message-Alerts)**
 * **[💬 Direct Message Push Function](Direct-Message-Push-Function)**
@@ -60,7 +60,6 @@
 ### 🏛️ Historical Archives & Early Prototypes
 * **[📜 Early Fellowship Rooms (Prototype 1)](User-Journeys-and-Fellowship-Rooms)**
 * **[📜 Early Calm-Tech Standard (Prototype 1)](Product-Vision-and-Calm-Tech)**
-* **[📜 Dual Pixel Hardware LTE Demo (Serverpod Hackathon)](Dual-Pixel-Cloud-Demo)**
-* **[📜 Serverpod Architecture Deep Dive](Serverpod-Architecture-Deep-Dive)**
-* **[📜 Appwrite vs. Serverpod Initial Evaluation](Migrate-to-Appwrite-Evaluation)**
+* **[📜 Dual Pixel Hardware LTE Demo (Firebase Hackathon)](Dual-Pixel-Cloud-Demo)**
+* **[📜 Appwrite vs. Firebase Initial Evaluation](Migrate-to-Appwrite-Evaluation)**
 * **[📜 Screenshot & Video Planning Document](Plan-for-Videos-and-Screenshots)**

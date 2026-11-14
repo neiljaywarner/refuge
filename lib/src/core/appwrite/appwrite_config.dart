@@ -5,9 +5,8 @@
 /// a signed-in Appwrite session, or a server holding an API key, exists.
 /// Cloud Firestore is the live reflection store.
 ///
-/// Pass an empty `--dart-define=APPWRITE_ENDPOINT=` to skip Appwrite. Serverpod
-/// Cloud is not used unless the build also sets `BACKEND=serverpod` and
-/// `ENABLE_SERVERPOD=true`.
+/// Pass an empty `--dart-define=APPWRITE_ENDPOINT=` to skip Appwrite.
+/// Firestore remains the live community store.
 class AppwriteConfig {
   const AppwriteConfig({
     required this.endpoint,

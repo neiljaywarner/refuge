@@ -189,10 +189,9 @@ void main() {
     });
   });
 
-  group('BDD Feature: Serverpod 4 Resilient Client Integration', () {
+  group('BDD Feature: Offline reflection fallback', () {
     test('Scenario: Operating in resilient offline fallback mode within 800ms', () async {
-      // Given a ServerpodPostRepository initialized with unreachable server
-      final repo = ServerpodPostRepository(serverUrl: 'http://127.0.0.1:9999/');
+      final repo = LocalPostRepository();
 
       // When client requests posts for space 'prayer'
       final posts = await repo.getPosts(spaceKey: 'prayer');

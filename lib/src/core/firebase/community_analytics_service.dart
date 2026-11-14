@@ -8,13 +8,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/logging/app_logger.dart';
-import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
+import 'package:refuge4serverpod/src/core/observability/local_telemetry_ring.dart';
 
 /// Privacy-safe, zero-PII multi-vendor telemetry engine backing:
 /// 1. Firebase Analytics (Google Analytics 4 & DebugView)
 /// 2. Aptabase (Open-source privacy-first analytics)
 /// 3. PostHog (Product analytics, event funnels, and session insights)
-/// 4. Serverpod Diagnostics ring buffer
+/// 4. Local diagnostics ring buffer
 ///
 /// Dispatches via fire-and-forget [unawaited] tasks so UI rendering is NEVER
 /// blocked by network transport latency.
@@ -26,7 +26,7 @@ import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_back
 class CommunityAnalyticsService {
   CommunityAnalyticsService({
     required this.flavor,
-    this.serverpodBackup,
+    this.localTelemetryRing,
     http.Client? httpClient,
     this.aptabaseKeyOverride,
     this.postHogKeyOverride,
@@ -35,7 +35,7 @@ class CommunityAnalyticsService {
   }) : _httpClient = httpClient ?? http.Client();
 
   final AppFlavor flavor;
-  final ServerpodTelemetryBackup? serverpodBackup;
+  final LocalTelemetryRing? localTelemetryRing;
   final http.Client _httpClient;
   final String? aptabaseKeyOverride;
   final String? postHogKeyOverride;
@@ -92,10 +92,10 @@ class CommunityAnalyticsService {
       '📊 [ANALYTICS] Event "$name" triggered (flavor: ${flavor.slug}) | Parameters: $enriched',
     );
 
-    // 1. Dual-dispatch to Serverpod backup ring buffer (fire-and-forget)
-    if (serverpodBackup != null) {
+    // 1. Dual-dispatch to the local telemetry ring (fire-and-forget)
+    if (localTelemetryRing != null) {
       unawaited(
-        serverpodBackup!.recordAnalyticsEvent(name, parameters: enriched).catchError((_) {}),
+        localTelemetryRing!.recordAnalyticsEvent(name, parameters: enriched).catchError((_) {}),
       );
     }
 
@@ -314,6 +314,6 @@ class CommunityAnalyticsService {
 
 final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((ref) {
   final flavor = ref.watch(appFlavorProvider);
-  final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
-  return CommunityAnalyticsService(flavor: flavor, serverpodBackup: serverpodBackup);
+  final localTelemetryRing = ref.watch(localTelemetryRingProvider);
+  return CommunityAnalyticsService(flavor: flavor, localTelemetryRing: localTelemetryRing);
 });

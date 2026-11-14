@@ -822,7 +822,7 @@ Future<void> _addFlavorsAndCsvIssues() async {
 
   stdout.writeln('==> 2. Creating Issue #40: Add stg (prod-data mirror) and qa flavors...');
   await _createIssueWithComment(
-    title: 'feat(flavors): Configure stg (prod-data mirror) and qa Firebase & Serverpod flavors when needed',
+    title: 'feat(flavors): Configure stg (prod-data mirror) and qa Firebase flavors when needed',
     labels: 'infra,firebase,mentoring',
     milestone: 'v0.9.0-rc - Release Candidate & 70% Coverage',
     body: '''
@@ -904,7 +904,7 @@ Future<void> _addMentoringEpic() async {
     milestone: 'v0.6.0 - Clean Belong Circle UI, Nav, Icons, Firebase & Wiki',
     body: '''
 ## Why This Matters (For Students, Mentees & Apprentices)
-Beyond serving **Belong on the Spectrum**, this repository (`neiljaywarner/refuge`) is architected to be a **gold-standard teaching reference** that students, mentees, and apprentices can study to learn modern, AI-assisted full-stack Flutter & Serverpod engineering:
+Beyond serving **Belong on the Spectrum**, this repository (`neiljaywarner/refuge`) is architected to be a **gold-standard teaching reference** that students, mentees, and apprentices can study to learn modern, AI-assisted Flutter engineering:
 
 1. **CodeWithAndrea Feature-First Layered Architecture + `hooks_riverpod`** (`presentation` -> `application` -> `domain` -> `data`).
 2. **Pragmatic Red-Green-Refactor BDD**: Human-readable `.feature` files (`bdd_widget_test`) paired with fast 1-second widget tests and live **Marionette MCP** / **Patrol MCP** verification.
@@ -1002,7 +1002,7 @@ To keep our Flutter codebase clean, testable, and free of `StatefulWidget` boile
    - `presentation/` (Widgets + Riverpod Controllers/Notifiers)
    - `application/` (Services coordinating multiple repositories)
    - `domain/` (Immutable models & entities)
-   - `data/` (Repositories & external data sources like Serverpod / Firebase Remote Config)
+   - `data/` (Repositories and external data sources like Cloud Firestore / Firebase Remote Config)
 
 ## Acceptance Criteria
 - [ ] Add `hooks_riverpod` and `flutter_hooks` to `pubspec.yaml`.

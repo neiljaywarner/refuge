@@ -43,7 +43,7 @@ void main() {
       repo = MockFeatureVotingRepository();
       memory = InMemoryFeatureVotingRepository();
       updates = StreamController<List<VotableFeatureItem>>.broadcast();
-      when(() => repo.target).thenReturn(BackendTarget.serverpod);
+      when(() => repo.target).thenReturn(BackendTarget.firebase);
       when(() => repo.loadInitialFeatures()).thenReturn(kDefaultBelongVotableFeatures);
       when(() => repo.watchFeatures()).thenAnswer((_) => updates.stream);
       when(() => repo.toggleVote(any(), any())).thenAnswer((invocation) {

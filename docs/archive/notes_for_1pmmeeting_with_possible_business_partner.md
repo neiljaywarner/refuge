@@ -77,7 +77,7 @@ As an experienced dev consultant, you will appreciate how cleanly this system ha
        ┌─────────────────┼─────────────────┐
        ▼                 ▼                 ▼
 [Firebase Auth & Edge]  [Firestore & Cloud]   [Modular Backend Seams]
- (Email, Magic Links,   (Collections, Storage (Serverpod WebSocket &
+ (Email, Magic Links,   (Collections, Storage (Firebase WebSocket &
   Remote Config Admin)   Session Replays)      Appwrite Realtime Ready)
 ```
 
@@ -184,7 +184,7 @@ We can structure collaboration to fit your availability, consulting bandwidth, a
 ### Q2: What is the current backend architecture?
 **A**: Belong uses a pragmatic hybrid model:
 - **Firebase Edge**: Global CDN hosting, Firebase Authentication, and Firestore synchronization.
-- **Serverpod 4**: Originally evaluated for WebSockets; currently in a clean 20-day teardown roadmap to eliminate its \$5/mo cluster.
+- **the retired backend**: Originally evaluated for WebSockets; currently in a clean 20-day teardown roadmap to eliminate its \$5/mo cluster.
 - **Appwrite Seams**: Pluggable Riverpod repository interfaces (`PostRepository`, `CommentRepository`, `FeatureVotingRepository`) ready to connect to Appwrite or any self-hosted BaaS.
 
 ### Q3: How much time is expected from a partner or advisor?
@@ -203,8 +203,8 @@ We can structure collaboration to fit your availability, consulting bandwidth, a
 - **Live Production Web App**: [`https://belongonthespectrum.web.app`](https://belongonthespectrum.web.app)
 - **Main Codebase**: [`https://github.com/neiljaywarner/refuge`](https://github.com/neiljaywarner/refuge)
 - **Private Feedback Triage Queue**: [`https://github.com/neiljaywarner/belong_feedback`](https://github.com/neiljaywarner/belong_feedback)
-- **Human Reviewer Briefing**: [`notes_for_first_meeting_with_human_reviewer.md`](file:///Users/neil/belongonthespectrum/refuge/notes_for_first_meeting_with_human_reviewer.md)
-- **Friend QA Walkthrough Notes**: [`notes_for_friend_helping_with_qa.md`](file:///Users/neil/belongonthespectrum/refuge/notes_for_friend_helping_with_qa.md)
-- **1.0 Master Plan**: [`1.0_alpha_plan.md`](file:///Users/neil/belongonthespectrum/1.0_alpha_plan.md)
-- **Serverpod Teardown & $0/Mo Cost Savings Guide**: [`docs/wiki/Serverpod-Deprecation-and-Teardown-Guide.md`](file:///Users/neil/belongonthespectrum/refuge/docs/wiki/Serverpod-Deprecation-and-Teardown-Guide.md)
-- **Review Sentiment Benchmark Report**: [`docs/benchmarks/circle_apple_google_reviews_sentiment_report.md`](file:///Users/neil/belongonthespectrum/refuge/docs/benchmarks/circle_apple_google_reviews_sentiment_report.md)
+- **Human Reviewer Briefing**: [`notes_for_first_meeting_with_human_reviewer.md`](notes_for_first_meeting_with_human_reviewer.md)
+- **Friend QA Walkthrough Notes**: [`notes_for_friend_helping_with_qa.md`](notes_for_friend_helping_with_qa.md)
+- **1.0 Master Plan**: [`1.0_alpha_plan.md`](1.0_alpha_plan.md)
+- **Firebase Teardown & $0/Mo Cost Savings Guide**: [`docs/wiki/Firestore-Spark-Quota.md`](docs/wiki/Firestore-Spark-Quota.md)
+- **Review Sentiment Benchmark Report**: [`docs/benchmarks/circle_apple_google_reviews_sentiment_report.md`](docs/benchmarks/circle_apple_google_reviews_sentiment_report.md)

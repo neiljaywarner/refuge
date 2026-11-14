@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/main.dart';
 import 'package:refuge4serverpod/src/features/fellowship_spaces/domain/fellowship_space.dart';
-import 'package:refuge4serverpod/src/features/reflections/data/serverpod_post_repository.dart';
+import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
 
 void main() {
   group('Space Routing and Post Isolation (#445, #446)', () {
-    test('ServerpodPostRepository routes distinct spaces without collapsing to prayer', () async {
-      final repo = ServerpodPostRepository(isDevMode: true);
+    test('LocalPostRepository routes distinct spaces without collapsing to prayer', () async {
+      final repo = LocalPostRepository(isDevMode: true);
 
       // Verify each space retains its distinct posts
       final prayerPosts = await repo.getPosts(spaceKey: 'prayer');

@@ -128,9 +128,9 @@ Future<void> main(List<String> args) async {
       exit(65);
     }
   } else {
-    // Dev and prod share one Firebase project and one Serverpod host.
-    // The public dev site must stay on the local post repository so a
-    // visitor cannot publish into the live community.
+    // Dev and prod share one Firebase project. Dev posts are stored in
+    // reflections_dev, not the live reflections collection. This build does
+    // not pass an Appwrite dart-define; the feed reads Firestore.
     await _run(_bin('flutter'), [
       ...stamp.flutterArgs(
         'web',
@@ -138,7 +138,6 @@ Future<void> main(List<String> args) async {
         flavor: 'dev',
         extraDefines: extraDefines,
       ),
-      '--dart-define=ENABLE_SERVERPOD=false',
     ], dryRun: dryRun);
     if (!dryRun) {
       await _writeWebVersionJson(version, stamp);

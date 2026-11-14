@@ -1,4 +1,4 @@
-Feature: Stage 1 "Any Auth" & Pluggable Appwrite/Serverpod Auth Repository (#26, ADR-0009)
+Feature: Stage 1 "Any Auth" & Pluggable Appwrite Auth Repository (#26, ADR-0009)
   As a Belong on the Spectrum alpha member
   I want frictionless Stage 1 email + display name sign-in and 1-Tap Google/Apple Sign-In readiness
   So that my reflections carry my name and I can sign out anytime from the upper-right profile dialog
