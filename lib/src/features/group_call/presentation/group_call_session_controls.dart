@@ -30,6 +30,12 @@ class GroupCallSessionControls extends StatelessWidget {
     required this.onRemove,
     required this.onEnd,
     this.others = const [],
+    this.canShare = false,
+    this.sharing = false,
+    this.onShare,
+    this.showGuestShare = false,
+    this.guestShareAllowed = false,
+    this.onGuestShare,
   });
 
   final bool microphoneEnabled;
@@ -42,60 +48,99 @@ class GroupCallSessionControls extends StatelessWidget {
   final Future<void> Function(String userId) onRemove;
   final Future<void> Function() onEnd;
 
+  /// False hides the share button unless this person is already sharing.
+  /// A guest stays false until the organizer allows it and Stream grants
+  /// `screenshare`. Stopping stays available after that allow is removed.
+  final bool canShare;
+
+  /// True while this person's screen-share track is on.
+  final bool sharing;
+  final VoidCallback? onShare;
+
+  /// Host-only switch. Guests do not get it.
+  final bool showGuestShare;
+  final bool guestShareAllowed;
+  final ValueChanged<bool>? onGuestShare;
+
   @override
-  Widget build(BuildContext context) => StreamCallControls(
-    options: [
-      Semantics(
-        button: true,
-        label: 'Microphone',
-        child: CallControlOption(
-          key: const Key('group_call_microphone_button'),
-          icon: Icon(microphoneEnabled ? Icons.mic_rounded : Icons.mic_off_rounded),
-          onPressed: onMicrophone,
-        ),
-      ),
-      Semantics(
-        button: true,
-        label: 'Camera',
-        child: CallControlOption(
-          key: const Key('group_call_camera_button'),
-          icon: Icon(cameraEnabled ? Icons.videocam_rounded : Icons.videocam_off_rounded),
-          onPressed: onCamera,
-        ),
-      ),
-      if (host)
+  Widget build(BuildContext context) {
+    final bar = StreamCallControls(
+      options: [
         Semantics(
           button: true,
-          label: 'Remove someone',
+          label: 'Microphone',
           child: CallControlOption(
-            key: const Key('group_call_remove_button'),
-            icon: const Icon(Icons.person_remove_alt_1_rounded),
-            onPressed: () => unawaited(_removeSomeone(context)),
+            key: const Key('group_call_microphone_button'),
+            icon: Icon(microphoneEnabled ? Icons.mic_rounded : Icons.mic_off_rounded),
+            onPressed: onMicrophone,
           ),
         ),
-      if (host)
         Semantics(
           button: true,
-          label: 'End call for everyone',
+          label: 'Camera',
           child: CallControlOption(
-            key: const Key('group_call_end_button'),
-            icon: const Icon(Icons.stop_circle_outlined),
-            onPressed: () => unawaited(_endForEveryone(context)),
+            key: const Key('group_call_camera_button'),
+            icon: Icon(cameraEnabled ? Icons.videocam_rounded : Icons.videocam_off_rounded),
+            onPressed: onCamera,
           ),
         ),
-      Semantics(
-        button: true,
-        label: 'Leave call',
-        child: CallControlOption(
-          key: const Key('group_call_leave_button'),
-          icon: const Icon(Icons.call_end_rounded),
-          iconColor: Colors.white,
-          backgroundColor: Colors.red,
-          onPressed: () => unawaited(onLeave()),
+        if (canShare || sharing)
+          Semantics(
+            button: true,
+            label: sharing ? 'Stop sharing' : 'Share screen',
+            child: CallControlOption(
+              key: const Key('group_call_share_button'),
+              icon: Icon(sharing ? Icons.stop_screen_share_rounded : Icons.screen_share_rounded),
+              onPressed: onShare ?? () {},
+            ),
+          ),
+        if (host)
+          Semantics(
+            button: true,
+            label: 'Remove someone',
+            child: CallControlOption(
+              key: const Key('group_call_remove_button'),
+              icon: const Icon(Icons.person_remove_alt_1_rounded),
+              onPressed: () => unawaited(_removeSomeone(context)),
+            ),
+          ),
+        if (host)
+          Semantics(
+            button: true,
+            label: 'End call for everyone',
+            child: CallControlOption(
+              key: const Key('group_call_end_button'),
+              icon: const Icon(Icons.stop_circle_outlined),
+              onPressed: () => unawaited(_endForEveryone(context)),
+            ),
+          ),
+        Semantics(
+          button: true,
+          label: 'Leave call',
+          child: CallControlOption(
+            key: const Key('group_call_leave_button'),
+            icon: const Icon(Icons.call_end_rounded),
+            iconColor: Colors.white,
+            backgroundColor: Colors.red,
+            onPressed: () => unawaited(onLeave()),
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+    if (!showGuestShare) return bar;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SwitchListTile(
+          key: const Key('group_call_guest_share_switch'),
+          title: const Text('Let guests share'),
+          value: guestShareAllowed,
+          onChanged: onGuestShare,
+        ),
+        bar,
+      ],
+    );
+  }
 
   Future<void> _endForEveryone(BuildContext context) async {
     final confirmed = await _confirm(

@@ -1,0 +1,68 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Preview call start and stop screen share"
+tags:
+  - known-gap
+  - screenshare
+  - issue-928
+---
+# Black-box share for a signed-in preview build (#928).
+# The default `maestro test .maestro` suite excludes known-gap, because
+# this flow needs Join call on screen. It does not type a password,
+# a token, or an email.
+#
+#   maestro test .maestro/group_call_screen_share.yaml
+#
+# Share screen / Stop sharing are the semantics labels on the share button.
+# You are sharing is the presenter label while this device is publishing.
+# Home "Join call" opens the lobby. The lobby button is also "Join call".
+- launchApp
+- extendedWaitUntil:
+    visible: "Join call"
+    timeout: 30000
+- tapOn: "Join call"
+- extendedWaitUntil:
+    visible: "Call name"
+    timeout: 15000
+- tapOn: "Join call"
+# Mic and camera sheets can cover the call. Accept them when they show.
+- tapOn:
+    text: "While using the app"
+    optional: true
+- tapOn:
+    text: "Only this time"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "While using the app"
+    optional: true
+- tapOn:
+    text: "Only this time"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- extendedWaitUntil:
+    visible: "Share screen"
+    timeout: 30000
+- tapOn: "Share screen"
+# Android capture consent. Pick a scope, then confirm, before Stop sharing.
+- tapOn:
+    text: "Entire screen"
+    optional: true
+- tapOn:
+    text: "Start now"
+    optional: true
+- tapOn:
+    text: "Start"
+    optional: true
+- extendedWaitUntil:
+    visible: "Stop sharing"
+    timeout: 20000
+- assertVisible: "You are sharing"
+- tapOn: "Stop sharing"
+- extendedWaitUntil:
+    visible: "Share screen"
+    timeout: 15000
+- assertNotVisible: "You are sharing"

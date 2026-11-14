@@ -246,6 +246,32 @@ That covers the preview gate, dart-define filtering, member token minting, guest
 
 Stream measures video in participant-minutes. Ten people for one hour is about 600 participant-minutes. Stream's comparison with Zoom describes a monthly free allowance on the order of 66,000 participant-minutes and about $0.003 per participant-minute after that ([Zoom Video SDK vs. Stream Video](https://getstream.io/blog/zoom-video-sdk-comparison/)). Confirm the current plan in the Stream dashboard before treating that as a bill. This is the cost context for skipping a Zoom plan of about $18 a month. It is not a promise about a future invoice.
 
+## Screen share (#928)
+
+A participant can share a screen on web and Android. Everyone in the call, including iOS, sees that picture as the large tile with a presenter label. Stopping the share returns the room to the grid.
+
+The share button stays hidden unless Stream's `ownCapabilities` includes `screenshare`. A guest also needs the host to turn on **Let guests share**, which writes `guestScreenShare: true` on the call. iOS cannot publish yet.
+
+Web uses `call.setScreenShareEnabled`, which asks the browser for `getDisplayMedia`. Android asks `call.requestScreenSharePermission()`, starts `StreamBackgroundService.startScreenSharingNotificationService`, then enables the track. The app manifest declares `FOREGROUND_SERVICE_MEDIA_PROJECTION`. Docs: [screen sharing](https://getstream.io/video/docs/flutter/guides/screensharing/) and [background modes](https://getstream.io/video/docs/flutter/advanced/background-modes/).
+
+Debug builds log `[#screenshare]`. The lines are booleans and the platform name. They do not include names, emails, or tokens.
+
+```bash
+adb logcat | grep '\[#screenshare\]'
+```
+
+`node tool/screen_share_peer.mjs` launches headless Chrome with `--use-fake-ui-for-media-stream` and `--auto-select-desktop-capture-source=Entire screen`. It fails unless a second peer's `getStats` inbound video `bytesReceived` is above zero. `flutter test test/features/group_call/group_call_screen_share_web_peer_test.dart` runs that script when Chrome is installed.
+
+`integration_test/patrol_group_call_screen_share_test.dart` accepts the Android system capture dialog. It skips unless the binary has a preview mint, same as the microphone Patrol check. It was not run on a device in the change that added it.
+
+`.maestro/group_call_screen_share.yaml` taps Share screen and Stop sharing. It is tagged `known-gap` so the default Maestro suite does not require a signed-in preview session.
+
+### iOS follow-up
+
+iOS screen share needs a ReplayKit Broadcast Upload Extension, the `stream_video_screen_sharing` package, an app group, and `RTCAppGroupIdentifier` in both Info.plists. `call.setScreenShareEnabled` with `ScreenShareConstraints(useiOSBroadcastExtension: true)` is the toggle. This client does not ship that extension. Viewing a share on iOS already uses the same main tile as the other platforms.
+
+Suggested follow-up title: Video calls: iOS broadcast screen share for refuge preview calls.
+
 ## What this slice does not do
 
-Production hosting, a waiting room, screen share, or a 50-person broadcast. A signed-in member who knows the call name can still join the preview room. A person who is not signed in cannot, unless they have a guest link that has not expired or been revoked. Scheduling a future meeting is [#903](https://github.com/neiljaywarner/refuge/issues/903) and should reuse these invite rules.
+Production hosting, a waiting room, iOS broadcast screen share, or a 50-person broadcast. A signed-in member who knows the call name can still join the preview room. A person who is not signed in cannot, unless they have a guest link that has not expired or been revoked. Scheduling a future meeting is [#903](https://github.com/neiljaywarner/refuge/issues/903) and should reuse these invite rules.

@@ -186,6 +186,9 @@ void main() {
       isNull,
     );
     expect(parseStreamTokenEndpoint('http://127.0.0.1:5001/token'), isNotNull);
+    expect(parseStreamTokenEndpoint('http://localhost:5011/token'), isNotNull);
+    expect(parseStreamTokenEndpoint('http://10.0.2.2:5011/token'), isNotNull);
+    expect(parseStreamTokenEndpoint('http://192.168.1.5:5011/token'), isNull);
     expect(
       groupCallPatrolMintReady(
         previewEnabled: false,
