@@ -2,6 +2,7 @@ import {
   handle,
   memberCallRole,
   MemoryInviteStore,
+  prepareGuestOnCall,
   prepareMemberOnCall,
   randomGuestId,
   randomInviteToken,
@@ -20,36 +21,15 @@ function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error(msg);
 }
 
-Deno.test("member role is host for the creator or an existing host", () => {
-  assert(memberCallRole({ userId: caller, createdById: caller, existingRole: "" }) === "host", "creator");
-  assert(
-    memberCallRole({ userId: caller, createdById: caller, existingRole: "call_member" }) === "host",
-    "creator stays host",
-  );
-  assert(
-    memberCallRole({ userId: caller, createdById: owner, existingRole: "host" }) === "host",
-    "already host",
-  );
-  assert(
-    memberCallRole({ userId: caller, createdById: owner, existingRole: "Admin" }) === "admin",
-    "admin is not demoted",
-  );
-  assert(
-    memberCallRole({ userId: caller, createdById: caller, existingRole: "admin" }) === "admin",
-    "admin creator stays admin",
-  );
-  assert(
-    memberCallRole({ userId: caller, createdById: owner, existingRole: "" }) === "call_member",
-    "new joiner",
-  );
-  assert(
-    memberCallRole({ userId: caller, createdById: owner, existingRole: "guest" }) === "call_member",
-    "guest becomes call_member",
-  );
-  assert(
-    memberCallRole({ userId: caller, createdById: owner, existingRole: "call_member" }) === "call_member",
-    "call member stays",
-  );
+Deno.test("signed-in members are call_member, including the creator and an existing host", () => {
+  assert(memberCallRole("") === "call_member", "creator with no membership yet");
+  assert(memberCallRole("call_member") === "call_member", "stays call_member");
+  assert(memberCallRole("host") === "call_member", "host is downgraded");
+  assert(memberCallRole("Host") === "call_member", "host casing");
+  assert(memberCallRole("guest") === "call_member", "guest becomes call_member");
+  assert(memberCallRole("user") === "call_member", "user becomes call_member");
+  assert(memberCallRole("admin") === "admin", "admin stays");
+  assert(memberCallRole("Admin") === "admin", "admin casing");
 });
 
 interface Seen {
@@ -108,7 +88,7 @@ function memberRole(calls: Seen[], userId: string): string {
   return row.role as string;
 }
 
-Deno.test("a new call is created on default and the caller is host", async () => {
+Deno.test("a new call is created on default and the caller is call_member", async () => {
   const { fetchFn, calls } = scripted((seen) => {
     if (seen.url.includes("/users")) return jsonResponse(201, {});
     if (seen.method === "GET") return jsonResponse(404, { message: "missing" });
@@ -122,24 +102,28 @@ Deno.test("a new call is created on default and the caller is host", async () =>
     userId: caller,
     nowSeconds: now,
   }, fetchFn);
-  assert(result.ok === true && result.role === "host", `created ${JSON.stringify(result)}`);
+  assert(result.ok === true && result.role === "call_member", `created ${JSON.stringify(result)}`);
   assert(calls.some((call) => call.url.includes("/video/call/default/monthly")), "default call type");
   assert(!calls.some((call) => call.url.includes("/video/call/guest/")), "not the guest type");
   const create = calls.find((call) => call.method === "POST" && call.url.includes("/monthly?") &&
     !call.url.includes("/members"));
   assert(create, "getOrCreate");
   const created = JSON.parse(create!.body);
-  assert(created.data.created_by_id === caller, "owner");
-  assert(JSON.stringify(created.data.members) === JSON.stringify([{ user_id: caller, role: "host" }]), "host member");
+  assert(created.data.created_by_id === caller, "owner stays the creator for createdByMe");
+  assert(
+    JSON.stringify(created.data.members) === JSON.stringify([{ user_id: caller, role: "call_member" }]),
+    "call member",
+  );
   const users = calls.find((call) => call.url.includes("/users"));
   const userBody = JSON.parse(users!.body);
   assert(JSON.stringify(userBody.users[caller]) === JSON.stringify({ id: caller }), "id only");
   assert(!Object.hasOwn(userBody.users[caller], "role"), "app role is not rewritten");
-  assert(memberRole(calls, caller) === "host", "upsert host");
+  assert(memberRole(calls, caller) === "call_member", "upsert call_member");
+  assert(!calls.some((call) => call.body.includes('"role":"host"')), "never assigns host");
   await assertServerJwt(calls);
 });
 
-Deno.test("joining an existing call uses call_member unless they own it or are already host", async () => {
+Deno.test("joining an existing call uses call_member, and an existing host is downgraded", async () => {
   const cases: { name: string; body: unknown; role: string }[] = [
     {
       name: "someone else's room",
@@ -156,12 +140,12 @@ Deno.test("joining an existing call uses call_member unless they own it or are a
         call: { created_by: { id: owner } },
         members: [{ user: { id: caller }, role: "host" }],
       },
-      role: "host",
+      role: "call_member",
     },
     {
       name: "creator",
       body: { call: { created_by: { id: caller } }, members: [] },
-      role: "host",
+      role: "call_member",
     },
     {
       name: "admin",
@@ -194,6 +178,7 @@ Deno.test("joining an existing call uses call_member unless they own it or are a
       assert(!calls.some((call) => call.method === "POST" && !call.url.includes("/users") &&
         !call.url.includes("/members")), `${item.name} does not recreate`);
       assert(memberRole(calls, caller) === item.role, item.name);
+      assert(!calls.some((call) => call.body.includes('"role":"host"')), `${item.name} does not assign host`);
       const logged = logs.join("\n");
       assert(!logged.includes(secret), "no secret in logs");
       assert(!logged.includes(plantedEmail), "no email in logs");
@@ -204,7 +189,7 @@ Deno.test("joining an existing call uses call_member unless they own it or are a
   }
 });
 
-Deno.test("a lost create race does not keep the host role this request asked for", async () => {
+Deno.test("a create response that echoes host is still saved as call_member", async () => {
   const { fetchFn, calls } = scripted((seen) => {
     if (seen.url.includes("/users")) return jsonResponse(201, {});
     if (seen.method === "GET") return jsonResponse(404, {});
@@ -224,6 +209,59 @@ Deno.test("a lost create race does not keep the host role this request asked for
   }, fetchFn);
   assert(result.ok === true && result.role === "call_member", JSON.stringify(result));
   assert(memberRole(calls, caller) === "call_member", "corrected role");
+  assert(!calls.some((call) => call.body.includes('"role":"host"')), "request does not assign host");
+});
+
+Deno.test("a guest invite does not upgrade the inviting member to host", async () => {
+  const created = scripted((seen) => {
+    if (seen.url.includes("/users")) return jsonResponse(201, {});
+    if (seen.method === "GET") return jsonResponse(404, {});
+    return jsonResponse(201, { created: true });
+  });
+  const made = await prepareGuestOnCall({
+    apiKey,
+    apiSecret: secret,
+    callId: "monthly",
+    hostUserId: caller,
+    guestUserId: "g" + "ab".repeat(16),
+    displayName: "Ada",
+    nowSeconds: now,
+  }, created.fetchFn);
+  assert(made.ok === true, "guest room");
+  const create = created.calls.find((call) =>
+    call.method === "POST" && call.url.includes("/monthly?") && !call.url.includes("/members")
+  );
+  const createBody = JSON.parse(create!.body);
+  assert(createBody.data.created_by_id === caller, "owner");
+  assert(createBody.data.members[0].role === "call_member", "create role");
+  const update = JSON.parse(created.calls.find((call) => call.url.includes("/members"))!.body);
+  assert(update.update_members.every((member: { role: string }) => member.role === "call_member"), "both call_member");
+  assert(!created.calls.some((call) => call.body.includes('"role":"host"')), "no host");
+
+  const admin = scripted((seen) => {
+    if (seen.url.includes("/users")) return jsonResponse(200, {});
+    if (seen.method === "GET") {
+      return jsonResponse(200, {
+        call: { created_by: { id: caller } },
+        members: [{ user_id: caller, role: "admin" }],
+      });
+    }
+    return jsonResponse(200, {});
+  });
+  const kept = await prepareGuestOnCall({
+    apiKey,
+    apiSecret: secret,
+    callId: "monthly",
+    hostUserId: caller,
+    guestUserId: "g" + "cd".repeat(16),
+    displayName: "Ada",
+    nowSeconds: now,
+  }, admin.fetchFn);
+  assert(kept.ok === true, "admin inviter");
+  const members = JSON.parse(admin.calls.find((call) => call.url.includes("/members"))!.body).update_members;
+  assert(members.find((member: { user_id: string }) => member.user_id === caller).role === "admin", "admin stays");
+  assert(!admin.calls.some((call) => call.method === "POST" && !call.url.includes("/users") &&
+    !call.url.includes("/members")), "existing call is not recreated");
 });
 
 Deno.test("a Stream failure does not report success", async () => {

@@ -19,6 +19,11 @@ export const JOIN_MAX_ATTEMPTS = 20;
 /** App-facing label. Stream's members API takes STREAM_CALL_MEMBER_ROLE instead. */
 export const GUEST_CALL_ROLE = "call-member";
 export const STREAM_CALL_MEMBER_ROLE = "call_member";
+/**
+ * Stream's built-in host name. The `default` call type has no grants for it,
+ * so this function does not assign it. Belong's end/remove controls use the
+ * call owner (`createdByMe`), not this role.
+ */
 export const HOST_CALL_ROLE = "host";
 export const CALL_TYPE = "default";
 const ACCEPTED_STREAM_CALL_ROLES = new Set(["user", "moderator", "host", "admin", "call_member"]);
@@ -378,22 +383,34 @@ export async function prepareGuestOnCall(
 
   const callPath = `${VIDEO_ORIGIN}/api/v2/video/call/${CALL_TYPE}/${encodeURIComponent(callId)}`;
   const callUrl = `${callPath}?api_key=${key}`;
-  const existing = await fetchFn(callUrl, { method: "GET", headers });
-  await discard(existing);
+  const existing = await fetchFn(`${callUrl}&members_limit=100`, { method: "GET", headers });
+  const existingBody = await readJson(existing);
+  // `created_by_id` stays the inviting member so Belong's createdByMe still
+  // matches. The membership role is call_member: host has no grants on default.
+  let existingRole = "";
   if (existing.status === 404) {
     const created = await fetchFn(callUrl, {
       method: "POST",
       headers,
       body: JSON.stringify({
-        data: { created_by_id: hostUserId, members: [{ user_id: hostUserId, role: HOST_CALL_ROLE }] },
+        data: {
+          created_by_id: hostUserId,
+          members: [{ user_id: hostUserId, role: STREAM_CALL_MEMBER_ROLE }],
+        },
       }),
     });
-    await discard(created);
+    const createdBody = await readJson(created);
     if (!created.ok) return { ok: false, status: created.status };
+    existingRole = createdBody ? membershipRole(createdBody, hostUserId) : "";
   } else if (!existing.ok) {
     return { ok: false, status: existing.status };
+  } else if (!existingBody) {
+    return { ok: false, status: 502 };
+  } else {
+    existingRole = membershipRole(existingBody, hostUserId);
   }
-  if (!ACCEPTED_STREAM_CALL_ROLES.has(HOST_CALL_ROLE) || !ACCEPTED_STREAM_CALL_ROLES.has(STREAM_CALL_MEMBER_ROLE)) {
+  const inviterRole = memberCallRole(existingRole);
+  if (!ACCEPTED_STREAM_CALL_ROLES.has(inviterRole) || !ACCEPTED_STREAM_CALL_ROLES.has(STREAM_CALL_MEMBER_ROLE)) {
     return { ok: false, status: 400 };
   }
   const updated = await fetchFn(`${callPath}/members?api_key=${key}`, {
@@ -401,7 +418,7 @@ export async function prepareGuestOnCall(
     headers,
     body: JSON.stringify({
       update_members: [
-        { user_id: hostUserId, role: HOST_CALL_ROLE },
+        { user_id: hostUserId, role: inviterRole },
         { user_id: guestUserId, role: STREAM_CALL_MEMBER_ROLE },
       ],
     }),
@@ -443,21 +460,6 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function createdByIdOf(created: unknown): string {
-  if (typeof created === "string") return created;
-  const obj = asRecord(created);
-  if (!obj) return "";
-  if (typeof obj.id === "string") return obj.id;
-  if (typeof obj.user_id === "string") return obj.user_id;
-  return "";
-}
-
-function callOwnerId(body: Record<string, unknown> | null): string {
-  if (!body) return "";
-  const call = asRecord(body.call) ?? body;
-  return createdByIdOf(call.created_by);
-}
-
 function memberUserId(member: Record<string, unknown>): string {
   if (typeof member.user_id === "string") return member.user_id;
   const user = asRecord(member.user);
@@ -481,42 +483,32 @@ function membershipRole(body: Record<string, unknown>, userId: string): string {
 }
 
 /**
- * Call role for a signed-in member.
- * Host when they created the call or are already host.
- * Admin stays admin so a dashboard admin is not demoted.
- * Everyone else is call_member, which can share a screen on the default call type.
+ * Membership role written for a signed-in member on the `default` call type.
+ *
+ * `user`, `call_member`, `guest`, and `admin` have screenshare there. `host`
+ * has no grants at all, so this never assigns it. An existing host is moved
+ * to `call_member`. Admin stays admin. The creator is `call_member` too;
+ * Belong still treats them as the moderator because the call's `created_by`
+ * matches them (`createdByMe`), which does not depend on this role.
  */
-export function memberCallRole(
-  { userId, createdById, existingRole }: { userId: string; createdById: string; existingRole: string },
-): string {
-  const role = existingRole.trim().toLowerCase();
-  if (role === "admin") return "admin";
-  if (createdById !== "" && createdById === userId) return HOST_CALL_ROLE;
-  if (role === HOST_CALL_ROLE) return HOST_CALL_ROLE;
+export function memberCallRole(existingRole: string): string {
+  if (existingRole.trim().toLowerCase() === "admin") return "admin";
   return STREAM_CALL_MEMBER_ROLE;
-}
-
-function requestCreatedCall(status: number, body: Record<string, unknown> | null, userId: string): boolean {
-  if (body && body.created === false) return false;
-  const owner = callOwnerId(body);
-  if (owner !== "" && owner !== userId) return false;
-  if (body && body.created === true) return true;
-  if (owner === userId) return true;
-  return status === 201;
 }
 
 /**
  * Ensures the call exists (Stream get-or-create, call type `default`) and
- * upserts the signed-in member. GET first so an existing call does not get a
- * new owner. The user record has an id only: no role, name, or email.
- * Response bodies are read and never logged.
+ * upserts the signed-in member as call_member, or leaves an admin as admin.
+ * GET first so an existing call does not get a new owner. `created_by_id` is
+ * still this member when they create the call. The user record has an id
+ * only: no role, name, or email. Response bodies are read and never logged.
  */
 export async function prepareMemberOnCall(
   input: MemberPrepareInput,
   fetchFn: typeof fetch = fetch,
 ): Promise<MemberPrepareResult> {
   const { apiKey, apiSecret, callId, userId, nowSeconds } = input;
-  if (!ACCEPTED_STREAM_CALL_ROLES.has(HOST_CALL_ROLE) || !ACCEPTED_STREAM_CALL_ROLES.has(STREAM_CALL_MEMBER_ROLE)) {
+  if (!ACCEPTED_STREAM_CALL_ROLES.has(STREAM_CALL_MEMBER_ROLE) || !ACCEPTED_STREAM_CALL_ROLES.has("admin")) {
     return { ok: false, status: 400 };
   }
   const server = await mintStreamServerToken(apiSecret, nowSeconds);
@@ -535,7 +527,6 @@ export async function prepareMemberOnCall(
   const existing = await fetchFn(`${callUrl}&members_limit=100`, { method: "GET", headers });
   const existingBody = await readJson(existing);
 
-  let createdById = "";
   let existingRole = "";
   if (existing.status === 404) {
     const created = await fetchFn(callUrl, {
@@ -544,32 +535,22 @@ export async function prepareMemberOnCall(
       body: JSON.stringify({
         data: {
           created_by_id: userId,
-          members: [{ user_id: userId, role: HOST_CALL_ROLE }],
+          members: [{ user_id: userId, role: STREAM_CALL_MEMBER_ROLE }],
         },
       }),
     });
     const createdBody = await readJson(created);
     if (!created.ok) return { ok: false, status: created.status };
-    const owner = callOwnerId(createdBody);
-    const echoed = createdBody ? membershipRole(createdBody, userId) : "";
-    if (requestCreatedCall(created.status, createdBody, userId)) {
-      createdById = owner || userId;
-      existingRole = echoed || HOST_CALL_ROLE;
-    } else {
-      createdById = owner;
-      // The create body asked for host. A lost race must not keep that echo.
-      existingRole = echoed === HOST_CALL_ROLE ? "" : echoed;
-    }
+    existingRole = createdBody ? membershipRole(createdBody, userId) : "";
   } else if (!existing.ok) {
     return { ok: false, status: existing.status };
   } else if (!existingBody) {
     return { ok: false, status: 502 };
   } else {
-    createdById = callOwnerId(existingBody);
     existingRole = membershipRole(existingBody, userId);
   }
 
-  const role = memberCallRole({ userId, createdById, existingRole });
+  const role = memberCallRole(existingRole);
   if (!ACCEPTED_STREAM_CALL_ROLES.has(role)) return { ok: false, status: 400 };
   const updated = await fetchFn(`${callPath}/members?api_key=${key}`, {
     method: "POST",

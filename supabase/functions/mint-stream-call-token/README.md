@@ -11,7 +11,11 @@ A first-time `joinGuest` returns a seat key. Only the SHA-256 hash of that
 key is stored. Refresh and release require the same key.
 
 A signed-in mint (no `action`) also gets or creates the `default` call and
-adds the caller. The creator, or someone who is already host, is `host`. An
-existing admin stays `admin`. Everyone else is `call_member`, which can share
-a screen. The token response is unchanged. Logs stay free of tokens, secrets,
-and email addresses.
+adds the caller. On that call type, `host` has no grants, so it cannot share
+a screen. Signed-in members, including the creator and anyone already listed
+as `host`, are upserted as `call_member`. An existing admin stays `admin`.
+This path does not assign `host`. The call is still created with
+`created_by_id` set to the creator. Belong's end and remove controls use that
+owner flag (`createdByMe`), not the Stream membership role. Guest setup uses
+the same rule for the inviting member. The token response is unchanged. Logs
+stay free of tokens, secrets, and email addresses.
