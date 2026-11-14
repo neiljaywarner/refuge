@@ -11,6 +11,8 @@ import '../domain/stream_call_credentials.dart';
 import 'group_call_connection_status.dart';
 import 'group_call_member_copy.dart';
 import 'group_call_reactive_controls.dart';
+import 'group_call_screen_share_session.dart';
+import 'group_call_stage.dart';
 
 /// Active preview call. Starts muted and camera-off.
 class StreamGroupCallPage extends StatefulWidget {
@@ -117,6 +119,10 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
             muteVideoWhenInBackground: true,
           ),
         );
+        prepareGroupCallScreenShare(
+          platform: currentGroupCallSharePlatform(),
+          registerAndroidHandlers: () => StreamBackgroundService.init(client),
+        );
         call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
         // getOrCreate applies the call type's camera-on default in the
         // background, after join has asked for the camera to stay off. Join
@@ -204,10 +210,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: call == null
           ? Scaffold(
               appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
-              body: GroupCallConnectionStatus(
-                failure: _failure,
-                onBack: () => unawaited(_leave()),
-              ),
+              body: GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave())),
             )
           : StreamCallContent(
               call: call,
@@ -219,6 +222,8 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
                 onLeaveCallTap: _leave,
                 title: Text('Call ${widget.credentials.callId}'),
               ),
+              callParticipantsWidgetBuilder: (context, call) =>
+                  GroupCallParticipantsArea(call: call, guest: widget.credentials.isGuest),
               callControlsWidgetBuilder: (context, call) => GroupCallLiveControls(
                 call: call,
                 signedInMember: !widget.credentials.isGuest,
@@ -253,15 +258,17 @@ typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);
 ///
 /// [user] is always [User.regular]. Its type is authenticated, including for
 /// a guest. [userToken] is the token the function minted for [user.id].
-class const StreamCallConnectPlan({
-  required this.apiKey,
-  required this.user,
-  required this.userToken,
-  required this.callId,
-  required this.cameraStartsEnabled,
-  required this.microphoneStartsEnabled,
-  required this.speakerStartsOn,
-}) {
+class StreamCallConnectPlan {
+  const StreamCallConnectPlan({
+    required this.apiKey,
+    required this.user,
+    required this.userToken,
+    required this.callId,
+    required this.cameraStartsEnabled,
+    required this.microphoneStartsEnabled,
+    required this.speakerStartsOn,
+  });
+
   final String apiKey;
   final User user;
   final String userToken;
