@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../domain/group_call_analytics.dart';
 import '../domain/guest_display_name.dart';
 import '../domain/stream_call_credentials.dart';
 import 'stream_token_client.dart';
@@ -35,26 +36,27 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
   }
 
   /// Checks the name locally, then asks the function for a guest token.
-  Future<StreamCallCredentials> join({required String displayName}) async {
-    final clean = sanitizeGuestDisplayName(displayName);
-    if (clean == null) {
-      throw const StreamTokenException(
-        'Use a short name. Leave out email addresses and web links.',
-      );
-    }
-    final credentials = await _request(displayName: clean, guestUserId: null);
-    if (credentials.seatKey.isEmpty) {
-      throw const StreamTokenException(streamTokenUnavailableMessage);
-    }
-    _guestUserId = credentials.userId;
-    _seatKey = credentials.seatKey;
-    _displayName = credentials.displayName;
-    return credentials;
-  }
+  Future<StreamCallCredentials> join({required String displayName}) =>
+      _guard('join_guest', () async {
+        final clean = sanitizeGuestDisplayName(displayName);
+        if (clean == null) {
+          throw const StreamTokenException(
+            'Use a short name. Leave out email addresses and web links.',
+          );
+        }
+        final credentials = await _request(displayName: clean, guestUserId: null);
+        if (credentials.seatKey.isEmpty) {
+          throw const StreamTokenException(streamTokenUnavailableMessage);
+        }
+        _guestUserId = credentials.userId;
+        _seatKey = credentials.seatKey;
+        _displayName = credentials.displayName;
+        return credentials;
+      });
 
   /// Refreshes the same guest seat. Does not take a second seat.
   @override
-  Future<StreamCallCredentials> mint({required String callId}) {
+  Future<StreamCallCredentials> mint({required String callId}) => _guard('refresh_guest', () async {
     if (this.callId != null && this.callId != callId) {
       throw const StreamTokenException('This invite link is for a different call.');
     }
@@ -62,6 +64,32 @@ class StreamGuestTokenClient implements GroupCallTokenSource {
       throw const StreamTokenException(streamTokenUnavailableMessage);
     }
     return _request(displayName: _displayName, guestUserId: _guestUserId, seatKey: _seatKey);
+  });
+
+  /// Reports a handled guest failure, then rethrows a calm sentence.
+  ///
+  /// A malformed body throws [FormatException]. That message can quote the
+  /// response, so it is recorded as `unavailable` and is not copied into the event.
+  Future<T> _guard<T>(String action, Future<T> Function() body) async {
+    try {
+      return await body();
+    } on StreamTokenException catch (error, stack) {
+      await GroupCallTelemetry.current?.failed(
+        role: 'guest',
+        action: action,
+        failureReason: callFailureReasonForMessage(error.message),
+        stack: stack,
+      );
+      rethrow;
+    } on FormatException catch (_, stack) {
+      await GroupCallTelemetry.current?.failed(
+        role: 'guest',
+        action: action,
+        failureReason: 'unavailable',
+        stack: stack,
+      );
+      throw const StreamTokenException(streamTokenUnavailableMessage);
+    }
   }
 
   /// Gives the seat back. A failure still lets the person leave the screen.

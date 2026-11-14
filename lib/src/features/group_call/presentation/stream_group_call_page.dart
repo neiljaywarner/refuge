@@ -5,6 +5,7 @@ import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../data/stream_token_client.dart';
 import '../domain/group_call_909_log.dart';
+import '../domain/group_call_analytics.dart';
 import '../domain/group_call_audio_checks.dart';
 import '../domain/group_call_session_lifecycle.dart';
 import '../domain/stream_call_credentials.dart';
@@ -44,6 +45,11 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   Call? _call;
   String? _failure;
   bool _alive = true;
+  DateTime? _joinedAt;
+  bool _loggedLeft = false;
+  bool _connectFailureReported = false;
+
+  String get _analyticsRole => widget.credentials.isGuest ? 'guest' : 'member';
 
   @override
   void initState() {
@@ -58,10 +64,36 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   @override
   void dispose() {
     _alive = false;
+    unawaited(_noteLeft());
     if (widget.initialCall == null) {
       unawaited(_shutdown());
     }
     super.dispose();
+  }
+
+  void _noteJoined() {
+    if (_joinedAt != null) return;
+    _joinedAt = DateTime.now();
+    unawaited(GroupCallTelemetry.current?.joined(role: _analyticsRole) ?? Future<void>.value());
+  }
+
+  Future<void> _noteLeft() async {
+    final started = _joinedAt;
+    if (_loggedLeft || started == null) return;
+    _loggedLeft = true;
+    final seconds = DateTime.now().difference(started).inSeconds;
+    await GroupCallTelemetry.current?.left(role: _analyticsRole, durationSeconds: seconds);
+  }
+
+  /// SDK join failures. A token exception was already recorded by the client.
+  Future<void> _reportConnectFailed() async {
+    if (_connectFailureReported) return;
+    _connectFailureReported = true;
+    await GroupCallTelemetry.current?.failed(
+      role: _analyticsRole,
+      action: 'connect',
+      failureReason: 'connect_failed',
+    );
   }
 
   Future<void> _connect() {
@@ -77,64 +109,88 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
     );
     final opener = widget.openConnection;
     if (opener != null) {
+      var shown = 'The call could not connect.';
+      var tokenFailure = false;
       return _life.connect(
         join: () async {
-          await opener(plan);
-          return true;
+          try {
+            await opener(plan);
+            return true;
+          } on StreamTokenException catch (error) {
+            tokenFailure = true;
+            shown = error.message;
+            return false;
+          }
         },
         leave: () async {},
-        onReady: () {},
+        onReady: _noteJoined,
         onFailure: () async {
+          if (!tokenFailure) await _reportConnectFailed();
           if (!_life.shutDown) await _life.releaseOnce(_releaseResources);
-          _showFailure('The call could not connect.');
+          _showFailure(shown);
         },
       );
     }
     Call? call;
     var failure = 'The call could not connect.';
+    var tokenFailure = false;
     return _life.connect(
       join: () async {
-        if (StreamVideo.isInitialized()) {
-          await StreamVideo.reset(disconnect: true);
-        }
-        // [plan.userToken] is a Stream user token from mintStreamCallToken.
-        // The API secret never arrives here. Stream calls [tokenLoader] when it
-        // wants another user token. A member sends the Firebase ID token again.
-        // A guest sends the invite token again and keeps the same seat.
-        //
-        // The function creates the call as the inviting member before a guest
-        // token is issued, so this getOrCreate does not make the guest the owner.
-        final client = StreamVideo(
-          plan.apiKey,
-          user: plan.user,
-          userToken: plan.userToken,
-          tokenLoader: (_) async {
-            final fresh = await widget.tokenClient.mint(callId: plan.callId);
-            return fresh.token;
-          },
-          options: StreamVideoOptions(
-            muteAudioWhenInBackground: true,
-            muteVideoWhenInBackground: true,
-          ),
-        );
-        call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
-        // getOrCreate applies the call type's camera-on default in the
-        // background, after join has asked for the camera to stay off. Join
-        // creates the room itself. The disabled options are merged after that
-        // default, and [GroupCallLiveControls] turns a late camera back off.
-        final joined = await call!.join(
-          connectOptions: previewCallConnectOptions(
-            cameraStartsEnabled: plan.cameraStartsEnabled,
-            microphoneStartsEnabled: plan.microphoneStartsEnabled,
-            speakerStartsOn: plan.speakerStartsOn,
-          ),
-        );
-        final joinedFailure = _calmFailure(joined);
-        if (joinedFailure != null) {
-          failure = joinedFailure;
+        try {
+          if (StreamVideo.isInitialized()) {
+            await StreamVideo.reset(disconnect: true);
+          }
+          // [plan.userToken] is a Stream user token from mintStreamCallToken.
+          // The API secret never arrives here. Stream calls [tokenLoader] when it
+          // wants another user token. A member sends the Firebase ID token again.
+          // A guest sends the invite token again and keeps the same seat.
+          //
+          // The function creates the call as the inviting member before a guest
+          // token is issued, so this getOrCreate does not make the guest the owner.
+          final client = StreamVideo(
+            plan.apiKey,
+            user: plan.user,
+            userToken: plan.userToken,
+            tokenLoader: (_) => loadReplacementCallToken(
+              mint: () => widget.tokenClient.mint(callId: plan.callId),
+              onTokenFailure: (message) {
+                // Stream turns a loader error into Result.failure, so the
+                // catch below does not run. The client already recorded it.
+                tokenFailure = true;
+                failure = message;
+              },
+            ),
+            options: StreamVideoOptions(
+              muteAudioWhenInBackground: true,
+              muteVideoWhenInBackground: true,
+            ),
+          );
+          call = client.makeCall(callType: StreamCallType.defaultType(), id: plan.callId);
+          // getOrCreate applies the call type's camera-on default in the
+          // background, after join has asked for the camera to stay off. Join
+          // creates the room itself. The disabled options are merged after that
+          // default, and [GroupCallLiveControls] turns a late camera back off.
+          final joined = await call!.join(
+            connectOptions: previewCallConnectOptions(
+              cameraStartsEnabled: plan.cameraStartsEnabled,
+              microphoneStartsEnabled: plan.microphoneStartsEnabled,
+              speakerStartsOn: plan.speakerStartsOn,
+            ),
+          );
+          final joinedFailure = _calmFailure(joined);
+          if (joinedFailure != null) {
+            if (!tokenFailure) {
+              failure = joinedFailure;
+              await _reportConnectFailed();
+            }
+            return false;
+          }
+          return true;
+        } on StreamTokenException catch (error) {
+          tokenFailure = true;
+          failure = error.message;
           return false;
         }
-        return true;
       },
       leave: () async {
         final leaving = call;
@@ -145,9 +201,11 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       },
       onReady: () {
         _call = call;
+        _noteJoined();
         if (_alive && mounted) setState(() {});
       },
       onFailure: () async {
+        if (!tokenFailure) await _reportConnectFailed();
         if (!_life.shutDown) await _life.releaseOnce(_releaseResources);
         _showFailure(failure);
       },
@@ -183,6 +241,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
   );
 
   Future<void> _leave() async {
+    await _noteLeft();
     await _shutdown();
     if (mounted) Navigator.of(context).pop();
   }
@@ -204,10 +263,7 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
       child: call == null
           ? Scaffold(
               appBar: AppBar(title: Text('Call ${widget.credentials.callId}')),
-              body: GroupCallConnectionStatus(
-                failure: _failure,
-                onBack: () => unawaited(_leave()),
-              ),
+              body: GroupCallConnectionStatus(failure: _failure, onBack: () => unawaited(_leave())),
             )
           : StreamCallContent(
               call: call,
@@ -245,6 +301,24 @@ class _StreamGroupCallPageState extends State<StreamGroupCallPage> {
 
 String? _calmFailure<T>(Result<T> result) =>
     result.isSuccess ? null : calmGroupCallFailureText(result.getErrorOrNull()?.message ?? '');
+
+/// Asks the token client for a replacement user token.
+///
+/// [onTokenFailure] runs before the exception is rethrown. Stream catches that
+/// exception and reports join as a failed result, so the page can skip a second
+/// `connect_failed` event. The message is the calm sentence, not the response.
+Future<String> loadReplacementCallToken({
+  required Future<StreamCallCredentials> Function() mint,
+  required void Function(String message) onTokenFailure,
+}) async {
+  try {
+    final fresh = await mint();
+    return fresh.token;
+  } on StreamTokenException catch (error) {
+    onTokenFailure(error.message);
+    rethrow;
+  }
+}
 
 /// Opens a preview call with a server-issued api key, user id, and user token.
 typedef StreamCallOpener = Future<void> Function(StreamCallConnectPlan plan);
