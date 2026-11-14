@@ -4,11 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/config/preview_mode_override.dart';
 import '../../account_deletion/data/account_deletion_provider.dart';
 import '../../account_deletion/domain/account_deletion_exception.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_session.dart';
 import '../data/member_directory_store.dart';
+import '../data/member_profile_cloud_store.dart';
 import '../data/profile_storage_service.dart';
 
 /// Represents the signed-in community member's profile and Stage 1 ("Any Auth")
@@ -138,6 +140,10 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
   StreamSubscription<AuthSession>? _sub;
   static MemberProfile? _persistedProfile;
   Future<void>? _publishFlight;
+  Future<void> _cloudFlight = Future<void>.value();
+
+  /// Completes after a reload has read `users/{uid}` for church and preview.
+  Future<void> get cloudHydration => _cloudFlight;
 
   /// Set while [signOut] is draining auth events that were already queued.
   ///
@@ -160,7 +166,9 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
           : (persisted?.comfortBadges ?? session.comfortBadges),
       isSignedIn: session.isSignedIn,
       authMethod: session.authMethod,
-      icocChurchAffiliation: session.icocChurchAffiliation ?? persisted?.icocChurchAffiliation,
+      icocChurchAffiliation:
+          _presentChurch(session.icocChurchAffiliation) ??
+          _presentChurch(persisted?.icocChurchAffiliation),
       avatarUrl: session.photoUrl ?? persisted?.avatarUrl,
     );
   }
@@ -246,17 +254,84 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
       _sub?.cancel();
     });
 
+    var disposed = false;
+    ref.onDispose(() => disposed = true);
+
     final session = repo.currentSession();
+    final MemberProfile initial;
     if (!_explicitlySignedOut && session.isSignedIn) {
       final effective = _profileFor(session);
       _persistedProfile = effective;
-      return effective;
+      initial = effective;
+    } else if (!_explicitlySignedOut &&
+        _persistedProfile != null &&
+        _persistedProfile!.isSignedIn) {
+      initial = _persistedProfile!;
+    } else {
+      initial = const MemberProfile.guest();
     }
+    _cloudFlight = _hydrateCloud(initial, () => disposed);
+    return initial;
+  }
 
-    if (!_explicitlySignedOut && _persistedProfile != null && _persistedProfile!.isSignedIn) {
-      return _persistedProfile!;
+  /// Restores the preview switch from local storage, then fills church and
+  /// preview from `users/{uid}` when this device does not already have them.
+  Future<void> _hydrateCloud(MemberProfile initial, bool Function() disposed) async {
+    await Future<void>.value();
+    if (disposed()) return;
+    _applyStoredPreview();
+    if (!initial.isSignedIn || initial.userId.isEmpty || initial.userId == 'guest') {
+      return;
     }
-    return const MemberProfile.guest();
+    MemberProfileCloudFields? cloud;
+    try {
+      cloud = await ProfileStorageService.cloudStore.load(initial.userId);
+    } catch (_) {
+      return;
+    }
+    if (disposed() || cloud == null) return;
+    if (state.userId != initial.userId || !state.isSignedIn) return;
+
+    final cloudChurch = _presentChurch(cloud.icocChurchAffiliation);
+    if (_presentChurch(state.icocChurchAffiliation) == null && cloudChurch != null) {
+      state = state.copyWith(icocChurchAffiliation: cloudChurch);
+      _persistedProfile = state;
+      ProfileStorageService.instance.save(
+        displayName: state.displayName,
+        email: state.email,
+        userId: state.userId,
+        bio: state.bio,
+        icocChurchAffiliation: state.icocChurchAffiliation,
+        comfortBadges: state.comfortBadges,
+        avatarUrl: state.avatarUrl,
+      );
+    }
+    if (disposed()) return;
+    if (ref.read(previewModeUserOverrideProvider) == null && cloud.previewFeaturesEnabled != null) {
+      ref.read(previewModeUserOverrideProvider.notifier).state = cloud.previewFeaturesEnabled;
+      ProfileStorageService.instance.persistPreviewFeatures(
+        cloud.previewFeaturesEnabled!,
+        userId: state.userId,
+      );
+    }
+  }
+
+  void _applyStoredPreview() {
+    if (ref.read(previewModeUserOverrideProvider) != null) return;
+    final stored = ProfileStorageService.instance
+        .load()?[ProfileStorageService.previewFeaturesEnabledKey];
+    if (stored is bool) {
+      ref.read(previewModeUserOverrideProvider.notifier).state = stored;
+    }
+  }
+
+  /// Saves the experimental preview switch without a church answer.
+  void persistPreviewFeatures(bool enabled) {
+    ref.read(previewModeUserOverrideProvider.notifier).state = enabled;
+    final uid = state.isSignedIn && state.userId.isNotEmpty && state.userId != 'guest'
+        ? state.userId
+        : null;
+    ProfileStorageService.instance.persistPreviewFeatures(enabled, userId: uid);
   }
 
   void signIn({
@@ -423,6 +498,7 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     _persistedProfile = null;
     ProfileStorageService.instance.clear();
     state = const MemberProfile.guest();
+    ref.read(previewModeUserOverrideProvider.notifier).state = null;
 
     await ref.read(authRepositoryProvider).signOut();
     if (!_explicitlySignedOut) return;
@@ -482,6 +558,13 @@ class MemberProfileNotifier extends Notifier<MemberProfile> {
     } catch (_) {}
     await signOut();
   }
+}
+
+/// Blank Auth church must not hide a stored answer. Auth has no church field.
+String? _presentChurch(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) return null;
+  return trimmed;
 }
 
 final memberProfileProvider = NotifierProvider<MemberProfileNotifier, MemberProfile>(

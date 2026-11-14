@@ -479,8 +479,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                     ),
                     value: isPreview,
                     onChanged: (val) {
-                      ref.read(previewModeUserOverrideProvider.notifier).state = val;
-                      ref.read(previewFeaturesEnabledProvider.notifier).setEnabled(val);
+                      ref.read(memberProfileProvider.notifier).persistPreviewFeatures(val);
                     },
                   );
                 },

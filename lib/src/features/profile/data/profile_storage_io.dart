@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'profile_storage_stub.dart';
 
+export 'profile_storage_stub.dart' show BaseProfileStorage;
+
 /// IO-backed profile session storage.
 ///
 /// Uses a **per-process** filename (`belong_profile_session_<pid>.json`) so

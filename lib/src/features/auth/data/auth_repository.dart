@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
@@ -344,6 +345,12 @@ class InMemoryAuthRepository implements AuthRepository {
 class FirebaseAuthRepository implements AuthRepository {
   static AuthSession? _savedSession;
 
+  /// Drops the in-memory church copy. A browser reload does this on its own.
+  @visibleForTesting
+  static void debugClearSavedSession() {
+    _savedSession = null;
+  }
+
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? firebaseAuth,
     InMemoryAuthRepository? fallback,
@@ -632,9 +639,10 @@ class FirebaseAuthRepository implements AuthRepository {
   }) {
     final liveAuth = auth;
     final currentUser = liveAuth?.currentUser;
-    if (currentUser != null) {
+    final signedInUser = (currentUser != null && !currentUser.isAnonymous) ? currentUser : null;
+    if (signedInUser != null) {
       try {
-        currentUser.updateDisplayName(displayName);
+        signedInUser.updateDisplayName(displayName);
       } catch (_) {}
     }
 
@@ -645,7 +653,12 @@ class FirebaseAuthRepository implements AuthRepository {
       comfortBadges: comfortBadges,
       icocChurchAffiliation: icocChurchAffiliation,
     );
+    final firebaseEmail = signedInUser?.email;
     final effective = session.copyWith(
+      userId: (signedInUser != null && signedInUser.uid.isNotEmpty)
+          ? signedInUser.uid
+          : session.userId,
+      email: (firebaseEmail != null && firebaseEmail.isNotEmpty) ? firebaseEmail : session.email,
       authMethod: 'firebase_email',
       icocChurchAffiliation: icocChurchAffiliation,
     );
