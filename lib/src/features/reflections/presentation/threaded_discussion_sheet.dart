@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/presentation/async_action_button.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../../core/presentation/unbroken_body_text.dart';
 import '../../admin/data/admin_banning_repository.dart';
@@ -47,11 +48,7 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     final textController = useTextEditingController();
     useListenable(textController);
     final isPaused = ref.watch(isCurrentMemberBannedProvider);
-    // #977: one tap on Send = one reply. The ref blocks re-entry synchronously
-    // (a second tap can land before a rebuild); the state disables the button.
-    final sendingRef = useRef(false);
-    final isSending = useState(false);
-    final canSubmit = !isPaused && !isSending.value && textController.text.trim().isNotEmpty;
+    final canSubmit = !isPaused && textController.text.trim().isNotEmpty;
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -365,17 +362,19 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          IconButton.filled(
+                          // #977: AsyncActionButton ignores repeat taps and shows a
+                          // spinner while the reply is saving.
+                          AsyncActionButton(
                             key: const Key('submit_comment_button'),
+                            variant: AsyncButtonVariant.filledIcon,
                             icon: const Icon(Icons.send, size: 18),
+                            busyLabel: 'Sending reply',
                             tooltip: 'Submit reply',
+                            child: const SizedBox.shrink(),
                             onPressed: canSubmit
                                 ? () async {
-                                    if (sendingRef.value) return;
                                     final text = textController.text.trim();
                                     if (text.isEmpty) return;
-                                    sendingRef.value = true;
-                                    isSending.value = true;
 
                                     final author = currentProfile.displayName.isNotEmpty
                                         ? currentProfile.displayName
@@ -417,9 +416,6 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                         textController.text = text;
                                         replyingTo.value = replyTarget;
                                       }
-                                    } finally {
-                                      sendingRef.value = false;
-                                      if (context.mounted) isSending.value = false;
                                     }
                                   }
                                 : null,

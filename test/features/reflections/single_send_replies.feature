@@ -17,6 +17,13 @@ Feature: One tap on Send posts one reply (#977)
     Then the reply box is empty
     And Send is disabled until the reply has saved
 
+  Scenario: Send shows a spinner while saving
+    Given a reflection with no replies
+    And saving a reply is slow
+    When I write "Holding you in prayer tonight." and tap Send
+    Then Send shows a spinner instead of the send icon
+    And the spinner goes away once the reply has saved
+
   Scenario: A second, separate reply still posts after the first has saved
     Given a reflection with one saved reply
     When I write "And for rest tomorrow." and tap Send

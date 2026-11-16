@@ -83,8 +83,18 @@ Future<void> _writeAndTapSend(PatrolTester $, String text) async {
   await $.pump();
 }
 
-IconButton _sendButton(PatrolTester $) =>
-    $.tester.widget<IconButton>(find.byKey(const Key('submit_comment_button')));
+IconButton _sendButton(PatrolTester $) => $.tester.widget<IconButton>(
+  find.descendant(
+    of: find.byKey(const Key('submit_comment_button')),
+    matching: find.byWidgetPredicate((w) => w is IconButton),
+    matchRoot: true,
+  ),
+);
+
+Finder _sendSpinner() => find.descendant(
+  of: find.byKey(const Key('submit_comment_button')),
+  matching: find.byType(CircularProgressIndicator),
+);
 
 void main() {
   patrolWidgetTest('Tapping Send twice while the first reply is still saving posts one reply', (
@@ -109,10 +119,7 @@ void main() {
     // Then only one reply is saved
     expect(repo.saved, hasLength(1));
     // And the reply appears once in the thread
-    expect(
-      find.descendant(of: find.byType(ListView), matching: find.text(_reply)),
-      findsOneWidget,
-    );
+    expect(find.descendant(of: find.byType(ListView), matching: find.text(_reply)), findsOneWidget);
   });
 
   patrolWidgetTest('The composer clears as soon as Send is tapped', ($) async {
@@ -132,6 +139,23 @@ void main() {
     repo.gate.complete();
     await $.pumpAndSettle();
     expect(repo.saved, hasLength(1));
+  });
+
+  patrolWidgetTest('Send shows a spinner while saving', ($) async {
+    // Given a reflection with no replies
+    // And saving a reply is slow
+    final repo = await _givenReflectionWithSlowSaves($);
+
+    // When I write the reply and tap Send
+    await _writeAndTapSend($, _reply);
+
+    // Then Send shows a spinner instead of the send icon
+    expect(_sendSpinner(), findsOneWidget);
+
+    // And the spinner goes away once the reply has saved
+    repo.gate.complete();
+    await $.pumpAndSettle();
+    expect(_sendSpinner(), findsNothing);
   });
 
   patrolWidgetTest('A second, separate reply still posts after the first has saved', ($) async {
