@@ -370,7 +370,6 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             icon: const Icon(Icons.send, size: 18),
                             busyLabel: 'Sending reply',
                             tooltip: 'Submit reply',
-                            child: const SizedBox.shrink(),
                             onPressed: canSubmit
                                 ? () async {
                                     final text = textController.text.trim();

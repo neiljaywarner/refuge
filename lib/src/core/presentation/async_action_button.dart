@@ -16,7 +16,7 @@ class AsyncActionButton extends StatefulWidget {
   const AsyncActionButton({
     super.key,
     required this.onPressed,
-    required this.child,
+    this.child = const SizedBox.shrink(),
     this.variant = AsyncButtonVariant.filled,
     this.icon,
     this.busyLabel = 'Working',

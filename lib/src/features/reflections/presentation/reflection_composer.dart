@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../../core/presentation/async_action_button.dart';
 import '../../../core/widgets/calm_media_image.dart';
 import '../domain/post.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
@@ -554,8 +555,10 @@ class ReflectionComposer extends HookWidget {
                     icon: const Icon(Icons.unfold_less_rounded, size: 14),
                     label: const Text('Collapse', style: TextStyle(fontSize: 11)),
                   ),
-                ElevatedButton.icon(
+                AsyncActionButton(
                   key: const Key('publish_reflection_button'),
+                  variant: AsyncButtonVariant.elevated,
+                  busyLabel: 'Publishing',
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: isContrast ? Colors.black : Colors.white,
@@ -567,7 +570,7 @@ class ReflectionComposer extends HookWidget {
                     isImagePost ? Icons.photo_library_outlined : Icons.send_rounded,
                     size: 14,
                   ),
-                  label: Text(
+                  child: Text(
                     isImagePost ? 'Publish Image Post' : 'Publish Reflection',
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
