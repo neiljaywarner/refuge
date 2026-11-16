@@ -67,7 +67,9 @@ Future<_SlowCommentRepository> _givenReflectionWithSlowSaves(PatrolTester $) asy
         commentRepositoryProvider.overrideWithValue(repo),
         memberProfileProvider.overrideWith(_FakeProfile.new),
       ],
-      child: MaterialApp(home: Scaffold(body: ThreadedDiscussionSheet(post: _post))),
+      child: MaterialApp(
+        home: Scaffold(body: ThreadedDiscussionSheet(post: _post)),
+      ),
     ),
   );
   await $.pumpAndSettle();
@@ -107,7 +109,10 @@ void main() {
     // Then only one reply is saved
     expect(repo.saved, hasLength(1));
     // And the reply appears once in the thread
-    expect(find.text(_reply), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(ListView), matching: find.text(_reply)),
+      findsOneWidget,
+    );
   });
 
   patrolWidgetTest('The composer clears as soon as Send is tapped', ($) async {

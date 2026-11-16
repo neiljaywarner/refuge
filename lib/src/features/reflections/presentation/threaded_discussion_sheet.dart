@@ -47,7 +47,11 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     final textController = useTextEditingController();
     useListenable(textController);
     final isPaused = ref.watch(isCurrentMemberBannedProvider);
-    final canSubmit = !isPaused && textController.text.trim().isNotEmpty;
+    // #977: one tap on Send = one reply. The ref blocks re-entry synchronously
+    // (a second tap can land before a rebuild); the state disables the button.
+    final sendingRef = useRef(false);
+    final isSending = useState(false);
+    final canSubmit = !isPaused && !isSending.value && textController.text.trim().isNotEmpty;
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -367,17 +371,21 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             tooltip: 'Submit reply',
                             onPressed: canSubmit
                                 ? () async {
+                                    if (sendingRef.value) return;
                                     final text = textController.text.trim();
                                     if (text.isEmpty) return;
+                                    sendingRef.value = true;
+                                    isSending.value = true;
 
                                     final author = currentProfile.displayName.isNotEmpty
                                         ? currentProfile.displayName
                                         : 'Fellowship Member';
+                                    final replyTarget = replyingTo.value;
 
                                     final newComment = Comment(
                                       id: 'c_${DateTime.now().millisecondsSinceEpoch}',
                                       postId: post.id,
-                                      parentCommentId: replyingTo.value?.id,
+                                      parentCommentId: replyTarget?.id,
                                       authorName: author,
                                       content: text,
                                       toneTag: selectedTone.value == 'None'
@@ -386,18 +394,33 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                       timestamp: DateTime.now(),
                                     );
 
-                                    final created = await createContributionUnlessBanned(
-                                      isBanned: ref.read(isCurrentMemberBannedProvider),
-                                      create: () async {
-                                        await ref
-                                            .read(commentRepositoryProvider)
-                                            .addComment(newComment);
-                                      },
-                                    );
-                                    if (!created) return;
-
+                                    // Clear right away so the reply doesn't look unsent
+                                    // while the network write is still in flight.
                                     textController.clear();
                                     replyingTo.value = null;
+
+                                    try {
+                                      final created = await createContributionUnlessBanned(
+                                        isBanned: ref.read(isCurrentMemberBannedProvider),
+                                        create: () async {
+                                          await ref
+                                              .read(commentRepositoryProvider)
+                                              .addComment(newComment);
+                                        },
+                                      );
+                                      if (!created && context.mounted) {
+                                        textController.text = text;
+                                        replyingTo.value = replyTarget;
+                                      }
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        textController.text = text;
+                                        replyingTo.value = replyTarget;
+                                      }
+                                    } finally {
+                                      sendingRef.value = false;
+                                      if (context.mounted) isSending.value = false;
+                                    }
                                   }
                                 : null,
                           ),
