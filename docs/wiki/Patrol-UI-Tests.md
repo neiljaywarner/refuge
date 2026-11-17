@@ -12,6 +12,8 @@ CI installs `patrol_cli` 4.8.0, which matches the `patrol` 4.10 dependency in `p
 
 ```bash
 dart pub global activate patrol_cli 4.8.0
+# macOS and Linux. On Windows add %LOCALAPPDATA%\Pub\Cache\bin instead.
+export PATH="$PATH:$HOME/.pub-cache/bin"
 export PATROL_ANALYTICS_ENABLED=false
 patrol doctor
 ```
@@ -67,7 +69,7 @@ Details, IAM, and the panther matrix are in the [Test Lab guide](Firebase-Test-L
 | `integration_test/patrol_ftl_attach_media_test.dart` | Attach-media sheet with an in-memory GIF search. Does not publish and does not call Giphy. | Yes | Yes. Dev APK only on Test Lab |
 | `integration_test/patrol_hello_world_test.dart` | Legacy alias of the home-shell smoke. | Yes | Yes |
 | `integration_test/patrol_ftl_native_resume_test.dart` | `pressHome` and `openApp` for the `.dev` package. | No | Yes |
-| `integration_test/patrol_group_call_mic_test.dart` | Skips unless the binary was built with `STREAM_VIDEO_PREVIEW` and `STREAM_TOKEN_ENDPOINT`. The guest harness still hides Join call, so the on-device mute walk does not start from this file alone. | The skip path runs. The permission dialogs do not. | Yes, when the defines are set and a real join is opened. See [Stream video preview](Stream-Video-Preview) |
+| `integration_test/patrol_group_call_mic_test.dart` | Skips unless the binary was built with `STREAM_VIDEO_PREVIEW` and `STREAM_TOKEN_ENDPOINT`. Even then the guest harness hides Join call, so this file never reaches the microphone control. See [Stream video preview](Stream-Video-Preview). | The skip path runs. The permission dialogs do not. | The skip path runs. The on-device mute walk is not reached from this file. |
 | `integration_test/feed_sort_options_patrol_test.dart` | `patrolWidgetTest` of every sort chip on a local home. | `flutter test`, not `patrol test` | Same |
 | `integration_test/account_return_patrol_test.dart` | `patrolWidgetTest` of the return panel against an in-memory deletion sink. It does not call Firebase or the hosted site. | `flutter test` | `flutter test` |
 

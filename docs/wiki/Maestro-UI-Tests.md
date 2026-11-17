@@ -35,7 +35,7 @@ Start the local server the committed flows expect:
 flutter run -d web-server --release --web-port 8095 --web-hostname 127.0.0.1
 ```
 
-A plain `flutter run` uses `FLAVOR=dev` (see `lib/main.dart`). The default repository still talks to Firestore. For a run that must not write community data, pass `--dart-define=BACKEND=local`.
+A plain `flutter run` uses `FLAVOR=dev` (see `lib/main.dart`). The default post repository still talks to Firestore. For a run that must not write reflections, pass `--dart-define=BACKEND=local`. That flag selects only the post repository. Account creation and sign-in still use `authRepositoryProvider`, which is Firebase Auth, so a flow that registers still writes an account.
 
 ### What is deployed
 
@@ -72,7 +72,17 @@ Some painted sentences on the wall are missing from the web accessibility tree, 
 
 ## Credentials
 
-Account addresses and the shared password are not stored in this repo. The direct-message, mention, and account flows read `GROKBOT1_EMAIL`, `GROKBOT2_EMAIL`, and `GROKBOT_PASSWORD` from the environment (a gitignored `.maestro/.env.local` on a developer machine). Do not invent accounts on the public site to satisfy those flows.
+Account addresses and the shared password are not stored in this repo. The direct-message, mention, and account flows reference `${GROKBOT1_EMAIL}`, `${GROKBOT2_EMAIL}`, and `${GROKBOT_PASSWORD}`. `maestro test` does not read a gitignored `.maestro/.env.local`, and `.maestro/web/config.yaml` does not supply those values. Maestro 2.11.0 accepts them on the command (`maestro test --help` shows `-e` / `--env`).
+
+```bash
+maestro -p web test --headless \
+  -e GROKBOT1_EMAIL=member@belongonthespectrum.com \
+  -e GROKBOT2_EMAIL=tester@example.com \
+  -e GROKBOT_PASSWORD='the shared password' \
+  .maestro/web/grokbot_dm_web.yaml
+```
+
+Do not invent accounts on the public site to satisfy those flows. The password stays out of the repo.
 
 ## Flows
 
@@ -80,7 +90,7 @@ Account addresses and the shared password are not stored in this repo. The direc
 | --- | --- | --- |
 | `calm_tech_walkthrough_web.yaml` | Read-only theme and navigation walkthrough. Needs the home shell. | No home shell while signed out. Do not treat a wall failure as a missing theme. |
 | `directory_web.yaml` | Read-only spaces list, member directory, events, guidelines. | Same. `spaces_tab` is not on the wall. |
-| `feature_voting_web.yaml` | Vote & Feedback opens and a feature vote is cast. The flow does not remove the vote. | No. It would cast a real vote if it got past the wall. |
+| `feature_voting_web.yaml` | Vote & Feedback opens. The vote control is tapped only while it says "Vote for Native iOS App Store and Google Play Apps", then the flow expects "Remove vote". It does not tap again to clear the vote. | No. A first run casts a real vote if it gets past the wall. |
 | `feedback_drawing_web.yaml` | Share Feedback accepts the note "hi from bot", a scribble, and a praise submit. | No. |
 | `space_post_web.yaml` | A reflection published in General Chat appears in that space. | No. |
 | `attach_media_animated_text_web.yaml` | Attach-media sheet can request animated text. | No publish, but it needs the composer, which is behind the wall. |
