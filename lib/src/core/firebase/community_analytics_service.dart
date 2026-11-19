@@ -8,13 +8,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
 import 'package:refuge4serverpod/src/core/logging/app_logger.dart';
-import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
+import 'package:refuge4serverpod/src/core/observability/local_telemetry_ring.dart';
 
 /// Privacy-safe, zero-PII multi-vendor telemetry engine backing:
 /// 1. Firebase Analytics (Google Analytics 4 & DebugView)
 /// 2. Aptabase (Open-source privacy-first analytics)
 /// 3. PostHog (Product analytics, event funnels, and session insights)
-/// 4. Serverpod Diagnostics ring buffer
+/// 4. Local diagnostics ring buffer
 ///
 /// Dispatches via fire-and-forget [unawaited] tasks so UI rendering is NEVER
 /// blocked by network transport latency.
@@ -26,7 +26,7 @@ import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_back
 class CommunityAnalyticsService {
   CommunityAnalyticsService({
     required this.flavor,
-    this.serverpodBackup,
+    this.localTelemetryRing,
     http.Client? httpClient,
     this.aptabaseKeyOverride,
     this.postHogKeyOverride,
@@ -35,7 +35,7 @@ class CommunityAnalyticsService {
   }) : _httpClient = httpClient ?? http.Client();
 
   final AppFlavor flavor;
-  final ServerpodTelemetryBackup? serverpodBackup;
+  final LocalTelemetryRing? localTelemetryRing;
   final http.Client _httpClient;
   final String? aptabaseKeyOverride;
   final String? postHogKeyOverride;
@@ -92,10 +92,10 @@ class CommunityAnalyticsService {
       '📊 [ANALYTICS] Event "$name" triggered (flavor: ${flavor.slug}) | Parameters: $enriched',
     );
 
-    // 1. Dual-dispatch to Serverpod backup ring buffer (fire-and-forget)
-    if (serverpodBackup != null) {
+    // 1. Dual-dispatch to the local telemetry ring (fire-and-forget)
+    if (localTelemetryRing != null) {
       unawaited(
-        serverpodBackup!.recordAnalyticsEvent(name, parameters: enriched).catchError((_) {}),
+        localTelemetryRing!.recordAnalyticsEvent(name, parameters: enriched).catchError((_) {}),
       );
     }
 
@@ -310,10 +310,83 @@ class CommunityAnalyticsService {
     isSaved ? 'post_saved' : 'post_unsaved',
     parameters: {'post_id': postId, 'space_key': spaceKey, 'is_undo': isUndo},
   );
+
+  /// Closed reasons for [logCallFailed]. Anything else is recorded as `unavailable`.
+  static const Set<String> callFailureReasons = {
+    'sign_in_required',
+    'forbidden',
+    'unconfigured',
+    'unavailable',
+    'invalid_invite',
+    'expired',
+    'full',
+    'mismatch',
+    'seat',
+    'rate_limited',
+    'invalid_name',
+    'connect_failed',
+    'microphone_unavailable',
+    'camera_unavailable',
+    'invite_failed',
+  };
+
+  /// Preview call joined. [role] is `guest` or `member`.
+  ///
+  /// `platform` is added by [logEvent]. `surface` is `web` or `native`.
+  /// The event never carries a token, email, invite code, invite URL, or name.
+  Future<void> logCallJoined({required String role}) =>
+      logEvent('call_joined', parameters: _callEventProperties({'role': _callRole(role)}));
+
+  /// Preview call left. [durationSeconds] is how long the room stayed open.
+  Future<void> logCallLeft({required String role, required int durationSeconds}) {
+    final seconds = durationSeconds < 0 ? 0 : durationSeconds;
+    return logEvent(
+      'call_left',
+      parameters: _callEventProperties({
+        'role': _callRole(role),
+        'duration_seconds': seconds > 86400 ? 86400 : seconds,
+      }),
+    );
+  }
+
+  /// Preview call failed. [failureReason] must be one of [callFailureReasons].
+  Future<void> logCallFailed({required String role, required String failureReason}) => logEvent(
+    'call_failed',
+    parameters: _callEventProperties({
+      'role': _callRole(role),
+      'failure_reason': callFailureReasons.contains(failureReason) ? failureReason : 'unavailable',
+    }),
+  );
+
+  /// Microphone or camera turned on or off by the person in the call.
+  ///
+  /// An unknown [medium] is dropped so a free-text value cannot be recorded.
+  Future<void> logCallMediaToggled({
+    required String role,
+    required String medium,
+    required bool enabled,
+  }) {
+    if (medium != 'camera' && medium != 'microphone') return Future<void>.value();
+    return logEvent(
+      'call_media_toggled',
+      parameters: _callEventProperties({
+        'role': _callRole(role),
+        'medium': medium,
+        'enabled': enabled,
+      }),
+    );
+  }
+
+  static String _callRole(String role) => role == 'guest' ? 'guest' : 'member';
+
+  Map<String, Object> _callEventProperties(Map<String, Object> fields) => {
+    ...fields,
+    'surface': kIsWeb ? 'web' : 'native',
+  };
 }
 
 final communityAnalyticsServiceProvider = Provider<CommunityAnalyticsService>((ref) {
   final flavor = ref.watch(appFlavorProvider);
-  final serverpodBackup = ref.watch(serverpodTelemetryBackupProvider);
-  return CommunityAnalyticsService(flavor: flavor, serverpodBackup: serverpodBackup);
+  final localTelemetryRing = ref.watch(localTelemetryRingProvider);
+  return CommunityAnalyticsService(flavor: flavor, localTelemetryRing: localTelemetryRing);
 });

@@ -97,7 +97,7 @@
 
 1. **Firebase Auth sign-in methods for alpha:** Email link (passwordless) + Google? Or Google only? (Recommend: Google + email link. No passwords to forget.)
 2. **Who can post in alpha?** Anyone signed in, or an allowlist (pre-alpha testers only)? (Recommend: allowlist via Firestore rules until Oct 24.)
-3. **Dev build header shows "Live"** on the Pixel. Is a Serverpod server running somewhere reachable from the phone, or is that a false positive? (I'll investigate either way.)
+3. **Dev build header shows "Live"** on the Pixel. Is a Firebase server running somewhere reachable from the phone, or is that a false positive? (I'll investigate either way.)
 4. **CodeRabbit:** stay on the free tier (hourly limit) or upgrade for the cutover weeks?
 5. **App Distribution:** add more testers to `pre-alpha-testers` now, or after v0.8.0-alpha?
 

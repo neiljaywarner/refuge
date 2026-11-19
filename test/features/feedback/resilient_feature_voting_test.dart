@@ -11,11 +11,7 @@ void main() {
 
   group('ResilientFeatureVotingRepository (tri-backend UX)', () {
     test('cloud targets wrap Firebase while preserving BackendTarget label', () {
-      for (final target in [
-        BackendTarget.firebase,
-        BackendTarget.appwrite,
-        BackendTarget.serverpod,
-      ]) {
+      for (final target in [BackendTarget.firebase, BackendTarget.appwrite]) {
         final container = ProviderContainer(
           overrides: [featureVotingBackendTargetProvider.overrideWithValue(target)],
         );

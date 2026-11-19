@@ -15,7 +15,7 @@ This master execution plan outlines the remaining tasks following PR #433 (`feat
 | Item | Title | Branch / Worktree | Scope & Key Files |
 | :--- | :--- | :--- | :--- |
 | **Item 1** | **High-Contrast Theme Tokens & Monogram Initials** | `fix/#<NUM>-high-contrast-initials`<br>`.worktrees/issue-<NUM>-high-contrast-initials` | `lib/src/constants/app_theme.dart`<br>`lib/src/features/reflections/presentation/reflection_card.dart`<br>`lib/src/features/reflections/presentation/space_navigation_bar.dart`<br>`test/features/profile/member_profile_initials_test.dart` |
-| **Item 2** | **Feed Loading Stream & Sub-View Navigation Resilience** | `fix/#<NUM>-feed-stream-resilience`<br>`.worktrees/issue-<NUM>-feed-stream-resilience` | `lib/src/home_screen.dart`<br>`lib/src/features/reflections/data/serverpod_post_repository.dart`<br>`test/features/feed/feed_stream_resilience_test.dart` |
+| **Item 2** | **Feed Loading Stream & Sub-View Navigation Resilience** | `fix/#<NUM>-feed-stream-resilience`<br>`.worktrees/issue-<NUM>-feed-stream-resilience` | `lib/src/home_screen.dart`<br>`lib/src/features/reflections/data/Firebase_post_repository.dart`<br>`test/features/feed/feed_stream_resilience_test.dart` |
 | **Item 3** | **Application ID (`com.belongonthespectrum.refuge`) & Flavors** | `feat/#<NUM>-refuge-application-id-flavors`<br>`.worktrees/issue-<NUM>-refuge-application-id-flavors` | `android/app/build.gradle.kts`<br>`android/app/google-services.json`<br>`android/app/src/main/kotlin/com/belongonthespectrum/refuge/MainActivity.kt`<br>`lib/src/core/config/app_flavor.dart`<br>`lib/src/features/branding/domain/community_brand_config.dart`<br>`lib/src/features/reflections/presentation/community_anchor_banner.dart`<br>`lib/src/features/auth/data/auth_repository.dart`<br>`lib/src/features/notifications/data/app_launcher_badge_service.dart`<br>`ios/Runner.xcodeproj/project.pbxproj`<br>`macos/Runner/Configs/AppInfo.xcconfig` |
 
 ---
@@ -67,12 +67,12 @@ This master execution plan outlines the remaining tasks following PR #433 (`feat
 - **Objective**: Prevent indefinite loading spinners when toggling sub-views (`Feed` <-> `Spaces`) or switching bottom navigation tabs.
 - **Problem**:
   1. In `lib/src/home_screen.dart`, `useMemoized` caching `postStream` was keyed on empty list `[]` or incomplete state, meaning that when returning from Spaces or changing filters, the stream listener could remain stalled or waiting for a WebSocket frame.
-  2. In `lib/src/features/reflections/data/serverpod_post_repository.dart`, `watchPosts` was tied directly to Serverpod streaming without immediate replay from local cached state.
+  2. In `lib/src/features/reflections/data/Firebase_post_repository.dart`, `watchPosts` was tied directly to Firebase streaming without immediate replay from local cached state.
 - **Implementation**:
   1. In `lib/src/home_screen.dart`:
      - Key stream subscription memoization to `[homeSubView.value, activeBottomTab.value, selectedSpace.value]`.
      - Ensure fallback timeout or default initial data from cache so UI immediately renders cached feed items instead of blank circular progress indicator.
-  2. In `lib/src/features/reflections/data/serverpod_post_repository.dart`:
+  2. In `lib/src/features/reflections/data/Firebase_post_repository.dart`:
      - Use a `BehaviorSubject` or broadcast stream controller that emits local cached posts immediately before opening remote stream.
   3. Add a test in `test/features/feed/feed_stream_resilience_test.dart` simulating rapid subview toggles and ensuring post count > 0 without lingering progress indicators.
 - **Verification**:

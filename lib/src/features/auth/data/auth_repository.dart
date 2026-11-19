@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
@@ -17,7 +18,7 @@ export 'auth_backend_target.dart';
 
 /// Pluggable authentication repository interface supporting:
 /// - Firebase Authentication (Production Email/Password & Passwordless Magic Link)
-/// - Serverpod & Appwrite hybrid migration seams (ADR-0009)
+/// - Appwrite hybrid migration seams (ADR-0009)
 /// - In-Memory Auth (Deterministic, zero-network unit & widget testing)
 abstract interface class AuthRepository {
   BackendTarget get target;
@@ -344,6 +345,12 @@ class InMemoryAuthRepository implements AuthRepository {
 class FirebaseAuthRepository implements AuthRepository {
   static AuthSession? _savedSession;
 
+  /// Drops the in-memory church copy. A browser reload does this on its own.
+  @visibleForTesting
+  static void debugClearSavedSession() {
+    _savedSession = null;
+  }
+
   FirebaseAuthRepository({
     fb_auth.FirebaseAuth? firebaseAuth,
     InMemoryAuthRepository? fallback,
@@ -632,9 +639,10 @@ class FirebaseAuthRepository implements AuthRepository {
   }) {
     final liveAuth = auth;
     final currentUser = liveAuth?.currentUser;
-    if (currentUser != null) {
+    final signedInUser = (currentUser != null && !currentUser.isAnonymous) ? currentUser : null;
+    if (signedInUser != null) {
       try {
-        currentUser.updateDisplayName(displayName);
+        signedInUser.updateDisplayName(displayName);
       } catch (_) {}
     }
 
@@ -645,7 +653,12 @@ class FirebaseAuthRepository implements AuthRepository {
       comfortBadges: comfortBadges,
       icocChurchAffiliation: icocChurchAffiliation,
     );
+    final firebaseEmail = signedInUser?.email;
     final effective = session.copyWith(
+      userId: (signedInUser != null && signedInUser.uid.isNotEmpty)
+          ? signedInUser.uid
+          : session.userId,
+      email: (firebaseEmail != null && firebaseEmail.isNotEmpty) ? firebaseEmail : session.email,
       authMethod: 'firebase_email',
       icocChurchAffiliation: icocChurchAffiliation,
     );
@@ -707,13 +720,6 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 }
 
-class ServerpodAuthRepository extends InMemoryAuthRepository {
-  ServerpodAuthRepository({super.isAccountSoftDeleted});
-
-  @override
-  BackendTarget get target => BackendTarget.serverpod;
-}
-
 class AppwriteAuthRepository extends InMemoryAuthRepository {
   AppwriteAuthRepository({super.isAccountSoftDeleted});
 
@@ -728,7 +734,6 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final blockSignIn = ref.watch(accountDeletionRepositoryProvider).isSignInBlocked;
   return switch (target) {
     BackendTarget.inMemory => InMemoryAuthRepository(isAccountSoftDeleted: blockSignIn),
-    BackendTarget.serverpod => ServerpodAuthRepository(isAccountSoftDeleted: blockSignIn),
     BackendTarget.appwrite => AppwriteAuthRepository(isAccountSoftDeleted: blockSignIn),
     BackendTarget.firebase => FirebaseAuthRepository(
       flavor: flavor,

@@ -1691,13 +1691,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.2"
-  sanctuary_server_client:
-    dependency: "direct main"
-    description:
-      path: "sanctuary_server/sanctuary_server_client"
-      relative: true
-    source: path
-    version: "0.0.0"
   sdp_transform:
     dependency: transitive
     description:
@@ -1706,38 +1699,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.2"
-  serverpod_auth_core_client:
-    dependency: transitive
-    description:
-      name: serverpod_auth_core_client
-      sha256: "2150795e2b2817749e9834add6c1610d4c2f29d5709f0216892267afe3ad9b4f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.4"
-  serverpod_auth_idp_client:
-    dependency: transitive
-    description:
-      name: serverpod_auth_idp_client
-      sha256: "045d6d49b15bf163a23dc18393c406f605e92c0c897f2244042f052435b1e176"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.4"
-  serverpod_client:
-    dependency: "direct main"
-    description:
-      name: serverpod_client
-      sha256: "9c86584382bfddab72cdd4fc992ee52d0fecc6dc83da2d831d7577a28ded8a60"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.4"
-  serverpod_serialization:
-    dependency: transitive
-    description:
-      name: serverpod_serialization
-      sha256: "5f6e417c97afd7232931c5db25b078498c732f5d484262da9b1aad8d3b2bf2ca"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.4"
   share_plus:
     dependency: transitive
     description:

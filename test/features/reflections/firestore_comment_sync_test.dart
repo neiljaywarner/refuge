@@ -185,23 +185,28 @@ void main() {
       expect(firestoreReflectionData(post, authorId: '').containsKey('authorId'), isFalse);
     });
 
-    test('a reaction bumps both the column and the reactions map', () async {
-      final fs = FakeFirebaseFirestore();
-      await fs.collection('reflections').doc('post-1').set(firestoreReflectionData(post));
-      final repo = AppwritePostRepository(
-        fallback: LocalPostRepository(isDevMode: false),
-        customFirestore: fs,
-        mirror: _NoopMirror(),
-        isDevMode: false,
-      );
+    test(
+      'one tap bumps the column and the map, and the same member tap returns the map to 0',
+      () async {
+        final fs = FakeFirebaseFirestore();
+        await fs.collection('reflections').doc('post-1').set(firestoreReflectionData(post));
+        final repo = AppwritePostRepository(
+          fallback: LocalPostRepository(isDevMode: false),
+          customFirestore: fs,
+          mirror: _NoopMirror(),
+          isDevMode: false,
+        );
 
-      await repo.addReaction(postId: 'post-1', reactionType: 'pray');
-      await repo.addReaction(postId: 'post-1', reactionType: 'pray');
+        await repo.addReaction(postId: 'post-1', reactionType: 'pray');
+        final once = (await fs.collection('reflections').doc('post-1').get()).data()!;
+        expect(once['prayingCount'], 1);
+        expect((once['reactions'] as Map)['pray'], 1);
 
-      final data = (await fs.collection('reflections').doc('post-1').get()).data()!;
-      expect(data['prayingCount'], 2);
-      expect((data['reactions'] as Map)['pray'], 2);
-      expect(postFromFirestore('post-1', data, 'general_chat').reactions['pray'], 2);
-    });
+        await repo.addReaction(postId: 'post-1', reactionType: 'pray');
+        final twice = (await fs.collection('reflections').doc('post-1').get()).data()!;
+        expect(twice['prayingCount'], 1);
+        expect((twice['reactions'] as Map)['pray'], 0);
+      },
+    );
   });
 }

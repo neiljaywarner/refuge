@@ -5,8 +5,8 @@ echo "======================================================================"
 echo " Winding Down Old Mac & Packaging Everything for New Apple Silicon Mac"
 echo "======================================================================"
 
-HOME_DIR="/Users/neil"
-REPO_DIR="$HOME_DIR/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon"
+HOME_DIR="$HOME"
+REPO_DIR="$HOME_DIR/AndroidStudioProjects/refuge"
 INVENTORY_DIR="$HOME_DIR/.old_mac_inventory"
 mkdir -p "$INVENTORY_DIR"
 
@@ -62,13 +62,10 @@ zip -r "$ZIP_OUT" \
   .zshenv \
   .gitconfig \
   .bash_profile \
-  .serverpod \
   .config/gh \
   .config/flutter \
   .android/debug.keystore \
-  AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/sanctuary_server/sanctuary_server_server/config/passwords.yaml \
-  AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/sanctuary_server/.scloud \
-  AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/.firebase \
+  AndroidStudioProjects/refuge/.firebase \
   2>/dev/null || true
 
 # 4. Build the untracked media & scratch zip (~47 MB)

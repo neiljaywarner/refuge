@@ -29,7 +29,7 @@ class NotificationSyncService {
 
   Stream<BelongNotification> get onNotificationReceived => _incomingStreamController.stream;
 
-  /// Handles an incoming notification from a Serverpod streaming connection,
+  /// Handles an incoming notification from a push or local source,
   /// FCM data payload, or cloud webhook invalidation (#530).
   Future<void> handleIncomingNotification(
     BelongNotification notification, {

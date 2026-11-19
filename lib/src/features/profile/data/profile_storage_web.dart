@@ -4,6 +4,8 @@ import 'dart:html' as html;
 
 import 'profile_storage_stub.dart';
 
+export 'profile_storage_stub.dart' show BaseProfileStorage;
+
 class WebProfileStorage implements BaseProfileStorage {
   static const _key = 'belong_member_profile_session';
 

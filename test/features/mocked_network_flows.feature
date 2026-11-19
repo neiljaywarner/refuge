@@ -1,6 +1,6 @@
 Feature: Community flows with a mocked network
   Members can vote, send feedback, read the bell, message someone, and publish
-  text or image posts while HTTP, Firebase, and Serverpod stay mocked.
+  text or image posts while HTTP and Firebase stay mocked.
 
   Scenario: Member shares public praise
     Given the roadmap sheet is open against a mocked voting repository

@@ -6,7 +6,6 @@
     "dev": {
       "deployed": true,
       "mirrors": {
-        "serverpod": false,
         "appwriteDb": false,
         "cloudStore": false
       },
@@ -18,7 +17,6 @@
     "stg": {
       "deployed": false,
       "mirrors": {
-        "serverpod": false,
         "appwriteDb": false,
         "cloudStore": false
       },
@@ -30,7 +28,6 @@
     "qa": {
       "deployed": false,
       "mirrors": {
-        "serverpod": false,
         "appwriteDb": false,
         "cloudStore": false
       },
@@ -42,7 +39,6 @@
     "prod": {
       "deployed": true,
       "mirrors": {
-        "serverpod": false,
         "appwriteDb": false,
         "cloudStore": false
       },

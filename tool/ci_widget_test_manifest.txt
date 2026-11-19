@@ -52,9 +52,10 @@ test/core/firebase/firestore_members_only_rules_test.dart
 test/core/firebase/community_analytics_service_test.dart
 test/core/firebase/firebase_initializer_and_error_hooks_test.dart
 test/core/logging/app_logger_test.dart
-test/core/observability/serverpod_telemetry_backup_test.dart
+test/core/observability/local_telemetry_ring_test.dart
 test/core/presentation/coming_soon_view_test.dart
 test/core/preview_mode_test.dart
+test/features/group_call/group_call_analytics_test.dart
 test/features/group_call/group_call_lobby_test.dart
 test/features/group_call/group_call_preview_test.dart
 test/features/group_call/group_call_guest_join_test.dart
@@ -63,6 +64,14 @@ test/features/group_call/group_call_909_log_test.dart
 test/features/group_call/group_call_session_lifecycle_test.dart
 test/features/group_call/macos_call_entitlements_test.dart
 test/features/group_call/stream_group_call_page_test.dart
+test/features/group_call/group_call_screen_share_test.dart
+test/features/group_call/group_call_screen_share_log_test.dart
+test/features/group_call/group_call_screen_share_session_test.dart
+test/features/group_call/group_call_screen_share_manifest_test.dart
+test/features/group_call/group_call_screen_share_controls_test.dart
+test/features/group_call/group_call_stage_test.dart
+test/features/group_call/group_call_screen_share_bdd_test.dart
+test/features/group_call/group_call_screen_share_web_peer_test.dart
 test/core/theme/belong_text_styles_test.dart
 test/features/about/about_build_stamp_test.dart
 test/features/admin/admin_member_banning_widget_test.dart
@@ -160,6 +169,7 @@ test/features/sensory/system_text_scaler_test.dart
 test/features/accessibility/system_text_scale_app_test.dart
 test/features/accessibility/large_text_sign_in_test.dart
 test/features/accessibility/large_text_home_test.dart
+test/features/accessibility/large_font_feed_viewport_test.dart
 test/features/accessibility/large_text_followups_test.dart
 test/features/accessibility/large_text_post_detail_test.dart
 test/features/accessibility/large_text_messages_test.dart
@@ -167,6 +177,8 @@ test/features/accessibility/large_text_settings_test.dart
 test/features/accessibility/large_text_feedback_test.dart
 test/features/accessibility/large_text_video_call_test.dart
 test/features/accessibility/large_text_bdd_test.dart
+test/core/config/no_serverpod_backend_test.dart
+test/tool/no_serverpod_references_test.dart
 
 # Messages and notification redirect coverage
 test/features/messages/direct_message_banner_test.dart
