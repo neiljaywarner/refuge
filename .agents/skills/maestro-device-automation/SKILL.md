@@ -95,7 +95,7 @@ When verifying multi-user flows (e.g. User A publishes a reflection or sends a d
 sequenceDiagram
     autonumber
     participant D1 as Pixel 1 (56091JEBF14039)
-    participant S as Serverpod / FCM Backend
+    participant S as Firebase / FCM Backend
     participant D2 as Pixel 2 (58221JEBF20835)
 
     Note over D1: User A logged in

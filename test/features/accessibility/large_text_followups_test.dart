@@ -522,10 +522,21 @@ void main() {
 
   testWidgets('welcome card and composer hint wrap to two lines at text scale 2', (tester) async {
     final session = await pumpHomeAtScale(tester, 2);
-    final banner = find.byKey(const Key('organizer_message_banner'));
+    await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
+    await settleLargeText(tester);
+    final drawerScroll = find.descendant(
+      of: find.byKey(const Key('large_font_home_drawer')),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('Welcome to Belong on the Spectrum'),
+      240,
+      scrollable: drawerScroll.first,
+    );
     final title = find.text('Welcome to Belong on the Spectrum');
     final titleText = tester.widget<Text>(title);
-    expect(titleText.maxLines, 2);
+    expect(titleText.maxLines, isNull);
+    expect(titleText.overflow, isNot(TextOverflow.ellipsis));
     final titleWidth = tester.getSize(title).width;
     final oneLine = TextPainter(
       text: TextSpan(text: 'Welcome to Belong on the Spectrum', style: titleText.style),
@@ -538,28 +549,19 @@ void main() {
 
     final message = find.textContaining('peaceful sanctuary');
     final messageText = tester.widget<Text>(message);
-    expect(messageText.maxLines, anyOf(isNull, greaterThan(2)));
+    expect(messageText.maxLines, isNull);
     expect(messageText.overflow, isNot(TextOverflow.ellipsis));
-    expect(tester.getSize(message).width, greaterThan(tester.getSize(banner).width * 0.75));
-
-    final composer = find.byKey(const Key('reflection_composer_input'));
-    await tester.scrollUntilVisible(
-      composer,
-      300,
-      scrollable: find
-          .descendant(of: find.byType(CustomScrollView), matching: find.byType(Scrollable))
-          .first,
-    );
-    await tester.pump();
     session.check();
+
+    await tester.tapAt(const Offset(370, 400));
+    await settleLargeText(tester);
+    await tester.tap(find.byKey(const Key('large_font_share_thought_button')));
+    await settleLargeText(tester);
+    final composer = find.byKey(const Key('reflection_composer_input'));
+    expect(composer, findsOneWidget);
     final field = tester.widget<TextField>(composer);
-    expect(field.maxLines, isNull);
-    final hint = find.textContaining('Share an unhurried thought');
-    final hintText = tester.widget<Text>(hint);
-    expect(hintText.maxLines, isNull);
-    expect(hintText.overflow, isNot(TextOverflow.ellipsis));
-    expect(hintText.data, contains('Prayer Sanctuary'));
-    expect(tester.getSize(hint).height, greaterThan(28));
+    expect(field.maxLines, greaterThan(1));
+    session.check();
   });
 
   testWidgets('feed scroll view keeps most of a phone at text scale 2', (tester) async {
@@ -569,16 +571,16 @@ void main() {
 
     final feed = find.byKey(const Key('home_feed_scroll'));
     expect(feed, findsOneWidget);
-    final banner = find.byKey(const Key('organizer_message_banner'));
-    final before = tester.getTopLeft(banner).dy;
+    final screenHeight = physical.height / dpr;
+    final before = tester.getTopLeft(find.byKey(const Key('reflection_card_1'))).dy;
+    expect(before, lessThanOrEqualTo(screenHeight * 0.30));
     await tester.drag(feed, const Offset(0, -120));
     await tester.pump();
     session.check();
 
     final viewport = tester.getRect(feed);
-    final screenHeight = physical.height / dpr;
-    expect(viewport.height, greaterThanOrEqualTo(screenHeight * 0.60));
-    expect(tester.getTopLeft(banner).dy, lessThan(before - 40));
+    expect(viewport.height, greaterThanOrEqualTo(screenHeight * 0.70));
+    expect(tester.getTopLeft(find.byKey(const Key('reflection_card_1'))).dy, lessThan(before - 40));
 
     final scrollable = find.descendant(
       of: feed,
@@ -663,37 +665,26 @@ void main() {
     failing.fail();
     await tester.pump();
     expect(find.byKey(const Key('home_feed_scroll')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
+    await settleLargeText(tester);
     expect(find.byKey(const Key('subnav_spaces_tab')), findsOneWidget);
     expect(find.byKey(const Key('space_room_header')), findsOneWidget);
-    final feedScroll = find.descendant(
-      of: find.byKey(const Key('home_feed_scroll')),
-      matching: find.byType(Scrollable),
-    );
     final error = find.textContaining('Error loading reflections');
-    await tester.scrollUntilVisible(error, 400, scrollable: feedScroll.first);
     expect(error, findsOneWidget);
     expect(tester.getSize(error).height, greaterThan(0));
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('subnav_spaces_tab')),
-      -400,
-      scrollable: feedScroll.first,
-    );
     await tester.tap(find.byKey(const Key('subnav_spaces_tab')));
     await settleLargeText(tester);
     failed.check();
     expect(find.byKey(const Key('belong_spaces_directory_list')), findsOneWidget);
 
     final pending = await pumpFeed(tester, _PendingFeed());
-    final pendingScroll = find.descendant(
-      of: find.byKey(const Key('home_feed_scroll')),
-      matching: find.byType(Scrollable),
-    );
+    await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
+    await settleLargeText(tester);
     final spinner = find.byType(CircularProgressIndicator);
     expect(find.byKey(const Key('subnav_feed_tab')), findsOneWidget);
     expect(find.byKey(const Key('subnav_spaces_tab')), findsOneWidget);
     expect(find.byKey(const Key('space_room_header')), findsOneWidget);
     expect(find.textContaining('Error loading reflections'), findsNothing);
-    await tester.scrollUntilVisible(spinner, 400, scrollable: pendingScroll.first);
     expect(spinner, findsOneWidget);
     pending.check();
   });

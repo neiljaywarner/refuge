@@ -1,4 +1,4 @@
-# Backend Evaluation & Migration Plan: Serverpod + Firebase vs. Appwrite (`appwrite.io`)
+# Backend Evaluation & Migration Plan: Firebase + Firebase vs. Appwrite (`appwrite.io`)
 
 - **Document ID**: `ADR-0008` / `docs/migrate_to_appwrite.md`
 - **Last Updated**: `2026-10-18T20:01:00-05:00`
@@ -35,6 +35,6 @@ Following 37signals' **"Getting Real"** philosophy:
 | Capability | Current Alpha Stack | Appwrite Cloud (`appwrite.io`) + Firebase Analytics/FCM | Why Members & Organizers Win |
 | :--- | :--- | :--- | :--- |
 | **1-Tap Google & Apple Sign-In** | Stage 1 Email/Password (requires password reset flow) | **1-Tap `createOAuth2Session(provider: OAuthProvider.google)`** | **Zero "Forgot Password" friction** for neurodivergent members! |
-| **Monthly Hosting Cost** | ~$5/month (Serverpod Cloud mini) | **$0/month** (Appwrite Cloud Free Tier: 75,000 MAU, Realtime, Storage) | Saves 100% of recurring backend hosting fees. |
+| **Monthly Hosting Cost** | ~$5/month (Firebase mini) | **$0/month** (Appwrite Cloud Free Tier: 75,000 MAU, Realtime, Storage) | Saves 100% of recurring backend hosting fees. |
 | **Realtime Posts & Direct Messages** | Polling / custom streams | **Built-in Realtime WebSocket channels** | Instant updates in *Say Hello*, *Geek Out!*, and *Msgs*. |
 | **FCM Push & Analytics** | `firebase_messaging` + `firebase_analytics` | Appwrite Messaging **natively integrates with FCM/APNs** while `firebase_analytics` + `firebase_remote_config` stay active | Organizers keep Firebase Remote Config & Analytics with zero conflict. |

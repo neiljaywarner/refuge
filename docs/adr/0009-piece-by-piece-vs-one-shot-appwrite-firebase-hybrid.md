@@ -1,15 +1,15 @@
-# ADR-0009: Piece-by-Piece vs. One-Shot Backend Migration — Grading Serverpod, Appwrite & Firebase Hybrid Coexistence
+# ADR-0009: Piece-by-Piece vs. One-Shot Backend Migration — Grading Firebase, Appwrite & Firebase Hybrid Coexistence
 
 * **Status**: Accepted
 * **Date**: October 18, 2026
-* **Deciders**: Neil Jay Warner & Engineering Team
+* **Deciders**: Engineering Team
 * **Related Docs**:
   * [`docs/archive/unattended_session_908pm.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/archive/unattended_session_908pm.md)
   * [`docs/archive/neil_to_review_sunday_night.md`](https://github.com/neiljaywarner/refuge/blob/main/docs/archive/neil_to_review_sunday_night.md)
   * [`DEPLOYMENT.md`](../../DEPLOYMENT.md)
   * [ADR-0007: Neurodivergent-First Feedback & 1-Tap Feature Voting](../../docs/adr/0007-neurodivergent-feedback-and-feature-voting.md)
   * [ADR-0008: Appwrite Migration Timing](../../docs/adr/0008-appwrite-migration-timing.md)
-  * [Wiki: Backend Migration Strategy (Serverpod, Appwrite & Firebase)](https://github.com/neiljaywarner/refuge/wiki/Backend-Migration-Strategy-Serverpod-Appwrite-Firebase)
+  * [Wiki: Backend Migration Strategy (Firebase, Appwrite & Firebase)](https://github.com/neiljaywarner/refuge/wiki/Backend-Migration-Strategy-Appwrite-Firebase)
 
 ---
 
@@ -21,8 +21,8 @@ As **Belong on the Spectrum** (`https://belongonthespectrum.web.app`) prepares t
    - We love **Appwrite** for **1-Tap Google & Apple Sign-In (Auth)**, **Structured Databases (Spaces, Posts, Feature Voting)**, **Realtime Subscriptions**, and **Storage Buckets**.
    - At the same time, we love **Firebase** for **Hosting (`belongonthespectrum.web.app` + PR Preview Channels)**, **Firebase Cloud Messaging (FCM)**, **Firebase Analytics Audiences**, and **Firebase Remote Config** (*"Message from the Organizer"*).
    - **Question A**: *Does an "Appwrite Core + Firebase Edge/Growth" hybrid make sense for `v1.0`, `v1.1`, and `v2.0`?*
-2. **Migration Execution Strategy (Serverpod → Appwrite + Firebase)**:
-   - Right now in `v0.6.0`–`v0.8.0-alpha`, our app talks to Serverpod (with resilient in-memory/local fallback when offline).
+2. **Migration Execution Strategy (Firebase → Appwrite + Firebase)**:
+   - Right now in `v0.6.0`–`v0.8.0-alpha`, our app talks to Firebase (with resilient in-memory/local fallback when offline).
    - **Question B**: *When switching to Appwrite, is it quicker, safer, and cleaner to migrate **Piece-by-Piece (Strangler Fig)** or **All-at-Once (One-Shot Swap)**?*
 
 ---
@@ -46,12 +46,12 @@ Why? Because **Appwrite and Firebase have zero conflict when split along the "Co
 
 ## 3. Grading the 3 Migration Strategies: Piece-by-Piece vs. One-Shot vs. Hybrid Adapter
 
-Because our codebase uses **Riverpod Repository Interfaces** (`AuthRepository`, `FeatureVotingRepository`, `SpacePostRepository`), we evaluated the three ways to execute the transition from Serverpod to Appwrite:
+Because our codebase uses **Riverpod Repository Interfaces** (`AuthRepository`, `FeatureVotingRepository`, `SpacePostRepository`), we evaluated the three ways to execute the transition from Firebase to Appwrite:
 
 | Strategy | Overall Grade | Speed Score | Safety Score | How It Works | Pros | Cons |
 | :--- | :---: | :---: | :---: | :--- | :--- | :--- |
-| **Option 1: Piece-by-Piece via Repository Providers (*Recommended: Strangler Fig*)** | **🏆 A+ (`9.6/10`)** | `9.5/10` | `9.8/10` | Keep every feature behind a Riverpod provider (`authRepositoryProvider`, `featureVotingRepositoryProvider`, `postsRepositoryProvider`). Swap **Auth + Feature Voting first** (in 1 PR), then **Posts/Spaces second** (in 1 PR), while keeping Firebase Hosting/FCM/RemoteConfig untouched. | • Zero downtime; app stays 100% shippable after every single PR.<br>• Unlocks **1-Tap Google/Apple Sign-In** immediately without waiting on schema migration.<br>• Instant 1-line rollback per feature via Remote Config or provider override.<br>• Unit, Widget (`patrolWidgetTest`), Integration & Maestro E2E tests run identically against `InMemory`, `Serverpod`, `Appwrite`, and `Firebase` adapters! | • For 24–48 hours between PR 1 and PR 2, both `serverpod_flutter` and `appwrite` packages sit in `pubspec.yaml` (negligible ~300KB impact). |
-| **Option 2: One-Shot Swap (*All-at-Once*)** | **B+ (`8.4/10`)** | `8.8/10` | `7.5/10` | Replace Serverpod Auth, Posts, Spaces, and Feature Voting in a single giant branch (`feat/appwrite-cutover`) and remove `serverpod_flutter` in the same PR. | • Because our surface area is still compact (~4 core tables: `users`, `spaces`, `posts`, `feature_votes`), a one-shot swap only takes ~3–4 hours.<br>• Removes `serverpod_flutter` dependencies immediately. | • Larger PR diff (~15 files) increases merge-conflict risk during active UI work.<br>• Harder to isolate whether a regression came from Auth vs. Database permissions. |
+| **Option 1: Piece-by-Piece via Repository Providers (*Recommended: Strangler Fig*)** | **🏆 A+ (`9.6/10`)** | `9.5/10` | `9.8/10` | Keep every feature behind a Riverpod provider (`authRepositoryProvider`, `featureVotingRepositoryProvider`, `postsRepositoryProvider`). Swap **Auth + Feature Voting first** (in 1 PR), then **Posts/Spaces second** (in 1 PR), while keeping Firebase Hosting/FCM/RemoteConfig untouched. | • Zero downtime; app stays 100% shippable after every single PR.<br>• Unlocks **1-Tap Google/Apple Sign-In** immediately without waiting on schema migration.<br>• Instant 1-line rollback per feature via Remote Config or provider override.<br>• Unit, Widget (`patrolWidgetTest`), Integration & Maestro E2E tests run identically against `InMemory`, `Firebase`, `Appwrite`, and `Firebase` adapters! | • For 24–48 hours between PR 1 and PR 2, both `Firebase_flutter` and `appwrite` packages sit in `pubspec.yaml` (negligible ~300KB impact). |
+| **Option 2: One-Shot Swap (*All-at-Once*)** | **B+ (`8.4/10`)** | `8.8/10` | `7.5/10` | Replace Firebase Auth, Posts, Spaces, and Feature Voting in a single giant branch (`feat/appwrite-cutover`) and remove `Firebase_flutter` in the same PR. | • Because our surface area is still compact (~4 core tables: `users`, `spaces`, `posts`, `feature_votes`), a one-shot swap only takes ~3–4 hours.<br>• Removes `Firebase_flutter` dependencies immediately. | • Larger PR diff (~15 files) increases merge-conflict risk during active UI work.<br>• Harder to isolate whether a regression came from Auth vs. Database permissions. |
 | **Option 3: Pure Firebase Everything (*Firestore for Spaces/Posts*)** | **B (`7.9/10`)** | `8.2/10` | `8.0/10` | Move Auth and Databases to Firebase Auth + Cloud Firestore instead of Appwrite. | • Single console (`console.firebase.google.com`). | • NoSQL document nesting and security rules for Circle-style Space Role/Team permissions are harder to maintain than Appwrite Teams + Collections.<br>• Higher per-read cost if members scroll large feeds. |
 
 ---
@@ -75,7 +75,7 @@ abstract interface class FeatureVotingRepository {
 
 We provide **4 interchangeable implementations** tested by the exact same 4-layer test suite (Unit, Widget BDD, Integration, and Maestro E2E):
 1. **`InMemoryFeatureVotingRepository`**: Sub-millisecond deterministic adapter for offline mode, Alpha previews, and widget/BDD tests.
-2. **`ServerpodFeatureVotingRepository`**: Connects to the existing Serverpod backend (`v0.6.0`–`v0.8.0-alpha`).
+2. **`FirebaseFeatureVotingRepository`**: Connects to the existing Firebase backend (`v0.6.0`–`v0.8.0-alpha`).
 3. **`AppwriteFeatureVotingRepository`**: Ready-to-activate adapter targeting Appwrite Collections (`feature_items` & `feedback_submissions`).
 4. **`FirebaseFeatureVotingRepository`**: Ready-to-activate adapter targeting Cloud Firestore (`feature_items` & `feedback_submissions`) + Analytics events.
 

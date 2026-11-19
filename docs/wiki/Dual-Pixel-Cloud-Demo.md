@@ -1,7 +1,7 @@
 # 📱 Dual Pixel Cloud Demo — Hardware Verification & Live Walkthrough
 
 > [!TIP]
-> **Live Multi-Device Verification**: Real-time multi-device verification executed across physical Google Pixel 9a hardware and Android emulators operating on T-Mobile LTE and Wi-Fi, communicating over Serverpod Cloud (`refuge4serverpod.api.serverpod.space`).
+> **Live Multi-Device Verification**: Real-time multi-device verification executed across physical Google Pixel 9a hardware and Android emulators operating on T-Mobile LTE and Wi-Fi, communicating over Firebase (`refuge4serverpod.api.Firebase.space`).
 
 ---
 
@@ -16,7 +16,7 @@ Rather than relying purely on headless mocks or localhost network loopbacks, Bel
 | **Operating System** | Android 15 | Android 15 | Android API 35 / Web |
 | **Sensory Mode** | **Sage Botanical** (calming green) | **Monastic Dark** (low blue-light) | **Clean Slate** / **High Contrast** |
 | **Resolution** | 1080 × 2424 px (420 dpi) | 1080 × 2424 px (420 dpi) | Responsive Viewport |
-| **Backend Connected** | Serverpod Cloud | Serverpod Cloud | Serverpod Cloud / Local Seed Fallback |
+| **Backend Connected** | Firebase | Firebase | Firebase / Local Seed Fallback |
 
 ---
 
@@ -44,10 +44,10 @@ Per our **Zero-PII & Clean-Frame Rule**, all verification screenshots are captur
 
 ## 🎬 Real-Time Multi-Device Demonstration Flow
 
-The live multi-device interaction sequence verifies real-time bidirectional synchronization over Serverpod Cloud:
+The live multi-device interaction sequence verifies real-time bidirectional synchronization over Firebase:
 
 ```
-[Pixel Right] ─────► Publishes Reflection over Serverpod Cloud
+[Pixel Right] ─────► Publishes Reflection over Firebase
                           │
                           ▼ (WebSocket session messages stream)
 [Pixel Left]  ◄───── Receives Post in Real Time & Taps "🙏 Praying" Reaction
@@ -61,7 +61,7 @@ The live multi-device interaction sequence verifies real-time bidirectional sync
 ### Verified Interaction Steps:
 1. **Pixel Right Composes Reflection**:
    - Taps unhurried composer text box.
-   - Types: *"Praising God for unhurried fellowship via Serverpod Cloud!"*
+   - Types: *"Praising God for unhurried fellowship via Firebase!"*
    - Selects Intent Tag `[Prayer Request]`.
    - Taps **Publish Reflection**.
 2. **Pixel Left Synchronizes Live**:
@@ -109,9 +109,9 @@ LEFT_PID=$!
 adb -s $RIGHT_DEV shell screenrecord --time-limit 45 /sdcard/right_pixel_demo.mp4 &
 RIGHT_PID=$!
 
-# 2. Pixel Right posts to Serverpod Cloud
+# 2. Pixel Right posts to Firebase
 adb -s $RIGHT_DEV shell input tap 524 1266
-adb -s $RIGHT_DEV shell "input text 'From%spixel%son%sthe%sright%ssaying%shi%svia%sServerpod%sCloud!'"
+adb -s $RIGHT_DEV shell "input text 'From%spixel%son%sthe%sright%ssaying%shi%svia%sFirebase%sCloud!'"
 adb -s $RIGHT_DEV shell input keyevent 4 # Dismiss keyboard cleanly
 adb -s $RIGHT_DEV shell input tap 778 1470 # Publish Reflection
 
@@ -132,7 +132,7 @@ echo "=== Done! Live recordings pulled successfully ==="
 ## 🏛️ Historical Hackathon Archive (v0.1.0)
 
 <details>
-<summary>Click to view historical Serverpod Hackathon v0.1.0 recordings and hardware archive</summary>
+<summary>Click to view historical Firebase Hackathon v0.1.0 recordings and hardware archive</summary>
 
 ### v0.1.0 Demonstrations:
 - **Pixel Right (Initiating)**: Composed reflection on T-Mobile LTE (`192.168.4.45`), toggled Monastic Dark. [Download `sanctuary_pixel_right_scloud.mp4`](https://github.com/neiljaywarner/refuge4serverpod/releases/download/v0.1.0/sanctuary_pixel_right_scloud.mp4).

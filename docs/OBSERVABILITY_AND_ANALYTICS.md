@@ -13,7 +13,7 @@ Belong on the Spectrum employs a **fail-safe dual-channel telemetry model**:
 1. **Cloud Observability (Firebase Crashlytics & Analytics)**:
    - Symbolicated crash logs on Android (`Google Pixel 9a`) and iOS.
    - Real-time privacy-preserving event stream (`app_error`, `space_navigated`, `feedback_submitted`, `reflection_published`).
-2. **Local / Fallback Observability (Serverpod & Talker Ring Buffer)**:
+2. **Local / Fallback Observability (Firebase & Talker Ring Buffer)**:
    - Operates **100% offline with zero cloud credentials required**.
    - Accessible to developers in local terminals via Talker CLI output and to automated tests via `recordedErrorsForTesting`.
    - Guaranteed visibility even if Firebase is disabled, unconfigured, or blocked by local firewalls.
@@ -34,7 +34,7 @@ Belong on the Spectrum employs a **fail-safe dual-channel telemetry model**:
  ┌──────────────────────┐    ┌──────────────────────┐    ┌──────────────────────┐
  │ Firebase Crashlytics │    │  Firebase Analytics  │    │  Talker & Diagnostic │
  │  (Symbolicated crash │    │   (Categorized event │    │  Ring Buffer / Local │
- │   logs on devices)   │    │      telemetry)      │    │  Serverpod fallback) │
+ │   logs on devices)   │    │      telemetry)      │    │  Firebase fallback) │
  └──────────────────────┘    └──────────────────────┘    └──────────────────────┘
 ```
 

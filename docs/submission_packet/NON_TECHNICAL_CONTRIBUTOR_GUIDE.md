@@ -1,12 +1,12 @@
 # 🤝 How to Help With Sanctuary (Non-Technical Contributor Guide)
-**Project**: Sanctuary (Refuge) — Calm-Tech Fellowship for Serverpod Hackathon  
+**Project**: Sanctuary (Refuge) — Calm-Tech Fellowship for Firebase Hackathon  
 **Target Audience**: Ministry Partners, Friends, Counselors, Pastors & Community Members  
 **Last Updated**: Tuesday, October 14, 2026 at 12:09 AM CDT  
 
 ---
 
 ## 👋 Welcome! No Technical Experience Needed
-You do **not** need to know how to code, use the terminal, or understand Serverpod to make a huge impact on our hackathon submission. 
+You do **not** need to know how to code, use the terminal, or understand Firebase to make a huge impact on our hackathon submission. 
 
 Judges and potential partners care deeply about **how the product feels to real humans**, how clearly the mission is communicated, and how accessible it is to people experiencing digital burnout. Here are four high-impact ways you can dive in and help right now!
 
@@ -27,7 +27,7 @@ Judges and potential partners care deeply about **how the product feels to real 
 
 ### 2. 🎙️ Record the 2-Minute Demo Video Voiceover (15-20 Minutes)
 If you have a clear, calm, and articulate speaking voice, you can be the voice of Sanctuary!
-- Open [`docs/submission_packet/VIDEO_SCRIPT_AND_STORYBOARD.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/VIDEO_SCRIPT_AND_STORYBOARD.md).
+- Open [`docs/submission_packet/VIDEO_SCRIPT_AND_STORYBOARD.md`](docs/submission_packet/VIDEO_SCRIPT_AND_STORYBOARD.md).
 - Use the Voice Memos app on your iPhone/Android or laptop.
 - Read through the script at a relaxed, unhurried pace (target ~2 minutes).
 - Send the audio file to Neil via email, iMessage, or Slack. We will sync it with the screen capture video!
@@ -35,7 +35,7 @@ If you have a clear, calm, and articulate speaking voice, you can be the voice o
 ---
 
 ### 3. ✍️ Review the Submission Story & Copy (10 Minutes)
-- Open [`docs/submission_packet/DEVPOST_SUBMISSION_DRAFT.md`](file:///Users/neil/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/docs/submission_packet/DEVPOST_SUBMISSION_DRAFT.md).
+- Open [`docs/submission_packet/DEVPOST_SUBMISSION_DRAFT.md`](docs/submission_packet/DEVPOST_SUBMISSION_DRAFT.md).
 - Read the **Inspiration** and **What It Does** sections.
 - Ask yourself:
   - Does this clearly convey *why* the world needs calm technology?

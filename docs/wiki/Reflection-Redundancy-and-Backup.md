@@ -4,7 +4,9 @@
 > **Reviewed change**: [PR #546](https://github.com/neiljaywarner/refuge/pull/546) for [issue #212](https://github.com/neiljaywarner/refuge/issues/212)
 > **Live site**: [belongonthespectrum.web.app](https://belongonthespectrum.web.app)
 
-This page answers a practical question: after dropping the $5 Serverpod database, should reflections live in two clouds at once, or in one cloud with a backup feature made for restore?
+The phone reads and writes reflections in Cloud Firestore. Production uses `reflections`. The dev site uses `reflections_dev`. The default build does not call the Appwrite table `reflection_posts`. That table stays disabled. Do not register a web origin or create that table to make the feed load. Live member notes stay in Firestore.
+
+This page answers a practical question: after dropping the paid database, should reflections live in two clouds at once, or in one cloud with a backup feature made for restore?
 
 ## What "redundancy" was trying to do
 
@@ -18,7 +20,7 @@ Sign-in stays on Firebase Auth. The hope was that if Appwrite is down, Firestore
 
 ## Does that actually work?
 
-The part that works is leaving Serverpod. A normal build does not open `refuge4serverpod.api.serverpod.space`.
+The part that works is leaving Firebase. A normal build does not open `refuge4serverpod.api.Firebase.space`.
 
 The two-cloud copy does not work as a safety net yet.
 
@@ -28,10 +30,10 @@ The two-cloud copy does not work as a safety net yet.
 * The Firestore rules that would accept `reflections` are in the pull request and are not deployed. The live rules do not mention that collection, so the second copy fails too.
 * If one cloud accepts a write and the other does not, nothing comes back later to fill the gap.
 * The reader mixes the three copies. When two copies share a time, it keeps the one with more reactions. That can hide a correction.
-* Notes that already exist in Serverpod were not moved.
+* Notes that already exist in Firebase were not moved.
 * The home screen on `main` does not currently compile against the widgets it calls, so a release build is not running this repository yet.
 
-So the pull request is a real way to stop calling Serverpod. It is not yet a second durable copy of the community's notes.
+So the pull request is a real way to stop calling the retired cloud backend. It is not yet a second durable copy of the community's notes.
 
 ## Why two live databases are a weak backup
 
@@ -46,7 +48,7 @@ Two live databases do help with a different problem: one vendor being down while
 | Approach | What it is good at | What it costs you |
 | :--- | :--- | :--- |
 | **Device list only** | The screen works offline and in tests. | Restarting the app, or opening it on another phone, loses the notes. |
-| **Serverpod, the current $5 database** | One Postgres database, relational notes, already wired. | $5 every month, and a server we want to stop running. |
+| **Firebase, the current $5 database** | One Postgres database, relational notes, already wired. | $5 every month, and a server we want to stop running. |
 | **Appwrite and Firestore, both live** ([PR #546](https://github.com/neiljaywarner/refuge/pull/546)) | Either cloud can answer if the other is unreachable, once writes actually succeed. | Two shapes to keep identical. Firebase users cannot be Appwrite permissions. A bad write hits both. No "yesterday" snapshot. |
 | **Firestore only** | The same login that already works can own the security rules. One place to read and one place to fix. | Spark has no managed restore. A regional Firestore incident takes the notes with it until a backup exists. |
 | **Appwrite only** | One SDK for tables and realtime, if members later sign in with Appwrite. | Today there is no Appwrite session. Free plan has no backups. Pro is $25 per month for a daily backup kept 7 days. |
@@ -105,7 +107,7 @@ Appwrite's backup screen is the matching feature if Appwrite is the database you
 * The Free plan, which is what this project is on, does not include that.
 * Finer restore ("the second before the bad edit") on Appwrite is point-in-time recovery for a **dedicated** database, billed on top of compute that starts around $10 per month. The database created in this cutover is serverless TablesDB, so that switch is not included.
 
-Paying $25 to back up Appwrite, while also paying nothing for a Firestore database the app can already protect with Firebase Auth, spends more than the $5 Serverpod bill and protects the database the members are not signed into.
+Paying $25 to back up Appwrite, while also paying nothing for a Firestore database the app can already protect with Firebase Auth, spends more than the $5 Firebase bill and protects the database the members are not signed into.
 
 ### When Appwrite would become the one database
 
@@ -117,7 +119,7 @@ Move the live notes to Appwrite when members have an Appwrite session. Then the 
 2. Read and write reflections in Firestore. Require a signed-in member in the rules.
 3. Add the one-way Appwrite mirror through a free Function that checks the Firebase ID token.
 4. Export a weekly JSON snapshot into a private GitHub repo.
-5. Cancel Serverpod after a released build no longer calls it.
+5. Cancel Firebase after a released build no longer calls it.
 
 The on-device list stays. It is what makes the screen calm when the network drops. It is not the backup of the community's notes.
 
