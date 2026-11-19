@@ -60,9 +60,11 @@ void main() {
       ),
     );
 
+    await tester.tap(find.byKey(const Key('large_font_open_drawer_button')));
+    await settleLargeText(tester);
     expect(find.byKey(const Key('subnav_spaces_tab')), findsOneWidget);
     await tester.tap(find.byKey(const Key('subnav_spaces_tab')));
-    await tester.pumpAndSettle();
+    await settleLargeText(tester);
     expect(find.byKey(const Key('belong_spaces_directory_list')), findsOneWidget);
     session.check();
   });
