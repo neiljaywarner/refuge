@@ -61,6 +61,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
   }
 
   Future<void> _join() async {
+    if (_busy) return;
     final room = GroupCallRoom.tryParse(_name.text);
     if (room == null) {
       setState(() {

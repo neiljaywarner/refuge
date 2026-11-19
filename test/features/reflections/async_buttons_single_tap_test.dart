@@ -23,15 +23,11 @@ class _SlowSaveRepository extends LocalPostRepository {
   }
 }
 
-Finder _spinnerIn(Key key) => find.descendant(
-  of: find.byKey(key),
-  matching: find.byType(CircularProgressIndicator),
-);
+Finder _spinnerIn(Key key) =>
+    find.descendant(of: find.byKey(key), matching: find.byType(CircularProgressIndicator));
 
 void main() {
-  patrolWidgetTest('Publishing a reflection twice in a row posts it once', (
-    $,
-  ) async {
+  patrolWidgetTest('Publishing a reflection twice in a row posts it once', ($) async {
     // Given the reflection composer with a slow connection
     final gate = Completer<PostPublishStatus>();
     var submits = 0;
@@ -83,9 +79,7 @@ void main() {
     expect(submits, 1);
   });
 
-  patrolWidgetTest('Tapping Save for Later twice in a row saves it once', (
-    $,
-  ) async {
+  patrolWidgetTest('Tapping Save for Later twice in a row saves it once', ($) async {
     // Given a reflection card with a slow connection
     final gate = Completer<void>();
     final repo = _SlowSaveRepository(gate);
@@ -104,11 +98,7 @@ void main() {
         child: MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: ReflectionCard(
-                post: post,
-                isContrast: false,
-                onAddReaction: (_) {},
-              ),
+              child: ReflectionCard(post: post, isContrast: false, onAddReaction: (_) {}),
             ),
           ),
         ),
@@ -132,71 +122,66 @@ void main() {
     expect(repo.toggles, 1);
   });
 
-  patrolWidgetTest(
-    'Collapsing and expanding mid-publish does not submit twice',
-    ($) async {
-      // Given the feed composer with a slow connection
-      final gate = Completer<PostPublishStatus>();
-      var submits = 0;
-      await $.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: ReflectionComposer(
-                selectedSpace: 'general_chat',
-                primaryColor: Colors.teal,
-                isContrast: false,
-                isModal: false,
-                onSubmit:
-                    ({
-                      required String content,
-                      required String toneTag,
-                      String? specialInterestTag,
-                      String? imageUrl,
-                    }) {
-                      submits++;
-                      return gate.future;
-                    },
-              ),
+  patrolWidgetTest('Collapsing and expanding mid-publish does not submit twice', ($) async {
+    // Given the feed composer with a slow connection
+    final gate = Completer<PostPublishStatus>();
+    var submits = 0;
+    await $.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ReflectionComposer(
+              selectedSpace: 'general_chat',
+              primaryColor: Colors.teal,
+              isContrast: false,
+              isModal: false,
+              onSubmit:
+                  ({
+                    required String content,
+                    required String toneTag,
+                    String? specialInterestTag,
+                    String? imageUrl,
+                  }) {
+                    submits++;
+                    return gate.future;
+                  },
             ),
           ),
         ),
-      );
-      await $.pumpAndSettle();
+      ),
+    );
+    await $.pumpAndSettle();
 
-      // When I write a reflection, tap Publish, collapse, expand, and tap Publish again
-      await $.tester.enterText(
-        find.byKey(const Key('reflection_composer_input')),
-        'A gentle evening.',
-      );
-      await $.pump();
-      const publish = Key('publish_reflection_button');
-      await $.tester.ensureVisible(find.byKey(publish));
-      await $.tester.tap(find.byKey(publish));
-      await $.pump();
-      expect(submits, 1);
+    // When I write a reflection, tap Publish, collapse, expand, and tap Publish again
+    await $.tester.enterText(
+      find.byKey(const Key('reflection_composer_input')),
+      'A gentle evening.',
+    );
+    await $.pump();
+    const publish = Key('publish_reflection_button');
+    await $.tester.ensureVisible(find.byKey(publish));
+    await $.tester.tap(find.byKey(publish));
+    await $.pump();
+    expect(submits, 1);
 
-      await $.tester.ensureVisible(
-        find.byKey(const Key('composer_collapse_button')),
-      );
-      await $.tester.tap(find.byKey(const Key('composer_collapse_button')));
-      await $.pump();
-      expect(find.byKey(publish), findsNothing);
+    await $.tester.ensureVisible(find.byKey(const Key('composer_collapse_button')));
+    await $.tester.tap(find.byKey(const Key('composer_collapse_button')));
+    await $.pump();
+    expect(find.byKey(publish), findsNothing);
 
-      await $.tester.tap(find.byKey(const Key('reflection_composer_input')));
-      await $.pump();
-      await $.tester.ensureVisible(find.byKey(publish));
-      await $.tester.tap(find.byKey(publish));
-      await $.pump();
+    await $.tester.tap(find.byKey(const Key('reflection_composer_input')));
+    await $.pump();
+    await $.tester.ensureVisible(find.byKey(publish));
+    await $.tester.tap(find.byKey(publish));
+    await $.pump();
 
-      // Then the reflection is submitted once
-      expect(submits, 1);
-      // And Publish shows a spinner
-      expect(_spinnerIn(publish), findsOneWidget);
+    // Then the reflection is submitted once
+    expect(submits, 1);
+    // And Publish shows a spinner
+    expect(_spinnerIn(publish), findsOneWidget);
 
-      gate.complete(PostPublishStatus.confirmed);
-      await $.pumpAndSettle();
-      expect(submits, 1);
-    },
-  );
+    gate.complete(PostPublishStatus.confirmed);
+    await $.pumpAndSettle();
+    expect(submits, 1);
+  });
 }

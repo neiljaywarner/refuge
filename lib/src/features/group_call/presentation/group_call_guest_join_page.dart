@@ -85,6 +85,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
   }
 
   Future<void> _join() async {
+    if (_busy) return;
     final clean = sanitizeGuestDisplayName(_name.text);
     if (clean == null) {
       setState(() {

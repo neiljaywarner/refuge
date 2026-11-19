@@ -102,10 +102,7 @@ class _AsyncActionButtonState extends State<AsyncActionButton> {
             child: Center(
               child: SizedBox.square(
                 dimension: size,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  semanticsLabel: widget.busyLabel,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: widget.busyLabel),
               ),
             ),
           ),
@@ -144,7 +141,11 @@ class _AsyncActionButtonState extends State<AsyncActionButton> {
         ? widget.child
         : Row(
             mainAxisSize: MainAxisSize.min,
-            children: [widget.icon!, const SizedBox(width: 8), Flexible(child: widget.child)],
+            children: [
+              widget.icon!,
+              const SizedBox(width: 8),
+              Flexible(child: widget.child),
+            ],
           );
     final content = _withSpinner(label, maxSpinner: double.infinity);
     final button = switch (widget.variant) {
