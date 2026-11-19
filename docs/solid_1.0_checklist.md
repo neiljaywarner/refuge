@@ -16,7 +16,7 @@ The marketing site [https://www.belongonthespectrum.com/](https://www.belongonth
 
 ### A. Fresh non-DEV production build
 
-- [ ] Tag a release from current `main` after the merges below. Aim **0.9.7** or **0.9.8**, or **1.0.0** if that name is chosen.
+- [ ] Tag a release from current `main` after the merges below. Aim **0.9.10** or **0.9.11**, or **1.0.0** if that name is chosen.
 - [ ] Deploy production web to `belongonthespectrum.web.app` (not `onthespectrum.web.app`).
 - [ ] Confirm strangers hit the **non-DEV** sign-in wall.
 - [ ] Confirm the Android open-beta / App Distribution build includes the Giphy path and the merges already on `main`, or republish it.
