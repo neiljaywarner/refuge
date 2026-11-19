@@ -188,6 +188,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
             AsyncActionButton(
               key: const Key('group_call_guest_join_button'),
               busyLabel: 'Joining call',
+              isBusy: _busy,
               onPressed: _busy ? null : _join,
               child: const Text('Join call'),
             ),

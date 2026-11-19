@@ -270,6 +270,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
             AsyncActionButton(
               key: const Key('group_call_confirm_join_button'),
               busyLabel: 'Joining call',
+              isBusy: _busy,
               onPressed: _busy ? null : _join,
               child: const Text('Join call'),
             ),

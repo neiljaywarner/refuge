@@ -12,3 +12,10 @@ Feature: Buttons that save something show a spinner and ignore repeat taps (#977
     When I tap Save for Later twice
     Then the save button shows a spinner
     And the post is toggled once
+
+  Scenario: Collapsing and expanding mid-publish does not submit twice
+    Given the feed composer with a slow connection
+    When I write a reflection, tap Publish, collapse, expand, and tap Publish again
+    Then the reflection is submitted once
+    And Publish shows a spinner
+

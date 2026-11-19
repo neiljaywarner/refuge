@@ -20,6 +20,7 @@ class AsyncActionButton extends StatefulWidget {
     this.variant = AsyncButtonVariant.filled,
     this.icon,
     this.busyLabel = 'Working',
+    this.isBusy = false,
     this.style,
     this.tooltip,
     this.iconSize,
@@ -40,6 +41,11 @@ class AsyncActionButton extends StatefulWidget {
   /// What assistive tech announces while the action runs, e.g. 'Sending'.
   final String busyLabel;
 
+  /// When true, show the spinner and ignore taps even if this button did not
+  /// start the work (a keyboard submit, or a parent still waiting after this
+  /// widget was recreated).
+  final bool isBusy;
+
   final ButtonStyle? style;
   final String? tooltip;
   final double? iconSize;
@@ -54,9 +60,11 @@ class _AsyncActionButtonState extends State<AsyncActionButton> {
   bool get _isIconVariant =>
       widget.variant == AsyncButtonVariant.icon || widget.variant == AsyncButtonVariant.filledIcon;
 
+  bool get _showBusy => _busy || widget.isBusy;
+
   Future<void> _run() async {
     final action = widget.onPressed;
-    if (_busy || action == null) return;
+    if (_showBusy || action == null) return;
     _busy = true; // synchronous: a second tap before rebuild is ignored
     setState(() {});
     try {
@@ -83,13 +91,13 @@ class _AsyncActionButtonState extends State<AsyncActionButton> {
       alignment: Alignment.center,
       children: [
         Visibility(
-          visible: !_busy,
+          visible: !_showBusy,
           maintainSize: true,
           maintainAnimation: true,
           maintainState: true,
           child: content,
         ),
-        if (_busy)
+        if (_showBusy)
           Positioned.fill(
             child: Center(
               child: SizedBox.square(
@@ -107,7 +115,7 @@ class _AsyncActionButtonState extends State<AsyncActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final onPressed = widget.onPressed == null || _busy ? null : _run;
+    final onPressed = widget.onPressed == null || _showBusy ? null : _run;
 
     if (_isIconVariant) {
       final iconSize = widget.iconSize ?? 24;

@@ -37,7 +37,9 @@ void main() {
         child: const Text('Send'),
       );
 
-      testWidgets('a double tap runs the action once and shows a spinner', (tester) async {
+      testWidgets('a double tap runs the action once and shows a spinner', (
+        tester,
+      ) async {
         gate = Completer<void>();
         await tester.pumpWidget(_host(button()));
         final sizeBefore = tester.getSize(find.byKey(_key));
@@ -49,7 +51,11 @@ void main() {
         expect(calls, 1);
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.bySemanticsLabel('Sending'), findsOneWidget);
-        expect(tester.getSize(find.byKey(_key)), sizeBefore, reason: 'no layout jump');
+        expect(
+          tester.getSize(find.byKey(_key)),
+          sizeBefore,
+          reason: 'no layout jump',
+        );
 
         await tester.tap(find.byKey(_key), warnIfMissed: false);
         await tester.pump();
@@ -74,7 +80,9 @@ void main() {
         expect(calls, 2);
       });
 
-      testWidgets('re-enables after the action throws and reports the error', (tester) async {
+      testWidgets('re-enables after the action throws and reports the error', (
+        tester,
+      ) async {
         gate = Completer<void>();
         await tester.pumpWidget(_host(button()));
         await tester.tap(find.byKey(_key));
@@ -109,13 +117,41 @@ void main() {
     });
   }
 
+  testWidgets('isBusy shows a spinner without the button starting the action', (
+    tester,
+  ) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      _host(
+        AsyncActionButton(
+          key: _key,
+          isBusy: true,
+          onPressed: () async => calls++,
+          busyLabel: 'Joining call',
+          child: const Text('Join call'),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.bySemanticsLabel('Joining call'), findsOneWidget);
+    await tester.tap(find.byKey(_key), warnIfMissed: false);
+    await tester.pump();
+    expect(calls, 0);
+  });
+
   testWidgets('spinner grows with large text', (tester) async {
     final gate = Completer<void>();
     Future<void> work() => gate.future;
     Future<double> spinnerSize(double scale) async {
       await tester.pumpWidget(
         _host(
-          AsyncActionButton(key: UniqueKey(), onPressed: work, child: const Text('Save')),
+          AsyncActionButton(
+            key: UniqueKey(),
+            onPressed: work,
+            child: const Text('Save'),
+          ),
           textScale: scale,
         ),
       );
