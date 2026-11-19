@@ -2,18 +2,18 @@ For the past year, our neurodivergent community, a group of autistic individuals
 
 Worse than the cost was the sensory overload: red notification badges, urgency loops, and noisy feeds that overwhelmed members who simply wanted a quiet, safe place to connect and share.
 
-Tonight, we replaced that expensive, anxious software stack with Refuge: an unhurried, calm-tech community platform built full-stack on Flutter and Serverpod 4.
+Tonight, we replaced that expensive, anxious software stack with Refuge: an unhurried, calm-tech community platform built full-stack on Flutter and the retired backend.
 
-Under the hood, Serverpod 4 powers everything. With typed SPI YAML models, our client and server share one unified Dart language. We get end-to-end type safety, migrations on PostgreSQL 16, and real-time WebSocket streams with zero JSON boilerplate.
+Under the hood, the retired backend powers everything. With typed SPI YAML models, our client and server share one unified Dart language. We get end-to-end type safety, migrations on PostgreSQL 16, and real-time WebSocket streams with zero JSON boilerplate.
 
-Instead of spamming client push notifications, our Serverpod Cloud backend computes a peaceful Quiet Digest, summarizing community updates and shared care in a gentle, aggregate banner.
+Instead of spamming client push notifications, our Firebase backend computes a peaceful Quiet Digest, summarizing community updates and shared care in a gentle, aggregate banner.
 
 Refuge respects your sensory comfort. Members can instantly switch between four curated themes: botanical Sage, daylight Clean Slate, nocturnal Monastic Dark, and AAA High Contrast. There are no red badges or urgency traps anywhere.
 
 Humor and special interests are essential to genuine connection. Our built-in calm-tech meme gallery offers wholesome, relatable neurodivergent humor without strobe animations or third-party tracking. We can share a meme, infodump on a favorite topic, and post with qualitative care tags.
 
-To prove real-world durability, here is Refuge running simultaneously on two physical Google Pixel 9a devices communicating live over T-Mobile LTE cellular data straight to our Serverpod Cloud instance.
+To prove real-world durability, here is Refuge running simultaneously on two physical Google Pixel 9a devices communicating live over T-Mobile LTE cellular data straight to our Firebase instance.
 
 Refuge is engineered for rock-solid reliability. If internet drops while traveling or outdoors, our resilient repository automatically falls back to offline mode within 800 milliseconds without interrupting the user. Twenty-one automated tests verify every single interaction.
 
-Refuge proves that modern communities can replace expensive, anxiety-inducing platforms with fast, calm, full-stack Dart software. Huge thanks to BuilderBase and the Serverpod team. Thank you, and welcome to Refuge.
+Refuge proves that modern communities can replace expensive, anxiety-inducing platforms with fast, calm, full-stack Dart software. Huge thanks to BuilderBase and the Firebase team. Thank you, and welcome to Refuge.

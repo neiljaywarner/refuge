@@ -21,7 +21,6 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
-    - sanctuary_server/**
 
 plugins:
   belong_lints:

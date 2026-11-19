@@ -1,6 +1,6 @@
 // 📊 Belong on the Spectrum — Firestore Spark Quota & Scale Diagnostic Tool
 //
-// Audits Firebase Spark free tier ceilings, zero-billing guarantee, and Serverpod headroom.
+// Audits Firebase Spark free tier ceilings and the zero-billing guarantee.
 // Tracking: Issue #274 & Issue #275
 //
 // Usage:
@@ -78,24 +78,11 @@ void main(List<String> args) {
     );
   } else {
     stdout.writeln(
-      '   • Quota Safety Status:    \x1B[31m🔴 High Usage (Recommended to migrate comments to Serverpod/Appwrite)\x1B[0m',
+      '   • Quota Safety Status:    \x1B[31m🔴 High Usage (Firestore daily read ceiling is close)\x1B[0m',
     );
   }
 
-  // 4. Serverpod & PostgreSQL Scale Comparison
-  stdout.writeln('\n\x1B[1m4. Serverpod + PostgreSQL Architecture (Scale Sovereignty):\x1B[0m');
-  stdout.writeln(
-    '   • Query Quota Limits:     \x1B[32mZERO / UNLIMITED\x1B[0m (PostgreSQL relational engine)',
-  );
-  stdout.writeln(
-    '   • Cost per Read/Write:    \x1B[32m\$0.00\x1B[0m (Fixed VPS cost, e.g. \$5–\$20/mo)',
-  );
-  stdout.writeln(
-    '   • Real-Time Protocol:     Binary WebSockets (Direct streaming without document polls)',
-  );
-  stdout.writeln(
-    '   • Scale Conclusion:       \x1B[32mEverything in Serverpod is safe from daily query ceilings!\x1B[0m',
-  );
+  stdout.writeln('\n\x1B[1m4. Live store:\x1B[0m Cloud Firestore on the Spark tier.');
 
   // 5. Where to Inspect Real-Time Cloud Metrics
   stdout.writeln('\n\x1B[1m5. Real-Time Cloud Console Inspection Links:\x1B[0m');

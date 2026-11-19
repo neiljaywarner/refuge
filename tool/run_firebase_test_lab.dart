@@ -3,8 +3,8 @@
 /// Builds a **dev-only** debug APK pair and optionally uploads to Firebase Test
 /// Lab on project `belongonthespectrum`.
 ///
-/// Every build uses `lib/main_dev.dart`, `FLAVOR=dev`, and
-/// `ENABLE_SERVERPOD=false`. Upload is refused unless `aapt dump badging`
+/// Every build uses `lib/main_dev.dart` and `FLAVOR=dev`.
+/// Upload is refused unless `aapt dump badging`
 /// reports `com.belongonthespectrum.refuge.dev` and label `[DEV] Belong on the Spectrum`.
 ///
 /// CI authenticates with repository secret `FIREBASE_SERVICE_ACCOUNT`. The JSON
@@ -248,7 +248,7 @@ Belong on the Spectrum — Firebase Test Lab runner (dev APK only)
 Usage:
   dart run tool/run_firebase_test_lab.dart [flags]
 
-Builds with -t lib/main_dev.dart, FLAVOR=dev, ENABLE_SERVERPOD=false.
+Builds with -t lib/main_dev.dart and FLAVOR=dev.
 Refuses upload unless the app package is com.belongonthespectrum.refuge.dev.
 
 Flags:
