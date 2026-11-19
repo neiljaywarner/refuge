@@ -7,7 +7,7 @@
 
 ## 🧭 Why Multi-Agent Fan-Out?
 
-In complex full-stack Flutter applications powered by Riverpod, Serverpod WebSockets, and Firebase services, diagnosing an incident sequentially can take 30–60 minutes:
+In complex full-stack Flutter applications powered by Riverpod, Firebase WebSockets, and Firebase services, diagnosing an incident sequentially can take 30–60 minutes:
 1. First, reading through 500 lines of logs...
 2. Then, checking git commit history...
 3. Then, searching closed issues...
@@ -75,7 +75,7 @@ invoke_subagent(
 ## 🔍 The 4 Specialized Subagent Roles
 
 ### 1. Log & Telemetry Investigator
-- **Scope**: Queries Firebase Crashlytics, device logcat, and local `ServerpodTelemetryBackup` ring buffer.
+- **Scope**: Queries Firebase Crashlytics, device logcat, and local `FirebaseTelemetryBackup` ring buffer.
 - **Rule**: Scrubs PII (emails, auth tokens, device serials) before posting findings.
 
 ### 2. Git History & Blame Auditor
@@ -86,7 +86,7 @@ invoke_subagent(
 - **Scope**: Uses GitHub MCP (`search_issues`, `pull_request_read`) to find if CodeRabbit or a prior PR already discussed this failure signature.
 
 ### 4. Reproducer & Patch Verifier
-- **Scope**: Works in an isolated worktree (`/Users/neil/belongonthespectrum/.worktrees/issue-<NUM>-<slug>`).
+- **Scope**: Works in an isolated worktree (`$HOME/belongonthespectrum/.worktrees/issue-<NUM>-<slug>`).
 - **Goal**: Creates a deterministic test, applies the fix, and runs `run_tests` via the Dart MCP server.
 
 ---

@@ -15,7 +15,7 @@ import 'in_app_messaging/in_app_messaging_service.dart';
 /// Guarantees that [Firebase.initializeApp] is invoked at startup across
 /// Flutter Web / PWA, Android, and iOS with platform-appropriate options,
 /// activates Crashlytics fatal & non-fatal collection, configures Analytics
-/// user properties, and falls back gracefully to in-memory / Serverpod
+/// user properties, and falls back gracefully to in-memory storage
 /// diagnostics in unit/BDD test harnesses or offline environments.
 class FirebaseInitializer {
   static bool _initialized = false;

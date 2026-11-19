@@ -13,14 +13,13 @@ void main() {
         '-t',
         'integration_test/patrol_ftl_home_shell_test.dart',
         '--dart-define=FLAVOR=dev',
-        '--dart-define=ENABLE_SERVERPOD=false',
         '--no-uninstall',
       ]);
     });
   });
 
   group('devFlutterApkBuildArgs', () {
-    test('pins dev entrypoint, flavor, and Serverpod off', () {
+    test('pins dev entrypoint and flavor', () {
       expect(devFlutterApkBuildArgs(), [
         'build',
         'apk',
@@ -28,7 +27,6 @@ void main() {
         '-t',
         'lib/main_dev.dart',
         '--dart-define=FLAVOR=dev',
-        '--dart-define=ENABLE_SERVERPOD=false',
       ]);
     });
 
@@ -40,7 +38,6 @@ void main() {
         '-t',
         'integration_test/patrol_ftl_attach_media_test.dart',
         '--dart-define=FLAVOR=dev',
-        '--dart-define=ENABLE_SERVERPOD=false',
       ]);
     });
   });

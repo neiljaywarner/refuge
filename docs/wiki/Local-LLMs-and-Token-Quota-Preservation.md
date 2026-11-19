@@ -64,7 +64,7 @@ flowchart TD
 
     subgraph "Cloud Model Strengths (Conserve Quota)"
         Cloud --> C1[System Architecture & ADR Decisions]
-        Cloud --> C2[Multi-Database Migrations Appwrite/Serverpod]
+        Cloud --> C2[Multi-Database Migrations Appwrite/Firebase]
         Cloud --> C3[Real-Glass Multi-Device Orchestration]
         Cloud --> C4[Security Rules & Consent Audits]
     end
@@ -86,7 +86,7 @@ flowchart TD
 ### 🔴 Tasks Reserved for Frontier Cloud Models (Gemini Pro / Claude 3.5 Sonnet)
 
 1. **Architectural Decisions (ADRs)**:
-   - Designing multi-system synchronization between Appwrite document databases, Serverpod WebSockets, and Firebase edge triggers.
+   - Designing multi-system synchronization between Appwrite document databases, Firebase WebSockets, and Firebase edge triggers.
 2. **Cross-Service Security Audit**:
    - Firestore security rules (`firestore.rules`), Appwrite permissions, and OAuth credential scopes.
 3. **Complex Multi-Device Hardware Automation**:

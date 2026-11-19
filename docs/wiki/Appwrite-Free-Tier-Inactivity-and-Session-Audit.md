@@ -2,7 +2,7 @@
 
 > **Project**: `belongonthespectrum` (`6adae5c40013c409e109`), endpoint `https://nyc.cloud.appwrite.io/v1`, database `belong_community_db` (TablesDB).
 > **Issue**: [#781](https://github.com/neiljaywarner/refuge/issues/781)
-> **Related**: [Backend migration strategy](Backend-Migration-Strategy-Serverpod-Appwrite-Firebase) · [Observability](Observability-Crashlytics-Analytics-and-Diagnostics)
+> **Related**: [Backend migration strategy](Backend-Migration-Strategy-Appwrite-Firebase) · [Observability](Observability-Crashlytics-Analytics-and-Diagnostics)
 
 ## Client heartbeats do not keep Free alive
 

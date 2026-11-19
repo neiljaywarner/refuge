@@ -152,120 +152,132 @@ class ReflectionCard extends ConsumerWidget {
                   ],
                 ],
               ),
-              Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 80),
-                    child: Container(
-                      padding: const .symmetric(horizontal: 8.0, vertical: 3.0),
-                      decoration: BoxDecoration(
-                        color: isMeme
-                            ? Colors.amber.withValues(alpha: 0.2)
-                            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                        borderRadius: .circular(6.0),
-                      ),
-                      child: Text(
-                        post.toneTag,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: isMeme
-                              ? Colors.amber.shade800
-                              : Theme.of(context).colorScheme.primary,
+              // Keep the 48dp save control on this line. A wrap dropped it
+              // under the tag once large text made the tag wide, and that
+              // pushed the reflection itself down the screen (#951).
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxTagWidth = constraints.maxWidth - 64;
+                  return Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: maxTagWidth < 80 ? constraints.maxWidth : maxTagWidth,
+                        ),
+                        child: Container(
+                          padding: const .symmetric(horizontal: 8.0, vertical: 3.0),
+                          decoration: BoxDecoration(
+                            color: isMeme
+                                ? Colors.amber.withValues(alpha: 0.2)
+                                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                            borderRadius: .circular(6.0),
+                          ),
+                          child: Text(
+                            post.toneTag,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isMeme
+                                  ? Colors.amber.shade800
+                                  : Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  IconButton(
-                    key: Key('save_post_button_${post.id}'),
-                    style: IconButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      tapTargetSize: MaterialTapTargetSize.padded,
-                      padding: .zero,
-                    ),
-                    tooltip: post.isSaved ? 'Remove from Saved' : 'Save for Later (Private)',
-                    onPressed: () async {
-                      final wasSaved = post.isSaved;
-                      final repo = ref.read(postRepositoryProvider);
-                      final analytics = ref.read(communityAnalyticsServiceProvider);
-                      await repo.toggleSavePost(postId: post.id);
-                      unawaited(
-                        analytics.logPostSaved(
-                          postId: post.id,
-                          isSaved: !wasSaved,
-                          spaceKey: post.spaceKey,
+                      IconButton(
+                        key: Key('save_post_button_${post.id}'),
+                        style: IconButton.styleFrom(
+                          minimumSize: const Size(48, 48),
+                          tapTargetSize: MaterialTapTargetSize.padded,
+                          padding: .zero,
                         ),
-                      );
-                      if (!context.mounted) return;
-                      final messenger = ScaffoldMessenger.maybeOf(context);
-                      if (messenger == null) return;
-                      messenger.hideCurrentSnackBar();
-                      messenger.showSnackBar(
-                        SnackBar(
-                          key: Key('save_for_later_snackbar_${post.id}'),
-                          duration: const Duration(seconds: 4),
-                          behavior: SnackBarBehavior.floating,
-                          content: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  wasSaved
-                                      ? 'Removed from Saved for Later.'
-                                      : '🔖 Saved to your private Saved for Later space.',
-                                ),
+                        tooltip: post.isSaved ? 'Remove from Saved' : 'Save for Later (Private)',
+                        onPressed: () async {
+                          final wasSaved = post.isSaved;
+                          final repo = ref.read(postRepositoryProvider);
+                          final analytics = ref.read(communityAnalyticsServiceProvider);
+                          await repo.toggleSavePost(postId: post.id);
+                          unawaited(
+                            analytics.logPostSaved(
+                              postId: post.id,
+                              isSaved: !wasSaved,
+                              spaceKey: post.spaceKey,
+                            ),
+                          );
+                          if (!context.mounted) return;
+                          final messenger = ScaffoldMessenger.maybeOf(context);
+                          if (messenger == null) return;
+                          messenger.hideCurrentSnackBar();
+                          messenger.showSnackBar(
+                            SnackBar(
+                              key: Key('save_for_later_snackbar_${post.id}'),
+                              duration: const Duration(seconds: 4),
+                              behavior: SnackBarBehavior.floating,
+                              content: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      wasSaved
+                                          ? 'Removed from Saved for Later.'
+                                          : '🔖 Saved to your private Saved for Later space.',
+                                    ),
+                                  ),
+                                  if (!wasSaved && onNavigateToSaved != null) ...[
+                                    const SizedBox(width: 8),
+                                    TextButton(
+                                      key: Key('view_saved_for_later_btn_${post.id}'),
+                                      style: TextButton.styleFrom(
+                                        visualDensity: VisualDensity.compact,
+                                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                                        foregroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .inversePrimary,
+                                      ),
+                                      onPressed: () {
+                                        messenger.hideCurrentSnackBar();
+                                        onNavigateToSaved!();
+                                      },
+                                      child: const Text(
+                                        'View Saved',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              if (!wasSaved && onNavigateToSaved != null) ...[
-                                const SizedBox(width: 8),
-                                TextButton(
-                                  key: Key('view_saved_for_later_btn_${post.id}'),
-                                  style: TextButton.styleFrom(
-                                    visualDensity: VisualDensity.compact,
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                                    foregroundColor: Theme.of(context).colorScheme.inversePrimary,
-                                  ),
-                                  onPressed: () {
-                                    messenger.hideCurrentSnackBar();
-                                    onNavigateToSaved!();
-                                  },
-                                  child: const Text(
-                                    'View Saved',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              repo.toggleSavePost(postId: post.id);
-                              unawaited(
-                                analytics.logPostSaved(
-                                  postId: post.id,
-                                  isSaved: wasSaved,
-                                  spaceKey: post.spaceKey,
-                                  isUndo: true,
-                                ),
-                              );
-                            },
-                          ),
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                onPressed: () {
+                                  repo.toggleSavePost(postId: post.id);
+                                  unawaited(
+                                    analytics.logPostSaved(
+                                      postId: post.id,
+                                      isSaved: wasSaved,
+                                      spaceKey: post.spaceKey,
+                                      isUndo: true,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        icon: Icon(
+                          post.isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                          size: 18,
+                          color: post.isSaved
+                              ? (isContrast ? Colors.yellow : Theme.of(context).colorScheme.primary)
+                              : (isContrast ? Colors.white70 : Colors.grey.shade600),
                         ),
-                      );
-                    },
-                    icon: Icon(
-                      post.isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                      size: 18,
-                      color: post.isSaved
-                          ? (isContrast ? Colors.yellow : Theme.of(context).colorScheme.primary)
-                          : (isContrast ? Colors.white70 : Colors.grey.shade600),
-                    ),
-                  ),
-                ],
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

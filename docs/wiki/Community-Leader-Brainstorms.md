@@ -93,14 +93,14 @@ Every visual element, notification, and profile field has a cognitive cost. This
 
 ---
 
-### 🛡️ Brainstorm 7: Cloud Ceilings, Serverpod Scale & Zero-Cost Guarantees
+### 🛡️ Brainstorm 7: Cloud Ceilings, Firebase Scale & Zero-Cost Guarantees
 
-* **The Question**: What happens if our community traffic surges on the Firebase free tier with no billing card on file? Can we get a surprise bill, and is Serverpod safe from quota limits?
+* **The Question**: What happens if our community traffic surges on the Firebase free tier with no billing card on file? Can we get a surprise bill, and is Firebase safe from quota limits?
 * **Leadership Guidance & Analysis**:
   1. **Zero Financial Risk ($0.00 Guaranteed)**: With no billing instrument attached to Firebase, charges are impossible. If daily reads exceed 50,000, the API stops gracefully (`RESOURCE_EXHAUSTED`), the app's local offline cache continues serving existing content, and quotas reset automatically at midnight PST ([Issue #274](https://github.com/neiljaywarner/refuge/issues/274)).
-  2. **Serverpod PostgreSQL Has Infinite Scale**: Core domain logic and streaming in Serverpod run on PostgreSQL with zero per-read or per-write daily limits.
+  2. **Firebase PostgreSQL Has Infinite Scale**: Core domain logic and streaming in Firebase run on PostgreSQL with zero per-read or per-write daily limits.
   3. **Appwrite Switchover Ready**: If active membership expands past 300+ daily members, our pluggable `DiscussionRepository` seam enables switching from Firestore to self-hosted Appwrite Database with zero UI changes ([Issue #275](https://github.com/neiljaywarner/refuge/issues/275)).
-* **Full Architecture Guide**: Read [`docs/wiki/Firestore-Spark-Quota-and-Serverpod-Scale.md`](Firestore-Spark-Quota-and-Serverpod-Scale.md).
+* **Full Architecture Guide**: Read [`docs/wiki/Firestore-Spark-Quota.md`](Firestore-Spark-Quota.md).
 
 ---
 

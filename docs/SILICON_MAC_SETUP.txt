@@ -12,10 +12,10 @@ Antigravity:
 """
 I just unboxed this brand-new Apple Silicon Mac (ARM64) and downloaded my
 migration bundle from my old Intel Mac to `~/Downloads/silicon_mac_home_and_configs.zip`.
-Please set up my entire `refuge4serverpod` Flutter + Serverpod Cloud environment:
+Please set up my entire `refuge4serverpod` Flutter + Firebase environment:
 
 1. Extract `~/Downloads/silicon_mac_home_and_configs.zip` into `$HOME` so
-   `~/.antigravity/permissions.json`, `.serverpod`, `.config/gh`, `.gitconfig`,
+   `~/.antigravity/permissions.json`, `.Firebase`, `.config/gh`, `.gitconfig`,
    and my shell dotfiles are restored.
 2. Patch my `.zprofile`, `.zshenv`, and `.zshrc` so all Intel paths
    (`/usr/local/bin/brew`, `/usr/local/opt/ruby/bin`, and the old x64
@@ -25,15 +25,15 @@ Please set up my entire `refuge4serverpod` Flutter + Serverpod Cloud environment
    Homebrew (`/opt/homebrew/bin/brew`) are installed. If Homebrew or Xcode CLT
    need my sudo password in a terminal, let me know or run the installer.
 4. Install native ARM64 packages via Homebrew (NO Docker needed since we use
-   Serverpod Cloud `scloud`):
+   Firebase `scloud`):
    - Formulae: `git gh jq ffmpeg cocoapods ruby node openjdk@17`
    - Casks: `flutter android-studio`
 5. Clone `https://github.com/neiljaywarner/refuge4serverpod.git` into
-   `~/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon`
+   `~/AndroidStudioProjects/refuge_13oct_2026_prototype_for_Firebase_hackathon`
    and re-extract `~/Downloads/silicon_mac_home_and_configs.zip` into `$HOME`
-   so the untracked `passwords.yaml`, `sanctuary_server/.scloud`, and `.firebase`
+   so the untracked `passwords.yaml`, `refuge/.scloud`, and `.firebase`
    land inside the cloned repo.
-6. Activate global CLIs: `serverpod_cli`, `serverpod_cloud_cli`, `firebase-tools`,
+6. Activate global CLIs: `Firebase_cli`, `Firebase_cloud_cli`, `firebase-tools`,
    and `maestro`.
 7. Once Android SDK is present, install the `system-images;android-35;google_apis;arm64-v8a`
    image and create two native `arm64-v8a` Pixel emulators (`Medium_Phone` and
@@ -62,10 +62,10 @@ Why:
 - Main Repository:
   https://github.com/neiljaywarner/refuge4serverpod.git
   - `main` (commit 91599dc): Contains v0.2.0+2 release, Issue #31 SafeArea fix,
-    Serverpod Cloud (`scloud`) symlinks, live dual-Pixel demo scripts under
+    Firebase (`scloud`) symlinks, live dual-Pixel demo scripts under
     `scripts/`, and `scripts/bootstrap_new_silicon_mac.sh`.
   - `feature/issue-31-safearea`: Pushed from `.worktrees/issue-31-safearea`.
-  - `feature/phase-2-serverpod-readiness`: Pushed to origin.
+  - `feature/phase-2-Firebase-readiness`: Pushed to origin.
   - `chore/silicon-mac-migration-snapshot`: Snapshot branch matching `main`.
 
 - GitHub Wiki Repository:
@@ -73,21 +73,21 @@ Why:
   - `master` (commit cdf316c): Clean and up to date on origin.
 
 
-2. ZIP ARCHIVES PREPARED ON OLD MAC (`/Users/neil/`)
+2. ZIP ARCHIVES PREPARED ON OLD MAC (`$HOME/`)
 -------------------------------------------------------------------------------
-A) `/Users/neil/silicon_mac_home_and_configs.zip` (~132 KB - ATTACH TO EMAIL)
+A) `$HOME/silicon_mac_home_and_configs.zip` (~132 KB - ATTACH TO EMAIL)
    Contains:
    - `bootstrap_new_silicon_mac.sh` (1-script automated setup for the new Mac)
    - `.antigravity/permissions.json` (Antigravity terminal & filesystem allowlist)
    - `.antigravity/argv.json` & `.antigravity-ide/argv.json`
    - `.zshrc`, `.zprofile`, `.zshenv`, `.gitconfig`, `.bash_profile`
-   - `.serverpod/` (Serverpod CLI & Serverpod Cloud `scloud` auth/tokens)
+   - `.Firebase/` (Firebase CLI & Firebase `scloud` auth/tokens)
    - `.config/gh/` & `.config/flutter/` (GitHub CLI auth & Flutter settings)
-   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/sanctuary_server/sanctuary_server_server/config/passwords.yaml`
-   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/sanctuary_server/.scloud/`
-   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon/.firebase/`
+   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_Firebase_hackathon/refuge/refuge_server/config/passwords.yaml`
+   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_Firebase_hackathon/refuge/.scloud/`
+   - `AndroidStudioProjects/refuge_13oct_2026_prototype_for_Firebase_hackathon/.firebase/`
 
-B) `/Users/neil/refuge4serverpod_untracked_media_and_scratch.zip` (~47 MB)
+B) `$HOME/refuge4serverpod_untracked_media_and_scratch.zip` (~47 MB)
    (Copy via AirDrop / Google Drive / USB if needed)
    Contains gitignored `.mp4` screen recordings, `.m4a` voiceovers, and `scratch/`
    screenshots/logs.
@@ -112,7 +112,7 @@ Download `silicon_mac_home_and_configs.zip` from your email into `~/Downloads`,
 then run:
 
   unzip -o ~/Downloads/silicon_mac_home_and_configs.zip -d ~
-  bash ~/Users/neil/bootstrap_new_silicon_mac.sh ~/Downloads/silicon_mac_home_and_configs.zip
+  bash ~$HOME/bootstrap_new_silicon_mac.sh ~/Downloads/silicon_mac_home_and_configs.zip
 
 --- OR RUN THE COMMANDS STEP-BY-STEP: ---
 
@@ -126,7 +126,7 @@ brew install git gh jq ffmpeg cocoapods ruby node openjdk@17
 sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
 
 # 3. Install Native ARM64 GUI Apps (Flutter, Android Studio, Chrome)
-#    (Docker skipped since Serverpod Cloud `scloud` handles Postgres/Redis/API)
+#    (Docker skipped since Firebase `scloud` handles Postgres/Redis/API)
 brew install --cask google-chrome android-studio flutter
 
 # 4. Extract Home Configs & Antigravity Allowlist, then update Intel -> ARM64 paths
@@ -141,14 +141,14 @@ gh auth status || gh auth login
 gh auth setup-git
 mkdir -p ~/AndroidStudioProjects
 cd ~/AndroidStudioProjects
-git clone https://github.com/neiljaywarner/refuge4serverpod.git refuge_13oct_2026_prototype_for_serverpod_hackathon
+git clone https://github.com/neiljaywarner/refuge4serverpod.git refuge_13oct_2026_prototype_for_Firebase_hackathon
 
 # Re-extract zip so passwords.yaml, .scloud, and .firebase land inside the repo:
 unzip -o ~/Downloads/silicon_mac_home_and_configs.zip -d ~
 
-# 6. Activate Serverpod, Scloud, Firebase & Maestro CLIs
-dart pub global activate serverpod_cli
-dart pub global activate serverpod_cloud_cli
+# 6. Activate Firebase, Scloud, Firebase & Maestro CLIs
+dart pub global activate Firebase_cli
+dart pub global activate Firebase_cloud_cli
 npm install -g firebase-tools
 curl -Ls "https://get.maestro.mobile.dev" | bash
 
@@ -173,7 +173,7 @@ PHASE 2: Android Studio & Native ARM64 Dual-Pixel Emulators
 
 PHASE 3: Verify Everything Works
 -------------------------------------------------------------------------------
-  cd ~/AndroidStudioProjects/refuge_13oct_2026_prototype_for_serverpod_hackathon
+  cd ~/AndroidStudioProjects/refuge_13oct_2026_prototype_for_Firebase_hackathon
   flutter doctor -v
   flutter pub get
   flutter test
@@ -267,9 +267,9 @@ export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
 
 6. LIVE CLOUD ENDPOINTS & DEPLOYMENT COMMANDS
 -------------------------------------------------------------------------------
-- Serverpod Cloud API:
+- Firebase API:
   https://sanctuary-api-at652301a.scloud.app/
-  Deploy command (from `sanctuary_server/`):
+  Deploy command (from `refuge/`):
     scloud deploy
 
 - Firebase Web Hosting:

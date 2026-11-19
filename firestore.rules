@@ -226,6 +226,20 @@ service cloud.firestore {
         allow read, write: if isSignedInMember() && request.auth.uid == userId;
       }
 
+      // This member's own care reactions, so another device can toggle off.
+      // Counts stay on the reflection. This row is not the community total.
+      match /care_reactions/{markId} {
+        allow read, delete: if isSignedInMember() && request.auth.uid == userId;
+        allow create, update: if isSignedInMember()
+          && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly(['types'])
+          && request.resource.data.types is list
+          && request.resource.data.types.size() <= 5
+          && request.resource.data.types.hasOnly([
+            'pray', 'peace', 'standing', 'encouraged', 'relatable'
+          ]);
+      }
+
       // Message ids only, no bodies. The sender may append. A rules admin
       // reads and deletes the index while erasing a banned account.
       // Owners cannot delete rows, so they cannot hide sent messages from erase.
@@ -288,7 +302,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // 7. Reflection mirror kept while Serverpod Cloud is turned off (#212).
+    // 7. Reflection mirror kept on Firestore (#212).
     match /reflections/{postId} {
       allow read: if isSignedInMember();
       allow create: if isSignedInMember() && createsAsSelf();

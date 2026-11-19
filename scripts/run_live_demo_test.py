@@ -71,7 +71,7 @@ def main():
     time.sleep(3)
 
     ts_now = time.strftime("%H:%M:%S")
-    right_msg = f"[{ts_now} LTE] Unhurried reflection via Serverpod Cloud!"
+    right_msg = f"[{ts_now} LTE] Unhurried reflection for the circle!"
 
     print(f"=== Step 1: Right Pixel taps text box and types reflection with timestamp {ts_now} ===")
     adb_shell(RIGHT_DEV, "input tap 500 1050")

@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:refuge4serverpod/src/core/config/app_flavor.dart';
-import 'package:refuge4serverpod/src/core/observability/serverpod_telemetry_backup.dart';
+import 'package:refuge4serverpod/src/core/observability/local_telemetry_ring.dart';
 
 /// CLI tool to review and inspect dual-observability telemetry across
-/// Firebase Crashlytics, Firebase Analytics, and Serverpod Backup Ring Buffers.
+/// Firebase Crashlytics, Firebase Analytics, and the local telemetry ring.
 ///
 /// Usage:
 ///   dart run tool/review_telemetry.dart [--flavor dev|prod] [--simulate-error] [--simulate-event]
@@ -36,13 +36,12 @@ void main(List<String> rawArgs) async {
 
   final flavorName = results['flavor'] as String;
   final flavor = flavorName == 'prod' ? AppFlavor.prod : AppFlavor.dev;
-  final backup = ServerpodTelemetryBackup(flavor: flavor);
+  final backup = LocalTelemetryRing(flavor: flavor);
 
   stdout.writeln('================================================================');
   stdout.writeln('📡 Belong on the Spectrum: Observability & Telemetry Audit');
   stdout.writeln('   Active Flavor: ${flavor.slug.toUpperCase()}');
   stdout.writeln('   Firebase Project: belongonthespectrum (US Central)');
-  stdout.writeln('   Serverpod Cluster: https://refuge4serverpod.api.serverpod.space/');
   stdout.writeln('================================================================\n');
 
   final shouldSimulateError = results['simulate-error'] as bool;
@@ -53,7 +52,7 @@ void main(List<String> rawArgs) async {
     await backup.recordAnalyticsEvent('space_viewed', parameters: {'space_slug': 'memes'});
     await backup.recordAnalyticsEvent('sensory_theme_changed', parameters: {'mode': 'sage'});
     await backup.recordAnalyticsEvent('vote_cast', parameters: {'feature_id': 'soundscapes'});
-    stdout.writeln('   ✅ Successfully logged 3 sample analytics events into Serverpod buffer.\n');
+    stdout.writeln('   ✅ Successfully logged 3 sample analytics events into the local buffer.\n');
   }
 
   if (shouldSimulateError) {
@@ -71,11 +70,11 @@ void main(List<String> rawArgs) async {
       fatal: true,
     );
     stdout.writeln(
-      '   ✅ Successfully logged handled exception & fatal crash into Serverpod buffer.\n',
+      '   ✅ Successfully logged handled exception & fatal crash into the local buffer.\n',
     );
   }
 
-  stdout.writeln('3. Current Serverpod Backup Ring Buffer:');
+  stdout.writeln('3. Current local telemetry ring:');
   for (final record in backup.recentRecords) {
     final icon = record.kind == TelemetryKind.error ? (record.isFatal ? '🚨' : '⚠️') : '📊';
     stdout.writeln(
@@ -97,8 +96,6 @@ void main(List<String> rawArgs) async {
   stdout.writeln(
     '     https://console.firebase.google.com/project/belongonthespectrum/crashlytics',
   );
-  stdout.writeln('   • Serverpod Live Logs:');
-  stdout.writeln('     Run: serverpod logs --project refuge4serverpod');
   stdout.writeln('   • On-Device 7-Tap Easter Egg:');
   stdout.writeln(
     '     Rapidly tap the Belong logo 7 times in the header to trigger test crashes & NFEs!',
