@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/async_action_button.dart';
 import '../data/stream_token_client.dart';
 import '../domain/group_call_room.dart';
 import '../domain/guest_invite.dart';
@@ -60,6 +61,7 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
   }
 
   Future<void> _join() async {
+    if (_busy) return;
     final room = GroupCallRoom.tryParse(_name.text);
     if (room == null) {
       setState(() {
@@ -266,10 +268,12 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
               onSubmitted: (_) => _join(),
             ),
             const SizedBox(height: 20),
-            FilledButton(
+            AsyncActionButton(
               key: const Key('group_call_confirm_join_button'),
+              busyLabel: 'Joining call',
+              isBusy: _busy,
               onPressed: _busy ? null : _join,
-              child: Text(_busy ? 'Joining…' : 'Join call'),
+              child: const Text('Join call'),
             ),
             if (_message != null) ...[
               const SizedBox(height: 16),
@@ -284,8 +288,10 @@ class _GroupCallLobbyPageState extends State<GroupCallLobbyPage> {
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
-            OutlinedButton(
+            AsyncActionButton(
               key: const Key('group_call_invite_button'),
+              variant: AsyncButtonVariant.outlined,
+              busyLabel: 'Creating guest link',
               onPressed: _busy ? null : _createInvite,
               child: const Text('Create guest link'),
             ),

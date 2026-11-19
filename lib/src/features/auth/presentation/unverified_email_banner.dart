@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
+import '../../../core/presentation/async_action_button.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_access_policy.dart';
 import '../domain/auth_session.dart';
@@ -94,8 +95,10 @@ class _UnverifiedEmailBannerState extends ConsumerState<UnverifiedEmailBanner> {
               ],
               Align(
                 alignment: Alignment.centerLeft,
-                child: TextButton(
+                child: AsyncActionButton(
                   key: const Key('home_resend_verification'),
+                  variant: AsyncButtonVariant.text,
+                  busyLabel: 'Sending verification email',
                   onPressed: _busy ? null : () => _send(automatic: false),
                   child: const Text(VerifyEmailCopy.resendButton),
                 ),
