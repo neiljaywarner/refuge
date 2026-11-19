@@ -24,7 +24,7 @@ Sanctuary enters the market as a purpose-built **Calm-Tech Fellowship Clubhouse*
 | **Conversational Tone Tags** | ✅ **Compulsory Intent** | ❌ Freeform unstructured | ❌ Unstructured | ❌ Prayer only | ❌ None |
 | **Affirmation Metrics** | 🙏 **Qualitative Care** | 😂 Emoji spam / Reactions | 👍 Likes / Vanity metrics | 🙏 Generic pray click | 🔒 Private checkmarks |
 | **Sensory Ergonomics** | 🌿 **4 Curated Modes** | 🌗 Basic Light/Dark | 🌗 Basic Light/Dark | 🌗 Basic Light/Dark | 🌗 Basic Light/Dark |
-| **Modern Dart Backend** | 🚀 **Serverpod 4** | Proprietary Elixir/Go | Proprietary Hack/PHP | Proprietary Cloud | Client-heavy / Firebase |
+| **Modern Dart Backend** | 🚀 **the retired backend** | Proprietary Elixir/Go | Proprietary Hack/PHP | Proprietary Cloud | Client-heavy / Firebase |
 | **Offline-First Resilience** | ✅ **Full Local Fallback** | ❌ Disconnect error | ❌ Offline blocker | ⚠️ Read cached only | ⚠️ Local SQLite only |
 
 ---
@@ -52,4 +52,4 @@ Sanctuary enters the market as a purpose-built **Calm-Tech Fellowship Clubhouse*
 
 1. **The "Calm-Tech" Moat**: As digital burnout and mental fatigue escalate, churches and mental wellness groups are actively seeking digital detox alternatives.
 2. **Sensory Inclusivity (Neurodivergence & Accessibility)**: High contrast WCAG AAA and low-stimulation Sage/Charcoal palettes make Sanctuary the premier accessible option for neurodivergent believers.
-3. **Serverpod 4 Unified Stack**: End-to-end type safety in Dart dramatically reduces server maintenance costs and deployment overhead for non-profit communities.
+3. **the retired backend Unified Stack**: End-to-end type safety in Dart dramatically reduces server maintenance costs and deployment overhead for non-profit communities.

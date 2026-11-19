@@ -100,4 +100,59 @@ assert(released.status === 200, "release");
 const rel = await released.json();
 assert(rel.released === true, "released true");
 
+async function expectAuthRejection(
+  event: string,
+  body: unknown,
+  headers: Record<string, string>,
+  forbidden: string[],
+) {
+  const seen: string[] = [];
+  const original = console.info;
+  console.info = (msg?: unknown) => {
+    seen.push(String(msg));
+  };
+  try {
+    const response = await post(body, headers);
+    assert(response.status === 401, `${event} status ${response.status}`);
+    assert(seen.length === 1, `${event} log count ${seen.length}: ${seen.join(" | ")}`);
+    const row = JSON.parse(seen[0]) as Record<string, unknown>;
+    assert(row.event === event, `${event} name`);
+    assert(row.ok === false, `${event} ok`);
+    assert(row.reason === "auth", `${event} reason`);
+    assert(row.status === 401, `${event} status field`);
+    assert(Object.keys(row).length === 4, `${event} extra fields ${Object.keys(row).join(",")}`);
+    const encoded = JSON.stringify(row);
+    const payloadText = JSON.stringify(await response.json());
+    for (const secretText of forbidden) {
+      assert(secretText.length > 0, "empty forbidden string");
+      assert(!encoded.includes(secretText), `${event} log leaked`);
+      assert(!payloadText.includes(secretText), `${event} body leaked`);
+    }
+  } finally {
+    console.info = original;
+  }
+}
+
+const hidden = [secret, apiKey, "member-token"];
+await expectAuthRejection("mintStreamCallToken", {}, {}, hidden);
+await expectAuthRejection(
+  "mintStreamCallToken",
+  { callId: "preview-room" },
+  { Authorization: "Bearer not-a-member" },
+  [...hidden, "not-a-member"],
+);
+await expectAuthRejection(
+  "createStreamGuestInvite",
+  { action: "createInvite", callId: "preview-room" },
+  {},
+  hidden,
+);
+const inviteProbe = "Q".repeat(43);
+await expectAuthRejection(
+  "revokeStreamGuestInvite",
+  { action: "revokeInvite", inviteToken: inviteProbe },
+  {},
+  [...hidden, inviteProbe],
+);
+
 console.log("PASS seatKey join/refresh/release");

@@ -5,7 +5,7 @@ Refuge employs a **3-tiered, privacy-hardened, zero-PII telemetry pipeline**:
 1. **Firebase Analytics (Google Analytics 4 & DebugView)**: Ecosystem telemetry and Play Store conversion tracking.
 2. **Aptabase (Open-Source Privacy-First Analytics)**: Lightweight, zero-cookie, transparent event metrics.
 3. **PostHog (Product Analytics & Session Insights)**: Funnel analysis, retention cohorts, and user journey tracking.
-4. **Serverpod Telemetry Backup**: In-memory ring buffer for resilient offline fallback.
+4. **Firebase Telemetry Backup**: In-memory ring buffer for resilient offline fallback.
 
 ---
 

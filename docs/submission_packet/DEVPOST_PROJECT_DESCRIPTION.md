@@ -1,7 +1,7 @@
 ### 🌟 What Refuge Does
 Modern digital communities are weaponized for urgency: red badge counters, rapid notification pings, and algorithmic gamification induce chronic anxiety and sensory overload—especially for neurodivergent individuals and mindful fellowship groups.
 
-**Refuge** is an unhurried, zero-badge, sensory-friendly community platform built with **Flutter** and **Serverpod 4**. Designed in partnership with the neurodivergent community ([Belong on the Spectrum](https://www.belongonthespectrum.com/)), Refuge provides a peaceful digital haven:
+**Refuge** is an unhurried, zero-badge, sensory-friendly community platform built with **Flutter** and **the retired backend**. Designed in partnership with the neurodivergent community ([Belong on the Spectrum](https://www.belongonthespectrum.com/)), Refuge provides a peaceful digital haven:
 * **Zero-Badge Architecture**: No red notification dots, unread counters, or manipulative push urgency. Posts wait peacefully for you; you never chase them.
 * **4 WCAG AAA Sensory Modes**: Instant cognitive comfort with *Sage Botanical*, *Clean Slate*, *Monastic Dark*, and *High Contrast* modes.
 * **Calm-Tech Memes & Wholesome Fun**: Curated, low-stimulus meme gallery celebrating neurodivergent life and relatable humor without flashing strobe GIFs, external CDN lag, or ad trackers.
@@ -11,13 +11,13 @@ Modern digital communities are weaponized for urgency: red badge counters, rapid
 
 ---
 
-### 🚀 How Refuge Uses Serverpod 4
-Serverpod 4 provides our full-stack Dart backend running on **Serverpod Cloud** with PostgreSQL 16 and Redis 7:
-1. **End-to-End Type Safety via Serverpod SPI**: Models (`ReflectionPost`, `QuietDigest`, `ReactionPayload`) are declared in `.spy.yaml` and compiled into shared Dart classes across server and client, eliminating JSON serialization drift.
-2. **Real-Time WebSocket Streaming**: The `ReflectionEndpoint` leverages Serverpod's native streaming sessions and pub/sub message bus, broadcasting new reflections, meme cards, and atomic care reactions with sub-100ms latency.
-3. **Calm-Tech API Filtering**: Serverpod endpoints enforce calm-tech principles at the gateway, filtering hostile urgency keywords (`asap`, `act now`, `urgent`) to safeguard community peace.
+### 🚀 How Refuge Uses the retired backend
+the retired backend provides our full-stack Dart backend running on **Firebase** with PostgreSQL 16 and Redis 7:
+1. **End-to-End Type Safety via Firebase SPI**: Models (`ReflectionPost`, `QuietDigest`, `ReactionPayload`) are declared in `.spy.yaml` and compiled into shared Dart classes across server and client, eliminating JSON serialization drift.
+2. **Real-Time WebSocket Streaming**: The `ReflectionEndpoint` leverages Firebase's native streaming sessions and pub/sub message bus, broadcasting new reflections, meme cards, and atomic care reactions with sub-100ms latency.
+3. **Calm-Tech API Filtering**: Firebase endpoints enforce calm-tech principles at the gateway, filtering hostile urgency keywords (`asap`, `act now`, `urgent`) to safeguard community peace.
 4. **Atomic Care Increments & Aggregations**: PostgreSQL atomic field increments handle simultaneous reactions without concurrency locks, while server endpoints compute holistic `QuietDigest` aggregates.
-5. **Production Deployment**: Live and operational in the cloud at **[https://refuge4serverpod.api.serverpod.space](https://refuge4serverpod.api.serverpod.space)** and monitored via the **Serverpod Insights** macOS App.
+5. **Production Deployment**: Live and operational in the cloud at **[the live Firebase Hosting site](the live Firebase Hosting site)** and monitored via the **Firebase Insights** macOS App.
 
 ---
 
@@ -32,6 +32,6 @@ The frontend is a pure Flutter multi-platform application targeting Web, Android
 
 ### 🏆 Complete & Functional Proof of Delivery
 * **Live Deployed Web App**: [https://refuge4serverpodhackathon.web.app](https://refuge4serverpodhackathon.web.app) (Firebase CDN with global SSL).
-* **Live Serverpod Cloud API**: [https://refuge4serverpod.api.serverpod.space](https://refuge4serverpod.api.serverpod.space).
+* **Live Firebase API**: [the live Firebase Hosting site](the live Firebase Hosting site).
 * **100% Automated Test Suite**: 26 unit, widget, BDD, and Riverpod architecture tests passing; 0 issues on `flutter analyze`.
 * **Physical Hardware Validation**: Tested live on two physical Google Pixel 9a devices streaming reflections across real-world T-Mobile LTE cellular networks.

@@ -1,10 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(refuge_13oct_2026_prototype_for_serverpod_hackathon LANGUAGES CXX)
+project(refuge LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "refuge_13oct_2026_prototype_for_serverpod_hackathon")
+set(BINARY_NAME "refuge")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

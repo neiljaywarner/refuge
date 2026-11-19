@@ -10,15 +10,11 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   patrolWidgetTest(
-    'End-to-end integration flow: Feature Voting persists across modal sheet openings with Appwrite/Serverpod/Firebase adapters',
+    'End-to-end integration flow: Feature Voting persists across modal sheet openings with Appwrite and Firebase adapters',
     ($) async {
       await $.pumpWidgetAndSettle(
         ProviderScope(
-          overrides: [
-            featureVotingBackendTargetProvider.overrideWithValue(
-              BackendTarget.appwrite,
-            ),
-          ],
+          overrides: [featureVotingBackendTargetProvider.overrideWithValue(BackendTarget.appwrite)],
           child: MaterialApp(
             home: Builder(
               builder: (context) => Scaffold(
