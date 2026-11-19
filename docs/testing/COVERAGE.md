@@ -63,7 +63,7 @@ That is **+7.8 percentage points**. The denominator did not grow: 1,121 lines th
 
 Soft-launch slices after the union: auth 75.2%, spaces 92.7%, vote & feedback 86.2%, home 73.3%, reflections 84.2%, appwrite 92.0%, install links 83.8%.
 
-HTTP, Firebase, and Serverpod are faked or pointed at a closed local port. No live token endpoint is called, and no API secret is compiled into these tests.
+HTTP and Firebase are faked or pointed at a closed local port. No live token endpoint is called, and no API secret is compiled into these tests.
 
 Screen sharing is not on `main` (it is still an open pull request). The call tests cover guest seat refresh, mint errors, a camera-off and microphone-off join, and Start/Stop of the microphone and camera controls that exist today.
 
