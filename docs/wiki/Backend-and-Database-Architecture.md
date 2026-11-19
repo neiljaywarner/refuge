@@ -5,7 +5,7 @@
 
 > **Host choice on 8 November 2026 ([#906](https://github.com/neiljaywarner/refuge/issues/906)).** The live member store is Firestore, with Firebase Auth and Firebase Hosting ([ADR-0011](https://github.com/neiljaywarner/refuge/blob/main/docs/adr/0011-one-database-plus-backup-not-dual-write.md)). Appwrite project `belongonthespectrum` hosts functions `dm-push` and `dm-mirror` and the spare/mirror path. When a new free backend must sit for days without someone opening a vendor console, prefer Supabase Free. Pause rules: [Leave-alone free backends](Leave-Alone-Free-Backends.md). The 22 October map below is the older pluggable-backend dictionary. It is not this decision.
 
-> **Snapshot of `main` on 22 October 2026.** That day's note said Serverpod was the default post backend, Cloud Firestore was the second copy, and Appwrite had not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
+> **Snapshot of `main` on 22 October 2026.** That day's note said Firebase was the default post backend, Cloud Firestore was the second copy, and Appwrite had not replaced either. Appwrite is on `main` ([PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`) and stays off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set. [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed. The Flutter package name is still `refuge4serverpod` ([#233](https://github.com/neiljaywarner/refuge/issues/233)).
 
 ---
 
@@ -13,7 +13,7 @@
 
 **Belong on the Spectrum** is powered by an accessible, calm-tech frontend with a **pluggable multi-backend architecture** (ADR-0009). The client consumes abstractions through Riverpod providers, allowing the application to connect to:
 
-1. **Serverpod RPC & PostgreSQL** (default post backend on `main`).
+1. **Firebase RPC & PostgreSQL** (default post backend on `main`).
 2. **Cloud Firestore / Firebase** (second copy of posts, plus profiles, votes, and feedback notes).
 3. **Appwrite** (on `main` via [PR #412](https://github.com/neiljaywarner/refuge/pull/412), `fc71fd4`; off unless both `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID` are set; [#384](https://github.com/neiljaywarner/refuge/issues/384) is not closed).
 4. **Deterministic In-Memory Repositories** (Local offline development, BDD widget tests, and CI/CD with zero cloud dependencies).
@@ -32,7 +32,7 @@
             │                       │                         │
             ▼                       ▼                         ▼
 ┌──────────────────────┐  ┌───────────────────┐  ┌───────────────────────┐
-│   Serverpod RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
+│   Firebase RPC      │  │ Cloud Firestore   │  │ In-Memory (tests)     │
 │   (Default posts)    │  │ (Second copy)     │  │ Appwrite opt-in only  │
 └──────────────────────┘  └───────────────────┘  └───────────────────────┘
 ```
@@ -46,8 +46,8 @@
 | **Firestore Database** | Firebase Console -> Project `belong-on-the-spectrum` -> *Firestore Database* | Live user profiles, reflections, feature votes, and feedback |
 | **Firebase Remote Config** | Firebase Console -> *Remote Config* -> Parameters | Live organizer welcome banner, community guidelines markdown, dynamic announcements |
 | **Crashlytics & Errors** | Firebase Console -> *Crashlytics* & `Talker` diagnostics | Unhandled exceptions and handled errors scrubbed of PII (`ErrorReporterService`) |
-| **Serverpod Endpoints** | `refuge4serverpod_server/lib/src/endpoints/` | Dart Serverpod endpoints (`post_endpoint.dart`, `feature_endpoint.dart`) |
-| **Serverpod Models** | `refuge4serverpod_server/lib/src/models/` | YAML schema definitions (`*.spy.yaml`) compiled to typed Dart entities |
+| **Firebase Endpoints** | `refuge4serverpod_server/lib/src/endpoints/` | Dart Firebase endpoints (`post_endpoint.dart`, `feature_endpoint.dart`) |
+| **Firebase Models** | `refuge4serverpod_server/lib/src/models/` | YAML schema definitions (`*.spy.yaml`) compiled to typed Dart entities |
 | **Frontend Repositories** | `lib/src/features/*/data/` | Pluggable client adapters implementing repository interfaces |
 | **Domain Models** | `lib/src/features/*/domain/` | Immutable business logic (`MemberProfile`, `Post`, `CommunityBrandConfig`) |
 

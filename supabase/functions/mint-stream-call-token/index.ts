@@ -1,4 +1,4 @@
-// mint-stream-call-token: signed-in member mint (unchanged) + #905 guest actions.
+// mint-stream-call-token: signed-in member mint (call membership + user token) + #905 guest actions.
 // STREAM_API_KEY / STREAM_API_SECRET are read from Supabase function secrets only.
 // 0d5a0a3 seatKey port: first-time joinGuest returns a seat key; only its hash is stored.
 import postgres from "npm:postgres@3.4.5";
@@ -6,6 +6,7 @@ import {
   type Deps,
   handle,
   prepareGuestOnCall,
+  prepareMemberOnCall,
   randomGuestId,
   randomInviteToken,
   verifyFirebaseIdToken,
@@ -25,6 +26,7 @@ const deps: Deps = {
   randomGuestId,
   randomSeatKey: randomInviteToken,
   prepareGuestCall: (input) => prepareGuestOnCall(input),
+  prepareMemberCall: (input) => prepareMemberOnCall(input),
 };
 
 Deno.serve(async (req: Request) => {

@@ -18,7 +18,7 @@ Use this skill at the end of every milestone or PR merge to proactively advise t
 3. **Reserve `Gemini 4 Argon High` / `Pro` Strictly for Complex Architecture (5% of Work)**:
    - Recommend switching up to **Argon High** ONLY when:
      - Designing the Community Organizer's custom feature from scratch (`Issue #10`)
-     - Debugging multi-layer Serverpod protocol codegen + OAuth (`Issue #12` / `Issue #19`).
+     - Debugging multi-layer Firebase protocol codegen + OAuth (`Issue #12` / `Issue #19`).
    - Immediately after the architectural ticket merges, remind the user to **switch back down to Argon Low or Medium**!
 4. **Recommend `/compact` Every 2–3 Merged PRs**:
    - Because all state is persisted in `18-oct-diving-in-since-machine-setup-in25-minutes-successfully.md`, `18Oct2026_session_plan_and_status.md`, and GitHub Issue comments, remind the user to run `/compact` after every 2–3 PRs to avoid paying quadratic input token costs on long conversation history.

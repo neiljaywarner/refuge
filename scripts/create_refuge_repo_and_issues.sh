@@ -10,7 +10,7 @@ set -euo pipefail
 # ==============================================================================
 
 REPO="neiljaywarner/refuge"
-REPO_DIR="/Users/neil/belongonthespectrum/refuge"
+REPO_DIR="$HOME/belongonthespectrum/refuge"
 GH="/opt/homebrew/bin/gh"
 
 echo "==> Verifying GitHub CLI authentication (account: $("$GH" api user --jq .login))..."
@@ -149,11 +149,11 @@ cp -R /tmp/flutter_skills/skills/* .agents/skills/
   "### 🤖 LLM Execution Brief (Status: COMPLETED — Reference for All Future Agents)
 - **MCP Config Location**: \`.agents/mcp_config.json\`
 - **Installed Binaries**:
-  - \`/Users/neil/.pub-cache/bin/marionette_mcp\` (\`0.7.0\`)
-  - \`/Users/neil/.pub-cache/bin/patrol\` (\`4.8.0\`)
-  - \`/Users/neil/.pub-cache/bin/patrol_mcp\` (\`0.2.1\`)
+  - \`$HOME/.pub-cache/bin/marionette_mcp\` (\`0.7.0\`)
+  - \`$HOME/.pub-cache/bin/patrol\` (\`4.8.0\`)
+  - \`$HOME/.pub-cache/bin/patrol_mcp\` (\`0.2.1\`)
   - \`/opt/homebrew/bin/dart mcp-server --enable all\`
-  - \`/Users/neil/.maestro/bin/maestro\`
+  - \`$HOME/.maestro/bin/maestro\`
 - **Verification**: All 27 skills are committed under \`.agents/skills/\` and active in this workspace."
 
 "$GH" issue close "$LAST_ISSUE_NUM" --repo "$REPO" --comment "✅ Marionette MCP (0.7.0), Patrol CLI (4.8.0) + Patrol MCP (0.2.1), Dart/Flutter MCP Server, Maestro, and all 25 official Dart & Flutter skills are installed, verified, and committed to \`.agents/\` for mentees to reference!"
@@ -183,7 +183,7 @@ Instead of hardcoding community names, logos, or space lists inside UI widgets, 
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Flash (~10 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-2-whitelabel-brand-config -b feat/#2-whitelabel-brand-config
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-2-whitelabel-brand-config -b feat/#2-whitelabel-brand-config
   \`\`\`
 - **Files to Create / Edit**:
   - Create \`lib/src/core/branding/community_brand_config.dart\`
@@ -236,7 +236,7 @@ As we prepare to transition **Belong on the Spectrum** off their \$130/month Cir
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Medium (~25 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-3-circle-home-navigation -b feat/#3-circle-home-navigation
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-3-circle-home-navigation -b feat/#3-circle-home-navigation
   \`\`\`
 - **Files to Create / Edit**:
   - Create \`docs/adr/0005-bottom-navigation-bar-package-selection.md\`
@@ -276,7 +276,7 @@ When Belong members install the app on their iPhone, Android phone, Mac, or brow
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Flash (~12 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-4-belong-logo-and-icons -b feat/#4-belong-logo-and-icons
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-4-belong-logo-and-icons -b feat/#4-belong-logo-and-icons
   \`\`\`
 - **Steps**:
   1. Prepare \`assets/images/belong_logo.png\` and safe-zone padded \`assets/images/belong_icon_foreground.png\` (1024x1024).
@@ -315,7 +315,7 @@ By integrating **Firebase Remote Config** alongside **Firebase Analytics**:
 - **SECURITY MANDATE**: **NEVER commit \`firebase_options.dart\`, \`google-services.json\`, \`GoogleService-Info.plist\`, or raw API keys to Git.** Use an abstract \`RemoteConfigDataSource\` / \`AnalyticsDataSource\` with Riverpod providers and \`String.fromEnvironment\` so production reads Firebase when initialized and gracefully falls back to \`BelongBrandConfig\` defaults in tests/CI.
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-5-firebase-analytics-remote-config -b feat/#5-firebase-analytics-remote-config
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-5-firebase-analytics-remote-config -b feat/#5-firebase-analytics-remote-config
   \`\`\`
 - **Files to Create / Edit**:
   - \`lib/src/core/firebase/organizer_remote_config_service.dart\`
@@ -349,7 +349,7 @@ Most importantly, **Belong on the Spectrum's Circle.so subscription ends on Octo
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Flash (~12 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-6-non-technical-wiki-oct31 -b docs/#6-non-technical-wiki-oct31
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-6-non-technical-wiki-oct31 -b docs/#6-non-technical-wiki-oct31
   \`\`\`
 - **Files to Create / Edit / Delete**:
   - \`git rm docs/wiki/Hackathon-Judges-Portal.md\`
@@ -375,7 +375,7 @@ Two of the most loved spaces in Belong on the Spectrum are **\`Memes\`** and **\
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Flash (~12 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-7-search-and-media-spaces -b feat/#7-search-and-media-spaces
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-7-search-and-media-spaces -b feat/#7-search-and-media-spaces
   \`\`\`
 - **Files to Create / Edit**:
   - Create \`lib/src/features/search/presentation/community_search_view.dart\`
@@ -399,7 +399,7 @@ In the upper-right corner of the Belong app sits the member's **Profile Avatar**
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Flash (~15 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-8-member-profile-avatar -b feat/#8-member-profile-avatar
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-8-member-profile-avatar -b feat/#8-member-profile-avatar
   \`\`\`
 - **Files to Create / Edit**:
   - \`lib/src/features/profile/domain/member_profile.dart\`
@@ -423,7 +423,7 @@ Reserved ticket in \`v0.7.0\` for the specific workflow/feature requested by the
 - **Model Tier Recommendation**: Gemini 4 Argon Medium / High (~20 Agent Clock Minutes once specification is provided by Neil)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-9-organizer-request -b feat/#9-organizer-request
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-9-organizer-request -b feat/#9-organizer-request
   \`\`\`"
 
 # ------------------------------------------------------------------------------
@@ -444,7 +444,7 @@ To make sure Belong on the Spectrum is rock-solid for community members, we trac
 - **Model Tier Recommendation**: Gemini 4 Argon Low / Flash (~15 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-10-coverage-50-percent -b test/#10-coverage-50-percent
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-10-coverage-50-percent -b test/#10-coverage-50-percent
   \`\`\`
 - **Verification**:
   \`\`\`bash
@@ -464,13 +464,13 @@ Before launching \`1.0\`, community members need a simple, welcoming way to sign
 
 ## Acceptance Criteria
 - [ ] Clean **Welcome / Sign In to Belong** screen featuring the Belong logo and calm typography.
-- [ ] Frictionless email + display name sign-in persisted across sessions and passed to Serverpod post creation.
+- [ ] Frictionless email + display name sign-in persisted across sessions and attached to each post.
 - [ ] Sign-out button inside the upper-right Member Profile sheet." \
   "### 🤖 LLM Execution Brief (Argon Medium / High Ready)
 - **Model Tier Recommendation**: Gemini 4 Argon Medium / High (~20 Agent Clock Minutes)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-11-stage1-any-auth -b feat/#11-stage1-any-auth
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-11-stage1-any-auth -b feat/#11-stage1-any-auth
   \`\`\`
 - **Files to Create / Edit**:
   - \`lib/src/features/auth/domain/auth_session.dart\`
@@ -565,7 +565,7 @@ Before switching the whole Belong community over from Circle.so on October 31st,
   "### 🤖 LLM Execution Brief (Argon Low / Medium Ready)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-17-coverage-70-percent -b test/#17-coverage-70-percent
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-17-coverage-70-percent -b test/#17-coverage-70-percent
   \`\`\`"
 
 # ------------------------------------------------------------------------------
@@ -576,11 +576,11 @@ create_issue_with_llm_comment \
   "auth" \
   "v1.0.1 - Fast-Follow Notifications & Good Auth" \
   "## Why This Matters (Human Summary)
-Upgrades Stage 1 Alpha Authentication to support 1-tap **Sign in with Google** (and/or Appwrite/Serverpod OAuth) so members never have to remember a password." \
+Upgrades Stage 1 Alpha Authentication to support 1-tap **Sign in with Google** (and/or Appwrite OAuth) so members never have to remember a password." \
   "### 🤖 LLM Execution Brief (Argon High)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-18-stage2-google-auth -b feat/#18-stage2-google-auth
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-18-stage2-google-auth -b feat/#18-stage2-google-auth
   \`\`\`"
 
 # ------------------------------------------------------------------------------
@@ -595,7 +595,7 @@ Comprehensive **90% blended test coverage** across unit tests, \`bdd_widget_test
   "### 🤖 LLM Execution Brief (Argon Low / Medium Ready)
 - **Worktree Setup**:
   \`\`\`bash
-  git -C /Users/neil/belongonthespectrum/refuge worktree add /Users/neil/belongonthespectrum/.worktrees/issue-19-coverage-90-percent -b test/#19-coverage-90-percent
+  git -C $HOME/belongonthespectrum/refuge worktree add $HOME/belongonthespectrum/.worktrees/issue-19-coverage-90-percent -b test/#19-coverage-90-percent
   \`\`\`"
 
 echo "==> SUCCESS! Clean repository https://github.com/$REPO and all 19 Issues/Epics with LLM Execution Brief comments are live!"

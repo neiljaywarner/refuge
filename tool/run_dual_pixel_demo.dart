@@ -155,7 +155,7 @@ class DualPixelDemoRunner {
       );
       outSink.writeln('   - Screen recording: $recordVideo (${durationSeconds}s limit)');
       outSink.writeln('   - Step screenshots: $captureScreenshots');
-      outSink.writeln('   - Step 1: Right device composes reflection via Serverpod Cloud');
+      outSink.writeln('   - Step 1: Right device composes a reflection');
       outSink.writeln('   - Step 2: Left device observes incoming post & taps Praying reaction');
       outSink.writeln('   - Step 3: Left device replies to Right reflection');
       outSink.writeln('   - Step 4: Right device switches to Charcoal/Dark sensory theme');
@@ -246,9 +246,7 @@ class DualPixelDemoRunner {
     outSink.writeln('\n=== Step 1: Right device composes reflection ===');
     await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'tap', '524', '1266']);
     await Future<void>.delayed(const Duration(milliseconds: 1000));
-    final msg1 = formatInputText(
-      'From pixel on the right: Unhurried reflection via Serverpod Cloud!',
-    );
+    final msg1 = formatInputText('From pixel on the right: Unhurried reflection for the circle.');
     await executor.run(['adb', '-s', rightDev, 'shell', 'input', 'text', msg1]);
     await Future<void>.delayed(const Duration(milliseconds: 1000));
     await executor.run([

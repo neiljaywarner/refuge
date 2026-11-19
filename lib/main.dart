@@ -13,6 +13,7 @@ import 'src/core/config/app_flavor.dart';
 import 'src/core/firebase/community_analytics_service.dart';
 import 'src/core/firebase/firebase_initializer.dart';
 import 'src/core/observability/error_reporter_service.dart';
+import 'src/features/group_call/domain/group_call_analytics.dart';
 import 'src/features/reflections/data/post_repository_factory.dart';
 
 // Re-export domain models, repositories, themes, and presentation components
@@ -44,7 +45,6 @@ export 'src/features/profile/presentation/member_profile_sheet.dart';
 export 'src/features/reflections/data/local_post_repository.dart';
 export 'src/features/reflections/data/post_repository.dart';
 export 'src/features/reflections/data/post_repository_factory.dart';
-export 'src/features/reflections/data/serverpod_post_repository.dart';
 export 'src/features/reflections/domain/post.dart';
 export 'src/features/reflections/presentation/community_anchor_banner.dart';
 export 'src/features/reflections/presentation/quiet_digest_banner.dart';
@@ -102,6 +102,7 @@ Future<void> runWithFlavor(AppFlavor flavor) async {
   final analytics = CommunityAnalyticsService(flavor: flavor);
   await FcmMessagingService.ensureInitialized(analytics: analytics);
   final errorReporter = ErrorReporterService(flavor: flavor, analyticsService: analytics);
+  GroupCallTelemetry.bind(GroupCallTelemetry(analytics: analytics, errors: errorReporter));
 
   // 2. Global Flutter framework error hook
   FlutterError.onError = (FlutterErrorDetails details) {

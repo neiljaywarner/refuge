@@ -11,7 +11,7 @@
 
 Modern social platforms drive addictive behaviors through red badges, rapid-fire chat indicators, and algorithmic outrage. Communities centered around prayer, spiritual reflection, and mental recovery require a **digital sanctuary** — a quiet, unhurried space designed for intentional communion without cognitive overload.
 
-**Mission Statement**: To engineer a low-stimulation digital clubhouse that fosters meaningful spiritual fellowship, emotional safety, and peaceful reflection using modern pure-Dart and Serverpod technologies.
+**Mission Statement**: To engineer a low-stimulation digital clubhouse that fosters meaningful spiritual fellowship, emotional safety, and peaceful reflection using modern pure-Dart and Firebase technologies.
 
 ---
 
@@ -51,7 +51,7 @@ Modern social platforms drive addictive behaviors through red badges, rapid-fire
   - `[Comfort Only]`
   - `[Question]`
   - `[Resource]`
-- Publishing immediately injects the reflection into the chronological feed and broadcasts via Serverpod WebSocket stream.
+- Publishing immediately injects the reflection into the chronological feed and broadcasts via Firebase WebSocket stream.
 
 ### 3.3 Qualitative Care Affirmations
 - Replaces binary "Likes" with:
@@ -65,8 +65,8 @@ Modern social platforms drive addictive behaviors through red badges, rapid-fire
 - **Charcoal**: Nighttime low-contrast slate (`#1A1D20`).
 - **Contrast**: High contrast WCAG AAA black/yellow/white mode.
 
-### 3.5 Serverpod 4 Real-Time Synchronization
-- Serverpod WebSocket streaming endpoint (`streamPosts`) isolates message channels per space (`space_$spaceKey`).
+### 3.5 the retired backend Real-Time Synchronization
+- Firebase WebSocket streaming endpoint (`streamPosts`) isolates message channels per space (`space_$spaceKey`).
 - ORM entities defined via YAML (`post.spy.yaml`).
 - PostgreSQL persistence and Redis message queuing.
 - Local-first fallback when server is unreachable.
@@ -87,6 +87,6 @@ Modern social platforms drive addictive behaviors through red badges, rapid-fire
 | Metric | Target | Measurement |
 | :--- | :--- | :--- |
 | **Code Health** | 0 warnings, 100% tests passing | CI static analysis & `flutter test` |
-| **Stream Sync Latency** | < 250ms cross-device update | Serverpod WebSocket message dispatch |
+| **Stream Sync Latency** | < 250ms cross-device update | Firebase WebSocket message dispatch |
 | **User Perceived Calm** | > 90% positive feedback on sensory modes | In-app feedback & partner survey |
 | **Accessibility Compliance** | WCAG 2.1 AAA Contrast | Automated color ratio audits |

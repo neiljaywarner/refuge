@@ -20,8 +20,14 @@ name: Belong web feature voting
     timeout: 20000
     visibilityPercentage: 40
 - takeScreenshot: web_voting_before
-- tapOn:
-    id: "vote_planned-native-store-apps"
+# Same guard as feature_voting_firestore_e2e.yaml. A leftover local vote
+# already shows "Remove vote"; tapping the id again would clear it.
+- runFlow:
+    when:
+      visible: "Vote for Native iOS App Store and Google Play Apps"
+    commands:
+      - tapOn:
+          id: "vote_planned-native-store-apps"
 - extendedWaitUntil:
     visible: "Remove vote for Native iOS App Store and Google Play Apps"
     timeout: 20000
