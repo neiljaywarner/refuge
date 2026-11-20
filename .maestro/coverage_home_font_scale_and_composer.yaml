@@ -1,0 +1,38 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Home at a large font opens Spaces and the composer"
+tags:
+  - belong
+  - accessibility
+  - coverage
+---
+# Issue #956's drawer is not on main. Spaces is the home section that
+# stands in for it. Set the emulator font before this flow, then restore it:
+#   adb shell settings put system font_scale 2.0
+#   maestro test .maestro/coverage_home_font_scale_and_composer.yaml
+#   adb shell settings put system font_scale 1.0
+# The saved-account subflow reads BELONG_DEV_E2E_EMAIL and
+# MAESTRO_TEST_PASSWORD from the environment. Do not commit those values.
+
+- launchApp:
+    clearState: false
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+- extendedWaitUntil:
+    visible: ".*Vote & Feedback.*"
+    timeout: 45000
+- tapOn: "Spaces"
+- extendedWaitUntil:
+    visible: ".*LINKS.*"
+    timeout: 20000
+- assertVisible: ".*Community Guidelines.*"
+- tapOn: "Feed"
+- scrollUntilVisible:
+    element:
+      id: "reflection_composer"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "reflection_composer"
+- assertVisible: "Intent Tag:"
+- tapOn: "Collapse"
+- assertNotVisible: "Intent Tag:"

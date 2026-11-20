@@ -1,0 +1,21 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Signed-out launch stays on the sign-in wall"
+tags:
+  - belong
+  - auth
+  - coverage
+---
+# A cleared dev install has no session, so Home, the composer, and
+# "Skip for now" stay hidden. Skip for now is the first-visit card after
+# a real sign-in. The Patrol target pumps that card without a password:
+# integration_test/coverage_journeys_patrol_test.dart
+
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: ".*Sign in to Belong on the Spectrum.*"
+    timeout: 45000
+- assertVisible: ".*Sign in to Belong on the Spectrum.*"
+- assertNotVisible: "Skip for now"
+- assertNotVisible: "Vote & Feedback"
+- assertNotVisible: "Share an unhurried thought"
