@@ -238,6 +238,7 @@ void main() {
         initialComments: const [],
         isDevMode: false,
         customFirestore: firestore,
+        currentUid: () => 'uid-member',
       );
       final comment = await repo.addComment(
         Comment(
