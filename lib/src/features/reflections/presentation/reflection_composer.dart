@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../../core/presentation/async_action_button.dart';
 import '../../../core/widgets/calm_media_image.dart';
 import '../domain/post.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
@@ -56,6 +57,7 @@ class ReflectionComposer extends HookWidget {
     final priorTone = useState<String?>(null);
     final attachedMeme = useState<CalmMeme?>(null);
     final isExpanded = useState(isModal || isImagePost);
+    final isPublishing = useState(false);
     final contentController = useTextEditingController();
     final specialInterestController = useTextEditingController();
     final imageUrlController = useTextEditingController();
@@ -89,6 +91,7 @@ class ReflectionComposer extends HookWidget {
     }
 
     Future<void> handlePublish() async {
+      if (isPublishing.value) return;
       var text = contentController.text.trim();
       final effectiveImageUrl = customImageUrl.value.isNotEmpty
           ? customImageUrl.value
@@ -123,51 +126,58 @@ class ReflectionComposer extends HookWidget {
           ? specialInterestController.text.trim()
           : (selectedTone.value.contains('Meme') ? 'Faith & Neurodiversity' : null);
 
-      final status = await onSubmit(
-        content: text,
-        toneTag: selectedTone.value,
-        specialInterestTag: specialInterest,
-        imageUrl: effectiveImageUrl,
-      );
-      if (!context.mounted) return;
-
-      if (status == PostPublishStatus.failed) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            key: Key('reflection_publish_failed_snackbar'),
-            content: Text(
-              'This reflection was not saved. Your words are still here.',
-              style: TextStyle(fontSize: 12),
-            ),
-            duration: Duration(seconds: 4),
-          ),
+      isPublishing.value = true;
+      try {
+        final status = await onSubmit(
+          content: text,
+          toneTag: selectedTone.value,
+          specialInterestTag: specialInterest,
+          imageUrl: effectiveImageUrl,
         );
-        return;
-      }
+        if (!context.mounted) return;
 
-      contentController.clear();
-      specialInterestController.clear();
-      imageUrlController.clear();
-      altTextController.clear();
-      attachedMeme.value = null;
-
-      if (status == PostPublishStatus.pending) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            key: Key('reflection_publish_pending_snackbar'),
-            content: Text(
-              'Saved on this device. It will be shared when the connection returns.',
-              style: TextStyle(fontSize: 12),
+        if (status == PostPublishStatus.failed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              key: Key('reflection_publish_failed_snackbar'),
+              content: Text(
+                'This reflection was not saved. Your words are still here.',
+                style: TextStyle(fontSize: 12),
+              ),
+              duration: Duration(seconds: 4),
             ),
-            duration: Duration(seconds: 4),
-          ),
-        );
-      }
+          );
+          return;
+        }
 
-      if (isModal) {
-        Navigator.of(context).maybePop();
-      } else {
-        isExpanded.value = false;
+        contentController.clear();
+        specialInterestController.clear();
+        imageUrlController.clear();
+        altTextController.clear();
+        attachedMeme.value = null;
+
+        if (status == PostPublishStatus.pending) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              key: Key('reflection_publish_pending_snackbar'),
+              content: Text(
+                'Saved on this device. It will be shared when the connection returns.',
+                style: TextStyle(fontSize: 12),
+              ),
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+
+        if (isModal) {
+          Navigator.of(context).maybePop();
+        } else {
+          isExpanded.value = false;
+        }
+      } finally {
+        if (context.mounted) {
+          isPublishing.value = false;
+        }
       }
     }
 
@@ -554,8 +564,11 @@ class ReflectionComposer extends HookWidget {
                     icon: const Icon(Icons.unfold_less_rounded, size: 14),
                     label: const Text('Collapse', style: TextStyle(fontSize: 11)),
                   ),
-                ElevatedButton.icon(
+                AsyncActionButton(
                   key: const Key('publish_reflection_button'),
+                  variant: AsyncButtonVariant.elevated,
+                  busyLabel: 'Publishing',
+                  isBusy: isPublishing.value,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: isContrast ? Colors.black : Colors.white,
@@ -567,7 +580,7 @@ class ReflectionComposer extends HookWidget {
                     isImagePost ? Icons.photo_library_outlined : Icons.send_rounded,
                     size: 14,
                   ),
-                  label: Text(
+                  child: Text(
                     isImagePost ? 'Publish Image Post' : 'Publish Reflection',
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
