@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/async_action_button.dart';
 import '../data/stream_guest_token_client.dart';
 import '../data/stream_token_client.dart';
 import '../domain/group_call_room.dart';
@@ -84,6 +85,7 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
   }
 
   Future<void> _join() async {
+    if (_busy) return;
     final clean = sanitizeGuestDisplayName(_name.text);
     if (clean == null) {
       setState(() {
@@ -184,10 +186,12 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
               onSubmitted: (_) => _join(),
             ),
             const SizedBox(height: 20),
-            FilledButton(
+            AsyncActionButton(
               key: const Key('group_call_guest_join_button'),
+              busyLabel: 'Joining call',
+              isBusy: _busy,
               onPressed: _busy ? null : _join,
-              child: Text(_busy ? 'Joining…' : 'Join call'),
+              child: const Text('Join call'),
             ),
             if (_message != null) ...[
               const SizedBox(height: 16),
