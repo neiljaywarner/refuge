@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/community_analytics_service.dart';
+import '../../../core/presentation/async_action_button.dart';
 import '../../../core/presentation/unbroken_body_text.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
@@ -189,8 +190,10 @@ class ReflectionCard extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      IconButton(
+                      AsyncActionButton(
                         key: Key('save_post_button_${post.id}'),
+                        variant: AsyncButtonVariant.icon,
+                        busyLabel: post.isSaved ? 'Removing from Saved' : 'Saving for later',
                         style: IconButton.styleFrom(
                           minimumSize: const Size(48, 48),
                           tapTargetSize: MaterialTapTargetSize.padded,

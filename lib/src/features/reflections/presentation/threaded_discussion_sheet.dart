@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../core/presentation/async_action_button.dart';
 import '../../../core/presentation/system_insets.dart';
 import '../../../core/presentation/unbroken_body_text.dart';
 import '../../admin/data/admin_banning_repository.dart';
@@ -361,9 +362,13 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          IconButton.filled(
+                          // #977: AsyncActionButton ignores repeat taps and shows a
+                          // spinner while the reply is saving.
+                          AsyncActionButton(
                             key: const Key('submit_comment_button'),
+                            variant: AsyncButtonVariant.filledIcon,
                             icon: const Icon(Icons.send, size: 18),
+                            busyLabel: 'Sending reply',
                             tooltip: 'Submit reply',
                             onPressed: canSubmit
                                 ? () async {
@@ -373,11 +378,12 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                     final author = currentProfile.displayName.isNotEmpty
                                         ? currentProfile.displayName
                                         : 'Fellowship Member';
+                                    final replyTarget = replyingTo.value;
 
                                     final newComment = Comment(
                                       id: 'c_${DateTime.now().millisecondsSinceEpoch}',
                                       postId: post.id,
-                                      parentCommentId: replyingTo.value?.id,
+                                      parentCommentId: replyTarget?.id,
                                       authorName: author,
                                       content: text,
                                       toneTag: selectedTone.value == 'None'
@@ -386,18 +392,30 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                       timestamp: DateTime.now(),
                                     );
 
-                                    final created = await createContributionUnlessBanned(
-                                      isBanned: ref.read(isCurrentMemberBannedProvider),
-                                      create: () async {
-                                        await ref
-                                            .read(commentRepositoryProvider)
-                                            .addComment(newComment);
-                                      },
-                                    );
-                                    if (!created) return;
-
+                                    // Clear right away so the reply doesn't look unsent
+                                    // while the network write is still in flight.
                                     textController.clear();
                                     replyingTo.value = null;
+
+                                    try {
+                                      final created = await createContributionUnlessBanned(
+                                        isBanned: ref.read(isCurrentMemberBannedProvider),
+                                        create: () async {
+                                          await ref
+                                              .read(commentRepositoryProvider)
+                                              .addComment(newComment);
+                                        },
+                                      );
+                                      if (!created && context.mounted) {
+                                        textController.text = text;
+                                        replyingTo.value = replyTarget;
+                                      }
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        textController.text = text;
+                                        replyingTo.value = replyTarget;
+                                      }
+                                    }
                                   }
                                 : null,
                           ),
