@@ -207,3 +207,5 @@ test/features/feedback/local_feedback_receipt_test.dart
 test/features/feedback/resilient_feature_voting_test.dart
 test/features/profile/profile_storage_io_isolation_test.dart
 test/features/reflections/firestore_post_repository_fallback_test.dart
+# Large-font layout helper coverage
+test/features/feedback/screenshot_frame_test.dart
