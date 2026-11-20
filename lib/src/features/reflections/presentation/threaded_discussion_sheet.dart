@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -410,10 +411,20 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                         textController.text = text;
                                         replyingTo.value = replyTarget;
                                       }
-                                    } catch (_) {
+                                    } catch (error) {
                                       if (context.mounted) {
                                         textController.text = text;
                                         replyingTo.value = replyTarget;
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            key: const Key('comment_send_failed_snackbar'),
+                                            content: Text(
+                                              commentSendFailedMessage(error),
+                                              style: const TextStyle(fontSize: 12),
+                                            ),
+                                            duration: const Duration(seconds: 4),
+                                          ),
+                                        );
                                       }
                                     }
                                   }
@@ -657,4 +668,13 @@ class _CommentTile extends StatelessWidget {
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     return '${diff.inDays}d ago';
   }
+}
+
+/// Visible send failure for #978. Includes a Firestore error code when one is
+/// present so a QA pass can record the real denial without opening a console.
+String commentSendFailedMessage(Object error) {
+  if (error is FirebaseException && error.code.isNotEmpty) {
+    return 'This reply was not saved (${error.code}). Your words are still here.';
+  }
+  return 'This reply was not saved. Your words are still here.';
 }

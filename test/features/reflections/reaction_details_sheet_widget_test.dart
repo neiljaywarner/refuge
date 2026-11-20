@@ -214,6 +214,7 @@ void main() {
         initialComments: const [],
         isDevMode: false,
         customFirestore: firestore,
+        currentUid: () => 'uid-member',
       );
       final created = await repo.addComment(
         Comment(
