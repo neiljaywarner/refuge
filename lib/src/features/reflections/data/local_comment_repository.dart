@@ -198,20 +198,32 @@ class LocalCommentRepository implements CommentRepository {
 
   @override
   Future<Comment> addComment(Comment comment) async {
+    final fs = firestore;
+    final authorId = _authorUid;
+    // Published rules require createsAsSelf(): authorId == request.auth.uid.
+    // A missing uid would be denied, so fail visibly instead of writing a
+    // document that cannot pass (#978).
+    if (fs != null && (authorId == null || authorId.isEmpty)) {
+      throw StateError('Comment was not saved: the signed-in member id is missing.');
+    }
+
     _store.add(comment);
     _controller.add(List.unmodifiable(_store));
 
-    // Dual-redundancy: dispatch to Firebase Cloud Firestore
-    final fs = firestore;
     if (fs != null) {
       try {
         await fs
             .collection(collectionName)
             .doc(comment.id)
-            .set(firestoreCommentData(comment, authorId: _authorUid))
+            .set(firestoreCommentData(comment, authorId: authorId))
             .timeout(_firestoreTimeout);
-      } catch (_) {
-        // Silent edge fallback ensures local UX never blocks
+      } catch (error, stack) {
+        _store.removeWhere((c) => c.id == comment.id);
+        if (!_controller.isClosed) {
+          _controller.add(List.unmodifiable(_store));
+        }
+        talker.handle(error, stack, 'Firestore comment write failed');
+        rethrow;
       }
     }
 
