@@ -180,6 +180,12 @@ test/features/accessibility/large_text_bdd_test.dart
 test/core/config/no_serverpod_backend_test.dart
 test/tool/no_serverpod_references_test.dart
 
+# Call and guest coverage
+test/features/group_call/group_call_audio_checks_test.dart
+test/features/group_call/group_call_mic_bdd_test.dart
+test/features/group_call/preview_track_mute_test.dart
+test/features/group_call/stream_guest_seat_test.dart
+
 # Repository and service coverage
 test/core/appwrite/client_session_audit_retention_test.dart
 test/core/config/other_site_info_button_test.dart
