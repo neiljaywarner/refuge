@@ -186,5 +186,11 @@ test/features/group_call/group_call_mic_bdd_test.dart
 test/features/group_call/preview_track_mute_test.dart
 test/features/group_call/stream_guest_seat_test.dart
 
+# Auth redirect and guest skip coverage
+test/features/auth/auth_access_policy_test.dart
+test/features/auth/auth_gate_guest_and_skip_test.dart
+test/features/auth/auth_help_and_about_sheet_test.dart
+test/features/auth/sign_in_recovery_panel_test.dart
+
 # Large-font layout helper coverage
 test/features/feedback/screenshot_frame_test.dart
