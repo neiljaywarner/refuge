@@ -24,12 +24,22 @@ class SimpleSignInScreen extends ConsumerWidget {
     final title = tag == null
         ? 'Sign in to Belong on the Spectrum'
         : '[$tag] Sign in to Belong on the Spectrum PREVIEW';
+    // Flutter web drops plain Text inside the FirebaseUI scroll view, so the
+    // sentence is on screen and missing from the accessibility tree. An
+    // explicit label is what Maestro and screen readers can see.
     final titleText = Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        key: const Key('sign_in_title'),
-        style: Theme.of(context).textTheme.titleMedium,
+      child: Semantics(
+        identifier: 'sign_in_title',
+        label: title,
+        header: true,
+        container: true,
+        excludeSemantics: true,
+        child: Text(
+          title,
+          key: const Key('sign_in_title'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
       ),
     );
 
@@ -51,7 +61,9 @@ class SimpleSignInScreen extends ConsumerWidget {
                         key: Key('sign_in_unavailable'),
                         textAlign: TextAlign.center,
                       ),
-                      SignInRecoveryPanel(canUseAppWhileWaiting: !flavor.isProduction),
+                      SignInRecoveryPanel(
+                        canUseAppWhileWaiting: !flavor.isProduction,
+                      ),
                     ],
                   ),
                 ),

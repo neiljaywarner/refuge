@@ -116,17 +116,32 @@ void main() {
     });
 
     testWidgets('prod sign-in wall has no DEV prefix', (tester) async {
-      final authRepo = InMemoryAuthRepository();
-      await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.prod));
-      await tester.pumpAndSettle();
+      final semantics = tester.ensureSemantics();
+      try {
+        final authRepo = InMemoryAuthRepository();
+        await tester.pumpWidget(_gateApp(authRepo: authRepo, flavor: AppFlavor.prod));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Sign in to Belong on the Spectrum'), findsOneWidget);
-      expect(find.text('Forgot your password?'), findsOneWidget);
-      expect(
-        find.textContaining('The next screen lets you send the verification email again.'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('You can use the app while you wait'), findsNothing);
+        expect(find.text('Sign in to Belong on the Spectrum'), findsOneWidget);
+        expect(find.bySemanticsIdentifier('sign_in_title'), findsOneWidget);
+        expect(
+          tester.getSemantics(find.byKey(const Key('sign_in_title'))).label,
+          'Sign in to Belong on the Spectrum',
+        );
+        expect(find.text('Forgot your password?'), findsOneWidget);
+        expect(
+          tester.getSemantics(find.byKey(const Key('sign_in_forgot_password_help'))).label,
+          'We email you a link to choose a new password.',
+        );
+        expect(find.bySemanticsIdentifier('sign_in_resend_verification_help'), findsOneWidget);
+        expect(
+          find.textContaining('The next screen lets you send the verification email again.'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('You can use the app while you wait'), findsNothing);
+      } finally {
+        semantics.dispose();
+      }
     });
 
     testWidgets('prod unverified shows verify wall', (tester) async {

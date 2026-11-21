@@ -35,18 +35,34 @@ class SignInRecoveryPanel extends StatelessWidget {
             onPressed: onForgotPassword,
             child: const Text(VerifyEmailCopy.forgotPasswordButton),
           ),
-          Text(
-            VerifyEmailCopy.forgotPasswordHelp,
-            key: const Key('sign_in_forgot_password_help'),
-            textAlign: TextAlign.center,
-            style: style,
+          Semantics(
+            identifier: 'sign_in_forgot_password_help',
+            label: VerifyEmailCopy.forgotPasswordHelp,
+            container: true,
+            excludeSemantics: true,
+            child: Text(
+              VerifyEmailCopy.forgotPasswordHelp,
+              key: const Key('sign_in_forgot_password_help'),
+              textAlign: TextAlign.center,
+              style: style,
+            ),
           ),
           const SizedBox(height: 12),
-          Text(
-            VerifyEmailCopy.signInVerifyHelp(canUseAppWhileWaiting: canUseAppWhileWaiting),
-            key: const Key('sign_in_resend_verification_help'),
-            textAlign: TextAlign.center,
-            style: style,
+          Semantics(
+            identifier: 'sign_in_resend_verification_help',
+            label: VerifyEmailCopy.signInVerifyHelp(
+              canUseAppWhileWaiting: canUseAppWhileWaiting,
+            ),
+            container: true,
+            excludeSemantics: true,
+            child: Text(
+              VerifyEmailCopy.signInVerifyHelp(
+                canUseAppWhileWaiting: canUseAppWhileWaiting,
+              ),
+              key: const Key('sign_in_resend_verification_help'),
+              textAlign: TextAlign.center,
+              style: style,
+            ),
           ),
         ],
       ),
