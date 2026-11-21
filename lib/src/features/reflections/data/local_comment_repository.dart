@@ -10,6 +10,19 @@ import '../domain/comment.dart';
 import '../domain/reaction_member.dart';
 import 'comment_repository.dart';
 
+/// Final result of a Firestore comment write that outlived the client timeout.
+///
+/// The discussion sheet listens so a late rejection can restore the reply
+/// and a late success can clear the pending notice (#981).
+class CommentWriteSettlement {
+  const CommentWriteSettlement({required this.commentId, this.error});
+
+  final String commentId;
+  final Object? error;
+
+  bool get succeeded => error == null;
+}
+
 /// In-memory, broadcast stream implementation of [CommentRepository] with
 /// Firebase Cloud Firestore dual-redundancy and dev-mode isolation.
 ///
@@ -24,6 +37,8 @@ class LocalCommentRepository implements CommentRepository {
 
   final List<Comment> _store = [];
   final StreamController<List<Comment>> _controller = StreamController<List<Comment>>.broadcast();
+  final StreamController<CommentWriteSettlement> _writeSettlements =
+      StreamController<CommentWriteSettlement>.broadcast();
   final FirebaseFirestore? customFirestore;
 
   /// Whether this repository uses dev seed data and the `comments_dev` collection.
@@ -35,6 +50,9 @@ class LocalCommentRepository implements CommentRepository {
   /// How long to wait for a Firestore write acknowledgement before treating
   /// the send as still in flight. The underlying `set` is not cancelled.
   final Duration firestoreTimeout;
+
+  /// Success or rejection of a write that already timed out on the client.
+  Stream<CommentWriteSettlement> get commentWriteSettlements => _writeSettlements.stream;
 
   /// Firestore collection for comments. Dev builds never touch prod threads.
   String get collectionName => isDevMode ? 'comments_dev' : 'comments';
@@ -222,14 +240,17 @@ class LocalCommentRepository implements CommentRepository {
         await write.timeout(firestoreTimeout);
       } on TimeoutException {
         // The client bound expired, but set() is still running. Keep the
-        // optimistic comment and let a late success stand. Roll back only
-        // if Firestore later returns a definite error (#978 / #981).
+        // optimistic comment and tell the sheet how the write actually ends.
+        // Roll back only if Firestore later returns a definite error (#978).
         unawaited(
           write.then<void>(
-            (_) {},
+            (_) {
+              _emitWriteSettlement(CommentWriteSettlement(commentId: comment.id));
+            },
             onError: (Object error, StackTrace stack) {
               if (error is! FirebaseException) return;
               _removeLocalComment(comment.id);
+              _emitWriteSettlement(CommentWriteSettlement(commentId: comment.id, error: error));
               talker.handle(error, stack, 'Firestore comment write failed after timeout');
             },
           ),
@@ -252,6 +273,11 @@ class LocalCommentRepository implements CommentRepository {
           .collection(collectionName)
           .doc(comment.id)
           .set(firestoreCommentData(comment, authorId: authorId));
+
+  void _emitWriteSettlement(CommentWriteSettlement settlement) {
+    if (_writeSettlements.isClosed) return;
+    _writeSettlements.add(settlement);
+  }
 
   void _removeLocalComment(String id) {
     _store.removeWhere((c) => c.id == id);

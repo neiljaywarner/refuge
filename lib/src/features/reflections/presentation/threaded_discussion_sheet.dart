@@ -14,6 +14,7 @@ import '../../admin/presentation/account_paused_banner.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/comment_repository.dart';
+import '../data/local_comment_repository.dart';
 import '../domain/comment.dart';
 import '../domain/post.dart';
 import 'reaction_details_sheet.dart';
@@ -52,7 +53,37 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     useListenable(textController);
     final sendNotice = useState<String?>(null);
     final sendNoticePending = useState(false);
+    final sendAttempt = useRef(0);
+    final pendingSend = useRef<_PendingCommentSend?>(null);
     final isPaused = ref.watch(isCurrentMemberBannedProvider);
+
+    useEffect(() {
+      final repository = ref.read(commentRepositoryProvider);
+      if (repository is! LocalCommentRepository) return null;
+      final subscription = repository.commentWriteSettlements.listen((settlement) {
+        final current = pendingSend.value;
+        if (current == null || current.commentId != settlement.commentId) return;
+        if (sendAttempt.value != current.attempt) return;
+        pendingSend.value = null;
+        if (!context.mounted) return;
+        if (settlement.succeeded) {
+          sendNoticePending.value = false;
+          sendNotice.value = null;
+          return;
+        }
+        restoreFailedCommentComposer(
+          textController: textController,
+          replyingTo: replyingTo,
+          text: current.text,
+          replyTarget: current.replyTarget,
+        );
+        sendNoticePending.value = false;
+        sendNotice.value = commentSendFailedMessage(settlement.error!);
+      });
+      return () {
+        subscription.cancel();
+      };
+    }, const []);
     final canSubmit = !isPaused && textController.text.trim().isNotEmpty;
 
     final theme = Theme.of(context);
@@ -412,6 +443,9 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                         final text = textController.text.trim();
                                         if (text.isEmpty) return;
 
+                                        final attempt = ++sendAttempt.value;
+                                        pendingSend.value = null;
+
                                         final author = currentProfile.displayName.isNotEmpty
                                             ? currentProfile.displayName
                                             : 'Fellowship Member';
@@ -454,20 +488,27 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                                             );
                                           }
                                         } catch (error) {
-                                          if (context.mounted) {
-                                            if (error is TimeoutException) {
-                                              sendNoticePending.value = true;
-                                              sendNotice.value = commentSendPendingMessage;
-                                            } else {
-                                              restoreFailedCommentComposer(
-                                                textController: textController,
-                                                replyingTo: replyingTo,
-                                                text: text,
-                                                replyTarget: replyTarget,
-                                              );
-                                              sendNoticePending.value = false;
-                                              sendNotice.value = commentSendFailedMessage(error);
-                                            }
+                                          if (!context.mounted || sendAttempt.value != attempt) {
+                                            return;
+                                          }
+                                          if (error is TimeoutException) {
+                                            pendingSend.value = _PendingCommentSend(
+                                              commentId: newComment.id,
+                                              text: text,
+                                              replyTarget: replyTarget,
+                                              attempt: attempt,
+                                            );
+                                            sendNoticePending.value = true;
+                                            sendNotice.value = commentSendPendingMessage;
+                                          } else {
+                                            restoreFailedCommentComposer(
+                                              textController: textController,
+                                              replyingTo: replyingTo,
+                                              text: text,
+                                              replyTarget: replyTarget,
+                                            );
+                                            sendNoticePending.value = false;
+                                            sendNotice.value = commentSendFailedMessage(error);
                                           }
                                         }
                                       }
@@ -726,19 +767,35 @@ String commentSendFailedMessage(Object error) {
 
 const commentSendPendingMessage = 'Still saving this reply.';
 
-/// Put a failed reply back in the composer only when the member has not
-/// already started a new draft or chosen a different reply target (#981).
+/// Put a failed reply back in the composer only when neither the text nor
+/// the reply target has changed since the send (#981).
+///
+/// The two fields are restored together. If either one changed, both stay
+/// as they are, so a newer draft is never paired with the old reply target.
 void restoreFailedCommentComposer({
   required TextEditingController textController,
   required ValueNotifier<Comment?> replyingTo,
   required String text,
   required Comment? replyTarget,
 }) {
-  final current = textController.text;
-  if (current.isEmpty || current == text) {
-    textController.text = text;
-  }
-  if (replyingTo.value == null) {
-    replyingTo.value = replyTarget;
-  }
+  final textUnchanged = textController.text.isEmpty || textController.text == text;
+  final target = replyingTo.value;
+  final targetUnchanged = target == null || target == replyTarget;
+  if (!textUnchanged || !targetUnchanged) return;
+  textController.text = text;
+  replyingTo.value = replyTarget;
+}
+
+class _PendingCommentSend {
+  const _PendingCommentSend({
+    required this.commentId,
+    required this.text,
+    required this.replyTarget,
+    required this.attempt,
+  });
+
+  final String commentId;
+  final String text;
+  final Comment? replyTarget;
+  final int attempt;
 }
