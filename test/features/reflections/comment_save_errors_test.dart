@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // #978: a failed Firestore comment write must be visible and must not
 // look like a successful save.
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,6 +38,44 @@ class _FailingCommentRepository extends LocalCommentRepository {
 
   @override
   Future<Comment> addComment(Comment comment) async {
+    throw _permissionDenied();
+  }
+}
+
+class _HangingWriteRepo extends LocalCommentRepository {
+  _HangingWriteRepo()
+    : super(
+        isDevMode: false,
+        customFirestore: FakeFirebaseFirestore(),
+        currentUid: () => 'uid-ana',
+        firestoreTimeout: const Duration(milliseconds: 20),
+      );
+
+  final Completer<void> hang = Completer<void>();
+
+  @override
+  Future<void> persistCommentToFirestore(FirebaseFirestore fs, Comment comment, String? authorId) =>
+      hang.future;
+}
+
+class _TimeoutCommentRepository extends LocalCommentRepository {
+  _TimeoutCommentRepository() : super(isDevMode: false);
+
+  @override
+  Future<Comment> addComment(Comment comment) async {
+    await super.addComment(comment);
+    throw TimeoutException('Firestore write timed out');
+  }
+}
+
+class _SlowFailingCommentRepository extends LocalCommentRepository {
+  _SlowFailingCommentRepository() : super(isDevMode: false);
+
+  final Completer<void> gate = Completer<void>();
+
+  @override
+  Future<Comment> addComment(Comment comment) async {
+    await gate.future;
     throw _permissionDenied();
   }
 }
@@ -80,17 +120,80 @@ void main() {
       expect(await repo.getComments(postId: 'p1'), isEmpty);
     });
 
-    test('fails visibly when the signed-in uid is missing so createsAsSelf would deny the write', () async {
-      final fs = FakeFirebaseFirestore();
-      final repo = LocalCommentRepository(
-        isDevMode: false,
-        customFirestore: fs,
-        currentUid: () => null,
+    test(
+      'fails visibly when the signed-in uid is missing so createsAsSelf would deny the write',
+      () async {
+        final fs = FakeFirebaseFirestore();
+        final repo = LocalCommentRepository(
+          isDevMode: false,
+          customFirestore: fs,
+          currentUid: () => null,
+        );
+
+        await expectLater(repo.addComment(_comment('c-no-uid')), throwsA(isA<StateError>()));
+        expect((await fs.collection('comments').doc('c-no-uid').get()).exists, isFalse);
+        expect(await repo.getComments(postId: 'p1'), isEmpty);
+      },
+    );
+
+    test('a write timeout keeps the local comment so a late success can stand', () async {
+      final repo = _HangingWriteRepo();
+
+      await expectLater(repo.addComment(_comment('c-slow')), throwsA(isA<TimeoutException>()));
+      expect((await repo.getComments(postId: 'p1')).map((c) => c.id), ['c-slow']);
+
+      repo.hang.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect((await repo.getComments(postId: 'p1')).map((c) => c.id), ['c-slow']);
+    });
+
+    test('a write timeout rolls back later if Firestore then rejects the write', () async {
+      final repo = _HangingWriteRepo();
+
+      await expectLater(repo.addComment(_comment('c-late-fail')), throwsA(isA<TimeoutException>()));
+      expect(await repo.getComments(postId: 'p1'), isNotEmpty);
+
+      repo.hang.completeError(_permissionDenied());
+      await Future<void>.delayed(Duration.zero);
+      expect(await repo.getComments(postId: 'p1'), isEmpty);
+    });
+  });
+
+  group('restoreFailedCommentComposer (#981)', () {
+    test('restores the failed reply when the composer is still empty', () {
+      final controller = TextEditingController();
+      final replyingTo = ValueNotifier<Comment?>(null);
+      final target = _comment('c-target');
+
+      restoreFailedCommentComposer(
+        textController: controller,
+        replyingTo: replyingTo,
+        text: _reply,
+        replyTarget: target,
       );
 
-      await expectLater(repo.addComment(_comment('c-no-uid')), throwsA(isA<StateError>()));
-      expect((await fs.collection('comments').doc('c-no-uid').get()).exists, isFalse);
-      expect(await repo.getComments(postId: 'p1'), isEmpty);
+      expect(controller.text, _reply);
+      expect(replyingTo.value, target);
+      controller.dispose();
+      replyingTo.dispose();
+    });
+
+    test('does not overwrite a newer draft or reply target', () {
+      final controller = TextEditingController(text: 'Checking in again tomorrow.');
+      final newerTarget = _comment('c-newer');
+      final replyingTo = ValueNotifier<Comment?>(newerTarget);
+
+      restoreFailedCommentComposer(
+        textController: controller,
+        replyingTo: replyingTo,
+        text: _reply,
+        replyTarget: _comment('c-target'),
+      );
+
+      expect(controller.text, 'Checking in again tomorrow.');
+      expect(replyingTo.value, newerTarget);
+      controller.dispose();
+      replyingTo.dispose();
     });
   });
 
@@ -110,20 +213,55 @@ void main() {
     });
   });
 
-  patrolWidgetTest('A failed send keeps the reply text, shows an error, and does not leave the comment in the thread', (
+  patrolWidgetTest(
+    'A failed send keeps the reply text, shows an error, and does not leave the comment in the thread',
+    ($) async {
+      $.tester.view.devicePixelRatio = 1.0;
+      $.tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(() {
+        $.tester.view.resetPhysicalSize();
+        $.tester.view.resetDevicePixelRatio();
+      });
+
+      await $.pumpWidget(
+        ProviderScope(
+          overrides: [
+            commentRepositoryProvider.overrideWithValue(_FailingCommentRepository()),
+            memberProfileProvider.overrideWith(_FakeProfile.new),
+          ],
+          child: MaterialApp(
+            home: Scaffold(body: ThreadedDiscussionSheet(post: _post)),
+          ),
+        ),
+      );
+      await $.pumpAndSettle();
+
+      await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
+      await $.pump();
+      await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
+      // Do not pumpAndSettle: the snackbar lasts 4 seconds.
+      await $.pump();
+      await $.pump(const Duration(milliseconds: 100));
+
+      final field = $.tester.widget<TextField>(find.byKey(const Key('comment_input_field')));
+      expect(field.controller!.text, _reply);
+      expect(find.byKey(const Key('comment_send_failed_snackbar')), findsOneWidget);
+      expect(
+        find.text('This reply was not saved (permission-denied). Your words are still here.'),
+        findsOneWidget,
+      );
+      expect(find.descendant(of: find.byType(ListView), matching: find.text(_reply)), findsNothing);
+    },
+  );
+
+  patrolWidgetTest('A timed-out send keeps the reply in the thread and does not restore the text', (
     $,
   ) async {
-    $.tester.view.devicePixelRatio = 1.0;
-    $.tester.view.physicalSize = const Size(1200, 2400);
-    addTearDown(() {
-      $.tester.view.resetPhysicalSize();
-      $.tester.view.resetDevicePixelRatio();
-    });
-
+    await _setSheetSurface($);
     await $.pumpWidget(
       ProviderScope(
         overrides: [
-          commentRepositoryProvider.overrideWithValue(_FailingCommentRepository()),
+          commentRepositoryProvider.overrideWithValue(_TimeoutCommentRepository()),
           memberProfileProvider.overrideWith(_FakeProfile.new),
         ],
         child: MaterialApp(
@@ -136,20 +274,101 @@ void main() {
     await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
     await $.pump();
     await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
-    // Do not pumpAndSettle: the snackbar lasts 4 seconds.
     await $.pump();
     await $.pump(const Duration(milliseconds: 100));
 
     final field = $.tester.widget<TextField>(find.byKey(const Key('comment_input_field')));
-    expect(field.controller!.text, _reply);
+    expect(field.controller!.text, isEmpty);
+    expect(find.byKey(const Key('comment_send_pending_snackbar')), findsOneWidget);
+    expect(find.text(commentSendPendingMessage), findsOneWidget);
+    expect(find.byKey(const Key('comment_send_failed_snackbar')), findsNothing);
+    expect(find.descendant(of: find.byType(ListView), matching: find.text(_reply)), findsOneWidget);
+  });
+
+  patrolWidgetTest('A failed send does not overwrite a newer draft typed while saving', ($) async {
+    await _setSheetSurface($);
+    const draftB = 'Checking in again tomorrow.';
+    final repo = _SlowFailingCommentRepository();
+    await $.pumpWidget(
+      ProviderScope(
+        overrides: [
+          commentRepositoryProvider.overrideWithValue(repo),
+          memberProfileProvider.overrideWith(_FakeProfile.new),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: ThreadedDiscussionSheet(post: _post)),
+        ),
+      ),
+    );
+    await $.pumpAndSettle();
+
+    await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
+    await $.pump();
+    await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
+    await $.pump();
+
+    await $.tester.enterText(find.byKey(const Key('comment_input_field')), draftB);
+    await $.pump();
+    repo.gate.complete();
+    await $.pump();
+    await $.pump(const Duration(milliseconds: 100));
+
+    final field = $.tester.widget<TextField>(find.byKey(const Key('comment_input_field')));
+    expect(field.controller!.text, draftB);
     expect(find.byKey(const Key('comment_send_failed_snackbar')), findsOneWidget);
+    expect(find.text(_reply), findsNothing);
+  });
+
+  patrolWidgetTest('A failed send shows the error inside the discussion sheet', ($) async {
+    await _setSheetSurface($);
+    await $.pumpWidget(
+      ProviderScope(
+        overrides: [
+          commentRepositoryProvider.overrideWithValue(_FailingCommentRepository()),
+          memberProfileProvider.overrideWith(_FakeProfile.new),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                key: const Key('open_discussion_sheet'),
+                onPressed: () => ThreadedDiscussionSheet.show(context, post: _post),
+                child: const Text('Open discussion'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await $.pumpAndSettle();
+    await $.tester.tap(find.byKey(const Key('open_discussion_sheet')));
+    await $.pumpAndSettle();
+
+    await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
+    await $.pump();
+    await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
+    await $.pump();
+    await $.pump(const Duration(milliseconds: 100));
+
+    expect(
+      find.descendant(
+        of: find.byType(ThreadedDiscussionSheet),
+        matching: find.byKey(const Key('comment_send_failed_snackbar')),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text('This reply was not saved (permission-denied). Your words are still here.'),
       findsOneWidget,
     );
-    expect(
-      find.descendant(of: find.byType(ListView), matching: find.text(_reply)),
-      findsNothing,
-    );
+  });
+}
+
+Future<void> _setSheetSurface(PatrolTester $) async {
+  $.tester.view.devicePixelRatio = 1.0;
+  $.tester.view.physicalSize = const Size(1200, 2400);
+  addTearDown(() {
+    $.tester.view.resetPhysicalSize();
+    $.tester.view.resetDevicePixelRatio();
   });
 }
