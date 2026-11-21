@@ -43,7 +43,7 @@ class _FailingCommentRepository extends LocalCommentRepository {
 }
 
 class _HangingWriteRepo extends LocalCommentRepository {
-  _HangingWriteRepo()
+  _HangingWriteRepo({super.initialComments})
     : super(
         isDevMode: false,
         customFirestore: FakeFirebaseFirestore(),
@@ -157,6 +157,41 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       expect(await repo.getComments(postId: 'p1'), isEmpty);
     });
+
+    test('a timed-out write reports the later rejection for the sheet', () async {
+      final repo = _HangingWriteRepo();
+      final outcomes = <CommentWriteSettlement>[];
+      final sub = repo.commentWriteSettlements.listen(outcomes.add);
+      addTearDown(sub.cancel);
+
+      await expectLater(repo.addComment(_comment('c-late-fail')), throwsA(isA<TimeoutException>()));
+
+      repo.hang.completeError(_permissionDenied());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(outcomes, hasLength(1));
+      expect(outcomes.single.commentId, 'c-late-fail');
+      expect(outcomes.single.succeeded, isFalse);
+      expect(outcomes.single.error, isA<FirebaseException>());
+      expect(await repo.getComments(postId: 'p1'), isEmpty);
+    });
+
+    test('a timed-out write reports the later success for the sheet', () async {
+      final repo = _HangingWriteRepo();
+      final outcomes = <CommentWriteSettlement>[];
+      final sub = repo.commentWriteSettlements.listen(outcomes.add);
+      addTearDown(sub.cancel);
+
+      await expectLater(repo.addComment(_comment('c-slow')), throwsA(isA<TimeoutException>()));
+
+      repo.hang.complete();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(outcomes, hasLength(1));
+      expect(outcomes.single.commentId, 'c-slow');
+      expect(outcomes.single.succeeded, isTrue);
+      expect((await repo.getComments(postId: 'p1')).map((c) => c.id), ['c-slow']);
+    });
   });
 
   group('restoreFailedCommentComposer (#981)', () {
@@ -191,6 +226,42 @@ void main() {
       );
 
       expect(controller.text, 'Checking in again tomorrow.');
+      expect(replyingTo.value, newerTarget);
+      controller.dispose();
+      replyingTo.dispose();
+    });
+
+    test('does not restore either field when only the draft text changed', () {
+      final controller = TextEditingController(text: 'Checking in again tomorrow.');
+      final replyingTo = ValueNotifier<Comment?>(null);
+      final target = _comment('c-target');
+
+      restoreFailedCommentComposer(
+        textController: controller,
+        replyingTo: replyingTo,
+        text: _reply,
+        replyTarget: target,
+      );
+
+      expect(controller.text, 'Checking in again tomorrow.');
+      expect(replyingTo.value, isNull);
+      controller.dispose();
+      replyingTo.dispose();
+    });
+
+    test('does not restore either field when only the reply target changed', () {
+      final controller = TextEditingController();
+      final newerTarget = _comment('c-newer');
+      final replyingTo = ValueNotifier<Comment?>(newerTarget);
+
+      restoreFailedCommentComposer(
+        textController: controller,
+        replyingTo: replyingTo,
+        text: _reply,
+        replyTarget: _comment('c-target'),
+      );
+
+      expect(controller.text, isEmpty);
       expect(replyingTo.value, newerTarget);
       controller.dispose();
       replyingTo.dispose();
@@ -317,6 +388,156 @@ void main() {
     expect(field.controller!.text, draftB);
     expect(find.byKey(const Key('comment_send_failed_snackbar')), findsOneWidget);
     expect(find.text(_reply), findsNothing);
+  });
+
+  patrolWidgetTest(
+    'A timed-out send that later fails restores the text and reply target inside the sheet',
+    ($) async {
+      await _setSheetSurface($);
+      final parent = Comment(
+        id: 'c-parent',
+        postId: _post.id,
+        authorName: 'Jordan',
+        content: 'An earlier thought.',
+        timestamp: DateTime.utc(2026, 11, 18, 11),
+      );
+      final repo = _HangingWriteRepo(initialComments: [parent]);
+      await $.pumpWidget(
+        ProviderScope(
+          overrides: [
+            commentRepositoryProvider.overrideWithValue(repo),
+            memberProfileProvider.overrideWith(_FakeProfile.new),
+          ],
+          child: MaterialApp(
+            home: Scaffold(body: ThreadedDiscussionSheet(post: _post)),
+          ),
+        ),
+      );
+      await $.pumpAndSettle();
+
+      await $.tester.tap(find.byKey(const Key('reply_button_c-parent')));
+      await $.pump();
+      await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
+      await $.pump();
+      await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
+      await $.pump();
+      await $.pump(const Duration(milliseconds: 50));
+
+      expect(find.byKey(const Key('comment_send_pending_snackbar')), findsOneWidget);
+      expect(find.text('Replying to @Jordan'), findsNothing);
+
+      repo.hang.completeError(_permissionDenied());
+      await $.pump();
+      await $.pump(const Duration(milliseconds: 50));
+
+      final field = $.tester.widget<TextField>(find.byKey(const Key('comment_input_field')));
+      expect(field.controller!.text, _reply);
+      expect(find.text('Replying to @Jordan'), findsOneWidget);
+      expect(find.byKey(const Key('comment_send_failed_snackbar')), findsOneWidget);
+      expect(
+        find.text('This reply was not saved (permission-denied). Your words are still here.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('comment_send_pending_snackbar')), findsNothing);
+      expect(find.descendant(of: find.byType(ListView), matching: find.text(_reply)), findsNothing);
+    },
+  );
+
+  patrolWidgetTest(
+    'A timed-out send that later succeeds clears the pending notice and keeps the reply',
+    ($) async {
+      await _setSheetSurface($);
+      final repo = _HangingWriteRepo();
+      await $.pumpWidget(
+        ProviderScope(
+          overrides: [
+            commentRepositoryProvider.overrideWithValue(repo),
+            memberProfileProvider.overrideWith(_FakeProfile.new),
+          ],
+          child: MaterialApp(
+            home: Scaffold(body: ThreadedDiscussionSheet(post: _post)),
+          ),
+        ),
+      );
+      await $.pumpAndSettle();
+
+      await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
+      await $.pump();
+      await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
+      await $.pump();
+      await $.pump(const Duration(milliseconds: 50));
+
+      expect(find.text(commentSendPendingMessage), findsOneWidget);
+
+      repo.hang.complete();
+      await $.pump();
+      await $.pump(const Duration(milliseconds: 50));
+
+      expect(find.byKey(const Key('comment_send_pending_snackbar')), findsNothing);
+      expect(find.byKey(const Key('comment_send_failed_snackbar')), findsNothing);
+      final field = $.tester.widget<TextField>(find.byKey(const Key('comment_input_field')));
+      expect(field.controller!.text, isEmpty);
+      expect(
+        find.descendant(of: find.byType(ListView), matching: find.text(_reply)),
+        findsOneWidget,
+      );
+    },
+  );
+
+  patrolWidgetTest('A late rejection does not replace a newer draft or reply target', ($) async {
+    await _setSheetSurface($);
+    const draftB = 'Checking in again tomorrow.';
+    final parent = Comment(
+      id: 'c-parent',
+      postId: _post.id,
+      authorName: 'Jordan',
+      content: 'An earlier thought.',
+      timestamp: DateTime.utc(2026, 11, 18, 11),
+    );
+    final other = Comment(
+      id: 'c-other',
+      postId: _post.id,
+      authorName: 'Riley',
+      content: 'Another thought.',
+      timestamp: DateTime.utc(2026, 11, 18, 11, 30),
+    );
+    final repo = _HangingWriteRepo(initialComments: [parent, other]);
+    await $.pumpWidget(
+      ProviderScope(
+        overrides: [
+          commentRepositoryProvider.overrideWithValue(repo),
+          memberProfileProvider.overrideWith(_FakeProfile.new),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: ThreadedDiscussionSheet(post: _post)),
+        ),
+      ),
+    );
+    await $.pumpAndSettle();
+
+    await $.tester.tap(find.byKey(const Key('reply_button_c-parent')));
+    await $.pump();
+    await $.tester.enterText(find.byKey(const Key('comment_input_field')), _reply);
+    await $.pump();
+    await $.tester.tap(find.byKey(const Key('submit_comment_button')), warnIfMissed: false);
+    await $.pump();
+    await $.pump(const Duration(milliseconds: 50));
+
+    await $.tester.enterText(find.byKey(const Key('comment_input_field')), draftB);
+    await $.pump();
+    await $.tester.tap(find.byKey(const Key('reply_button_c-other')));
+    await $.pump();
+
+    repo.hang.completeError(_permissionDenied());
+    await $.pump();
+    await $.pump(const Duration(milliseconds: 50));
+
+    final field = $.tester.widget<TextField>(find.byKey(const Key('comment_input_field')));
+    expect(field.controller!.text, draftB);
+    expect(find.text('Replying to @Riley'), findsOneWidget);
+    expect(find.text('Replying to @Jordan'), findsNothing);
+    expect(find.text(_reply), findsNothing);
+    expect(find.byKey(const Key('comment_send_failed_snackbar')), findsOneWidget);
   });
 
   patrolWidgetTest('A failed send shows the error inside the discussion sheet', ($) async {
