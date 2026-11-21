@@ -12,6 +12,30 @@ class const GroupCallOtherMember({required this.userId, required this.name}) {
   final String name;
 }
 
+/// Stream's control button uses comfortable density and lands at 44dp.
+/// Large-text checks require a 48dp target, so the key sits on this box.
+Widget _callControl({
+  required Key key,
+  required String label,
+  required Widget icon,
+  required VoidCallback onPressed,
+  Color? iconColor,
+  Color? backgroundColor,
+}) => Semantics(
+  button: true,
+  label: label,
+  child: ConstrainedBox(
+    key: key,
+    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+    child: CallControlOption(
+      icon: icon,
+      iconColor: iconColor,
+      backgroundColor: backgroundColor,
+      onPressed: onPressed,
+    ),
+  ),
+);
+
 /// Mute, camera, leave, and the host actions for a preview group call.
 ///
 /// Everyone can turn the microphone or camera on, or leave. Leave only steps
@@ -66,64 +90,46 @@ class GroupCallSessionControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final bar = StreamCallControls(
       options: [
-        Semantics(
-          button: true,
+        _callControl(
+          key: const Key('group_call_microphone_button'),
           label: 'Microphone',
-          child: CallControlOption(
-            key: const Key('group_call_microphone_button'),
-            icon: Icon(microphoneEnabled ? Icons.mic_rounded : Icons.mic_off_rounded),
-            onPressed: onMicrophone,
-          ),
+          icon: Icon(microphoneEnabled ? Icons.mic_rounded : Icons.mic_off_rounded),
+          onPressed: onMicrophone,
         ),
-        Semantics(
-          button: true,
+        _callControl(
+          key: const Key('group_call_camera_button'),
           label: 'Camera',
-          child: CallControlOption(
-            key: const Key('group_call_camera_button'),
-            icon: Icon(cameraEnabled ? Icons.videocam_rounded : Icons.videocam_off_rounded),
-            onPressed: onCamera,
-          ),
+          icon: Icon(cameraEnabled ? Icons.videocam_rounded : Icons.videocam_off_rounded),
+          onPressed: onCamera,
         ),
         if (canShare || sharing)
-          Semantics(
-            button: true,
+          _callControl(
+            key: const Key('group_call_share_button'),
             label: sharing ? 'Stop sharing' : 'Share screen',
-            child: CallControlOption(
-              key: const Key('group_call_share_button'),
-              icon: Icon(sharing ? Icons.stop_screen_share_rounded : Icons.screen_share_rounded),
-              onPressed: onShare ?? () {},
-            ),
+            icon: Icon(sharing ? Icons.stop_screen_share_rounded : Icons.screen_share_rounded),
+            onPressed: onShare ?? () {},
           ),
         if (host)
-          Semantics(
-            button: true,
+          _callControl(
+            key: const Key('group_call_remove_button'),
             label: 'Remove someone',
-            child: CallControlOption(
-              key: const Key('group_call_remove_button'),
-              icon: const Icon(Icons.person_remove_alt_1_rounded),
-              onPressed: () => unawaited(_removeSomeone(context)),
-            ),
+            icon: const Icon(Icons.person_remove_alt_1_rounded),
+            onPressed: () => unawaited(_removeSomeone(context)),
           ),
         if (host)
-          Semantics(
-            button: true,
+          _callControl(
+            key: const Key('group_call_end_button'),
             label: 'End call for everyone',
-            child: CallControlOption(
-              key: const Key('group_call_end_button'),
-              icon: const Icon(Icons.stop_circle_outlined),
-              onPressed: () => unawaited(_endForEveryone(context)),
-            ),
+            icon: const Icon(Icons.stop_circle_outlined),
+            onPressed: () => unawaited(_endForEveryone(context)),
           ),
-        Semantics(
-          button: true,
+        _callControl(
+          key: const Key('group_call_leave_button'),
           label: 'Leave call',
-          child: CallControlOption(
-            key: const Key('group_call_leave_button'),
-            icon: const Icon(Icons.call_end_rounded),
-            iconColor: Colors.white,
-            backgroundColor: Colors.red,
-            onPressed: () => unawaited(onLeave()),
-          ),
+          icon: const Icon(Icons.call_end_rounded),
+          iconColor: Colors.white,
+          backgroundColor: Colors.red,
+          onPressed: () => unawaited(onLeave()),
         ),
       ],
     );
@@ -131,11 +137,19 @@ class GroupCallSessionControls extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SwitchListTile(
-          key: const Key('group_call_guest_share_switch'),
-          title: const Text('Let guests share'),
-          value: guestShareAllowed,
-          onChanged: onGuestShare,
+        Padding(
+          padding: const .fromLTRB(16, 4, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Let guests share'),
+              Switch(
+                key: const Key('group_call_guest_share_switch'),
+                value: guestShareAllowed,
+                onChanged: onGuestShare,
+              ),
+            ],
+          ),
         ),
         bar,
       ],

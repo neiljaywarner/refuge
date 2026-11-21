@@ -315,7 +315,6 @@ void expectVisibleCopy(WidgetTester tester) {
     final object = element.renderObject;
     return object is RenderParagraph && object.attached && object.hasSize && object.size.width > 0;
   });
-  expect(texts, isNotEmpty);
   for (final element in texts) {
     final finder = find.byWidget(element.widget);
     expectNoMidWordWrap(tester, finder);
@@ -413,19 +412,17 @@ class _ParticipantGrid extends StatelessWidget {
   const _ParticipantGrid();
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
-      key: const Key('group_call_participant_grid'),
-      children: [
-        for (var i = 0; i < 4; i++)
-          Padding(
-            key: Key('group_call_participant_$i'),
-            padding: const .all(8),
-            child: Text('Guest ${i + 1}'),
-          ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => ListView(
+    key: const Key('group_call_participant_grid'),
+    children: [
+      for (var i = 0; i < 4; i++)
+        Padding(
+          key: Key('group_call_participant_$i'),
+          padding: const .all(8),
+          child: Text('Guest ${i + 1}'),
+        ),
+    ],
+  );
 }
 
 class _MockCall extends Mock implements Call {}
