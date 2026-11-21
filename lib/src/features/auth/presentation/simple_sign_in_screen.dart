@@ -20,6 +20,7 @@ class SimpleSignInScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final flavor = ref.watch(appFlavorProvider);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final tag = flavor.environmentTag;
     final title = tag == null
         ? 'Sign in to Belong on the Spectrum'
@@ -41,7 +42,7 @@ class SimpleSignInScreen extends ConsumerWidget {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -51,7 +52,9 @@ class SimpleSignInScreen extends ConsumerWidget {
                         key: Key('sign_in_unavailable'),
                         textAlign: TextAlign.center,
                       ),
-                      SignInRecoveryPanel(canUseAppWhileWaiting: !flavor.isProduction),
+                      SignInRecoveryPanel(
+                        canUseAppWhileWaiting: !flavor.isProduction,
+                      ),
                     ],
                   ),
                 ),
@@ -66,9 +69,14 @@ class SimpleSignInScreen extends ConsumerWidget {
       providers: [EmailAuthProvider()],
       showPasswordVisibilityToggle: true,
       subtitleBuilder: (context, action) => titleText,
-      footerBuilder: (context, action) => SignInRecoveryPanel(
-        canUseAppWhileWaiting: !flavor.isProduction,
-        onForgotPassword: () => showForgotPasswordScreen(context: context),
+      footerBuilder: (context, action) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewPaddingOf(context).bottom,
+        ),
+        child: SignInRecoveryPanel(
+          canUseAppWhileWaiting: !flavor.isProduction,
+          onForgotPassword: () => showForgotPasswordScreen(context: context),
+        ),
       ),
     );
   }
