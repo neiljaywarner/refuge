@@ -79,11 +79,24 @@ export interface MemberPrepareResult {
   status?: number;
   role?: string;
 }
+/** Admin decoded token or a verified ID-token payload. */
+export interface FirebaseIdClaims {
+  uid?: string;
+  user_id?: string;
+  sub?: string;
+  firebase?: { sign_in_provider?: string };
+}
 export interface Deps {
   apiKey(): string;
   apiSecret(): string;
   nowSeconds(): number;
-  verifyIdToken(token: string): Promise<string>; // returns uid or ""
+  /** Uid string, or claims that still carry the sign-in provider. */
+  verifyIdToken(token: string): Promise<string | FirebaseIdClaims>;
+  /**
+   * When set, a banned or soft-deleted member is rejected before an invite
+   * is stored. A throw fails closed. Omitted only for older unit fixtures.
+   */
+  banActive?(uid: string): Promise<boolean>;
   store: InviteStore | null;
   randomInviteToken(): string;
   randomGuestId(): string;
@@ -323,6 +336,33 @@ async function seatMatches(
   return timingSafeEqualHex(actual, existing.sessionHash);
 }
 
+/**
+ * Firebase uid from verified claims.
+ * Anonymous sign-in is not a member. A payload with no provider still counts:
+ * older fixtures return only a uid string, and a password token includes a
+ * non-anonymous provider.
+ */
+export function memberFromFirebaseClaims(decoded: unknown): string {
+  if (!decoded || typeof decoded !== "object") return "";
+  const record = decoded as Record<string, unknown>;
+  const raw = typeof record.uid === "string"
+    ? record.uid
+    : typeof record.user_id === "string"
+    ? record.user_id
+    : typeof record.sub === "string"
+    ? record.sub
+    : "";
+  const userId = raw.trim();
+  if (!USER_ID.test(userId)) return "";
+  const firebase = record.firebase;
+  const provider = firebase && typeof firebase === "object" &&
+      typeof (firebase as { sign_in_provider?: unknown }).sign_in_provider === "string"
+    ? (firebase as { sign_in_provider: string }).sign_in_provider
+    : "";
+  if (provider === "anonymous") return "";
+  return userId;
+}
+
 // ---------- Firebase ID token ----------
 export async function verifyFirebaseIdToken(token: string): Promise<string> {
   const parts = token.split(".");
@@ -352,8 +392,7 @@ export async function verifyFirebaseIdToken(token: string): Promise<string> {
     if (typeof payload.exp !== "number" || payload.exp < now) return "";
     if (payload.aud !== FIREBASE_PROJECT_ID) return "";
     if (payload.iss !== `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`) return "";
-    const uid = String(payload.user_id ?? payload.sub ?? "").trim();
-    return USER_ID.test(uid) ? uid : "";
+    return memberFromFirebaseClaims(payload);
   } catch {
     return "";
   }
@@ -580,15 +619,42 @@ function readSecrets(deps: Deps) {
   return { apiKey, apiSecret };
 }
 
-async function requireMember(req: Request, deps: Deps): Promise<string> {
+const SIGN_IN_REQUIRED = "Sign in is required.";
+const ACCOUNT_BLOCKED = "This account cannot join a call.";
+
+type MemberDecision =
+  | { ok: true; userId: string }
+  | { ok: false; status: number; code: string; error: string };
+
+function refused(status: number, code: string, error: string): MemberDecision {
+  return { ok: false, status, code, error };
+}
+
+/**
+ * Member gate for minting a token or creating an invite.
+ * Anonymous sessions and banned members are rejected before secrets are read
+ * or an invite is stored. Missing banActive skips the ban read.
+ */
+async function decideMember(req: Request, deps: Deps): Promise<MemberDecision> {
   const match = /^Bearer\s+(\S+)$/.exec(req.headers.get("Authorization") ?? "");
-  if (!match) return "";
+  if (!match) return refused(401, "auth", SIGN_IN_REQUIRED);
+  let verified: string | FirebaseIdClaims;
   try {
-    const uid = await deps.verifyIdToken(match[1]);
-    return USER_ID.test(uid) ? uid : "";
+    verified = await deps.verifyIdToken(match[1]);
   } catch {
-    return "";
+    return refused(401, "auth", SIGN_IN_REQUIRED);
   }
+  const userId = typeof verified === "string"
+    ? (USER_ID.test(verified) ? verified : "")
+    : memberFromFirebaseClaims(verified);
+  if (!userId) return refused(401, "auth", SIGN_IN_REQUIRED);
+  if (typeof deps.banActive !== "function") return { ok: true, userId };
+  try {
+    if (await deps.banActive(userId)) return refused(403, "forbidden", ACCOUNT_BLOCKED);
+  } catch {
+    return refused(403, "forbidden", ACCOUNT_BLOCKED);
+  }
+  return { ok: true, userId };
 }
 
 export async function handle(req: Request, deps: Deps): Promise<Response> {
@@ -624,11 +690,13 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   // No action: signed-in member mint. A user token alone leaves the caller as
   // Stream's guest role, which cannot share a screen. The call id is already
   // on this request. Ensure the call exists and upsert this member first.
-  const userId = await requireMember(req, deps);
-  if (!userId) {
-    logAuthRejection("mintStreamCallToken");
-    return json(401, { error: "Sign in is required." });
+  const member = await decideMember(req, deps);
+  if (!member.ok) {
+    if (member.status === 401) logAuthRejection("mintStreamCallToken");
+    else log("mintStreamCallToken", { ok: false, reason: "forbidden", status: member.status });
+    return json(member.status, { error: member.error, code: member.code });
   }
+  const userId = member.userId;
   const callId = normalizeCallId(body.callId);
   if (!callId) return json(400, { error: "Choose a short call name using letters, numbers, and dashes." });
   const { apiKey, apiSecret } = readSecrets(deps);
@@ -666,11 +734,13 @@ const UNCONFIGURED = "Video calling is not configured on this preview.";
 const NOT_VALID = "This invite link is not valid.";
 
 async function createInvite(req: Request, deps: Deps, body: Body, err: ErrFn, json: JsonFn) {
-  const userId = await requireMember(req, deps);
-  if (!userId) {
-    logAuthRejection("createStreamGuestInvite");
-    return err(401, "auth", "Sign in is required.");
+  const member = await decideMember(req, deps);
+  if (!member.ok) {
+    if (member.status === 401) logAuthRejection("createStreamGuestInvite");
+    else log("createStreamGuestInvite", { ok: false, reason: "forbidden", status: member.status });
+    return err(member.status, member.code, member.error);
   }
+  const userId = member.userId;
   const callId = normalizeCallId(body.callId);
   if (!callId) return err(400, "call", "Choose a short call name using letters, numbers, and dashes.");
   const secrets = readSecrets(deps);
@@ -697,11 +767,13 @@ async function createInvite(req: Request, deps: Deps, body: Body, err: ErrFn, js
 }
 
 async function revokeInvite(req: Request, deps: Deps, body: Body, err: ErrFn, json: JsonFn) {
-  const userId = await requireMember(req, deps);
-  if (!userId) {
-    logAuthRejection("revokeStreamGuestInvite");
-    return err(401, "auth", "Sign in is required.");
+  const member = await decideMember(req, deps);
+  if (!member.ok) {
+    if (member.status === 401) logAuthRejection("revokeStreamGuestInvite");
+    else log("revokeStreamGuestInvite", { ok: false, reason: "forbidden", status: member.status });
+    return err(member.status, member.code, member.error);
   }
+  const userId = member.userId;
   const inviteToken = body.inviteToken;
   if (!inviteTokenLooksValid(inviteToken) || !deps.store) return err(404, "not-found", NOT_VALID);
   const tokenHash = await sha256Hex(inviteToken);
