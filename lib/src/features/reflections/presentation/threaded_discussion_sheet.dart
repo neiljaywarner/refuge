@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,6 +14,7 @@ import '../../admin/presentation/account_paused_banner.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/comment_repository.dart';
+import '../data/local_comment_repository.dart';
 import '../domain/comment.dart';
 import '../domain/post.dart';
 import 'reaction_details_sheet.dart';
@@ -47,7 +51,39 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
     final selectedTone = useState<String>('None');
     final textController = useTextEditingController();
     useListenable(textController);
+    final sendNotice = useState<String?>(null);
+    final sendNoticePending = useState(false);
+    final sendAttempt = useRef(0);
+    final pendingSend = useRef<_PendingCommentSend?>(null);
     final isPaused = ref.watch(isCurrentMemberBannedProvider);
+
+    useEffect(() {
+      final repository = ref.read(commentRepositoryProvider);
+      if (repository is! LocalCommentRepository) return null;
+      final subscription = repository.commentWriteSettlements.listen((settlement) {
+        final current = pendingSend.value;
+        if (current == null || current.commentId != settlement.commentId) return;
+        if (sendAttempt.value != current.attempt) return;
+        pendingSend.value = null;
+        if (!context.mounted) return;
+        if (settlement.succeeded) {
+          sendNoticePending.value = false;
+          sendNotice.value = null;
+          return;
+        }
+        restoreFailedCommentComposer(
+          textController: textController,
+          replyingTo: replyingTo,
+          text: current.text,
+          replyTarget: current.replyTarget,
+        );
+        sendNoticePending.value = false;
+        sendNotice.value = commentSendFailedMessage(settlement.error!);
+      });
+      return () {
+        subscription.cancel();
+      };
+    }, const []);
     final canSubmit = !isPaused && textController.text.trim().isNotEmpty;
 
     final theme = Theme.of(context);
@@ -57,367 +93,143 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
       return const Material(child: Center(child: AccountPausedLockout()));
     }
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.90),
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const .vertical(top: .circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const .only(top: 10, bottom: 6),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.dividerColor.withValues(alpha: 0.6),
-                borderRadius: .circular(2),
+    // Own messenger so a send-failure snackbar appears inside this sheet,
+    // not on the page behind a modal bottom sheet (#981).
+    return ScaffoldMessenger(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.90),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: const .vertical(top: .circular(20)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 16,
+                offset: const Offset(0, -4),
               ),
-            ),
+            ],
           ),
-
-          // Header
-          Padding(
-            padding: const .symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: .spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Text('💬', style: TextStyle(fontSize: 18)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Discussion & Replies',
-                          key: const Key('threaded_discussion_sheet_title'),
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
+          child: Column(
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  margin: const .only(top: 10, bottom: 6),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor.withValues(alpha: 0.6),
+                    borderRadius: .circular(2),
                   ),
                 ),
-                IconButton(
-                  key: const Key('close_discussion_sheet_button'),
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Close discussion',
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          // Original Post Context Banner
-          Container(
-            margin: const .symmetric(horizontal: 16, vertical: 4),
-            padding: const .all(12),
-            decoration: BoxDecoration(
-              color: theme.cardColor.withValues(alpha: isDark ? 0.7 : 0.9),
-              borderRadius: .circular(10),
-              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
-            ),
-            child: Row(
-              crossAxisAlignment: .start,
-              children: [
-                CircleAvatar(
-                  radius: 14,
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
-                  child: Text(
-                    post.authorName.isNotEmpty ? post.authorName[0] : 'P',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: .start,
-                    children: [
-                      Row(
+              // Header
+              Padding(
+                padding: const .symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: .spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
                         children: [
-                          Flexible(
+                          const Text('💬', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
+                          Expanded(
                             child: Text(
-                              post.authorName,
+                              'Discussion & Replies',
+                              key: const Key('threaded_discussion_sheet_title'),
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Container(
-                              padding: const .symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: .circular(4),
-                              ),
-                              child: Text(
-                                post.toneTag,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      UnbrokenBodyText(
-                        text: post.content,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    ),
+                    IconButton(
+                      key: const Key('close_discussion_sheet_button'),
+                      icon: const Icon(Icons.close),
+                      tooltip: 'Close discussion',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Original Post Context Banner
+              Container(
+                margin: const .symmetric(horizontal: 16, vertical: 4),
+                padding: const .all(12),
+                decoration: BoxDecoration(
+                  color: theme.cardColor.withValues(alpha: isDark ? 0.7 : 0.9),
+                  borderRadius: .circular(10),
+                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  crossAxisAlignment: .start,
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      child: Text(
+                        post.authorName.isNotEmpty ? post.authorName[0] : 'P',
                         style: TextStyle(
                           fontSize: 12,
-                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
-                          height: 1.3,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(height: 16),
-
-          // Threaded Comments List
-          Expanded(
-            child: commentsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error loading comments: $err')),
-              data: (comments) {
-                if (comments.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const .all(24.0),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
                       child: Column(
-                        mainAxisSize: .min,
+                        crossAxisAlignment: .start,
                         children: [
-                          Icon(Icons.forum_outlined, size: 44, color: theme.disabledColor),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No replies yet',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Be the first to share an unhurried, gentle thought.',
-                            key: const Key('empty_comments_placeholder'),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12, color: theme.textTheme.bodySmall?.color),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const .symmetric(horizontal: 16, vertical: 8),
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    return _CommentTile(
-                      key: Key('comment_item_${comment.id}'),
-                      comment: comment,
-                      onReply: () => replyingTo.value = comment,
-                      onReaction: (reaction) {
-                        try {
-                          final session = ref.read(authRepositoryProvider).currentSession();
-                          ref
-                              .read(commentRepositoryProvider)
-                              .toggleReaction(
-                                commentId: comment.id,
-                                reactionType: reaction,
-                                userId: session.userId,
-                                displayName: session.displayName,
-                                avatarUrl: session.photoUrl,
-                              );
-                        } catch (_) {
-                          ref
-                              .read(commentRepositoryProvider)
-                              .addReaction(commentId: comment.id, reactionType: reaction);
-                        }
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-
-          // Composer Area
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5))),
-                ),
-                child: Column(
-                  mainAxisSize: .min,
-                  crossAxisAlignment: .stretch,
-                  children: [
-                    // Replying to banner
-                    if (replyingTo.value != null)
-                      Container(
-                        padding: const .symmetric(horizontal: 16, vertical: 6),
-                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.reply, size: 14),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                'Replying to @${replyingTo.value!.authorName}',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                            IconButton(
-                              key: const Key('cancel_reply_target_button'),
-                              icon: const Icon(Icons.close, size: 14),
-                              padding: .zero,
-                              constraints: const BoxConstraints(),
-                              tooltip: 'Cancel reply',
-                              onPressed: () => replyingTo.value = null,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    // Tone Tag Picker Row
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const .symmetric(horizontal: 12, vertical: 6),
-                      child: Row(
-                        children: availableToneTags.map((tag) {
-                          final isSelected = selectedTone.value == tag;
-                          return Padding(
-                            padding: const .only(right: 6),
-                            child: ChoiceChip(
-                              label: Text(tag, style: const TextStyle(fontSize: 10)),
-                              selected: isSelected,
-                              visualDensity: VisualDensity.compact,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              onSelected: (val) {
-                                if (val) selectedTone.value = tag;
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                    // Input Field and Submit Button
-                    Padding(
-                      padding: const .fromLTRB(12, 0, 12, 8),
-                      child: Row(
-                        crossAxisAlignment: .end,
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              key: const Key('comment_input_field'),
-                              controller: textController,
-                              maxLines: 4,
-                              minLines: 1,
-                              style: const TextStyle(fontSize: 13),
-                              decoration: InputDecoration(
-                                hintText: replyingTo.value != null
-                                    ? 'Write a gentle reply to @${replyingTo.value!.authorName}...'
-                                    : 'Share an unhurried, gentle thought...',
-                                hintStyle: TextStyle(fontSize: 12, color: theme.hintColor),
-                                contentPadding: const .symmetric(horizontal: 12, vertical: 10),
-                                border: OutlineInputBorder(
-                                  borderRadius: .circular(12),
-                                  borderSide: BorderSide(color: theme.dividerColor),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  post.authorName,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: .circular(12),
-                                  borderSide: BorderSide(
-                                    color: theme.dividerColor.withValues(alpha: 0.6),
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Container(
+                                  padding: const .symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    borderRadius: .circular(4),
+                                  ),
+                                  child: Text(
+                                    post.toneTag,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          // #977: AsyncActionButton ignores repeat taps and shows a
-                          // spinner while the reply is saving.
-                          AsyncActionButton(
-                            key: const Key('submit_comment_button'),
-                            variant: AsyncButtonVariant.filledIcon,
-                            icon: const Icon(Icons.send, size: 18),
-                            busyLabel: 'Sending reply',
-                            tooltip: 'Submit reply',
-                            onPressed: canSubmit
-                                ? () async {
-                                    final text = textController.text.trim();
-                                    if (text.isEmpty) return;
-
-                                    final author = currentProfile.displayName.isNotEmpty
-                                        ? currentProfile.displayName
-                                        : 'Fellowship Member';
-                                    final replyTarget = replyingTo.value;
-
-                                    final newComment = Comment(
-                                      id: 'c_${DateTime.now().millisecondsSinceEpoch}',
-                                      postId: post.id,
-                                      parentCommentId: replyTarget?.id,
-                                      authorName: author,
-                                      content: text,
-                                      toneTag: selectedTone.value == 'None'
-                                          ? null
-                                          : selectedTone.value,
-                                      timestamp: DateTime.now(),
-                                    );
-
-                                    // Clear right away so the reply doesn't look unsent
-                                    // while the network write is still in flight.
-                                    textController.clear();
-                                    replyingTo.value = null;
-
-                                    try {
-                                      final created = await createContributionUnlessBanned(
-                                        isBanned: ref.read(isCurrentMemberBannedProvider),
-                                        create: () async {
-                                          await ref
-                                              .read(commentRepositoryProvider)
-                                              .addComment(newComment);
-                                        },
-                                      );
-                                      if (!created && context.mounted) {
-                                        textController.text = text;
-                                        replyingTo.value = replyTarget;
-                                      }
-                                    } catch (_) {
-                                      if (context.mounted) {
-                                        textController.text = text;
-                                        replyingTo.value = replyTarget;
-                                      }
-                                    }
-                                  }
-                                : null,
+                          const SizedBox(height: 4),
+                          UnbrokenBodyText(
+                            text: post.content,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
+                              height: 1.3,
+                            ),
                           ),
                         ],
                       ),
@@ -425,9 +237,294 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                   ],
                 ),
               ),
-            ),
+
+              const Divider(height: 16),
+
+              // Threaded Comments List
+              Expanded(
+                child: commentsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error loading comments: $err')),
+                  data: (comments) {
+                    if (comments.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const .all(24.0),
+                          child: Column(
+                            mainAxisSize: .min,
+                            children: [
+                              Icon(Icons.forum_outlined, size: 44, color: theme.disabledColor),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No replies yet',
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Be the first to share an unhurried, gentle thought.',
+                                key: const Key('empty_comments_placeholder'),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const .symmetric(horizontal: 16, vertical: 8),
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = comments[index];
+                        return _CommentTile(
+                          key: Key('comment_item_${comment.id}'),
+                          comment: comment,
+                          onReply: () => replyingTo.value = comment,
+                          onReaction: (reaction) {
+                            try {
+                              final session = ref.read(authRepositoryProvider).currentSession();
+                              ref
+                                  .read(commentRepositoryProvider)
+                                  .toggleReaction(
+                                    commentId: comment.id,
+                                    reactionType: reaction,
+                                    userId: session.userId,
+                                    displayName: session.displayName,
+                                    avatarUrl: session.photoUrl,
+                                  );
+                            } catch (_) {
+                              ref
+                                  .read(commentRepositoryProvider)
+                                  .addReaction(commentId: comment.id, reactionType: reaction);
+                            }
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              // Composer Area
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      border: Border(
+                        top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: .min,
+                      crossAxisAlignment: .stretch,
+                      children: [
+                        if (sendNotice.value != null)
+                          Padding(
+                            key: sendNoticePending.value
+                                ? const Key('comment_send_pending_snackbar')
+                                : const Key('comment_send_failed_snackbar'),
+                            padding: const .fromLTRB(12, 8, 12, 0),
+                            child: Text(
+                              sendNotice.value!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: sendNoticePending.value
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+
+                        // Replying to banner
+                        if (replyingTo.value != null)
+                          Container(
+                            padding: const .symmetric(horizontal: 16, vertical: 6),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.reply, size: 14),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'Replying to @${replyingTo.value!.authorName}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  key: const Key('cancel_reply_target_button'),
+                                  icon: const Icon(Icons.close, size: 14),
+                                  padding: .zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Cancel reply',
+                                  onPressed: () => replyingTo.value = null,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        // Tone Tag Picker Row
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const .symmetric(horizontal: 12, vertical: 6),
+                          child: Row(
+                            children: availableToneTags.map((tag) {
+                              final isSelected = selectedTone.value == tag;
+                              return Padding(
+                                padding: const .only(right: 6),
+                                child: ChoiceChip(
+                                  label: Text(tag, style: const TextStyle(fontSize: 10)),
+                                  selected: isSelected,
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  onSelected: (val) {
+                                    if (val) selectedTone.value = tag;
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+
+                        // Input Field and Submit Button
+                        Padding(
+                          padding: const .fromLTRB(12, 0, 12, 8),
+                          child: Row(
+                            crossAxisAlignment: .end,
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  key: const Key('comment_input_field'),
+                                  controller: textController,
+                                  maxLines: 4,
+                                  minLines: 1,
+                                  style: const TextStyle(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: replyingTo.value != null
+                                        ? 'Write a gentle reply to @${replyingTo.value!.authorName}...'
+                                        : 'Share an unhurried, gentle thought...',
+                                    hintStyle: TextStyle(fontSize: 12, color: theme.hintColor),
+                                    contentPadding: const .symmetric(horizontal: 12, vertical: 10),
+                                    border: OutlineInputBorder(
+                                      borderRadius: .circular(12),
+                                      borderSide: BorderSide(color: theme.dividerColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: .circular(12),
+                                      borderSide: BorderSide(
+                                        color: theme.dividerColor.withValues(alpha: 0.6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // #977: AsyncActionButton ignores repeat taps and shows a
+                              // spinner while the reply is saving.
+                              AsyncActionButton(
+                                key: const Key('submit_comment_button'),
+                                variant: AsyncButtonVariant.filledIcon,
+                                icon: const Icon(Icons.send, size: 18),
+                                busyLabel: 'Sending reply',
+                                tooltip: 'Submit reply',
+                                onPressed: canSubmit
+                                    ? () async {
+                                        final text = textController.text.trim();
+                                        if (text.isEmpty) return;
+
+                                        final attempt = ++sendAttempt.value;
+                                        pendingSend.value = null;
+
+                                        final author = currentProfile.displayName.isNotEmpty
+                                            ? currentProfile.displayName
+                                            : 'Fellowship Member';
+                                        final replyTarget = replyingTo.value;
+
+                                        final newComment = Comment(
+                                          id: 'c_${DateTime.now().millisecondsSinceEpoch}',
+                                          postId: post.id,
+                                          parentCommentId: replyTarget?.id,
+                                          authorName: author,
+                                          content: text,
+                                          toneTag: selectedTone.value == 'None'
+                                              ? null
+                                              : selectedTone.value,
+                                          timestamp: DateTime.now(),
+                                        );
+
+                                        // Clear right away so the reply doesn't look unsent
+                                        // while the network write is still in flight.
+                                        textController.clear();
+                                        replyingTo.value = null;
+                                        sendNotice.value = null;
+                                        sendNoticePending.value = false;
+
+                                        try {
+                                          final created = await createContributionUnlessBanned(
+                                            isBanned: ref.read(isCurrentMemberBannedProvider),
+                                            create: () async {
+                                              await ref
+                                                  .read(commentRepositoryProvider)
+                                                  .addComment(newComment);
+                                            },
+                                          );
+                                          if (!created && context.mounted) {
+                                            restoreFailedCommentComposer(
+                                              textController: textController,
+                                              replyingTo: replyingTo,
+                                              text: text,
+                                              replyTarget: replyTarget,
+                                            );
+                                          }
+                                        } catch (error) {
+                                          if (!context.mounted || sendAttempt.value != attempt) {
+                                            return;
+                                          }
+                                          if (error is TimeoutException) {
+                                            pendingSend.value = _PendingCommentSend(
+                                              commentId: newComment.id,
+                                              text: text,
+                                              replyTarget: replyTarget,
+                                              attempt: attempt,
+                                            );
+                                            sendNoticePending.value = true;
+                                            sendNotice.value = commentSendPendingMessage;
+                                          } else {
+                                            restoreFailedCommentComposer(
+                                              textController: textController,
+                                              replyingTo: replyingTo,
+                                              text: text,
+                                              replyTarget: replyTarget,
+                                            );
+                                            sendNoticePending.value = false;
+                                            sendNotice.value = commentSendFailedMessage(error);
+                                          }
+                                        }
+                                      }
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -657,4 +754,48 @@ class _CommentTile extends StatelessWidget {
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     return '${diff.inDays}d ago';
   }
+}
+
+/// Visible send failure for #978. Includes a Firestore error code when one is
+/// present so a QA pass can record the real denial without opening a console.
+String commentSendFailedMessage(Object error) {
+  if (error is FirebaseException && error.code.isNotEmpty) {
+    return 'This reply was not saved (${error.code}). Your words are still here.';
+  }
+  return 'This reply was not saved. Your words are still here.';
+}
+
+const commentSendPendingMessage = 'Still saving this reply.';
+
+/// Put a failed reply back in the composer only when neither the text nor
+/// the reply target has changed since the send (#981).
+///
+/// The two fields are restored together. If either one changed, both stay
+/// as they are, so a newer draft is never paired with the old reply target.
+void restoreFailedCommentComposer({
+  required TextEditingController textController,
+  required ValueNotifier<Comment?> replyingTo,
+  required String text,
+  required Comment? replyTarget,
+}) {
+  final textUnchanged = textController.text.isEmpty || textController.text == text;
+  final target = replyingTo.value;
+  final targetUnchanged = target == null || target == replyTarget;
+  if (!textUnchanged || !targetUnchanged) return;
+  textController.text = text;
+  replyingTo.value = replyTarget;
+}
+
+class _PendingCommentSend {
+  const _PendingCommentSend({
+    required this.commentId,
+    required this.text,
+    required this.replyTarget,
+    required this.attempt,
+  });
+
+  final String commentId;
+  final String text;
+  final Comment? replyTarget;
+  final int attempt;
 }
