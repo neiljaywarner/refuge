@@ -1,6 +1,7 @@
 import {
   handle,
   memberCallRole,
+  memberFromFirebaseClaims,
   MemoryInviteStore,
   prepareGuestOnCall,
   prepareMemberOnCall,
@@ -395,4 +396,91 @@ Deno.test("mint does not return a token when the call cannot be prepared", async
     { Authorization: "Bearer member-token" },
   );
   assert(unnamed.status === 503 && prepared === false, "secrets before prepare");
+});
+
+Deno.test("anonymous and banned sessions cannot create a guest invite", async () => {
+  assert(
+    memberFromFirebaseClaims({
+      user_id: "anon_user_1",
+      firebase: { sign_in_provider: "anonymous" },
+    }) === "",
+    "anonymous claims are not a member",
+  );
+  assert(
+    memberFromFirebaseClaims({
+      user_id: caller,
+      firebase: { sign_in_provider: "password" },
+    }) === caller,
+    "password claims stay a member",
+  );
+
+  const store = new MemoryInviteStore();
+  let secretReads = 0;
+  const deps: Deps = {
+    apiKey: () => apiKey,
+    apiSecret: () => {
+      secretReads += 1;
+      return secret;
+    },
+    nowSeconds: () => now,
+    verifyIdToken: async (token) => {
+      if (token === "anon-token") {
+        return { uid: "anon_user_1", firebase: { sign_in_provider: "anonymous" } };
+      }
+      if (token === "banned-token") {
+        return { uid: "banned_user", firebase: { sign_in_provider: "password" } };
+      }
+      if (token === "member-token") return caller;
+      return "";
+    },
+    banActive: async (uid) => uid === "banned_user",
+    store,
+    randomInviteToken,
+    randomGuestId,
+    randomSeatKey: randomInviteToken,
+    prepareGuestCall: async () => ({ ok: true }),
+  };
+
+  const anon = await mint(
+    deps,
+    { action: "createInvite", callId: "monthly" },
+    { Authorization: "Bearer anon-token" },
+  );
+  assert(anon.status === 401, `anonymous status ${anon.status}`);
+  const anonBody = await anon.json();
+  assert(anonBody.code === "auth", "anonymous code");
+  assert(store.invites.size === 0, "anonymous session stores no invite");
+
+  const banned = await mint(
+    deps,
+    { action: "createInvite", callId: "monthly" },
+    { Authorization: "Bearer banned-token" },
+  );
+  assert(banned.status === 403, `banned status ${banned.status}`);
+  const bannedBody = await banned.json();
+  assert(bannedBody.code === "forbidden", "banned code");
+  assert(store.invites.size === 0, "banned member stores no invite");
+  assert(!JSON.stringify(bannedBody).includes(secret), "secret stays out of the rejection");
+
+  const lookupFailed = await mint(
+    {
+      ...deps,
+      banActive: async () => {
+        throw new Error("ban lookup failed");
+      },
+    },
+    { action: "createInvite", callId: "monthly" },
+    { Authorization: "Bearer member-token" },
+  );
+  assert(lookupFailed.status === 403, `ban lookup status ${lookupFailed.status}`);
+  assert(store.invites.size === 0, "a failed ban lookup stores no invite");
+  assert(secretReads === 0, "rejections do not read the video secret");
+
+  const created = await mint(
+    deps,
+    { action: "createInvite", callId: "monthly" },
+    { Authorization: "Bearer member-token" },
+  );
+  assert(created.status === 200, `member status ${created.status}`);
+  assert(store.invites.size === 1, "eligible member stores one invite");
 });

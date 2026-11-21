@@ -1,0 +1,48 @@
+appId: com.belongonthespectrum.refuge.dev
+name: "Call lobby joins with the camera and microphone off"
+tags:
+  - belong
+  - coverage
+  - calls
+---
+# Screen sharing is not on main. This flow checks the preview lobby, which
+# tells the member the camera and microphone start off, then Start/Stop of
+# those two controls when the call screen is showing.
+#
+# The Join call button is compiled only when the binary was built with
+# STREAM_VIDEO_PREVIEW and a STREAM_TOKEN_ENDPOINT. A normal dev APK skips
+# the lobby steps. Do not put an API secret in the build.
+#
+#   adb shell settings put system font_scale 1.0
+#   maestro test .maestro/coverage_call_lobby_camera_mic.yaml
+# BELONG_DEV_E2E_EMAIL and MAESTRO_TEST_PASSWORD come from the environment.
+
+- launchApp:
+    clearState: false
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+- runFlow:
+    when:
+      visible: "Join call"
+    commands:
+      - tapOn: "Join call"
+      - extendedWaitUntil:
+          visible: ".*microphone and camera off.*"
+          timeout: 20000
+      - assertVisible: ".*Turn them on when you are ready.*"
+      - assertNotVisible: "Start screen share"
+      - tapOn:
+          id: "group_call_confirm_join_button"
+      - runFlow:
+          when:
+            visible:
+              id: "group_call_microphone_button"
+          commands:
+            - tapOn:
+                id: "group_call_microphone_button"
+            - tapOn:
+                id: "group_call_camera_button"
+            - tapOn:
+                id: "group_call_microphone_button"
+            - tapOn:
+                id: "group_call_camera_button"

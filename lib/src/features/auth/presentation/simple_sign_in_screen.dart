@@ -5,6 +5,40 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/config/app_flavor.dart';
 import 'sign_in_recovery_panel.dart';
 
+/// Title on the sign-in wall.
+///
+/// Register keeps the community name and drops "Sign in to", so the form
+/// does not tell a new member they are signing in. The flavor tag stays.
+String signInWallTitle(AppFlavor flavor, {bool registering = false}) {
+  final sentence = registering
+      ? 'Belong on the Spectrum'
+      : 'Sign in to Belong on the Spectrum';
+  final tag = flavor.environmentTag;
+  if (tag == null) return sentence;
+  return '[$tag] $sentence PREVIEW';
+}
+
+Widget signInWallTitleText(BuildContext context, String title) {
+  // Flutter web drops plain Text inside the FirebaseUI scroll view, so the
+  // sentence is on screen and missing from the accessibility tree. An
+  // explicit label is what Maestro and screen readers can see.
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Semantics(
+      identifier: 'sign_in_title',
+      label: title,
+      header: true,
+      container: true,
+      excludeSemantics: true,
+      child: Text(
+        title,
+        key: const Key('sign_in_title'),
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+    ),
+  );
+}
+
 /// Minimal sign-in, essentially the firebase_ui_auth pub.dev example.
 ///
 /// This is the whole route: no wrapper, no logo. Theme comes from the app's
@@ -21,18 +55,7 @@ class SimpleSignInScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final flavor = ref.watch(appFlavorProvider);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    final tag = flavor.environmentTag;
-    final title = tag == null
-        ? 'Sign in to Belong on the Spectrum'
-        : '[$tag] Sign in to Belong on the Spectrum PREVIEW';
-    final titleText = Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        key: const Key('sign_in_title'),
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-    );
+    final titleText = signInWallTitleText(context, signInWallTitle(flavor));
 
     if (!firebaseReady) {
       return Scaffold(
@@ -68,7 +91,10 @@ class SimpleSignInScreen extends ConsumerWidget {
     return SignInScreen(
       providers: [EmailAuthProvider()],
       showPasswordVisibilityToggle: true,
-      subtitleBuilder: (context, action) => titleText,
+      subtitleBuilder: (context, action) => signInWallTitleText(
+        context,
+        signInWallTitle(flavor, registering: action == AuthAction.signUp),
+      ),
       footerBuilder: (context, action) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewPaddingOf(context).bottom,
