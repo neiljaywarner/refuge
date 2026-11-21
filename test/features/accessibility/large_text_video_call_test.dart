@@ -129,6 +129,51 @@ void main() {
     }
   });
 
+  testWidgets('guest join title stays fully painted behind a back button', (tester) async {
+    const surface = Size(320, 640);
+    final session = await pumpWithTextScale(
+      tester,
+      Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => GroupCallGuestJoinPage(
+                      inviteToken: 'c' * 43,
+                      callId: 'monthly',
+                      tokenClientFactory: () => null,
+                      onReady: (
+                        context, {
+                        required room,
+                        required credentials,
+                        required displayName,
+                        required tokenClient,
+                      }) async {},
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Open guest join'),
+            ),
+          ),
+        ),
+      ),
+      scale: 2,
+      surface: surface,
+    );
+    await tester.tap(find.text('Open guest join'));
+    await settleLargeText(tester);
+    session.check();
+
+    final title = find.text('Join as a guest');
+    expect(title, findsOneWidget);
+    expectOnPhone(tester, title, surface: surface);
+    expectNoMidWordWrap(tester, title);
+    expectTextFitsItsBox(tester, title);
+  });
+
   testWidgets('in-call controls stay hittable at text scales 2.0 and 3.0', (tester) async {
     for (final scale in _callTextScales) {
       await _expectControls(tester, scale: scale, host: false, canShare: false);
@@ -291,21 +336,13 @@ Future<void> expectScrolledFullyOnScreen(
   expectOnPhone(tester, finder);
 }
 
-void expectOnPhone(WidgetTester tester, Finder finder) {
+void expectOnPhone(WidgetTester tester, Finder finder, {Size surface = largeTextPhoneSurface}) {
   expect(finder, findsWidgets);
   final rect = tester.getRect(finder.first);
   expect(rect.left, greaterThanOrEqualTo(-0.5), reason: 'left ${rect.left}');
   expect(rect.top, greaterThanOrEqualTo(-0.5), reason: 'top ${rect.top}');
-  expect(
-    rect.right,
-    lessThanOrEqualTo(largeTextPhoneSurface.width + 0.5),
-    reason: 'right ${rect.right}',
-  );
-  expect(
-    rect.bottom,
-    lessThanOrEqualTo(largeTextPhoneSurface.height + 0.5),
-    reason: 'bottom ${rect.bottom}',
-  );
+  expect(rect.right, lessThanOrEqualTo(surface.width + 0.5), reason: 'right ${rect.right}');
+  expect(rect.bottom, lessThanOrEqualTo(surface.height + 0.5), reason: 'bottom ${rect.bottom}');
   expect(rect.width, greaterThan(0));
   expect(rect.height, greaterThan(0));
 }

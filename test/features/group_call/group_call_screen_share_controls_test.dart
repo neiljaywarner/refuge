@@ -153,6 +153,7 @@ void main() {
     await room.pump(tester);
 
     expect(find.text('Let guests share'), findsOneWidget);
+    expect(find.bySemanticsLabel('Let guests share'), findsOneWidget);
     expect(room.guestShareUpdates, isEmpty);
 
     await tester.tap(find.byKey(const Key('group_call_guest_share_switch')));

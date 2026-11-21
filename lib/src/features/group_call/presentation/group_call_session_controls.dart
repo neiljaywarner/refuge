@@ -139,16 +139,18 @@ class GroupCallSessionControls extends StatelessWidget {
       children: [
         Padding(
           padding: const .fromLTRB(16, 4, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Let guests share'),
-              Switch(
-                key: const Key('group_call_guest_share_switch'),
-                value: guestShareAllowed,
-                onChanged: onGuestShare,
-              ),
-            ],
+          child: MergeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Let guests share'),
+                Switch(
+                  key: const Key('group_call_guest_share_switch'),
+                  value: guestShareAllowed,
+                  onChanged: onGuestShare,
+                ),
+              ],
+            ),
           ),
         ),
         bar,

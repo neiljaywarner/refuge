@@ -19,8 +19,8 @@ double _guestJoinToolbarHeight(BuildContext context) {
   final style = theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge;
   final screen = MediaQuery.sizeOf(context).width;
   final leading = Navigator.maybeOf(context)?.canPop() ?? false;
-  final side = leading ? kToolbarHeight : 16.0;
-  final width = (screen - side - 16).clamp(0.0, screen);
+  final leadingWidth = leading ? kToolbarHeight : 0.0;
+  final width = (screen - leadingWidth - 32).clamp(0.0, screen);
   final painter = TextPainter(
     text: TextSpan(text: 'Join as a guest', style: style),
     textDirection: Directionality.of(context),
