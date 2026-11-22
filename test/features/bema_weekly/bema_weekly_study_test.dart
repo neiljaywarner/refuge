@@ -197,6 +197,84 @@ void main() {
     expect(find.text('Show notes'), findsNothing);
   });
 
+  test('a Firestore row with a generated id is still this week\'s study', () {
+    const oldDump = '''
+BEMA 183 — Revelation — Seals from Scripture
+The Return of the Horses
+
+Gathering: Sundays, 7:30 PM CT
+Listen: https://www.bemadiscipleship.com/183
+Show notes: https://www.bemadiscipleship.com/183
+Transcript: https://docs.google.com/document/d/example/pub
+''';
+    final cloud = Post(
+      id: 'firestore-week-183',
+      authorName: 'Weekly Study',
+      spaceKey: 'study',
+      toneTag: '[Question]',
+      content: oldDump,
+      timestamp: DateTime.utc(2026, 11, 22, 18),
+      reactions: const {},
+    );
+    expect(weeklyStudyForPostId(cloud.id), isNull);
+    expect(weeklyStudyForPost(cloud), same(bemaEpisode183));
+  });
+
+  testWidgets('the home feed paints the structured post, not the stored URL dump', (tester) async {
+    const oldDump = '''
+BEMA 183 — Revelation — Seals from Scripture
+The Return of the Horses
+
+Gathering: Sundays, 7:30 PM CT
+Listen: https://www.bemadiscipleship.com/183
+Show notes: https://www.bemadiscipleship.com/183
+Transcript: https://docs.google.com/document/d/example/pub
+Discussion video: https://www.youtube.com/watch?v=q4RSOhwDV4M
+Apple Podcasts: https://podcasts.apple.com/us/podcast/the-bema-podcast/id1148115183
+''';
+    for (final width in <double>[390, 1280]) {
+      final repository = LocalPostRepository(isDevMode: false);
+      await repository.getPosts(spaceKey: 'study');
+      repository.absorbCloudPosts([
+        Post(
+          id: 'firestore-week-183',
+          authorName: 'Weekly Study',
+          spaceKey: 'study',
+          toneTag: '[Question]',
+          content: oldDump,
+          timestamp: DateTime.utc(2026, 11, 22, 18),
+          reactions: const {},
+        ),
+      ]);
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = Size(width, 1800);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [postRepositoryProvider.overrideWithValue(repository)],
+          child: MaterialApp(
+            home: RefugeHomeScreen(repository: repository, initialSpace: 'study'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('This week is BEMA'), findsWidgets);
+      expect(find.textContaining('Listen: https://'), findsNothing);
+      expect(find.textContaining('BEMA 183 —'), findsNothing);
+      expect(find.byKey(const Key('bema_post_firestore-week-183_show_notes')), findsOneWidget);
+      expect(find.byKey(const Key('bema_post_firestore-week-183_listen')), findsOneWidget);
+
+      final notes = tester.getSize(find.byKey(const Key('bema_card_show_notes')));
+      final apple = tester.getSize(find.byKey(const Key('bema_card_apple_podcasts')));
+      final questions = tester.getSize(find.byKey(const Key('bema_card_questions')));
+      expect(apple.width, notes.width);
+      expect(questions.width, notes.width);
+      expect(notes.width, greaterThan(width == 390 ? 120 : 200));
+    }
+  });
+
   testWidgets('Join the weekly call opens the lobby for bema-weekly', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(412, 915);

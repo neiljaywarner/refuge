@@ -94,7 +94,7 @@ class BemaThisWeekCard extends StatelessWidget {
           );
           if (!wide) {
             return Column(
-              crossAxisAlignment: .start,
+              crossAxisAlignment: .stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
                 heading,
@@ -106,7 +106,7 @@ class BemaThisWeekCard extends StatelessWidget {
             );
           }
           return Column(
-            crossAxisAlignment: .start,
+            crossAxisAlignment: .stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(

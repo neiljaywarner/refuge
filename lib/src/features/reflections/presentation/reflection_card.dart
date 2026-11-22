@@ -57,7 +57,7 @@ class ReflectionCard extends ConsumerWidget {
     final hasSupported = post.hasMemberReacted('peace', currentUserId);
     final hasEncouraged = post.hasMemberReacted('encouraged', currentUserId);
     final hasRelated = post.hasMemberReacted('relatable', currentUserId);
-    final weeklyStudy = weeklyStudyForPostId(post.id);
+    final weeklyStudy = weeklyStudyForPost(post);
 
     return Container(
       key: Key('reflection_card_${post.id}'),

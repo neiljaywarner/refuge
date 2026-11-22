@@ -223,9 +223,9 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           UnbrokenBodyText(
-                            text: weeklyStudyForPostId(post.id) == null
+                            text: weeklyStudyForPost(post) == null
                                 ? post.content
-                                : weeklyDiscussionBody(weeklyStudyForPostId(post.id)!),
+                                : weeklyDiscussionBody(weeklyStudyForPost(post)!),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

@@ -65,7 +65,15 @@ class RefugeHomeScreen extends HookConsumerWidget {
   final PostRepository? repository;
   final ThemeNotifier? themeNotifier;
 
-  const RefugeHomeScreen({super.key, this.repository, this.themeNotifier});
+  /// Feed room shown on the first frame. The app opens Prayer Sanctuary.
+  final String initialSpace;
+
+  const RefugeHomeScreen({
+    super.key,
+    this.repository,
+    this.themeNotifier,
+    this.initialSpace = 'prayer',
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,7 +86,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
     final analytics = ref.watch(communityAnalyticsServiceProvider);
 
-    final selectedSpace = useState<String>('prayer');
+    final selectedSpace = useState<String>(initialSpace);
     final activeFilter = useState<String>('All');
     final activeSort = useState<FeedSortOption>(FeedSortOption.latest);
     final activityTimestampsAsync = ref.watch(postActivityTimestampsProvider);

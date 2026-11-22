@@ -187,7 +187,7 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   /// A cloud copy of the same id can still carry the earlier URL dump. The
   /// feed paints from the study record, and the stored text matches it.
   Post _withReadableWeeklyBody(Post post) {
-    final study = weeklyStudyForPostId(post.id);
+    final study = weeklyStudyForPost(post);
     if (study == null) return post;
     final body = weeklyDiscussionBody(study);
     return post.content == body ? post : post.copyWith(content: body);

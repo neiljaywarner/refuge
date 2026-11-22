@@ -56,6 +56,30 @@ BemaWeeklyStudy? weeklyStudyForPostId(String id) {
   return null;
 }
 
+/// Study for a feed row, including a Firestore copy whose document id is not
+/// `bema-week-<n>`.
+///
+/// The live dev row was written by the earlier preview. Its id can be the
+/// stable id or a generated one, and its stored text can still be the URL
+/// dump. The home feed paints the structured post for either shape.
+BemaWeeklyStudy? weeklyStudyForPost(Post post) {
+  final byId = weeklyStudyForPostId(post.id);
+  if (byId != null) return byId;
+  for (final study in kBemaWeeklyStudies) {
+    if (_cloudRowMatchesStudy(post, study)) return study;
+  }
+  return null;
+}
+
+bool _cloudRowMatchesStudy(Post post, BemaWeeklyStudy study) {
+  if (post.spaceKey.trim().toLowerCase() != study.spaceKey) return false;
+  if (post.authorName.trim().toLowerCase() == 'weekly study') return true;
+  final content = post.content;
+  return content.contains('BEMA ${study.episodeNumber}') &&
+      content.contains(study.title) &&
+      (content.contains('Listen:') || content.contains('This week is BEMA'));
+}
+
 /// BEMA 183, verified 22 Nov 2026 from https://www.bemadiscipleship.com/183.
 ///
 /// Standard questions are from the group-start guide:

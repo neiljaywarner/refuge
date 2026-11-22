@@ -67,26 +67,31 @@ class BemaWeeklySourceLinks extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final stacked = constraints.maxWidth < 300;
+        // The home column passes a bounded width. A loose max still has to
+        // produce equal rectangles, not shrink-wrapped pills.
+        final maxWidth = constraints.maxWidth.isFinite && constraints.maxWidth > 0
+            ? constraints.maxWidth
+            : 360.0;
+        final stacked = maxWidth < 300;
         final rows = <Widget>[];
         if (stacked) {
           for (var i = 0; i < links.length; i++) {
             if (i > 0) rows.add(const SizedBox(height: 8));
-            rows.add(_button(links[i]));
+            rows.add(_button(links[i], maxWidth));
           }
         } else {
+          final half = (maxWidth - 8) / 2;
           for (var i = 0; i < links.length; i += 2) {
             if (rows.isNotEmpty) rows.add(const SizedBox(height: 8));
-            final left = _button(links[i]);
             if (i + 1 >= links.length) {
-              rows.add(left);
+              rows.add(_button(links[i], maxWidth));
             } else {
               rows.add(
                 Row(
                   children: [
-                    Expanded(child: left),
+                    _button(links[i], half),
                     const SizedBox(width: 8),
-                    Expanded(child: _button(links[i + 1])),
+                    _button(links[i + 1], half),
                   ],
                 ),
               );
@@ -98,16 +103,24 @@ class BemaWeeklySourceLinks extends StatelessWidget {
     );
   }
 
-  Widget _button(_LabeledLink link) => OutlinedButton(
-    key: Key(link.keyName),
-    style: OutlinedButton.styleFrom(
-      foregroundColor: foregroundColor,
-      minimumSize: const Size(48, 44),
-      padding: const .symmetric(horizontal: 10, vertical: 10),
-      textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.2),
+  Widget _button(_LabeledLink link, double width) => SizedBox(
+    width: width,
+    height: 48,
+    child: OutlinedButton(
+      key: Key(link.keyName),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foregroundColor,
+        minimumSize: Size(width, 48),
+        maximumSize: Size(width, 48),
+        fixedSize: Size(width, 48),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const .symmetric(horizontal: 8),
+        shape: const RoundedRectangleBorder(borderRadius: .all(.circular(10))),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.15),
+      ),
+      onPressed: link.onPressed,
+      child: Text(link.label, textAlign: .center, maxLines: 1, overflow: TextOverflow.ellipsis),
     ),
-    onPressed: link.onPressed,
-    child: Text(link.label, textAlign: .center),
   );
 }
 
