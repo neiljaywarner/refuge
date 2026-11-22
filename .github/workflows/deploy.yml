@@ -1,3 +1,6 @@
+# TEMPORARY preview branch temp/carina-preview-991-992.
+# A workflow_dispatch here publishes the dev Hosting site only.
+# Do not merge this file. It refuses production Hosting.
 name: Deploy
 
 on:
@@ -7,11 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Print the release plan and skip Firebase
+        description: Print the dev deploy plan and skip Firebase
         type: boolean
         default: false
       production:
-        description: Publish production Hosting. Leave off unless this is a release.
+        description: Ignored on this temporary branch. Production Hosting is refused.
         type: boolean
         default: false
       distribute_android:
@@ -88,22 +91,29 @@ jobs:
           POSTHOG_HOST: https://us.i.posthog.com
           # Dev web only. tool/deploy_release.dart must not pass this define.
           DEV_EXAMPLE_PASSWORD: ${{ secrets.DEV_EXAMPLE_PASSWORD }}
+          # Preview group call on the dev web build. The endpoint is a public
+          # mint that returns 401 without sign-in. A repository variable wins
+          # when it is set; otherwise the shell uses the documented preview URL.
+          STREAM_VIDEO_PREVIEW: "true"
+          STREAM_TOKEN_ENDPOINT: "${{ vars.STREAM_TOKEN_ENDPOINT }}"
         run: |
           set -eu
           short="${GITHUB_SHA::7}"
-          # Push to main deploys the dev site only. A v* tag publishes production
-          # Hosting and uploads the release APK to App Distribution. A manual
-          # release does the same when production and distribute_android are on.
+          # This temporary branch never publishes production Hosting, Cloud
+          # Functions, or security rules, and it never runs deploy_release.dart.
+          if [ "${{ github.ref_type }}" = "tag" ] || { [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.production }}" = "true" ]; }; then
+            echo "Refusing production publish from temp/carina-preview-991-992."
+            echo "This branch deploys the dev Hosting site only."
+            exit 1
+          fi
+          if [ -z "${STREAM_TOKEN_ENDPOINT:-}" ]; then
+            STREAM_TOKEN_ENDPOINT='https://kcgsbtaamipkfmiluczb.supabase.co/functions/v1/mint-stream-call-token'
+            export STREAM_TOKEN_ENDPOINT
+          fi
+          echo "Deploy target: dev Hosting only (dev-belongonthespectrum). Production, functions, and rules are not deployed."
+          echo "Stream video preview flag is on. Token endpoint is set. The endpoint value is not printed."
           if [ "${{ steps.firebase_auth.outputs.mode }}" = "dry" ]; then
-            flutter pub run tool/deploy_release.dart --version "ci-$short" --dry-run
-          elif [ "${{ github.ref_type }}" = "tag" ]; then
-            flutter pub run tool/deploy_release.dart --version "${GITHUB_REF_NAME}" --prod --distribute-android
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.production }}" = "true" ]; then
-            args=(--version "release-$short" --prod)
-            if [ "${{ inputs.distribute_android }}" = "true" ]; then
-              args+=(--distribute-android)
-            fi
-            flutter pub run tool/deploy_release.dart "${args[@]}"
+            flutter pub run tool/deploy_dev_web.dart --version "ci-$short" --dry-run
           else
             dev_args=(--version "ci-$short" --build-android)
             if [ -n "${FIREBASE_ANDROID_DEV_APP_ID:-}" ]; then
