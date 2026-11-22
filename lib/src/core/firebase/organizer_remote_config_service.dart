@@ -32,7 +32,7 @@ class OrganizerRemoteConfig {
     welcomeTitle: brand.defaultOrganizerWelcomeTitle,
     welcomeMessage: brand.defaultOrganizerWelcomeMessage,
     bannerEnabled: true,
-    dfwChurchUrl: brand.partnerOrgUrl,
+    dfwChurchUrl: 'https://dfwchurch.org',
     communityGuidelinesMarkdown: _defaultGuidelines,
     androidAppDownloadUrl: '',
     iosAppDownloadUrl: '',

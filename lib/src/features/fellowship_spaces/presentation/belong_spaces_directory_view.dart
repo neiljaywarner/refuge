@@ -161,36 +161,65 @@ class _SpaceRowTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    return ListTile(
-      dense: true,
-      selected: isSelected,
-      leading: ExcludeSemantics(child: Text(item.emoji, style: const TextStyle(fontSize: 18))),
-      title: Text(
-        item.title,
-        style: TextStyle(
-          fontSize: 13.5,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+    final opensLink = item.externalUrl != null;
+    final trailing = opensLink
+        ? Icon(Icons.open_in_new_rounded, size: 16, color: primary)
+        : item.phoneInstallFocus != null
+        ? Icon(Icons.menu_book_outlined, size: 18, color: primary)
+        : item.isComingSoon
+        ? Container(
+            padding: const .symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.1),
+              borderRadius: .circular(999),
+            ),
+            child: Text(
+              item.slug.startsWith('link_') ? 'Pending' : 'Coming Soon',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: primary),
+            ),
+          )
+        : const Icon(Icons.chevron_right_rounded, size: 18);
+    return Semantics(
+      button: true,
+      label: opensLink ? 'Open ${item.title}' : item.title,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const .symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              crossAxisAlignment: .start,
+              children: [
+                ExcludeSemantics(child: Text(item.emoji, style: const TextStyle(fontSize: 18))),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: .start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                        ),
+                      ),
+                      Text(item.subtitle, style: const TextStyle(fontSize: 11.5)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.34),
+                  child: trailing,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 11.5)),
-      trailing: item.externalUrl != null
-          ? Icon(Icons.open_in_new_rounded, size: 16, color: primary)
-          : item.phoneInstallFocus != null
-          ? Icon(Icons.menu_book_outlined, size: 18, color: primary)
-          : item.isComingSoon
-          ? Container(
-              padding: const .symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.1),
-                borderRadius: .circular(999),
-              ),
-              child: Text(
-                item.slug.startsWith('link_') ? 'Pending' : 'Coming Soon',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: primary),
-              ),
-            )
-          : const Icon(Icons.chevron_right_rounded, size: 18),
-      onTap: onTap,
     );
   }
 }
