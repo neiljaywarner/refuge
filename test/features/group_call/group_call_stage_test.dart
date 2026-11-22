@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -244,8 +245,66 @@ void main() {
         surface: surface,
       );
       expect(find.text('Fellow Member is sharing'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+            child: child ?? const SizedBox.shrink(),
+          ),
+          home: Scaffold(
+            body: GroupCallStage(
+              key: ValueKey('pending-$scale'),
+              trackPending: true,
+              presenter: const GroupCallPresenter(
+                userId: 'member-1',
+                name: 'Fellow Member',
+                local: false,
+              ),
+              grid: const Text('grid'),
+              shareTile: const GroupCallScreenShareStarting(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('group_call_back_to_grid')));
+      await tester.pump();
+      expect(tester.takeException(), isNull, reason: 'pending grid at text scale $scale');
+      expect(find.byKey(const Key('group_call_share_grid')), findsOneWidget);
+      expectMessageFits(tester, GroupCallScreenShareStarting.label);
+      final message = tester.getRect(find.text(GroupCallScreenShareStarting.label));
+      expect(message.top, greaterThanOrEqualTo(-0.5));
+      expect(message.bottom, lessThanOrEqualTo(surface.height + 0.5));
+      final tile = tester.getRect(find.byKey(const Key('group_call_screen_share_tile')));
+      expect(tile.width, greaterThanOrEqualTo(48));
+      expect(tile.height, greaterThanOrEqualTo(48));
     }
   });
+}
+
+/// The starting line is fully painted. A 48dp slot clips it at large text
+/// without throwing, because [Text] clips instead of overflowing.
+void expectMessageFits(WidgetTester tester, String text) {
+  final paragraph = tester.renderObject<RenderParagraph>(find.text(text));
+  final painter = TextPainter(
+    text: paragraph.text,
+    textAlign: paragraph.textAlign,
+    textDirection: paragraph.textDirection,
+    textScaler: paragraph.textScaler,
+    maxLines: paragraph.maxLines,
+    locale: paragraph.locale,
+    strutStyle: paragraph.strutStyle,
+    textWidthBasis: paragraph.textWidthBasis,
+    textHeightBehavior: paragraph.textHeightBehavior,
+  )..layout(maxWidth: paragraph.size.width);
+  expect(
+    painter.height,
+    lessThanOrEqualTo(paragraph.size.height + 1),
+    reason: 'clipped: painted ${painter.height} box ${paragraph.size.height} for "$text"',
+  );
+  painter.dispose();
 }
 
 Widget _area(_StageRoom room, {bool tile = true}) {
