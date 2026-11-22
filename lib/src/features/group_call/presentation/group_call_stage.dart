@@ -61,12 +61,16 @@ class GroupCallStage extends StatelessWidget {
               Positioned(
                 left: 12,
                 top: 12,
-                child: DecoratedBox(
-                  key: const Key('group_call_presenter_label'),
-                  decoration: BoxDecoration(color: Colors.black54, borderRadius: .circular(8)),
-                  child: Padding(
-                    padding: const .all(8),
-                    child: Text(groupCallPresenterLabel(presenter)),
+                right: 12,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: DecoratedBox(
+                    key: const Key('group_call_presenter_label'),
+                    decoration: BoxDecoration(color: Colors.black54, borderRadius: .circular(8)),
+                    child: Padding(
+                      padding: const .all(8),
+                      child: Text(groupCallPresenterLabel(presenter)),
+                    ),
                   ),
                 ),
               ),
