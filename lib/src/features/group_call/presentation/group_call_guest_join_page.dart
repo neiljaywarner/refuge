@@ -11,6 +11,27 @@ import 'group_call_lobby.dart';
 
 typedef StreamGuestTokenClientFactory = StreamGuestTokenClient? Function();
 
+/// AppBar clamps a title to 1.34 and then ellipsizes it. "Join as a guest"
+/// is wider than a phone title slot at that scale, so the bar grows and the
+/// title wraps on word boundaries instead of clipping.
+double _guestJoinToolbarHeight(BuildContext context) {
+  final theme = Theme.of(context);
+  final style = theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge;
+  final screen = MediaQuery.sizeOf(context).width;
+  final leading = Navigator.maybeOf(context)?.canPop() ?? false;
+  final leadingWidth = leading ? kToolbarHeight : 0.0;
+  final width = (screen - leadingWidth - 32).clamp(0.0, screen);
+  final painter = TextPainter(
+    text: TextSpan(text: 'Join as a guest', style: style),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.34),
+    maxLines: 3,
+  )..layout(maxWidth: width);
+  final height = painter.height + 8;
+  painter.dispose();
+  return height < kToolbarHeight ? kToolbarHeight : height;
+}
+
 /// Builds the guest client for a link. Tests pass a fake.
 typedef GuestJoinClientBuilder = StreamGuestTokenClient? Function({
   required String inviteToken,
@@ -150,7 +171,10 @@ class _GroupCallGuestJoinPageState extends State<GroupCallGuestJoinPage> {
     final room = widget.callId;
     return Scaffold(
       key: const Key('group_call_guest_join_page'),
-      appBar: AppBar(title: const Text('Join as a guest')),
+      appBar: AppBar(
+        toolbarHeight: _guestJoinToolbarHeight(context),
+        title: const Text('Join as a guest', softWrap: true, overflow: TextOverflow.clip),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const .all(24),
