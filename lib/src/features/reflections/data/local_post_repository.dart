@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../bema_weekly/bema_weekly_study.dart';
 import '../domain/post.dart';
 import '../domain/reaction_member.dart';
 import 'canonical_organizer_starter_posts.dart';
@@ -127,7 +128,9 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
 
   /// Drops posts in [spaceKey] that a successful cloud snapshot no longer has.
   ///
-  /// Demo seeds and [pendingIds] stay. Other spaces stay.
+  /// Demo seeds, the weekly discussion post, and [pendingIds] stay. Other
+  /// spaces stay. The weekly row is seeded on this device with a stable id,
+  /// so a snapshot that has not stored it yet must not erase the thread.
   void retainAuthoritativeSpace({
     required String spaceKey,
     required Set<String> cloudIds,
@@ -138,6 +141,7 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
     _store.removeWhere((post) {
       if (normalizeReflectionSpaceKey(post.spaceKey) != wanted) return false;
       if (post.isDemo) return false;
+      if (isWeeklyDiscussionPostId(post.id)) return false;
       if (post.publishStatus == PostPublishStatus.pending) return false;
       if (pendingIds.contains(post.id)) return false;
       return !cloudIds.contains(post.id);
@@ -330,9 +334,41 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
     _notify();
   }
 
+  /// Inserts or refreshes the current week's discussion post.
+  ///
+  /// The id comes from the episode number, so a second load does not add a
+  /// duplicate. A config edit for the same episode updates the text and keeps
+  /// reactions. Repositories built with an explicit post list skip this so
+  /// tests stay in control of their rows.
+  void _ensureWeeklyDiscussion() {
+    if (_suppressOrganizerStarters) return;
+    final post = weeklyDiscussionPost(currentBemaWeeklyStudy);
+    final index = _store.indexWhere((existing) => existing.id == post.id);
+    if (index == -1) {
+      _store.insert(0, post);
+      _notify();
+      return;
+    }
+    final existing = _store[index];
+    if (existing.content == post.content &&
+        existing.spaceKey == post.spaceKey &&
+        existing.authorName == post.authorName &&
+        existing.toneTag == post.toneTag) {
+      return;
+    }
+    _store[index] = existing.copyWith(
+      content: post.content,
+      spaceKey: post.spaceKey,
+      authorName: post.authorName,
+      toneTag: post.toneTag,
+    );
+    _notify();
+  }
+
   @override
   Future<List<Post>> getPosts({required String spaceKey}) async {
     _ensureOrganizerStartersForSpace(spaceKey);
+    _ensureWeeklyDiscussion();
     return _store.where((p) => p.spaceKey == spaceKey).toList();
   }
 
@@ -546,6 +582,7 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   }) => Stream<List<Post>>.multi((controller) {
     if (ensureStarterSpaceKey != null) {
       _ensureOrganizerStartersForSpace(ensureStarterSpaceKey);
+      _ensureWeeklyDiscussion();
     }
     List<Post> mapPosts(Iterable<Post> source) {
       final filtered = source.where(include);

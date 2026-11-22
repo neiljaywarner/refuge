@@ -8,6 +8,8 @@ import '../../../core/presentation/async_action_button.dart';
 import '../../../core/presentation/unbroken_body_text.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
+import '../../bema_weekly/bema_weekly_source_links.dart';
+import '../../bema_weekly/bema_weekly_study.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../profile/domain/member_profile.dart';
@@ -55,6 +57,7 @@ class ReflectionCard extends ConsumerWidget {
     final hasSupported = post.hasMemberReacted('peace', currentUserId);
     final hasEncouraged = post.hasMemberReacted('encouraged', currentUserId);
     final hasRelated = post.hasMemberReacted('relatable', currentUserId);
+    final weeklyStudy = weeklyStudyForPostId(post.id);
 
     return Container(
       key: Key('reflection_card_${post.id}'),
@@ -327,6 +330,10 @@ class ReflectionCard extends ConsumerWidget {
                 ),
               ),
             ),
+          ],
+          if (weeklyStudy != null) ...[
+            const SizedBox(height: 8),
+            BemaWeeklySourceLinks(study: weeklyStudy, idPrefix: 'bema_post_${post.id}'),
           ],
           const SizedBox(height: 8),
           Semantics(

@@ -16,6 +16,9 @@ import 'features/admin/domain/ban_standing.dart';
 import 'features/admin/presentation/account_paused_banner.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/simple_auth.dart';
+import 'features/bema_weekly/bema_this_week_card.dart';
+import 'features/bema_weekly/bema_weekly_study.dart';
+import 'features/group_call/presentation/group_call_flow.dart';
 import 'features/auth/presentation/unverified_email_banner.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
@@ -365,6 +368,24 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
               final feedSlivers = <Widget>[
                 ...navigationSlivers,
+                if (selectedSpace.value != 'saved_for_later')
+                  SliverToBoxAdapter(
+                    child: BemaThisWeekCard(
+                      study: currentBemaWeeklyStudy,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      onJoinCall: () => openGroupCallLobby(
+                        context: context,
+                        displayName: profile.displayName,
+                        initialCallId: currentBemaWeeklyStudy.callRoom,
+                        shareOrigin: Uri.parse(flavor.websiteUrl),
+                      ),
+                      onOpenDiscussion: () {
+                        selectSpace(currentBemaWeeklyStudy.spaceKey);
+                        highlightedPostId.value = currentBemaWeeklyStudy.discussionPostId;
+                      },
+                    ),
+                  ),
                 if (selectedSpace.value == 'saved_for_later')
                   SliverToBoxAdapter(
                     child: Container(
