@@ -88,7 +88,7 @@ void main() {
       await $(const Key('profile_email_field')).enterText('marty@belongonthespectrum.com');
 
       // Open dropdown and select 'DFW Church (Partner)'
-      await $(const Key('profile_church_affiliation_dropdown')).tap();
+      await $(const Key('profile_church_dropdown_trigger_button')).tap();
       await $.pumpAndSettle();
 
       await $('DFW Church (Partner)').last.tap();
@@ -131,7 +131,7 @@ void main() {
       await $(const Key('profile_email_field')).enterText('jordan@example.com');
 
       // Open dropdown and select non-member option
-      await $(const Key('profile_church_affiliation_dropdown')).tap();
+      await $(const Key('profile_church_dropdown_trigger_button')).tap();
       await $.pumpAndSettle();
 
       await $('I am not a member of an ICOC church').last.tap();

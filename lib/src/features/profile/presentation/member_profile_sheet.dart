@@ -128,6 +128,23 @@ class MemberProfileDialog extends HookConsumerWidget {
       return null;
     }, [profile.icocChurchAffiliation]);
     final validationError = useState<String?>(null);
+    final firstNameFocus = useFocusNode();
+    final lastNameFocus = useFocusNode();
+    final emailFocus = useFocusNode();
+    final churchFocus = useFocusNode();
+    final bioFocus = useFocusNode();
+    useEffect(() {
+      final nodes = [firstNameFocus, lastNameFocus, emailFocus, churchFocus, bioFocus];
+      void listener() => _scheduleProfileFieldReveal(nodes);
+      for (final node in nodes) {
+        node.addListener(listener);
+      }
+      return () {
+        for (final node in nodes) {
+          node.removeListener(listener);
+        }
+      };
+    }, [firstNameFocus, lastNameFocus, emailFocus, churchFocus, bioFocus]);
 
     final allAffiliationOptions = [
       ...brand.fellowshipAffiliationOptions,
@@ -135,12 +152,31 @@ class MemberProfileDialog extends HookConsumerWidget {
     ];
 
     final liveAuth = _liveFirebaseAuthWithUser();
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-    // Above this, the pinned Sign Out / Cancel / Save row stacks and eats the
-    // dialog, leaving Experimental Preview Features below the fold (#932).
+    final media = MediaQuery.of(context);
+    final textScale = media.textScaler.scale(1);
+    // Above this, Sign Out / Cancel / Save stack so each stays a full-width
+    // target and Experimental Preview Features can scroll into view (#932).
     final largeText = textScale > 1.15;
-    final available = MediaQuery.sizeOf(context).width - 80;
+    final keyboardInset = media.viewInsets.bottom;
+    final keyboardUp = keyboardInset > 0;
+    useEffect(() {
+      if (keyboardInset <= 0) return null;
+      _scheduleProfileFieldReveal([
+        firstNameFocus,
+        lastNameFocus,
+        emailFocus,
+        churchFocus,
+        bioFocus,
+      ]);
+      return null;
+    }, [keyboardInset, firstNameFocus, lastNameFocus, emailFocus, churchFocus, bioFocus]);
+    final available = media.size.width - (keyboardUp ? 24 : 80);
     final sheetWidth = available < 380 ? available.clamp(220.0, 380.0) : 380.0;
+    final fieldGap = keyboardUp ? 8.0 : 12.0;
+    // A 2-line bio is taller than the band above the keyboard on a short phone.
+    final bioLines = keyboardUp && media.size.height - keyboardInset < 420 ? 1 : 2;
+    final baseInset = SystemInsets.dialogInsetPadding(media);
+    final insetPadding = keyboardUp ? EdgeInsets.fromLTRB(12, baseInset.top, 12, 8) : baseInset;
 
     Future<void> signOut() async {
       await ref.read(memberProfileProvider.notifier).signOut();
@@ -205,7 +241,10 @@ class MemberProfileDialog extends HookConsumerWidget {
         minimumSize: largeText ? const Size(48, 48) : null,
       ),
       onPressed: saveProfile,
-      child: Text(profile.isSignedIn ? 'Save Profile' : 'Save & Sign In'),
+      child: Text(
+        profile.isSignedIn ? 'Save Profile' : 'Save & Sign In',
+        textAlign: TextAlign.center,
+      ),
     );
     Widget stretch(Widget child) => Row(children: [Expanded(child: child)]);
     final stackedActions = Column(
@@ -218,64 +257,147 @@ class MemberProfileDialog extends HookConsumerWidget {
       ],
     );
 
-    return AlertDialog(
-      insetPadding: SystemInsets.dialogInsetPadding(MediaQuery.of(context)),
-      titlePadding: const .fromLTRB(20, 20, 20, 12),
-      contentPadding: const .fromLTRB(20, 4, 20, 12),
-      actionsPadding: const .fromLTRB(16, 0, 16, 12),
-      title: Row(
-        children: [
-          const BelongEditableAvatar(radius: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: .start,
-              mainAxisSize: .min,
-              children: [
-                Text(
-                  profile.isSignedIn ? profile.displayName : 'Member Profile & Sign-In',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                if (profile.isSignedIn && profile.email.isNotEmpty)
-                  Text(
-                    profile.email,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.75),
-                    ),
-                  )
-                else if (!profile.isSignedIn)
-                  Text(
-                    'Complete your fellowship profile',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.75),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          IconButton(
-            key: const Key('profile_sheet_close_button'),
-            icon: const Icon(Icons.close_rounded, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
-            tooltip: 'Close',
-          ),
-        ],
+    final stackActions = largeText || keyboardUp;
+    final inlineActions = Align(
+      alignment: Alignment.centerRight,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.end,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [?signOutButton, cancelButton, saveButton],
       ),
-      content: SizedBox(
-        width: sheetWidth,
+    );
+
+    InputDecoration fieldDecoration({
+      required String label,
+      String? hintText,
+      String? helperText,
+    }) => InputDecoration(
+      labelText: largeText ? null : label,
+      hintText: hintText,
+      helperText: helperText,
+      isDense: true,
+      border: const OutlineInputBorder(),
+    );
+
+    Widget profileField({
+      required Key key,
+      required String label,
+      required String identifier,
+      required FocusNode focusNode,
+      required TextEditingController controller,
+      String? hintText,
+      String? helperText,
+      TextInputType? keyboardType,
+      TextCapitalization textCapitalization = TextCapitalization.none,
+      int maxLines = 1,
+    }) => _WrappingFieldLabel(
+      label: label,
+      largeText: largeText,
+      identifier: identifier,
+      child: TextField(
+        key: key,
+        focusNode: focusNode,
+        controller: controller,
+        keyboardType: keyboardType,
+        textCapitalization: textCapitalization,
+        maxLines: maxLines,
+        scrollPadding: const .symmetric(vertical: 8, horizontal: 8),
+        decoration: fieldDecoration(label: label, hintText: hintText, helperText: helperText),
+      ),
+    );
+
+    final firstNameField = profileField(
+      key: const Key('profile_display_name_field'),
+      label: 'First Name',
+      identifier: 'profile_display_name_field',
+      focusNode: firstNameFocus,
+      controller: firstNameController,
+      hintText: 'First name',
+      textCapitalization: TextCapitalization.words,
+    );
+    final lastNameField = profileField(
+      key: const Key('profile_last_name_field'),
+      label: 'Last Name',
+      identifier: 'profile_last_name_field',
+      focusNode: lastNameFocus,
+      controller: lastNameController,
+      hintText: 'Last name',
+      textCapitalization: TextCapitalization.words,
+    );
+
+    return Dialog(
+      insetPadding: insetPadding,
+      alignment: keyboardUp ? Alignment.topCenter : Alignment.center,
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: sheetWidth),
         child: SingleChildScrollView(
-          key: largeText ? const Key('profile_sheet_scroll') : null,
+          key: const Key('profile_sheet_scroll'),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+          padding: .fromLTRB(16, keyboardUp ? 8 : 16, 16, 12),
           child: Column(
             mainAxisSize: .min,
-            crossAxisAlignment: largeText ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
+            crossAxisAlignment: .stretch,
             children: [
+              Row(
+                crossAxisAlignment: .start,
+                children: [
+                  BelongEditableAvatar(radius: keyboardUp ? 16 : 20),
+                  SizedBox(width: keyboardUp ? 8 : 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: .start,
+                      mainAxisSize: .min,
+                      children: [
+                        Text(
+                          profile.isSignedIn ? profile.displayName : 'Member Profile & Sign-In',
+                          // One line while the keyboard is open so the first
+                          // field still fits on a short phone at large text.
+                          maxLines: keyboardUp ? 1 : 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: keyboardUp ? 15 : 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (!keyboardUp && profile.isSignedIn && profile.email.isNotEmpty)
+                          Text(
+                            profile.email,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).textTheme.bodySmall?.color
+                                  ?.withValues(alpha: 0.75),
+                            ),
+                          )
+                        else if (!keyboardUp && !profile.isSignedIn)
+                          Text(
+                            'Complete your fellowship profile',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Theme.of(context).textTheme.bodySmall?.color
+                                  ?.withValues(alpha: 0.75),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('profile_sheet_close_button'),
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Close',
+                    visualDensity: keyboardUp ? VisualDensity.compact : VisualDensity.standard,
+                  ),
+                ],
+              ),
+              SizedBox(height: keyboardUp ? 8 : 12),
               if (validationError.value != null) ...[
                 Container(
                   key: const Key('profile_validation_error_banner'),
                   padding: const .all(8),
-                  margin: const .only(bottom: 12),
+                  margin: .only(bottom: fieldGap),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.12),
                     borderRadius: .circular(8),
@@ -296,66 +418,38 @@ class MemberProfileDialog extends HookConsumerWidget {
                   ),
                 ),
               ],
-              Row(
-                crossAxisAlignment: .start,
-                children: [
-                  Expanded(
-                    child: _WrappingFieldLabel(
-                      label: 'First Name',
-                      largeText: largeText,
-                      child: TextField(
-                        key: const Key('profile_display_name_field'),
-                        controller: firstNameController,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          labelText: largeText ? null : 'First Name',
-                          hintText: 'First name',
-                          isDense: true,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _WrappingFieldLabel(
-                      label: 'Last Name',
-                      largeText: largeText,
-                      child: TextField(
-                        key: const Key('profile_last_name_field'),
-                        controller: lastNameController,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          labelText: largeText ? null : 'Last Name',
-                          hintText: 'Last name',
-                          isDense: true,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              if (largeText)
+                Column(
+                  crossAxisAlignment: .stretch,
+                  children: [
+                    firstNameField,
+                    SizedBox(height: fieldGap),
+                    lastNameField,
+                  ],
+                )
+              else
+                Row(
+                  crossAxisAlignment: .start,
+                  children: [
+                    Expanded(child: firstNameField),
+                    const SizedBox(width: 10),
+                    Expanded(child: lastNameField),
+                  ],
+                ),
               if (!profile.isSignedIn || profile.email.isEmpty) ...[
-                const SizedBox(height: 12),
-                _WrappingFieldLabel(
+                SizedBox(height: fieldGap),
+                profileField(
+                  key: const Key('profile_email_field'),
                   label: 'Email Address',
-                  largeText: largeText,
-                  child: TextField(
-                    key: const Key('profile_email_field'),
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: largeText ? null : 'Email Address',
-                      helperText: 'For notifications and account recovery',
-                      isDense: true,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
+                  identifier: 'profile_email_field',
+                  focusNode: emailFocus,
+                  controller: emailController,
+                  helperText: keyboardUp ? null : 'For notifications and account recovery',
+                  keyboardType: TextInputType.emailAddress,
                 ),
               ],
               if (brand.enableFellowshipAffiliationField) ...[
-                const SizedBox(height: 14),
+                SizedBox(height: keyboardUp ? 8 : 14),
                 Row(
                   mainAxisSize: .min,
                   children: [
@@ -372,105 +466,74 @@ class MemberProfileDialog extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  key: const Key('profile_church_affiliation_dropdown'),
-                  controller: churchAffiliationController,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding: const .symmetric(horizontal: 10, vertical: 10),
-                    border: const OutlineInputBorder(),
-                    hintText: 'Select or enter your church affiliation...',
-                    hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
-                    suffixIcon: PopupMenuButton<String>(
-                      key: const Key('profile_church_dropdown_trigger_button'),
-                      tooltip: 'Select church affiliation',
-                      icon: const Icon(Icons.arrow_drop_down, size: 24),
-                      onSelected: (val) {
-                        churchAffiliationController.text = val;
-                        selectedAffiliation.value = val;
-                        validationError.value = null;
-                      },
-                      itemBuilder: (context) => allAffiliationOptions.map((opt) {
-                        final isNonMember = opt == brand.fellowshipNonMemberOption;
-                        return PopupMenuItem<String>(
-                          value: opt,
-                          child: Text(
-                            opt,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                if (!keyboardUp) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
                   ),
-                  onTap: () async {
-                    final RenderBox? box = context.findRenderObject() as RenderBox?;
-                    final offset = box != null ? box.localToGlobal(Offset.zero) : Offset.zero;
-                    final size = box?.size ?? Size.zero;
-                    final selected = await showMenu<String>(
-                      context: context,
-                      position: RelativeRect.fromLTRB(
-                        offset.dx,
-                        offset.dy + size.height,
-                        offset.dx + size.width,
-                        offset.dy + size.height + 250,
-                      ),
-                      items: allAffiliationOptions.map((opt) {
-                        final isNonMember = opt == brand.fellowshipNonMemberOption;
-                        return PopupMenuItem<String>(
-                          value: opt,
-                          child: Text(
-                            opt,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                ],
+                const SizedBox(height: 6),
+                Semantics(
+                  identifier: 'profile_church_affiliation_dropdown',
+                  child: TextFormField(
+                    key: const Key('profile_church_affiliation_dropdown'),
+                    focusNode: churchFocus,
+                    controller: churchAffiliationController,
+                    scrollPadding: const .symmetric(vertical: 8, horizontal: 8),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const .symmetric(horizontal: 10, vertical: 10),
+                      border: const OutlineInputBorder(),
+                      hintText: 'Select or enter your church affiliation...',
+                      hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
+                      suffixIcon: PopupMenuButton<String>(
+                        key: const Key('profile_church_dropdown_trigger_button'),
+                        tooltip: 'Select church affiliation',
+                        icon: const Icon(Icons.arrow_drop_down, size: 24),
+                        onSelected: (val) {
+                          churchAffiliationController.text = val;
+                          selectedAffiliation.value = val;
+                          validationError.value = null;
+                        },
+                        itemBuilder: (context) => allAffiliationOptions.map((opt) {
+                          final isNonMember = opt == brand.fellowshipNonMemberOption;
+                          return PopupMenuItem<String>(
+                            value: opt,
+                            child: Text(
+                              opt,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                    if (selected != null) {
-                      churchAffiliationController.text = selected;
-                      selectedAffiliation.value = selected;
-                      validationError.value = null;
-                    }
-                  },
-                  onChanged: (val) {
-                    selectedAffiliation.value = val;
-                    if (val.trim().isNotEmpty) {
-                      validationError.value = null;
-                    }
-                  },
-                ),
-              ],
-              const SizedBox(height: 14),
-              _WrappingFieldLabel(
-                label: 'Bio / Note to Fellowship',
-                largeText: largeText,
-                child: TextField(
-                  key: const Key('profile_bio_field'),
-                  controller: bioController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: largeText ? null : 'Bio / Note to Fellowship',
-                    hintText: 'A quiet sentence about yourself',
-                    isDense: true,
-                    border: const OutlineInputBorder(),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      selectedAffiliation.value = val;
+                      if (val.trim().isNotEmpty) {
+                        validationError.value = null;
+                      }
+                    },
                   ),
                 ),
+              ],
+              SizedBox(height: keyboardUp ? 8 : 14),
+              profileField(
+                key: const Key('profile_bio_field'),
+                label: 'Bio / Note to Fellowship',
+                identifier: 'profile_bio_field',
+                focusNode: bioFocus,
+                controller: bioController,
+                hintText: 'A quiet sentence about yourself',
+                maxLines: bioLines,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: keyboardUp ? 8 : 12),
               const Divider(height: 10),
               Consumer(
                 builder: (context, ref, _) {
@@ -549,34 +612,56 @@ class MemberProfileDialog extends HookConsumerWidget {
                     ),
                   ),
               ],
-              if (largeText) ...[const SizedBox(height: 16), stackedActions],
+              SizedBox(height: stackActions ? 16 : 8),
+              if (stackActions) stackedActions else inlineActions,
             ],
           ),
         ),
       ),
-      actions: largeText ? null : [?signOutButton, cancelButton, saveButton],
     );
+  }
+}
+
+/// Brings the focused profile field to the top of the dialog scroll view
+/// after the caret's own reveal animation, so the whole field stays above
+/// the keyboard (#992).
+void _scheduleProfileFieldReveal(Iterable<FocusNode> nodes) {
+  for (final node in nodes) {
+    if (!node.hasFocus) continue;
+    Future<void>.delayed(const Duration(milliseconds: 160), () {
+      if (!node.hasFocus) return;
+      final fieldContext = node.context;
+      if (fieldContext == null || !fieldContext.mounted) return;
+      Scrollable.ensureVisible(fieldContext, alignment: 0.0, duration: Duration.zero);
+    });
   }
 }
 
 /// Floating field labels ellipsize to "First N…" at large text. Above the
 /// field they can wrap to as many lines as the words need.
 class _WrappingFieldLabel extends StatelessWidget {
-  const _WrappingFieldLabel({required this.label, required this.largeText, required this.child});
+  const _WrappingFieldLabel({
+    required this.label,
+    required this.largeText,
+    required this.child,
+    this.identifier,
+  });
 
   final String label;
   final bool largeText;
   final Widget child;
+  final String? identifier;
 
   @override
   Widget build(BuildContext context) {
-    if (!largeText) return child;
+    final field = Semantics(identifier: identifier, label: largeText ? label : null, child: child);
+    if (!largeText) return field;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ExcludeSemantics(child: Text(label)),
         const SizedBox(height: 4),
-        Semantics(label: label, child: child),
+        field,
       ],
     );
   }
