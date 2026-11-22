@@ -27,7 +27,9 @@ void main() {
       ($) async {
         final sageTheme = SensoryThemeData.getTheme(SensoryMode.sage);
         final container = ProviderContainer(
-          overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+          overrides: [
+            authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+          ],
         );
         addTearDown(container.dispose);
 
@@ -50,14 +52,16 @@ void main() {
           ),
         );
 
-        final buttonFinder = $(const Key('delete_my_account_button'));
-        expect(buttonFinder, findsOneWidget);
+        await $(const Key('profile_account_menu_button')).tap();
+        await $.pumpAndSettle();
 
-        final textButton = $.tester.widget<TextButton>(buttonFinder);
-        final foreground = textButton.style?.foregroundColor?.resolve({});
-        expect(foreground, equals(sageTheme.colorScheme.error));
-        expect(foreground, isNot(equals(Colors.white)));
-        expect(foreground, isNot(equals(sageTheme.colorScheme.onError)));
+        final label = $.tester.widget<Text>(find.text('Delete account'));
+        expect(label.style?.color, equals(sageTheme.colorScheme.error));
+        expect(label.style?.color, isNot(equals(Colors.white)));
+        expect(
+          label.style?.color,
+          isNot(equals(sageTheme.colorScheme.onError)),
+        );
       },
     );
 
@@ -72,7 +76,9 @@ void main() {
             home: Scaffold(
               body: Theme(
                 data: sageTheme.copyWith(
-                  colorScheme: sageTheme.colorScheme.copyWith(onError: sageTheme.colorScheme.error),
+                  colorScheme: sageTheme.colorScheme.copyWith(
+                    onError: sageTheme.colorScheme.error,
+                  ),
                 ),
                 child: const DeleteAccountButton(
                   key: Key('styled_delete_account_button'),

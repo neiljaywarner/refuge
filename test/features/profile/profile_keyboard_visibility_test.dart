@@ -5,9 +5,11 @@ import 'package:refuge4serverpod/src/constants/app_theme.dart';
 import 'package:refuge4serverpod/src/features/auth/data/auth_repository.dart';
 import 'package:refuge4serverpod/src/features/feedback/data/feature_voting_repository.dart';
 import 'package:refuge4serverpod/src/features/profile/data/profile_storage_service.dart';
+import 'package:refuge4serverpod/src/features/profile/domain/member_profile.dart';
 import 'package:refuge4serverpod/src/features/profile/presentation/member_profile_sheet.dart';
 import 'package:refuge4serverpod/src/features/sensory_themes/domain/sensory_mode.dart';
 
+import '../../helpers/keyboard_visibility.dart';
 import '../../support/test_font_loader.dart';
 
 const _fields = <Key>[
@@ -33,138 +35,164 @@ void main() {
     ProfileStorageService.instance.clear();
   });
 
-  for (final surface in const <(String, Size)>[
-    ('360x640', Size(360, 640)),
-    ('412x915', Size(412, 915)),
-  ]) {
-    for (final scale in const <double>[1.0, 1.3, 2.0, 3.0]) {
-      testWidgets('focused profile fields stay above a 45% keyboard on ${surface.$1} at '
-          'text scale $scale', (tester) async {
-        final inset = surface.$2.height * 0.45;
-        final overflows = _captureOverflows();
-        await _pumpProfile(
-          tester,
-          physicalSize: surface.$2,
-          textScale: scale,
-          inset: inset,
-        );
-        _expectNoOverflow(overflows, '${surface.$1} scale $scale after open');
+  for (final surface in keyboardPhoneSurfaces) {
+    for (final scale in const <double>[1.0, 2.0]) {
+      testWidgets(
+        'signed-in profile fields and Save stay above the keyboard on ${surface.$1} '
+        'at text scale $scale',
+        (tester) async {
+          final inset = surface.$3;
+          final overflows = captureOverflowErrors();
+          final container = await _pumpSignedInProfile(
+            tester,
+            logicalSize: surface.$2,
+            textScale: scale,
+            keyboardInset: inset,
+          );
+          addTearDown(container.dispose);
+          _expectNoAccountSection();
+          expectNoOverflow(overflows, '${surface.$1} scale $scale after open');
 
-        for (final key in _fields) {
-          final reason = '${surface.$1} scale $scale $key';
-          final field = find.byKey(key, skipOffstage: false);
           final scrollable = find.descendant(
             of: find.byKey(const Key('profile_sheet_scroll')),
             matching: find.byType(Scrollable),
           );
-          await tester.scrollUntilVisible(field, 80, scrollable: scrollable.first);
-          await tester.pump();
-          await tester.showKeyboard(field);
-          await tester.pump(const Duration(milliseconds: 250));
-          _expectNoOverflow(overflows, reason);
-          _expectFullyVisible(tester, find.byKey(key), inset: inset, reason: reason);
-        }
-
-        const saveReason = 'Save';
-        _expectNoOverflow(overflows, '${surface.$1} scale $scale $saveReason');
-        _expectFullyVisible(
-          tester,
-          find.byKey(const Key('profile_save_sign_in_button')),
-          inset: inset,
-          reason: '${surface.$1} scale $scale $saveReason',
-        );
-      });
+          for (final key in _fields) {
+            final reason = '${surface.$1} scale $scale $key';
+            await expectFocusedFieldAboveKeyboard(
+              tester,
+              field: find.byKey(key, skipOffstage: false),
+              pinned: find.byKey(const Key('profile_save_sign_in_button')),
+              keyboardInset: inset,
+              reason: reason,
+              scrollable: scrollable.first,
+            );
+            expectNoOverflow(overflows, reason);
+          }
+          expect(container.read(memberProfileProvider).isSignedIn, isTrue);
+        },
+      );
     }
   }
 
-  for (final scale in const <double>[1.0, 2.0, 3.0]) {
-    testWidgets('golden: profile keyboard-up layout at text scale $scale', (tester) async {
-      await _pumpProfile(
-        tester,
-        physicalSize: const Size(360, 640),
-        textScale: scale,
-        inset: 640 * 0.45,
-      );
-      await expectLater(
-        find.byType(MaterialApp),
-        matchesGoldenFile('goldens/profile_keyboard_scale_${scale.toStringAsFixed(0)}.png'),
-      );
-    });
-  }
+  testWidgets('account overflow menu signs out without a confirm dialog', (
+    tester,
+  ) async {
+    final container = await _pumpSignedInProfile(
+      tester,
+      logicalSize: const Size(411, 914),
+      textScale: 1,
+      keyboardInset: 0,
+    );
+    addTearDown(container.dispose);
+
+    expect(find.text('Sign Out'), findsNothing);
+    expect(find.text('Delete account'), findsNothing);
+    await tester.tap(find.byKey(const Key('profile_account_menu_button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('profile_sign_out_button')), findsOneWidget);
+    expect(find.byKey(const Key('delete_my_account_button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('profile_sign_out_button')));
+    await tester.pumpAndSettle();
+
+    expect(container.read(memberProfileProvider).isSignedIn, isFalse);
+    expect(find.byKey(const Key('profile_save_sign_in_button')), findsNothing);
+    expect(find.text('Are you sure?'), findsNothing);
+  });
+
+  testWidgets('delete confirmation Cancel does not delete the account', (
+    tester,
+  ) async {
+    final container = await _pumpSignedInProfile(
+      tester,
+      logicalSize: const Size(411, 914),
+      textScale: 1,
+      keyboardInset: 0,
+    );
+    addTearDown(container.dispose);
+
+    await tester.tap(find.byKey(const Key('profile_account_menu_button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('delete_my_account_button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('profile_delete_confirm_dialog')),
+      findsOneWidget,
+    );
+    expect(find.text('Are you sure?'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    final deleteButton = tester.widget<FilledButton>(
+      find.byKey(const Key('profile_delete_confirm_delete')),
+    );
+    final background = deleteButton.style?.backgroundColor?.resolve(
+      const <WidgetState>{},
+    );
+    expect(
+      background,
+      Theme.of(tester.element(find.text('Are you sure?'))).colorScheme.error,
+    );
+
+    await tester.tap(find.byKey(const Key('profile_delete_confirm_cancel')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Are you sure?'), findsNothing);
+    expect(
+      find.byKey(const Key('delete_my_account_confirm_field')),
+      findsNothing,
+    );
+    expect(container.read(memberProfileProvider).isSignedIn, isTrue);
+    expect(
+      find.byKey(const Key('profile_save_sign_in_button')),
+      findsOneWidget,
+    );
+  });
 }
 
-List<FlutterErrorDetails> _captureOverflows() {
-  final overflows = <FlutterErrorDetails>[];
-  final previous = FlutterError.onError;
-  FlutterError.onError = (details) {
-    final message = details.exceptionAsString();
-    if (message.contains('overflowed') || message.contains('RenderFlex')) {
-      overflows.add(details);
-      return;
-    }
-    previous?.call(details);
-  };
-  addTearDown(() => FlutterError.onError = previous);
-  return overflows;
+void _expectNoAccountSection() {
+  expect(find.text('Account'), findsNothing);
+  expect(find.text('Sign Out'), findsNothing);
+  expect(find.text('Delete account'), findsNothing);
 }
 
-void _expectNoOverflow(List<FlutterErrorDetails> overflows, String reason) {
-  if (overflows.isEmpty) return;
-  final rendered = overflows.map((details) => details.exceptionAsString()).join('\n---\n');
-  fail('$reason painted an overflow:\n$rendered');
-}
-
-void _expectFullyVisible(
-  WidgetTester tester,
-  Finder finder, {
-  required double inset,
-  required String reason,
-}) {
-  expect(finder, findsOneWidget, reason: reason);
-  expect(tester.takeException(), isNull, reason: reason);
-  final rect = tester.getRect(finder);
-  final logical = Size(
-    tester.view.physicalSize.width / tester.view.devicePixelRatio,
-    tester.view.physicalSize.height / tester.view.devicePixelRatio,
-  );
-  final visibleBottom = logical.height - inset;
-  expect(rect.top, greaterThanOrEqualTo(-0.5), reason: '$reason top $rect');
-  expect(rect.left, greaterThanOrEqualTo(-0.5), reason: '$reason left $rect');
-  expect(rect.right, lessThanOrEqualTo(logical.width + 0.5), reason: '$reason right $rect');
-  expect(
-    rect.bottom,
-    lessThanOrEqualTo(visibleBottom + 0.5),
-    reason: '$reason bottom ${rect.bottom} must be above the keyboard at $visibleBottom ($rect)',
-  );
-  expect(rect.width, greaterThan(8), reason: reason);
-  expect(rect.height, greaterThan(8), reason: reason);
-}
-
-Future<void> _pumpProfile(
+Future<ProviderContainer> _pumpSignedInProfile(
   WidgetTester tester, {
-  required Size physicalSize,
+  required Size logicalSize,
   required double textScale,
-  required double inset,
+  required double keyboardInset,
 }) async {
-  tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = physicalSize;
-  tester.view.viewInsets = FakeViewPadding(bottom: inset);
-  addTearDown(tester.view.resetPhysicalSize);
-  addTearDown(tester.view.resetDevicePixelRatio);
-  addTearDown(tester.view.resetViewInsets);
+  prepareKeyboardSurface(
+    tester,
+    logicalSize: logicalSize,
+    textScale: textScale,
+    keyboardInset: keyboardInset,
+  );
+
+  final container = ProviderContainer(
+    overrides: [
+      authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
+    ],
+  );
+  container
+      .read(memberProfileProvider.notifier)
+      .signIn(
+        displayName: 'Fellow Member',
+        email: '',
+        bio: 'A quiet note',
+        icocChurchAffiliation: 'Example Fellowship',
+      );
 
   await tester.pumpWidget(
-    ProviderScope(
-      overrides: [authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory)],
+    UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: SensoryThemeData.getTheme(SensoryMode.clean),
         builder: (context, child) {
           final media = MediaQuery.of(context);
           return MediaQuery(
-            data: media.copyWith(
-              textScaler: TextScaler.linear(textScale),
-            ),
+            data: media.copyWith(textScaler: TextScaler.linear(textScale)),
             child: child ?? const SizedBox.shrink(),
           );
         },
@@ -189,4 +217,5 @@ Future<void> _pumpProfile(
   await tester.tap(find.byKey(const Key('open_profile_sheet')));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 300));
+  return container;
 }
