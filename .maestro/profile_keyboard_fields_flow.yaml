@@ -23,7 +23,7 @@ tags:
 - tapOn:
     id: "profile_avatar_button"
 - extendedWaitUntil:
-    visible: ".*Member Profile.*"
+    visible: "Profile"
     timeout: 20000
 
 - tapOn:
