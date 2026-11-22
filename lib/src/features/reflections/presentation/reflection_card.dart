@@ -8,7 +8,7 @@ import '../../../core/presentation/async_action_button.dart';
 import '../../../core/presentation/unbroken_body_text.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
-import '../../bema_weekly/bema_weekly_source_links.dart';
+import '../../bema_weekly/bema_weekly_post_body.dart';
 import '../../bema_weekly/bema_weekly_study.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../../auth/data/auth_repository.dart';
@@ -331,20 +331,19 @@ class ReflectionCard extends ConsumerWidget {
               ),
             ),
           ],
-          if (weeklyStudy != null) ...[
-            const SizedBox(height: 8),
-            BemaWeeklySourceLinks(study: weeklyStudy, idPrefix: 'bema_post_${post.id}'),
-          ],
           const SizedBox(height: 8),
-          Semantics(
-            container: true,
-            label: post.content,
-            child: UnbrokenBodyText(
-              key: Key('post_body_${post.id}'),
-              text: post.content,
-              style: const TextStyle(fontSize: 13, height: 1.45),
+          if (weeklyStudy != null)
+            BemaWeeklyPostBody(study: weeklyStudy, postId: post.id, isContrast: isContrast)
+          else
+            Semantics(
+              container: true,
+              label: post.content,
+              child: UnbrokenBodyText(
+                key: Key('post_body_${post.id}'),
+                text: post.content,
+                style: const TextStyle(fontSize: 13, height: 1.45),
+              ),
             ),
-          ),
           if (ReflectionPostMedia.isRenderableUrl(post.imageUrl)) ...[
             const SizedBox(height: 10),
             ReflectionPostMedia(

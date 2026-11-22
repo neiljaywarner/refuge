@@ -36,9 +36,11 @@ void main() {
     expect(post.id, 'bema-week-183');
     expect(post.isDemo, isFalse);
     expect(post.spaceKey, 'study');
-    expect(post.content, contains('Show notes: ${study.showNotesUrl}'));
-    expect(post.content, contains('Transcript: ${study.transcriptUrl}'));
-    expect(post.content, contains('Apple Podcasts: ${study.applePodcastsUrl}'));
+    expect(post.content, isNot(contains('https://')));
+    expect(post.content, contains('This week is BEMA 183, ${study.title}.'));
+    expect(post.content, contains('We gather ${study.gatheringLabel}.'));
+    expect(post.content, contains('1. ${study.questions.first}'));
+    expect(post.content, contains('5. ${study.questions.last}'));
     expect(weeklyStudyForPostId(post.id), same(study));
     expect(weeklyStudyForPostId('post-1'), isNull);
   });
@@ -54,6 +56,69 @@ void main() {
     expect(repo.findPost('bema-week-183'), isNotNull);
     final kept = await repo.getPosts(spaceKey: 'study');
     expect(kept.map((post) => post.id), contains('bema-week-183'));
+
+    repo.absorbCloudPosts([
+      weeklyDiscussionPost(bemaEpisode183).copyWith(
+        content:
+            'Show notes: ${bemaEpisode183.showNotesUrl} Transcript: ${bemaEpisode183.transcriptUrl}',
+      ),
+    ]);
+    expect(repo.findPost('bema-week-183')!.content, isNot(contains('https://')));
+    expect(repo.findPost('bema-week-183')!.content, contains('Discussion questions'));
+  });
+
+  testWidgets('the This Week card fits a phone and a desktop width', (tester) async {
+    final overflows = <FlutterErrorDetails>[];
+    final previous = FlutterError.onError;
+    FlutterError.onError = (details) {
+      final message = details.exceptionAsString();
+      if (message.contains('overflowed') || message.contains('RenderFlex')) {
+        overflows.add(details);
+        return;
+      }
+      previous?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = previous);
+
+    for (final width in <double>[390, 1100]) {
+      overflows.clear();
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = Size(width + 80, 1000);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: width,
+                child: BemaThisWeekCard(
+                  study: bemaEpisode183,
+                  primaryColor: const Color(0xFF2E6B56),
+                  isContrast: false,
+                  onJoinCall: () {},
+                  onOpenDiscussion: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(overflows, isEmpty, reason: 'width $width overflowed');
+      expect(find.text('Show notes'), findsOneWidget);
+      expect(find.text('Transcript'), findsOneWidget);
+      expect(find.textContaining('Sundays, 7:30 PM CT'), findsOneWidget);
+      final notesWidth = tester.getSize(find.byKey(const Key('bema_card_show_notes'))).width;
+      final appleWidth = tester.getSize(find.byKey(const Key('bema_card_apple_podcasts'))).width;
+      final questionsWidth = tester.getSize(find.byKey(const Key('bema_card_questions'))).width;
+      expect(appleWidth, notesWidth);
+      expect(questionsWidth, notesWidth);
+      final cardWidth = tester.getSize(find.byKey(const Key('bema_this_week_card'))).width;
+      expect(cardWidth, lessThanOrEqualTo(width));
+      expect(cardWidth, greaterThan(width - 40));
+    }
   });
 
   testWidgets('the call card and the week post both open transcript and show notes', (
@@ -101,6 +166,9 @@ void main() {
     expect(find.byKey(const Key('bema_post_bema-week-183_show_notes')), findsOneWidget);
     expect(find.byKey(const Key('bema_post_bema-week-183_transcript')), findsOneWidget);
     expect(find.byKey(const Key('bema_post_bema-week-183_apple_podcasts')), findsOneWidget);
+    expect(find.text('Discussion questions'), findsOneWidget);
+    expect(find.textContaining('1. What are the problems'), findsOneWidget);
+    expect(find.textContaining('https://'), findsNothing);
 
     await tester.tap(find.byKey(const Key('bema_post_bema-week-183_transcript')));
     await tester.pump();

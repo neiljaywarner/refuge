@@ -12,6 +12,7 @@ import '../../admin/data/admin_banning_repository.dart';
 import '../../admin/domain/ban_standing.dart';
 import '../../admin/presentation/account_paused_banner.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../bema_weekly/bema_weekly_study.dart';
 import '../../profile/domain/member_profile.dart';
 import '../data/comment_repository.dart';
 import '../data/local_comment_repository.dart';
@@ -222,7 +223,9 @@ class ThreadedDiscussionSheet extends HookConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           UnbrokenBodyText(
-                            text: post.content,
+                            text: weeklyStudyForPostId(post.id) == null
+                                ? post.content
+                                : weeklyDiscussionBody(weeklyStudyForPostId(post.id)!),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

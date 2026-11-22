@@ -91,27 +91,16 @@ const BemaWeeklyStudy bemaEpisode183 = BemaWeeklyStudy(
 /// True for the seeded weekly discussion rows, including earlier episodes.
 bool isWeeklyDiscussionPostId(String id) => id.startsWith('bema-week-');
 
-/// Body of the auto-posted Weekly Study reflection.
+/// Plain-text body of the auto-posted Weekly Study reflection.
+///
+/// Links stay on the labeled buttons beside the post. This string is the
+/// intro and the numbered questions, with no raw URLs.
 String weeklyDiscussionBody(BemaWeeklyStudy study) {
   final buffer = StringBuffer()
-    ..writeln('BEMA ${study.episodeNumber} — ${study.title}')
-    ..writeln(study.subtitle)
+    ..writeln('This week is BEMA ${study.episodeNumber}, ${study.title}.')
+    ..writeln('${study.subtitle}. We gather ${study.gatheringLabel}.')
     ..writeln()
-    ..writeln('Gathering: ${study.gatheringLabel}')
-    ..writeln('Follows episode ${study.followsEpisodeNumber}, ${study.followsTitle}.')
-    ..writeln('Listen: ${study.listenUrl}')
-    ..writeln('Show notes: ${study.showNotesUrl}')
-    ..writeln('Transcript: ${study.transcriptUrl}')
-    ..writeln('Discussion video: ${study.discussionVideoUrl}');
-  final apple = study.applePodcastsUrl;
-  if (apple != null && apple.isNotEmpty) {
-    buffer.writeln('Apple Podcasts: $apple');
-  }
-  final presentation = study.presentationUrl;
-  if (presentation != null && presentation.isNotEmpty) {
-    buffer.writeln('Presentation: $presentation');
-  }
-  buffer
+    ..writeln('It follows episode ${study.followsEpisodeNumber}, ${study.followsTitle}.')
     ..writeln()
     ..writeln('Discussion questions');
   for (var i = 0; i < study.questions.length; i++) {

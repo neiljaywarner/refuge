@@ -152,7 +152,8 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
   /// Merges cloud rows into the local feed, preserving a local bookmark.
   void absorbCloudPosts(Iterable<Post> posts) {
     var changed = false;
-    for (final incoming in posts) {
+    for (final raw in posts) {
+      final incoming = _withReadableWeeklyBody(raw);
       final saved = _savedPostIds.contains(incoming.id) || incoming.isSaved;
       if (saved) _savedPostIds.add(incoming.id);
       final index = _store.indexWhere((existing) => existing.id == incoming.id);
@@ -165,10 +166,12 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
           existing,
           incoming.copyWith(isSaved: saved, publishStatus: PostPublishStatus.confirmed),
         );
-        final merged = preferred.copyWith(
-          publishStatus: PostPublishStatus.confirmed,
-          authorId: incoming.authorId ?? existing.authorId ?? preferred.authorId,
-          isSaved: saved || existing.isSaved,
+        final merged = _withReadableWeeklyBody(
+          preferred.copyWith(
+            publishStatus: PostPublishStatus.confirmed,
+            authorId: incoming.authorId ?? existing.authorId ?? preferred.authorId,
+            isSaved: saved || existing.isSaved,
+          ),
         );
         if (merged != existing || !_sameReactionCounts(merged.reactions, existing.reactions)) {
           _store[index] = merged;
@@ -177,6 +180,17 @@ class LocalPostRepository implements PostRepository, AccountScopedCache {
       }
     }
     if (changed) _notify();
+  }
+
+  /// Keeps a weekly discussion row on the readable intro and numbered questions.
+  ///
+  /// A cloud copy of the same id can still carry the earlier URL dump. The
+  /// feed paints from the study record, and the stored text matches it.
+  Post _withReadableWeeklyBody(Post post) {
+    final study = weeklyStudyForPostId(post.id);
+    if (study == null) return post;
+    final body = weeklyDiscussionBody(study);
+    return post.content == body ? post : post.copyWith(content: body);
   }
 
   /// Registers cloud reflections in the local store so bookmarking a live
