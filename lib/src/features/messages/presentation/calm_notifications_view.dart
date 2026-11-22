@@ -12,6 +12,26 @@ import '../../profile/domain/member_profile.dart';
 import '../../sensory_themes/domain/sensory_mode.dart';
 import '../../sensory_themes/presentation/sensory_theme_controller.dart';
 
+Widget _notificationFilterChip({
+  required BelongNotificationFilter filter,
+  required bool selected,
+  required bool isContrast,
+  required Color primary,
+  required VoidCallback onSelected,
+}) => FilterChip(
+  key: Key('filter_chip_${filter.name}'),
+  selected: selected,
+  label: Text(filter.label),
+  labelStyle: TextStyle(
+    fontSize: 12,
+    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+    color: selected ? (isContrast ? Colors.black : Colors.white) : null,
+  ),
+  selectedColor: isContrast ? Colors.yellow : primary,
+  checkmarkColor: isContrast ? Colors.black : Colors.white,
+  onSelected: (_) => onSelected(),
+);
+
 /// Calm Notification Bell view (Issue #286, #330).
 /// Presents unhurried, digestible notifications with filter chips (Inbox, Mentions, Threads, Following),
 /// author avatars with lower-right action badges, relative timestamps, and a 'Mark all as read' action.
@@ -33,6 +53,12 @@ class CalmNotificationsView extends HookConsumerWidget {
     final unreadCount = ref.watch(unreadNotificationsCountProvider);
     final profile = ref.watch(currentUserProfileProvider);
     final mailbox = ref.watch(directMessageMailboxProvider);
+    // Above this, a horizontal chip row and the "Mark all read" label push the
+    // title down to "Not…" on a phone (#932).
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.15;
+    final markAllRead = unreadCount == 0
+        ? null
+        : () => ref.read(notificationSyncServiceProvider).syncMarkAllAsRead();
 
     // The message list syncs when Messages is open. The bell has to do the
     // same, or a direct message sent in this session never appears there.
@@ -51,9 +77,128 @@ class CalmNotificationsView extends HookConsumerWidget {
       };
     }, [profile.userId, mailbox]);
 
+    final gentleBanner = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isContrast
+              ? Colors.black
+              : (theme.brightness == Brightness.dark
+                    ? const Color(0xFF202723)
+                    : const Color(0xFFF3F7F5)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isContrast
+                ? Colors.white
+                : (theme.brightness == Brightness.dark
+                      ? const Color(0xFF3E5446)
+                      : const Color(0xFFDCECE4)),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.notifications_paused_outlined,
+              color: isContrast
+                  ? Colors.yellow
+                  : (theme.brightness == Brightness.dark
+                        ? const Color(0xFF8CD4A2)
+                        : const Color(0xFF2E6B56)),
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                profile.isSignedIn
+                    ? 'All notifications are delivered gently without intrusive sound alerts.'
+                    : 'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isContrast
+                      ? Colors.white
+                      : (theme.brightness == Brightness.dark
+                            ? const Color(0xFFE2E8F0)
+                            : const Color(0xFF1E4638)),
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Widget notificationTile(BelongNotification item) => _BelongNotificationCard(
+      item: item,
+      primaryColor: primary,
+      isContrast: isContrast,
+      onTap: () {
+        if (!item.isRead) {
+          ref.read(belongNotificationsProvider.notifier).markAsRead(item.id);
+        }
+
+        NotificationNavigationTarget? target;
+        if (item.type == BelongNotificationType.directMessage) {
+          target = NotificationNavigationTarget(
+            tab: BelongBottomTab.msgs,
+            conversationId: item.conversationId,
+          );
+        } else if (item.spaceKey != null || item.postId != null) {
+          target = NotificationNavigationTarget(
+            tab: BelongBottomTab.home,
+            spaceKey: item.spaceKey ?? 'general_chat',
+            postId: item.postId,
+            openDiscussion:
+                item.type == BelongNotificationType.reply ||
+                item.type == BelongNotificationType.mention,
+          );
+        } else {
+          // Polite fallback when referenced item was archived/deleted
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              key: Key('notification_archived_snackbar'),
+              content: Text(
+                'This reflection was unhurriedly archived or moved',
+              ),
+              duration: Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+
+        if (target != null) {
+          ref.read(notificationNavigationTargetProvider.notifier).state =
+              target;
+          onNavigate?.call(target);
+        }
+      },
+    );
+
+    final emptyPlaceholder = Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Text(
+        'No notifications in ${activeFilter.label.toLowerCase()} right now.',
+        key: const Key('empty_notifications_placeholder'),
+        style: TextStyle(
+          fontSize: 12,
+          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+        ),
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: largeText
+            ? const FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Notifications',
+                  overflow: TextOverflow.visible,
+                  softWrap: false,
+                ),
+              )
+            : const Text('Notifications'),
         leading: onBackToHome != null
             ? IconButton(
                 key: const Key('notif-back-button'),
@@ -62,44 +207,49 @@ class CalmNotificationsView extends HookConsumerWidget {
               )
             : null,
         actions: [
-          // Checkbox in upper right to mark all as read (greyed out if unreadCount == 0)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Checkbox(
-                  key: const Key('mark_all_read_checkbox'),
-                  value: unreadCount == 0,
-                  activeColor: isContrast ? Colors.yellow : primary,
-                  checkColor: isContrast ? Colors.black : Colors.white,
-                  onChanged: unreadCount == 0
-                      ? null
-                      : (_) => ref.read(notificationSyncServiceProvider).syncMarkAllAsRead(),
-                ),
-                InkWell(
-                  key: const Key('mark_all_notifications_as_read_button'),
-                  borderRadius: BorderRadius.circular(4),
-                  onTap: unreadCount == 0
-                      ? null
-                      : () => ref.read(notificationSyncServiceProvider).syncMarkAllAsRead(),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
-                    child: Text(
-                      'Mark all read',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: unreadCount == 0
-                            ? (isContrast ? Colors.white38 : theme.disabledColor)
-                            : (isContrast ? Colors.yellow : primary),
+          // Checkbox in upper right to mark all as read (greyed out if unreadCount == 0).
+          // At large text the words move into the body so the title can stay whole.
+          if (!largeText)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    key: const Key('mark_all_read_checkbox'),
+                    value: unreadCount == 0,
+                    activeColor: isContrast ? Colors.yellow : primary,
+                    checkColor: isContrast ? Colors.black : Colors.white,
+                    onChanged: markAllRead == null
+                        ? null
+                        : (_) => markAllRead(),
+                  ),
+                  InkWell(
+                    key: const Key('mark_all_notifications_as_read_button'),
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: markAllRead,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                        vertical: 6.0,
+                      ),
+                      child: Text(
+                        'Mark all read',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: unreadCount == 0
+                              ? (isContrast
+                                    ? Colors.white38
+                                    : theme.disabledColor)
+                              : (isContrast ? Colors.yellow : primary),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           Semantics(
             button: true,
             identifier: 'notification-preferences-button',
@@ -113,159 +263,156 @@ class CalmNotificationsView extends HookConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Gentle banner
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: isContrast
-                    ? Colors.black
-                    : (theme.brightness == Brightness.dark
-                          ? const Color(0xFF202723)
-                          : const Color(0xFFF3F7F5)),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isContrast
-                      ? Colors.white
-                      : (theme.brightness == Brightness.dark
-                            ? const Color(0xFF3E5446)
-                            : const Color(0xFFDCECE4)),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.notifications_paused_outlined,
-                    color: isContrast
-                        ? Colors.yellow
-                        : (theme.brightness == Brightness.dark
-                              ? const Color(0xFF8CD4A2)
-                              : const Color(0xFF2E6B56)),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      profile.isSignedIn
-                          ? 'All notifications are delivered gently without intrusive sound alerts.'
-                          : 'Demo Mode · Showing sample interactions. Sign in to receive personal notifications.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isContrast
-                            ? Colors.white
-                            : (theme.brightness == Brightness.dark
-                                  ? const Color(0xFFE2E8F0)
-                                  : const Color(0xFF1E4638)),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Filter Chips Row: Inbox, Mentions, Threads, Following
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: BelongNotificationFilter.values.map((filter) {
-                final isSelected = activeFilter == filter;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: FilterChip(
-                    key: Key('filter_chip_${filter.name}'),
-                    selected: isSelected,
-                    label: Text(filter.label),
-                    labelStyle: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? (isContrast ? Colors.black : Colors.white) : null,
-                    ),
-                    selectedColor: isContrast ? Colors.yellow : primary,
-                    checkmarkColor: isContrast ? Colors.black : Colors.white,
-                    onSelected: (_) {
-                      ref.read(notificationActiveFilterProvider.notifier).state = filter;
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const Divider(height: 12),
-
-          // Notifications List
-          Expanded(
-            child: notifications.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Text(
-                        'No notifications in ${activeFilter.label.toLowerCase()} right now.',
-                        key: const Key('empty_notifications_placeholder'),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+      // At large text the wrapped filters can be taller than a short
+      // screen. They scroll with the notices instead of pinning a header
+      // that leaves the list at zero height (#932).
+      body: largeText
+          ? CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 12, 0),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          key: const Key('mark_all_read_checkbox'),
+                          value: unreadCount == 0,
+                          activeColor: isContrast ? Colors.yellow : primary,
+                          checkColor: isContrast ? Colors.black : Colors.white,
+                          onChanged: markAllRead == null
+                              ? null
+                              : (_) => markAllRead(),
                         ),
-                      ),
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    itemCount: notifications.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 6),
-                    itemBuilder: (context, index) {
-                      final item = notifications[index];
-                      return _BelongNotificationCard(
-                        item: item,
-                        primaryColor: primary,
-                        isContrast: isContrast,
-                        onTap: () {
-                          if (!item.isRead) {
-                            ref.read(belongNotificationsProvider.notifier).markAsRead(item.id);
-                          }
-
-                          NotificationNavigationTarget? target;
-                          if (item.type == BelongNotificationType.directMessage) {
-                            target = NotificationNavigationTarget(
-                              tab: BelongBottomTab.msgs,
-                              conversationId: item.conversationId,
-                            );
-                          } else if (item.spaceKey != null || item.postId != null) {
-                            target = NotificationNavigationTarget(
-                              tab: BelongBottomTab.home,
-                              spaceKey: item.spaceKey ?? 'general_chat',
-                              postId: item.postId,
-                              openDiscussion:
-                                  item.type == BelongNotificationType.reply ||
-                                  item.type == BelongNotificationType.mention,
-                            );
-                          } else {
-                            // Polite fallback when referenced item was archived/deleted
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                key: Key('notification_archived_snackbar'),
-                                content: Text('This reflection was unhurriedly archived or moved'),
-                                duration: Duration(seconds: 3),
-                                behavior: SnackBarBehavior.floating,
+                        Expanded(
+                          child: InkWell(
+                            key: const Key(
+                              'mark_all_notifications_as_read_button',
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            onTap: markAllRead,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                                vertical: 6.0,
                               ),
-                            );
-                          }
-
-                          if (target != null) {
-                            ref.read(notificationNavigationTargetProvider.notifier).state = target;
-                            onNavigate?.call(target);
-                          }
-                        },
-                      );
-                    },
+                              child: Text(
+                                'Mark all read',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: unreadCount == 0
+                                      ? (isContrast
+                                            ? Colors.white38
+                                            : theme.disabledColor)
+                                      : (isContrast ? Colors.yellow : primary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-          ),
-        ],
-      ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final filter in BelongNotificationFilter.values)
+                          _notificationFilterChip(
+                            filter: filter,
+                            selected: activeFilter == filter,
+                            isContrast: isContrast,
+                            primary: primary,
+                            onSelected: () {
+                              ref
+                                      .read(
+                                        notificationActiveFilterProvider
+                                            .notifier,
+                                      )
+                                      .state =
+                                  filter;
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: Divider(height: 12)),
+                SliverToBoxAdapter(child: gentleBanner),
+                if (notifications.isEmpty)
+                  SliverToBoxAdapter(child: emptyPlaceholder)
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    sliver: SliverList.separated(
+                      itemCount: notifications.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 6),
+                      itemBuilder: (context, index) =>
+                          notificationTile(notifications[index]),
+                    ),
+                  ),
+              ],
+            )
+          : Column(
+              children: [
+                gentleBanner,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    children: [
+                      for (final filter in BelongNotificationFilter.values)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: _notificationFilterChip(
+                            filter: filter,
+                            selected: activeFilter == filter,
+                            isContrast: isContrast,
+                            primary: primary,
+                            onSelected: () {
+                              ref
+                                      .read(
+                                        notificationActiveFilterProvider
+                                            .notifier,
+                                      )
+                                      .state =
+                                  filter;
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 12),
+                Expanded(
+                  child: notifications.isEmpty
+                      ? Center(child: emptyPlaceholder)
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          itemCount: notifications.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 6),
+                          itemBuilder: (context, index) =>
+                              notificationTile(notifications[index]),
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }
@@ -288,9 +435,21 @@ class _BelongNotificationCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     // Lower-right badge icon and background color
-    final (IconData badgeIcon, Color badgeBgColor, Color badgeIconColor) = switch (item.type) {
-      BelongNotificationType.like => (Icons.favorite, const Color(0xFFE91E63), Colors.white),
-      BelongNotificationType.reply => (Icons.reply_rounded, const Color(0xFF2196F3), Colors.white),
+    final (
+      IconData badgeIcon,
+      Color badgeBgColor,
+      Color badgeIconColor,
+    ) = switch (item.type) {
+      BelongNotificationType.like => (
+        Icons.favorite,
+        const Color(0xFFE91E63),
+        Colors.white,
+      ),
+      BelongNotificationType.reply => (
+        Icons.reply_rounded,
+        const Color(0xFF2196F3),
+        Colors.white,
+      ),
       BelongNotificationType.mention => (
         Icons.alternate_email_rounded,
         const Color(0xFF4CAF50),
@@ -313,7 +472,9 @@ class _BelongNotificationCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       color: item.isRead
           ? (isContrast ? Colors.black : theme.cardColor)
-          : (isContrast ? const Color(0xFF1A1A00) : primaryColor.withValues(alpha: 0.06)),
+          : (isContrast
+                ? const Color(0xFF1A1A00)
+                : primaryColor.withValues(alpha: 0.06)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
@@ -333,7 +494,9 @@ class _BelongNotificationCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 19,
-              backgroundColor: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.15),
+              backgroundColor: isContrast
+                  ? Colors.yellow
+                  : primaryColor.withValues(alpha: 0.15),
               child: Text(
                 item.authorInitials,
                 style: TextStyle(
@@ -352,7 +515,10 @@ class _BelongNotificationCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: badgeBgColor,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).cardColor, width: 1.5),
+                  border: Border.all(
+                    color: Theme.of(context).cardColor,
+                    width: 1.5,
+                  ),
                 ),
                 child: Icon(badgeIcon, size: 10, color: badgeIconColor),
               ),
@@ -378,7 +544,9 @@ class _BelongNotificationCard extends StatelessWidget {
                   fontSize: 11,
                   color: isContrast
                       ? Colors.white70
-                      : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                      : theme.textTheme.bodySmall?.color?.withValues(
+                          alpha: 0.7,
+                        ),
                 ),
               ),
               if (item.commentSnippet != null) ...[
@@ -395,7 +563,9 @@ class _BelongNotificationCard extends StatelessWidget {
                       fontStyle: FontStyle.italic,
                       color: isContrast
                           ? Colors.white70
-                          : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                          : theme.textTheme.bodySmall?.color?.withValues(
+                              alpha: 0.7,
+                            ),
                     ),
                   ),
                 ),

@@ -209,7 +209,12 @@ Widget _presenterLabel(String label, TextStyle? style) {
     color: const Color(0xFF2A2A2E),
     child: Padding(
       padding: const .symmetric(horizontal: 12, vertical: 8),
-      child: Text(label, style: style),
+      child: Text(
+        label,
+        style: style,
+        softWrap: true,
+        textAlign: TextAlign.start,
+      ),
     ),
   );
 }
