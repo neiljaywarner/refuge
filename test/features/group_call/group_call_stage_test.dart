@@ -9,12 +9,14 @@ import 'package:refuge4serverpod/src/features/group_call/presentation/group_call
 import 'package:stream_video_flutter/stream_video_flutter.dart';
 
 import '../../helpers/text_scale.dart' show expectMinTapTarget;
+import '../../support/test_font_loader.dart';
 
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
     registerFallbackValue(ViewportVisibility.unknown);
     registerFallbackValue(SfuTrackType.screenShare);
     registerFallbackValue(const RtcVideoDimension(width: 0, height: 0));
+    await TestFontLoader.loadAppFonts();
   });
 
   testWidgets('a quiet room stays a grid with no presenter label', (tester) async {
@@ -246,6 +248,52 @@ void main() {
       expect(find.text('Fellow Member is sharing'), findsOneWidget);
     }
   });
+
+  for (final surface in const [Size(360, 640), Size(412, 915), Size(1280, 800)]) {
+    for (final scale in const [1.0, 2.0, 3.0]) {
+      final name =
+          'screen_share_${surface.width.toInt()}x${surface.height.toInt()}_x${scale.toStringAsFixed(1)}';
+      testWidgets(name, (tester) async {
+        tester.view.physicalSize = surface;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(brightness: Brightness.dark, fontFamily: 'Roboto'),
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+              child: child ?? const SizedBox.shrink(),
+            ),
+            home: const Scaffold(
+              backgroundColor: Color(0xFF101014),
+              body: GroupCallStage(
+                presenter: GroupCallPresenter(
+                  userId: 'member-1',
+                  name: 'Fellow Member',
+                  local: false,
+                ),
+                grid: ColoredBox(
+                  color: Color(0xFF2A2A2E),
+                  child: Center(
+                    child: Text('Grid', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+
+        await expectLater(find.byType(Scaffold), matchesGoldenFile('goldens/$name.png'));
+      });
+    }
+  }
 }
 
 Widget _area(_StageRoom room, {bool tile = true}) {
