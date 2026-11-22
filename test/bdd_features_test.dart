@@ -24,7 +24,7 @@ void main() {
     patrolWidgetTest(
       'Scenario: Switching between fellowship spaces displays space-specific reflections',
       ($) async {
-        // Given the Refuge application is open in default '#prayer-sanctuary' room
+        // Given the Refuge application is open in the Prayer Sanctuary space
         await pumpRefuge($);
 
         // Then I should see reflections from 'David M. (UK)'
@@ -32,8 +32,9 @@ void main() {
         // And I should not see reflections from 'Pastor Thomas (Melbourne)'
         expect($('Pastor Thomas (Melbourne)'), findsNothing);
 
-        // When I tap on the '📖 #weekly-study' space chip
-        await $('📖 #weekly-study').tap();
+        // When I tap the Weekly Study space
+        await $(Key('space_switcher_popup_button')).tap();
+        await $('📖 Weekly Study').tap();
 
         // Then I should see reflections from 'Pastor Thomas (Melbourne)'
         expect($('Pastor Thomas (Melbourne)'), findsOneWidget);
@@ -42,16 +43,16 @@ void main() {
       },
     );
 
-    patrolWidgetTest('Scenario: Visiting an empty fellowship room shows peaceful stillness', (
-      $,
-    ) async {
+    patrolWidgetTest('Scenario: Visiting Announcements shows that space update', ($) async {
       await pumpRefuge($);
 
-      // When I tap on '#announcements' space chip
-      await $('📢 #announcements').tap();
+      // When I tap the Announcements space
+      await $(Key('space_switcher_popup_button')).tap();
+      await $('📢 Announcements').tap();
 
-      // Then I should see 'Space is quiet right now'
-      expect($(RegExp('Space is quiet right now')), findsOneWidget);
+      // Then I should see the seeded announcement, not another space's posts
+      expect($('Belong Leadership'), findsOneWidget);
+      expect($('David M. (UK)'), findsNothing);
       // And no chaotic error banners exist
       expect($(RegExp('Error')), findsNothing);
     });

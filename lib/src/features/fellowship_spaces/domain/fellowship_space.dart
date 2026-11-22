@@ -3,19 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../install/domain/phone_install_links.dart';
 
-/// Predefined calm-tech fellowship spaces in Refuge (kept for backward compatibility
-/// with existing unit and BDD tests, plus Belong Circle.so spaces).
-const Map<String, String> kFellowshipSpaces = {
-  'general_chat': '📌 #general-chat',
-  'start_here': '👋 #start-here',
-  'prayer': '🙏 #prayer-sanctuary',
-  'study': '📖 #weekly-study',
-  'announcements': '📢 #announcements',
-  'special_interests': '🧩 #special-interests-memes',
-  'general': '🌿 #main-hall',
-  'saved_for_later': '🔖 #saved-for-later',
-};
-
 /// Represents a single space or external/pending link in the Circle.so-style
 /// Belong on the Spectrum navigation hierarchy.
 @immutable
@@ -41,6 +28,19 @@ class BelongSpaceItem {
 
   /// Opens the in-app phone guide instead of a Coming Soon card.
   final PhoneInstallFocus? phoneInstallFocus;
+
+  /// A fellowship space with its own post feed. The space switcher lists these.
+  ///
+  /// Coming-soon cards, external links, install guides, and the members
+  /// directory stay in the Spaces directory. They are not switcher rows.
+  bool get isPostableSpace =>
+      !isComingSoon &&
+      externalUrl == null &&
+      phoneInstallFocus == null &&
+      slug != 'members_directory';
+
+  /// Emoji and title for the switcher. No channel hash.
+  String get spaceSwitcherLabel => '$emoji $title';
 }
 
 /// Represents a collapsible/grouped section in the Circle.so-style Spaces view.
@@ -86,6 +86,12 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         title: 'Announcements',
         emoji: '📢',
         subtitle: 'Calm community updates from Belong organizers',
+      ),
+      BelongSpaceItem(
+        slug: 'study',
+        title: 'Weekly Study',
+        emoji: '📖',
+        subtitle: 'Thematic questions and scripture meditations',
       ),
     ],
   ),
@@ -187,7 +193,17 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
   ),
 ];
 
+/// Postable spaces in directory order. The space switcher reads this list.
+final List<BelongSpaceItem> kPostableBelongSpaces = [
+  for (final section in kBelongSpaceSections)
+    for (final item in section.items)
+      if (item.isPostableSpace) item,
+];
+
 /// Riverpod StateProvider tracking the currently active fellowship space key.
+///
+/// First-launch default stays General Chat. Remembering the last space, and
+/// a Prayer Sanctuary first launch, are a later change.
 final activeSpaceKeyProvider = StateProvider<String>((ref) => 'general_chat');
 
 /// Human-friendly display metadata for a fellowship space (#618).
@@ -210,27 +226,11 @@ BelongSpaceInfo getBelongSpaceInfo(String slug) {
     }
   }
 
-  // Fallback to kFellowshipSpaces legacy mapping
-  if (kFellowshipSpaces.containsKey(slug)) {
-    final raw = kFellowshipSpaces[slug]!;
-    final parts = raw.split(' ');
-    final emoji = parts.isNotEmpty ? parts.first : '💬';
-    final name = switch (slug) {
-      'prayer' => 'Prayer Sanctuary',
-      'study' => 'Weekly Study',
-      'special_interests' => 'Special Interests & Memes',
-      'general' => 'Main Hall',
-      'general_chat' => 'General Chat',
-      'start_here' => 'Start Here & Introduce Yourself',
-      'announcements' => 'Announcements',
-      'saved_for_later' => 'Saved for Later',
-      _ =>
-        parts.length > 1
-            ? parts.sublist(1).join(' ').replaceAll('#', '').replaceAll('-', ' ').trim()
-            : slug,
-    };
-    return BelongSpaceInfo(slug: slug, title: name, emoji: emoji);
-  }
+  // Stored posts may still use a key from before this list. Resolve a title
+  // without rewriting the key, so Main Hall (`general`) and Special Interests
+  // stay distinct from General Chat and Memes.
+  final legacy = _legacyFellowshipSpace(slug);
+  if (legacy != null) return legacy;
 
   // Fallback for custom or unknown slugs
   final cleanName = slug
@@ -245,3 +245,20 @@ BelongSpaceInfo getBelongSpaceInfo(String slug) {
     emoji: '💬',
   );
 }
+
+/// Titles for stored space keys that are not rows in [kBelongSpaceSections].
+///
+/// Weekly Study is a real postable space (`study`) in that list. Main Hall
+/// (`general`) is not a second switcher row: General Chat (`general_chat`) is
+/// the canonical space. A stored `general` post still displays as Main Hall
+/// and stays in its own feed. Special Interests posts stay on
+/// `special_interests`; Memes is the canonical space for new posts.
+BelongSpaceInfo? _legacyFellowshipSpace(String slug) => switch (slug) {
+  'general' => const BelongSpaceInfo(slug: 'general', title: 'Main Hall', emoji: '🌿'),
+  'special_interests' => const BelongSpaceInfo(
+    slug: 'special_interests',
+    title: 'Special Interests & Memes',
+    emoji: '🧩',
+  ),
+  _ => null,
+};

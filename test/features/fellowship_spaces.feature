@@ -1,24 +1,24 @@
 Feature: Fellowship Spaces and Mindful Intent Navigation
   As a neurodivergent fellowship member
-  I want peaceful, unhurried fellowship rooms
+  I want peaceful, unhurried fellowship spaces
   So that I can receive encouragement and prayer without sensory overload or notifications
 
   Scenario: Switching between fellowship spaces displays space-specific reflections
-    Given the Refuge application is open in the default "#prayer-sanctuary" room
+    Given the Refuge application is open in the Prayer Sanctuary space
     Then I should see reflections from "David M. (UK)"
     And I should not see reflections from "Pastor Thomas (Melbourne)"
-    When I tap on the "📖 #weekly-study" space chip
+    When I tap on the "📖 Weekly Study" space
     Then I should see reflections from "Pastor Thomas (Melbourne)"
     And I should not see reflections from "David M. (UK)"
 
-  Scenario: Visiting an empty fellowship room shows peaceful stillness
+  Scenario: Visiting Announcements shows that space's update
     Given the Refuge application is open
-    When I tap on the "📢 #announcements" space chip
-    Then I should see "Space is quiet right now"
+    When I tap on the "📢 Announcements" space
+    Then I should see the Belong Leadership announcement
     And I should not see any chaotic error banners
 
   Scenario: Filtering reflections by mindful intent tags
-    Given the Refuge application is open in the "#prayer-sanctuary" room
+    Given the Refuge application is open in the Prayer Sanctuary space
     When I select the "[Comfort Only]" intent filter chip
     Then I should see reflections from "Elena R. (Colorado)"
     And I should not see reflections from "David M. (UK)"

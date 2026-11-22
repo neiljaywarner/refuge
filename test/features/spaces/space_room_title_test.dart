@@ -26,7 +26,7 @@ void main() {
       expect(startHere.emoji, equals('👋'));
     });
 
-    test('resolves legacy kFellowshipSpaces keys to clean titles', () {
+    test('resolves canonical and legacy space keys to clean titles', () {
       final prayer = getBelongSpaceInfo('prayer');
       expect(prayer.title, equals('Prayer Sanctuary'));
       expect(prayer.emoji, equals('🙏'));
@@ -34,10 +34,16 @@ void main() {
       final study = getBelongSpaceInfo('study');
       expect(study.title, equals('Weekly Study'));
       expect(study.emoji, equals('📖'));
+      expect(study.slug, equals('study'));
 
       final general = getBelongSpaceInfo('general');
       expect(general.title, equals('Main Hall'));
       expect(general.emoji, equals('🌿'));
+      expect(general.slug, equals('general'));
+
+      final interests = getBelongSpaceInfo('special_interests');
+      expect(interests.title, equals('Special Interests & Memes'));
+      expect(interests.emoji, equals('🧩'));
     });
 
     test('falls back gracefully on unknown slugs', () {
@@ -47,8 +53,8 @@ void main() {
     });
   });
 
-  group('SpaceNavigationBar Room Title & Breadcrumb Widget Tests (#618)', () {
-    testWidgets('renders room header and title for active space', (tester) async {
+  group('SpaceNavigationBar space title and breadcrumb widget tests (#618)', () {
+    testWidgets('renders space header and title for active space', (tester) async {
       String? selected;
       bool backTapped = false;
 
@@ -68,7 +74,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify room title header exists with human display name
+      // Keys stay space_room_* so Maestro flows keep finding the header.
       expect(find.byKey(const Key('space_room_header')), findsOneWidget);
       expect(find.byKey(const Key('space_room_title')), findsOneWidget);
       expect(find.text('General Chat'), findsOneWidget);
@@ -88,6 +94,8 @@ void main() {
       // Open space switcher popup menu and select another space
       await tester.tap(find.byKey(const Key('space_switcher_popup_button')));
       await tester.pumpAndSettle();
+      expect(find.text('👋 Start Here & Introduce Yourself'), findsOneWidget);
+      expect(find.textContaining('#'), findsNothing);
       await tester.tap(find.byKey(const Key('space_chip_start_here')));
       await tester.pumpAndSettle();
       expect(selected, equals('start_here'));
