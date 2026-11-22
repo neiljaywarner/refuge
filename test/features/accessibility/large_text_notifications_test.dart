@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:refuge4serverpod/src/features/messages/presentation/calm_notifications_view.dart';
 import 'package:refuge4serverpod/src/features/notifications/data/app_launcher_badge_service.dart';
+import 'package:refuge4serverpod/src/features/notifications/domain/belong_notification.dart';
 import 'package:refuge4serverpod/src/features/notifications/presentation/notifications_controller.dart';
 
 import '../../helpers/text_scale.dart';
@@ -29,9 +30,14 @@ const _filterChipKeys = <String>[
 /// "overflowed" layout error as another overflow and swallows it, so the test
 /// never finishes. Layout errors are taken below and checked after the
 /// visible-content assertions.
-Future<void> _pumpNotifications(WidgetTester tester, double scale) async {
+Future<void> _pumpNotifications(
+  WidgetTester tester,
+  double scale, {
+  Size surface = largeTextPhoneSurface,
+  List<BelongNotification> notices = const [],
+}) async {
   tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = largeTextPhoneSurface;
+  tester.view.physicalSize = surface;
   final dispatcher = tester.platformDispatcher;
   dispatcher.textScaleFactorTestValue = scale;
   addTearDown(() {
@@ -46,7 +52,7 @@ Future<void> _pumpNotifications(WidgetTester tester, double scale) async {
       overrides: [
         belongNotificationsProvider.overrideWith(
           () => BelongNotificationsNotifier(
-            initialList: const [],
+            initialList: notices,
             badgeService: _QuietBadge(),
           ),
         ),
@@ -168,6 +174,48 @@ void main() {
           isEmpty,
           reason: 'text scale $scale: $layoutErrors',
         );
+      }
+    },
+  );
+
+  testWidgets(
+    'first notification stays reachable on a short screen at text scales 2 and 3',
+    (tester) async {
+      const surface = Size(568, 320);
+      final notice = BelongNotification(
+        id: 'compact-1',
+        type: BelongNotificationType.like,
+        authorName: 'Fellow Member',
+        postTitle: 'A quiet note',
+        timestamp: DateTime.utc(2026, 10, 22, 15),
+      );
+      final tile = find.byKey(const Key('notification_list_tile_compact-1'));
+
+      for (final scale in <double>[2, 3]) {
+        await _pumpNotifications(
+          tester,
+          scale,
+          surface: surface,
+          notices: [notice],
+        );
+        final layoutErrors = <Object>[];
+        while (true) {
+          final error = tester.takeException();
+          if (error == null) break;
+          layoutErrors.add(error);
+        }
+        expect(
+          layoutErrors,
+          isEmpty,
+          reason: 'text scale $scale: $layoutErrors',
+        );
+
+        await tester.scrollUntilVisible(tile, 200);
+        await tester.pump();
+        expect(tile, findsOneWidget);
+        final rect = tester.getRect(tile);
+        expect(rect.bottom, greaterThan(0));
+        expect(rect.top, lessThan(surface.height));
       }
     },
   );
