@@ -10,6 +10,19 @@ import '../domain/comment.dart';
 import '../domain/reaction_member.dart';
 import 'comment_repository.dart';
 
+/// Final result of a Firestore comment write that outlived the client timeout.
+///
+/// The discussion sheet listens so a late rejection can restore the reply
+/// and a late success can clear the pending notice (#981).
+class CommentWriteSettlement {
+  const CommentWriteSettlement({required this.commentId, this.error});
+
+  final String commentId;
+  final Object? error;
+
+  bool get succeeded => error == null;
+}
+
 /// In-memory, broadcast stream implementation of [CommentRepository] with
 /// Firebase Cloud Firestore dual-redundancy and dev-mode isolation.
 ///
@@ -24,6 +37,8 @@ class LocalCommentRepository implements CommentRepository {
 
   final List<Comment> _store = [];
   final StreamController<List<Comment>> _controller = StreamController<List<Comment>>.broadcast();
+  final StreamController<CommentWriteSettlement> _writeSettlements =
+      StreamController<CommentWriteSettlement>.broadcast();
   final FirebaseFirestore? customFirestore;
 
   /// Whether this repository uses dev seed data and the `comments_dev` collection.
@@ -32,10 +47,17 @@ class LocalCommentRepository implements CommentRepository {
   /// Optional override for the signed-in member's uid (used by tests).
   final String? Function()? currentUid;
 
+  /// How long to wait for a Firestore write acknowledgement before treating
+  /// the send as still in flight. The underlying `set` is not cancelled.
+  final Duration firestoreTimeout;
+
+  /// Success or rejection of a write that already timed out on the client.
+  Stream<CommentWriteSettlement> get commentWriteSettlements => _writeSettlements.stream;
+
   /// Firestore collection for comments. Dev builds never touch prod threads.
   String get collectionName => isDevMode ? 'comments_dev' : 'comments';
 
-  static const Duration _firestoreTimeout = Duration(seconds: 2);
+  static const Duration defaultFirestoreTimeout = Duration(seconds: 2);
 
   String? get _authorUid {
     final override = currentUid;
@@ -65,6 +87,7 @@ class LocalCommentRepository implements CommentRepository {
     this.isDevMode = true,
     this.customFirestore,
     this.currentUid,
+    this.firestoreTimeout = defaultFirestoreTimeout,
   }) {
     if (initialComments != null) {
       _store.addAll(initialComments);
@@ -146,7 +169,7 @@ class LocalCommentRepository implements CommentRepository {
     final fs = firestore;
     if (fs != null) {
       try {
-        final snap = await _threadQuery(fs, postId).get().timeout(_firestoreTimeout);
+        final snap = await _threadQuery(fs, postId).get().timeout(firestoreTimeout);
         _mergeRemote(snap.docs.map((doc) => commentFromFirestore(doc.id, doc.data())));
       } catch (_) {
         // Offline, timed out, or denied: show the local thread only.
@@ -198,24 +221,69 @@ class LocalCommentRepository implements CommentRepository {
 
   @override
   Future<Comment> addComment(Comment comment) async {
+    final fs = firestore;
+    final authorId = _authorUid;
+    // Published rules require createsAsSelf(): authorId == request.auth.uid.
+    // A missing uid would be denied, so fail visibly instead of writing a
+    // document that cannot pass (#978).
+    if (fs != null && (authorId == null || authorId.isEmpty)) {
+      throw StateError('Comment was not saved: the signed-in member id is missing.');
+    }
+
     _store.add(comment);
     _controller.add(List.unmodifiable(_store));
 
-    // Dual-redundancy: dispatch to Firebase Cloud Firestore
-    final fs = firestore;
     if (fs != null) {
+      late final Future<void> write;
       try {
-        await fs
-            .collection(collectionName)
-            .doc(comment.id)
-            .set(firestoreCommentData(comment, authorId: _authorUid))
-            .timeout(_firestoreTimeout);
-      } catch (_) {
-        // Silent edge fallback ensures local UX never blocks
+        write = persistCommentToFirestore(fs, comment, authorId);
+        await write.timeout(firestoreTimeout);
+      } on TimeoutException {
+        // The client bound expired, but set() is still running. Keep the
+        // optimistic comment and tell the sheet how the write actually ends.
+        // Roll back only if Firestore later returns a definite error (#978).
+        unawaited(
+          write.then<void>(
+            (_) {
+              _emitWriteSettlement(CommentWriteSettlement(commentId: comment.id));
+            },
+            onError: (Object error, StackTrace stack) {
+              if (error is! FirebaseException) return;
+              _removeLocalComment(comment.id);
+              _emitWriteSettlement(CommentWriteSettlement(commentId: comment.id, error: error));
+              talker.handle(error, stack, 'Firestore comment write failed after timeout');
+            },
+          ),
+        );
+        rethrow;
+      } catch (error, stack) {
+        _removeLocalComment(comment.id);
+        talker.handle(error, stack, 'Firestore comment write failed');
+        rethrow;
       }
     }
 
     return comment;
+  }
+
+  /// The Firestore write, without the local timeout. Tests may override this
+  /// to hang or fail without mocking sealed Firestore types.
+  Future<void> persistCommentToFirestore(FirebaseFirestore fs, Comment comment, String? authorId) =>
+      fs
+          .collection(collectionName)
+          .doc(comment.id)
+          .set(firestoreCommentData(comment, authorId: authorId));
+
+  void _emitWriteSettlement(CommentWriteSettlement settlement) {
+    if (_writeSettlements.isClosed) return;
+    _writeSettlements.add(settlement);
+  }
+
+  void _removeLocalComment(String id) {
+    _store.removeWhere((c) => c.id == id);
+    if (!_controller.isClosed) {
+      _controller.add(List.unmodifiable(_store));
+    }
   }
 
   @override
@@ -318,7 +386,7 @@ class LocalCommentRepository implements CommentRepository {
               .collection(collectionName)
               .doc(commentId)
               .update({'reactions.$reactionType': FieldValue.increment(incrementAmount)})
-              .timeout(_firestoreTimeout);
+              .timeout(firestoreTimeout);
         } catch (_) {
           // Silent edge fallback
         }

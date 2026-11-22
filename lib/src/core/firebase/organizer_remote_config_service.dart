@@ -170,8 +170,15 @@ final organizerRemoteConfigProvider = Provider<OrganizerRemoteConfig>((ref) {
     devEmails: devAdminEmails,
     isProduction: flavor.isProduction,
   );
-  if (merged == config.adminEmailsCsv) return config;
-  return config.copyWith(adminEmailsCsv: merged);
+  final withAdmins = merged == config.adminEmailsCsv
+      ? config
+      : config.copyWith(adminEmailsCsv: merged);
+  if (!brand.isBema) return withAdmins;
+  return withAdmins.copyWith(
+    welcomeTitle: brand.defaultOrganizerWelcomeTitle,
+    welcomeMessage: brand.defaultOrganizerWelcomeMessage,
+    communityGuidelinesMarkdown: brand.sensoryDisclaimerMarkdown,
+  );
 });
 
 /// Evaluates whether the currently signed-in user is recognized as an Admin

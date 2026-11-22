@@ -111,6 +111,12 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         subtitle: 'Autism, faith & wholesome neurodivergent humor',
       ),
       BelongSpaceItem(
+        slug: 'study',
+        title: 'Weekly Study',
+        emoji: '📖',
+        subtitle: 'This week’s BEMA episode and discussion questions',
+      ),
+      BelongSpaceItem(
         slug: 'resources_videos',
         title: 'Online Resources / Videos',
         emoji: '🎥',
@@ -199,6 +205,14 @@ class BelongSpaceInfo {
   final String title;
   final String emoji;
 }
+
+/// Names shown in the BEMA build. Other brands keep [getBelongSpaceInfo].
+String bemaSpaceTitle(String slug) => switch (slug) {
+  'study' => 'Weekly Study',
+  'prayer' => 'Prayer',
+  'resources_videos' => 'Online Resources / Videos',
+  _ => getBelongSpaceInfo(slug).title,
+};
 
 /// Resolves human-friendly space title and emoji from any space slug or legacy key (#618).
 BelongSpaceInfo getBelongSpaceInfo(String slug) {

@@ -49,11 +49,13 @@ class AboutDialogTitle extends StatelessWidget {
     required this.version,
     required this.primaryColor,
     required this.isContrast,
+    this.communityName = 'Belong on the Spectrum',
   });
 
   final Future<AppVersionLabel> version;
   final Color primaryColor;
   final bool isContrast;
+  final String communityName;
 
   @override
   Widget build(BuildContext context) => FutureBuilder<AppVersionLabel>(
@@ -62,7 +64,7 @@ class AboutDialogTitle extends StatelessWidget {
       final suffix = snapshot.connectionState == ConnectionState.done
           ? snapshot.data?.titleSuffix
           : null;
-      final title = suffix == null ? 'Belong on the Spectrum' : 'Belong on the Spectrum ($suffix)';
+      final title = suffix == null ? communityName : '$communityName ($suffix)';
       final titleStyle = BelongTextStyles.of(context).title
           .copyWith(color: isContrast ? const Color(0xFFFFEB3B) : primaryColor);
       return Text(title, key: const Key('about_dialog_title'), style: titleStyle);

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../branding/presentation/brand_config_provider.dart';
 
 import '../../../core/build/build_identity.dart';
 import '../../../core/config/other_site_info_button.dart';
@@ -53,254 +56,265 @@ void showAboutRefugeDialog(
   final versionFuture = (loadVersion ?? loadPackageVersion)();
   showDialog(
     context: context,
-    builder: (ctx) => Semantics(
-      namesRoute: true,
-      scopesRoute: true,
-      explicitChildNodes: true,
-      container: true,
-      label: 'About Belong',
-      child: AlertDialog(
-        // The title, verse, and font chips grow with system text. Scrolling
-        // the dialog keeps them reachable instead of overflowing the screen.
-        scrollable: true,
-        title: Row(
-          children: [
-            ClipRRect(
-              borderRadius: .circular(8),
-              child: Image.asset(
-                'assets/images/belong_logo.png',
-                width: 32,
-                height: 32,
-                errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 22)),
-              ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: .start,
-                mainAxisSize: .min,
-                children: [
-                  AboutDialogTitle(
-                    version: versionFuture,
-                    primaryColor: primaryColor,
-                    isContrast: isContrast,
-                  ),
-                  Text(
-                    'belongonthespectrum.com • Partnered with DFW Church',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const OtherSiteInfoButton(),
-          ],
-        ),
-        content: SizedBox(
-          // 520 is the comfortable reading width. On a phone the dialog inset
-          // is about 80dp, so the content must shrink instead of overflowing.
-          width: _aboutDialogWidth(MediaQuery.sizeOf(ctx).width),
-          child: Column(
-            crossAxisAlignment: .start,
-            mainAxisSize: .min,
+    builder: (ctx) {
+      final brand = ProviderScope.containerOf(ctx).read(communityBrandConfigProvider);
+      return Semantics(
+        namesRoute: true,
+        scopesRoute: true,
+        explicitChildNodes: true,
+        container: true,
+        label: brand.isBema ? 'About ${brand.fullName}' : 'About Belong',
+        child: AlertDialog(
+          // The title, verse, and font chips grow with system text. Scrolling
+          // the dialog keeps them reachable instead of overflowing the screen.
+          scrollable: true,
+          title: Row(
             children: [
-              Container(
-                padding: const .all(10),
-                decoration: BoxDecoration(
-                  color: isContrast
-                      ? Colors.yellow.withValues(alpha: 0.1)
-                      : primaryColor.withValues(alpha: 0.08),
+              if (!brand.isBema)
+                ClipRRect(
                   borderRadius: .circular(8),
-                  border: Border.all(
-                    color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
+                  child: Image.asset(
+                    'assets/images/belong_logo.png',
+                    width: 32,
+                    height: 32,
+                    errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 22)),
                   ),
                 ),
+              if (!brand.isBema) const Gap(10),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: .start,
+                  mainAxisSize: .min,
                   children: [
-                    Text(
-                      '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
-                      style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
+                    AboutDialogTitle(
+                      version: versionFuture,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      communityName: brand.fullName,
                     ),
-                    SizedBox(height: 4),
-                    Semantics(
-                      label: 'Psalm 139:14',
-                      excludeSemantics: true,
-                      child: Text(
-                        '— Psalm 139:14',
-                        style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
+                    Text(
+                      brand.isBema
+                          ? 'bemadiscipleship.com'
+                          : 'belongonthespectrum.com • Partnered with DFW Church',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Gap(12),
-              AboutBuildStamp(identity: identity, version: versionFuture),
-              const Gap(12),
-              // Dedicated High Contrast Mode Toggle (Issue #277)
-              SwitchListTile(
-                contentPadding: .zero,
-                dense: true,
-                title: const Text(
-                  'High Contrast Mode',
+              const OtherSiteInfoButton(),
+            ],
+          ),
+          content: SizedBox(
+            // 520 is the comfortable reading width. On a phone the dialog inset
+            // is about 80dp, so the content must shrink instead of overflowing.
+            width: _aboutDialogWidth(MediaQuery.sizeOf(ctx).width),
+            child: Column(
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
+              children: [
+                Container(
+                  padding: const .all(10),
+                  decoration: BoxDecoration(
+                    color: isContrast
+                        ? Colors.yellow.withValues(alpha: 0.1)
+                        : primaryColor.withValues(alpha: 0.08),
+                    borderRadius: .circular(8),
+                    border: Border.all(
+                      color: isContrast ? Colors.yellow : primaryColor.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: .start,
+                    children: [
+                      Text(
+                        '"I praise you because I am fearfully and wonderfully made; your works are wonderful, I know that full well."',
+                        style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
+                      ),
+                      SizedBox(height: 4),
+                      Semantics(
+                        label: 'Psalm 139:14',
+                        excludeSemantics: true,
+                        child: Text(
+                          '— Psalm 139:14',
+                          style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Gap(12),
+                AboutBuildStamp(identity: identity, version: versionFuture),
+                const Gap(12),
+                // Dedicated High Contrast Mode Toggle (Issue #277)
+                SwitchListTile(
+                  contentPadding: .zero,
+                  dense: true,
+                  title: const Text(
+                    'High Contrast Mode',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'Stark black & yellow palette for maximum visual clarity',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  value: currentMode == SensoryMode.contrast,
+                  onChanged: (val) {
+                    onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                const Gap(6),
+                const Text(
+                  'Sensory Theme Palettes:',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
-                subtitle: const Text(
-                  'Stark black & yellow palette for maximum visual clarity',
-                  style: TextStyle(fontSize: 11),
-                ),
-                value: currentMode == SensoryMode.contrast,
-                onChanged: (val) {
-                  onSelectMode?.call(val ? SensoryMode.contrast : SensoryMode.sage);
-                  Navigator.pop(ctx);
-                },
-              ),
-              const Gap(6),
-              const Text(
-                'Sensory Theme Palettes:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(6),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: [
-                  ChoiceChip(
-                    label: const Text('☀️ Clean Slate'),
-                    selected: currentMode == SensoryMode.clean,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.clean);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  ChoiceChip(
-                    label: const Text('🌿 Sage Botanical'),
-                    selected: currentMode == SensoryMode.sage,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.sage);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  ChoiceChip(
-                    label: const Text('🌙 Dark'),
-                    selected: currentMode == SensoryMode.charcoal,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.charcoal);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  ChoiceChip(
-                    label: const Text('👁️ High Contrast'),
-                    selected: currentMode == SensoryMode.contrast,
-                    onSelected: (_) {
-                      onSelectMode?.call(SensoryMode.contrast);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                ],
-              ),
-              const Gap(12),
-              // Sensory Font Scaling Presets (Issue #277)
-              const Text(
-                'Sensory Font Scaling (Visual Ergonomics):',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(4),
-              const Text(
-                'Adjust typography size to relieve visual crowding and reading fatigue:',
-                style: TextStyle(fontSize: 11),
-              ),
-              const Gap(6),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: [
-                  for (final scale in SensoryFontScale.values)
+                const Gap(6),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: [
                     ChoiceChip(
-                      label: Text('${scale.label} (${scale.percentage})'),
-                      selected: currentFontScale == scale,
+                      label: const Text('☀️ Clean Slate'),
+                      selected: currentMode == SensoryMode.clean,
                       onSelected: (_) {
-                        onSelectFontScale?.call(scale);
+                        onSelectMode?.call(SensoryMode.clean);
                         Navigator.pop(ctx);
                       },
                     ),
-                ],
-              ),
-              const Divider(height: 20),
-              const Text(
-                'About Belong on the Spectrum:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(4),
-              const Text(
-                '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
-                '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
-                '• Community announcements and guidance are updated unhurriedly by organizers.',
-                style: TextStyle(fontSize: 11.5, height: 1.4),
-              ),
-              const Gap(8),
-              const Text(
-                key: Key('about_giphy_line'),
-                'GIF features are gratefully powered by GIPHY. GIPHY does not endorse Belong.',
-                style: TextStyle(fontSize: 11.5, height: 1.4),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  key: const Key('about_giphy_link'),
-                  style: TextButton.styleFrom(
-                    padding: .zero,
-                    minimumSize: const Size(0, 32),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  onPressed: _openGiphyHome,
-                  child: const Text('giphy.com', style: TextStyle(fontSize: 11.5)),
+                    ChoiceChip(
+                      label: const Text('🌿 Sage Botanical'),
+                      selected: currentMode == SensoryMode.sage,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.sage);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    ChoiceChip(
+                      label: const Text('🌙 Dark'),
+                      selected: currentMode == SensoryMode.charcoal,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.charcoal);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    ChoiceChip(
+                      label: const Text('👁️ High Contrast'),
+                      selected: currentMode == SensoryMode.contrast,
+                      onSelected: (_) {
+                        onSelectMode?.call(SensoryMode.contrast);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  ],
                 ),
-              ),
-              const Divider(height: 20),
-              const Text(
-                'Community Support & Feedback:',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Gap(4),
-              // Soft launch (#495): help is in-app Vote & Feedback only.
-              // Do not add a public support address here.
-              const Text(
-                key: Key('about_support_copy'),
-                '• Use in-app Vote & Feedback only. Tap Vote & Feedback on the Home screen.\n'
-                '• Share help, an idea, or a quirk there.',
-                style: TextStyle(fontSize: 11.5, height: 1.4),
-              ),
-            ],
+                const Gap(12),
+                // Sensory Font Scaling Presets (Issue #277)
+                const Text(
+                  'Sensory Font Scaling (Visual Ergonomics):',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(4),
+                const Text(
+                  'Adjust typography size to relieve visual crowding and reading fatigue:',
+                  style: TextStyle(fontSize: 11),
+                ),
+                const Gap(6),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: [
+                    for (final scale in SensoryFontScale.values)
+                      ChoiceChip(
+                        label: Text('${scale.label} (${scale.percentage})'),
+                        selected: currentFontScale == scale,
+                        onSelected: (_) {
+                          onSelectFontScale?.call(scale);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                  ],
+                ),
+                const Divider(height: 20),
+                Text(
+                  brand.isBema ? 'About ${brand.fullName}:' : 'About Belong on the Spectrum:',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(4),
+                Text(
+                  brand.isBema
+                      ? '• A small group that discusses the BEMA podcast together.\n'
+                            '• This week’s episode, show notes, and call stay at the top of Weekly Study.\n'
+                            '• Quiet on purpose: no auto-playing media.'
+                      : '• A welcoming Christian & neurodivergent/autistic fellowship community.\n'
+                            '• Designed with calm-tech principles: zero surprise pop-ups, zero auto-playing media, and clear conversational intent tags.\n'
+                            '• Community announcements and guidance are updated unhurriedly by organizers.',
+                  style: const TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+                const Gap(8),
+                Text(
+                  key: const Key('about_giphy_line'),
+                  brand.isBema ? 'GIF features are gratefully powered by GIPHY.' : 'GIF features are gratefully powered by GIPHY. GIPHY does not endorse Belong.',
+                  style: const TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    key: const Key('about_giphy_link'),
+                    style: TextButton.styleFrom(
+                      padding: .zero,
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: _openGiphyHome,
+                    child: const Text('giphy.com', style: TextStyle(fontSize: 11.5)),
+                  ),
+                ),
+                const Divider(height: 20),
+                const Text(
+                  'Community Support & Feedback:',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const Gap(4),
+                // Soft launch (#495): help is in-app Vote & Feedback only.
+                // Do not add a public support address here.
+                const Text(
+                  key: Key('about_support_copy'),
+                  '• Use in-app Vote & Feedback only. Tap Vote & Feedback on the Home screen.\n'
+                  '• Share help, an idea, or a quirk there.',
+                  style: TextStyle(fontSize: 11.5, height: 1.4),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          if (onOpenFeedback != null)
-            TextButton.icon(
-              key: const Key('about_dialog_open_feedback_button'),
+          actions: [
+            if (onOpenFeedback != null && brand.showFeedbackEntry)
+              TextButton.icon(
+                key: const Key('about_dialog_open_feedback_button'),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  onOpenFeedback();
+                },
+                icon: const Icon(Icons.how_to_vote_outlined, size: 16),
+                label: const Text('Vote & Feedback', style: TextStyle(fontSize: 12)),
+              ),
+            OutlinedButton.icon(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                onOpenFeedback();
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (_) => TalkerScreen(talker: talker)));
               },
-              icon: const Icon(Icons.how_to_vote_outlined, size: 16),
-              label: const Text('Vote & Feedback', style: TextStyle(fontSize: 12)),
+              icon: const Icon(Icons.receipt_long_rounded, size: 16),
+              label: const Text('Diagnostics & Logs', style: TextStyle(fontSize: 12)),
             ),
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => TalkerScreen(talker: talker)));
-            },
-            icon: const Icon(Icons.receipt_long_rounded, size: 16),
-            label: const Text('Diagnostics & Logs', style: TextStyle(fontSize: 12)),
-          ),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
-        ],
-      ),
-    ),
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
+          ],
+        ),
+      );
+    },
   );
 }
 

@@ -8,6 +8,8 @@ import '../../../core/presentation/async_action_button.dart';
 import '../../../core/presentation/unbroken_body_text.dart';
 import '../../../core/theme/belong_text_styles.dart';
 
+import '../../bema_weekly/bema_weekly_post_body.dart';
+import '../../bema_weekly/bema_weekly_study.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../profile/domain/member_profile.dart';
@@ -55,6 +57,7 @@ class ReflectionCard extends ConsumerWidget {
     final hasSupported = post.hasMemberReacted('peace', currentUserId);
     final hasEncouraged = post.hasMemberReacted('encouraged', currentUserId);
     final hasRelated = post.hasMemberReacted('relatable', currentUserId);
+    final weeklyStudy = weeklyStudyForPost(post);
 
     return Container(
       key: Key('reflection_card_${post.id}'),
@@ -329,15 +332,18 @@ class ReflectionCard extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 8),
-          Semantics(
-            container: true,
-            label: post.content,
-            child: UnbrokenBodyText(
-              key: Key('post_body_${post.id}'),
-              text: post.content,
-              style: const TextStyle(fontSize: 13, height: 1.45),
+          if (weeklyStudy != null)
+            BemaWeeklyPostBody(study: weeklyStudy, postId: post.id, isContrast: isContrast)
+          else
+            Semantics(
+              container: true,
+              label: post.content,
+              child: UnbrokenBodyText(
+                key: Key('post_body_${post.id}'),
+                text: post.content,
+                style: const TextStyle(fontSize: 13, height: 1.45),
+              ),
             ),
-          ),
           if (ReflectionPostMedia.isRenderableUrl(post.imageUrl)) ...[
             const SizedBox(height: 10),
             ReflectionPostMedia(

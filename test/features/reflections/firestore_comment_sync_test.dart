@@ -116,7 +116,7 @@ void main() {
     });
 
     test('a care reaction from another member reaches the shared document', () async {
-      final ana = LocalCommentRepository(isDevMode: false, customFirestore: fs);
+      final ana = LocalCommentRepository(isDevMode: false, customFirestore: fs, currentUid: () => 'uid-ana');
       await ana.addComment(_comment('c1'));
 
       final ben = LocalCommentRepository(isDevMode: false, customFirestore: fs);

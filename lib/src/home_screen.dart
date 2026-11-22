@@ -16,6 +16,9 @@ import 'features/admin/domain/ban_standing.dart';
 import 'features/admin/presentation/account_paused_banner.dart';
 import 'features/about/presentation/about_refuge_dialog.dart';
 import 'features/auth/presentation/simple_auth.dart';
+import 'features/bema_weekly/bema_this_week_card.dart';
+import 'features/bema_weekly/bema_weekly_study.dart';
+import 'features/group_call/presentation/group_call_flow.dart';
 import 'features/auth/presentation/unverified_email_banner.dart';
 import 'features/branding/presentation/brand_config_provider.dart';
 import 'features/feedback/presentation/belong_feedback_and_voting_sheet.dart';
@@ -62,7 +65,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
   final PostRepository? repository;
   final ThemeNotifier? themeNotifier;
 
-  const RefugeHomeScreen({super.key, this.repository, this.themeNotifier});
+  /// Feed room shown on the first frame.
+  ///
+  /// Null opens Prayer Sanctuary, or Weekly Study on the BEMA brand.
+  final String? initialSpace;
+
+  const RefugeHomeScreen({super.key, this.repository, this.themeNotifier, this.initialSpace});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,7 +83,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
     final analytics = ref.watch(communityAnalyticsServiceProvider);
 
-    final selectedSpace = useState<String>('prayer');
+    final selectedSpace = useState<String>(initialSpace ?? (brand.isBema ? 'study' : 'prayer'));
     final activeFilter = useState<String>('All');
     final activeSort = useState<FeedSortOption>(FeedSortOption.latest);
     final activityTimestampsAsync = ref.watch(postActivityTimestampsProvider);
@@ -315,6 +323,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
                       primaryColor: primaryColor,
                       isContrast: isContrast,
+                      showVote: brand.showFeedbackEntry,
                     ),
                   ),
                 if (!largeFont) SliverToBoxAdapter(child: spaceNav),
@@ -365,6 +374,24 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
               final feedSlivers = <Widget>[
                 ...navigationSlivers,
+                if (!largeFont && selectedSpace.value != 'saved_for_later')
+                  SliverToBoxAdapter(
+                    child: BemaThisWeekCard(
+                      study: currentBemaWeeklyStudy,
+                      primaryColor: primaryColor,
+                      isContrast: isContrast,
+                      onJoinCall: () => openGroupCallLobby(
+                        context: context,
+                        displayName: profile.displayName,
+                        initialCallId: currentBemaWeeklyStudy.callRoom,
+                        shareOrigin: Uri.parse(flavor.websiteUrl),
+                      ),
+                      onOpenDiscussion: () {
+                        selectSpace(currentBemaWeeklyStudy.spaceKey);
+                        highlightedPostId.value = currentBemaWeeklyStudy.discussionPostId;
+                      },
+                    ),
+                  ),
                 if (selectedSpace.value == 'saved_for_later')
                   SliverToBoxAdapter(
                     child: Container(
@@ -534,6 +561,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
                   primaryColor: primaryColor,
                   isContrast: isContrast,
+                  showVote: brand.showFeedbackEntry,
                 ),
               Expanded(child: buildHomeBody()),
             ],
@@ -579,7 +607,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
     // The amber flavor chip needs about 40dp. On a phone it collides with the
     // logo and the 48dp actions, including at the default font size.
     final showFlavorChip =
-        flavor.environmentTag != null && textScale < 1.3 && MediaQuery.sizeOf(context).width >= 520;
+        brand.showEnvironmentBadge &&
+        flavor.environmentTag != null &&
+        textScale < 1.3 &&
+        MediaQuery.sizeOf(context).width >= 520;
 
     final showShareThought =
         largeFont &&
@@ -688,82 +719,124 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   FlavorEnvironmentChip(tag: flavor.environmentTag!),
                   const SizedBox(width: 6),
                 ],
-                ClipRRect(
-                  borderRadius: .circular(6),
-                  child: Image.asset(
-                    brand.logoAssetPath,
-                    key: const Key('belong_header_logo'),
-                    width: 28,
-                    height: 28,
-                    errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 18)),
+                if (brand.logoAssetPath.isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: .circular(6),
+                    child: Image.asset(
+                      brand.logoAssetPath,
+                      key: const Key('belong_header_logo'),
+                      width: 28,
+                      height: 28,
+                      errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 18)),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: .start,
                     mainAxisSize: .min,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Semantics(
-                              container: true,
-                              explicitChildNodes: true,
-                              child: Text(
-                                brand.shortName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: BelongTextStyles.of(context).emphasis.copyWith(fontSize: 15),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              'Refuge',
+                      if (brand.isBema)
+                        const Column(
+                          crossAxisAlignment: .start,
+                          children: [
+                            Text(
+                              'BEMA',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: BelongTextStyles.of(context).emphasis
-                                  .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 18,
+                                height: 1,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isLiveFeed ? const Color(0xFF4CAF50) : const Color(0xFF68A67D),
+                            Text(
+                              'Discussion Group',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.2,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 5),
-                          Flexible(
-                            child: Semantics(
-                              identifier: 'active_sensory_theme_${currentMode.name}',
-                              label: 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
-                              container: true,
-                              explicitChildNodes: true,
-                              child: Text(
-                                largeFont
-                                    ? '${getBelongSpaceInfo(selectedSpace.value).title} • '
-                                          '${isLiveFeed ? "Live" : "Resilient"}'
-                                    : 'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Theme.of(context).textTheme.bodySmall?.color
-                                      ?.withValues(alpha: 0.7),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Semantics(
+                                container: true,
+                                explicitChildNodes: true,
+                                child: Text(
+                                  brand.shortName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: BelongTextStyles.of(context).emphasis
+                                      .copyWith(fontSize: 15),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                            if (!brand.isBema) ...[
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'Refuge',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: BelongTextStyles.of(context).emphasis
+                                      .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      if (!brand.isBema)
+                        Row(
+                          children: [
+                            if (brand.showLiveStatus) ...[
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isLiveFeed
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFF68A67D),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                            ],
+                            Flexible(
+                              child: Semantics(
+                                identifier: 'active_sensory_theme_${currentMode.name}',
+                                label: brand.isBema
+                                    ? brand.tagline
+                                    : 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
+                                container: true,
+                                explicitChildNodes: true,
+                                child: Text(
+                                  brand.isBema
+                                      ? brand.tagline
+                                      : largeFont
+                                      ? '${getBelongSpaceInfo(selectedSpace.value).title} • '
+                                            '${isLiveFeed ? "Live" : "Resilient"}'
+                                      : 'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context).textTheme.bodySmall?.color
+                                        ?.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -813,7 +886,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
             Semantics(
               identifier: 'about_belong_info_button',
               child: IconButton(
-                tooltip: kIsWeb ? '' : 'About Belong',
+                tooltip: kIsWeb ? '' : (brand.isBema ? 'About this group' : 'About Belong'),
                 icon: const Icon(Icons.info_outline_rounded, size: 18),
                 visualDensity: VisualDensity.compact,
                 onPressed: openAbout,
@@ -1127,6 +1200,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
     required this.onSelectSpaces,
     required this.primaryColor,
     required this.isContrast,
+    this.showVote = true,
   });
 
   final BelongHomeSubView activeSubView;
@@ -1134,6 +1208,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
   final VoidCallback onSelectSpaces;
   final Color primaryColor;
   final bool isContrast;
+  final bool showVote;
 
   @override
   Widget build(BuildContext context) {
@@ -1204,14 +1279,20 @@ class _BelongSubHeaderBar extends StatelessWidget {
           // ignores the overflow. Wide layouts keep the chip on the right.
           if (constraints.maxWidth >= 520) {
             return Row(
-              children: [feedChip, const SizedBox(width: 8), spacesChip, const Spacer(), voteChip],
+              children: [
+                feedChip,
+                const SizedBox(width: 8),
+                spacesChip,
+                const Spacer(),
+                if (showVote) voteChip,
+              ],
             );
           }
           return Wrap(
             spacing: 8,
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
-            children: [feedChip, spacesChip, voteChip],
+            children: [feedChip, spacesChip, if (showVote) voteChip],
           );
         },
       ),

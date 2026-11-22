@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../core/config/app_flavor.dart';
 
+/// Compile-time brand. Absent or any value other than `bema` is Belong.
+///
+/// `lib/main_bema.dart` is built with `--dart-define=BRAND=bema`.
+const String kCommunityBrandId = String.fromEnvironment('BRAND', defaultValue: 'belong');
+
+/// True only for the BEMA discussion-group build.
+bool get kIsBemaBrand => kCommunityBrandId == 'bema';
+
 /// Immutable multi-tenant branding configuration allowing Refuge to power
 /// **Belong on the Spectrum** (`belongonthespectrum.com`) as its flagship
 /// community while remaining 100% white-labelable for partner churches and
@@ -72,6 +80,35 @@ class CommunityBrandConfig {
       defaultOrganizerWelcomeMessage = 'A peaceful sanctuary for autistic Christians, families, and friends to connect at their own pace.',
       enableFellowshipAffiliationField = true;
 
+  /// Discussion-group skin. Belong copy, spaces, and colors stay on [belong].
+  ///
+  /// Colors are the Fireside `minimal-dark` theme on bemadiscipleship.com:
+  /// page `#222222`, header and player `#2A2A2A`, episode links `#2EA4F9`
+  /// (hover `#1599F8`).
+  const CommunityBrandConfig.bema()
+    : tenantId = 'bema',
+      shortName = 'BEMA',
+      fullName = 'BEMA Discussion Group',
+      tagline = 'Discuss the BEMA podcast together',
+      scriptureAnchor = '',
+      websiteUrl = 'https://bemademo.web.app/',
+      partnerOrgName = 'BEMA Discipleship',
+      partnerOrgUrl = 'https://www.bemadiscipleship.com/',
+      logoAssetPath = '',
+      creamBackgroundColor = const Color(0xFF222222),
+      deepNavyPrimaryColor = const Color(0xFF2EA4F9),
+      sageAccentColor = const Color(0xFF1599F8),
+      warmAmberAccentColor = const Color(0xFF2A2A2A),
+      defaultSubredditOrSpaceTag = 'bema',
+      defaultCategoryLabel = 'Spaces',
+      sensoryDisclaimerMarkdown = 'A quiet place to discuss the BEMA podcast together.',
+      fellowshipAffiliationPrompt = '',
+      fellowshipAffiliationOptions = const [],
+      fellowshipNonMemberOption = '',
+      defaultOrganizerWelcomeTitle = 'Welcome to the BEMA Discussion Group',
+      defaultOrganizerWelcomeMessage = 'Listen to this week’s episode and talk about it together.',
+      enableFellowshipAffiliationField = false;
+
   /// Flavor-aware flagship configuration for **Belong on the Spectrum**.
   /// Uses Firebase Hosting web app URLs (`https://dev-belongonthespectrum.web.app/`
   /// in `dev`, `https://belongonthespectrum.web.app/` in `prod`). The marketing
@@ -117,6 +154,22 @@ class CommunityBrandConfig {
   final String defaultOrganizerWelcomeTitle;
   final String defaultOrganizerWelcomeMessage;
   final bool enableFellowshipAffiliationField;
+
+  bool get isBema => tenantId == 'bema';
+
+  /// Null shows every space. The BEMA build keeps three rooms.
+  List<String>? get visibleSpaceSlugs =>
+      isBema ? const ['study', 'prayer', 'resources_videos'] : null;
+
+  bool get showEnvironmentBadge => !isBema;
+
+  bool get showLiveStatus => !isBema;
+
+  bool get showFeedbackEntry => !isBema;
+
+  /// Active brand for this compilation. Belong unless `BRAND=bema`.
+  static CommunityBrandConfig resolve() =>
+      kIsBemaBrand ? const CommunityBrandConfig.bema() : const CommunityBrandConfig.belong();
 
   CommunityBrandConfig copyWith({
     String? tenantId,
