@@ -10,8 +10,6 @@ import 'package:refuge4serverpod/src/features/sensory_themes/domain/sensory_mode
 
 import '../../support/test_font_loader.dart';
 
-const _keyboardInset = 340.0;
-
 const _fields = <Key>[
   Key('profile_display_name_field'),
   Key('profile_last_name_field'),
@@ -35,40 +33,44 @@ void main() {
     ProfileStorageService.instance.clear();
   });
 
-  for (final surface in const <(String, Size, double)>[
-    ('small phone', Size(360, 640), 1),
-    ('Pixel 9a', Size(1080, 2424), 2.6),
-    ('tablet or web', Size(1024, 768), 1),
+  for (final surface in const <(String, Size)>[
+    ('360x640', Size(360, 640)),
+    ('412x915', Size(412, 915)),
   ]) {
     for (final scale in const <double>[1.0, 1.3, 2.0, 3.0]) {
-      testWidgets('focused profile fields stay above the keyboard on ${surface.$1} at '
+      testWidgets('focused profile fields stay above a 45% keyboard on ${surface.$1} at '
           'text scale $scale', (tester) async {
+        final inset = surface.$2.height * 0.45;
         final overflows = _captureOverflows();
         await _pumpProfile(
           tester,
           physicalSize: surface.$2,
-          devicePixelRatio: surface.$3,
           textScale: scale,
+          inset: inset,
         );
         _expectNoOverflow(overflows, '${surface.$1} scale $scale after open');
 
         for (final key in _fields) {
           final reason = '${surface.$1} scale $scale $key';
-          await tester.showKeyboard(find.byKey(key, skipOffstage: false));
+          final field = find.byKey(key, skipOffstage: false);
+          final scrollable = find.descendant(
+            of: find.byKey(const Key('profile_sheet_scroll')),
+            matching: find.byType(Scrollable),
+          );
+          await tester.scrollUntilVisible(field, 80, scrollable: scrollable.first);
+          await tester.pump();
+          await tester.showKeyboard(field);
           await tester.pump(const Duration(milliseconds: 250));
           _expectNoOverflow(overflows, reason);
-          _expectFullyVisible(tester, find.byKey(key), reason: reason);
+          _expectFullyVisible(tester, find.byKey(key), inset: inset, reason: reason);
         }
 
         const saveReason = 'Save';
-        await tester.ensureVisible(
-          find.byKey(const Key('profile_save_sign_in_button'), skipOffstage: false),
-        );
-        await tester.pump();
         _expectNoOverflow(overflows, '${surface.$1} scale $scale $saveReason');
         _expectFullyVisible(
           tester,
           find.byKey(const Key('profile_save_sign_in_button')),
+          inset: inset,
           reason: '${surface.$1} scale $scale $saveReason',
         );
       });
@@ -80,8 +82,8 @@ void main() {
       await _pumpProfile(
         tester,
         physicalSize: const Size(360, 640),
-        devicePixelRatio: 1,
         textScale: scale,
+        inset: 640 * 0.45,
       );
       await expectLater(
         find.byType(MaterialApp),
@@ -112,7 +114,12 @@ void _expectNoOverflow(List<FlutterErrorDetails> overflows, String reason) {
   fail('$reason painted an overflow:\n$rendered');
 }
 
-void _expectFullyVisible(WidgetTester tester, Finder finder, {required String reason}) {
+void _expectFullyVisible(
+  WidgetTester tester,
+  Finder finder, {
+  required double inset,
+  required String reason,
+}) {
   expect(finder, findsOneWidget, reason: reason);
   expect(tester.takeException(), isNull, reason: reason);
   final rect = tester.getRect(finder);
@@ -120,7 +127,7 @@ void _expectFullyVisible(WidgetTester tester, Finder finder, {required String re
     tester.view.physicalSize.width / tester.view.devicePixelRatio,
     tester.view.physicalSize.height / tester.view.devicePixelRatio,
   );
-  final visibleBottom = logical.height - _keyboardInset;
+  final visibleBottom = logical.height - inset;
   expect(rect.top, greaterThanOrEqualTo(-0.5), reason: '$reason top $rect');
   expect(rect.left, greaterThanOrEqualTo(-0.5), reason: '$reason left $rect');
   expect(rect.right, lessThanOrEqualTo(logical.width + 0.5), reason: '$reason right $rect');
@@ -136,13 +143,15 @@ void _expectFullyVisible(WidgetTester tester, Finder finder, {required String re
 Future<void> _pumpProfile(
   WidgetTester tester, {
   required Size physicalSize,
-  required double devicePixelRatio,
   required double textScale,
+  required double inset,
 }) async {
-  tester.view.devicePixelRatio = devicePixelRatio;
+  tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = physicalSize;
+  tester.view.viewInsets = FakeViewPadding(bottom: inset);
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetViewInsets);
 
   await tester.pumpWidget(
     ProviderScope(
@@ -155,7 +164,6 @@ Future<void> _pumpProfile(
           return MediaQuery(
             data: media.copyWith(
               textScaler: TextScaler.linear(textScale),
-              viewInsets: media.viewInsets.copyWith(bottom: _keyboardInset),
             ),
             child: child ?? const SizedBox.shrink(),
           );

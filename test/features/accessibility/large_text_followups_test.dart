@@ -434,9 +434,13 @@ void main() {
     await tester.tap(find.byKey(const Key('open_profile_sheet')));
     await settleLargeText(tester);
     session.check();
-
+    final scrollable = find.descendant(
+      of: find.byKey(const Key('profile_sheet_scroll')),
+      matching: find.byType(Scrollable),
+    );
     for (final label in ['First Name', 'Last Name', 'Bio / Note to Fellowship']) {
-      final text = tester.widget<Text>(find.text(label));
+      await tester.scrollUntilVisible(find.text(label, skipOffstage: false), 80, scrollable: scrollable.first);
+      final text = tester.widget<Text>(find.text(label, skipOffstage: false));
       expect(text.maxLines, isNull, reason: label);
       expect(text.overflow, isNot(TextOverflow.ellipsis), reason: label);
     }
@@ -459,20 +463,16 @@ void main() {
 
     await reveal(find.byKey(const Key('preview_mode_switch')));
     expect(tester.getSize(find.byKey(const Key('preview_mode_switch'))).height, greaterThan(24));
+    expect(find.byKey(const Key('profile_sign_out_button')), findsOneWidget);
 
-    final saveFinder = find.byKey(const Key('profile_save_sign_in_button'));
-    final cancelFinder = find.byKey(const Key('profile_cancel_button'));
-    final signOutFinder = find.byKey(const Key('profile_sign_out_button'));
-    await reveal(signOutFinder);
-    final save = tester.getRect(saveFinder);
-    final cancel = tester.getRect(cancelFinder);
-    final signOut = tester.getRect(signOutFinder);
+    final save = tester.getRect(find.byKey(const Key('profile_save_sign_in_button')));
+    final close = tester.getRect(find.byKey(const Key('profile_sheet_close_button')));
+    final surface = largeTextPhoneSurface;
     expect(save.width, greaterThan(180));
-    expect((save.width - cancel.width).abs(), lessThan(8));
-    expect((save.width - signOut.width).abs(), lessThan(8));
-    expect(save.bottom, lessThanOrEqualTo(cancel.top));
-    expect(cancel.bottom, lessThanOrEqualTo(signOut.top));
-    expect(cancel.top - save.bottom, greaterThanOrEqualTo(4));
+    expect(save.top, greaterThanOrEqualTo(-0.5));
+    expect(save.bottom, lessThanOrEqualTo(surface.height + 0.5));
+    expect(close.top, greaterThanOrEqualTo(-0.5));
+    expect(close.bottom, lessThan(save.top));
   });
 
   testWidgets('large-text profile fields keep their accessible names at text scale 2', (
@@ -509,8 +509,17 @@ void main() {
         'profile_email_field': 'Email Address',
         'profile_bio_field': 'Bio / Note to Fellowship',
       };
+      final scrollable = find.descendant(
+        of: find.byKey(const Key('profile_sheet_scroll')),
+        matching: find.byType(Scrollable),
+      );
       for (final entry in fields.entries) {
-        expect(find.text(entry.value), findsOneWidget, reason: entry.key);
+        await tester.scrollUntilVisible(
+          find.byKey(Key(entry.key), skipOffstage: false),
+          80,
+          scrollable: scrollable.first,
+        );
+        expect(find.text(entry.value, skipOffstage: false), findsWidgets, reason: entry.key);
         final node = tester.getSemantics(find.byKey(Key(entry.key)));
         expect(node.label, contains(entry.value), reason: entry.key);
         expect(find.bySemanticsLabel(entry.value), findsOneWidget, reason: entry.key);
