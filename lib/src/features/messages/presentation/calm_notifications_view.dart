@@ -128,6 +128,64 @@ class CalmNotificationsView extends HookConsumerWidget {
       ),
     );
 
+    Widget notificationTile(BelongNotification item) => _BelongNotificationCard(
+      item: item,
+      primaryColor: primary,
+      isContrast: isContrast,
+      onTap: () {
+        if (!item.isRead) {
+          ref.read(belongNotificationsProvider.notifier).markAsRead(item.id);
+        }
+
+        NotificationNavigationTarget? target;
+        if (item.type == BelongNotificationType.directMessage) {
+          target = NotificationNavigationTarget(
+            tab: BelongBottomTab.msgs,
+            conversationId: item.conversationId,
+          );
+        } else if (item.spaceKey != null || item.postId != null) {
+          target = NotificationNavigationTarget(
+            tab: BelongBottomTab.home,
+            spaceKey: item.spaceKey ?? 'general_chat',
+            postId: item.postId,
+            openDiscussion:
+                item.type == BelongNotificationType.reply ||
+                item.type == BelongNotificationType.mention,
+          );
+        } else {
+          // Polite fallback when referenced item was archived/deleted
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              key: Key('notification_archived_snackbar'),
+              content: Text(
+                'This reflection was unhurriedly archived or moved',
+              ),
+              duration: Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+
+        if (target != null) {
+          ref.read(notificationNavigationTargetProvider.notifier).state =
+              target;
+          onNavigate?.call(target);
+        }
+      },
+    );
+
+    final emptyPlaceholder = Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Text(
+        'No notifications in ${activeFilter.label.toLowerCase()} right now.',
+        key: const Key('empty_notifications_placeholder'),
+        style: TextStyle(
+          fontSize: 12,
+          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+        ),
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: largeText
@@ -205,86 +263,110 @@ class CalmNotificationsView extends HookConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          if (largeText)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 12, 0),
-              child: Row(
-                children: [
-                  Checkbox(
-                    key: const Key('mark_all_read_checkbox'),
-                    value: unreadCount == 0,
-                    activeColor: isContrast ? Colors.yellow : primary,
-                    checkColor: isContrast ? Colors.black : Colors.white,
-                    onChanged: markAllRead == null
-                        ? null
-                        : (_) => markAllRead(),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      key: const Key('mark_all_notifications_as_read_button'),
-                      borderRadius: BorderRadius.circular(4),
-                      onTap: markAllRead,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4.0,
-                          vertical: 6.0,
+      // At large text the wrapped filters can be taller than a short
+      // screen. They scroll with the notices instead of pinning a header
+      // that leaves the list at zero height (#932).
+      body: largeText
+          ? CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 12, 0),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          key: const Key('mark_all_read_checkbox'),
+                          value: unreadCount == 0,
+                          activeColor: isContrast ? Colors.yellow : primary,
+                          checkColor: isContrast ? Colors.black : Colors.white,
+                          onChanged: markAllRead == null
+                              ? null
+                              : (_) => markAllRead(),
                         ),
-                        child: Text(
-                          'Mark all read',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: unreadCount == 0
-                                ? (isContrast
-                                      ? Colors.white38
-                                      : theme.disabledColor)
-                                : (isContrast ? Colors.yellow : primary),
+                        Expanded(
+                          child: InkWell(
+                            key: const Key(
+                              'mark_all_notifications_as_read_button',
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            onTap: markAllRead,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                                vertical: 6.0,
+                              ),
+                              child: Text(
+                                'Mark all read',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: unreadCount == 0
+                                      ? (isContrast
+                                            ? Colors.white38
+                                            : theme.disabledColor)
+                                      : (isContrast ? Colors.yellow : primary),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          // The banner is a fixed block at normal size. At large text it scrolls
-          // with the list so the filter chips can stay on the first frame.
-          if (!largeText) gentleBanner,
-
-          // Filter chips. A horizontal row hides Threads and Following once the
-          // labels grow, with no scroll hint (#932). Wrap keeps every chip on
-          // the phone.
-          largeText
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final filter in BelongNotificationFilter.values)
+                          _notificationFilterChip(
+                            filter: filter,
+                            selected: activeFilter == filter,
+                            isContrast: isContrast,
+                            primary: primary,
+                            onSelected: () {
+                              ref
+                                      .read(
+                                        notificationActiveFilterProvider
+                                            .notifier,
+                                      )
+                                      .state =
+                                  filter;
+                            },
+                          ),
+                      ],
+                    ),
                   ),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final filter in BelongNotificationFilter.values)
-                        _notificationFilterChip(
-                          filter: filter,
-                          selected: activeFilter == filter,
-                          isContrast: isContrast,
-                          primary: primary,
-                          onSelected: () {
-                            ref
-                                    .read(
-                                      notificationActiveFilterProvider.notifier,
-                                    )
-                                    .state =
-                                filter;
-                          },
-                        ),
-                    ],
+                ),
+                const SliverToBoxAdapter(child: Divider(height: 12)),
+                SliverToBoxAdapter(child: gentleBanner),
+                if (notifications.isEmpty)
+                  SliverToBoxAdapter(child: emptyPlaceholder)
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    sliver: SliverList.separated(
+                      itemCount: notifications.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 6),
+                      itemBuilder: (context, index) =>
+                          notificationTile(notifications[index]),
+                    ),
                   ),
-                )
-              : SingleChildScrollView(
+              ],
+            )
+          : Column(
+              children: [
+                gentleBanner,
+                SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -314,118 +396,23 @@ class CalmNotificationsView extends HookConsumerWidget {
                     ],
                   ),
                 ),
-          const Divider(height: 12),
-
-          // Notifications List
-          Expanded(
-            child: notifications.isEmpty
-                ? (largeText
-                      ? ListView(
+                const Divider(height: 12),
+                Expanded(
+                  child: notifications.isEmpty
+                      ? Center(child: emptyPlaceholder)
+                      : ListView.separated(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 6,
                           ),
-                          children: [
-                            gentleBanner,
-                            Padding(
-                              padding: const EdgeInsets.all(32.0),
-                              child: Text(
-                                'No notifications in ${activeFilter.label.toLowerCase()} right now.',
-                                key: const Key(
-                                  'empty_notifications_placeholder',
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.textTheme.bodySmall?.color
-                                      ?.withValues(alpha: 0.6),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: Text(
-                              'No notifications in ${activeFilter.label.toLowerCase()} right now.',
-                              key: const Key('empty_notifications_placeholder'),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.textTheme.bodySmall?.color
-                                    ?.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ),
-                        ))
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    itemCount: notifications.length + (largeText ? 1 : 0),
-                    separatorBuilder: (_, _) => const SizedBox(height: 6),
-                    itemBuilder: (context, index) {
-                      if (largeText && index == 0) return gentleBanner;
-                      final item = notifications[largeText ? index - 1 : index];
-                      return _BelongNotificationCard(
-                        item: item,
-                        primaryColor: primary,
-                        isContrast: isContrast,
-                        onTap: () {
-                          if (!item.isRead) {
-                            ref
-                                .read(belongNotificationsProvider.notifier)
-                                .markAsRead(item.id);
-                          }
-
-                          NotificationNavigationTarget? target;
-                          if (item.type ==
-                              BelongNotificationType.directMessage) {
-                            target = NotificationNavigationTarget(
-                              tab: BelongBottomTab.msgs,
-                              conversationId: item.conversationId,
-                            );
-                          } else if (item.spaceKey != null ||
-                              item.postId != null) {
-                            target = NotificationNavigationTarget(
-                              tab: BelongBottomTab.home,
-                              spaceKey: item.spaceKey ?? 'general_chat',
-                              postId: item.postId,
-                              openDiscussion:
-                                  item.type == BelongNotificationType.reply ||
-                                  item.type == BelongNotificationType.mention,
-                            );
-                          } else {
-                            // Polite fallback when referenced item was archived/deleted
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                key: Key('notification_archived_snackbar'),
-                                content: Text(
-                                  'This reflection was unhurriedly archived or moved',
-                                ),
-                                duration: Duration(seconds: 3),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-
-                          if (target != null) {
-                            ref
-                                    .read(
-                                      notificationNavigationTargetProvider
-                                          .notifier,
-                                    )
-                                    .state =
-                                target;
-                            onNavigate?.call(target);
-                          }
-                        },
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
+                          itemCount: notifications.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 6),
+                          itemBuilder: (context, index) =>
+                              notificationTile(notifications[index]),
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }
