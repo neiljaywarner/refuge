@@ -463,7 +463,8 @@ void main() {
 
     await reveal(find.byKey(const Key('preview_mode_switch')));
     expect(tester.getSize(find.byKey(const Key('preview_mode_switch'))).height, greaterThan(24));
-    expect(find.byKey(const Key('profile_sign_out_button')), findsOneWidget);
+    expect(find.text('Sign Out'), findsNothing);
+    expect(find.byKey(const Key('profile_account_menu_button')), findsOneWidget);
 
     final save = tester.getRect(find.byKey(const Key('profile_save_sign_in_button')));
     final close = tester.getRect(find.byKey(const Key('profile_sheet_close_button')));

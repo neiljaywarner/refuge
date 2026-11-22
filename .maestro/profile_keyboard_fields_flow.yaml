@@ -66,4 +66,12 @@ tags:
     direction: DOWN
     timeout: 15000
 - assertVisible: ".*(Save Profile|Save & Sign In).*"
+- assertNotVisible: "Sign Out"
 - takeScreenshot: profile_keyboard_save
+- tapOn:
+    id: "profile_account_menu_button"
+- extendedWaitUntil:
+    visible: "Delete account"
+    timeout: 8000
+- assertVisible: "Sign Out"
+- takeScreenshot: profile_keyboard_account_menu

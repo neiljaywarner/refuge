@@ -46,7 +46,8 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         authBackendTargetProvider.overrideWithValue(BackendTarget.inMemory),
-        if (repository != null) accountDeletionRepositoryProvider.overrideWithValue(repository),
+        if (repository != null)
+          accountDeletionRepositoryProvider.overrideWithValue(repository),
       ],
     );
     addTearDown(() async {
@@ -75,21 +76,39 @@ void main() {
     return container;
   }
 
+  Future<void> openDeletePhraseDialog(PatrolTester $) async {
+    await $(const Key('profile_account_menu_button')).tap();
+    await $.pumpAndSettle();
+    await $(const Key('delete_my_account_button')).tap();
+    await $.pumpAndSettle();
+    expect($('Are you sure?'), findsOneWidget);
+    await $(const Key('profile_delete_confirm_delete')).tap();
+    await $.pumpAndSettle();
+  }
+
   group('Delete my account dialog', () {
     patrolWidgetTest('hides the action for a guest', ($) async {
       await pumpProfile($);
 
+      expect($(const Key('profile_account_menu_button')), findsNothing);
       expect($(const Key('delete_my_account_button')), findsNothing);
     });
 
-    patrolWidgetTest('requires DELETE and then signs the member out', ($) async {
+    patrolWidgetTest('requires DELETE and then signs the member out', (
+      $,
+    ) async {
       final sink = InMemoryAccountDeletionSink();
-      final repository = AccountDeletionRepository(sinks: [sink], flavor: 'dev');
-      final container = await pumpProfile($, signedIn: true, repository: repository);
+      final repository = AccountDeletionRepository(
+        sinks: [sink],
+        flavor: 'dev',
+      );
+      final container = await pumpProfile(
+        $,
+        signedIn: true,
+        repository: repository,
+      );
 
-      expect($(const Key('delete_my_account_button')), findsOneWidget);
-      await $(const Key('delete_my_account_button')).tap();
-      await $.pumpAndSettle();
+      await openDeletePhraseDialog($);
 
       await $(const Key('delete_my_account_confirm_field')).enterText('nope');
       await $(const Key('delete_my_account_submit_button')).tap();
@@ -109,10 +128,13 @@ void main() {
       expect(sink.records.values.single.email, 'tester@example.com');
     });
 
-    patrolWidgetTest('keeps the member signed in when a backend fails', ($) async {
+    patrolWidgetTest('keeps the member signed in when a backend fails', (
+      $,
+    ) async {
       final sink = MockAccountDeletionSink();
       when(() => sink.name).thenReturn('firestore');
-      when(() => sink.softDelete(any())).thenThrow(Exception('permission-denied'));
+      when(() => sink.softDelete(any()))
+          .thenThrow(Exception('permission-denied'));
       when(
         () => sink.isSoftDeleted(
           userId: any(named: 'userId'),
@@ -126,8 +148,7 @@ void main() {
         repository: AccountDeletionRepository(sinks: [sink], flavor: 'prod'),
       );
 
-      await $(const Key('delete_my_account_button')).tap();
-      await $.pumpAndSettle();
+      await openDeletePhraseDialog($);
       await $(const Key('delete_my_account_confirm_field')).enterText('DELETE');
       await $(const Key('delete_my_account_submit_button')).tap();
       await $.pumpAndSettle();
@@ -150,7 +171,9 @@ void main() {
     );
     expect($(const Key('soft_delete_sign_in_blocked')), findsOneWidget);
     expect(
-      $('This account was deleted. Sign-in is turned off. Your posts are still here.'),
+      $(
+        'This account was deleted. Sign-in is turned off. Your posts are still here.',
+      ),
       findsOneWidget,
     );
   });
