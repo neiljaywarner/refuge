@@ -22,7 +22,8 @@ class BemaWeeklyPostBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = isContrast ? Colors.white : const Color(0xFF14211C);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final ink = isContrast || dark ? Colors.white : const Color(0xFF14211C);
     final intro = TextStyle(color: ink, fontSize: 16, height: 1.4, fontWeight: FontWeight.w600);
     return Semantics(
       container: true,

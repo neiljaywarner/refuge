@@ -22,14 +22,19 @@ class BemaThisWeekCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = isContrast ? Colors.yellow : const Color(0xFF1B4332);
-    final ink = isContrast ? Colors.white : const Color(0xFF14211C);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final accent = isContrast
+        ? Colors.yellow
+        : (dark ? Theme.of(context).colorScheme.primary : const Color(0xFF1B4332));
+    final ink = isContrast || dark ? Colors.white : const Color(0xFF14211C);
     return Container(
       key: const Key('bema_this_week_card'),
       margin: const .fromLTRB(12, 6, 12, 4),
       padding: const .fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
+        color: isContrast
+            ? Colors.black
+            : (dark ? const Color(0xFF2A2A2A) : primaryColor.withValues(alpha: 0.08)),
         borderRadius: .circular(16),
         border: Border.all(color: accent.withValues(alpha: isContrast ? 1 : 0.45), width: 1.5),
       ),
