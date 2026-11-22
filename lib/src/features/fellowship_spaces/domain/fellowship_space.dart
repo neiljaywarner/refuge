@@ -168,6 +168,13 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         externalUrl: 'https://dfwchurch.org',
       ),
       BelongSpaceItem(
+        slug: 'link_disciples_today',
+        title: 'Disciples Today',
+        emoji: '📖',
+        subtitle: 'Visit disciplestoday.org',
+        externalUrl: 'https://disciplestoday.org',
+      ),
+      BelongSpaceItem(
         slug: 'link_android_app',
         title: 'Download the Android App',
         emoji: '🤖',

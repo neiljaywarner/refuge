@@ -5,7 +5,11 @@ import 'package:refuge4serverpod/src/features/fellowship_spaces/domain/fellowshi
 import 'package:refuge4serverpod/src/features/fellowship_spaces/presentation/belong_spaces_directory_view.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
+void _ignoreSpace(BelongSpaceItem item) {}
+
 class _FakeUrlLauncher extends UrlLauncherPlatform {
+  final launched = <String>[];
+
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 
@@ -19,12 +23,18 @@ class _FakeUrlLauncher extends UrlLauncherPlatform {
     required bool universalLinksOnly,
     required Map<String, String> headers,
     String? webOnlyWindowName,
-  }) async => true;
+  }) async {
+    launched.add(url);
+    return true;
+  }
 }
 
 void main() {
+  late _FakeUrlLauncher launcher;
+
   setUp(() {
-    UrlLauncherPlatform.instance = _FakeUrlLauncher();
+    launcher = _FakeUrlLauncher();
+    UrlLauncherPlatform.instance = launcher;
   });
 
   Future<BelongSpaceItem?> pumpAndTap(WidgetTester tester, String title) async {
@@ -85,9 +95,82 @@ void main() {
     final selected = await pumpAndTap(tester, 'DFW Church');
     expect(selected, isNull);
     expect(find.textContaining('Opening DFW Church'), findsOneWidget);
-    // The row's external URL is dfwchurch.org. The live tap uses the organizer
-    // remote-config partner URL, which defaults to disciplestoday.org.
-    expect(find.textContaining('https://disciplestoday.org'), findsOneWidget);
+    expect(find.textContaining('https://dfwchurch.org'), findsOneWidget);
+    expect(launcher.launched, ['https://dfwchurch.org']);
+  });
+
+  testWidgets('Disciples Today opens its own page', (tester) async {
+    final selected = await pumpAndTap(tester, 'Disciples Today');
+    expect(selected, isNull);
+    expect(find.textContaining('Opening Disciples Today'), findsOneWidget);
+    expect(launcher.launched, ['https://disciplestoday.org']);
+  });
+
+  testWidgets('church links stay at least 48dp from text scale 1 to 3', (tester) async {
+    for (final scale in const [1.0, 1.3, 2.0, 3.0]) {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(360, 900);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+              child: child ?? const SizedBox.shrink(),
+            ),
+            home: Scaffold(
+              body: BelongSpacesDirectoryView(
+                selectedSpaceSlug: 'general_chat',
+                onSelectSpaceItem: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final slug in const ['link_dfw_church', 'link_disciples_today']) {
+        final tile = find.byKey(Key('space_tile_$slug'));
+        await tester.scrollUntilVisible(tile, 120);
+        await tester.pump();
+        final rect = tester.getRect(tile);
+        expect(rect.height, greaterThanOrEqualTo(48), reason: '$slug scale $scale');
+        expect(rect.top, greaterThanOrEqualTo(-0.5), reason: '$slug scale $scale');
+        expect(rect.bottom, lessThanOrEqualTo(900.5), reason: '$slug scale $scale');
+        expect(tester.getSemantics(tile).label, isNotEmpty);
+      }
+    }
+  });
+
+  testWidgets('golden: church links at text scale 3', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(fontFamily: 'Roboto'),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(3)),
+            child: child ?? const SizedBox.shrink(),
+          ),
+          home: Scaffold(
+            body: BelongSpacesDirectoryView(
+              selectedSpaceSlug: 'general_chat',
+              onSelectSpaceItem: _ignoreSpace,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final title = find.text('DFW Church');
+    await tester.scrollUntilVisible(title, 240);
+    await tester.pump();
+    final card = find.ancestor(of: title, matching: find.byType(Card)).first;
+    await expectLater(card, matchesGoldenFile('goldens/links_church_scale_3.png'));
   });
 
   testWidgets('Download the Android App opens the in-app phone guide', (tester) async {
