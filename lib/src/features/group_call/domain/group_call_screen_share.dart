@@ -105,6 +105,21 @@ GroupCallShareParticipant groupCallShareParticipant(CallParticipantState person)
       screenShareEnabled: person.isScreenShareEnabled,
     );
 
+/// True when a remote screen-share track is published but frames have not
+/// arrived.
+///
+/// [CallParticipantState.isScreenShareEnabled] is already true in this state
+/// (the track exists and is not muted), so the share can take the main tile.
+/// [RemoteTrackState.received] stays false until the subscriber update, and
+/// the video renderer paints nothing during that gap.
+///
+/// https://getstream.io/video/docs/flutter/video-render/
+bool groupCallScreenSharePending(CallParticipantState person) {
+  final track = person.screenShareTrack;
+  if (track is! RemoteTrackState) return false;
+  return !track.muted && !track.received;
+}
+
 /// The session that is actually publishing [presenter]'s screen-share track.
 ///
 /// Two sessions can share a user id. The first session with that id may not
