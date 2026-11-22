@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/firebase/organizer_remote_config_service.dart';
+import '../../branding/presentation/brand_config_provider.dart';
 import '../../install/presentation/phone_install_guide_view.dart';
 import '../../notifications/data/notification_permissions_service.dart';
 import '../../notifications/presentation/calm_notification_preferences_sheet.dart';
@@ -66,11 +67,25 @@ class BelongSpacesDirectoryView extends HookConsumerWidget {
     final primary = Theme.of(context).colorScheme.primary;
     final isMutedInSettings = notificationPrefs.isSystemPermissionDenied;
 
+    final brand = ref.watch(communityBrandConfigProvider);
+    final sections = [
+      for (final section in kBelongSpaceSections)
+        if (brand.visibleSpaceSlugs == null)
+          section
+        else
+          BelongSpaceSection(
+            heading: section.heading,
+            items: [
+              for (final item in section.items)
+                if (brand.visibleSpaceSlugs!.contains(item.slug)) item,
+            ],
+          ),
+    ].where((section) => section.items.isNotEmpty);
     return ListView(
       key: const Key('belong_spaces_directory_list'),
       padding: const .symmetric(horizontal: 12, vertical: 8),
       children: [
-        for (final section in kBelongSpaceSections)
+        for (final section in sections)
           Padding(
             padding: const .only(bottom: 12),
             child: Column(
@@ -166,7 +181,9 @@ class _SpaceRowTile extends StatelessWidget {
       selected: isSelected,
       leading: ExcludeSemantics(child: Text(item.emoji, style: const TextStyle(fontSize: 18))),
       title: Text(
-        item.title,
+        ProviderScope.containerOf(context).read(communityBrandConfigProvider).isBema
+            ? bemaSpaceTitle(item.slug)
+            : item.title,
         style: TextStyle(
           fontSize: 13.5,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,

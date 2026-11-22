@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../constants/app_theme.dart';
+import '../../branding/domain/community_brand_config.dart';
+import '../../branding/presentation/brand_config_provider.dart';
 import '../../fellowship_spaces/domain/fellowship_space.dart';
 import '../domain/feed_sort_option.dart';
 import 'feed_sort_row.dart';
@@ -45,7 +47,9 @@ class SpaceNavigationBar extends ConsumerWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final effectiveContrast = _resolveContrast(theme);
+    final brand = ref.watch(communityBrandConfigProvider);
     final spaceInfo = getBelongSpaceInfo(selectedSpace);
+    final roomTitle = brand.isBema ? bemaSpaceTitle(selectedSpace) : spaceInfo.title;
     final hasFilterAndSort = onSelectFilter != null || onSelectSort != null;
 
     return Container(
@@ -80,6 +84,8 @@ class SpaceNavigationBar extends ConsumerWidget {
             primary: primary,
             effectiveContrast: effectiveContrast,
             spaceInfo: spaceInfo,
+            roomTitle: roomTitle,
+            brand: brand,
             minControlHeight: minControlHeight,
           );
           final filter = _filterControl(
@@ -262,7 +268,7 @@ class SpaceNavigationBar extends ConsumerWidget {
             const Text('🙏', style: TextStyle(fontSize: 13)),
             const SizedBox(width: 4),
             Text(
-              'Prayer Sanctuary',
+              ref.watch(communityBrandConfigProvider).isBema ? 'Prayer' : 'Prayer Sanctuary',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
@@ -282,13 +288,15 @@ class SpaceNavigationBar extends ConsumerWidget {
     required Color primary,
     required bool effectiveContrast,
     required BelongSpaceInfo spaceInfo,
+    required String roomTitle,
+    required CommunityBrandConfig brand,
     double? minControlHeight,
   }) => Align(
     alignment: Alignment.centerLeft,
     child: Semantics(
       identifier: 'space_switcher_popup_button',
       button: true,
-      label: 'Switch fellowship space (${spaceInfo.title})',
+      label: 'Switch fellowship space ($roomTitle)',
       child: PopupMenuButton<String>(
         key: const Key('space_switcher_popup_button'),
         tooltip: 'Switch fellowship space',
@@ -304,39 +312,47 @@ class SpaceNavigationBar extends ConsumerWidget {
             onSelectSpace(spaceKey);
           });
         },
-        itemBuilder: (context) => kFellowshipSpaces.entries.map((entry) {
-          final isSelected = selectedSpace == entry.key;
-          return PopupMenuItem<String>(
-            key: Key('space_chip_${entry.key}'),
-            value: entry.key,
-            child: Semantics(
-              identifier: 'space_chip_${entry.key}',
-              button: true,
-              selected: isSelected,
-              label: entry.value,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      entry.value,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? (effectiveContrast ? Colors.yellow : primary) : null,
+        itemBuilder: (context) => kFellowshipSpaces.entries
+            .where((entry) {
+              final allowed = brand.visibleSpaceSlugs;
+              return allowed == null || allowed.contains(entry.key);
+            })
+            .map((entry) {
+              final isSelected = selectedSpace == entry.key;
+              return PopupMenuItem<String>(
+                key: Key('space_chip_${entry.key}'),
+                value: entry.key,
+                child: Semantics(
+                  identifier: 'space_chip_${entry.key}',
+                  button: true,
+                  selected: isSelected,
+                  label: brand.isBema ? bemaSpaceTitle(entry.key) : entry.value,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          brand.isBema ? bemaSpaceTitle(entry.key) : entry.value,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? (effectiveContrast ? Colors.yellow : primary)
+                                : null,
+                          ),
+                        ),
                       ),
-                    ),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_rounded,
+                          size: 16,
+                          color: effectiveContrast ? Colors.yellow : primary,
+                        ),
+                    ],
                   ),
-                  if (isSelected)
-                    Icon(
-                      Icons.check_rounded,
-                      size: 16,
-                      color: effectiveContrast ? Colors.yellow : primary,
-                    ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
+                ),
+              );
+            })
+            .toList(),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: minControlHeight == null ? 3 : 16),
           child: Row(
@@ -346,7 +362,7 @@ class SpaceNavigationBar extends ConsumerWidget {
               const SizedBox(width: 5),
               Flexible(
                 child: Text(
-                  spaceInfo.title,
+                  roomTitle,
                   key: const Key('space_room_title'),
                   style: TextStyle(
                     fontSize: 14,

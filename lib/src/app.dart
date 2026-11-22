@@ -7,6 +7,8 @@ import 'constants/app_theme.dart';
 import 'core/config/app_flavor.dart';
 import 'core/presentation/system_insets.dart';
 import 'features/auth/presentation/auth_gate.dart';
+import 'features/branding/domain/community_brand_config.dart';
+import 'features/branding/presentation/bema_theme.dart';
 import 'features/group_call/data/stream_video_preview_config.dart';
 import 'features/group_call/domain/guest_invite.dart';
 import 'features/messages/presentation/direct_message_arrival_banner.dart';
@@ -121,8 +123,8 @@ class _RefugeAppContent extends ConsumerWidget {
     return MaterialApp(
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
-      title: flavor.launcherTitle,
-      theme: SensoryThemeData.getTheme(themeNotifier.mode),
+      title: kIsBemaBrand ? 'BEMA Discussion Group' : flavor.launcherTitle,
+      theme: kIsBemaBrand ? bemaDiscussionTheme() : SensoryThemeData.getTheme(themeNotifier.mode),
       builder: (context, child) {
         final riverpodFontScale = ref.watch(sensoryFontScaleProvider);
         final activeScale = themeNotifier.fontScale != SensoryFontScale.standard

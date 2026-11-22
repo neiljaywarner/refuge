@@ -7,5 +7,5 @@ import 'package:refuge4serverpod/src/features/branding/domain/community_brand_co
 /// can be overridden in `ProviderScope` for white-label partner tenants or BDD
 /// tests.
 final communityBrandConfigProvider = Provider<CommunityBrandConfig>(
-  (ref) => const CommunityBrandConfig.belong(),
+  (ref) => CommunityBrandConfig.resolve(),
 );

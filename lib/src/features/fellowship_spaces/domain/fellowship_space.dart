@@ -206,6 +206,14 @@ class BelongSpaceInfo {
   final String emoji;
 }
 
+/// Names shown in the BEMA build. Other brands keep [getBelongSpaceInfo].
+String bemaSpaceTitle(String slug) => switch (slug) {
+  'study' => 'Weekly Study',
+  'prayer' => 'Prayer',
+  'resources_videos' => 'Online Resources / Videos',
+  _ => getBelongSpaceInfo(slug).title,
+};
+
 /// Resolves human-friendly space title and emoji from any space slug or legacy key (#618).
 BelongSpaceInfo getBelongSpaceInfo(String slug) {
   for (final section in kBelongSpaceSections) {

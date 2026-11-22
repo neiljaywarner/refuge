@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/config/app_flavor.dart';
 import '../../../core/firebase/organizer_remote_config_service.dart';
 import '../../about/presentation/about_refuge_dialog.dart';
+import '../../branding/presentation/brand_config_provider.dart';
 
 /// Gentle top announcement banner configured dynamically by community
 /// organizers via Firebase Remote Config (#20).
@@ -48,6 +49,9 @@ class CommunityAnchorBanner extends HookConsumerWidget {
           final aboutButton = _BannerAboutButton(
             primaryColor: primaryColor,
             isContrast: isContrast,
+            semanticsLabel: ref.watch(communityBrandConfigProvider).isBema
+                ? 'Learn more about this discussion group'
+                : 'Learn more about Belong community principles',
           );
           final title = Text(
             remoteConfig.welcomeTitle,
@@ -104,7 +108,8 @@ class CommunityAnchorBanner extends HookConsumerWidget {
                     Row(
                       children: [
                         Flexible(child: title),
-                        if (showDomainInline) ...[
+                        if (showDomainInline &&
+                            !ref.watch(communityBrandConfigProvider).isBema) ...[
                           const Gap(4),
                           // A second Flexible would take half this row. The
                           // domain keeps only the width it needs, up to a cap.
@@ -168,16 +173,21 @@ class _BannerMark extends StatelessWidget {
 }
 
 class _BannerAboutButton extends StatelessWidget {
-  const _BannerAboutButton({required this.primaryColor, required this.isContrast});
+  const _BannerAboutButton({
+    required this.primaryColor,
+    required this.isContrast,
+    required this.semanticsLabel,
+  });
 
   final Color primaryColor;
   final bool isContrast;
+  final String semanticsLabel;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       identifier: 'banner_learn_more_button',
-      label: 'Learn more about Belong community principles',
+      label: semanticsLabel,
       button: true,
       child: TextButton(
         onPressed: () =>

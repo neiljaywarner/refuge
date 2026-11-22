@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/app_flavor.dart';
+import '../../branding/domain/community_brand_config.dart';
+import '../../branding/presentation/brand_config_provider.dart';
 import 'sign_in_recovery_panel.dart';
 
 /// Title on the sign-in wall.
 ///
 /// Register keeps the community name and drops "Sign in to", so the form
 /// does not tell a new member they are signing in. The flavor tag stays.
-String signInWallTitle(AppFlavor flavor, {bool registering = false}) {
-  final sentence = registering
-      ? 'Belong on the Spectrum'
-      : 'Sign in to Belong on the Spectrum';
+String signInWallTitle(AppFlavor flavor, {bool registering = false, CommunityBrandConfig? brand}) {
+  final community = brand?.fullName ?? 'Belong on the Spectrum';
+  final sentence = registering ? community : 'Sign in to $community';
+  if (brand?.isBema == true) return sentence;
   final tag = flavor.environmentTag;
   if (tag == null) return sentence;
   return '[$tag] $sentence PREVIEW';
@@ -54,7 +56,8 @@ class SimpleSignInScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final flavor = ref.watch(appFlavorProvider);
-    final titleText = signInWallTitleText(context, signInWallTitle(flavor));
+    final brand = ref.watch(communityBrandConfigProvider);
+    final titleText = signInWallTitleText(context, signInWallTitle(flavor, brand: brand));
 
     if (!firebaseReady) {
       return Scaffold(
@@ -74,9 +77,7 @@ class SimpleSignInScreen extends ConsumerWidget {
                         key: Key('sign_in_unavailable'),
                         textAlign: TextAlign.center,
                       ),
-                      SignInRecoveryPanel(
-                        canUseAppWhileWaiting: !flavor.isProduction,
-                      ),
+                      SignInRecoveryPanel(canUseAppWhileWaiting: !flavor.isProduction),
                     ],
                   ),
                 ),
@@ -92,7 +93,7 @@ class SimpleSignInScreen extends ConsumerWidget {
       showPasswordVisibilityToggle: true,
       subtitleBuilder: (context, action) => signInWallTitleText(
         context,
-        signInWallTitle(flavor, registering: action == AuthAction.signUp),
+        signInWallTitle(flavor, registering: action == AuthAction.signUp, brand: brand),
       ),
       footerBuilder: (context, action) => SignInRecoveryPanel(
         canUseAppWhileWaiting: !flavor.isProduction,

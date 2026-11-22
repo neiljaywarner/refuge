@@ -145,7 +145,7 @@ class FirstVisitWelcomeCard extends HookConsumerWidget {
                   FilledButton(
                     key: const Key('first_visit_save_button'),
                     onPressed: busy.value ? null : finishSave,
-                    child: const Text('Save & Enter Belong'),
+                    child: Text(brand.isBema ? 'Save & enter the group' : 'Save & Enter Belong'),
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton(

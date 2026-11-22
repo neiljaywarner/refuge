@@ -65,15 +65,12 @@ class RefugeHomeScreen extends HookConsumerWidget {
   final PostRepository? repository;
   final ThemeNotifier? themeNotifier;
 
-  /// Feed room shown on the first frame. The app opens Prayer Sanctuary.
-  final String initialSpace;
+  /// Feed room shown on the first frame.
+  ///
+  /// Null opens Prayer Sanctuary, or Weekly Study on the BEMA brand.
+  final String? initialSpace;
 
-  const RefugeHomeScreen({
-    super.key,
-    this.repository,
-    this.themeNotifier,
-    this.initialSpace = 'prayer',
-  });
+  const RefugeHomeScreen({super.key, this.repository, this.themeNotifier, this.initialSpace});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,7 +83,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
     final remoteConfig = ref.watch(organizerRemoteConfigProvider);
     final analytics = ref.watch(communityAnalyticsServiceProvider);
 
-    final selectedSpace = useState<String>(initialSpace);
+    final selectedSpace = useState<String>(initialSpace ?? (brand.isBema ? 'study' : 'prayer'));
     final activeFilter = useState<String>('All');
     final activeSort = useState<FeedSortOption>(FeedSortOption.latest);
     final activityTimestampsAsync = ref.watch(postActivityTimestampsProvider);
@@ -326,6 +323,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                       onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
                       primaryColor: primaryColor,
                       isContrast: isContrast,
+                      showVote: brand.showFeedbackEntry,
                     ),
                   ),
                 if (!largeFont) SliverToBoxAdapter(child: spaceNav),
@@ -563,6 +561,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   onSelectSpaces: () => homeSubView.value = BelongHomeSubView.spaces,
                   primaryColor: primaryColor,
                   isContrast: isContrast,
+                  showVote: brand.showFeedbackEntry,
                 ),
               Expanded(child: buildHomeBody()),
             ],
@@ -608,7 +607,10 @@ class RefugeHomeScreen extends HookConsumerWidget {
     // The amber flavor chip needs about 40dp. On a phone it collides with the
     // logo and the 48dp actions, including at the default font size.
     final showFlavorChip =
-        flavor.environmentTag != null && textScale < 1.3 && MediaQuery.sizeOf(context).width >= 520;
+        brand.showEnvironmentBadge &&
+        flavor.environmentTag != null &&
+        textScale < 1.3 &&
+        MediaQuery.sizeOf(context).width >= 520;
 
     final showShareThought =
         largeFont &&
@@ -717,17 +719,19 @@ class RefugeHomeScreen extends HookConsumerWidget {
                   FlavorEnvironmentChip(tag: flavor.environmentTag!),
                   const SizedBox(width: 6),
                 ],
-                ClipRRect(
-                  borderRadius: .circular(6),
-                  child: Image.asset(
-                    brand.logoAssetPath,
-                    key: const Key('belong_header_logo'),
-                    width: 28,
-                    height: 28,
-                    errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 18)),
+                if (brand.logoAssetPath.isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: .circular(6),
+                    child: Image.asset(
+                      brand.logoAssetPath,
+                      key: const Key('belong_header_logo'),
+                      width: 28,
+                      height: 28,
+                      errorBuilder: (_, _, _) => const Text('♾️', style: TextStyle(fontSize: 18)),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: .start,
@@ -740,44 +744,54 @@ class RefugeHomeScreen extends HookConsumerWidget {
                               container: true,
                               explicitChildNodes: true,
                               child: Text(
-                                brand.shortName,
+                                brand.isBema ? brand.fullName : brand.shortName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: BelongTextStyles.of(context).emphasis.copyWith(fontSize: 15),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              'Refuge',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: BelongTextStyles.of(context).emphasis
-                                  .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                          if (!brand.isBema) ...[
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                'Refuge',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: BelongTextStyles.of(context).emphasis
+                                    .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                       Row(
                         children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isLiveFeed ? const Color(0xFF4CAF50) : const Color(0xFF68A67D),
+                          if (brand.showLiveStatus) ...[
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isLiveFeed
+                                    ? const Color(0xFF4CAF50)
+                                    : const Color(0xFF68A67D),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 5),
+                            const SizedBox(width: 5),
+                          ],
                           Flexible(
                             child: Semantics(
                               identifier: 'active_sensory_theme_${currentMode.name}',
-                              label: 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
+                              label: brand.isBema
+                                  ? brand.tagline
+                                  : 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
                               container: true,
                               explicitChildNodes: true,
                               child: Text(
-                                largeFont
+                                brand.isBema
+                                    ? brand.tagline
+                                    : largeFont
                                     ? '${getBelongSpaceInfo(selectedSpace.value).title} • '
                                           '${isLiveFeed ? "Live" : "Resilient"}'
                                     : 'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
@@ -842,7 +856,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
             Semantics(
               identifier: 'about_belong_info_button',
               child: IconButton(
-                tooltip: kIsWeb ? '' : 'About Belong',
+                tooltip: kIsWeb ? '' : (brand.isBema ? 'About this group' : 'About Belong'),
                 icon: const Icon(Icons.info_outline_rounded, size: 18),
                 visualDensity: VisualDensity.compact,
                 onPressed: openAbout,
@@ -1156,6 +1170,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
     required this.onSelectSpaces,
     required this.primaryColor,
     required this.isContrast,
+    this.showVote = true,
   });
 
   final BelongHomeSubView activeSubView;
@@ -1163,6 +1178,7 @@ class _BelongSubHeaderBar extends StatelessWidget {
   final VoidCallback onSelectSpaces;
   final Color primaryColor;
   final bool isContrast;
+  final bool showVote;
 
   @override
   Widget build(BuildContext context) {
@@ -1233,14 +1249,20 @@ class _BelongSubHeaderBar extends StatelessWidget {
           // ignores the overflow. Wide layouts keep the chip on the right.
           if (constraints.maxWidth >= 520) {
             return Row(
-              children: [feedChip, const SizedBox(width: 8), spacesChip, const Spacer(), voteChip],
+              children: [
+                feedChip,
+                const SizedBox(width: 8),
+                spacesChip,
+                const Spacer(),
+                if (showVote) voteChip,
+              ],
             );
           }
           return Wrap(
             spacing: 8,
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
-            children: [feedChip, spacesChip, voteChip],
+            children: [feedChip, spacesChip, if (showVote) voteChip],
           );
         },
       ),
