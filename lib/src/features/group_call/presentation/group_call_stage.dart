@@ -66,11 +66,22 @@ class GroupCallScreenShareStarting extends StatelessWidget {
 /// https://getstream.io/video/docs/flutter/video-render/
 /// https://getstream.io/video/docs/flutter/guides/call-and-participant-state/
 class GroupCallStage extends StatefulWidget {
-  const GroupCallStage({super.key, required this.presenter, required this.grid, this.shareTile});
+  const GroupCallStage({
+    super.key,
+    required this.presenter,
+    required this.grid,
+    this.shareTile,
+    this.trackPending = false,
+  });
 
   final GroupCallPresenter? presenter;
   final Widget grid;
   final Widget? shareTile;
+
+  /// The remote screen-share track is published but frames have not arrived.
+  /// Grid mode then sizes the picture to the starting message. A received
+  /// picture stays a 48dp preview.
+  final bool trackPending;
 
   @override
   State<GroupCallStage> createState() => _GroupCallStageState();
@@ -113,13 +124,24 @@ class _GroupCallStageState extends State<GroupCallStage> {
   }
 
   Widget _gridWithTile(BuildContext context, GroupCallPresenter presenter) {
-    return Column(
-      key: const Key('group_call_share_grid'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(child: widget.grid),
-        _tile(context, presenter, expandPicture: false),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final room = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.sizeOf(context).height;
+        // The message sizes itself. When that plus the label is taller than
+        // the phone, the grid scrolls instead of clipping the words.
+        return SingleChildScrollView(
+          key: const Key('group_call_share_grid'),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: room),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [_tile(context, presenter, expandPicture: false), widget.grid],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -166,13 +188,19 @@ class _GroupCallStageState extends State<GroupCallStage> {
               _presenterLabel(label, style),
             ],
           )
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: 48, width: double.infinity, child: picture),
-              _presenterLabel(label, style),
-            ],
+        : LayoutBuilder(
+            builder: (context, constraints) {
+              final message = widget.trackPending || widget.shareTile == null;
+              final height = message ? _startingMessageHeight(context, constraints.maxWidth) : 48.0;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: height, width: double.infinity, child: picture),
+                  _presenterLabel(label, style),
+                ],
+              );
+            },
           );
     return Semantics(
       key: const Key('group_call_screen_share_tile'),
@@ -201,6 +229,24 @@ class _GroupCallStageState extends State<GroupCallStage> {
       ),
     );
   }
+}
+
+/// Height of "Screen share is starting…" plus its 16dp padding, and at
+/// least 48dp. Grid mode uses this so large text is not clipped in the
+/// preview slot. The renderer stays the child of that slot.
+double _startingMessageHeight(BuildContext context, double maxWidth) {
+  final width = maxWidth.isFinite && maxWidth > 0 ? maxWidth : MediaQuery.sizeOf(context).width;
+  final textWidth = width > 32 ? width - 32 : width;
+  final style = Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white);
+  final painter = TextPainter(
+    text: TextSpan(text: GroupCallScreenShareStarting.label, style: style),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  )..layout(maxWidth: textWidth);
+  final height = painter.height + 32;
+  painter.dispose();
+  if (height < 48) return 48;
+  return height;
 }
 
 Widget _presenterLabel(String label, TextStyle? style) {
@@ -321,7 +367,7 @@ class _GroupCallParticipantsAreaState extends State<GroupCallParticipantsArea> {
             persistTrackIfNotVisible: true,
             placeholderBuilder: (_) => const GroupCallScreenShareStarting(),
           );
-    return GroupCallStage(presenter: presenter, grid: grid, shareTile: tile);
+    return GroupCallStage(presenter: presenter, grid: grid, shareTile: tile, trackPending: pending);
   }
 }
 
