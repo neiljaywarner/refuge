@@ -138,7 +138,7 @@ class GroupCallScreenShareWorld {
               custom: const {},
               sessionId: 'session-remote',
               trackIdPrefix: 'remote',
-              publishedTracks: {SfuTrackType.screenShare: TrackState.remote()},
+              publishedTracks: {SfuTrackType.screenShare: TrackState.remote(received: true)},
             ),
         ],
       );

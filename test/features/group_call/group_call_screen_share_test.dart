@@ -216,6 +216,26 @@ void main() {
     expect(view.presenter?.local, isFalse);
   });
 
+  test('a remote screen-share track that has not arrived is pending', () {
+    final pending = _participant(
+      userId: 'guest-1',
+      local: false,
+      screenShare: TrackState.remote(received: false),
+    );
+    final ready = _participant(
+      userId: 'guest-2',
+      local: false,
+      screenShare: TrackState.remote(received: true, subscribed: true),
+    );
+    final local = _participant(userId: 'member-1', local: true, screenShare: TrackState.local());
+
+    expect(groupCallScreenSharePending(pending), isTrue);
+    expect(pending.isScreenShareEnabled, isTrue);
+    expect(groupCallScreenSharePending(ready), isFalse);
+    expect(groupCallScreenSharePending(local), isFalse);
+    expect(groupCallScreenSharePending(_participant(userId: 'guest-3', local: false)), isFalse);
+  });
+
   test('a live screen-share track counts and a muted one does not', () {
     final sharing = _participant(userId: 'member-1', local: true, screenShare: TrackState.local());
     final muted = _participant(
