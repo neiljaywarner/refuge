@@ -281,282 +281,283 @@ class MemberProfileDialog extends HookConsumerWidget {
         children: [
           Expanded(
             child: ListView(
-        key: const Key('profile_sheet_scroll'),
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-        padding: const .fromLTRB(16, 12, 16, 24),
-        children: [
-          Row(
-            crossAxisAlignment: .start,
-            children: [
-              const BelongEditableAvatar(radius: 28),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+              key: const Key('profile_sheet_scroll'),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+              padding: const .fromLTRB(16, 12, 16, 24),
+              children: [
+                Row(
                   crossAxisAlignment: .start,
                   children: [
-                    if (profile.isSignedIn && profile.email.isNotEmpty)
-                      Text(profile.email)
-                    else if (!profile.isSignedIn)
-                      const Text('Complete your fellowship profile'),
+                    const BelongEditableAvatar(radius: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: .start,
+                        children: [
+                          if (profile.isSignedIn)
+                            Text(
+                              profile.displayName,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          if (profile.isSignedIn && profile.email.isNotEmpty)
+                            Text(profile.email)
+                          else if (!profile.isSignedIn)
+                            const Text('Complete your fellowship profile'),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (validationError.value != null) ...[
-            Container(
-              key: const Key('profile_validation_error_banner'),
-              padding: const .all(8),
-              margin: const .only(bottom: fieldGap),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.12),
-                borderRadius: .circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline_rounded, size: 16, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      validationError.value!,
-                      key: const Key('profile_affiliation_error_text'),
-                      style: const TextStyle(fontSize: 11, color: Colors.red),
+                const SizedBox(height: 16),
+                if (validationError.value != null) ...[
+                  Container(
+                    key: const Key('profile_validation_error_banner'),
+                    padding: const .all(8),
+                    margin: const .only(bottom: fieldGap),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.12),
+                      borderRadius: .circular(8),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline_rounded, size: 16, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            validationError.value!,
+                            key: const Key('profile_affiliation_error_text'),
+                            style: const TextStyle(fontSize: 11, color: Colors.red),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-          if (largeText)
-            Column(
-              crossAxisAlignment: .stretch,
-              children: [
-                firstNameField,
-                const SizedBox(height: fieldGap),
-                lastNameField,
-              ],
-            )
-          else
-            Row(
-              crossAxisAlignment: .start,
-              children: [
-                Expanded(child: firstNameField),
-                const SizedBox(width: 10),
-                Expanded(child: lastNameField),
-              ],
-            ),
-          if (!profile.isSignedIn || profile.email.isEmpty) ...[
-            const SizedBox(height: fieldGap),
-            profileField(
-              key: const Key('profile_email_field'),
-              label: 'Email Address',
-              identifier: 'profile_email_field',
-              focusNode: emailFocus,
-              controller: emailController,
-              helperText: 'For notifications and account recovery',
-              keyboardType: TextInputType.emailAddress,
-            ),
-          ],
-          if (brand.enableFellowshipAffiliationField) ...[
-            const SizedBox(height: 16),
-            Row(
-              mainAxisSize: .min,
-              children: [
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: Text(
-                    brand.fellowshipAffiliationPrompt,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                if (largeText)
+                  Column(
+                    crossAxisAlignment: .stretch,
+                    children: [
+                      firstNameField,
+                      const SizedBox(height: fieldGap),
+                      lastNameField,
+                    ],
+                  )
+                else
+                  Row(
+                    crossAxisAlignment: .start,
+                    children: [
+                      Expanded(child: firstNameField),
+                      const SizedBox(width: 10),
+                      Expanded(child: lastNameField),
+                    ],
                   ),
-                ),
-                const Text(
-                  ' *',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
-              style: TextStyle(
-                fontSize: 10.5,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Semantics(
-              identifier: 'profile_church_affiliation_dropdown',
-              child: TextFormField(
-                key: const Key('profile_church_affiliation_dropdown'),
-                focusNode: churchFocus,
-                controller: churchAffiliationController,
-                scrollPadding: const .only(bottom: 24, top: 12),
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const .symmetric(horizontal: 10, vertical: 10),
-                  border: const OutlineInputBorder(),
-                  hintText: 'Select or enter your church affiliation...',
-                  hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
-                  suffixIcon: PopupMenuButton<String>(
-                    key: const Key('profile_church_dropdown_trigger_button'),
-                    tooltip: 'Select church affiliation',
-                    icon: const Icon(Icons.arrow_drop_down, size: 24),
-                    onSelected: (val) {
-                      churchAffiliationController.text = val;
-                      selectedAffiliation.value = val;
-                      validationError.value = null;
-                    },
-                    itemBuilder: (context) => allAffiliationOptions.map((opt) {
-                      final isNonMember = opt == brand.fellowshipNonMemberOption;
-                      return PopupMenuItem<String>(
-                        value: opt,
+                if (!profile.isSignedIn || profile.email.isEmpty) ...[
+                  const SizedBox(height: fieldGap),
+                  profileField(
+                    key: const Key('profile_email_field'),
+                    label: 'Email Address',
+                    identifier: 'profile_email_field',
+                    focusNode: emailFocus,
+                    controller: emailController,
+                    helperText: 'For notifications and account recovery',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                ],
+                if (brand.enableFellowshipAffiliationField) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisSize: .min,
+                    children: [
+                      Flexible(
+                        fit: FlexFit.loose,
                         child: Text(
-                          opt,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
-                          ),
+                          brand.fellowshipAffiliationPrompt,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      const Text(
+                        ' *',
+                        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                ),
-                onChanged: (val) {
-                  selectedAffiliation.value = val;
-                  if (val.trim().isNotEmpty) {
-                    validationError.value = null;
-                  }
-                },
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          profileField(
-            key: const Key('profile_bio_field'),
-            label: 'Bio / Note to Fellowship',
-            identifier: 'profile_bio_field',
-            focusNode: bioFocus,
-            controller: bioController,
-            hintText: 'A quiet sentence about yourself',
-            maxLines: bioLines,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Experimental features',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const SizedBox(height: 4),
-          Consumer(
-            builder: (context, ref, _) {
-              final isPreview = ref.watch(previewFeaturesEnabledProvider);
-              return SwitchListTile.adaptive(
-                key: const Key('preview_mode_switch'),
-                contentPadding: .zero,
-                title: const Text('Experimental Preview Features'),
-                subtitle: const Text(
-                  'Show early, experimental features still being tested.',
-                ),
-                value: isPreview,
-                onChanged: (val) {
-                  ref.read(memberProfileProvider.notifier).persistPreviewFeatures(val);
-                },
-              );
-            },
-          ),
-            ],
-          ),
-        ),
-        if (profile.isSignedIn)
-          Material(
-            color: Theme.of(context).colorScheme.surface,
-            child: Padding(
-              padding: const .fromLTRB(16, 4, 16, 4),
-              child: Column(
-                crossAxisAlignment: .stretch,
-                children: [
-                  Text('Account', style: Theme.of(context).textTheme.titleSmall),
-                  TextButton(
-                    key: const Key('profile_sign_out_button'),
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      alignment: Alignment.centerLeft,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
-                    onPressed: signOut,
-                    child: const Text('Sign Out'),
                   ),
-                  if (liveAuth != null)
-                    FirebaseUIActions(
-                      actions: [
-                        AccountDeletedAction((ctx, _) async {
-                          await ref.read(memberProfileProvider.notifier).signOut();
-                          if (ctx.mounted && Navigator.of(ctx).canPop()) {
-                            Navigator.of(ctx).pop();
-                          }
-                        }),
-                        SignedOutAction((ctx) async {
-                          await ref.read(memberProfileProvider.notifier).signOut();
-                          if (ctx.mounted && Navigator.of(ctx).canPop()) {
-                            Navigator.of(ctx).pop();
-                          }
-                        }),
-                      ],
-                      child: Align(
+                  const SizedBox(height: 6),
+                  Semantics(
+                    identifier: 'profile_church_affiliation_dropdown',
+                    child: TextFormField(
+                      key: const Key('profile_church_affiliation_dropdown'),
+                      focusNode: churchFocus,
+                      controller: churchAffiliationController,
+                      scrollPadding: const .only(bottom: 24, top: 12),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const .symmetric(horizontal: 10, vertical: 10),
+                        border: const OutlineInputBorder(),
+                        hintText: 'Select or enter your church affiliation...',
+                        hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
+                        suffixIcon: PopupMenuButton<String>(
+                          key: const Key('profile_church_dropdown_trigger_button'),
+                          tooltip: 'Select church affiliation',
+                          icon: const Icon(Icons.arrow_drop_down, size: 24),
+                          onSelected: (val) {
+                            churchAffiliationController.text = val;
+                            selectedAffiliation.value = val;
+                            validationError.value = null;
+                          },
+                          itemBuilder: (context) => allAffiliationOptions.map((opt) {
+                            final isNonMember = opt == brand.fellowshipNonMemberOption;
+                            return PopupMenuItem<String>(
+                              value: opt,
+                              child: Text(
+                                opt,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        selectedAffiliation.value = val;
+                        if (val.trim().isNotEmpty) {
+                          validationError.value = null;
+                        }
+                      },
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                profileField(
+                  key: const Key('profile_bio_field'),
+                  label: 'Bio / Note to Fellowship',
+                  identifier: 'profile_bio_field',
+                  focusNode: bioFocus,
+                  controller: bioController,
+                  hintText: 'A quiet sentence about yourself',
+                  maxLines: bioLines,
+                ),
+                const SizedBox(height: 24),
+                Text('Experimental features', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 4),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final isPreview = ref.watch(previewFeaturesEnabledProvider);
+                    return SwitchListTile.adaptive(
+                      key: const Key('preview_mode_switch'),
+                      contentPadding: .zero,
+                      title: const Text('Experimental Preview Features'),
+                      subtitle: const Text('Show early, experimental features still being tested.'),
+                      value: isPreview,
+                      onChanged: (val) {
+                        ref.read(memberProfileProvider.notifier).persistPreviewFeatures(val);
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          if (profile.isSignedIn)
+            Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: Padding(
+                padding: const .fromLTRB(16, 4, 16, 4),
+                child: Column(
+                  crossAxisAlignment: .stretch,
+                  children: [
+                    Text('Account', style: Theme.of(context).textTheme.titleSmall),
+                    TextButton(
+                      key: const Key('profile_sign_out_button'),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 48),
                         alignment: Alignment.centerLeft,
-                        child: Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: Theme.of(context).colorScheme
-                                .copyWith(onError: Theme.of(context).colorScheme.error),
-                          ),
-                          child: DeleteAccountButton(
-                            key: const Key('delete_my_account_button'),
-                            auth: liveAuth,
-                            variant: ButtonVariant.text,
-                            showDeleteConfirmationDialog: true,
-                            onSignInRequired: () => showReauthenticateDialog(
-                              context: context,
-                              providers: [EmailAuthProvider()],
+                      ),
+                      onPressed: signOut,
+                      child: const Text('Sign Out'),
+                    ),
+                    if (liveAuth != null)
+                      FirebaseUIActions(
+                        actions: [
+                          AccountDeletedAction((ctx, _) async {
+                            await ref.read(memberProfileProvider.notifier).signOut();
+                            if (ctx.mounted && Navigator.of(ctx).canPop()) {
+                              Navigator.of(ctx).pop();
+                            }
+                          }),
+                          SignedOutAction((ctx) async {
+                            await ref.read(memberProfileProvider.notifier).signOut();
+                            if (ctx.mounted && Navigator.of(ctx).canPop()) {
+                              Navigator.of(ctx).pop();
+                            }
+                          }),
+                        ],
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: Theme.of(context).colorScheme
+                                  .copyWith(onError: Theme.of(context).colorScheme.error),
+                            ),
+                            child: DeleteAccountButton(
+                              key: const Key('delete_my_account_button'),
                               auth: liveAuth,
-                              onSignedIn: () => Navigator.of(context).pop(true),
+                              variant: ButtonVariant.text,
+                              showDeleteConfirmationDialog: true,
+                              onSignInRequired: () => showReauthenticateDialog(
+                                context: context,
+                                providers: [EmailAuthProvider()],
+                                auth: liveAuth,
+                                onSignedIn: () => Navigator.of(context).pop(true),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    )
-                  else
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        key: const Key('delete_my_account_button'),
-                        onPressed: () => DeleteMyAccountDialog.show(context),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                          minimumSize: const Size(48, 48),
+                      )
+                    else
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          key: const Key('delete_my_account_button'),
+                          onPressed: () => DeleteMyAccountDialog.show(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.error,
+                            minimumSize: const Size(48, 48),
+                          ),
+                          icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                          label: const Text('Delete account'),
                         ),
-                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                        label: const Text('Delete account'),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+              ),
+            ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const .fromLTRB(16, 8, 16, 12),
+              child: FilledButton(
+                key: const Key('profile_save_sign_in_button'),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                onPressed: saveProfile,
+                child: Text(
+                  profile.isSignedIn ? 'Save Profile' : 'Save & Sign In',
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const .fromLTRB(16, 8, 16, 12),
-            child: FilledButton(
-              key: const Key('profile_save_sign_in_button'),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-              onPressed: saveProfile,
-              child: Text(
-                profile.isSignedIn ? 'Save Profile' : 'Save & Sign In',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
         ],
       ),
     );
