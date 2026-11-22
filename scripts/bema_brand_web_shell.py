@@ -15,15 +15,51 @@ def _chunk(tag: bytes, data: bytes) -> bytes:
     return struct.pack('>I', len(data)) + tag + data + struct.pack('>I', zlib.crc32(tag + data) & 0xFFFFFFFF)
 
 
+# 5×7 bitmaps for a text mark. Not the BEMA Discipleship logo.
+_GLYPHS = {
+    'B': ('11110', '10001', '11110', '10001', '10001', '10001', '11110'),
+    'E': ('11111', '10000', '10000', '11110', '10000', '10000', '11111'),
+    'M': ('10001', '11011', '10101', '10001', '10001', '10001', '10001'),
+    'A': ('01110', '10001', '10001', '11111', '10001', '10001', '10001'),
+}
+
+
 def wordmark_png(size: int = 192) -> bytes:
-    """Solid #2A2A2A tile. The in-app wordmark is text; this is only the favicon."""
-    row = b'\x00' + bytes([0x2A, 0x2A, 0x2A]) * size
-    raw = zlib.compress(row * size)
+    """#2A2A2A tile with BEMA in #2EA4F9. Generated, not their trademark artwork."""
+    bg = (0x2A, 0x2A, 0x2A)
+    fg = (0x2E, 0xA4, 0xF9)
+    pixels = [bg] * (size * size)
+    word = 'BEMA'
+    glyph_w, glyph_h = 5, 7
+    gap = 1
+    scale = max(1, size // 28)
+    text_w = (glyph_w * len(word) + gap * (len(word) - 1)) * scale
+    text_h = glyph_h * scale
+    origin_x = (size - text_w) // 2
+    origin_y = (size - text_h) // 2
+    for index, char in enumerate(word):
+        glyph = _GLYPHS[char]
+        left = origin_x + index * (glyph_w + gap) * scale
+        for row, bits in enumerate(glyph):
+            for col, bit in enumerate(bits):
+                if bit != '1':
+                    continue
+                for dy in range(scale):
+                    for dx in range(scale):
+                        x = left + col * scale + dx
+                        y = origin_y + row * scale + dy
+                        if 0 <= x < size and 0 <= y < size:
+                            pixels[y * size + x] = fg
+    raw = bytearray()
+    for y in range(size):
+        raw.append(0)
+        for x in range(size):
+            raw.extend(pixels[y * size + x])
     return b''.join(
         [
             b'\x89PNG\r\n\x1a\n',
             _chunk(b'IHDR', struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0)),
-            _chunk(b'IDAT', raw),
+            _chunk(b'IDAT', zlib.compress(bytes(raw), 9)),
             _chunk(b'IEND', b''),
         ]
     )
@@ -43,8 +79,8 @@ def main() -> None:
         'color: #0F2336;': 'color: #FFFFFF;',
         'color: #4A635D;': 'color: #F2F2F2;',
         'aria-label="Loading Belong on the Spectrum"': 'aria-label="Loading BEMA Discussion Group"',
-        '<h1>Belong on the Spectrum</h1>': '<h1>BEMA Discussion Group</h1>',
-        '<p>You belong here.</p>': '<p>Discuss the BEMA podcast together.</p>',
+        '<h1>Belong on the Spectrum</h1>': '<h1>BEMA</h1>',
+        '<p>You belong here.</p>': '<p>Discussion Group</p>',
         'alt="Belong on the Spectrum logo"': 'alt=""',
     }
     for old, new in replacements.items():

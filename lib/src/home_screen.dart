@@ -737,76 +737,106 @@ class RefugeHomeScreen extends HookConsumerWidget {
                     crossAxisAlignment: .start,
                     mainAxisSize: .min,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Semantics(
-                              container: true,
-                              explicitChildNodes: true,
-                              child: Text(
-                                brand.isBema ? brand.fullName : brand.shortName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: BelongTextStyles.of(context).emphasis.copyWith(fontSize: 15),
+                      if (brand.isBema)
+                        const Column(
+                          crossAxisAlignment: .start,
+                          children: [
+                            Text(
+                              'BEMA',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 18,
+                                height: 1,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
                               ),
                             ),
-                          ),
-                          if (!brand.isBema) ...[
-                            const SizedBox(width: 4),
+                            Text(
+                              'Discussion Group',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.2,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
                             Flexible(
-                              child: Text(
-                                'Refuge',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: BelongTextStyles.of(context).emphasis
-                                    .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          if (brand.showLiveStatus) ...[
-                            Container(
-                              width: 7,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isLiveFeed
-                                    ? const Color(0xFF4CAF50)
-                                    : const Color(0xFF68A67D),
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                          ],
-                          Flexible(
-                            child: Semantics(
-                              identifier: 'active_sensory_theme_${currentMode.name}',
-                              label: brand.isBema
-                                  ? brand.tagline
-                                  : 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
-                              container: true,
-                              explicitChildNodes: true,
-                              child: Text(
-                                brand.isBema
-                                    ? brand.tagline
-                                    : largeFont
-                                    ? '${getBelongSpaceInfo(selectedSpace.value).title} • '
-                                          '${isLiveFeed ? "Live" : "Resilient"}'
-                                    : 'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Theme.of(context).textTheme.bodySmall?.color
-                                      ?.withValues(alpha: 0.7),
+                              child: Semantics(
+                                container: true,
+                                explicitChildNodes: true,
+                                child: Text(
+                                  brand.shortName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: BelongTextStyles.of(context).emphasis
+                                      .copyWith(fontSize: 15),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                            if (!brand.isBema) ...[
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'Refuge',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: BelongTextStyles.of(context).emphasis
+                                      .copyWith(fontSize: 12, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      if (!brand.isBema)
+                        Row(
+                          children: [
+                            if (brand.showLiveStatus) ...[
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isLiveFeed
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFF68A67D),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                            ],
+                            Flexible(
+                              child: Semantics(
+                                identifier: 'active_sensory_theme_${currentMode.name}',
+                                label: brand.isBema
+                                    ? brand.tagline
+                                    : 'Active sensory theme ${_sensoryThemeLabel(currentMode)}',
+                                container: true,
+                                explicitChildNodes: true,
+                                child: Text(
+                                  brand.isBema
+                                      ? brand.tagline
+                                      : largeFont
+                                      ? '${getBelongSpaceInfo(selectedSpace.value).title} • '
+                                            '${isLiveFeed ? "Live" : "Resilient"}'
+                                      : 'Calm Tech • ${isLiveFeed ? "Live" : "Resilient"}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context).textTheme.bodySmall?.color
+                                        ?.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
