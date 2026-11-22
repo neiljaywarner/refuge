@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/preview_mode_provider.dart';
 import '../../account_deletion/presentation/delete_my_account_dialog.dart';
+import 'experimental_preview_dialog.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../domain/member_profile.dart';
 import 'avatar_picker_sheet.dart';
@@ -461,6 +462,7 @@ class MemberProfileDialog extends HookConsumerWidget {
                 value: isPreview,
                 onChanged: (val) {
                   ref.read(memberProfileProvider.notifier).persistPreviewFeatures(val);
+                  if (val) ExperimentalPreviewDialog.show(context);
                 },
               );
             },
