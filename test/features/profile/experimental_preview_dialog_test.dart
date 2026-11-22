@@ -18,6 +18,10 @@ void main() {
   });
 
   testWidgets('turning the preview switch on shows the dialog', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(800, 1400);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
