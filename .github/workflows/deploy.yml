@@ -5,7 +5,9 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    # temp/carina-preview-991-992 is a temporary main: a push deploys the dev
+    # site the same way main does. It does not publish production.
+    branches: [main, temp/carina-preview-991-992]
     tags: ['v*']
   workflow_dispatch:
     inputs:
