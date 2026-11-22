@@ -6,4 +6,4 @@ These are planning docs for a demo for Carina's Bema Discipleship discussion gro
 - [Bema-specific features PRD](bema-features-prd_b549.md)
 - [Community UX paradigms](community-ux-paradigms_4a68.md)
 - [Bema feature wish list](bema-feature-wish-list_ab7b.md)
-- [Talking points for Carina](talking-points-carina_b2ee.md)
+- [A note for Carina: Refuge for our Bema group](talking-points-carina_b2ee.md)

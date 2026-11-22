@@ -6,50 +6,51 @@ Source: https://docs.google.com/document/d/1mD1ZPmppunP9NlgW8UM-fW41LFm_v-JGR9kI
 
 ## 1\. Summary
 
-**The demo is close.** Refuge already has most of what Carina's Discord does: Spaces work like Discord text channels (topic rooms with posts, comments, and reactions), and the GetStream video call mostly works, including guest invite links and screen share. The remaining gaps are **mostly configuration and polish**, not new product:
+**Close for a guided call demo once \#981 and the flagged rebuild land; not yet ready for a group switch.** Refuge has topic rooms (Spaces) with posts, comments, and reactions, and a GetStream video call with guest invite links and screen share that works on the proven device path. Spaces are threaded rooms, not live chat, and they are hardcoded in the app (two Dart lists), so they are not organizer-configurable. The remaining gaps are **a mix of engineering steps, code changes, and product work**, not new product:
 
-- Set up a Bema community (or use Belong as a stand-in) with her channel names.  
-- Provide a stable, recurring weekly call link.  
-- Accept or smooth the difference between Discord's real-time chat feel and Refuge's threaded posts.  
+- Use Belong as the stand-in. Her channel names would be a code change, and a separate Bema community needs white-label work (\#924/\#925).  
+- Use one reusable preview call link (?call=monthly) after a flagged rebuild. A real scheduled weekly call with calendar invites is product work.  
+- Be honest that Spaces are threaded rooms, not live Discord chat (a chat-style Space is Phase 2 or later).  
 - Accept that Refuge has no always-on voice rooms (the call is a meeting you join).  
-- Merge PR \#981 so comments save reliably.
+- Merge PR \#981 and verify a comment saves on the demo build (comments can fail on dev too, not only prod).
 
 Refuge is the platform; **Belong on the Spectrum** is its first live community. No Bema-branded community exists yet.
 
 ## 2\. Demo goal and audience
 
 - **Audience:** Carina, who leads a Bema discussion group. Bema is The BEMA Podcast from BEMA Discipleship, hosted by Marty Solomon and others, which walks through the historical context of the Bible (https\://www\.bemadiscipleship.com). Groups listen to episodes, usually in order, and then discuss; Carina's group meets weekly.  
-- **Goal:** Show that a rhythm-first Refuge can replace her Discord for (a) the weekly group video call and (b) channels such as scripture videos and prayer requests.  
-- **Success for the demo:** Carina can picture her group's weekly rhythm living in Refuge and names what would need to change before she'd try it with the group.  
+- **Goal:** Show how Refuge could host (a) the weekly group video call and (b) channels such as scripture videos and prayer requests, and learn what a real switch would need. The rhythm-first "This Week" home is not built, so the demo uses a hand-made "this week" post instead and doesn't promise one.  
+- **Success for the demo:** Carina gives a clear yes or no to a pilot ("run next week's call here, with Discord as backup") and names what would need to change first.  
 - **Open question:** Is the demo an informal walkthrough with Neil, or should Carina try it hands-on on her own Pixel 9a?
 
 ## 3\. Discord vs Refuge Spaces
 
 | Discord concept | Refuge equivalent today | Gap | Type of gap |
 | :---- | :---- | :---- | :---- |
-| Server | Community (Belong on the Spectrum is live) | No Bema community yet | Configuration |
-| Text channel (e.g. \#prayer-requests, \#scripture-videos) | Space (topic room with posts, comments, reactions). Belong has Start Here, Announcements, General Chat, Online Resources / Videos, Prayer Sanctuary | Her channel names not set up | Configuration |
+| Server | Community (Belong on the Spectrum is live) | No Bema community yet; needs white-label work (\#924/\#925) | Code or product work (not config) |
+| Text channel (e.g. \#prayer-requests, \#scripture-videos) | Space (topic room with posts, comments, reactions). Belong has Start Here, Announcements, General Chat, Weekly Study, Prayer Sanctuary, and Online Resources / Videos (Prayer Sanctuary and Weekly Study are in the feed space bar; Online Resources / Videos is in the Spaces directory) | Spaces are hardcoded (two Dart lists); her channel names need a code change | Code or product work (not config) |
 | Real-time chat messages | Threaded posts with comments; DMs for 1:1 | Feels less like live chat | Polish / UX expectation |
 | Reactions, GIFs | Reactions (including praying/relate), Giphy | None known | — |
-| Weekly voice/video call | GetStream preview call with guest links and screen share | Preview link (?call=monthly), not a stable recurring weekly link; some device combos unproven | Configuration \+ verification |
+| Weekly voice/video call | GetStream preview call with guest links and screen share | Preview link (?call=monthly), not a stable recurring weekly link; some device combos unproven | Code or product work (not config) \+ verification |
 | Always-on voice channels | None; calls are meetings you join | No drop-in voice rooms | Product difference (likely acceptable — **Open question**) |
 | Member list | Member directory | None known | — |
 | Notifications | In-app notifications | Large-text notification UI in PR \#984 | Polish |
-| Welcome / rules channel | Start Here space, organizer welcome message | Bema-specific wording | Configuration |
+| Welcome / rules channel | Start Here space, organizer welcome message | Bema-specific wording (whether the welcome message is editable without code is unverified) | Code or product work (not config) |
 | Moderation (delete own messages) | Members can't delete their own posts (\#776) | Missing | Small feature |
 
 **Open question:** Does Carina's group rely on real-time chat during the week, or mainly on posting and replying? This decides whether threaded posts are "good enough" for the demo.
 
 ## 4\. Demo scenario and script
 
-Recommended format: **signed-in walkthrough on dev**, a **test call with a guest join**, and **Belong as a stand-in or a second community configured with her channel names**.
+Step 0, before any demo: talk to Carina first (using "A note for Carina"). Learn her real channels, which Discord features she uses (forum channels, events, voice), what her members are on (iPhone or Android), and which episode they're on, then adjust this script.  
+Recommended format: **signed-in walkthrough on dev**, a **test call with a guest join**, and **Belong as the stand-in, being careful what is visible (real members and prayer requests). A separate seeded community would be safer but needs \#924/\#925. Never use prod.**
 
 1. **Welcome (2 min).** Sign in on dev. Show the organizer welcome message and Start Here space.  
-2. **Her channels (5 min).** Open the Spaces that map to her Discord: Prayer Sanctuary (prayer requests) and Online Resources / Videos (scripture videos). If a Bema stand-in is configured, use her channel names. Post a sample prayer request; react with "praying"; add a comment.  
-3. **Weekly discussion (5 min).** Show a post for this week's episode in a discussion Space and a short comment thread. (Requires \#981 for reliable comment saves.)  
-4. **Weekly call (5–10 min).** Start the GetStream call from the preview link, have a second device join via a guest invite link, and show screen share. Keep audio quiet/muted near Carina during setup.  
+2. **Her channels (5 min).** Open the rooms that map to her Discord: Prayer Sanctuary and Weekly Study from the feed space bar, and Online Resources / Videos from the Spaces directory (it isn't in the bar). Show the seeded prayer request and react with "praying". Don't add a comment unless \#981 is merged and comment save is verified on this build.  
+3. **Weekly discussion (5 min).** Show the seeded "this week" post in Weekly Study, with the episode deep link, listen-by date, and call link. It's a hand-made post: there is no "This Week" home yet, so don't promise one. No live commenting unless \#981 is verified on this build.  
+4. **Weekly call (5–10 min).** Start the GetStream call from the preview link on the proven path only (Pixel 9a preview APK host, desktop Chrome guest via invite link), on headphones, and show screen share. If it fails, switch to her existing Discord call link. Keep audio quiet/muted near Carina during setup.  
 5. **Extras (2 min).** Member directory, DMs, sensory themes and large text, Vote & Feedback.  
-6. **Feedback (5 min).** Ask what she'd miss from Discord and what would need to be true to try it with the group.
+6. **Feedback (5 min).** Ask what she'd miss from Discord, then make the pilot ask: "Run next week's call here, with Discord as backup?"
 
 **Open question:** Should the scripted episode post use a real Bema episode title, or a placeholder?
 
@@ -57,50 +58,48 @@ Recommended format: **signed-in walkthrough on dev**, a **test call with a guest
 
 | Feature | Status | Environment | Owner / PR |
 | :---- | :---- | :---- | :---- |
-| Sign-in | Works | Dev/preview | — ; a11y \#973/\#974/\#976 merged, not on prod |
-| Feed / reflections with comments | Feed works; comments not saving reliably until \#981 ships (reported on prod; verify on dev) | Dev and prod | \#978 → PR \#981 (awaiting CodeRabbit re-review, then Neil) |
+| Sign-in | Works | Dev/preview | — ; a11y \#973/\#974 merged Nov 21 and \#976 merged Nov 19; not on prod |
+| Feed / reflections with comments | Feed works; comment saves can fail on dev (ci-dbfcc70) and prod until \#981 ships | Dev and prod | \#978 → PR \#981 (awaiting CodeRabbit re-review, then Neil) |
 | Comment double-send | Fixed | Dev | \#979 |
 | Reactions, Giphy, DMs | Works | Dev/preview | — |
 | Notifications | Works; large-text UI in progress | Dev/preview | PR \#984 (CI-green) |
-| Spaces (incl. Prayer Sanctuary, Online Resources / Videos) | Works | Dev/preview | — |
+| Spaces (hardcoded in the app; Prayer Sanctuary and Weekly Study in the feed bar, Online Resources / Videos in the directory) | Works | Dev/preview | — |
 | Links | Works | Dev/preview | — |
 | Member directory, sensory themes, Vote & Feedback, organizer welcome | Works | Dev/preview | — |
-| GetStream video call \+ guest links \+ screen share | Mostly works (preview) | On main; dev currently lacks call flag | Needs flagged dev rebuild after \#981 |
+| GetStream video call \+ guest links \+ screen share | Mostly works (preview) | On main; current dev (ci-dbfcc70) lacks the call flag | Needs flagged dev rebuild after \#981 |
 | Large-text call UI | CI-green | Not merged | PR \#983 (part of \#935) |
 | Two-way call: Pixel 9a APK host \+ desktop Chrome guest | Proven | Preview | — |
 | Web-to-web, APK-to-APK calls | Not fully proven | Preview | **Open question:** who verifies? |
-| Recurring weekly call link | Not built (preview link only) | — | Configuration |
-| Bema community / her channel names | Not set up | — | Configuration |
-| Invite-mint hardening | Reviewed, not deployed; ban checker unwired; no revoke-my-invites | — | \#982 |
-| Guest/token follow-ups | Open | — | \#914–\#920 |
+| Recurring weekly call link | Not built (preview link only) | — | Code or product work (not config) |
+| Bema community / her channel names | Not set up | — | Code or product work (not config) |
+| Invite-mint hardening | Merged and on dev web; mint edge function still needs a human deploy; ban reader unwired; revokeMyInvites is on main but the preview edge function doesn't expose it yet | — | \#982 |
+| Guest/token follow-ups (issues still open, but the fixes are already on main and dev) | Open | — | \#914–\#920 |
 | Delete own post | Missing | — | \#776 |
 | Course video (Mux HLS, captions, Educator Studio) | Separate Auxano POCs, not in Refuge | Separate apps | Port planned for Jan 1 |
-| Production deploy | Prod still Nov 4 v0.9.9; deploy last blocked on Firebase CLI auth | Prod | Issue \#765 |
+| Production deploy | Prod is still the Nov 4 v0.9.9 build (dc99aaa); the current prod-deploy blocker is unverified | Prod | None current (\#765 is the v1.0 checklist, closed Nov 1\) |
 
 ## 6\. Must-fix before the demo (in order)
 
-1. **Merge PR \#981** after CodeRabbit re-review, so comments save (\#978).  
+1. **Merge PR \#981** after CodeRabbit re-review, then verify a comment actually saves on the demo build (\#978).  
 2. **One flagged dev web \+ Android rebuild** to turn the call preview back on (merges to main currently deploy dev without the call flag).  
-3. **Configure her channels:** either rename/add Spaces in Belong as a stand-in, or create a second community with her channel names (placeholders such as Prayer Requests, Scripture Videos, Weekly Discussion until Carina's actual channel names are known). **Open question:** which option?  
+3. **Set up the stand-in:** use Belong's existing rooms (renaming or adding Spaces is a code change; a second community needs \#924/\#925). Seed three posts: a prayer request, a scripture/video link, and a "this week" post with an episode deep link, a listen-by date, and the call link. Keep test content out of real members' view. **Open question:** is dev's data separate from the live Belong community?  
 4. **Stable weekly call link:** pick one reusable preview call link for the demo and label it as "the weekly call." **Open question:** is a fixed preview link acceptable for the demo, or is a scheduled recurring call required?  
-5. **Verify the call path to be used** (device combo for the demo) end-to-end, quietly.
+5. **Dry-run only the proven path** (Pixel 9a preview APK host \+ desktop Chrome guest) on headphones with quiet audio. Residual audio risk: \#909/\#919.
 
 ## 7\. Nice-to-haves
 
 - Merge PR \#983 (large-text call UI) and PR \#984 (notification/sign-in large text).  
-- Merge \#980 (checklist docs).  
 - Members can delete their own posts (\#776).  
-- Deploy \#982 invite-mint hardening, wire the ban checker, add revoke-my-invites.  
-- Make threaded posts feel more like live chat (e.g. faster refresh or a chat-style Space). **Open question:** in scope?  
-- Seed sample content: a prayer request, a scripture video link, and a weekly episode discussion post.  
+- Finish \#982 invite hardening: a human deploy of the mint edge function, wire the ban reader, and expose revokeMyInvites in the preview edge function (must-haves before real group use).  
+- Make threaded posts feel more like live chat (e.g. faster refresh or a chat-style Space): Phase 2 or later, not for this demo.  
 - Packages/refuge extraction (\#924) and public refuge-demo repo (\#925) — demo checklist items, likely not needed for Carina's demo. **Open question.**
 
 ## 8\. Environment and device plan
 
-- **Environment:** Dev ([https\://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/)), signed in. Do not use prod ([https\://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/)) — it is the Nov 4 v0.9.9 build and comments are broken until \#981 ships. Team norm: publish only to dev/preview unless Neil says otherwise.  
+- **Environment:** Dev ([https\://dev-belongonthespectrum.web.app/](https://dev-belongonthespectrum.web.app/)), signed in. Do not use prod ([https\://belongonthespectrum.web.app/](https://belongonthespectrum.web.app/)) — it is the Nov 4 v0.9.9 build (dc99aaa). Comment saves can fail on both dev and prod until \#981 ships. Team norm: publish only to dev/preview unless Neil says otherwise.  
 - **Host device:** Pixel 9a with the preview APK (proven as call host).  
 - **Guest device:** Desktop Chrome via guest invite link (proven).  
-- **Backup:** No fallback for a failed call is decided yet (see the dry-run checklist). Screen share itself works from web, Chrome, and the Mac app, so content can be shown during the call.  
+- **Backup:** If the call fails, move to Carina's existing Discord call link. Screen share itself works from web, Chrome, and the Mac app, so content can be shown during the call.  
 - **Accounts:** **Open question:** which test accounts are signed in, and does Carina use her own account?
 
 ## 9\. Dry-run checklist
@@ -108,36 +107,45 @@ Recommended format: **signed-in walkthrough on dev**, a **test call with a guest
 - [ ] \#981 merged and comment save verified on dev  
 - [ ] Flagged dev web \+ Android rebuild done; call button visible  
 - [ ] Preview APK installed on host Pixel 9a  
-- [ ] Bema channels configured (stand-in or second community)  
-- [ ] Sample posts seeded in each channel  
+- [ ] Belong stand-in checked: test content not visible to real members, no real prayer requests on screen  
+- [ ] Three posts seeded: prayer request, scripture/video link, "this week" post (episode deep link, listen-by date, call link)  
 - [ ] Weekly call link chosen and tested  
 - [ ] Guest invite link tested from desktop Chrome  
 - [ ] Screen share tested  
 - [ ] Audio tested quietly (headphones/muted), not around Carina  
-- [ ] Reactions, comments, notifications checked end-to-end  
-- [ ] Backup plan ready if the call fails (for example a recorded walkthrough — **Open question**)
+- [ ] Reactions and notifications checked end-to-end; comments only if \#981 is verified  
+- [ ] Fallback ready: Carina's existing Discord call link
 
-## 10\. Risks and mitigations
+## 10\. Switching: what a real move would need
+
+* Talk to Carina first: learn her channels, the Discord features her group actually uses (forum channels, scheduled events with reminders, voice), and what devices her members use.  
+* Member invite and onboarding: members sign in on the web (Android can also use the APK) and land in Start Here. iPhone members would use Safari on the web: there is no native iOS app, and iOS push (\#165) and Safari/PWA calls are unproven. This is a big risk if her group is iPhone-heavy. Open question: what is the exact member invite path beyond call guest links?  
+* Call fallback (decided): her existing Discord call link stays in place; if the Refuge call fails, everyone moves there.  
+* Test content: keep demo and test posts out of the live Belong community. A separate Bema community would be cleaner but needs white-label work (\#924/\#925).  
+* Pilot ask: "Run next week's call here, with Discord as backup."  
+* Must-haves before real use: prayer privacy (members-only prayer Space), delete-own-post (\#776), and finished guest-link hardening (\#982 edge function deploy, ban reader, revokeMyInvites).
+
+## 11\. Risks and mitigations
 
 | Risk | Mitigation |
 | :---- | :---- |
-| Comments fail to save | Merge \#981 first; demo on dev only; verify in dry run |
+| Comments fail to save | Merge \#981 first and verify a comment saves on the demo build; until then, no comment posting in any demo step; never use prod |
 | Call not visible on dev | Flagged rebuild after \#981 |
-| Call fails on an unproven device combo | Use proven combo (Pixel 9a APK host \+ desktop Chrome guest) |
+| Call fails on an unproven device combo | Use proven combo (Pixel 9a APK host \+ desktop Chrome guest), headphones; residual audio risk \#909/\#919; Discord link as fallback |
 | Threaded posts feel unlike Discord chat | Frame Spaces as channels; ask Carina what matters most |
 | No always-on voice rooms | Position the weekly call as the group's meeting; confirm she doesn't need drop-in voice |
-| Guest link abuse before \#982 deploys | Use links only for the demo; keep them private |
+| Guest link abuse while \#982's mint edge function is undeployed | Use links only for the demo; keep them private |
 | Testing disrupts Carina | Quiet audio tests; don't ask her to test until comments are solid |
-| GCP billing account closed (Storage, backups) | **Open question:** does this affect any demo feature? |
-| Prod deploy blocked (\#765) | Not needed; demo on dev |
+| GCP billing account closed (Storage, backups) | Link-based videos (Fireside, YouTube) shouldn't be blocked; avoid file uploads in the demo |
+| Prod is an old build (v0.9.9, dc99aaa); deploy blocker unverified | Not needed; demo on dev only, never prod |
 
-## 11\. Open questions for Neil
+## 12\. Open questions for Neil
 
-1. Belong as a stand-in, or a second community with her channel names?  
+1. Is dev's data separate from the live Belong community, so test posts stay out of real members' view?  
 2. What are Carina's exact Discord channel names?  
 3. Is a fixed preview call link acceptable, or must the weekly call be scheduled/recurring for the demo?  
 4. Does she need real-time chat or always-on voice, or are threaded posts plus a weekly call enough?  
 5. Target demo date?  
 6. Should course/scripture video be shown from the Auxano POCs, or wait for the Jan 1 port?  
-7. Does the closed GCP billing account block anything in the demo?  
+7. How many of Carina's members use iPhones? (No native iOS app; Safari/PWA calls and iOS push \#165 are unproven.)  
 8. Who verifies web-to-web and APK-to-APK calls, and are they needed for this demo?
