@@ -66,7 +66,7 @@ const BemaWeeklyStudy bemaEpisode183 = BemaWeeklyStudy(
   subtitle: 'The Return of the Horses',
   publishedLabel: '27 August 2020',
   durationLabel: '21 min',
-  gatheringLabel: 'Sunday — time TBD',
+  gatheringLabel: 'Sundays, 7:30 PM CT',
   listenUrl: 'https://www.bemadiscipleship.com/183',
   showNotesUrl: 'https://www.bemadiscipleship.com/183',
   transcriptUrl: 'https://docs.google.com/document/d/e/2PACX-1vSGLBFW5q1hmjuBRFR2D4SkPi5tTyHoHMaHJR9AoTyFgm_FRIIxrtvfLuXTgNFnhH2c_l92fVSYXR4o/pub',

@@ -25,13 +25,10 @@ class BemaThisWeekCard extends StatelessWidget {
     final theme = Theme.of(context);
     final accent = isContrast ? Colors.yellow : primaryColor;
     final onCard = isContrast ? Colors.white : theme.textTheme.bodyMedium?.color;
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-    final titleSize = textScale > 1.3 ? 18.0 : 22.0;
-
     return Container(
       key: const Key('bema_this_week_card'),
-      margin: const .fromLTRB(12, 8, 12, 4),
-      padding: const .fromLTRB(16, 16, 16, 14),
+      margin: const .fromLTRB(12, 6, 12, 4),
+      padding: const .fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         color: isContrast ? Colors.black : primaryColor.withValues(alpha: 0.08),
         borderRadius: .circular(16),
@@ -41,57 +38,45 @@ class BemaThisWeekCard extends StatelessWidget {
         crossAxisAlignment: .start,
         children: [
           Text(
-            'THIS WEEK',
+            'THIS WEEK · BEMA ${study.episodeNumber}',
             style: theme.textTheme.labelMedium?.copyWith(
               color: accent,
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'BEMA ${study.episodeNumber}',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: accent,
-              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             study.title,
-            style: theme.textTheme.headlineSmall?.copyWith(
+            style: theme.textTheme.titleLarge?.copyWith(
               color: onCard,
-              fontSize: titleSize,
-              height: 1.2,
+              fontSize: 20,
+              height: 1.15,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 4),
           Text(
-            study.subtitle,
-            style: theme.textTheme.titleMedium?.copyWith(
+            '${study.subtitle} · ${study.gatheringLabel}',
+            key: const Key('bema_weekly_gathering'),
+            style: theme.textTheme.titleSmall?.copyWith(
               color: onCard,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '${study.publishedLabel} · ${study.durationLabel} · Follows ${study.followsEpisodeNumber}, ${study.followsTitle}',
-            style: theme.textTheme.bodySmall?.copyWith(color: onCard, height: 1.35),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            study.gatheringLabel,
-            key: const Key('bema_weekly_gathering'),
-            style: theme.textTheme.titleSmall?.copyWith(color: onCard, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          BemaWeeklySourceLinks(study: study, idPrefix: 'bema_card'),
-          const SizedBox(height: 8),
+          BemaWeeklySourceLinks(study: study, idPrefix: 'bema_card', includeApple: false),
+          const SizedBox(height: 4),
           Wrap(
             spacing: 8,
-            runSpacing: 8,
+            runSpacing: 4,
             children: [
+              if (study.applePodcastsUrl != null)
+                _LinkChip(
+                  key: const Key('bema_card_apple_podcasts'),
+                  label: 'Apple Podcasts',
+                  onPressed: () => openBemaLink(study.applePodcastsUrl!),
+                ),
               _LinkChip(label: 'Listen', onPressed: () => openBemaLink(study.listenUrl)),
               _LinkChip(
                 label: 'Discussion video',
@@ -102,39 +87,22 @@ class BemaThisWeekCard extends StatelessWidget {
                   label: 'Presentation',
                   onPressed: () => openBemaLink(study.presentationUrl!),
                 ),
+              _LinkChip(label: 'Questions', onPressed: onOpenDiscussion),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            'Show notes for this episode are on the episode page. Room ${study.callRoom}.',
-            style: theme.textTheme.bodySmall?.copyWith(color: onCard, height: 1.3),
-          ),
-          const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
               key: const Key('bema_weekly_join_call'),
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
+                visualDensity: VisualDensity.compact,
+                minimumSize: const Size.fromHeight(44),
                 backgroundColor: isContrast ? Colors.yellow : primaryColor,
                 foregroundColor: isContrast ? Colors.black : Colors.white,
               ),
               onPressed: onJoinCall,
               child: const Text('Join the weekly call'),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              key: const Key('bema_weekly_open_discussion'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                foregroundColor: accent,
-                side: BorderSide(color: accent),
-              ),
-              onPressed: onOpenDiscussion,
-              child: const Text('Open this week’s questions'),
             ),
           ),
         ],
@@ -144,11 +112,12 @@ class BemaThisWeekCard extends StatelessWidget {
 }
 
 class _LinkChip extends StatelessWidget {
-  const _LinkChip({required this.label, required this.onPressed});
+  const _LinkChip({super.key, required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => ActionChip(label: Text(label), onPressed: onPressed);
+  Widget build(BuildContext context) =>
+      ActionChip(visualDensity: VisualDensity.compact, label: Text(label), onPressed: onPressed);
 }

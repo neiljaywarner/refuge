@@ -65,12 +65,6 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         subtitle: 'Quiet fellowship, prayer requests & peaceful encouragement (Home)',
       ),
       BelongSpaceItem(
-        slug: 'study',
-        title: 'Weekly Study',
-        emoji: '📖',
-        subtitle: 'This week’s BEMA episode and discussion questions',
-      ),
-      BelongSpaceItem(
         slug: 'general_chat',
         title: 'General Chat',
         emoji: '📌',
@@ -115,6 +109,12 @@ const List<BelongSpaceSection> kBelongSpaceSections = [
         title: 'Memes',
         emoji: '😂',
         subtitle: 'Autism, faith & wholesome neurodivergent humor',
+      ),
+      BelongSpaceItem(
+        slug: 'study',
+        title: 'Weekly Study',
+        emoji: '📖',
+        subtitle: 'This week’s BEMA episode and discussion questions',
       ),
       BelongSpaceItem(
         slug: 'resources_videos',

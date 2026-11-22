@@ -16,10 +16,18 @@ Future<void> openBemaLink(String url) async {
 ///
 /// Used on the This Week card and on that week's discussion post.
 class BemaWeeklySourceLinks extends StatelessWidget {
-  const BemaWeeklySourceLinks({super.key, required this.study, required this.idPrefix});
+  const BemaWeeklySourceLinks({
+    super.key,
+    required this.study,
+    required this.idPrefix,
+    this.includeApple = true,
+  });
 
   final BemaWeeklyStudy study;
   final String idPrefix;
+
+  /// The feed card puts Apple Podcasts on the same row as Listen.
+  final bool includeApple;
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +41,11 @@ class BemaWeeklySourceLinks extends StatelessWidget {
       label: 'Transcript',
       url: study.transcriptUrl,
     );
-    final apple = study.applePodcastsUrl;
+    final apple = includeApple ? study.applePodcastsUrl : null;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final stacked = constraints.maxWidth < 420;
+        final stacked = constraints.maxWidth < 340;
         final pair = stacked
             ? Column(
                 crossAxisAlignment: .stretch,
@@ -71,7 +79,12 @@ class BemaWeeklySourceLinks extends StatelessWidget {
   Widget _sourceButton({required String keyName, required String label, required String url}) =>
       OutlinedButton(
         key: Key(keyName),
-        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+        style: OutlinedButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          minimumSize: const Size(48, 40),
+          padding: const .symmetric(horizontal: 8, vertical: 8),
+        ),
         onPressed: () => openBemaLink(url),
         child: Text(label),
       );

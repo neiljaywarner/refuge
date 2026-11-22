@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:refuge4serverpod/src/features/bema_weekly/bema_this_week_card.dart';
 import 'package:refuge4serverpod/src/features/bema_weekly/bema_weekly_study.dart';
 import 'package:refuge4serverpod/src/features/reflections/data/local_post_repository.dart';
+import 'package:refuge4serverpod/src/features/reflections/data/post_repository.dart';
 import 'package:refuge4serverpod/src/features/reflections/domain/post.dart';
 import 'package:refuge4serverpod/src/features/reflections/presentation/reflection_card.dart';
+import 'package:refuge4serverpod/src/home_screen.dart';
 
 void main() {
   test('episode 183 keeps the links published on the episode page', () {
@@ -25,6 +27,7 @@ void main() {
       'https://podcasts.apple.com/us/podcast/the-bema-podcast/id1148115183',
     );
     expect(study.presentationUrl, isNull);
+    expect(study.gatheringLabel, 'Sundays, 7:30 PM CT');
     expect(study.callRoom, 'bema-weekly');
     expect(study.questions, hasLength(5));
     expect(study.questions.first, contains('What sticks out to me?'));
@@ -78,8 +81,10 @@ void main() {
     expect(find.byKey(const Key('bema_card_transcript')), findsOneWidget);
     expect(find.byKey(const Key('bema_card_apple_podcasts')), findsOneWidget);
     expect(find.text('Join the weekly call'), findsOneWidget);
+    expect(find.textContaining('Sundays, 7:30 PM CT'), findsOneWidget);
     expect(find.text('Show notes'), findsOneWidget);
     expect(find.text('Transcript'), findsOneWidget);
+    expect(find.text('Apple Podcasts'), findsOneWidget);
 
     final post = weeklyDiscussionPost(bemaEpisode183);
     await tester.pumpWidget(
@@ -122,5 +127,25 @@ void main() {
     );
     expect(find.text('Transcript'), findsNothing);
     expect(find.text('Show notes'), findsNothing);
+  });
+
+  testWidgets('Join the weekly call opens the lobby for bema-weekly', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(412, 915);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = LocalPostRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [postRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp(home: RefugeHomeScreen(repository: repository)),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('bema_weekly_join_call')));
+    await tester.pumpAndSettle();
+    expect(find.text('Group call'), findsOneWidget);
+    final field = tester.widget<TextField>(find.byKey(const Key('group_call_name_field')));
+    expect(field.controller?.text, 'bema-weekly');
   });
 }

@@ -368,7 +368,7 @@ class RefugeHomeScreen extends HookConsumerWidget {
 
               final feedSlivers = <Widget>[
                 ...navigationSlivers,
-                if (selectedSpace.value != 'saved_for_later')
+                if (!largeFont && selectedSpace.value != 'saved_for_later')
                   SliverToBoxAdapter(
                     child: BemaThisWeekCard(
                       study: currentBemaWeeklyStudy,
