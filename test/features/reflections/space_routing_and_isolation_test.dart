@@ -24,12 +24,22 @@ void main() {
       expect(prayerPosts.first.id, isNot(equals(generalPosts.first.id)));
     });
 
-    test('kFellowshipSpaces contains all primary Belong spaces', () {
-      expect(kFellowshipSpaces.containsKey('general_chat'), isTrue);
-      expect(kFellowshipSpaces.containsKey('start_here'), isTrue);
-      expect(kFellowshipSpaces.containsKey('announcements'), isTrue);
-      expect(kFellowshipSpaces.containsKey('prayer'), isTrue);
-      expect(kFellowshipSpaces.containsKey('saved_for_later'), isTrue);
+    test('postable Belong spaces include the primary feeds and Weekly Study', () {
+      final slugs = kPostableBelongSpaces.map((space) => space.slug).toList();
+      expect(slugs, contains('general_chat'));
+      expect(slugs, contains('start_here'));
+      expect(slugs, contains('announcements'));
+      expect(slugs, contains('prayer'));
+      expect(slugs, contains('saved_for_later'));
+      expect(slugs, contains('study'));
+      expect(slugs, isNot(contains('general')));
+      expect(slugs, isNot(contains('members_directory')));
+      expect(getBelongSpaceInfo('general').title, 'Main Hall');
+      expect(getBelongSpaceInfo('study').title, 'Weekly Study');
+      for (final space in kPostableBelongSpaces) {
+        expect(space.title.contains('#'), isFalse);
+        expect(space.spaceSwitcherLabel.contains('#'), isFalse);
+      }
     });
 
     test('Creating a post in a specific space is isolated to that space', () async {

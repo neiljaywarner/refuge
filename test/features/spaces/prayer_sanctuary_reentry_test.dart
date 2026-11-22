@@ -101,5 +101,39 @@ void main() {
         expect(find.byKey(const Key('return_to_prayer_sanctuary_button')), findsNothing);
       },
     );
+
+    testWidgets('space switcher lists Prayer Sanctuary as a space without a channel hash', (
+      tester,
+    ) async {
+      String? switchedSpace;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: SensoryThemeData.getTheme(SensoryMode.sage),
+            home: Scaffold(
+              body: SpaceNavigationBar(
+                selectedSpace: 'general_chat',
+                onSelectSpace: (space) => switchedSpace = space,
+                onBackToSpaces: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('space_switcher_popup_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('space_chip_prayer')), findsOneWidget);
+      expect(find.text('🙏 Prayer Sanctuary'), findsOneWidget);
+      expect(find.textContaining('#prayer'), findsNothing);
+      expect(find.textContaining('room'), findsNothing);
+
+      await tester.tap(find.byKey(const Key('space_chip_prayer')));
+      await tester.pumpAndSettle();
+      expect(switchedSpace, equals('prayer'));
+    });
   });
 }

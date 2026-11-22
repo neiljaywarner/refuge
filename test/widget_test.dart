@@ -28,9 +28,13 @@ void main() {
       expect($('Refuge'), findsOneWidget);
       expect($(RegExp('Calm Tech')), findsOneWidget);
 
-      // Verify default spaces navigation chips
-      expect($('🙏 #prayer-sanctuary'), findsOneWidget);
-      expect($('📖 #weekly-study'), findsOneWidget);
+      // Default feed is Prayer Sanctuary. The switcher uses space names, not hashes.
+      expect($(Key('space_switcher_popup_button')), findsOneWidget);
+      expect($('Prayer Sanctuary'), findsWidgets);
+      await $(Key('space_switcher_popup_button')).tap();
+      expect($('📖 Weekly Study'), findsOneWidget);
+      expect($('#weekly-study'), findsNothing);
+      expect($('#prayer-sanctuary'), findsNothing);
 
       // Verify seeded posts in default 'prayer' space
       expect($('David M. (UK)'), findsOneWidget);
@@ -42,18 +46,19 @@ void main() {
     patrolWidgetTest('Switching space updates the stream of posts', ($) async {
       await pumpApp($);
 
-      // Tap on #weekly-study space chip
-      await $('📖 #weekly-study').tap();
+      await $(Key('space_switcher_popup_button')).tap();
+      await $('📖 Weekly Study').tap();
 
       // Now Pastor Thomas should be visible, and David M. should not
       expect($('Pastor Thomas (Melbourne)'), findsOneWidget);
       expect($('David M. (UK)'), findsNothing);
 
-      // Tap on #announcements (empty space)
-      await $('📢 #announcements').tap();
+      await $(Key('space_switcher_popup_button')).tap();
+      await $('📢 Announcements').tap();
 
-      // Verify empty space peaceful placeholder
-      expect($(RegExp('Space is quiet right now')), findsOneWidget);
+      expect($('Belong Leadership'), findsOneWidget);
+      expect($('David M. (UK)'), findsNothing);
+      expect($('Pastor Thomas (Melbourne)'), findsNothing);
     });
 
     patrolWidgetTest('Toggling sensory themes switches theme mode without errors', ($) async {

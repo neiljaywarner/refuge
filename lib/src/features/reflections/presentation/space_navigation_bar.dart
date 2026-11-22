@@ -8,10 +8,10 @@ import 'feed_sort_row.dart';
 import 'reflections_providers.dart';
 import 'tone_filter_row.dart';
 
-/// Room navigation and filter/sort header (#618, #671, #484).
+/// Space navigation and filter/sort header (#618, #671, #484).
 ///
 /// Wide layouts keep the space, filter, and sort on one line. Phone widths
-/// give the room title its own line and let filter and sort labels use their
+/// give the space title its own line and let filter and sort labels use their
 /// natural width, so names like "Prayer Request" stay readable in Monastic Dark.
 class SpaceNavigationBar extends ConsumerWidget {
   final String selectedSpace;
@@ -23,7 +23,7 @@ class SpaceNavigationBar extends ConsumerWidget {
   final ValueChanged<FeedSortOption>? onSelectSort;
   final bool? isContrast;
 
-  /// When set, the room, filter, and sort controls are at least this tall.
+  /// When set, the space, filter, and sort controls are at least this tall.
   /// Large-text drawers pass 48 so the targets stay tappable (#951).
   final double? minControlHeight;
 
@@ -65,7 +65,7 @@ class SpaceNavigationBar extends ConsumerWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Below this width the room title, filter, and sort cannot share one
+          // Below this width the space title, filter, and sort cannot share one
           // line without clipping names like "Prayer Request" (#484).
           final phoneChrome = hasFilterAndSort && constraints.maxWidth < 960;
           final showBreadcrumbs = onBackToSpaces != null && !phoneChrome;
@@ -304,39 +304,43 @@ class SpaceNavigationBar extends ConsumerWidget {
             onSelectSpace(spaceKey);
           });
         },
-        itemBuilder: (context) => kFellowshipSpaces.entries.map((entry) {
-          final isSelected = selectedSpace == entry.key;
-          return PopupMenuItem<String>(
-            key: Key('space_chip_${entry.key}'),
-            value: entry.key,
-            child: Semantics(
-              identifier: 'space_chip_${entry.key}',
-              button: true,
-              selected: isSelected,
-              label: entry.value,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      entry.value,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? (effectiveContrast ? Colors.yellow : primary) : null,
+        itemBuilder: (context) => [
+          for (final space in kPostableBelongSpaces)
+            PopupMenuItem<String>(
+              key: Key('space_chip_${space.slug}'),
+              value: space.slug,
+              child: Semantics(
+                identifier: 'space_chip_${space.slug}',
+                button: true,
+                selected: selectedSpace == space.slug,
+                label: space.spaceSwitcherLabel,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        space.spaceSwitcherLabel,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: selectedSpace == space.slug
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: selectedSpace == space.slug
+                              ? (effectiveContrast ? Colors.yellow : primary)
+                              : null,
+                        ),
                       ),
                     ),
-                  ),
-                  if (isSelected)
-                    Icon(
-                      Icons.check_rounded,
-                      size: 16,
-                      color: effectiveContrast ? Colors.yellow : primary,
-                    ),
-                ],
+                    if (selectedSpace == space.slug)
+                      Icon(
+                        Icons.check_rounded,
+                        size: 16,
+                        color: effectiveContrast ? Colors.yellow : primary,
+                      ),
+                  ],
+                ),
               ),
             ),
-          );
-        }).toList(),
+        ],
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: minControlHeight == null ? 3 : 16),
           child: Row(

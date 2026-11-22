@@ -38,7 +38,7 @@ void main() {
         // 1. Compact elements exist
         expect($(Key('reflection_composer_input')), findsOneWidget);
         expect(
-          $(find.textContaining('Share an unhurried thought in #General Chat')),
+          $(find.textContaining('Share an unhurried thought in the General Chat space')),
           findsOneWidget,
         );
         expect($(Key('composer_add_meme_compact_button')), findsOneWidget);
@@ -175,7 +175,7 @@ void main() {
         expect($(Key('publish_reflection_button')), findsNothing);
         expect($(Key('composer_expand_button')), findsOneWidget);
         expect(
-          $(find.textContaining('Share an unhurried thought in #Prayer Sanctuary')),
+          $(find.textContaining('Share an unhurried thought in the Prayer Sanctuary space')),
           findsOneWidget,
         );
       },

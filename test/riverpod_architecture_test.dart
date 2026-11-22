@@ -31,8 +31,8 @@ void main() {
       expect(container.read(sensoryThemeModeProvider), SensoryMode.clean);
     });
 
-    test('activeSpaceKeyProvider tracks active fellowship room selection', () {
-      expect(container.read(activeSpaceKeyProvider), 'prayer');
+    test('activeSpaceKeyProvider tracks active fellowship space selection', () {
+      expect(container.read(activeSpaceKeyProvider), 'general_chat');
 
       container.read(activeSpaceKeyProvider.notifier).state = 'special_interests';
       expect(container.read(activeSpaceKeyProvider), 'special_interests');

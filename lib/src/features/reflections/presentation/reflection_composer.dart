@@ -185,7 +185,7 @@ class ReflectionComposer extends HookWidget {
         customImageUrl.value.isNotEmpty || (attachedMeme.value?.imageUrl != null);
 
     final textScale = MediaQuery.textScalerOf(context).scale(1);
-    // Above 1.3 the space name ("#Prayer Sanctuary") needs more than two
+    // Above 1.3 the space name ("Prayer Sanctuary") needs more than two
     // lines. Null max lines lets the hint wrap instead of ellipsizing (#932).
     final int? collapsedHintLines = textScale > 1.3 ? null : (textScale > 1.15 ? 2 : 1);
 
@@ -225,7 +225,7 @@ class ReflectionComposer extends HookWidget {
                   decoration: InputDecoration(
                     isDense: true,
                     hintText:
-                        'Share an unhurried thought in #${getBelongSpaceInfo(selectedSpace).title}...',
+                        'Share an unhurried thought in the ${getBelongSpaceInfo(selectedSpace).title} space...',
                     hintStyle: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
