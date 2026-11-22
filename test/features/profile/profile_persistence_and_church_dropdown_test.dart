@@ -106,7 +106,7 @@ void main() {
         await $(const Key('profile_email_field')).enterText('sarah@belongonthespectrum.com');
 
         // Tap dropdown and select Boston Church of Christ
-        await $(const Key('profile_church_affiliation_dropdown')).tap();
+        await $(const Key('profile_church_dropdown_trigger_button')).tap();
         await $.pumpAndSettle();
 
         await $('Boston Church of Christ').last.tap();

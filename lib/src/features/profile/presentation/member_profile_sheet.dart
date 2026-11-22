@@ -1,4 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth hide EmailAuthProvider;
+import 'package:firebase_auth/firebase_auth.dart'
+    as fb_auth
+    hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/config/preview_mode_provider.dart';
-import '../../../core/presentation/system_insets.dart';
 import '../../account_deletion/presentation/delete_my_account_dialog.dart';
 import '../../branding/presentation/brand_config_provider.dart';
 import '../domain/member_profile.dart';
@@ -42,7 +43,9 @@ class BelongEditableAvatar extends ConsumerWidget {
               CircleAvatar(
                 radius: radius,
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                backgroundImage: hasPhoto ? NetworkImage(profile.avatarUrl!) : null,
+                backgroundImage: hasPhoto
+                    ? NetworkImage(profile.avatarUrl!)
+                    : null,
                 onBackgroundImageError: hasPhoto ? (_, _) {} : null,
                 child: !hasPhoto
                     ? Text(
@@ -50,7 +53,9 @@ class BelongEditableAvatar extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: radius * 0.65,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
                         ),
                       )
                     : null,
@@ -63,9 +68,16 @@ class BelongEditableAvatar extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).cardColor, width: 1.5),
+                    border: Border.all(
+                      color: Theme.of(context).cardColor,
+                      width: 1.5,
+                    ),
                   ),
-                  child: Icon(Icons.camera_alt, size: radius * 0.45, color: Colors.white),
+                  child: Icon(
+                    Icons.camera_alt,
+                    size: radius * 0.45,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -83,7 +95,12 @@ class MemberProfileDialog extends HookConsumerWidget {
   const MemberProfileDialog({super.key});
 
   static Future<void> show(BuildContext context) =>
-      showDialog<void>(context: context, builder: (_) => const MemberProfileDialog());
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          fullscreenDialog: true,
+          builder: (_) => const MemberProfileDialog(),
+        ),
+      );
 
   static bool _isSystemDefaultBio(String bio) {
     final trimmed = bio.trim();
@@ -107,7 +124,9 @@ class MemberProfileDialog extends HookConsumerWidget {
     final brand = ref.watch(communityBrandConfigProvider);
     final profile = ref.watch(memberProfileProvider);
 
-    final firstNameController = useTextEditingController(text: profile.firstName);
+    final firstNameController = useTextEditingController(
+      text: profile.firstName,
+    );
     final lastNameController = useTextEditingController(text: profile.lastName);
     final emailController = useTextEditingController(text: profile.email);
     final bioController = useTextEditingController(
@@ -116,7 +135,9 @@ class MemberProfileDialog extends HookConsumerWidget {
     final churchAffiliationController = useTextEditingController(
       text: profile.icocChurchAffiliation ?? '',
     );
-    final selectedAffiliation = useState<String?>(profile.icocChurchAffiliation);
+    final selectedAffiliation = useState<String?>(
+      profile.icocChurchAffiliation,
+    );
     useEffect(() {
       final restored = profile.icocChurchAffiliation;
       if (restored != null &&
@@ -128,6 +149,29 @@ class MemberProfileDialog extends HookConsumerWidget {
       return null;
     }, [profile.icocChurchAffiliation]);
     final validationError = useState<String?>(null);
+    final firstNameFocus = useFocusNode();
+    final lastNameFocus = useFocusNode();
+    final emailFocus = useFocusNode();
+    final churchFocus = useFocusNode();
+    final bioFocus = useFocusNode();
+    useEffect(() {
+      final nodes = [
+        firstNameFocus,
+        lastNameFocus,
+        emailFocus,
+        churchFocus,
+        bioFocus,
+      ];
+      void listener() => _scheduleProfileFieldReveal(nodes);
+      for (final node in nodes) {
+        node.addListener(listener);
+      }
+      return () {
+        for (final node in nodes) {
+          node.removeListener(listener);
+        }
+      };
+    }, [firstNameFocus, lastNameFocus, emailFocus, churchFocus, bioFocus]);
 
     final allAffiliationOptions = [
       ...brand.fellowshipAffiliationOptions,
@@ -135,12 +179,33 @@ class MemberProfileDialog extends HookConsumerWidget {
     ];
 
     final liveAuth = _liveFirebaseAuthWithUser();
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-    // Above this, the pinned Sign Out / Cancel / Save row stacks and eats the
-    // dialog, leaving Experimental Preview Features below the fold (#932).
+    final media = MediaQuery.of(context);
+    final textScale = media.textScaler.scale(1);
     final largeText = textScale > 1.15;
-    final available = MediaQuery.sizeOf(context).width - 80;
-    final sheetWidth = available < 380 ? available.clamp(220.0, 380.0) : 380.0;
+    final keyboardInset = media.viewInsets.bottom;
+    useEffect(
+      () {
+        if (keyboardInset <= 0) return null;
+        _scheduleProfileFieldReveal([
+          firstNameFocus,
+          lastNameFocus,
+          emailFocus,
+          churchFocus,
+          bioFocus,
+        ]);
+        return null;
+      },
+      [
+        keyboardInset,
+        firstNameFocus,
+        lastNameFocus,
+        emailFocus,
+        churchFocus,
+        bioFocus,
+      ],
+    );
+    const fieldGap = 12.0;
+    const bioLines = 2;
 
     Future<void> signOut() async {
       await ref.read(memberProfileProvider.notifier).signOut();
@@ -148,6 +213,40 @@ class MemberProfileDialog extends HookConsumerWidget {
     }
 
     void cancel() => Navigator.of(context).pop();
+
+    Future<void> confirmDelete() async {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          key: const Key('profile_delete_confirm_dialog'),
+          title: const Text('Are you sure?'),
+          content: const Text('This deletes your account.'),
+          actions: [
+            TextButton(
+              key: const Key('profile_delete_confirm_cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              key: const Key('profile_delete_confirm_delete'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+      final auth = liveAuth;
+      if (auth != null) {
+        await _deleteSignedInFirebaseAccount(context, ref, auth);
+        return;
+      }
+      await DeleteMyAccountDialog.show(context);
+    }
 
     void saveProfile() {
       final affiliation = churchAffiliationController.text.trim();
@@ -160,7 +259,9 @@ class MemberProfileDialog extends HookConsumerWidget {
         firstNameController.text.trim(),
         lastNameController.text.trim(),
       ].where((part) => part.isNotEmpty).join(' ');
-      final effectiveName = combinedName.isNotEmpty ? combinedName : profile.displayName;
+      final effectiveName = combinedName.isNotEmpty
+          ? combinedName
+          : profile.displayName;
       final effectiveBio = bioController.text.trim().isNotEmpty
           ? bioController.text.trim()
           : profile.bio;
@@ -178,405 +279,467 @@ class MemberProfileDialog extends HookConsumerWidget {
       Navigator.of(context).pop();
     }
 
-    final signOutButton = profile.isSignedIn
-        ? TextButton(
-            key: const Key('profile_sign_out_button'),
-            style: TextButton.styleFrom(
-              visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
-              minimumSize: largeText ? const Size(48, 48) : null,
-            ),
-            onPressed: signOut,
-            child: const Text('Sign Out'),
-          )
-        : null;
-    final cancelButton = TextButton(
-      key: const Key('profile_cancel_button'),
-      style: TextButton.styleFrom(
-        visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
-        minimumSize: largeText ? const Size(48, 48) : null,
-      ),
-      onPressed: cancel,
-      child: const Text('Cancel'),
-    );
-    final saveButton = FilledButton(
-      key: const Key('profile_save_sign_in_button'),
-      style: FilledButton.styleFrom(
-        visualDensity: largeText ? VisualDensity.standard : VisualDensity.compact,
-        minimumSize: largeText ? const Size(48, 48) : null,
-      ),
-      onPressed: saveProfile,
-      child: Text(profile.isSignedIn ? 'Save Profile' : 'Save & Sign In'),
-    );
-    Widget stretch(Widget child) => Row(children: [Expanded(child: child)]);
-    final stackedActions = Column(
-      crossAxisAlignment: .stretch,
-      children: [
-        stretch(saveButton),
-        const SizedBox(height: 8),
-        stretch(cancelButton),
-        if (signOutButton != null) ...[const SizedBox(height: 8), stretch(signOutButton)],
-      ],
+    final pageTitle = profile.isSignedIn
+        ? 'Profile'
+        : 'Member Profile & Sign-In';
+
+    InputDecoration fieldDecoration({
+      required String label,
+      String? hintText,
+      String? helperText,
+    }) => InputDecoration(
+      labelText: largeText ? null : label,
+      hintText: hintText,
+      helperText: helperText,
+      isDense: true,
+      border: const OutlineInputBorder(),
     );
 
-    return AlertDialog(
-      insetPadding: SystemInsets.dialogInsetPadding(MediaQuery.of(context)),
-      titlePadding: const .fromLTRB(20, 20, 20, 12),
-      contentPadding: const .fromLTRB(20, 4, 20, 12),
-      actionsPadding: const .fromLTRB(16, 0, 16, 12),
-      title: Row(
-        children: [
-          const BelongEditableAvatar(radius: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: .start,
-              mainAxisSize: .min,
-              children: [
-                Text(
-                  profile.isSignedIn ? profile.displayName : 'Member Profile & Sign-In',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                if (profile.isSignedIn && profile.email.isNotEmpty)
-                  Text(
-                    profile.email,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.75),
-                    ),
-                  )
-                else if (!profile.isSignedIn)
-                  Text(
-                    'Complete your fellowship profile',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.75),
-                    ),
-                  ),
-              ],
-            ),
+    Widget profileField({
+      required Key key,
+      required String label,
+      required String identifier,
+      required FocusNode focusNode,
+      required TextEditingController controller,
+      String? hintText,
+      String? helperText,
+      TextInputType? keyboardType,
+      TextCapitalization textCapitalization = TextCapitalization.none,
+      int maxLines = 1,
+    }) => Builder(
+      builder: (fieldContext) => _WrappingFieldLabel(
+        label: label,
+        largeText: largeText,
+        identifier: identifier,
+        child: TextField(
+          key: key,
+          focusNode: focusNode,
+          controller: controller,
+          keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
+          maxLines: maxLines,
+          scrollPadding: _profileFieldScrollPadding(fieldContext),
+          decoration: fieldDecoration(
+            label: label,
+            hintText: hintText,
+            helperText: helperText,
           ),
-          IconButton(
-            key: const Key('profile_sheet_close_button'),
-            icon: const Icon(Icons.close_rounded, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
-            tooltip: 'Close',
-          ),
-        ],
+        ),
       ),
-      content: SizedBox(
-        width: sheetWidth,
-        child: SingleChildScrollView(
-          key: largeText ? const Key('profile_sheet_scroll') : null,
-          child: Column(
-            mainAxisSize: .min,
-            crossAxisAlignment: largeText ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
-            children: [
-              if (validationError.value != null) ...[
-                Container(
-                  key: const Key('profile_validation_error_banner'),
-                  padding: const .all(8),
-                  margin: const .only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.12),
-                    borderRadius: .circular(8),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.35)),
+    );
+
+    final firstNameField = profileField(
+      key: const Key('profile_display_name_field'),
+      label: 'First Name',
+      identifier: 'profile_display_name_field',
+      focusNode: firstNameFocus,
+      controller: firstNameController,
+      hintText: 'First name',
+      textCapitalization: TextCapitalization.words,
+    );
+    final lastNameField = profileField(
+      key: const Key('profile_last_name_field'),
+      label: 'Last Name',
+      identifier: 'profile_last_name_field',
+      focusNode: lastNameFocus,
+      controller: lastNameController,
+      hintText: 'Last name',
+      textCapitalization: TextCapitalization.words,
+    );
+
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        leading: IconButton(
+          key: const Key('profile_sheet_close_button'),
+          tooltip: 'Close',
+          icon: const Icon(Icons.close),
+          onPressed: cancel,
+        ),
+        title: Text(pageTitle, maxLines: 2),
+        actions: [
+          if (profile.isSignedIn)
+            Semantics(
+              identifier: 'profile_account_menu_button',
+              button: true,
+              label: 'Account',
+              child: PopupMenuButton<_ProfileAccountAction>(
+                key: const Key('profile_account_menu_button'),
+                tooltip: 'Account',
+                icon: const Icon(Icons.more_vert),
+                onSelected: (action) {
+                  switch (action) {
+                    case _ProfileAccountAction.signOut:
+                      signOut();
+                    case _ProfileAccountAction.delete:
+                      confirmDelete();
+                  }
+                },
+                itemBuilder: (menuContext) => [
+                  const PopupMenuItem<_ProfileAccountAction>(
+                    key: Key('profile_sign_out_button'),
+                    value: _ProfileAccountAction.signOut,
+                    child: Text('Sign Out'),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline_rounded, size: 16, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          validationError.value!,
-                          key: const Key('profile_affiliation_error_text'),
-                          style: const TextStyle(fontSize: 11, color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              Row(
-                crossAxisAlignment: .start,
-                children: [
-                  Expanded(
-                    child: _WrappingFieldLabel(
-                      label: 'First Name',
-                      largeText: largeText,
-                      child: TextField(
-                        key: const Key('profile_display_name_field'),
-                        controller: firstNameController,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          labelText: largeText ? null : 'First Name',
-                          hintText: 'First name',
-                          isDense: true,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _WrappingFieldLabel(
-                      label: 'Last Name',
-                      largeText: largeText,
-                      child: TextField(
-                        key: const Key('profile_last_name_field'),
-                        controller: lastNameController,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          labelText: largeText ? null : 'Last Name',
-                          hintText: 'Last name',
-                          isDense: true,
-                          border: const OutlineInputBorder(),
-                        ),
+                  PopupMenuItem<_ProfileAccountAction>(
+                    key: const Key('delete_my_account_button'),
+                    value: _ProfileAccountAction.delete,
+                    child: Text(
+                      'Delete account',
+                      style: TextStyle(
+                        color: Theme.of(menuContext).colorScheme.error,
                       ),
                     ),
                   ),
                 ],
               ),
-              if (!profile.isSignedIn || profile.email.isEmpty) ...[
-                const SizedBox(height: 12),
-                _WrappingFieldLabel(
-                  label: 'Email Address',
-                  largeText: largeText,
-                  child: TextField(
-                    key: const Key('profile_email_field'),
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: largeText ? null : 'Email Address',
-                      helperText: 'For notifications and account recovery',
-                      isDense: true,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-              if (brand.enableFellowshipAffiliationField) ...[
-                const SizedBox(height: 14),
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              key: const Key('profile_sheet_scroll'),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+              padding: const .fromLTRB(16, 12, 16, 24),
+              children: [
                 Row(
-                  mainAxisSize: .min,
+                  crossAxisAlignment: .start,
                   children: [
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Text(
-                        brand.fellowshipAffiliationPrompt,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    const BelongEditableAvatar(radius: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: .start,
+                        children: [
+                          if (profile.isSignedIn)
+                            Text(
+                              profile.displayName,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          if (profile.isSignedIn && profile.email.isNotEmpty)
+                            Text(profile.email)
+                          else if (!profile.isSignedIn)
+                            const Text('Complete your fellowship profile'),
+                        ],
                       ),
-                    ),
-                    const Text(
-                      ' *',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  key: const Key('profile_church_affiliation_dropdown'),
-                  controller: churchAffiliationController,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding: const .symmetric(horizontal: 10, vertical: 10),
-                    border: const OutlineInputBorder(),
-                    hintText: 'Select or enter your church affiliation...',
-                    hintStyle: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
-                    suffixIcon: PopupMenuButton<String>(
-                      key: const Key('profile_church_dropdown_trigger_button'),
-                      tooltip: 'Select church affiliation',
-                      icon: const Icon(Icons.arrow_drop_down, size: 24),
-                      onSelected: (val) {
-                        churchAffiliationController.text = val;
-                        selectedAffiliation.value = val;
-                        validationError.value = null;
-                      },
-                      itemBuilder: (context) => allAffiliationOptions.map((opt) {
-                        final isNonMember = opt == brand.fellowshipNonMemberOption;
-                        return PopupMenuItem<String>(
-                          value: opt,
-                          child: Text(
-                            opt,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  onTap: () async {
-                    final RenderBox? box = context.findRenderObject() as RenderBox?;
-                    final offset = box != null ? box.localToGlobal(Offset.zero) : Offset.zero;
-                    final size = box?.size ?? Size.zero;
-                    final selected = await showMenu<String>(
-                      context: context,
-                      position: RelativeRect.fromLTRB(
-                        offset.dx,
-                        offset.dy + size.height,
-                        offset.dx + size.width,
-                        offset.dy + size.height + 250,
+                const SizedBox(height: 16),
+                if (validationError.value != null) ...[
+                  Container(
+                    key: const Key('profile_validation_error_banner'),
+                    padding: const .all(8),
+                    margin: const .only(bottom: fieldGap),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.12),
+                      borderRadius: .circular(8),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.35),
                       ),
-                      items: allAffiliationOptions.map((opt) {
-                        final isNonMember = opt == brand.fellowshipNonMemberOption;
-                        return PopupMenuItem<String>(
-                          value: opt,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
                           child: Text(
-                            opt,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: isNonMember ? FontStyle.italic : FontStyle.normal,
+                            validationError.value!,
+                            key: const Key('profile_affiliation_error_text'),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.red,
                             ),
                           ),
-                        );
-                      }).toList(),
-                    );
-                    if (selected != null) {
-                      churchAffiliationController.text = selected;
-                      selectedAffiliation.value = selected;
-                      validationError.value = null;
-                    }
-                  },
-                  onChanged: (val) {
-                    selectedAffiliation.value = val;
-                    if (val.trim().isNotEmpty) {
-                      validationError.value = null;
-                    }
-                  },
-                ),
-              ],
-              const SizedBox(height: 14),
-              _WrappingFieldLabel(
-                label: 'Bio / Note to Fellowship',
-                largeText: largeText,
-                child: TextField(
-                  key: const Key('profile_bio_field'),
-                  controller: bioController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: largeText ? null : 'Bio / Note to Fellowship',
-                    hintText: 'A quiet sentence about yourself',
-                    isDense: true,
-                    border: const OutlineInputBorder(),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 10),
-              Consumer(
-                builder: (context, ref, _) {
-                  final isPreview = ref.watch(previewFeaturesEnabledProvider);
-                  return SwitchListTile.adaptive(
-                    key: const Key('preview_mode_switch'),
-                    contentPadding: .zero,
-                    dense: !largeText,
-                    title: const Text(
-                      '🧪 Experimental Preview Features',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: const Text(
-                      'Show early, experimental features still being tested.',
-                      style: TextStyle(fontSize: 10.5),
-                    ),
-                    value: isPreview,
-                    onChanged: (val) {
-                      ref.read(memberProfileProvider.notifier).persistPreviewFeatures(val);
-                    },
-                  );
-                },
-              ),
-              if (profile.isSignedIn) ...[
-                const SizedBox(height: 4),
-                if (liveAuth != null)
-                  FirebaseUIActions(
-                    actions: [
-                      AccountDeletedAction((ctx, _) async {
-                        await ref.read(memberProfileProvider.notifier).signOut();
-                        if (ctx.mounted && Navigator.of(ctx).canPop()) {
-                          Navigator.of(ctx).pop();
-                        }
-                      }),
-                      SignedOutAction((ctx) async {
-                        await ref.read(memberProfileProvider.notifier).signOut();
-                        if (ctx.mounted && Navigator.of(ctx).canPop()) {
-                          Navigator.of(ctx).pop();
-                        }
-                      }),
+                ],
+                if (largeText)
+                  Column(
+                    crossAxisAlignment: .stretch,
+                    children: [
+                      firstNameField,
+                      const SizedBox(height: fieldGap),
+                      lastNameField,
                     ],
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: Theme.of(context).colorScheme
-                              .copyWith(onError: Theme.of(context).colorScheme.error),
-                        ),
-                        child: DeleteAccountButton(
-                          key: const Key('delete_my_account_button'),
-                          auth: liveAuth,
-                          variant: ButtonVariant.text,
-                          showDeleteConfirmationDialog: true,
-                          onSignInRequired: () => showReauthenticateDialog(
-                            context: context,
-                            providers: [EmailAuthProvider()],
-                            auth: liveAuth,
-                            onSignedIn: () => Navigator.of(context).pop(true),
-                          ),
-                        ),
-                      ),
-                    ),
                   )
                 else
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      key: const Key('delete_my_account_button'),
-                      onPressed: () => DeleteMyAccountDialog.show(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.error,
-                        padding: const .symmetric(horizontal: 8, vertical: 4),
+                  Row(
+                    crossAxisAlignment: .start,
+                    children: [
+                      Expanded(child: firstNameField),
+                      const SizedBox(width: 10),
+                      Expanded(child: lastNameField),
+                    ],
+                  ),
+                if (!profile.isSignedIn || profile.email.isEmpty) ...[
+                  const SizedBox(height: fieldGap),
+                  profileField(
+                    key: const Key('profile_email_field'),
+                    label: 'Email Address',
+                    identifier: 'profile_email_field',
+                    focusNode: emailFocus,
+                    controller: emailController,
+                    helperText: 'For notifications and account recovery',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                ],
+                if (brand.enableFellowshipAffiliationField) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisSize: .min,
+                    children: [
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Text(
+                          brand.fellowshipAffiliationPrompt,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                      label: const Text('Delete account'),
+                      const Text(
+                        ' *',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Required: Confirms whether you are part of our church fellowship or a welcoming visitor.',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: Theme.of(context).textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  Semantics(
+                    identifier: 'profile_church_affiliation_dropdown',
+                    child: Builder(
+                      builder: (fieldContext) => TextFormField(
+                        key: const Key('profile_church_affiliation_dropdown'),
+                        focusNode: churchFocus,
+                        controller: churchAffiliationController,
+                        scrollPadding: _profileFieldScrollPadding(fieldContext),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const .symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          border: const OutlineInputBorder(),
+                          hintText:
+                              'Select or enter your church affiliation...',
+                          hintStyle: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).hintColor,
+                          ),
+                          suffixIcon: PopupMenuButton<String>(
+                            key: const Key(
+                              'profile_church_dropdown_trigger_button',
+                            ),
+                            tooltip: 'Select church affiliation',
+                            icon: const Icon(Icons.arrow_drop_down, size: 24),
+                            onSelected: (val) {
+                              churchAffiliationController.text = val;
+                              selectedAffiliation.value = val;
+                              validationError.value = null;
+                            },
+                            itemBuilder: (context) =>
+                                allAffiliationOptions.map((opt) {
+                                  final isNonMember =
+                                      opt == brand.fellowshipNonMemberOption;
+                                  return PopupMenuItem<String>(
+                                    value: opt,
+                                    child: Text(
+                                      opt,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontStyle: isNonMember
+                                            ? FontStyle.italic
+                                            : FontStyle.normal,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
+                        onChanged: (val) {
+                          selectedAffiliation.value = val;
+                          if (val.trim().isNotEmpty) {
+                            validationError.value = null;
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                profileField(
+                  key: const Key('profile_bio_field'),
+                  label: 'Bio / Note to Fellowship',
+                  identifier: 'profile_bio_field',
+                  focusNode: bioFocus,
+                  controller: bioController,
+                  hintText: 'A quiet sentence about yourself',
+                  maxLines: bioLines,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Experimental features',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final isPreview = ref.watch(previewFeaturesEnabledProvider);
+                    return SwitchListTile.adaptive(
+                      key: const Key('preview_mode_switch'),
+                      contentPadding: .zero,
+                      title: const Text('Experimental Preview Features'),
+                      subtitle: const Text(
+                        'Show early, experimental features still being tested.',
+                      ),
+                      value: isPreview,
+                      onChanged: (val) {
+                        ref
+                            .read(memberProfileProvider.notifier)
+                            .persistPreviewFeatures(val);
+                      },
+                    );
+                  },
+                ),
               ],
-              if (largeText) ...[const SizedBox(height: 16), stackedActions],
-            ],
+            ),
           ),
-        ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const .fromLTRB(16, 8, 16, 12),
+              child: FilledButton(
+                key: const Key('profile_save_sign_in_button'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: saveProfile,
+                child: Text(
+                  profile.isSignedIn ? 'Save Profile' : 'Save & Sign In',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      actions: largeText ? null : [?signOutButton, cancelButton, saveButton],
     );
+  }
+}
+
+enum _ProfileAccountAction { signOut, delete }
+
+/// Keyboard inset still reported to the field, plus a gap above the pinned
+/// Save button. [Scaffold.resizeToAvoidBottomInset] already shrinks the body,
+/// so this inset is zero there and the full keyboard height otherwise.
+EdgeInsets _profileFieldScrollPadding(BuildContext context) {
+  final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+  return .only(top: 12, bottom: 24 + keyboardInset);
+}
+
+/// Deletes a live Firebase user after the profile menu's confirm dialog.
+///
+/// Re-authentication matches the previous Firebase account button. The
+/// in-memory profile (no live Firebase user) keeps [DeleteMyAccountDialog].
+Future<void> _deleteSignedInFirebaseAccount(
+  BuildContext context,
+  WidgetRef ref,
+  fb_auth.FirebaseAuth auth,
+) async {
+  Future<void> closeProfile() async {
+    await ref.read(memberProfileProvider.notifier).signOut();
+    if (context.mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  try {
+    await auth.currentUser?.delete();
+    await closeProfile();
+  } on fb_auth.FirebaseAuthException catch (error) {
+    if (error.code != 'requires-recent-login' || !context.mounted) return;
+    final signedIn = await showReauthenticateDialog(
+      context: context,
+      providers: [EmailAuthProvider()],
+      auth: auth,
+      onSignedIn: () => Navigator.of(context).pop(true),
+    );
+    if (!signedIn || !context.mounted) return;
+    await auth.currentUser?.delete();
+    await closeProfile();
+  }
+}
+
+/// Brings the focused profile field to the top of the dialog scroll view
+/// after the caret's own reveal animation, so the whole field stays above
+/// the keyboard (#992).
+void _scheduleProfileFieldReveal(Iterable<FocusNode> nodes) {
+  for (final node in nodes) {
+    if (!node.hasFocus) continue;
+    Future<void>.delayed(const Duration(milliseconds: 160), () {
+      if (!node.hasFocus) return;
+      final fieldContext = node.context;
+      if (fieldContext == null || !fieldContext.mounted) return;
+      Scrollable.ensureVisible(
+        fieldContext,
+        alignment: 0.0,
+        duration: Duration.zero,
+      );
+    });
   }
 }
 
 /// Floating field labels ellipsize to "First N…" at large text. Above the
 /// field they can wrap to as many lines as the words need.
 class _WrappingFieldLabel extends StatelessWidget {
-  const _WrappingFieldLabel({required this.label, required this.largeText, required this.child});
+  const _WrappingFieldLabel({
+    required this.label,
+    required this.largeText,
+    required this.child,
+    this.identifier,
+  });
 
   final String label;
   final bool largeText;
   final Widget child;
+  final String? identifier;
 
   @override
   Widget build(BuildContext context) {
-    if (!largeText) return child;
+    final field = Semantics(
+      identifier: identifier,
+      label: largeText ? label : null,
+      child: child,
+    );
+    if (!largeText) return field;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ExcludeSemantics(child: Text(label)),
         const SizedBox(height: 4),
-        Semantics(label: label, child: child),
+        field,
       ],
     );
   }

@@ -1,0 +1,77 @@
+appId: com.belongonthespectrum.refuge.dev
+# Debug/dev package. See .maestro/config.yaml for prod and legacy ids.
+name: "Profile fields stay fully visible above the keyboard"
+tags:
+  - belong
+  - profile
+  - keyboard
+  - issue-992
+---
+# Silent check for #992. No audio. Does not tap Save, so nothing is stored.
+# Typed values are synthetic placeholders.
+#
+# A signed-out dev build stops on the sign-in wall (#601). The saved-account
+# subflow reads BELONG_DEV_E2E_EMAIL and MAESTRO_TEST_PASSWORD from the
+# environment. Do not commit those values.
+# The email field is hidden once an account email is already on the profile.
+# Widget tests cover that field on the guest form.
+
+- launchApp:
+    clearState: false
+- runFlow:
+    file: subflows/dev_saved_account_home.yaml
+- tapOn:
+    id: "profile_avatar_button"
+- extendedWaitUntil:
+    visible: "Profile"
+    timeout: 20000
+
+- tapOn:
+    id: "profile_display_name_field"
+- eraseText
+- inputText: "Fellow"
+- takeScreenshot: profile_keyboard_first_name
+
+- tapOn:
+    id: "profile_last_name_field"
+- eraseText
+- inputText: "Member"
+- takeScreenshot: profile_keyboard_last_name
+
+- runFlow:
+    when:
+      visible:
+        id: "profile_email_field"
+    commands:
+      - tapOn:
+          id: "profile_email_field"
+      - eraseText
+      - inputText: "tester@example.com"
+      - takeScreenshot: profile_keyboard_email
+
+- tapOn:
+    id: "profile_church_affiliation_dropdown"
+- eraseText
+- inputText: "Example Fellowship"
+- takeScreenshot: profile_keyboard_church
+
+- tapOn:
+    id: "profile_bio_field"
+- eraseText
+- inputText: "A quiet note"
+- takeScreenshot: profile_keyboard_bio
+
+- scrollUntilVisible:
+    element: ".*(Save Profile|Save & Sign In).*"
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*(Save Profile|Save & Sign In).*"
+- assertNotVisible: "Sign Out"
+- takeScreenshot: profile_keyboard_save
+- tapOn:
+    id: "profile_account_menu_button"
+- extendedWaitUntil:
+    visible: "Delete account"
+    timeout: 8000
+- assertVisible: "Sign Out"
+- takeScreenshot: profile_keyboard_account_menu
